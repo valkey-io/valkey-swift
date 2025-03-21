@@ -15,10 +15,8 @@ struct App {
     }
 
     func run() async throws {
-        let mustacheLibrary = try await MustacheLibrary(directory: resourceFolder.path())
         let commands = try loadCommandsJSON()
-        let context = createMustacheContext(from: commands)
-        guard let output = mustacheLibrary.render(context, withTemplate: "file") else { preconditionFailure("Could not find mustache template") }
-        try output.write(toFile: "Sources/Redis/RedisConnection_commands.swift", atomically: true, encoding: .utf8)
+        let output = renderRedisCommands(commands)
+        try output.write(toFile: "Sources/Redis/RedisConnection_commands2.swift", atomically: true, encoding: .utf8)
     }
 }

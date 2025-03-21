@@ -18,7 +18,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.79.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.23.0"),
-        .package(url: "https://github.com/hummingbird-project/swift-mustache.git", from: "2.0.0"),
     ],
     targets: [
         .target(
@@ -40,9 +39,6 @@ let package = Package(
         ),
         .executableTarget(
             name: "RedisCommandBuilder",
-            dependencies: [
-                .product(name: "Mustache", package: "swift-mustache")
-            ],
             resources: [.process("Resources")]
         ),
         .testTarget(

@@ -9,8 +9,8 @@ import Testing
     logger.logLevel = .debug
     try await RedisClient.connect(.hostname("localhost", port: 6379), logger: logger) { connection, logger in
         let key = RedisKey(rawValue: UUID().uuidString)
-        _ = try await connection.setex(key: key, seconds: 50, value: "Hello")
+        _ = try await connection.setex(key: key, seconds: 50, value: "Hello3")
         let response = try await connection.get(key: key)
-        #expect(String(from: response) == "Hello")
+        #expect(String(from: response) == "Hello3")
     }
 }

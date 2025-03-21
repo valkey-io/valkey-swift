@@ -1,5 +1,5 @@
 extension StringProtocol {
-    func swiftFunction() -> String {
+    var swiftFunction: String {
         self
             .lowercased()
             .replacingOccurrences(of: "-", with: "_")
@@ -7,7 +7,7 @@ extension StringProtocol {
             .camelCased(capitalize: false)
     }
 
-    func swiftArgument() -> String {
+    var swiftArgument: String {
         self
             .lowercased()
             .replacingOccurrences(of: "-", with: "_")
