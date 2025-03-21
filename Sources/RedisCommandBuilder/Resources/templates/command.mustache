@@ -30,9 +30,9 @@
 {{/multiple}}
 {{/first()}}
 {{/arguments}}
-        return .init("{{commandName}}", arguments: arguments) 
+        return .init("{{commandName}}", arguments: arguments)
 {{/buildArgs}}    
 {{^buildArgs}}
-        .init("{{commandName}}", arguments: [{{#arguments}}{{name}}{{^isString}}.description{{/isString}}{{^last()}}, {{/last()}}{{/arguments}}]) 
+        .init("{{commandName}}", arguments: [{{#arguments}}{{name}}{{^isString}}.description{{/isString}}{{^last()}}, {{/last()}}{{/arguments}}])
 {{/buildArgs}}    
     }
