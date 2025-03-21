@@ -16,7 +16,7 @@ import Logging
 import NIOCore
 import RESP3
 
-public typealias RedisAsyncChannel = NIOAsyncChannel<RESP3Token, RESP3Command>
+public typealias RedisAsyncChannel = NIOAsyncChannel<RESP3Token, ByteBuffer>
 public typealias RedisClientHandler = @Sendable (RedisConnection, Logger) async throws -> Void
 
 struct RedisClientChannel: ClientConnectionChannel {

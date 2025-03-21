@@ -17,10 +17,10 @@ import NIO
 import NIOCore
 import RESP3
 
-class RESP3TokenHandler: ChannelDuplexHandler {
+class RESP3TokenHandler: ChannelInboundHandler {
     typealias InboundIn = ByteBuffer
     typealias InboundOut = RESP3Token
-    typealias OutboundIn = RESP3Command
+    typealias OutboundIn = ByteBuffer
     typealias OutboundOut = ByteBuffer
 
     var decoder: NIOSingleStepByteToMessageProcessor<RESP3TokenDecoder>
@@ -36,13 +36,6 @@ class RESP3TokenHandler: ChannelDuplexHandler {
     }
 
     func channelInactive(context: ChannelHandlerContext) {
-    }
-
-    func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
-        let token = unwrapOutboundIn(data)
-        var buffer = ByteBuffer()
-        buffer.writeRESP3Command(token)
-        context.writeAndFlush(wrapOutboundOut(buffer), promise: promise)
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
