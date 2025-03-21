@@ -1,0 +1,38 @@
+{{%CONTENT_TYPE: TEXT}}
+    /// {{summary}}
+    /// Version: {{version}}
+    /// Complexity: {{complexity}}
+    /// Categories: {{#categories}}{{.}}{{^last()}}, {{/last()}}{{/categories}}
+    public func {{funcName}}({{#parameters}}{{name}}: {{type}}{{#multiple}}...{{/multiple}}{{^last()}}, {{/last()}}{{/parameters}}) async throws -> RESP3Token {
+        let response = try await send({{funcName}}Command({{#parameters}}{{name}}: {{name}}{{^last()}}, {{/last()}}{{/parameters}}))
+        return response
+    }
+    @inlinable
+    public func {{funcName}}Command({{#parameters}}{{name}}: {{#multiple}}[{{type}}]{{/multiple}}{{^multiple}}{{type}}{{/multiple}}{{^last()}}, {{/last()}}{{/parameters}}) -> RESP3Command {
+{{#buildArgs}}
+{{#arguments}}
+{{#first()}}
+{{#multiple}}
+        {{#oneArg}}let{{/oneArg}}{{^oneArg}}var{{/oneArg}} arguments: [String] = {{name}}{{^isString}}.map(\.description){{/isString}}
+{{/multiple}}
+{{^multiple}}
+        var arguments: [String] = [{{name}}{{^isString}}.description{{/isString}}]
+{{/multiple}}
+{{/first()}}
+{{/arguments}}
+{{#arguments}}
+{{^first()}}
+{{#multiple}}
+        arguments.append(contentsOf: {{name}}{{^isString}}.map(\.description){{/isString}})
+{{/multiple}}
+{{^multiple}}
+        arguments.append({{name}}{{^isString}}.description{{/isString}})
+{{/multiple}}
+{{/first()}}
+{{/arguments}}
+        return .init("{{commandName}}", arguments: arguments) 
+{{/buildArgs}}    
+{{^buildArgs}}
+        .init("{{commandName}}", arguments: [{{#arguments}}{{name}}{{^isString}}.description{{/isString}}{{^last()}}, {{/last()}}{{/arguments}}]) 
+{{/buildArgs}}    
+    }
