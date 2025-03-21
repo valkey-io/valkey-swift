@@ -17,6 +17,6 @@ struct App {
     func run() async throws {
         let commands = try loadCommandsJSON()
         let output = renderRedisCommands(commands)
-        try output.write(toFile: "Sources/Redis/RedisConnection_commands2.swift", atomically: true, encoding: .utf8)
+        try output.write(toFile: "Sources/Redis/RedisConnection_commands.swift", atomically: true, encoding: .utf8)
     }
 }
