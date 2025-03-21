@@ -1,0 +1,53 @@
+// swift-tools-version: 6.0
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
+import PackageDescription
+
+let package = Package(
+    name: "swift-redis",
+    platforms: [.macOS(.v13)],
+    products: [
+        // Products define the executables and libraries a package produces, making them visible to other packages.
+        .library(
+            name: "Redis",
+            targets: ["Redis"]
+        )
+    ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.79.0"),
+        .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
+        .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.23.0"),
+        .package(url: "https://github.com/hummingbird-project/swift-mustache.git", from: "2.0.0"),
+    ],
+    targets: [
+        .target(
+            name: "Redis",
+            dependencies: [
+                "RESP3",
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+                .product(name: "NIOSSL", package: "swift-nio-ssl"),
+                .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
+            ]
+        ),
+        .target(
+            name: "RESP3",
+            dependencies: [
+                .product(name: "NIOCore", package: "swift-nio")
+            ]
+        ),
+        .executableTarget(
+            name: "RedisCommandBuilder",
+            dependencies: [
+                .product(name: "Mustache", package: "swift-mustache")
+            ],
+            resources: [.process("Resources")]
+        ),
+        .testTarget(
+            name: "RedisTests",
+            dependencies: ["Redis"]
+        ),
+    ]
+)

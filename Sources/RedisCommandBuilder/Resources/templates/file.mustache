@@ -1,0 +1,16 @@
+{{%CONTENT_TYPE: TEXT}}
+import NIOCore
+import RESP3
+
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
+extension RedisConnection {
+{{#commands}}
+{{>command}}
+
+{{/commands}}
+}
