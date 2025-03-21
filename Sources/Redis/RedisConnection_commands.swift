@@ -248,7 +248,8 @@ extension RedisConnection {
     }
     @inlinable
     public func bgsaveCommand(schedule: Bool) -> RESP3Command {
-        .init("BGSAVE", arguments: [schedule.description])
+        let arguments: [String] = schedule ? ["SCHEDULE"] : []
+        return .init("BGSAVE", arguments: arguments)
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -935,7 +936,11 @@ extension RedisConnection {
     }
     @inlinable
     public func copyCommand(source: RedisKey, destination: RedisKey, destinationDb: Int, replace: Bool) -> RESP3Command {
-        .init("COPY", arguments: [source.description, destination.description, destinationDb.description, replace.description])
+        var arguments: [String] = [source.description]
+        arguments.append(destination.description)
+        arguments.append(destinationDb.description)
+        arguments.append(contentsOf: replace ? ["REPLACE"] : [])
+        return .init("COPY", arguments: arguments)
     }
 
     /// Returns the number of keys in the database.
@@ -1260,7 +1265,10 @@ extension RedisConnection {
     }
     @inlinable
     public func functionListCommand(libraryNamePattern: String, withcode: Bool) -> RESP3Command {
-        .init("FUNCTION", arguments: ["LIST", libraryNamePattern, withcode.description])
+        var arguments: [String] = ["LIST"]
+        arguments.append(libraryNamePattern)
+        arguments.append(contentsOf: withcode ? ["WITHCODE"] : [])
+        return .init("FUNCTION", arguments: arguments)
     }
 
     /// Creates a library.
@@ -1273,7 +1281,10 @@ extension RedisConnection {
     }
     @inlinable
     public func functionLoadCommand(replace: Bool, functionCode: String) -> RESP3Command {
-        .init("FUNCTION", arguments: ["LOAD", replace.description, functionCode])
+        var arguments: [String] = ["LOAD"]
+        arguments.append(contentsOf: replace ? ["REPLACE"] : [])
+        arguments.append(functionCode)
+        return .init("FUNCTION", arguments: arguments)
     }
 
     /// Returns information about a function during execution.
@@ -1728,10 +1739,13 @@ extension RedisConnection {
     }
     @inlinable
     public func lcsCommand(key1: RedisKey, key2: RedisKey, len: Bool, idx: Bool, minMatchLen: Int, withmatchlen: Bool) -> RESP3Command {
-        .init(
-            "LCS",
-            arguments: [key1.description, key2.description, len.description, idx.description, minMatchLen.description, withmatchlen.description]
-        )
+        var arguments: [String] = [key1.description]
+        arguments.append(key2.description)
+        arguments.append(contentsOf: len ? ["LEN"] : [])
+        arguments.append(contentsOf: idx ? ["IDX"] : [])
+        arguments.append(minMatchLen.description)
+        arguments.append(contentsOf: withmatchlen ? ["WITHMATCHLEN"] : [])
+        return .init("LCS", arguments: arguments)
     }
 
     /// Returns an element from a list by its index.
@@ -1762,7 +1776,6 @@ extension RedisConnection {
 
     /// Displays computer art and the Redis version
     /// Version: 5.0.0
-    /// Complexity:
     /// Categories: @read, @fast
     public func lolwut(version: Int) async throws -> RESP3Token {
         let response = try await send(lolwutCommand(version: version))
@@ -2056,7 +2069,6 @@ extension RedisConnection {
 
     /// Listens for all requests received by the server in real-time.
     /// Version: 1.0.0
-    /// Complexity:
     /// Categories: @admin, @slow, @dangerous
     public func monitor() async throws -> RESP3Token {
         let response = try await send(monitorCommand())
@@ -2295,7 +2307,6 @@ extension RedisConnection {
 
     /// An internal command used in replication.
     /// Version: 2.8.0
-    /// Complexity:
     /// Categories: @admin, @slow, @dangerous
     public func psync(replicationid: String, offset: Int) async throws -> RESP3Token {
         let response = try await send(psyncCommand(replicationid: replicationid, offset: offset))
@@ -2509,90 +2520,40 @@ extension RedisConnection {
     /// Version: 2.6.0
     /// Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// Categories: @keyspace, @write, @slow, @dangerous
-    public func restore(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool,
-        absttl: Bool,
-        seconds: Int,
-        frequency: Int
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            restoreCommand(
-                key: key,
-                ttl: ttl,
-                serializedValue: serializedValue,
-                replace: replace,
-                absttl: absttl,
-                seconds: seconds,
-                frequency: frequency
-            )
-        )
+    public func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int, frequency: Int) async throws -> RESP3Token {
+        let response = try await send(restoreCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
         return response
     }
     @inlinable
-    public func restoreCommand(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool,
-        absttl: Bool,
-        seconds: Int,
-        frequency: Int
-    ) -> RESP3Command {
-        .init(
-            "RESTORE",
-            arguments: [
-                key.description, ttl.description, serializedValue, replace.description, absttl.description, seconds.description,
-                frequency.description,
-            ]
-        )
+    public func restoreCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int, frequency: Int) -> RESP3Command {
+        var arguments: [String] = [key.description]
+        arguments.append(ttl.description)
+        arguments.append(serializedValue)
+        arguments.append(contentsOf: replace ? ["REPLACE"] : [])
+        arguments.append(contentsOf: absttl ? ["ABSTTL"] : [])
+        arguments.append(seconds.description)
+        arguments.append(frequency.description)
+        return .init("RESTORE", arguments: arguments)
     }
 
     /// An internal command for migrating keys in a cluster.
     /// Version: 3.0.0
     /// Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// Categories: @keyspace, @write, @slow, @dangerous
-    public func restoreAsking(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool,
-        absttl: Bool,
-        seconds: Int,
-        frequency: Int
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            restoreAskingCommand(
-                key: key,
-                ttl: ttl,
-                serializedValue: serializedValue,
-                replace: replace,
-                absttl: absttl,
-                seconds: seconds,
-                frequency: frequency
-            )
-        )
+    public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int, frequency: Int) async throws -> RESP3Token {
+        let response = try await send(restoreAskingCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
         return response
     }
     @inlinable
-    public func restoreAskingCommand(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool,
-        absttl: Bool,
-        seconds: Int,
-        frequency: Int
-    ) -> RESP3Command {
-        .init(
-            "RESTORE-ASKING",
-            arguments: [
-                key.description, ttl.description, serializedValue, replace.description, absttl.description, seconds.description,
-                frequency.description,
-            ]
-        )
+    public func restoreAskingCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int, frequency: Int) -> RESP3Command {
+        var arguments: [String] = [key.description]
+        arguments.append(ttl.description)
+        arguments.append(serializedValue)
+        arguments.append(contentsOf: replace ? ["REPLACE"] : [])
+        arguments.append(contentsOf: absttl ? ["ABSTTL"] : [])
+        arguments.append(seconds.description)
+        arguments.append(frequency.description)
+        return .init("RESTORE-ASKING", arguments: arguments)
     }
 
     /// Returns the replication role.
@@ -3196,7 +3157,6 @@ extension RedisConnection {
 
     /// An internal command used in replication.
     /// Version: 1.0.0
-    /// Complexity:
     /// Categories: @admin, @slow, @dangerous
     public func sync() async throws -> RESP3Token {
         let response = try await send(syncCommand())
@@ -3361,81 +3321,32 @@ extension RedisConnection {
     /// Version: 6.2.0
     /// Complexity: O(1) if COUNT is small.
     /// Categories: @write, @stream, @fast
-    public func xautoclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        start: String,
-        count: Int,
-        justid: Bool
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            xautoclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid)
-        )
+    public func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int, justid: Bool) async throws -> RESP3Token {
+        let response = try await send(xautoclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
         return response
     }
     @inlinable
-    public func xautoclaimCommand(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        start: String,
-        count: Int,
-        justid: Bool
-    ) -> RESP3Command {
-        .init("XAUTOCLAIM", arguments: [key.description, group, consumer, minIdleTime, start, count.description, justid.description])
+    public func xautoclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int, justid: Bool) -> RESP3Command {
+        var arguments: [String] = [key.description]
+        arguments.append(group)
+        arguments.append(consumer)
+        arguments.append(minIdleTime)
+        arguments.append(start)
+        arguments.append(count.description)
+        arguments.append(contentsOf: justid ? ["JUSTID"] : [])
+        return .init("XAUTOCLAIM", arguments: arguments)
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
     /// Version: 5.0.0
     /// Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
     /// Categories: @write, @stream, @fast
-    public func xclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        id: String...,
-        ms: Int,
-        unixTimeMilliseconds: Date,
-        count: Int,
-        force: Bool,
-        justid: Bool,
-        lastid: String
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            xclaimCommand(
-                key: key,
-                group: group,
-                consumer: consumer,
-                minIdleTime: minIdleTime,
-                id: id,
-                ms: ms,
-                unixTimeMilliseconds: unixTimeMilliseconds,
-                count: count,
-                force: force,
-                justid: justid,
-                lastid: lastid
-            )
-        )
+    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String..., ms: Int, unixTimeMilliseconds: Date, count: Int, force: Bool, justid: Bool, lastid: String) async throws -> RESP3Token {
+        let response = try await send(xclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
         return response
     }
     @inlinable
-    public func xclaimCommand(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        id: [String],
-        ms: Int,
-        unixTimeMilliseconds: Date,
-        count: Int,
-        force: Bool,
-        justid: Bool,
-        lastid: String
-    ) -> RESP3Command {
+    public func xclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int, unixTimeMilliseconds: Date, count: Int, force: Bool, justid: Bool, lastid: String) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(group)
         arguments.append(consumer)
@@ -3444,8 +3355,8 @@ extension RedisConnection {
         arguments.append(ms.description)
         arguments.append(unixTimeMilliseconds.description)
         arguments.append(count.description)
-        arguments.append(force.description)
-        arguments.append(justid.description)
+        arguments.append(contentsOf: force ? ["FORCE"] : [])
+        arguments.append(contentsOf: justid ? ["JUSTID"] : [])
         arguments.append(lastid)
         return .init("XCLAIM", arguments: arguments)
     }
@@ -3672,7 +3583,7 @@ extension RedisConnection {
     public func zdiffCommand(numkeys: Int, key: [RedisKey], withscores: Bool) -> RESP3Command {
         var arguments: [String] = [numkeys.description]
         arguments.append(contentsOf: key.map(\.description))
-        arguments.append(withscores.description)
+        arguments.append(contentsOf: withscores ? ["WITHSCORES"] : [])
         return .init("ZDIFF", arguments: arguments)
     }
 
@@ -3785,7 +3696,10 @@ extension RedisConnection {
     }
     @inlinable
     public func zrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESP3Command {
-        .init("ZRANK", arguments: [key.description, member, withscore.description])
+        var arguments: [String] = [key.description]
+        arguments.append(member)
+        arguments.append(contentsOf: withscore ? ["WITHSCORE"] : [])
+        return .init("ZRANK", arguments: arguments)
     }
 
     /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
@@ -3852,7 +3766,11 @@ extension RedisConnection {
     }
     @inlinable
     public func zrevrangeCommand(key: RedisKey, start: Int, stop: Int, withscores: Bool) -> RESP3Command {
-        .init("ZREVRANGE", arguments: [key.description, start.description, stop.description, withscores.description])
+        var arguments: [String] = [key.description]
+        arguments.append(start.description)
+        arguments.append(stop.description)
+        arguments.append(contentsOf: withscores ? ["WITHSCORES"] : [])
+        return .init("ZREVRANGE", arguments: arguments)
     }
 
     /// Returns the index of a member in a sorted set ordered by descending scores.
@@ -3865,7 +3783,10 @@ extension RedisConnection {
     }
     @inlinable
     public func zrevrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESP3Command {
-        .init("ZREVRANK", arguments: [key.description, member, withscore.description])
+        var arguments: [String] = [key.description]
+        arguments.append(member)
+        arguments.append(contentsOf: withscore ? ["WITHSCORE"] : [])
+        return .init("ZREVRANK", arguments: arguments)
     }
 
     /// Returns the score of a member in a sorted set.

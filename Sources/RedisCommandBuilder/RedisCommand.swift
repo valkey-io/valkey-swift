@@ -25,6 +25,8 @@ struct RedisCommand: Decodable {
         let name: String
         let type: ArgumentType
         let multiple: Bool?
+        let optional: Bool?
+        let token: String?
     }
     let summary: String
     let since: String
