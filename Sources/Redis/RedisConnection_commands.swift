@@ -18,7 +18,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclCommand() -> RESP3Command {
-        .init("ACL", arguments: []) 
+        .init("ACL", arguments: [])
     }
 
     /// Lists the ACL categories, or the commands inside a category.
@@ -31,7 +31,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclCatCommand(category: String) -> RESP3Command {
-        .init("ACL", arguments: ["CAT", category]) 
+        .init("ACL", arguments: ["CAT", category])
     }
 
     /// Deletes ACL users, and terminates their connections.
@@ -46,7 +46,7 @@ extension RedisConnection {
     public func aclDeluserCommand(username: [String]) -> RESP3Command {
         var arguments: [String] = ["DELUSER"]
         arguments.append(contentsOf: username)
-        return .init("ACL", arguments: arguments) 
+        return .init("ACL", arguments: arguments)
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -63,7 +63,7 @@ extension RedisConnection {
         arguments.append(username)
         arguments.append(command)
         arguments.append(contentsOf: arg)
-        return .init("ACL", arguments: arguments) 
+        return .init("ACL", arguments: arguments)
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
@@ -76,7 +76,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclGenpassCommand(bits: Int) -> RESP3Command {
-        .init("ACL", arguments: ["GENPASS", bits.description]) 
+        .init("ACL", arguments: ["GENPASS", bits.description])
     }
 
     /// Lists the ACL rules of a user.
@@ -89,7 +89,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclGetuserCommand(username: String) -> RESP3Command {
-        .init("ACL", arguments: ["GETUSER", username]) 
+        .init("ACL", arguments: ["GETUSER", username])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -102,7 +102,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclHelpCommand() -> RESP3Command {
-        .init("ACL", arguments: ["HELP"]) 
+        .init("ACL", arguments: ["HELP"])
     }
 
     /// Dumps the effective rules in ACL file format.
@@ -115,7 +115,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclListCommand() -> RESP3Command {
-        .init("ACL", arguments: ["LIST"]) 
+        .init("ACL", arguments: ["LIST"])
     }
 
     /// Reloads the rules from the configured ACL file.
@@ -128,7 +128,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclLoadCommand() -> RESP3Command {
-        .init("ACL", arguments: ["LOAD"]) 
+        .init("ACL", arguments: ["LOAD"])
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
@@ -141,7 +141,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclSaveCommand() -> RESP3Command {
-        .init("ACL", arguments: ["SAVE"]) 
+        .init("ACL", arguments: ["SAVE"])
     }
 
     /// Creates and modifies an ACL user and its rules.
@@ -157,7 +157,7 @@ extension RedisConnection {
         var arguments: [String] = ["SETUSER"]
         arguments.append(username)
         arguments.append(contentsOf: rule)
-        return .init("ACL", arguments: arguments) 
+        return .init("ACL", arguments: arguments)
     }
 
     /// Lists all ACL users.
@@ -170,7 +170,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclUsersCommand() -> RESP3Command {
-        .init("ACL", arguments: ["USERS"]) 
+        .init("ACL", arguments: ["USERS"])
     }
 
     /// Returns the authenticated username of the current connection.
@@ -183,7 +183,7 @@ extension RedisConnection {
     }
     @inlinable
     public func aclWhoamiCommand() -> RESP3Command {
-        .init("ACL", arguments: ["WHOAMI"]) 
+        .init("ACL", arguments: ["WHOAMI"])
     }
 
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
@@ -196,7 +196,7 @@ extension RedisConnection {
     }
     @inlinable
     public func appendCommand(key: RedisKey, value: String) -> RESP3Command {
-        .init("APPEND", arguments: [key.description, value]) 
+        .init("APPEND", arguments: [key.description, value])
     }
 
     /// Signals that a cluster client is following an -ASK redirect.
@@ -209,7 +209,7 @@ extension RedisConnection {
     }
     @inlinable
     public func askingCommand() -> RESP3Command {
-        .init("ASKING", arguments: []) 
+        .init("ASKING", arguments: [])
     }
 
     /// Authenticates the connection.
@@ -222,7 +222,7 @@ extension RedisConnection {
     }
     @inlinable
     public func authCommand(username: String, password: String) -> RESP3Command {
-        .init("AUTH", arguments: [username, password]) 
+        .init("AUTH", arguments: [username, password])
     }
 
     /// Asynchronously rewrites the append-only file to disk.
@@ -235,7 +235,7 @@ extension RedisConnection {
     }
     @inlinable
     public func bgrewriteaofCommand() -> RESP3Command {
-        .init("BGREWRITEAOF", arguments: []) 
+        .init("BGREWRITEAOF", arguments: [])
     }
 
     /// Asynchronously saves the database(s) to disk.
@@ -248,7 +248,7 @@ extension RedisConnection {
     }
     @inlinable
     public func bgsaveCommand(schedule: Bool) -> RESP3Command {
-        .init("BGSAVE", arguments: [schedule.description]) 
+        .init("BGSAVE", arguments: [schedule.description])
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -263,7 +263,7 @@ extension RedisConnection {
     public func blpopCommand(key: [RedisKey], timeout: Double) -> RESP3Command {
         var arguments: [String] = key.map(\.description)
         arguments.append(timeout.description)
-        return .init("BLPOP", arguments: arguments) 
+        return .init("BLPOP", arguments: arguments)
     }
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -278,7 +278,7 @@ extension RedisConnection {
     public func brpopCommand(key: [RedisKey], timeout: Double) -> RESP3Command {
         var arguments: [String] = key.map(\.description)
         arguments.append(timeout.description)
-        return .init("BRPOP", arguments: arguments) 
+        return .init("BRPOP", arguments: arguments)
     }
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
@@ -291,7 +291,7 @@ extension RedisConnection {
     }
     @inlinable
     public func brpoplpushCommand(source: RedisKey, destination: RedisKey, timeout: Double) -> RESP3Command {
-        .init("BRPOPLPUSH", arguments: [source.description, destination.description, timeout.description]) 
+        .init("BRPOPLPUSH", arguments: [source.description, destination.description, timeout.description])
     }
 
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
@@ -306,7 +306,7 @@ extension RedisConnection {
     public func bzpopmaxCommand(key: [RedisKey], timeout: Double) -> RESP3Command {
         var arguments: [String] = key.map(\.description)
         arguments.append(timeout.description)
-        return .init("BZPOPMAX", arguments: arguments) 
+        return .init("BZPOPMAX", arguments: arguments)
     }
 
     /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
@@ -321,7 +321,7 @@ extension RedisConnection {
     public func bzpopminCommand(key: [RedisKey], timeout: Double) -> RESP3Command {
         var arguments: [String] = key.map(\.description)
         arguments.append(timeout.description)
-        return .init("BZPOPMIN", arguments: arguments) 
+        return .init("BZPOPMIN", arguments: arguments)
     }
 
     /// A container for client connection commands.
@@ -334,7 +334,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientCommand() -> RESP3Command {
-        .init("CLIENT", arguments: []) 
+        .init("CLIENT", arguments: [])
     }
 
     /// Returns the name of the connection.
@@ -347,7 +347,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientGetnameCommand() -> RESP3Command {
-        .init("CLIENT", arguments: ["GETNAME"]) 
+        .init("CLIENT", arguments: ["GETNAME"])
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
@@ -360,7 +360,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientGetredirCommand() -> RESP3Command {
-        .init("CLIENT", arguments: ["GETREDIR"]) 
+        .init("CLIENT", arguments: ["GETREDIR"])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -373,7 +373,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientHelpCommand() -> RESP3Command {
-        .init("CLIENT", arguments: ["HELP"]) 
+        .init("CLIENT", arguments: ["HELP"])
     }
 
     /// Returns the unique client ID of the connection.
@@ -386,7 +386,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientIdCommand() -> RESP3Command {
-        .init("CLIENT", arguments: ["ID"]) 
+        .init("CLIENT", arguments: ["ID"])
     }
 
     /// Returns information about the connection.
@@ -399,7 +399,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientInfoCommand() -> RESP3Command {
-        .init("CLIENT", arguments: ["INFO"]) 
+        .init("CLIENT", arguments: ["INFO"])
     }
 
     /// Sets the connection name.
@@ -412,7 +412,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientSetnameCommand(connectionName: String) -> RESP3Command {
-        .init("CLIENT", arguments: ["SETNAME", connectionName]) 
+        .init("CLIENT", arguments: ["SETNAME", connectionName])
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
@@ -425,7 +425,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientTrackinginfoCommand() -> RESP3Command {
-        .init("CLIENT", arguments: ["TRACKINGINFO"]) 
+        .init("CLIENT", arguments: ["TRACKINGINFO"])
     }
 
     /// Resumes processing commands from paused clients.
@@ -438,7 +438,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clientUnpauseCommand() -> RESP3Command {
-        .init("CLIENT", arguments: ["UNPAUSE"]) 
+        .init("CLIENT", arguments: ["UNPAUSE"])
     }
 
     /// A container for Redis Cluster commands.
@@ -451,7 +451,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: []) 
+        .init("CLUSTER", arguments: [])
     }
 
     /// Assigns new hash slots to a node.
@@ -466,7 +466,7 @@ extension RedisConnection {
     public func clusterAddslotsCommand(slot: [Int]) -> RESP3Command {
         var arguments: [String] = ["ADDSLOTS"]
         arguments.append(contentsOf: slot.map(\.description))
-        return .init("CLUSTER", arguments: arguments) 
+        return .init("CLUSTER", arguments: arguments)
     }
 
     /// Advances the cluster config epoch.
@@ -479,7 +479,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterBumpepochCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["BUMPEPOCH"]) 
+        .init("CLUSTER", arguments: ["BUMPEPOCH"])
     }
 
     /// Returns the number of active failure reports active for a node.
@@ -492,7 +492,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterCountFailureReportsCommand(nodeId: String) -> RESP3Command {
-        .init("CLUSTER", arguments: ["COUNT-FAILURE-REPORTS", nodeId]) 
+        .init("CLUSTER", arguments: ["COUNT-FAILURE-REPORTS", nodeId])
     }
 
     /// Returns the number of keys in a hash slot.
@@ -505,7 +505,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterCountkeysinslotCommand(slot: Int) -> RESP3Command {
-        .init("CLUSTER", arguments: ["COUNTKEYSINSLOT", slot.description]) 
+        .init("CLUSTER", arguments: ["COUNTKEYSINSLOT", slot.description])
     }
 
     /// Sets hash slots as unbound for a node.
@@ -520,7 +520,7 @@ extension RedisConnection {
     public func clusterDelslotsCommand(slot: [Int]) -> RESP3Command {
         var arguments: [String] = ["DELSLOTS"]
         arguments.append(contentsOf: slot.map(\.description))
-        return .init("CLUSTER", arguments: arguments) 
+        return .init("CLUSTER", arguments: arguments)
     }
 
     /// Deletes all slots information from a node.
@@ -533,7 +533,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterFlushslotsCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["FLUSHSLOTS"]) 
+        .init("CLUSTER", arguments: ["FLUSHSLOTS"])
     }
 
     /// Removes a node from the nodes table.
@@ -546,7 +546,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterForgetCommand(nodeId: String) -> RESP3Command {
-        .init("CLUSTER", arguments: ["FORGET", nodeId]) 
+        .init("CLUSTER", arguments: ["FORGET", nodeId])
     }
 
     /// Returns the key names in a hash slot.
@@ -559,7 +559,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterGetkeysinslotCommand(slot: Int, count: Int) -> RESP3Command {
-        .init("CLUSTER", arguments: ["GETKEYSINSLOT", slot.description, count.description]) 
+        .init("CLUSTER", arguments: ["GETKEYSINSLOT", slot.description, count.description])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -572,7 +572,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterHelpCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["HELP"]) 
+        .init("CLUSTER", arguments: ["HELP"])
     }
 
     /// Returns information about the state of a node.
@@ -585,7 +585,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterInfoCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["INFO"]) 
+        .init("CLUSTER", arguments: ["INFO"])
     }
 
     /// Returns the hash slot for a key.
@@ -598,7 +598,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterKeyslotCommand(key: String) -> RESP3Command {
-        .init("CLUSTER", arguments: ["KEYSLOT", key]) 
+        .init("CLUSTER", arguments: ["KEYSLOT", key])
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
@@ -611,7 +611,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterLinksCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["LINKS"]) 
+        .init("CLUSTER", arguments: ["LINKS"])
     }
 
     /// Forces a node to handshake with another node.
@@ -624,7 +624,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterMeetCommand(ip: String, port: Int, clusterBusPort: Int) -> RESP3Command {
-        .init("CLUSTER", arguments: ["MEET", ip, port.description, clusterBusPort.description]) 
+        .init("CLUSTER", arguments: ["MEET", ip, port.description, clusterBusPort.description])
     }
 
     /// Returns the ID of a node.
@@ -637,7 +637,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterMyidCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["MYID"]) 
+        .init("CLUSTER", arguments: ["MYID"])
     }
 
     /// Returns the shard ID of a node.
@@ -650,7 +650,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterMyshardidCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["MYSHARDID"]) 
+        .init("CLUSTER", arguments: ["MYSHARDID"])
     }
 
     /// Returns the cluster configuration for a node.
@@ -663,7 +663,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterNodesCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["NODES"]) 
+        .init("CLUSTER", arguments: ["NODES"])
     }
 
     /// Lists the replica nodes of a master node.
@@ -676,7 +676,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterReplicasCommand(nodeId: String) -> RESP3Command {
-        .init("CLUSTER", arguments: ["REPLICAS", nodeId]) 
+        .init("CLUSTER", arguments: ["REPLICAS", nodeId])
     }
 
     /// Configure a node as replica of a master node.
@@ -689,7 +689,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterReplicateCommand(nodeId: String) -> RESP3Command {
-        .init("CLUSTER", arguments: ["REPLICATE", nodeId]) 
+        .init("CLUSTER", arguments: ["REPLICATE", nodeId])
     }
 
     /// Forces a node to save the cluster configuration to disk.
@@ -702,7 +702,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterSaveconfigCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["SAVECONFIG"]) 
+        .init("CLUSTER", arguments: ["SAVECONFIG"])
     }
 
     /// Sets the configuration epoch for a new node.
@@ -715,7 +715,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterSetConfigEpochCommand(configEpoch: Int) -> RESP3Command {
-        .init("CLUSTER", arguments: ["SET-CONFIG-EPOCH", configEpoch.description]) 
+        .init("CLUSTER", arguments: ["SET-CONFIG-EPOCH", configEpoch.description])
     }
 
     /// Returns the mapping of cluster slots to shards.
@@ -728,7 +728,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterShardsCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["SHARDS"]) 
+        .init("CLUSTER", arguments: ["SHARDS"])
     }
 
     /// Lists the replica nodes of a master node.
@@ -741,7 +741,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterSlavesCommand(nodeId: String) -> RESP3Command {
-        .init("CLUSTER", arguments: ["SLAVES", nodeId]) 
+        .init("CLUSTER", arguments: ["SLAVES", nodeId])
     }
 
     /// Returns the mapping of cluster slots to nodes.
@@ -754,7 +754,7 @@ extension RedisConnection {
     }
     @inlinable
     public func clusterSlotsCommand() -> RESP3Command {
-        .init("CLUSTER", arguments: ["SLOTS"]) 
+        .init("CLUSTER", arguments: ["SLOTS"])
     }
 
     /// Returns detailed information about all commands.
@@ -767,7 +767,7 @@ extension RedisConnection {
     }
     @inlinable
     public func commandCommand() -> RESP3Command {
-        .init("COMMAND", arguments: []) 
+        .init("COMMAND", arguments: [])
     }
 
     /// Returns a count of commands.
@@ -780,7 +780,7 @@ extension RedisConnection {
     }
     @inlinable
     public func commandCountCommand() -> RESP3Command {
-        .init("COMMAND", arguments: ["COUNT"]) 
+        .init("COMMAND", arguments: ["COUNT"])
     }
 
     /// Returns documentary information about one, multiple or all commands.
@@ -795,7 +795,7 @@ extension RedisConnection {
     public func commandDocsCommand(commandName: [String]) -> RESP3Command {
         var arguments: [String] = ["DOCS"]
         arguments.append(contentsOf: commandName)
-        return .init("COMMAND", arguments: arguments) 
+        return .init("COMMAND", arguments: arguments)
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -811,7 +811,7 @@ extension RedisConnection {
         var arguments: [String] = ["GETKEYS"]
         arguments.append(command)
         arguments.append(contentsOf: arg)
-        return .init("COMMAND", arguments: arguments) 
+        return .init("COMMAND", arguments: arguments)
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
@@ -827,7 +827,7 @@ extension RedisConnection {
         var arguments: [String] = ["GETKEYSANDFLAGS"]
         arguments.append(command)
         arguments.append(contentsOf: arg)
-        return .init("COMMAND", arguments: arguments) 
+        return .init("COMMAND", arguments: arguments)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -840,7 +840,7 @@ extension RedisConnection {
     }
     @inlinable
     public func commandHelpCommand() -> RESP3Command {
-        .init("COMMAND", arguments: ["HELP"]) 
+        .init("COMMAND", arguments: ["HELP"])
     }
 
     /// Returns information about one, multiple or all commands.
@@ -855,7 +855,7 @@ extension RedisConnection {
     public func commandInfoCommand(commandName: [String]) -> RESP3Command {
         var arguments: [String] = ["INFO"]
         arguments.append(contentsOf: commandName)
-        return .init("COMMAND", arguments: arguments) 
+        return .init("COMMAND", arguments: arguments)
     }
 
     /// A container for server configuration commands.
@@ -868,7 +868,7 @@ extension RedisConnection {
     }
     @inlinable
     public func configCommand() -> RESP3Command {
-        .init("CONFIG", arguments: []) 
+        .init("CONFIG", arguments: [])
     }
 
     /// Returns the effective values of configuration parameters.
@@ -883,7 +883,7 @@ extension RedisConnection {
     public func configGetCommand(parameter: [String]) -> RESP3Command {
         var arguments: [String] = ["GET"]
         arguments.append(contentsOf: parameter)
-        return .init("CONFIG", arguments: arguments) 
+        return .init("CONFIG", arguments: arguments)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -896,7 +896,7 @@ extension RedisConnection {
     }
     @inlinable
     public func configHelpCommand() -> RESP3Command {
-        .init("CONFIG", arguments: ["HELP"]) 
+        .init("CONFIG", arguments: ["HELP"])
     }
 
     /// Resets the server's statistics.
@@ -909,7 +909,7 @@ extension RedisConnection {
     }
     @inlinable
     public func configResetstatCommand() -> RESP3Command {
-        .init("CONFIG", arguments: ["RESETSTAT"]) 
+        .init("CONFIG", arguments: ["RESETSTAT"])
     }
 
     /// Persists the effective configuration to file.
@@ -922,7 +922,7 @@ extension RedisConnection {
     }
     @inlinable
     public func configRewriteCommand() -> RESP3Command {
-        .init("CONFIG", arguments: ["REWRITE"]) 
+        .init("CONFIG", arguments: ["REWRITE"])
     }
 
     /// Copies the value of a key to a new key.
@@ -935,7 +935,7 @@ extension RedisConnection {
     }
     @inlinable
     public func copyCommand(source: RedisKey, destination: RedisKey, destinationDb: Int, replace: Bool) -> RESP3Command {
-        .init("COPY", arguments: [source.description, destination.description, destinationDb.description, replace.description]) 
+        .init("COPY", arguments: [source.description, destination.description, destinationDb.description, replace.description])
     }
 
     /// Returns the number of keys in the database.
@@ -948,7 +948,7 @@ extension RedisConnection {
     }
     @inlinable
     public func dbsizeCommand() -> RESP3Command {
-        .init("DBSIZE", arguments: []) 
+        .init("DBSIZE", arguments: [])
     }
 
     /// A container for debugging commands.
@@ -961,7 +961,7 @@ extension RedisConnection {
     }
     @inlinable
     public func debugCommand() -> RESP3Command {
-        .init("DEBUG", arguments: []) 
+        .init("DEBUG", arguments: [])
     }
 
     /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
@@ -974,7 +974,7 @@ extension RedisConnection {
     }
     @inlinable
     public func decrCommand(key: RedisKey) -> RESP3Command {
-        .init("DECR", arguments: [key.description]) 
+        .init("DECR", arguments: [key.description])
     }
 
     /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
@@ -987,7 +987,7 @@ extension RedisConnection {
     }
     @inlinable
     public func decrbyCommand(key: RedisKey, decrement: Int) -> RESP3Command {
-        .init("DECRBY", arguments: [key.description, decrement.description]) 
+        .init("DECRBY", arguments: [key.description, decrement.description])
     }
 
     /// Deletes one or more keys.
@@ -1001,7 +1001,7 @@ extension RedisConnection {
     @inlinable
     public func delCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("DEL", arguments: arguments) 
+        return .init("DEL", arguments: arguments)
     }
 
     /// Discards a transaction.
@@ -1014,7 +1014,7 @@ extension RedisConnection {
     }
     @inlinable
     public func discardCommand() -> RESP3Command {
-        .init("DISCARD", arguments: []) 
+        .init("DISCARD", arguments: [])
     }
 
     /// Returns a serialized representation of the value stored at a key.
@@ -1027,7 +1027,7 @@ extension RedisConnection {
     }
     @inlinable
     public func dumpCommand(key: RedisKey) -> RESP3Command {
-        .init("DUMP", arguments: [key.description]) 
+        .init("DUMP", arguments: [key.description])
     }
 
     /// Returns the given string.
@@ -1040,7 +1040,7 @@ extension RedisConnection {
     }
     @inlinable
     public func echoCommand(message: String) -> RESP3Command {
-        .init("ECHO", arguments: [message]) 
+        .init("ECHO", arguments: [message])
     }
 
     /// Executes a server-side Lua script.
@@ -1057,7 +1057,7 @@ extension RedisConnection {
         arguments.append(numkeys.description)
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(contentsOf: arg)
-        return .init("EVAL", arguments: arguments) 
+        return .init("EVAL", arguments: arguments)
     }
 
     /// Executes a server-side Lua script by SHA1 digest.
@@ -1074,7 +1074,7 @@ extension RedisConnection {
         arguments.append(numkeys.description)
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(contentsOf: arg)
-        return .init("EVALSHA", arguments: arguments) 
+        return .init("EVALSHA", arguments: arguments)
     }
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
@@ -1091,7 +1091,7 @@ extension RedisConnection {
         arguments.append(numkeys.description)
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(contentsOf: arg)
-        return .init("EVALSHA_RO", arguments: arguments) 
+        return .init("EVALSHA_RO", arguments: arguments)
     }
 
     /// Executes a read-only server-side Lua script.
@@ -1108,7 +1108,7 @@ extension RedisConnection {
         arguments.append(numkeys.description)
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(contentsOf: arg)
-        return .init("EVAL_RO", arguments: arguments) 
+        return .init("EVAL_RO", arguments: arguments)
     }
 
     /// Executes all commands in a transaction.
@@ -1121,7 +1121,7 @@ extension RedisConnection {
     }
     @inlinable
     public func execCommand() -> RESP3Command {
-        .init("EXEC", arguments: []) 
+        .init("EXEC", arguments: [])
     }
 
     /// Determines whether one or more keys exist.
@@ -1135,7 +1135,7 @@ extension RedisConnection {
     @inlinable
     public func existsCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("EXISTS", arguments: arguments) 
+        return .init("EXISTS", arguments: arguments)
     }
 
     /// Returns the expiration time of a key as a Unix timestamp.
@@ -1148,7 +1148,7 @@ extension RedisConnection {
     }
     @inlinable
     public func expiretimeCommand(key: RedisKey) -> RESP3Command {
-        .init("EXPIRETIME", arguments: [key.description]) 
+        .init("EXPIRETIME", arguments: [key.description])
     }
 
     /// Invokes a function.
@@ -1165,7 +1165,7 @@ extension RedisConnection {
         arguments.append(numkeys.description)
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(contentsOf: arg)
-        return .init("FCALL", arguments: arguments) 
+        return .init("FCALL", arguments: arguments)
     }
 
     /// Invokes a read-only function.
@@ -1182,7 +1182,7 @@ extension RedisConnection {
         arguments.append(numkeys.description)
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(contentsOf: arg)
-        return .init("FCALL_RO", arguments: arguments) 
+        return .init("FCALL_RO", arguments: arguments)
     }
 
     /// A container for function commands.
@@ -1195,7 +1195,7 @@ extension RedisConnection {
     }
     @inlinable
     public func functionCommand() -> RESP3Command {
-        .init("FUNCTION", arguments: []) 
+        .init("FUNCTION", arguments: [])
     }
 
     /// Deletes a library and its functions.
@@ -1208,7 +1208,7 @@ extension RedisConnection {
     }
     @inlinable
     public func functionDeleteCommand(libraryName: String) -> RESP3Command {
-        .init("FUNCTION", arguments: ["DELETE", libraryName]) 
+        .init("FUNCTION", arguments: ["DELETE", libraryName])
     }
 
     /// Dumps all libraries into a serialized binary payload.
@@ -1221,7 +1221,7 @@ extension RedisConnection {
     }
     @inlinable
     public func functionDumpCommand() -> RESP3Command {
-        .init("FUNCTION", arguments: ["DUMP"]) 
+        .init("FUNCTION", arguments: ["DUMP"])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1234,7 +1234,7 @@ extension RedisConnection {
     }
     @inlinable
     public func functionHelpCommand() -> RESP3Command {
-        .init("FUNCTION", arguments: ["HELP"]) 
+        .init("FUNCTION", arguments: ["HELP"])
     }
 
     /// Terminates a function during execution.
@@ -1247,7 +1247,7 @@ extension RedisConnection {
     }
     @inlinable
     public func functionKillCommand() -> RESP3Command {
-        .init("FUNCTION", arguments: ["KILL"]) 
+        .init("FUNCTION", arguments: ["KILL"])
     }
 
     /// Returns information about all libraries.
@@ -1260,7 +1260,7 @@ extension RedisConnection {
     }
     @inlinable
     public func functionListCommand(libraryNamePattern: String, withcode: Bool) -> RESP3Command {
-        .init("FUNCTION", arguments: ["LIST", libraryNamePattern, withcode.description]) 
+        .init("FUNCTION", arguments: ["LIST", libraryNamePattern, withcode.description])
     }
 
     /// Creates a library.
@@ -1273,7 +1273,7 @@ extension RedisConnection {
     }
     @inlinable
     public func functionLoadCommand(replace: Bool, functionCode: String) -> RESP3Command {
-        .init("FUNCTION", arguments: ["LOAD", replace.description, functionCode]) 
+        .init("FUNCTION", arguments: ["LOAD", replace.description, functionCode])
     }
 
     /// Returns information about a function during execution.
@@ -1286,7 +1286,7 @@ extension RedisConnection {
     }
     @inlinable
     public func functionStatsCommand() -> RESP3Command {
-        .init("FUNCTION", arguments: ["STATS"]) 
+        .init("FUNCTION", arguments: ["STATS"])
     }
 
     /// Returns members from a geospatial index as geohash strings.
@@ -1301,7 +1301,7 @@ extension RedisConnection {
     public func geohashCommand(key: RedisKey, member: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: member)
-        return .init("GEOHASH", arguments: arguments) 
+        return .init("GEOHASH", arguments: arguments)
     }
 
     /// Returns the longitude and latitude of members from a geospatial index.
@@ -1316,7 +1316,7 @@ extension RedisConnection {
     public func geoposCommand(key: RedisKey, member: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: member)
-        return .init("GEOPOS", arguments: arguments) 
+        return .init("GEOPOS", arguments: arguments)
     }
 
     /// Returns the string value of a key.
@@ -1329,7 +1329,7 @@ extension RedisConnection {
     }
     @inlinable
     public func getCommand(key: RedisKey) -> RESP3Command {
-        .init("GET", arguments: [key.description]) 
+        .init("GET", arguments: [key.description])
     }
 
     /// Returns a bit value by offset.
@@ -1342,7 +1342,7 @@ extension RedisConnection {
     }
     @inlinable
     public func getbitCommand(key: RedisKey, offset: Int) -> RESP3Command {
-        .init("GETBIT", arguments: [key.description, offset.description]) 
+        .init("GETBIT", arguments: [key.description, offset.description])
     }
 
     /// Returns the string value of a key after deleting the key.
@@ -1355,7 +1355,7 @@ extension RedisConnection {
     }
     @inlinable
     public func getdelCommand(key: RedisKey) -> RESP3Command {
-        .init("GETDEL", arguments: [key.description]) 
+        .init("GETDEL", arguments: [key.description])
     }
 
     /// Returns a substring of the string stored at a key.
@@ -1368,7 +1368,7 @@ extension RedisConnection {
     }
     @inlinable
     public func getrangeCommand(key: RedisKey, start: Int, end: Int) -> RESP3Command {
-        .init("GETRANGE", arguments: [key.description, start.description, end.description]) 
+        .init("GETRANGE", arguments: [key.description, start.description, end.description])
     }
 
     /// Returns the previous string value of a key after setting it to a new value.
@@ -1381,7 +1381,7 @@ extension RedisConnection {
     }
     @inlinable
     public func getsetCommand(key: RedisKey, value: String) -> RESP3Command {
-        .init("GETSET", arguments: [key.description, value]) 
+        .init("GETSET", arguments: [key.description, value])
     }
 
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
@@ -1396,7 +1396,7 @@ extension RedisConnection {
     public func hdelCommand(key: RedisKey, field: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: field)
-        return .init("HDEL", arguments: arguments) 
+        return .init("HDEL", arguments: arguments)
     }
 
     /// Determines whether a field exists in a hash.
@@ -1409,7 +1409,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hexistsCommand(key: RedisKey, field: String) -> RESP3Command {
-        .init("HEXISTS", arguments: [key.description, field]) 
+        .init("HEXISTS", arguments: [key.description, field])
     }
 
     /// Returns the value of a field in a hash.
@@ -1422,7 +1422,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hgetCommand(key: RedisKey, field: String) -> RESP3Command {
-        .init("HGET", arguments: [key.description, field]) 
+        .init("HGET", arguments: [key.description, field])
     }
 
     /// Returns all fields and values in a hash.
@@ -1435,7 +1435,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hgetallCommand(key: RedisKey) -> RESP3Command {
-        .init("HGETALL", arguments: [key.description]) 
+        .init("HGETALL", arguments: [key.description])
     }
 
     /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
@@ -1448,7 +1448,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hincrbyCommand(key: RedisKey, field: String, increment: Int) -> RESP3Command {
-        .init("HINCRBY", arguments: [key.description, field, increment.description]) 
+        .init("HINCRBY", arguments: [key.description, field, increment.description])
     }
 
     /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
@@ -1461,7 +1461,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hincrbyfloatCommand(key: RedisKey, field: String, increment: Double) -> RESP3Command {
-        .init("HINCRBYFLOAT", arguments: [key.description, field, increment.description]) 
+        .init("HINCRBYFLOAT", arguments: [key.description, field, increment.description])
     }
 
     /// Returns all fields in a hash.
@@ -1474,7 +1474,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hkeysCommand(key: RedisKey) -> RESP3Command {
-        .init("HKEYS", arguments: [key.description]) 
+        .init("HKEYS", arguments: [key.description])
     }
 
     /// Returns the number of fields in a hash.
@@ -1487,7 +1487,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hlenCommand(key: RedisKey) -> RESP3Command {
-        .init("HLEN", arguments: [key.description]) 
+        .init("HLEN", arguments: [key.description])
     }
 
     /// Returns the values of all fields in a hash.
@@ -1502,7 +1502,7 @@ extension RedisConnection {
     public func hmgetCommand(key: RedisKey, field: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: field)
-        return .init("HMGET", arguments: arguments) 
+        return .init("HMGET", arguments: arguments)
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
@@ -1515,7 +1515,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hsetnxCommand(key: RedisKey, field: String, value: String) -> RESP3Command {
-        .init("HSETNX", arguments: [key.description, field, value]) 
+        .init("HSETNX", arguments: [key.description, field, value])
     }
 
     /// Returns the length of the value of a field.
@@ -1528,7 +1528,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hstrlenCommand(key: RedisKey, field: String) -> RESP3Command {
-        .init("HSTRLEN", arguments: [key.description, field]) 
+        .init("HSTRLEN", arguments: [key.description, field])
     }
 
     /// Returns all values in a hash.
@@ -1541,7 +1541,7 @@ extension RedisConnection {
     }
     @inlinable
     public func hvalsCommand(key: RedisKey) -> RESP3Command {
-        .init("HVALS", arguments: [key.description]) 
+        .init("HVALS", arguments: [key.description])
     }
 
     /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
@@ -1554,7 +1554,7 @@ extension RedisConnection {
     }
     @inlinable
     public func incrCommand(key: RedisKey) -> RESP3Command {
-        .init("INCR", arguments: [key.description]) 
+        .init("INCR", arguments: [key.description])
     }
 
     /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
@@ -1567,7 +1567,7 @@ extension RedisConnection {
     }
     @inlinable
     public func incrbyCommand(key: RedisKey, increment: Int) -> RESP3Command {
-        .init("INCRBY", arguments: [key.description, increment.description]) 
+        .init("INCRBY", arguments: [key.description, increment.description])
     }
 
     /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
@@ -1580,7 +1580,7 @@ extension RedisConnection {
     }
     @inlinable
     public func incrbyfloatCommand(key: RedisKey, increment: Double) -> RESP3Command {
-        .init("INCRBYFLOAT", arguments: [key.description, increment.description]) 
+        .init("INCRBYFLOAT", arguments: [key.description, increment.description])
     }
 
     /// Returns information and statistics about the server.
@@ -1594,7 +1594,7 @@ extension RedisConnection {
     @inlinable
     public func infoCommand(section: [String]) -> RESP3Command {
         let arguments: [String] = section
-        return .init("INFO", arguments: arguments) 
+        return .init("INFO", arguments: arguments)
     }
 
     /// Returns the Unix timestamp of the last successful save to disk.
@@ -1607,7 +1607,7 @@ extension RedisConnection {
     }
     @inlinable
     public func lastsaveCommand() -> RESP3Command {
-        .init("LASTSAVE", arguments: []) 
+        .init("LASTSAVE", arguments: [])
     }
 
     /// A container for latency diagnostics commands.
@@ -1620,7 +1620,7 @@ extension RedisConnection {
     }
     @inlinable
     public func latencyCommand() -> RESP3Command {
-        .init("LATENCY", arguments: []) 
+        .init("LATENCY", arguments: [])
     }
 
     /// Returns a human-readable latency analysis report.
@@ -1633,7 +1633,7 @@ extension RedisConnection {
     }
     @inlinable
     public func latencyDoctorCommand() -> RESP3Command {
-        .init("LATENCY", arguments: ["DOCTOR"]) 
+        .init("LATENCY", arguments: ["DOCTOR"])
     }
 
     /// Returns a latency graph for an event.
@@ -1646,7 +1646,7 @@ extension RedisConnection {
     }
     @inlinable
     public func latencyGraphCommand(event: String) -> RESP3Command {
-        .init("LATENCY", arguments: ["GRAPH", event]) 
+        .init("LATENCY", arguments: ["GRAPH", event])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1659,7 +1659,7 @@ extension RedisConnection {
     }
     @inlinable
     public func latencyHelpCommand() -> RESP3Command {
-        .init("LATENCY", arguments: ["HELP"]) 
+        .init("LATENCY", arguments: ["HELP"])
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
@@ -1674,7 +1674,7 @@ extension RedisConnection {
     public func latencyHistogramCommand(command: [String]) -> RESP3Command {
         var arguments: [String] = ["HISTOGRAM"]
         arguments.append(contentsOf: command)
-        return .init("LATENCY", arguments: arguments) 
+        return .init("LATENCY", arguments: arguments)
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -1687,7 +1687,7 @@ extension RedisConnection {
     }
     @inlinable
     public func latencyHistoryCommand(event: String) -> RESP3Command {
-        .init("LATENCY", arguments: ["HISTORY", event]) 
+        .init("LATENCY", arguments: ["HISTORY", event])
     }
 
     /// Returns the latest latency samples for all events.
@@ -1700,7 +1700,7 @@ extension RedisConnection {
     }
     @inlinable
     public func latencyLatestCommand() -> RESP3Command {
-        .init("LATENCY", arguments: ["LATEST"]) 
+        .init("LATENCY", arguments: ["LATEST"])
     }
 
     /// Resets the latency data for one or more events.
@@ -1715,7 +1715,7 @@ extension RedisConnection {
     public func latencyResetCommand(event: [String]) -> RESP3Command {
         var arguments: [String] = ["RESET"]
         arguments.append(contentsOf: event)
-        return .init("LATENCY", arguments: arguments) 
+        return .init("LATENCY", arguments: arguments)
     }
 
     /// Finds the longest common substring.
@@ -1728,7 +1728,10 @@ extension RedisConnection {
     }
     @inlinable
     public func lcsCommand(key1: RedisKey, key2: RedisKey, len: Bool, idx: Bool, minMatchLen: Int, withmatchlen: Bool) -> RESP3Command {
-        .init("LCS", arguments: [key1.description, key2.description, len.description, idx.description, minMatchLen.description, withmatchlen.description]) 
+        .init(
+            "LCS",
+            arguments: [key1.description, key2.description, len.description, idx.description, minMatchLen.description, withmatchlen.description]
+        )
     }
 
     /// Returns an element from a list by its index.
@@ -1741,7 +1744,7 @@ extension RedisConnection {
     }
     @inlinable
     public func lindexCommand(key: RedisKey, index: Int) -> RESP3Command {
-        .init("LINDEX", arguments: [key.description, index.description]) 
+        .init("LINDEX", arguments: [key.description, index.description])
     }
 
     /// Returns the length of a list.
@@ -1754,12 +1757,12 @@ extension RedisConnection {
     }
     @inlinable
     public func llenCommand(key: RedisKey) -> RESP3Command {
-        .init("LLEN", arguments: [key.description]) 
+        .init("LLEN", arguments: [key.description])
     }
 
     /// Displays computer art and the Redis version
     /// Version: 5.0.0
-    /// Complexity: 
+    /// Complexity:
     /// Categories: @read, @fast
     public func lolwut(version: Int) async throws -> RESP3Token {
         let response = try await send(lolwutCommand(version: version))
@@ -1767,7 +1770,7 @@ extension RedisConnection {
     }
     @inlinable
     public func lolwutCommand(version: Int) -> RESP3Command {
-        .init("LOLWUT", arguments: [version.description]) 
+        .init("LOLWUT", arguments: [version.description])
     }
 
     /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
@@ -1780,7 +1783,7 @@ extension RedisConnection {
     }
     @inlinable
     public func lpopCommand(key: RedisKey, count: Int) -> RESP3Command {
-        .init("LPOP", arguments: [key.description, count.description]) 
+        .init("LPOP", arguments: [key.description, count.description])
     }
 
     /// Returns the index of matching elements in a list.
@@ -1793,7 +1796,7 @@ extension RedisConnection {
     }
     @inlinable
     public func lposCommand(key: RedisKey, element: String, rank: Int, numMatches: Int, len: Int) -> RESP3Command {
-        .init("LPOS", arguments: [key.description, element, rank.description, numMatches.description, len.description]) 
+        .init("LPOS", arguments: [key.description, element, rank.description, numMatches.description, len.description])
     }
 
     /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
@@ -1808,7 +1811,7 @@ extension RedisConnection {
     public func lpushCommand(key: RedisKey, element: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: element)
-        return .init("LPUSH", arguments: arguments) 
+        return .init("LPUSH", arguments: arguments)
     }
 
     /// Prepends one or more elements to a list only when the list exists.
@@ -1823,7 +1826,7 @@ extension RedisConnection {
     public func lpushxCommand(key: RedisKey, element: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: element)
-        return .init("LPUSHX", arguments: arguments) 
+        return .init("LPUSHX", arguments: arguments)
     }
 
     /// Returns a range of elements from a list.
@@ -1836,7 +1839,7 @@ extension RedisConnection {
     }
     @inlinable
     public func lrangeCommand(key: RedisKey, start: Int, stop: Int) -> RESP3Command {
-        .init("LRANGE", arguments: [key.description, start.description, stop.description]) 
+        .init("LRANGE", arguments: [key.description, start.description, stop.description])
     }
 
     /// Removes elements from a list. Deletes the list if the last element was removed.
@@ -1849,7 +1852,7 @@ extension RedisConnection {
     }
     @inlinable
     public func lremCommand(key: RedisKey, count: Int, element: String) -> RESP3Command {
-        .init("LREM", arguments: [key.description, count.description, element]) 
+        .init("LREM", arguments: [key.description, count.description, element])
     }
 
     /// Sets the value of an element in a list by its index.
@@ -1862,7 +1865,7 @@ extension RedisConnection {
     }
     @inlinable
     public func lsetCommand(key: RedisKey, index: Int, element: String) -> RESP3Command {
-        .init("LSET", arguments: [key.description, index.description, element]) 
+        .init("LSET", arguments: [key.description, index.description, element])
     }
 
     /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
@@ -1875,7 +1878,7 @@ extension RedisConnection {
     }
     @inlinable
     public func ltrimCommand(key: RedisKey, start: Int, stop: Int) -> RESP3Command {
-        .init("LTRIM", arguments: [key.description, start.description, stop.description]) 
+        .init("LTRIM", arguments: [key.description, start.description, stop.description])
     }
 
     /// A container for memory diagnostics commands.
@@ -1888,7 +1891,7 @@ extension RedisConnection {
     }
     @inlinable
     public func memoryCommand() -> RESP3Command {
-        .init("MEMORY", arguments: []) 
+        .init("MEMORY", arguments: [])
     }
 
     /// Outputs a memory problems report.
@@ -1901,7 +1904,7 @@ extension RedisConnection {
     }
     @inlinable
     public func memoryDoctorCommand() -> RESP3Command {
-        .init("MEMORY", arguments: ["DOCTOR"]) 
+        .init("MEMORY", arguments: ["DOCTOR"])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1914,7 +1917,7 @@ extension RedisConnection {
     }
     @inlinable
     public func memoryHelpCommand() -> RESP3Command {
-        .init("MEMORY", arguments: ["HELP"]) 
+        .init("MEMORY", arguments: ["HELP"])
     }
 
     /// Returns the allocator statistics.
@@ -1927,7 +1930,7 @@ extension RedisConnection {
     }
     @inlinable
     public func memoryMallocStatsCommand() -> RESP3Command {
-        .init("MEMORY", arguments: ["MALLOC-STATS"]) 
+        .init("MEMORY", arguments: ["MALLOC-STATS"])
     }
 
     /// Asks the allocator to release memory.
@@ -1940,7 +1943,7 @@ extension RedisConnection {
     }
     @inlinable
     public func memoryPurgeCommand() -> RESP3Command {
-        .init("MEMORY", arguments: ["PURGE"]) 
+        .init("MEMORY", arguments: ["PURGE"])
     }
 
     /// Returns details about memory usage.
@@ -1953,7 +1956,7 @@ extension RedisConnection {
     }
     @inlinable
     public func memoryStatsCommand() -> RESP3Command {
-        .init("MEMORY", arguments: ["STATS"]) 
+        .init("MEMORY", arguments: ["STATS"])
     }
 
     /// Estimates the memory usage of a key.
@@ -1966,7 +1969,7 @@ extension RedisConnection {
     }
     @inlinable
     public func memoryUsageCommand(key: RedisKey, count: Int) -> RESP3Command {
-        .init("MEMORY", arguments: ["USAGE", key.description, count.description]) 
+        .init("MEMORY", arguments: ["USAGE", key.description, count.description])
     }
 
     /// Atomically returns the string values of one or more keys.
@@ -1980,7 +1983,7 @@ extension RedisConnection {
     @inlinable
     public func mgetCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("MGET", arguments: arguments) 
+        return .init("MGET", arguments: arguments)
     }
 
     /// A container for module commands.
@@ -1993,7 +1996,7 @@ extension RedisConnection {
     }
     @inlinable
     public func moduleCommand() -> RESP3Command {
-        .init("MODULE", arguments: []) 
+        .init("MODULE", arguments: [])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2006,7 +2009,7 @@ extension RedisConnection {
     }
     @inlinable
     public func moduleHelpCommand() -> RESP3Command {
-        .init("MODULE", arguments: ["HELP"]) 
+        .init("MODULE", arguments: ["HELP"])
     }
 
     /// Returns all loaded modules.
@@ -2019,7 +2022,7 @@ extension RedisConnection {
     }
     @inlinable
     public func moduleListCommand() -> RESP3Command {
-        .init("MODULE", arguments: ["LIST"]) 
+        .init("MODULE", arguments: ["LIST"])
     }
 
     /// Loads a module.
@@ -2035,7 +2038,7 @@ extension RedisConnection {
         var arguments: [String] = ["LOAD"]
         arguments.append(path)
         arguments.append(contentsOf: arg)
-        return .init("MODULE", arguments: arguments) 
+        return .init("MODULE", arguments: arguments)
     }
 
     /// Unloads a module.
@@ -2048,12 +2051,12 @@ extension RedisConnection {
     }
     @inlinable
     public func moduleUnloadCommand(name: String) -> RESP3Command {
-        .init("MODULE", arguments: ["UNLOAD", name]) 
+        .init("MODULE", arguments: ["UNLOAD", name])
     }
 
     /// Listens for all requests received by the server in real-time.
     /// Version: 1.0.0
-    /// Complexity: 
+    /// Complexity:
     /// Categories: @admin, @slow, @dangerous
     public func monitor() async throws -> RESP3Token {
         let response = try await send(monitorCommand())
@@ -2061,7 +2064,7 @@ extension RedisConnection {
     }
     @inlinable
     public func monitorCommand() -> RESP3Command {
-        .init("MONITOR", arguments: []) 
+        .init("MONITOR", arguments: [])
     }
 
     /// Moves a key to another database.
@@ -2074,7 +2077,7 @@ extension RedisConnection {
     }
     @inlinable
     public func moveCommand(key: RedisKey, db: Int) -> RESP3Command {
-        .init("MOVE", arguments: [key.description, db.description]) 
+        .init("MOVE", arguments: [key.description, db.description])
     }
 
     /// Starts a transaction.
@@ -2087,7 +2090,7 @@ extension RedisConnection {
     }
     @inlinable
     public func multiCommand() -> RESP3Command {
-        .init("MULTI", arguments: []) 
+        .init("MULTI", arguments: [])
     }
 
     /// A container for object introspection commands.
@@ -2100,7 +2103,7 @@ extension RedisConnection {
     }
     @inlinable
     public func objectCommand() -> RESP3Command {
-        .init("OBJECT", arguments: []) 
+        .init("OBJECT", arguments: [])
     }
 
     /// Returns the internal encoding of a Redis object.
@@ -2113,7 +2116,7 @@ extension RedisConnection {
     }
     @inlinable
     public func objectEncodingCommand(key: RedisKey) -> RESP3Command {
-        .init("OBJECT", arguments: ["ENCODING", key.description]) 
+        .init("OBJECT", arguments: ["ENCODING", key.description])
     }
 
     /// Returns the logarithmic access frequency counter of a Redis object.
@@ -2126,7 +2129,7 @@ extension RedisConnection {
     }
     @inlinable
     public func objectFreqCommand(key: RedisKey) -> RESP3Command {
-        .init("OBJECT", arguments: ["FREQ", key.description]) 
+        .init("OBJECT", arguments: ["FREQ", key.description])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2139,7 +2142,7 @@ extension RedisConnection {
     }
     @inlinable
     public func objectHelpCommand() -> RESP3Command {
-        .init("OBJECT", arguments: ["HELP"]) 
+        .init("OBJECT", arguments: ["HELP"])
     }
 
     /// Returns the time since the last access to a Redis object.
@@ -2152,7 +2155,7 @@ extension RedisConnection {
     }
     @inlinable
     public func objectIdletimeCommand(key: RedisKey) -> RESP3Command {
-        .init("OBJECT", arguments: ["IDLETIME", key.description]) 
+        .init("OBJECT", arguments: ["IDLETIME", key.description])
     }
 
     /// Returns the reference count of a value of a key.
@@ -2165,7 +2168,7 @@ extension RedisConnection {
     }
     @inlinable
     public func objectRefcountCommand(key: RedisKey) -> RESP3Command {
-        .init("OBJECT", arguments: ["REFCOUNT", key.description]) 
+        .init("OBJECT", arguments: ["REFCOUNT", key.description])
     }
 
     /// Removes the expiration time of a key.
@@ -2178,7 +2181,7 @@ extension RedisConnection {
     }
     @inlinable
     public func persistCommand(key: RedisKey) -> RESP3Command {
-        .init("PERSIST", arguments: [key.description]) 
+        .init("PERSIST", arguments: [key.description])
     }
 
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
@@ -2191,7 +2194,7 @@ extension RedisConnection {
     }
     @inlinable
     public func pexpiretimeCommand(key: RedisKey) -> RESP3Command {
-        .init("PEXPIRETIME", arguments: [key.description]) 
+        .init("PEXPIRETIME", arguments: [key.description])
     }
 
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
@@ -2206,7 +2209,7 @@ extension RedisConnection {
     public func pfaddCommand(key: RedisKey, element: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: element)
-        return .init("PFADD", arguments: arguments) 
+        return .init("PFADD", arguments: arguments)
     }
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
@@ -2220,7 +2223,7 @@ extension RedisConnection {
     @inlinable
     public func pfcountCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("PFCOUNT", arguments: arguments) 
+        return .init("PFCOUNT", arguments: arguments)
     }
 
     /// Internal commands for debugging HyperLogLog values.
@@ -2233,7 +2236,7 @@ extension RedisConnection {
     }
     @inlinable
     public func pfdebugCommand(subcommand: String, key: RedisKey) -> RESP3Command {
-        .init("PFDEBUG", arguments: [subcommand, key.description]) 
+        .init("PFDEBUG", arguments: [subcommand, key.description])
     }
 
     /// Merges one or more HyperLogLog values into a single key.
@@ -2248,7 +2251,7 @@ extension RedisConnection {
     public func pfmergeCommand(destkey: RedisKey, sourcekey: [RedisKey]) -> RESP3Command {
         var arguments: [String] = [destkey.description]
         arguments.append(contentsOf: sourcekey.map(\.description))
-        return .init("PFMERGE", arguments: arguments) 
+        return .init("PFMERGE", arguments: arguments)
     }
 
     /// An internal command for testing HyperLogLog values.
@@ -2261,7 +2264,7 @@ extension RedisConnection {
     }
     @inlinable
     public func pfselftestCommand() -> RESP3Command {
-        .init("PFSELFTEST", arguments: []) 
+        .init("PFSELFTEST", arguments: [])
     }
 
     /// Returns the server's liveliness response.
@@ -2274,7 +2277,7 @@ extension RedisConnection {
     }
     @inlinable
     public func pingCommand(message: String) -> RESP3Command {
-        .init("PING", arguments: [message]) 
+        .init("PING", arguments: [message])
     }
 
     /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
@@ -2287,12 +2290,12 @@ extension RedisConnection {
     }
     @inlinable
     public func psetexCommand(key: RedisKey, milliseconds: Int, value: String) -> RESP3Command {
-        .init("PSETEX", arguments: [key.description, milliseconds.description, value]) 
+        .init("PSETEX", arguments: [key.description, milliseconds.description, value])
     }
 
     /// An internal command used in replication.
     /// Version: 2.8.0
-    /// Complexity: 
+    /// Complexity:
     /// Categories: @admin, @slow, @dangerous
     public func psync(replicationid: String, offset: Int) async throws -> RESP3Token {
         let response = try await send(psyncCommand(replicationid: replicationid, offset: offset))
@@ -2300,7 +2303,7 @@ extension RedisConnection {
     }
     @inlinable
     public func psyncCommand(replicationid: String, offset: Int) -> RESP3Command {
-        .init("PSYNC", arguments: [replicationid, offset.description]) 
+        .init("PSYNC", arguments: [replicationid, offset.description])
     }
 
     /// Returns the expiration time in milliseconds of a key.
@@ -2313,7 +2316,7 @@ extension RedisConnection {
     }
     @inlinable
     public func pttlCommand(key: RedisKey) -> RESP3Command {
-        .init("PTTL", arguments: [key.description]) 
+        .init("PTTL", arguments: [key.description])
     }
 
     /// Posts a message to a channel.
@@ -2326,7 +2329,7 @@ extension RedisConnection {
     }
     @inlinable
     public func publishCommand(channel: String, message: String) -> RESP3Command {
-        .init("PUBLISH", arguments: [channel, message]) 
+        .init("PUBLISH", arguments: [channel, message])
     }
 
     /// A container for Pub/Sub commands.
@@ -2339,7 +2342,7 @@ extension RedisConnection {
     }
     @inlinable
     public func pubsubCommand() -> RESP3Command {
-        .init("PUBSUB", arguments: []) 
+        .init("PUBSUB", arguments: [])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2352,7 +2355,7 @@ extension RedisConnection {
     }
     @inlinable
     public func pubsubHelpCommand() -> RESP3Command {
-        .init("PUBSUB", arguments: ["HELP"]) 
+        .init("PUBSUB", arguments: ["HELP"])
     }
 
     /// Returns a count of unique pattern subscriptions.
@@ -2365,7 +2368,7 @@ extension RedisConnection {
     }
     @inlinable
     public func pubsubNumpatCommand() -> RESP3Command {
-        .init("PUBSUB", arguments: ["NUMPAT"]) 
+        .init("PUBSUB", arguments: ["NUMPAT"])
     }
 
     /// Returns a count of subscribers to channels.
@@ -2380,7 +2383,7 @@ extension RedisConnection {
     public func pubsubNumsubCommand(channel: [String]) -> RESP3Command {
         var arguments: [String] = ["NUMSUB"]
         arguments.append(contentsOf: channel)
-        return .init("PUBSUB", arguments: arguments) 
+        return .init("PUBSUB", arguments: arguments)
     }
 
     /// Returns the count of subscribers of shard channels.
@@ -2395,7 +2398,7 @@ extension RedisConnection {
     public func pubsubShardnumsubCommand(shardchannel: [String]) -> RESP3Command {
         var arguments: [String] = ["SHARDNUMSUB"]
         arguments.append(contentsOf: shardchannel)
-        return .init("PUBSUB", arguments: arguments) 
+        return .init("PUBSUB", arguments: arguments)
     }
 
     /// Closes the connection.
@@ -2408,7 +2411,7 @@ extension RedisConnection {
     }
     @inlinable
     public func quitCommand() -> RESP3Command {
-        .init("QUIT", arguments: []) 
+        .init("QUIT", arguments: [])
     }
 
     /// Returns a random key name from the database.
@@ -2421,7 +2424,7 @@ extension RedisConnection {
     }
     @inlinable
     public func randomkeyCommand() -> RESP3Command {
-        .init("RANDOMKEY", arguments: []) 
+        .init("RANDOMKEY", arguments: [])
     }
 
     /// Enables read-only queries for a connection to a Redis Cluster replica node.
@@ -2434,7 +2437,7 @@ extension RedisConnection {
     }
     @inlinable
     public func readonlyCommand() -> RESP3Command {
-        .init("READONLY", arguments: []) 
+        .init("READONLY", arguments: [])
     }
 
     /// Enables read-write queries for a connection to a Reids Cluster replica node.
@@ -2447,7 +2450,7 @@ extension RedisConnection {
     }
     @inlinable
     public func readwriteCommand() -> RESP3Command {
-        .init("READWRITE", arguments: []) 
+        .init("READWRITE", arguments: [])
     }
 
     /// Renames a key and overwrites the destination.
@@ -2460,7 +2463,7 @@ extension RedisConnection {
     }
     @inlinable
     public func renameCommand(key: RedisKey, newkey: RedisKey) -> RESP3Command {
-        .init("RENAME", arguments: [key.description, newkey.description]) 
+        .init("RENAME", arguments: [key.description, newkey.description])
     }
 
     /// Renames a key only when the target key name doesn't exist.
@@ -2473,7 +2476,7 @@ extension RedisConnection {
     }
     @inlinable
     public func renamenxCommand(key: RedisKey, newkey: RedisKey) -> RESP3Command {
-        .init("RENAMENX", arguments: [key.description, newkey.description]) 
+        .init("RENAMENX", arguments: [key.description, newkey.description])
     }
 
     /// An internal command for configuring the replication stream.
@@ -2486,7 +2489,7 @@ extension RedisConnection {
     }
     @inlinable
     public func replconfCommand() -> RESP3Command {
-        .init("REPLCONF", arguments: []) 
+        .init("REPLCONF", arguments: [])
     }
 
     /// Resets the connection.
@@ -2499,33 +2502,97 @@ extension RedisConnection {
     }
     @inlinable
     public func resetCommand() -> RESP3Command {
-        .init("RESET", arguments: []) 
+        .init("RESET", arguments: [])
     }
 
     /// Creates a key from the serialized representation of a value.
     /// Version: 2.6.0
     /// Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// Categories: @keyspace, @write, @slow, @dangerous
-    public func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int, frequency: Int) async throws -> RESP3Token {
-        let response = try await send(restoreCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
+    public func restore(
+        key: RedisKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool,
+        absttl: Bool,
+        seconds: Int,
+        frequency: Int
+    ) async throws -> RESP3Token {
+        let response = try await send(
+            restoreCommand(
+                key: key,
+                ttl: ttl,
+                serializedValue: serializedValue,
+                replace: replace,
+                absttl: absttl,
+                seconds: seconds,
+                frequency: frequency
+            )
+        )
         return response
     }
     @inlinable
-    public func restoreCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int, frequency: Int) -> RESP3Command {
-        .init("RESTORE", arguments: [key.description, ttl.description, serializedValue, replace.description, absttl.description, seconds.description, frequency.description]) 
+    public func restoreCommand(
+        key: RedisKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool,
+        absttl: Bool,
+        seconds: Int,
+        frequency: Int
+    ) -> RESP3Command {
+        .init(
+            "RESTORE",
+            arguments: [
+                key.description, ttl.description, serializedValue, replace.description, absttl.description, seconds.description,
+                frequency.description,
+            ]
+        )
     }
 
     /// An internal command for migrating keys in a cluster.
     /// Version: 3.0.0
     /// Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// Categories: @keyspace, @write, @slow, @dangerous
-    public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int, frequency: Int) async throws -> RESP3Token {
-        let response = try await send(restoreAskingCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
+    public func restoreAsking(
+        key: RedisKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool,
+        absttl: Bool,
+        seconds: Int,
+        frequency: Int
+    ) async throws -> RESP3Token {
+        let response = try await send(
+            restoreAskingCommand(
+                key: key,
+                ttl: ttl,
+                serializedValue: serializedValue,
+                replace: replace,
+                absttl: absttl,
+                seconds: seconds,
+                frequency: frequency
+            )
+        )
         return response
     }
     @inlinable
-    public func restoreAskingCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int, frequency: Int) -> RESP3Command {
-        .init("RESTORE-ASKING", arguments: [key.description, ttl.description, serializedValue, replace.description, absttl.description, seconds.description, frequency.description]) 
+    public func restoreAskingCommand(
+        key: RedisKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool,
+        absttl: Bool,
+        seconds: Int,
+        frequency: Int
+    ) -> RESP3Command {
+        .init(
+            "RESTORE-ASKING",
+            arguments: [
+                key.description, ttl.description, serializedValue, replace.description, absttl.description, seconds.description,
+                frequency.description,
+            ]
+        )
     }
 
     /// Returns the replication role.
@@ -2538,7 +2605,7 @@ extension RedisConnection {
     }
     @inlinable
     public func roleCommand() -> RESP3Command {
-        .init("ROLE", arguments: []) 
+        .init("ROLE", arguments: [])
     }
 
     /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
@@ -2551,7 +2618,7 @@ extension RedisConnection {
     }
     @inlinable
     public func rpopCommand(key: RedisKey, count: Int) -> RESP3Command {
-        .init("RPOP", arguments: [key.description, count.description]) 
+        .init("RPOP", arguments: [key.description, count.description])
     }
 
     /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
@@ -2564,7 +2631,7 @@ extension RedisConnection {
     }
     @inlinable
     public func rpoplpushCommand(source: RedisKey, destination: RedisKey) -> RESP3Command {
-        .init("RPOPLPUSH", arguments: [source.description, destination.description]) 
+        .init("RPOPLPUSH", arguments: [source.description, destination.description])
     }
 
     /// Appends one or more elements to a list. Creates the key if it doesn't exist.
@@ -2579,7 +2646,7 @@ extension RedisConnection {
     public func rpushCommand(key: RedisKey, element: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: element)
-        return .init("RPUSH", arguments: arguments) 
+        return .init("RPUSH", arguments: arguments)
     }
 
     /// Appends an element to a list only when the list exists.
@@ -2594,7 +2661,7 @@ extension RedisConnection {
     public func rpushxCommand(key: RedisKey, element: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: element)
-        return .init("RPUSHX", arguments: arguments) 
+        return .init("RPUSHX", arguments: arguments)
     }
 
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
@@ -2609,7 +2676,7 @@ extension RedisConnection {
     public func saddCommand(key: RedisKey, member: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: member)
-        return .init("SADD", arguments: arguments) 
+        return .init("SADD", arguments: arguments)
     }
 
     /// Synchronously saves the database(s) to disk.
@@ -2622,7 +2689,7 @@ extension RedisConnection {
     }
     @inlinable
     public func saveCommand() -> RESP3Command {
-        .init("SAVE", arguments: []) 
+        .init("SAVE", arguments: [])
     }
 
     /// Returns the number of members in a set.
@@ -2635,7 +2702,7 @@ extension RedisConnection {
     }
     @inlinable
     public func scardCommand(key: RedisKey) -> RESP3Command {
-        .init("SCARD", arguments: [key.description]) 
+        .init("SCARD", arguments: [key.description])
     }
 
     /// A container for Lua scripts management commands.
@@ -2648,7 +2715,7 @@ extension RedisConnection {
     }
     @inlinable
     public func scriptCommand() -> RESP3Command {
-        .init("SCRIPT", arguments: []) 
+        .init("SCRIPT", arguments: [])
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
@@ -2663,7 +2730,7 @@ extension RedisConnection {
     public func scriptExistsCommand(sha1: [String]) -> RESP3Command {
         var arguments: [String] = ["EXISTS"]
         arguments.append(contentsOf: sha1)
-        return .init("SCRIPT", arguments: arguments) 
+        return .init("SCRIPT", arguments: arguments)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2676,7 +2743,7 @@ extension RedisConnection {
     }
     @inlinable
     public func scriptHelpCommand() -> RESP3Command {
-        .init("SCRIPT", arguments: ["HELP"]) 
+        .init("SCRIPT", arguments: ["HELP"])
     }
 
     /// Terminates a server-side Lua script during execution.
@@ -2689,7 +2756,7 @@ extension RedisConnection {
     }
     @inlinable
     public func scriptKillCommand() -> RESP3Command {
-        .init("SCRIPT", arguments: ["KILL"]) 
+        .init("SCRIPT", arguments: ["KILL"])
     }
 
     /// Loads a server-side Lua script to the script cache.
@@ -2702,7 +2769,7 @@ extension RedisConnection {
     }
     @inlinable
     public func scriptLoadCommand(script: String) -> RESP3Command {
-        .init("SCRIPT", arguments: ["LOAD", script]) 
+        .init("SCRIPT", arguments: ["LOAD", script])
     }
 
     /// Returns the difference of multiple sets.
@@ -2716,7 +2783,7 @@ extension RedisConnection {
     @inlinable
     public func sdiffCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("SDIFF", arguments: arguments) 
+        return .init("SDIFF", arguments: arguments)
     }
 
     /// Stores the difference of multiple sets in a key.
@@ -2731,7 +2798,7 @@ extension RedisConnection {
     public func sdiffstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESP3Command {
         var arguments: [String] = [destination.description]
         arguments.append(contentsOf: key.map(\.description))
-        return .init("SDIFFSTORE", arguments: arguments) 
+        return .init("SDIFFSTORE", arguments: arguments)
     }
 
     /// Changes the selected database.
@@ -2744,7 +2811,7 @@ extension RedisConnection {
     }
     @inlinable
     public func selectCommand(index: Int) -> RESP3Command {
-        .init("SELECT", arguments: [index.description]) 
+        .init("SELECT", arguments: [index.description])
     }
 
     /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
@@ -2757,7 +2824,7 @@ extension RedisConnection {
     }
     @inlinable
     public func setbitCommand(key: RedisKey, offset: Int, value: Int) -> RESP3Command {
-        .init("SETBIT", arguments: [key.description, offset.description, value.description]) 
+        .init("SETBIT", arguments: [key.description, offset.description, value.description])
     }
 
     /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
@@ -2770,7 +2837,7 @@ extension RedisConnection {
     }
     @inlinable
     public func setexCommand(key: RedisKey, seconds: Int, value: String) -> RESP3Command {
-        .init("SETEX", arguments: [key.description, seconds.description, value]) 
+        .init("SETEX", arguments: [key.description, seconds.description, value])
     }
 
     /// Set the string value of a key only when the key doesn't exist.
@@ -2783,7 +2850,7 @@ extension RedisConnection {
     }
     @inlinable
     public func setnxCommand(key: RedisKey, value: String) -> RESP3Command {
-        .init("SETNX", arguments: [key.description, value]) 
+        .init("SETNX", arguments: [key.description, value])
     }
 
     /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
@@ -2796,7 +2863,7 @@ extension RedisConnection {
     }
     @inlinable
     public func setrangeCommand(key: RedisKey, offset: Int, value: String) -> RESP3Command {
-        .init("SETRANGE", arguments: [key.description, offset.description, value]) 
+        .init("SETRANGE", arguments: [key.description, offset.description, value])
     }
 
     /// Returns the intersect of multiple sets.
@@ -2810,7 +2877,7 @@ extension RedisConnection {
     @inlinable
     public func sinterCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("SINTER", arguments: arguments) 
+        return .init("SINTER", arguments: arguments)
     }
 
     /// Returns the number of members of the intersect of multiple sets.
@@ -2826,7 +2893,7 @@ extension RedisConnection {
         var arguments: [String] = [numkeys.description]
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(limit.description)
-        return .init("SINTERCARD", arguments: arguments) 
+        return .init("SINTERCARD", arguments: arguments)
     }
 
     /// Stores the intersect of multiple sets in a key.
@@ -2841,7 +2908,7 @@ extension RedisConnection {
     public func sinterstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESP3Command {
         var arguments: [String] = [destination.description]
         arguments.append(contentsOf: key.map(\.description))
-        return .init("SINTERSTORE", arguments: arguments) 
+        return .init("SINTERSTORE", arguments: arguments)
     }
 
     /// Determines whether a member belongs to a set.
@@ -2854,7 +2921,7 @@ extension RedisConnection {
     }
     @inlinable
     public func sismemberCommand(key: RedisKey, member: String) -> RESP3Command {
-        .init("SISMEMBER", arguments: [key.description, member]) 
+        .init("SISMEMBER", arguments: [key.description, member])
     }
 
     /// A container for slow log commands.
@@ -2867,7 +2934,7 @@ extension RedisConnection {
     }
     @inlinable
     public func slowlogCommand() -> RESP3Command {
-        .init("SLOWLOG", arguments: []) 
+        .init("SLOWLOG", arguments: [])
     }
 
     /// Returns the slow log's entries.
@@ -2880,7 +2947,7 @@ extension RedisConnection {
     }
     @inlinable
     public func slowlogGetCommand(count: Int) -> RESP3Command {
-        .init("SLOWLOG", arguments: ["GET", count.description]) 
+        .init("SLOWLOG", arguments: ["GET", count.description])
     }
 
     /// Show helpful text about the different subcommands
@@ -2893,7 +2960,7 @@ extension RedisConnection {
     }
     @inlinable
     public func slowlogHelpCommand() -> RESP3Command {
-        .init("SLOWLOG", arguments: ["HELP"]) 
+        .init("SLOWLOG", arguments: ["HELP"])
     }
 
     /// Returns the number of entries in the slow log.
@@ -2906,7 +2973,7 @@ extension RedisConnection {
     }
     @inlinable
     public func slowlogLenCommand() -> RESP3Command {
-        .init("SLOWLOG", arguments: ["LEN"]) 
+        .init("SLOWLOG", arguments: ["LEN"])
     }
 
     /// Clears all entries from the slow log.
@@ -2919,7 +2986,7 @@ extension RedisConnection {
     }
     @inlinable
     public func slowlogResetCommand() -> RESP3Command {
-        .init("SLOWLOG", arguments: ["RESET"]) 
+        .init("SLOWLOG", arguments: ["RESET"])
     }
 
     /// Returns all members of a set.
@@ -2932,7 +2999,7 @@ extension RedisConnection {
     }
     @inlinable
     public func smembersCommand(key: RedisKey) -> RESP3Command {
-        .init("SMEMBERS", arguments: [key.description]) 
+        .init("SMEMBERS", arguments: [key.description])
     }
 
     /// Determines whether multiple members belong to a set.
@@ -2947,7 +3014,7 @@ extension RedisConnection {
     public func smismemberCommand(key: RedisKey, member: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: member)
-        return .init("SMISMEMBER", arguments: arguments) 
+        return .init("SMISMEMBER", arguments: arguments)
     }
 
     /// Moves a member from one set to another.
@@ -2960,7 +3027,7 @@ extension RedisConnection {
     }
     @inlinable
     public func smoveCommand(source: RedisKey, destination: RedisKey, member: String) -> RESP3Command {
-        .init("SMOVE", arguments: [source.description, destination.description, member]) 
+        .init("SMOVE", arguments: [source.description, destination.description, member])
     }
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
@@ -2973,7 +3040,7 @@ extension RedisConnection {
     }
     @inlinable
     public func spopCommand(key: RedisKey, count: Int) -> RESP3Command {
-        .init("SPOP", arguments: [key.description, count.description]) 
+        .init("SPOP", arguments: [key.description, count.description])
     }
 
     /// Post a message to a shard channel
@@ -2986,7 +3053,7 @@ extension RedisConnection {
     }
     @inlinable
     public func spublishCommand(shardchannel: String, message: String) -> RESP3Command {
-        .init("SPUBLISH", arguments: [shardchannel, message]) 
+        .init("SPUBLISH", arguments: [shardchannel, message])
     }
 
     /// Get one or multiple random members from a set
@@ -2999,7 +3066,7 @@ extension RedisConnection {
     }
     @inlinable
     public func srandmemberCommand(key: RedisKey, count: Int) -> RESP3Command {
-        .init("SRANDMEMBER", arguments: [key.description, count.description]) 
+        .init("SRANDMEMBER", arguments: [key.description, count.description])
     }
 
     /// Removes one or more members from a set. Deletes the set if the last member was removed.
@@ -3014,7 +3081,7 @@ extension RedisConnection {
     public func sremCommand(key: RedisKey, member: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: member)
-        return .init("SREM", arguments: arguments) 
+        return .init("SREM", arguments: arguments)
     }
 
     /// Listens for messages published to shard channels.
@@ -3028,7 +3095,7 @@ extension RedisConnection {
     @inlinable
     public func ssubscribeCommand(shardchannel: [String]) -> RESP3Command {
         let arguments: [String] = shardchannel
-        return .init("SSUBSCRIBE", arguments: arguments) 
+        return .init("SSUBSCRIBE", arguments: arguments)
     }
 
     /// Returns the length of a string value.
@@ -3041,7 +3108,7 @@ extension RedisConnection {
     }
     @inlinable
     public func strlenCommand(key: RedisKey) -> RESP3Command {
-        .init("STRLEN", arguments: [key.description]) 
+        .init("STRLEN", arguments: [key.description])
     }
 
     /// Listens for messages published to channels.
@@ -3055,7 +3122,7 @@ extension RedisConnection {
     @inlinable
     public func subscribeCommand(channel: [String]) -> RESP3Command {
         let arguments: [String] = channel
-        return .init("SUBSCRIBE", arguments: arguments) 
+        return .init("SUBSCRIBE", arguments: arguments)
     }
 
     /// Returns a substring from a string value.
@@ -3068,7 +3135,7 @@ extension RedisConnection {
     }
     @inlinable
     public func substrCommand(key: RedisKey, start: Int, end: Int) -> RESP3Command {
-        .init("SUBSTR", arguments: [key.description, start.description, end.description]) 
+        .init("SUBSTR", arguments: [key.description, start.description, end.description])
     }
 
     /// Returns the union of multiple sets.
@@ -3082,7 +3149,7 @@ extension RedisConnection {
     @inlinable
     public func sunionCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("SUNION", arguments: arguments) 
+        return .init("SUNION", arguments: arguments)
     }
 
     /// Stores the union of multiple sets in a key.
@@ -3097,7 +3164,7 @@ extension RedisConnection {
     public func sunionstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESP3Command {
         var arguments: [String] = [destination.description]
         arguments.append(contentsOf: key.map(\.description))
-        return .init("SUNIONSTORE", arguments: arguments) 
+        return .init("SUNIONSTORE", arguments: arguments)
     }
 
     /// Stops listening to messages posted to shard channels.
@@ -3111,7 +3178,7 @@ extension RedisConnection {
     @inlinable
     public func sunsubscribeCommand(shardchannel: [String]) -> RESP3Command {
         let arguments: [String] = shardchannel
-        return .init("SUNSUBSCRIBE", arguments: arguments) 
+        return .init("SUNSUBSCRIBE", arguments: arguments)
     }
 
     /// Swaps two Redis databases.
@@ -3124,12 +3191,12 @@ extension RedisConnection {
     }
     @inlinable
     public func swapdbCommand(index1: Int, index2: Int) -> RESP3Command {
-        .init("SWAPDB", arguments: [index1.description, index2.description]) 
+        .init("SWAPDB", arguments: [index1.description, index2.description])
     }
 
     /// An internal command used in replication.
     /// Version: 1.0.0
-    /// Complexity: 
+    /// Complexity:
     /// Categories: @admin, @slow, @dangerous
     public func sync() async throws -> RESP3Token {
         let response = try await send(syncCommand())
@@ -3137,7 +3204,7 @@ extension RedisConnection {
     }
     @inlinable
     public func syncCommand() -> RESP3Command {
-        .init("SYNC", arguments: []) 
+        .init("SYNC", arguments: [])
     }
 
     /// Returns the server time.
@@ -3150,7 +3217,7 @@ extension RedisConnection {
     }
     @inlinable
     public func timeCommand() -> RESP3Command {
-        .init("TIME", arguments: []) 
+        .init("TIME", arguments: [])
     }
 
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
@@ -3164,7 +3231,7 @@ extension RedisConnection {
     @inlinable
     public func touchCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("TOUCH", arguments: arguments) 
+        return .init("TOUCH", arguments: arguments)
     }
 
     /// Returns the expiration time in seconds of a key.
@@ -3177,7 +3244,7 @@ extension RedisConnection {
     }
     @inlinable
     public func ttlCommand(key: RedisKey) -> RESP3Command {
-        .init("TTL", arguments: [key.description]) 
+        .init("TTL", arguments: [key.description])
     }
 
     /// Determines the type of value stored at a key.
@@ -3190,7 +3257,7 @@ extension RedisConnection {
     }
     @inlinable
     public func typeCommand(key: RedisKey) -> RESP3Command {
-        .init("TYPE", arguments: [key.description]) 
+        .init("TYPE", arguments: [key.description])
     }
 
     /// Asynchronously deletes one or more keys.
@@ -3204,7 +3271,7 @@ extension RedisConnection {
     @inlinable
     public func unlinkCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("UNLINK", arguments: arguments) 
+        return .init("UNLINK", arguments: arguments)
     }
 
     /// Stops listening to messages posted to channels.
@@ -3218,7 +3285,7 @@ extension RedisConnection {
     @inlinable
     public func unsubscribeCommand(channel: [String]) -> RESP3Command {
         let arguments: [String] = channel
-        return .init("UNSUBSCRIBE", arguments: arguments) 
+        return .init("UNSUBSCRIBE", arguments: arguments)
     }
 
     /// Forgets about watched keys of a transaction.
@@ -3231,7 +3298,7 @@ extension RedisConnection {
     }
     @inlinable
     public func unwatchCommand() -> RESP3Command {
-        .init("UNWATCH", arguments: []) 
+        .init("UNWATCH", arguments: [])
     }
 
     /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
@@ -3244,7 +3311,7 @@ extension RedisConnection {
     }
     @inlinable
     public func waitCommand(numreplicas: Int, timeout: Int) -> RESP3Command {
-        .init("WAIT", arguments: [numreplicas.description, timeout.description]) 
+        .init("WAIT", arguments: [numreplicas.description, timeout.description])
     }
 
     /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
@@ -3257,7 +3324,7 @@ extension RedisConnection {
     }
     @inlinable
     public func waitaofCommand(numlocal: Int, numreplicas: Int, timeout: Int) -> RESP3Command {
-        .init("WAITAOF", arguments: [numlocal.description, numreplicas.description, timeout.description]) 
+        .init("WAITAOF", arguments: [numlocal.description, numreplicas.description, timeout.description])
     }
 
     /// Monitors changes to keys to determine the execution of a transaction.
@@ -3271,7 +3338,7 @@ extension RedisConnection {
     @inlinable
     public func watchCommand(key: [RedisKey]) -> RESP3Command {
         let arguments: [String] = key.map(\.description)
-        return .init("WATCH", arguments: arguments) 
+        return .init("WATCH", arguments: arguments)
     }
 
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
@@ -3287,32 +3354,88 @@ extension RedisConnection {
         var arguments: [String] = [key.description]
         arguments.append(group)
         arguments.append(contentsOf: id)
-        return .init("XACK", arguments: arguments) 
+        return .init("XACK", arguments: arguments)
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
     /// Version: 6.2.0
     /// Complexity: O(1) if COUNT is small.
     /// Categories: @write, @stream, @fast
-    public func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int, justid: Bool) async throws -> RESP3Token {
-        let response = try await send(xautoclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
+    public func xautoclaim(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        start: String,
+        count: Int,
+        justid: Bool
+    ) async throws -> RESP3Token {
+        let response = try await send(
+            xautoclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid)
+        )
         return response
     }
     @inlinable
-    public func xautoclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int, justid: Bool) -> RESP3Command {
-        .init("XAUTOCLAIM", arguments: [key.description, group, consumer, minIdleTime, start, count.description, justid.description]) 
+    public func xautoclaimCommand(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        start: String,
+        count: Int,
+        justid: Bool
+    ) -> RESP3Command {
+        .init("XAUTOCLAIM", arguments: [key.description, group, consumer, minIdleTime, start, count.description, justid.description])
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
     /// Version: 5.0.0
     /// Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
     /// Categories: @write, @stream, @fast
-    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String..., ms: Int, unixTimeMilliseconds: Date, count: Int, force: Bool, justid: Bool, lastid: String) async throws -> RESP3Token {
-        let response = try await send(xclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
+    public func xclaim(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        id: String...,
+        ms: Int,
+        unixTimeMilliseconds: Date,
+        count: Int,
+        force: Bool,
+        justid: Bool,
+        lastid: String
+    ) async throws -> RESP3Token {
+        let response = try await send(
+            xclaimCommand(
+                key: key,
+                group: group,
+                consumer: consumer,
+                minIdleTime: minIdleTime,
+                id: id,
+                ms: ms,
+                unixTimeMilliseconds: unixTimeMilliseconds,
+                count: count,
+                force: force,
+                justid: justid,
+                lastid: lastid
+            )
+        )
         return response
     }
     @inlinable
-    public func xclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int, unixTimeMilliseconds: Date, count: Int, force: Bool, justid: Bool, lastid: String) -> RESP3Command {
+    public func xclaimCommand(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        id: [String],
+        ms: Int,
+        unixTimeMilliseconds: Date,
+        count: Int,
+        force: Bool,
+        justid: Bool,
+        lastid: String
+    ) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(group)
         arguments.append(consumer)
@@ -3324,7 +3447,7 @@ extension RedisConnection {
         arguments.append(force.description)
         arguments.append(justid.description)
         arguments.append(lastid)
-        return .init("XCLAIM", arguments: arguments) 
+        return .init("XCLAIM", arguments: arguments)
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -3339,7 +3462,7 @@ extension RedisConnection {
     public func xdelCommand(key: RedisKey, id: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: id)
-        return .init("XDEL", arguments: arguments) 
+        return .init("XDEL", arguments: arguments)
     }
 
     /// A container for consumer groups commands.
@@ -3352,7 +3475,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xgroupCommand() -> RESP3Command {
-        .init("XGROUP", arguments: []) 
+        .init("XGROUP", arguments: [])
     }
 
     /// Creates a consumer in a consumer group.
@@ -3365,7 +3488,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xgroupCreateconsumerCommand(key: RedisKey, group: String, consumer: String) -> RESP3Command {
-        .init("XGROUP", arguments: ["CREATECONSUMER", key.description, group, consumer]) 
+        .init("XGROUP", arguments: ["CREATECONSUMER", key.description, group, consumer])
     }
 
     /// Deletes a consumer from a consumer group.
@@ -3378,7 +3501,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xgroupDelconsumerCommand(key: RedisKey, group: String, consumer: String) -> RESP3Command {
-        .init("XGROUP", arguments: ["DELCONSUMER", key.description, group, consumer]) 
+        .init("XGROUP", arguments: ["DELCONSUMER", key.description, group, consumer])
     }
 
     /// Destroys a consumer group.
@@ -3391,7 +3514,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xgroupDestroyCommand(key: RedisKey, group: String) -> RESP3Command {
-        .init("XGROUP", arguments: ["DESTROY", key.description, group]) 
+        .init("XGROUP", arguments: ["DESTROY", key.description, group])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -3404,7 +3527,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xgroupHelpCommand() -> RESP3Command {
-        .init("XGROUP", arguments: ["HELP"]) 
+        .init("XGROUP", arguments: ["HELP"])
     }
 
     /// A container for stream introspection commands.
@@ -3417,7 +3540,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xinfoCommand() -> RESP3Command {
-        .init("XINFO", arguments: []) 
+        .init("XINFO", arguments: [])
     }
 
     /// Returns a list of the consumers in a consumer group.
@@ -3430,7 +3553,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xinfoConsumersCommand(key: RedisKey, group: String) -> RESP3Command {
-        .init("XINFO", arguments: ["CONSUMERS", key.description, group]) 
+        .init("XINFO", arguments: ["CONSUMERS", key.description, group])
     }
 
     /// Returns a list of the consumer groups of a stream.
@@ -3443,7 +3566,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xinfoGroupsCommand(key: RedisKey) -> RESP3Command {
-        .init("XINFO", arguments: ["GROUPS", key.description]) 
+        .init("XINFO", arguments: ["GROUPS", key.description])
     }
 
     /// Returns helpful text about the different subcommands.
@@ -3456,7 +3579,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xinfoHelpCommand() -> RESP3Command {
-        .init("XINFO", arguments: ["HELP"]) 
+        .init("XINFO", arguments: ["HELP"])
     }
 
     /// Return the number of messages in a stream.
@@ -3469,7 +3592,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xlenCommand(key: RedisKey) -> RESP3Command {
-        .init("XLEN", arguments: [key.description]) 
+        .init("XLEN", arguments: [key.description])
     }
 
     /// Returns the messages from a stream within a range of IDs.
@@ -3482,7 +3605,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xrangeCommand(key: RedisKey, start: String, end: String, count: Int) -> RESP3Command {
-        .init("XRANGE", arguments: [key.description, start, end, count.description]) 
+        .init("XRANGE", arguments: [key.description, start, end, count.description])
     }
 
     /// Returns the messages from a stream within a range of IDs in reverse order.
@@ -3495,7 +3618,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xrevrangeCommand(key: RedisKey, end: String, start: String, count: Int) -> RESP3Command {
-        .init("XREVRANGE", arguments: [key.description, end, start, count.description]) 
+        .init("XREVRANGE", arguments: [key.description, end, start, count.description])
     }
 
     /// An internal command for replicating stream values.
@@ -3508,7 +3631,7 @@ extension RedisConnection {
     }
     @inlinable
     public func xsetidCommand(key: RedisKey, lastId: String, entriesAdded: Int, maxDeletedId: String) -> RESP3Command {
-        .init("XSETID", arguments: [key.description, lastId, entriesAdded.description, maxDeletedId]) 
+        .init("XSETID", arguments: [key.description, lastId, entriesAdded.description, maxDeletedId])
     }
 
     /// Returns the number of members in a sorted set.
@@ -3521,7 +3644,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zcardCommand(key: RedisKey) -> RESP3Command {
-        .init("ZCARD", arguments: [key.description]) 
+        .init("ZCARD", arguments: [key.description])
     }
 
     /// Returns the count of members in a sorted set that have scores within a range.
@@ -3534,7 +3657,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zcountCommand(key: RedisKey, min: Double, max: Double) -> RESP3Command {
-        .init("ZCOUNT", arguments: [key.description, min.description, max.description]) 
+        .init("ZCOUNT", arguments: [key.description, min.description, max.description])
     }
 
     /// Returns the difference between multiple sorted sets.
@@ -3550,7 +3673,7 @@ extension RedisConnection {
         var arguments: [String] = [numkeys.description]
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(withscores.description)
-        return .init("ZDIFF", arguments: arguments) 
+        return .init("ZDIFF", arguments: arguments)
     }
 
     /// Stores the difference of multiple sorted sets in a key.
@@ -3566,7 +3689,7 @@ extension RedisConnection {
         var arguments: [String] = [destination.description]
         arguments.append(numkeys.description)
         arguments.append(contentsOf: key.map(\.description))
-        return .init("ZDIFFSTORE", arguments: arguments) 
+        return .init("ZDIFFSTORE", arguments: arguments)
     }
 
     /// Increments the score of a member in a sorted set.
@@ -3579,7 +3702,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zincrbyCommand(key: RedisKey, increment: Int, member: String) -> RESP3Command {
-        .init("ZINCRBY", arguments: [key.description, increment.description, member]) 
+        .init("ZINCRBY", arguments: [key.description, increment.description, member])
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
@@ -3595,7 +3718,7 @@ extension RedisConnection {
         var arguments: [String] = [numkeys.description]
         arguments.append(contentsOf: key.map(\.description))
         arguments.append(limit.description)
-        return .init("ZINTERCARD", arguments: arguments) 
+        return .init("ZINTERCARD", arguments: arguments)
     }
 
     /// Returns the number of members in a sorted set within a lexicographical range.
@@ -3608,7 +3731,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zlexcountCommand(key: RedisKey, min: String, max: String) -> RESP3Command {
-        .init("ZLEXCOUNT", arguments: [key.description, min, max]) 
+        .init("ZLEXCOUNT", arguments: [key.description, min, max])
     }
 
     /// Returns the score of one or more members in a sorted set.
@@ -3623,7 +3746,7 @@ extension RedisConnection {
     public func zmscoreCommand(key: RedisKey, member: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: member)
-        return .init("ZMSCORE", arguments: arguments) 
+        return .init("ZMSCORE", arguments: arguments)
     }
 
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -3636,7 +3759,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zpopmaxCommand(key: RedisKey, count: Int) -> RESP3Command {
-        .init("ZPOPMAX", arguments: [key.description, count.description]) 
+        .init("ZPOPMAX", arguments: [key.description, count.description])
     }
 
     /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -3649,7 +3772,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zpopminCommand(key: RedisKey, count: Int) -> RESP3Command {
-        .init("ZPOPMIN", arguments: [key.description, count.description]) 
+        .init("ZPOPMIN", arguments: [key.description, count.description])
     }
 
     /// Returns the index of a member in a sorted set ordered by ascending scores.
@@ -3662,7 +3785,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESP3Command {
-        .init("ZRANK", arguments: [key.description, member, withscore.description]) 
+        .init("ZRANK", arguments: [key.description, member, withscore.description])
     }
 
     /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
@@ -3677,7 +3800,7 @@ extension RedisConnection {
     public func zremCommand(key: RedisKey, member: [String]) -> RESP3Command {
         var arguments: [String] = [key.description]
         arguments.append(contentsOf: member)
-        return .init("ZREM", arguments: arguments) 
+        return .init("ZREM", arguments: arguments)
     }
 
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
@@ -3690,7 +3813,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zremrangebylexCommand(key: RedisKey, min: String, max: String) -> RESP3Command {
-        .init("ZREMRANGEBYLEX", arguments: [key.description, min, max]) 
+        .init("ZREMRANGEBYLEX", arguments: [key.description, min, max])
     }
 
     /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
@@ -3703,7 +3826,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zremrangebyrankCommand(key: RedisKey, start: Int, stop: Int) -> RESP3Command {
-        .init("ZREMRANGEBYRANK", arguments: [key.description, start.description, stop.description]) 
+        .init("ZREMRANGEBYRANK", arguments: [key.description, start.description, stop.description])
     }
 
     /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
@@ -3716,7 +3839,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zremrangebyscoreCommand(key: RedisKey, min: Double, max: Double) -> RESP3Command {
-        .init("ZREMRANGEBYSCORE", arguments: [key.description, min.description, max.description]) 
+        .init("ZREMRANGEBYSCORE", arguments: [key.description, min.description, max.description])
     }
 
     /// Returns members in a sorted set within a range of indexes in reverse order.
@@ -3729,7 +3852,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zrevrangeCommand(key: RedisKey, start: Int, stop: Int, withscores: Bool) -> RESP3Command {
-        .init("ZREVRANGE", arguments: [key.description, start.description, stop.description, withscores.description]) 
+        .init("ZREVRANGE", arguments: [key.description, start.description, stop.description, withscores.description])
     }
 
     /// Returns the index of a member in a sorted set ordered by descending scores.
@@ -3742,7 +3865,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zrevrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESP3Command {
-        .init("ZREVRANK", arguments: [key.description, member, withscore.description]) 
+        .init("ZREVRANK", arguments: [key.description, member, withscore.description])
     }
 
     /// Returns the score of a member in a sorted set.
@@ -3755,7 +3878,7 @@ extension RedisConnection {
     }
     @inlinable
     public func zscoreCommand(key: RedisKey, member: String) -> RESP3Command {
-        .init("ZSCORE", arguments: [key.description, member]) 
+        .init("ZSCORE", arguments: [key.description, member])
     }
 
 }
