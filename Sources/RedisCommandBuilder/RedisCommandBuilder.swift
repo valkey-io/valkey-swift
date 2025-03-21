@@ -33,9 +33,13 @@ extension App {
         if name.contains(" ") {
             var split = name.split(separator: " ")
             commandName = .init(split.removeFirst())
-            arguments = split.map { ArgumentContext(name: "\"\($0)\"", isString: true, type: "String", multiple: false) } + arguments
+            arguments =
+                split.map {
+                    ArgumentContext(name: .init($0), parameter: "\"\($0)\"", arrayParameter: nil, type: "String", multiple: false, optional: false)
+                }
+                + arguments
         }
-        let buildArguments = arguments.contains { $0.multiple == true }
+        let buildArguments = arguments.contains { $0.multiple == true || $0.optional == true }
         return .init(
             summary: command.summary,
             version: command.since,
@@ -52,20 +56,47 @@ extension App {
 
     func createArgumentContext(from argument: RedisCommand.Argument) -> ArgumentContext {
         let name = argument.name.swiftArgument()
-        return .init(
-            name: name,
-            isString: argument.type == .string,
-            type: argument.type.swiftName,
-            multiple: argument.multiple == true
-        )
+        switch argument.type {
+        case .string:
+            return .init(
+                name: name,
+                parameter: name,
+                arrayParameter: name,
+                type: argument.type.swiftName,
+                multiple: argument.multiple == true,
+                optional: false
+            )
+        case .pureToken:
+            guard let token = argument.token else { preconditionFailure("Pure token argument needs a token") }
+            return .init(
+                name: name,
+                parameter: "\(name) ? [\"\(token)\"] : []",
+                arrayParameter: "\(name) ? [\"\(token)\"] : []",
+                type: argument.type.swiftName,
+                multiple: false,
+                optional: true
+            )
+        default:
+            return .init(
+                name: name,
+                parameter: "\(name).description",
+                arrayParameter: "\(name).map(\\.description)",
+                type: argument.type.swiftName,
+                multiple: argument.multiple == true,
+                optional: false
+            )
+
+        }
     }
 }
 
 struct ArgumentContext {
     let name: String
-    let isString: Bool
+    let parameter: String
+    let arrayParameter: String?
     let type: String
     let multiple: Bool
+    let optional: Bool
 }
 
 struct FunctionContext {

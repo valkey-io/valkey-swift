@@ -1,7 +1,9 @@
 {{%CONTENT_TYPE: TEXT}}
     /// {{summary}}
     /// Version: {{version}}
-    /// Complexity: {{complexity}}
+{{#complexity}}
+    /// Complexity: {{.}}
+{{/complexity}}
     /// Categories: {{#categories}}{{.}}{{^last()}}, {{/last()}}{{/categories}}
     public func {{funcName}}({{#parameters}}{{name}}: {{type}}{{#multiple}}...{{/multiple}}{{^last()}}, {{/last()}}{{/parameters}}) async throws -> RESP3Token {
         let response = try await send({{funcName}}Command({{#parameters}}{{name}}: {{name}}{{^last()}}, {{/last()}}{{/parameters}}))
@@ -13,26 +15,36 @@
 {{#arguments}}
 {{#first()}}
 {{#multiple}}
-        {{#oneArg}}let{{/oneArg}}{{^oneArg}}var{{/oneArg}} arguments: [String] = {{name}}{{^isString}}.map(\.description){{/isString}}
+        {{#oneArg}}let{{/oneArg}}{{^oneArg}}var{{/oneArg}} arguments: [String] = {{arrayParameter}}
 {{/multiple}}
 {{^multiple}}
-        var arguments: [String] = [{{name}}{{^isString}}.description{{/isString}}]
+{{#optional}}
+        {{#oneArg}}let{{/oneArg}}{{^oneArg}}var{{/oneArg}} arguments: [String] = {{arrayParameter}}
+{{/optional}}
+{{^optional}}
+        var arguments: [String] = [{{parameter}}]
+{{/optional}}
 {{/multiple}}
 {{/first()}}
 {{/arguments}}
 {{#arguments}}
 {{^first()}}
 {{#multiple}}
-        arguments.append(contentsOf: {{name}}{{^isString}}.map(\.description){{/isString}})
+        arguments.append(contentsOf: {{arrayParameter}})
 {{/multiple}}
 {{^multiple}}
-        arguments.append({{name}}{{^isString}}.description{{/isString}})
+{{#optional}}
+        arguments.append(contentsOf: {{arrayParameter}})
+{{/optional}}
+{{^optional}}
+        arguments.append({{parameter}})
+{{/optional}}
 {{/multiple}}
 {{/first()}}
 {{/arguments}}
         return .init("{{commandName}}", arguments: arguments)
 {{/buildArgs}}    
 {{^buildArgs}}
-        .init("{{commandName}}", arguments: [{{#arguments}}{{name}}{{^isString}}.description{{/isString}}{{^last()}}, {{/last()}}{{/arguments}}])
+        .init("{{commandName}}", arguments: [{{#arguments}}{{parameter}}{{^last()}}, {{/last()}}{{/arguments}}])
 {{/buildArgs}}    
     }
