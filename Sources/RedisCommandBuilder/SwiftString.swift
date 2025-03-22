@@ -23,6 +23,14 @@ extension StringProtocol {
             .camelCased(capitalize: false)
             .reservedwordEscaped()
     }
+    var swiftTypename: String {
+        self
+            .lowercased()
+            .replacingOccurrences(of: "-", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+            .camelCased(capitalize: false)
+            .upperFirst()
+    }
 
     func camelCased(capitalize: Bool) -> String {
         let items = self.split(separator: "_")

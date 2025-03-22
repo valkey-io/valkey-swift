@@ -324,7 +324,7 @@ extension RedisConnection {
         RESPCommand("BGSAVE", RedisPureToken("SCHEDULE", schedule))
     }
 
-    public enum BITCOUNTRANGEUnit: RESPRepresentable {
+    public enum BITCOUNTRangeUnit: RESPRepresentable {
         case byte
         case bit
 
@@ -339,7 +339,7 @@ extension RedisConnection {
     public struct BITCOUNTRange: RESPRepresentable {
         @usableFromInline let start: Int
         @usableFromInline let end: Int
-        @usableFromInline let unit: BITCOUNTRANGEUnit?
+        @usableFromInline let unit: BITCOUNTRangeUnit?
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -364,7 +364,7 @@ extension RedisConnection {
         RESPCommand("BITCOUNT", key, range)
     }
 
-    public struct BITFIELDOPERATIONGetBlock: RESPRepresentable {
+    public struct BITFIELDOperationGetBlock: RESPRepresentable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
@@ -374,7 +374,7 @@ extension RedisConnection {
             self.offset.writeToRESPBuffer(&buffer)
         }
     }
-    public enum BITFIELDOPERATIONWRITEOverflowBlock: RESPRepresentable {
+    public enum BITFIELDOperationWriteOverflowBlock: RESPRepresentable {
         case wrap
         case sat
         case fail
@@ -388,7 +388,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct BITFIELDOPERATIONWRITEWRITEOPERATIONSetBlock: RESPRepresentable {
+    public struct BITFIELDOperationWriteWriteOperationSetBlock: RESPRepresentable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let value: Int
@@ -400,7 +400,7 @@ extension RedisConnection {
             self.value.writeToRESPBuffer(&buffer)
         }
     }
-    public struct BITFIELDOPERATIONWRITEWRITEOPERATIONIncrbyBlock: RESPRepresentable {
+    public struct BITFIELDOperationWriteWriteOperationIncrbyBlock: RESPRepresentable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let increment: Int
@@ -412,9 +412,9 @@ extension RedisConnection {
             self.increment.writeToRESPBuffer(&buffer)
         }
     }
-    public enum BITFIELDOPERATIONWRITEWriteOperation: RESPRepresentable {
-        case setBlock(BITFIELDOPERATIONWRITEWRITEOPERATIONSetBlock)
-        case incrbyBlock(BITFIELDOPERATIONWRITEWRITEOPERATIONIncrbyBlock)
+    public enum BITFIELDOperationWriteWriteOperation: RESPRepresentable {
+        case setBlock(BITFIELDOperationWriteWriteOperationSetBlock)
+        case incrbyBlock(BITFIELDOperationWriteWriteOperationIncrbyBlock)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -424,9 +424,9 @@ extension RedisConnection {
             }
         }
     }
-    public struct BITFIELDOPERATIONWrite: RESPRepresentable {
-        @usableFromInline let overflowBlock: BITFIELDOPERATIONWRITEOverflowBlock?
-        @usableFromInline let writeOperation: BITFIELDOPERATIONWRITEWriteOperation
+    public struct BITFIELDOperationWrite: RESPRepresentable {
+        @usableFromInline let overflowBlock: BITFIELDOperationWriteOverflowBlock?
+        @usableFromInline let writeOperation: BITFIELDOperationWriteWriteOperation
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -435,8 +435,8 @@ extension RedisConnection {
         }
     }
     public enum BITFIELDOperation: RESPRepresentable {
-        case getBlock(BITFIELDOPERATIONGetBlock)
-        case write(BITFIELDOPERATIONWrite)
+        case getBlock(BITFIELDOperationGetBlock)
+        case write(BITFIELDOperationWrite)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -520,7 +520,7 @@ extension RedisConnection {
         RESPCommand("BITOP", operation, destkey, key)
     }
 
-    public enum BITPOSRANGEENDUNITBLOCKUnit: RESPRepresentable {
+    public enum BITPOSRangeEndUnitBlockUnit: RESPRepresentable {
         case byte
         case bit
 
@@ -532,9 +532,9 @@ extension RedisConnection {
             }
         }
     }
-    public struct BITPOSRANGEEndUnitBlock: RESPRepresentable {
+    public struct BITPOSRangeEndUnitBlock: RESPRepresentable {
         @usableFromInline let end: Int
-        @usableFromInline let unit: BITPOSRANGEENDUNITBLOCKUnit?
+        @usableFromInline let unit: BITPOSRangeEndUnitBlockUnit?
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -544,7 +544,7 @@ extension RedisConnection {
     }
     public struct BITPOSRange: RESPRepresentable {
         @usableFromInline let start: Int
-        @usableFromInline let endUnitBlock: BITPOSRANGEEndUnitBlock?
+        @usableFromInline let endUnitBlock: BITPOSRangeEndUnitBlock?
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -868,7 +868,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "INFO")
     }
 
-    public enum CLIENTKILLFILTERNEWFORMATClientType: RESPRepresentable {
+    public enum CLIENTKILLFilterNewFormatClientType: RESPRepresentable {
         case normal
         case master
         case slave
@@ -886,7 +886,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum CLIENTKILLFILTERNEWFORMATSkipme: RESPRepresentable {
+    public enum CLIENTKILLFilterNewFormatSkipme: RESPRepresentable {
         case yes
         case no
 
@@ -898,13 +898,13 @@ extension RedisConnection {
             }
         }
     }
-    public enum CLIENTKILLFILTERNewFormat: RESPRepresentable {
+    public enum CLIENTKILLFilterNewFormat: RESPRepresentable {
         case clientId(Int?)
-        case clientType(CLIENTKILLFILTERNEWFORMATClientType?)
+        case clientType(CLIENTKILLFilterNewFormatClientType?)
         case username(String?)
         case addr(String?)
         case laddr(String?)
-        case skipme(CLIENTKILLFILTERNEWFORMATSkipme?)
+        case skipme(CLIENTKILLFilterNewFormatSkipme?)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -920,7 +920,7 @@ extension RedisConnection {
     }
     public enum CLIENTKILLFilter: RESPRepresentable {
         case oldFormat(String)
-        case newFormat([CLIENTKILLFILTERNewFormat])
+        case newFormat([CLIENTKILLFilterNewFormat])
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -2962,7 +2962,7 @@ extension RedisConnection {
         RESPCommand("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 
-    public struct GEOSEARCHFROMFromlonlat: RESPRepresentable {
+    public struct GEOSEARCHFromFromlonlat: RESPRepresentable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
@@ -2974,7 +2974,7 @@ extension RedisConnection {
     }
     public enum GEOSEARCHFrom: RESPRepresentable {
         case member(String)
-        case fromlonlat(GEOSEARCHFROMFromlonlat)
+        case fromlonlat(GEOSEARCHFromFromlonlat)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -2984,7 +2984,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum GEOSEARCHBYCIRCLEUnit: RESPRepresentable {
+    public enum GEOSEARCHByCircleUnit: RESPRepresentable {
         case m
         case km
         case ft
@@ -3000,9 +3000,9 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHBYCircle: RESPRepresentable {
+    public struct GEOSEARCHByCircle: RESPRepresentable {
         @usableFromInline let radius: Double
-        @usableFromInline let unit: GEOSEARCHBYCIRCLEUnit
+        @usableFromInline let unit: GEOSEARCHByCircleUnit
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -3010,7 +3010,7 @@ extension RedisConnection {
             self.unit.writeToRESPBuffer(&buffer)
         }
     }
-    public enum GEOSEARCHBYBOXUnit: RESPRepresentable {
+    public enum GEOSEARCHByBoxUnit: RESPRepresentable {
         case m
         case km
         case ft
@@ -3026,10 +3026,10 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHBYBox: RESPRepresentable {
+    public struct GEOSEARCHByBox: RESPRepresentable {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
-        @usableFromInline let unit: GEOSEARCHBYBOXUnit
+        @usableFromInline let unit: GEOSEARCHByBoxUnit
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -3039,8 +3039,8 @@ extension RedisConnection {
         }
     }
     public enum GEOSEARCHBy: RESPRepresentable {
-        case circle(GEOSEARCHBYCircle)
-        case box(GEOSEARCHBYBox)
+        case circle(GEOSEARCHByCircle)
+        case box(GEOSEARCHByBox)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -3088,7 +3088,7 @@ extension RedisConnection {
         RESPCommand("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
     }
 
-    public struct GEOSEARCHSTOREFROMFromlonlat: RESPRepresentable {
+    public struct GEOSEARCHSTOREFromFromlonlat: RESPRepresentable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
@@ -3100,7 +3100,7 @@ extension RedisConnection {
     }
     public enum GEOSEARCHSTOREFrom: RESPRepresentable {
         case member(String)
-        case fromlonlat(GEOSEARCHSTOREFROMFromlonlat)
+        case fromlonlat(GEOSEARCHSTOREFromFromlonlat)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -3110,7 +3110,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum GEOSEARCHSTOREBYCIRCLEUnit: RESPRepresentable {
+    public enum GEOSEARCHSTOREByCircleUnit: RESPRepresentable {
         case m
         case km
         case ft
@@ -3126,9 +3126,9 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHSTOREBYCircle: RESPRepresentable {
+    public struct GEOSEARCHSTOREByCircle: RESPRepresentable {
         @usableFromInline let radius: Double
-        @usableFromInline let unit: GEOSEARCHSTOREBYCIRCLEUnit
+        @usableFromInline let unit: GEOSEARCHSTOREByCircleUnit
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -3136,7 +3136,7 @@ extension RedisConnection {
             self.unit.writeToRESPBuffer(&buffer)
         }
     }
-    public enum GEOSEARCHSTOREBYBOXUnit: RESPRepresentable {
+    public enum GEOSEARCHSTOREByBoxUnit: RESPRepresentable {
         case m
         case km
         case ft
@@ -3152,10 +3152,10 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHSTOREBYBox: RESPRepresentable {
+    public struct GEOSEARCHSTOREByBox: RESPRepresentable {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
-        @usableFromInline let unit: GEOSEARCHSTOREBYBOXUnit
+        @usableFromInline let unit: GEOSEARCHSTOREByBoxUnit
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -3165,8 +3165,8 @@ extension RedisConnection {
         }
     }
     public enum GEOSEARCHSTOREBy: RESPRepresentable {
-        case circle(GEOSEARCHSTOREBYCircle)
-        case box(GEOSEARCHSTOREBYBox)
+        case circle(GEOSEARCHSTOREByCircle)
+        case box(GEOSEARCHSTOREByBox)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -3344,7 +3344,7 @@ extension RedisConnection {
         RESPCommand("HDEL", key, field)
     }
 
-    public struct HELLOARGUMENTSAuth: RESPRepresentable {
+    public struct HELLOArgumentsAuth: RESPRepresentable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -3356,7 +3356,7 @@ extension RedisConnection {
     }
     public struct HELLOArguments: RESPRepresentable {
         @usableFromInline let protover: Int
-        @usableFromInline let auth: HELLOARGUMENTSAuth?
+        @usableFromInline let auth: HELLOArgumentsAuth?
         @usableFromInline let clientname: String?
 
         @inlinable
@@ -4303,7 +4303,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct MIGRATEAUTHENTICATIONAuth2: RESPRepresentable {
+    public struct MIGRATEAuthenticationAuth2: RESPRepresentable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -4315,7 +4315,7 @@ extension RedisConnection {
     }
     public enum MIGRATEAuthentication: RESPRepresentable {
         case auth(String)
-        case auth2(MIGRATEAUTHENTICATIONAuth2)
+        case auth2(MIGRATEAuthenticationAuth2)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -5153,7 +5153,7 @@ extension RedisConnection {
         RESPCommand("REPLCONF")
     }
 
-    public struct REPLICAOFARGSHostPort: RESPRepresentable {
+    public struct REPLICAOFArgsHostPort: RESPRepresentable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -5163,7 +5163,7 @@ extension RedisConnection {
             self.port.writeToRESPBuffer(&buffer)
         }
     }
-    public struct REPLICAOFARGSNoOne: RESPRepresentable {
+    public struct REPLICAOFArgsNoOne: RESPRepresentable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -5174,8 +5174,8 @@ extension RedisConnection {
         }
     }
     public enum REPLICAOFArgs: RESPRepresentable {
-        case hostPort(REPLICAOFARGSHostPort)
-        case noOne(REPLICAOFARGSNoOne)
+        case hostPort(REPLICAOFArgsHostPort)
+        case noOne(REPLICAOFArgsNoOne)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -5781,7 +5781,7 @@ extension RedisConnection {
         RESPCommand("SISMEMBER", key, member)
     }
 
-    public struct SLAVEOFARGSHostPort: RESPRepresentable {
+    public struct SLAVEOFArgsHostPort: RESPRepresentable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -5791,7 +5791,7 @@ extension RedisConnection {
             self.port.writeToRESPBuffer(&buffer)
         }
     }
-    public struct SLAVEOFARGSNoOne: RESPRepresentable {
+    public struct SLAVEOFArgsNoOne: RESPRepresentable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -5802,8 +5802,8 @@ extension RedisConnection {
         }
     }
     public enum SLAVEOFArgs: RESPRepresentable {
-        case hostPort(SLAVEOFARGSHostPort)
-        case noOne(SLAVEOFARGSNoOne)
+        case hostPort(SLAVEOFArgsHostPort)
+        case noOne(SLAVEOFArgsNoOne)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -6432,7 +6432,7 @@ extension RedisConnection {
         RESPCommand("XACK", key, group, id)
     }
 
-    public enum XADDTRIMStrategy: RESPRepresentable {
+    public enum XADDTrimStrategy: RESPRepresentable {
         case maxlen
         case minid
 
@@ -6444,7 +6444,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum XADDTRIMOperator: RESPRepresentable {
+    public enum XADDTrimOperator: RESPRepresentable {
         case equal
         case approximately
 
@@ -6457,8 +6457,8 @@ extension RedisConnection {
         }
     }
     public struct XADDTrim: RESPRepresentable {
-        @usableFromInline let strategy: XADDTRIMStrategy
-        @usableFromInline let `operator`: XADDTRIMOperator?
+        @usableFromInline let strategy: XADDTrimStrategy
+        @usableFromInline let `operator`: XADDTrimOperator?
         @usableFromInline let threshold: String
         @usableFromInline let count: Int?
 
@@ -6939,7 +6939,7 @@ extension RedisConnection {
         RESPCommand("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
     }
 
-    public enum XTRIMTRIMStrategy: RESPRepresentable {
+    public enum XTRIMTrimStrategy: RESPRepresentable {
         case maxlen
         case minid
 
@@ -6951,7 +6951,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum XTRIMTRIMOperator: RESPRepresentable {
+    public enum XTRIMTrimOperator: RESPRepresentable {
         case equal
         case approximately
 
@@ -6964,8 +6964,8 @@ extension RedisConnection {
         }
     }
     public struct XTRIMTrim: RESPRepresentable {
-        @usableFromInline let strategy: XTRIMTRIMStrategy
-        @usableFromInline let `operator`: XTRIMTRIMOperator?
+        @usableFromInline let strategy: XTRIMTrimStrategy
+        @usableFromInline let `operator`: XTRIMTrimOperator?
         @usableFromInline let threshold: String
         @usableFromInline let count: Int?
 
