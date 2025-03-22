@@ -21,7 +21,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclCommand() -> RESPCommand {
-        return RESPCommand("ACL")
+        RESPCommand("ACL")
     }
 
     /// Lists the ACL categories, or the commands inside a category.
@@ -37,7 +37,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclCatCommand(category: String?) -> RESPCommand {
-        return RESPCommand("ACL", "CAT", category)
+        RESPCommand("ACL", "CAT", category)
     }
 
     /// Deletes ACL users, and terminates their connections.
@@ -53,7 +53,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclDeluserCommand(username: [String]) -> RESPCommand {
-        return RESPCommand("ACL", "DELUSER", username)
+        RESPCommand("ACL", "DELUSER", username)
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -69,7 +69,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclDryrunCommand(username: String, command: String, arg: [String]) -> RESPCommand {
-        return RESPCommand("ACL", "DRYRUN", username, command, arg)
+        RESPCommand("ACL", "DRYRUN", username, command, arg)
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
@@ -85,7 +85,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclGenpassCommand(bits: Int?) -> RESPCommand {
-        return RESPCommand("ACL", "GENPASS", bits)
+        RESPCommand("ACL", "GENPASS", bits)
     }
 
     /// Lists the ACL rules of a user.
@@ -101,7 +101,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclGetuserCommand(username: String) -> RESPCommand {
-        return RESPCommand("ACL", "GETUSER", username)
+        RESPCommand("ACL", "GETUSER", username)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -117,7 +117,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclHelpCommand() -> RESPCommand {
-        return RESPCommand("ACL", "HELP")
+        RESPCommand("ACL", "HELP")
     }
 
     /// Dumps the effective rules in ACL file format.
@@ -133,7 +133,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclListCommand() -> RESPCommand {
-        return RESPCommand("ACL", "LIST")
+        RESPCommand("ACL", "LIST")
     }
 
     /// Reloads the rules from the configured ACL file.
@@ -149,7 +149,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclLoadCommand() -> RESPCommand {
-        return RESPCommand("ACL", "LOAD")
+        RESPCommand("ACL", "LOAD")
     }
 
     public enum ACLLOGOperation: RESPRepresentable {
@@ -177,7 +177,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclLogCommand(operation: ACLLOGOperation?) -> RESPCommand {
-        return RESPCommand("ACL", "LOG", operation)
+        RESPCommand("ACL", "LOG", operation)
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
@@ -193,7 +193,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclSaveCommand() -> RESPCommand {
-        return RESPCommand("ACL", "SAVE")
+        RESPCommand("ACL", "SAVE")
     }
 
     /// Creates and modifies an ACL user and its rules.
@@ -209,7 +209,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclSetuserCommand(username: String, rule: [String]) -> RESPCommand {
-        return RESPCommand("ACL", "SETUSER", username, rule)
+        RESPCommand("ACL", "SETUSER", username, rule)
     }
 
     /// Lists all ACL users.
@@ -225,7 +225,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclUsersCommand() -> RESPCommand {
-        return RESPCommand("ACL", "USERS")
+        RESPCommand("ACL", "USERS")
     }
 
     /// Returns the authenticated username of the current connection.
@@ -241,7 +241,7 @@ extension RedisConnection {
 
     @inlinable
     public func aclWhoamiCommand() -> RESPCommand {
-        return RESPCommand("ACL", "WHOAMI")
+        RESPCommand("ACL", "WHOAMI")
     }
 
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
@@ -257,7 +257,7 @@ extension RedisConnection {
 
     @inlinable
     public func appendCommand(key: RedisKey, value: String) -> RESPCommand {
-        return RESPCommand("APPEND", key, value)
+        RESPCommand("APPEND", key, value)
     }
 
     /// Signals that a cluster client is following an -ASK redirect.
@@ -273,7 +273,7 @@ extension RedisConnection {
 
     @inlinable
     public func askingCommand() -> RESPCommand {
-        return RESPCommand("ASKING")
+        RESPCommand("ASKING")
     }
 
     /// Authenticates the connection.
@@ -289,7 +289,7 @@ extension RedisConnection {
 
     @inlinable
     public func authCommand(username: String?, password: String) -> RESPCommand {
-        return RESPCommand("AUTH", username, password)
+        RESPCommand("AUTH", username, password)
     }
 
     /// Asynchronously rewrites the append-only file to disk.
@@ -305,7 +305,7 @@ extension RedisConnection {
 
     @inlinable
     public func bgrewriteaofCommand() -> RESPCommand {
-        return RESPCommand("BGREWRITEAOF")
+        RESPCommand("BGREWRITEAOF")
     }
 
     /// Asynchronously saves the database(s) to disk.
@@ -321,7 +321,171 @@ extension RedisConnection {
 
     @inlinable
     public func bgsaveCommand(schedule: Bool) -> RESPCommand {
-        return RESPCommand("BGSAVE", RedisPureToken("SCHEDULE", schedule))
+        RESPCommand("BGSAVE", RedisPureToken("SCHEDULE", schedule))
+    }
+
+    public enum BITCOUNTRANGEUnit: RESPRepresentable {
+        case byte
+        case bit
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .byte: "BYTE".writeToRESPBuffer(&buffer)
+            case .bit: "BIT".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct BITCOUNTRange: RESPRepresentable {
+        @usableFromInline let start: Int
+        @usableFromInline let end: Int
+        @usableFromInline let unit: BITCOUNTRANGEUnit?
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.start.writeToRESPBuffer(&buffer)
+            self.end.writeToRESPBuffer(&buffer)
+            self.unit.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Counts the number of set bits (population counting) in a string.
+    ///
+    /// Version: 2.6.0
+    /// Complexity: O(N)
+    /// Categories: @read, @bitmap, @slow
+    @inlinable
+    public func bitcount(key: RedisKey, range: BITCOUNTRange?) async throws -> RESP3Token {
+        let response = try await send(bitcountCommand(key: key, range: range))
+        return response
+    }
+
+    @inlinable
+    public func bitcountCommand(key: RedisKey, range: BITCOUNTRange?) -> RESPCommand {
+        RESPCommand("BITCOUNT", key, range)
+    }
+
+    public struct BITFIELDOPERATIONGetBlock: RESPRepresentable {
+        @usableFromInline let encoding: String
+        @usableFromInline let offset: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.encoding.writeToRESPBuffer(&buffer)
+            self.offset.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum BITFIELDOPERATIONWRITEOverflowBlock: RESPRepresentable {
+        case wrap
+        case sat
+        case fail
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .wrap: "WRAP".writeToRESPBuffer(&buffer)
+            case .sat: "SAT".writeToRESPBuffer(&buffer)
+            case .fail: "FAIL".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct BITFIELDOPERATIONWRITEWRITEOPERATIONSetBlock: RESPRepresentable {
+        @usableFromInline let encoding: String
+        @usableFromInline let offset: Int
+        @usableFromInline let value: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.encoding.writeToRESPBuffer(&buffer)
+            self.offset.writeToRESPBuffer(&buffer)
+            self.value.writeToRESPBuffer(&buffer)
+        }
+    }
+    public struct BITFIELDOPERATIONWRITEWRITEOPERATIONIncrbyBlock: RESPRepresentable {
+        @usableFromInline let encoding: String
+        @usableFromInline let offset: Int
+        @usableFromInline let increment: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.encoding.writeToRESPBuffer(&buffer)
+            self.offset.writeToRESPBuffer(&buffer)
+            self.increment.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum BITFIELDOPERATIONWRITEWriteOperation: RESPRepresentable {
+        case setBlock(BITFIELDOPERATIONWRITEWRITEOPERATIONSetBlock)
+        case incrbyBlock(BITFIELDOPERATIONWRITEWRITEOPERATIONIncrbyBlock)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .setBlock(let setBlock): RESPWithToken("SET", setBlock).writeToRESPBuffer(&buffer)
+            case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct BITFIELDOPERATIONWrite: RESPRepresentable {
+        @usableFromInline let overflowBlock: BITFIELDOPERATIONWRITEOverflowBlock?
+        @usableFromInline let writeOperation: BITFIELDOPERATIONWRITEWriteOperation
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.overflowBlock.writeToRESPBuffer(&buffer)
+            self.writeOperation.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum BITFIELDOperation: RESPRepresentable {
+        case getBlock(BITFIELDOPERATIONGetBlock)
+        case write(BITFIELDOPERATIONWrite)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .getBlock(let getBlock): RESPWithToken("GET", getBlock).writeToRESPBuffer(&buffer)
+            case .write(let write): write.writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Performs arbitrary bitfield integer operations on strings.
+    ///
+    /// Version: 3.2.0
+    /// Complexity: O(1) for each subcommand specified
+    /// Categories: @write, @bitmap, @slow
+    @inlinable
+    public func bitfield(key: RedisKey, operation: BITFIELDOperation...) async throws -> RESP3Token {
+        let response = try await send(bitfieldCommand(key: key, operation: operation))
+        return response
+    }
+
+    @inlinable
+    public func bitfieldCommand(key: RedisKey, operation: [BITFIELDOperation]) -> RESPCommand {
+        RESPCommand("BITFIELD", key, operation)
+    }
+
+    public struct BITFIELDROGetBlock: RESPRepresentable {
+        @usableFromInline let encoding: String
+        @usableFromInline let offset: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.encoding.writeToRESPBuffer(&buffer)
+            self.offset.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Performs arbitrary read-only bitfield integer operations on strings.
+    ///
+    /// Version: 6.0.0
+    /// Complexity: O(1) for each subcommand specified
+    /// Categories: @read, @bitmap, @fast
+    @inlinable
+    public func bitfieldRo(key: RedisKey, getBlock: BITFIELDROGetBlock...) async throws -> RESP3Token {
+        let response = try await send(bitfieldRoCommand(key: key, getBlock: getBlock))
+        return response
+    }
+
+    @inlinable
+    public func bitfieldRoCommand(key: RedisKey, getBlock: [BITFIELDROGetBlock]) -> RESPCommand {
+        RESPCommand("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
     }
 
     public enum BITOPOperation: RESPRepresentable {
@@ -353,7 +517,55 @@ extension RedisConnection {
 
     @inlinable
     public func bitopCommand(operation: BITOPOperation, destkey: RedisKey, key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("BITOP", operation, destkey, key)
+        RESPCommand("BITOP", operation, destkey, key)
+    }
+
+    public enum BITPOSRANGEENDUNITBLOCKUnit: RESPRepresentable {
+        case byte
+        case bit
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .byte: "BYTE".writeToRESPBuffer(&buffer)
+            case .bit: "BIT".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct BITPOSRANGEEndUnitBlock: RESPRepresentable {
+        @usableFromInline let end: Int
+        @usableFromInline let unit: BITPOSRANGEENDUNITBLOCKUnit?
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.end.writeToRESPBuffer(&buffer)
+            self.unit.writeToRESPBuffer(&buffer)
+        }
+    }
+    public struct BITPOSRange: RESPRepresentable {
+        @usableFromInline let start: Int
+        @usableFromInline let endUnitBlock: BITPOSRANGEEndUnitBlock?
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.start.writeToRESPBuffer(&buffer)
+            self.endUnitBlock.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Finds the first set (1) or clear (0) bit in a string.
+    ///
+    /// Version: 2.8.7
+    /// Complexity: O(N)
+    /// Categories: @read, @bitmap, @slow
+    @inlinable
+    public func bitpos(key: RedisKey, bit: Int, range: BITPOSRange?) async throws -> RESP3Token {
+        let response = try await send(bitposCommand(key: key, bit: bit, range: range))
+        return response
+    }
+
+    @inlinable
+    public func bitposCommand(key: RedisKey, bit: Int, range: BITPOSRange?) -> RESPCommand {
+        RESPCommand("BITPOS", key, bit, range)
     }
 
     public enum BLMOVEWherefrom: RESPRepresentable {
@@ -393,7 +605,7 @@ extension RedisConnection {
 
     @inlinable
     public func blmoveCommand(source: RedisKey, destination: RedisKey, wherefrom: BLMOVEWherefrom, whereto: BLMOVEWhereto, timeout: Double) -> RESPCommand {
-        return RESPCommand("BLMOVE", source, destination, wherefrom, whereto, timeout)
+        RESPCommand("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
 
     public enum BLMPOPWhere: RESPRepresentable {
@@ -421,7 +633,7 @@ extension RedisConnection {
 
     @inlinable
     public func blmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BLMPOPWhere, count: Int?) -> RESPCommand {
-        return RESPCommand("BLMPOP", timeout, numkeys, key, `where`, RESPWithToken("COUNT", count))
+        RESPCommand("BLMPOP", timeout, numkeys, key, `where`, RESPWithToken("COUNT", count))
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -437,7 +649,7 @@ extension RedisConnection {
 
     @inlinable
     public func blpopCommand(key: [RedisKey], timeout: Double) -> RESPCommand {
-        return RESPCommand("BLPOP", key, timeout)
+        RESPCommand("BLPOP", key, timeout)
     }
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -453,7 +665,7 @@ extension RedisConnection {
 
     @inlinable
     public func brpopCommand(key: [RedisKey], timeout: Double) -> RESPCommand {
-        return RESPCommand("BRPOP", key, timeout)
+        RESPCommand("BRPOP", key, timeout)
     }
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
@@ -469,7 +681,7 @@ extension RedisConnection {
 
     @inlinable
     public func brpoplpushCommand(source: RedisKey, destination: RedisKey, timeout: Double) -> RESPCommand {
-        return RESPCommand("BRPOPLPUSH", source, destination, timeout)
+        RESPCommand("BRPOPLPUSH", source, destination, timeout)
     }
 
     public enum BZMPOPWhere: RESPRepresentable {
@@ -497,7 +709,7 @@ extension RedisConnection {
 
     @inlinable
     public func bzmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BZMPOPWhere, count: Int?) -> RESPCommand {
-        return RESPCommand("BZMPOP", timeout, numkeys, key, `where`, RESPWithToken("COUNT", count))
+        RESPCommand("BZMPOP", timeout, numkeys, key, `where`, RESPWithToken("COUNT", count))
     }
 
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
@@ -513,7 +725,7 @@ extension RedisConnection {
 
     @inlinable
     public func bzpopmaxCommand(key: [RedisKey], timeout: Double) -> RESPCommand {
-        return RESPCommand("BZPOPMAX", key, timeout)
+        RESPCommand("BZPOPMAX", key, timeout)
     }
 
     /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
@@ -529,7 +741,7 @@ extension RedisConnection {
 
     @inlinable
     public func bzpopminCommand(key: [RedisKey], timeout: Double) -> RESPCommand {
-        return RESPCommand("BZPOPMIN", key, timeout)
+        RESPCommand("BZPOPMIN", key, timeout)
     }
 
     /// A container for client connection commands.
@@ -545,7 +757,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientCommand() -> RESPCommand {
-        return RESPCommand("CLIENT")
+        RESPCommand("CLIENT")
     }
 
     public enum CLIENTCACHINGMode: RESPRepresentable {
@@ -573,7 +785,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientCachingCommand(mode: CLIENTCACHINGMode) -> RESPCommand {
-        return RESPCommand("CLIENT", "CACHING", mode)
+        RESPCommand("CLIENT", "CACHING", mode)
     }
 
     /// Returns the name of the connection.
@@ -589,7 +801,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientGetnameCommand() -> RESPCommand {
-        return RESPCommand("CLIENT", "GETNAME")
+        RESPCommand("CLIENT", "GETNAME")
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
@@ -605,7 +817,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientGetredirCommand() -> RESPCommand {
-        return RESPCommand("CLIENT", "GETREDIR")
+        RESPCommand("CLIENT", "GETREDIR")
     }
 
     /// Returns helpful text about the different subcommands.
@@ -621,7 +833,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientHelpCommand() -> RESPCommand {
-        return RESPCommand("CLIENT", "HELP")
+        RESPCommand("CLIENT", "HELP")
     }
 
     /// Returns the unique client ID of the connection.
@@ -637,7 +849,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientIdCommand() -> RESPCommand {
-        return RESPCommand("CLIENT", "ID")
+        RESPCommand("CLIENT", "ID")
     }
 
     /// Returns information about the connection.
@@ -653,12 +865,62 @@ extension RedisConnection {
 
     @inlinable
     public func clientInfoCommand() -> RESPCommand {
-        return RESPCommand("CLIENT", "INFO")
+        RESPCommand("CLIENT", "INFO")
     }
 
+    public enum CLIENTKILLFILTERNEWFORMATClientType: RESPRepresentable {
+        case normal
+        case master
+        case slave
+        case replica
+        case pubsub
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .normal: "NORMAL".writeToRESPBuffer(&buffer)
+            case .master: "MASTER".writeToRESPBuffer(&buffer)
+            case .slave: "SLAVE".writeToRESPBuffer(&buffer)
+            case .replica: "REPLICA".writeToRESPBuffer(&buffer)
+            case .pubsub: "PUBSUB".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum CLIENTKILLFILTERNEWFORMATSkipme: RESPRepresentable {
+        case yes
+        case no
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .yes: "YES".writeToRESPBuffer(&buffer)
+            case .no: "NO".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum CLIENTKILLFILTERNewFormat: RESPRepresentable {
+        case clientId(Int?)
+        case clientType(CLIENTKILLFILTERNEWFORMATClientType?)
+        case username(String?)
+        case addr(String?)
+        case laddr(String?)
+        case skipme(CLIENTKILLFILTERNEWFORMATSkipme?)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .clientId(let clientId): RESPWithToken("ID", clientId).writeToRESPBuffer(&buffer)
+            case .clientType(let clientType): RESPWithToken("TYPE", clientType).writeToRESPBuffer(&buffer)
+            case .username(let username): RESPWithToken("USER", username).writeToRESPBuffer(&buffer)
+            case .addr(let addr): RESPWithToken("ADDR", addr).writeToRESPBuffer(&buffer)
+            case .laddr(let laddr): RESPWithToken("LADDR", laddr).writeToRESPBuffer(&buffer)
+            case .skipme(let skipme): RESPWithToken("SKIPME", skipme).writeToRESPBuffer(&buffer)
+            }
+        }
+    }
     public enum CLIENTKILLFilter: RESPRepresentable {
         case oldFormat(String)
-        case newFormat(String)
+        case newFormat([CLIENTKILLFILTERNewFormat])
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
@@ -681,7 +943,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientKillCommand(filter: CLIENTKILLFilter) -> RESPCommand {
-        return RESPCommand("CLIENT", "KILL", filter)
+        RESPCommand("CLIENT", "KILL", filter)
     }
 
     public enum CLIENTLISTClientType: RESPRepresentable {
@@ -713,7 +975,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientListCommand(clientType: CLIENTLISTClientType?, clientId: [Int]) -> RESPCommand {
-        return RESPCommand("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
+        RESPCommand("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
     }
 
     public enum CLIENTNOEVICTEnabled: RESPRepresentable {
@@ -741,7 +1003,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientNoEvictCommand(enabled: CLIENTNOEVICTEnabled) -> RESPCommand {
-        return RESPCommand("CLIENT", "NO-EVICT", enabled)
+        RESPCommand("CLIENT", "NO-EVICT", enabled)
     }
 
     public enum CLIENTNOTOUCHEnabled: RESPRepresentable {
@@ -769,7 +1031,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientNoTouchCommand(enabled: CLIENTNOTOUCHEnabled) -> RESPCommand {
-        return RESPCommand("CLIENT", "NO-TOUCH", enabled)
+        RESPCommand("CLIENT", "NO-TOUCH", enabled)
     }
 
     public enum CLIENTPAUSEMode: RESPRepresentable {
@@ -797,7 +1059,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientPauseCommand(timeout: Int, mode: CLIENTPAUSEMode?) -> RESPCommand {
-        return RESPCommand("CLIENT", "PAUSE", timeout, mode)
+        RESPCommand("CLIENT", "PAUSE", timeout, mode)
     }
 
     public enum CLIENTREPLYAction: RESPRepresentable {
@@ -827,7 +1089,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientReplyCommand(action: CLIENTREPLYAction) -> RESPCommand {
-        return RESPCommand("CLIENT", "REPLY", action)
+        RESPCommand("CLIENT", "REPLY", action)
     }
 
     public enum CLIENTSETINFOAttr: RESPRepresentable {
@@ -855,7 +1117,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientSetinfoCommand(attr: CLIENTSETINFOAttr) -> RESPCommand {
-        return RESPCommand("CLIENT", "SETINFO", attr)
+        RESPCommand("CLIENT", "SETINFO", attr)
     }
 
     /// Sets the connection name.
@@ -871,7 +1133,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientSetnameCommand(connectionName: String) -> RESPCommand {
-        return RESPCommand("CLIENT", "SETNAME", connectionName)
+        RESPCommand("CLIENT", "SETNAME", connectionName)
     }
 
     public enum CLIENTTRACKINGStatus: RESPRepresentable {
@@ -899,7 +1161,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientTrackingCommand(status: CLIENTTRACKINGStatus, clientId: Int?, prefix: [String], bcast: Bool, optin: Bool, optout: Bool, noloop: Bool) -> RESPCommand {
-        return RESPCommand("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+        RESPCommand("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
@@ -915,7 +1177,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientTrackinginfoCommand() -> RESPCommand {
-        return RESPCommand("CLIENT", "TRACKINGINFO")
+        RESPCommand("CLIENT", "TRACKINGINFO")
     }
 
     public enum CLIENTUNBLOCKUnblockType: RESPRepresentable {
@@ -943,7 +1205,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientUnblockCommand(clientId: Int, unblockType: CLIENTUNBLOCKUnblockType?) -> RESPCommand {
-        return RESPCommand("CLIENT", "UNBLOCK", clientId, unblockType)
+        RESPCommand("CLIENT", "UNBLOCK", clientId, unblockType)
     }
 
     /// Resumes processing commands from paused clients.
@@ -959,7 +1221,7 @@ extension RedisConnection {
 
     @inlinable
     public func clientUnpauseCommand() -> RESPCommand {
-        return RESPCommand("CLIENT", "UNPAUSE")
+        RESPCommand("CLIENT", "UNPAUSE")
     }
 
     /// A container for Redis Cluster commands.
@@ -975,7 +1237,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER")
+        RESPCommand("CLUSTER")
     }
 
     /// Assigns new hash slots to a node.
@@ -991,7 +1253,33 @@ extension RedisConnection {
 
     @inlinable
     public func clusterAddslotsCommand(slot: [Int]) -> RESPCommand {
-        return RESPCommand("CLUSTER", "ADDSLOTS", slot)
+        RESPCommand("CLUSTER", "ADDSLOTS", slot)
+    }
+
+    public struct CLUSTERADDSLOTSRANGERange: RESPRepresentable {
+        @usableFromInline let startSlot: Int
+        @usableFromInline let endSlot: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.startSlot.writeToRESPBuffer(&buffer)
+            self.endSlot.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Assigns new hash slot ranges to a node.
+    ///
+    /// Version: 7.0.0
+    /// Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
+    /// Categories: @admin, @slow, @dangerous
+    @inlinable
+    public func clusterAddslotsrange(range: CLUSTERADDSLOTSRANGERange...) async throws -> RESP3Token {
+        let response = try await send(clusterAddslotsrangeCommand(range: range))
+        return response
+    }
+
+    @inlinable
+    public func clusterAddslotsrangeCommand(range: [CLUSTERADDSLOTSRANGERange]) -> RESPCommand {
+        RESPCommand("CLUSTER", "ADDSLOTSRANGE", range)
     }
 
     /// Advances the cluster config epoch.
@@ -1007,7 +1295,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterBumpepochCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "BUMPEPOCH")
+        RESPCommand("CLUSTER", "BUMPEPOCH")
     }
 
     /// Returns the number of active failure reports active for a node.
@@ -1023,7 +1311,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterCountFailureReportsCommand(nodeId: String) -> RESPCommand {
-        return RESPCommand("CLUSTER", "COUNT-FAILURE-REPORTS", nodeId)
+        RESPCommand("CLUSTER", "COUNT-FAILURE-REPORTS", nodeId)
     }
 
     /// Returns the number of keys in a hash slot.
@@ -1039,7 +1327,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterCountkeysinslotCommand(slot: Int) -> RESPCommand {
-        return RESPCommand("CLUSTER", "COUNTKEYSINSLOT", slot)
+        RESPCommand("CLUSTER", "COUNTKEYSINSLOT", slot)
     }
 
     /// Sets hash slots as unbound for a node.
@@ -1055,7 +1343,33 @@ extension RedisConnection {
 
     @inlinable
     public func clusterDelslotsCommand(slot: [Int]) -> RESPCommand {
-        return RESPCommand("CLUSTER", "DELSLOTS", slot)
+        RESPCommand("CLUSTER", "DELSLOTS", slot)
+    }
+
+    public struct CLUSTERDELSLOTSRANGERange: RESPRepresentable {
+        @usableFromInline let startSlot: Int
+        @usableFromInline let endSlot: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.startSlot.writeToRESPBuffer(&buffer)
+            self.endSlot.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Sets hash slot ranges as unbound for a node.
+    ///
+    /// Version: 7.0.0
+    /// Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
+    /// Categories: @admin, @slow, @dangerous
+    @inlinable
+    public func clusterDelslotsrange(range: CLUSTERDELSLOTSRANGERange...) async throws -> RESP3Token {
+        let response = try await send(clusterDelslotsrangeCommand(range: range))
+        return response
+    }
+
+    @inlinable
+    public func clusterDelslotsrangeCommand(range: [CLUSTERDELSLOTSRANGERange]) -> RESPCommand {
+        RESPCommand("CLUSTER", "DELSLOTSRANGE", range)
     }
 
     public enum CLUSTERFAILOVEROptions: RESPRepresentable {
@@ -1083,7 +1397,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterFailoverCommand(options: CLUSTERFAILOVEROptions?) -> RESPCommand {
-        return RESPCommand("CLUSTER", "FAILOVER", options)
+        RESPCommand("CLUSTER", "FAILOVER", options)
     }
 
     /// Deletes all slots information from a node.
@@ -1099,7 +1413,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterFlushslotsCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "FLUSHSLOTS")
+        RESPCommand("CLUSTER", "FLUSHSLOTS")
     }
 
     /// Removes a node from the nodes table.
@@ -1115,7 +1429,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterForgetCommand(nodeId: String) -> RESPCommand {
-        return RESPCommand("CLUSTER", "FORGET", nodeId)
+        RESPCommand("CLUSTER", "FORGET", nodeId)
     }
 
     /// Returns the key names in a hash slot.
@@ -1131,7 +1445,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterGetkeysinslotCommand(slot: Int, count: Int) -> RESPCommand {
-        return RESPCommand("CLUSTER", "GETKEYSINSLOT", slot, count)
+        RESPCommand("CLUSTER", "GETKEYSINSLOT", slot, count)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1147,7 +1461,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterHelpCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "HELP")
+        RESPCommand("CLUSTER", "HELP")
     }
 
     /// Returns information about the state of a node.
@@ -1163,7 +1477,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterInfoCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "INFO")
+        RESPCommand("CLUSTER", "INFO")
     }
 
     /// Returns the hash slot for a key.
@@ -1179,7 +1493,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterKeyslotCommand(key: String) -> RESPCommand {
-        return RESPCommand("CLUSTER", "KEYSLOT", key)
+        RESPCommand("CLUSTER", "KEYSLOT", key)
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
@@ -1195,7 +1509,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterLinksCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "LINKS")
+        RESPCommand("CLUSTER", "LINKS")
     }
 
     /// Forces a node to handshake with another node.
@@ -1211,7 +1525,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterMeetCommand(ip: String, port: Int, clusterBusPort: Int?) -> RESPCommand {
-        return RESPCommand("CLUSTER", "MEET", ip, port, clusterBusPort)
+        RESPCommand("CLUSTER", "MEET", ip, port, clusterBusPort)
     }
 
     /// Returns the ID of a node.
@@ -1227,7 +1541,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterMyidCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "MYID")
+        RESPCommand("CLUSTER", "MYID")
     }
 
     /// Returns the shard ID of a node.
@@ -1243,7 +1557,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterMyshardidCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "MYSHARDID")
+        RESPCommand("CLUSTER", "MYSHARDID")
     }
 
     /// Returns the cluster configuration for a node.
@@ -1259,7 +1573,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterNodesCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "NODES")
+        RESPCommand("CLUSTER", "NODES")
     }
 
     /// Lists the replica nodes of a master node.
@@ -1275,7 +1589,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterReplicasCommand(nodeId: String) -> RESPCommand {
-        return RESPCommand("CLUSTER", "REPLICAS", nodeId)
+        RESPCommand("CLUSTER", "REPLICAS", nodeId)
     }
 
     /// Configure a node as replica of a master node.
@@ -1291,7 +1605,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterReplicateCommand(nodeId: String) -> RESPCommand {
-        return RESPCommand("CLUSTER", "REPLICATE", nodeId)
+        RESPCommand("CLUSTER", "REPLICATE", nodeId)
     }
 
     public enum CLUSTERRESETResetType: RESPRepresentable {
@@ -1319,7 +1633,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterResetCommand(resetType: CLUSTERRESETResetType?) -> RESPCommand {
-        return RESPCommand("CLUSTER", "RESET", resetType)
+        RESPCommand("CLUSTER", "RESET", resetType)
     }
 
     /// Forces a node to save the cluster configuration to disk.
@@ -1335,7 +1649,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterSaveconfigCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "SAVECONFIG")
+        RESPCommand("CLUSTER", "SAVECONFIG")
     }
 
     /// Sets the configuration epoch for a new node.
@@ -1351,7 +1665,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterSetConfigEpochCommand(configEpoch: Int) -> RESPCommand {
-        return RESPCommand("CLUSTER", "SET-CONFIG-EPOCH", configEpoch)
+        RESPCommand("CLUSTER", "SET-CONFIG-EPOCH", configEpoch)
     }
 
     public enum CLUSTERSETSLOTSubcommand: RESPRepresentable {
@@ -1383,7 +1697,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterSetslotCommand(slot: Int, subcommand: CLUSTERSETSLOTSubcommand) -> RESPCommand {
-        return RESPCommand("CLUSTER", "SETSLOT", slot, subcommand)
+        RESPCommand("CLUSTER", "SETSLOT", slot, subcommand)
     }
 
     /// Returns the mapping of cluster slots to shards.
@@ -1399,7 +1713,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterShardsCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "SHARDS")
+        RESPCommand("CLUSTER", "SHARDS")
     }
 
     /// Lists the replica nodes of a master node.
@@ -1415,7 +1729,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterSlavesCommand(nodeId: String) -> RESPCommand {
-        return RESPCommand("CLUSTER", "SLAVES", nodeId)
+        RESPCommand("CLUSTER", "SLAVES", nodeId)
     }
 
     /// Returns the mapping of cluster slots to nodes.
@@ -1431,7 +1745,7 @@ extension RedisConnection {
 
     @inlinable
     public func clusterSlotsCommand() -> RESPCommand {
-        return RESPCommand("CLUSTER", "SLOTS")
+        RESPCommand("CLUSTER", "SLOTS")
     }
 
     /// Returns detailed information about all commands.
@@ -1447,7 +1761,7 @@ extension RedisConnection {
 
     @inlinable
     public func commandCommand() -> RESPCommand {
-        return RESPCommand("COMMAND")
+        RESPCommand("COMMAND")
     }
 
     /// Returns a count of commands.
@@ -1463,7 +1777,7 @@ extension RedisConnection {
 
     @inlinable
     public func commandCountCommand() -> RESPCommand {
-        return RESPCommand("COMMAND", "COUNT")
+        RESPCommand("COMMAND", "COUNT")
     }
 
     /// Returns documentary information about one, multiple or all commands.
@@ -1479,7 +1793,7 @@ extension RedisConnection {
 
     @inlinable
     public func commandDocsCommand(commandName: [String]) -> RESPCommand {
-        return RESPCommand("COMMAND", "DOCS", commandName)
+        RESPCommand("COMMAND", "DOCS", commandName)
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -1495,7 +1809,7 @@ extension RedisConnection {
 
     @inlinable
     public func commandGetkeysCommand(command: String, arg: [String]) -> RESPCommand {
-        return RESPCommand("COMMAND", "GETKEYS", command, arg)
+        RESPCommand("COMMAND", "GETKEYS", command, arg)
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
@@ -1511,7 +1825,7 @@ extension RedisConnection {
 
     @inlinable
     public func commandGetkeysandflagsCommand(command: String, arg: [String]) -> RESPCommand {
-        return RESPCommand("COMMAND", "GETKEYSANDFLAGS", command, arg)
+        RESPCommand("COMMAND", "GETKEYSANDFLAGS", command, arg)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1527,7 +1841,7 @@ extension RedisConnection {
 
     @inlinable
     public func commandHelpCommand() -> RESPCommand {
-        return RESPCommand("COMMAND", "HELP")
+        RESPCommand("COMMAND", "HELP")
     }
 
     /// Returns information about one, multiple or all commands.
@@ -1543,7 +1857,7 @@ extension RedisConnection {
 
     @inlinable
     public func commandInfoCommand(commandName: [String]) -> RESPCommand {
-        return RESPCommand("COMMAND", "INFO", commandName)
+        RESPCommand("COMMAND", "INFO", commandName)
     }
 
     public enum COMMANDLISTFilterby: RESPRepresentable {
@@ -1573,7 +1887,7 @@ extension RedisConnection {
 
     @inlinable
     public func commandListCommand(filterby: COMMANDLISTFilterby?) -> RESPCommand {
-        return RESPCommand("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
+        RESPCommand("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
     }
 
     /// A container for server configuration commands.
@@ -1589,7 +1903,7 @@ extension RedisConnection {
 
     @inlinable
     public func configCommand() -> RESPCommand {
-        return RESPCommand("CONFIG")
+        RESPCommand("CONFIG")
     }
 
     /// Returns the effective values of configuration parameters.
@@ -1605,7 +1919,7 @@ extension RedisConnection {
 
     @inlinable
     public func configGetCommand(parameter: [String]) -> RESPCommand {
-        return RESPCommand("CONFIG", "GET", parameter)
+        RESPCommand("CONFIG", "GET", parameter)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1621,7 +1935,7 @@ extension RedisConnection {
 
     @inlinable
     public func configHelpCommand() -> RESPCommand {
-        return RESPCommand("CONFIG", "HELP")
+        RESPCommand("CONFIG", "HELP")
     }
 
     /// Resets the server's statistics.
@@ -1637,7 +1951,7 @@ extension RedisConnection {
 
     @inlinable
     public func configResetstatCommand() -> RESPCommand {
-        return RESPCommand("CONFIG", "RESETSTAT")
+        RESPCommand("CONFIG", "RESETSTAT")
     }
 
     /// Persists the effective configuration to file.
@@ -1653,7 +1967,33 @@ extension RedisConnection {
 
     @inlinable
     public func configRewriteCommand() -> RESPCommand {
-        return RESPCommand("CONFIG", "REWRITE")
+        RESPCommand("CONFIG", "REWRITE")
+    }
+
+    public struct CONFIGSETData: RESPRepresentable {
+        @usableFromInline let parameter: String
+        @usableFromInline let value: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.parameter.writeToRESPBuffer(&buffer)
+            self.value.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Sets configuration parameters in-flight.
+    ///
+    /// Version: 2.0.0
+    /// Complexity: O(N) when N is the number of configuration parameters provided
+    /// Categories: @admin, @slow, @dangerous
+    @inlinable
+    public func configSet(data: CONFIGSETData...) async throws -> RESP3Token {
+        let response = try await send(configSetCommand(data: data))
+        return response
+    }
+
+    @inlinable
+    public func configSetCommand(data: [CONFIGSETData]) -> RESPCommand {
+        RESPCommand("CONFIG", "SET", data)
     }
 
     /// Copies the value of a key to a new key.
@@ -1669,7 +2009,7 @@ extension RedisConnection {
 
     @inlinable
     public func copyCommand(source: RedisKey, destination: RedisKey, destinationDb: Int?, replace: Bool) -> RESPCommand {
-        return RESPCommand("COPY", source, destination, RESPWithToken("DB", destinationDb), RedisPureToken("REPLACE", replace))
+        RESPCommand("COPY", source, destination, RESPWithToken("DB", destinationDb), RedisPureToken("REPLACE", replace))
     }
 
     /// Returns the number of keys in the database.
@@ -1685,7 +2025,7 @@ extension RedisConnection {
 
     @inlinable
     public func dbsizeCommand() -> RESPCommand {
-        return RESPCommand("DBSIZE")
+        RESPCommand("DBSIZE")
     }
 
     /// A container for debugging commands.
@@ -1701,7 +2041,7 @@ extension RedisConnection {
 
     @inlinable
     public func debugCommand() -> RESPCommand {
-        return RESPCommand("DEBUG")
+        RESPCommand("DEBUG")
     }
 
     /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
@@ -1717,7 +2057,7 @@ extension RedisConnection {
 
     @inlinable
     public func decrCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("DECR", key)
+        RESPCommand("DECR", key)
     }
 
     /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
@@ -1733,7 +2073,7 @@ extension RedisConnection {
 
     @inlinable
     public func decrbyCommand(key: RedisKey, decrement: Int) -> RESPCommand {
-        return RESPCommand("DECRBY", key, decrement)
+        RESPCommand("DECRBY", key, decrement)
     }
 
     /// Deletes one or more keys.
@@ -1749,7 +2089,7 @@ extension RedisConnection {
 
     @inlinable
     public func delCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("DEL", key)
+        RESPCommand("DEL", key)
     }
 
     /// Discards a transaction.
@@ -1765,7 +2105,7 @@ extension RedisConnection {
 
     @inlinable
     public func discardCommand() -> RESPCommand {
-        return RESPCommand("DISCARD")
+        RESPCommand("DISCARD")
     }
 
     /// Returns a serialized representation of the value stored at a key.
@@ -1781,7 +2121,7 @@ extension RedisConnection {
 
     @inlinable
     public func dumpCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("DUMP", key)
+        RESPCommand("DUMP", key)
     }
 
     /// Returns the given string.
@@ -1797,7 +2137,7 @@ extension RedisConnection {
 
     @inlinable
     public func echoCommand(message: String) -> RESPCommand {
-        return RESPCommand("ECHO", message)
+        RESPCommand("ECHO", message)
     }
 
     /// Executes a server-side Lua script.
@@ -1813,7 +2153,7 @@ extension RedisConnection {
 
     @inlinable
     public func evalCommand(script: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        return RESPCommand("EVAL", script, numkeys, key, arg)
+        RESPCommand("EVAL", script, numkeys, key, arg)
     }
 
     /// Executes a server-side Lua script by SHA1 digest.
@@ -1829,7 +2169,7 @@ extension RedisConnection {
 
     @inlinable
     public func evalshaCommand(sha1: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        return RESPCommand("EVALSHA", sha1, numkeys, key, arg)
+        RESPCommand("EVALSHA", sha1, numkeys, key, arg)
     }
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
@@ -1845,7 +2185,7 @@ extension RedisConnection {
 
     @inlinable
     public func evalshaRoCommand(sha1: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        return RESPCommand("EVALSHA_RO", sha1, numkeys, key, arg)
+        RESPCommand("EVALSHA_RO", sha1, numkeys, key, arg)
     }
 
     /// Executes a read-only server-side Lua script.
@@ -1861,7 +2201,7 @@ extension RedisConnection {
 
     @inlinable
     public func evalRoCommand(script: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        return RESPCommand("EVAL_RO", script, numkeys, key, arg)
+        RESPCommand("EVAL_RO", script, numkeys, key, arg)
     }
 
     /// Executes all commands in a transaction.
@@ -1877,7 +2217,7 @@ extension RedisConnection {
 
     @inlinable
     public func execCommand() -> RESPCommand {
-        return RESPCommand("EXEC")
+        RESPCommand("EXEC")
     }
 
     /// Determines whether one or more keys exist.
@@ -1893,7 +2233,7 @@ extension RedisConnection {
 
     @inlinable
     public func existsCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("EXISTS", key)
+        RESPCommand("EXISTS", key)
     }
 
     public enum EXPIRECondition: RESPRepresentable {
@@ -1925,7 +2265,7 @@ extension RedisConnection {
 
     @inlinable
     public func expireCommand(key: RedisKey, seconds: Int, condition: EXPIRECondition?) -> RESPCommand {
-        return RESPCommand("EXPIRE", key, seconds, condition)
+        RESPCommand("EXPIRE", key, seconds, condition)
     }
 
     public enum EXPIREATCondition: RESPRepresentable {
@@ -1957,7 +2297,7 @@ extension RedisConnection {
 
     @inlinable
     public func expireatCommand(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition?) -> RESPCommand {
-        return RESPCommand("EXPIREAT", key, unixTimeSeconds, condition)
+        RESPCommand("EXPIREAT", key, unixTimeSeconds, condition)
     }
 
     /// Returns the expiration time of a key as a Unix timestamp.
@@ -1973,7 +2313,35 @@ extension RedisConnection {
 
     @inlinable
     public func expiretimeCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("EXPIRETIME", key)
+        RESPCommand("EXPIRETIME", key)
+    }
+
+    public struct FAILOVERTarget: RESPRepresentable {
+        @usableFromInline let host: String
+        @usableFromInline let port: Int
+        @usableFromInline let force: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.host.writeToRESPBuffer(&buffer)
+            self.port.writeToRESPBuffer(&buffer)
+            if self.force { "FORCE".writeToRESPBuffer(&buffer) }
+        }
+    }
+    /// Starts a coordinated failover from a server to one of its replicas.
+    ///
+    /// Version: 6.2.0
+    /// Complexity: O(1)
+    /// Categories: @admin, @slow, @dangerous
+    @inlinable
+    public func failover(target: FAILOVERTarget?, abort: Bool, milliseconds: Int?) async throws -> RESP3Token {
+        let response = try await send(failoverCommand(target: target, abort: abort, milliseconds: milliseconds))
+        return response
+    }
+
+    @inlinable
+    public func failoverCommand(target: FAILOVERTarget?, abort: Bool, milliseconds: Int?) -> RESPCommand {
+        RESPCommand("FAILOVER", RESPWithToken("TO", target), RedisPureToken("ABORT", abort), RESPWithToken("TIMEOUT", milliseconds))
     }
 
     /// Invokes a function.
@@ -1989,7 +2357,7 @@ extension RedisConnection {
 
     @inlinable
     public func fcallCommand(function: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        return RESPCommand("FCALL", function, numkeys, key, arg)
+        RESPCommand("FCALL", function, numkeys, key, arg)
     }
 
     /// Invokes a read-only function.
@@ -2005,7 +2373,7 @@ extension RedisConnection {
 
     @inlinable
     public func fcallRoCommand(function: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        return RESPCommand("FCALL_RO", function, numkeys, key, arg)
+        RESPCommand("FCALL_RO", function, numkeys, key, arg)
     }
 
     public enum FLUSHALLFlushType: RESPRepresentable {
@@ -2033,7 +2401,7 @@ extension RedisConnection {
 
     @inlinable
     public func flushallCommand(flushType: FLUSHALLFlushType?) -> RESPCommand {
-        return RESPCommand("FLUSHALL", flushType)
+        RESPCommand("FLUSHALL", flushType)
     }
 
     public enum FLUSHDBFlushType: RESPRepresentable {
@@ -2061,7 +2429,7 @@ extension RedisConnection {
 
     @inlinable
     public func flushdbCommand(flushType: FLUSHDBFlushType?) -> RESPCommand {
-        return RESPCommand("FLUSHDB", flushType)
+        RESPCommand("FLUSHDB", flushType)
     }
 
     /// A container for function commands.
@@ -2077,7 +2445,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionCommand() -> RESPCommand {
-        return RESPCommand("FUNCTION")
+        RESPCommand("FUNCTION")
     }
 
     /// Deletes a library and its functions.
@@ -2093,7 +2461,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionDeleteCommand(libraryName: String) -> RESPCommand {
-        return RESPCommand("FUNCTION", "DELETE", libraryName)
+        RESPCommand("FUNCTION", "DELETE", libraryName)
     }
 
     /// Dumps all libraries into a serialized binary payload.
@@ -2109,7 +2477,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionDumpCommand() -> RESPCommand {
-        return RESPCommand("FUNCTION", "DUMP")
+        RESPCommand("FUNCTION", "DUMP")
     }
 
     public enum FUNCTIONFLUSHFlushType: RESPRepresentable {
@@ -2137,7 +2505,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionFlushCommand(flushType: FUNCTIONFLUSHFlushType?) -> RESPCommand {
-        return RESPCommand("FUNCTION", "FLUSH", flushType)
+        RESPCommand("FUNCTION", "FLUSH", flushType)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2153,7 +2521,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionHelpCommand() -> RESPCommand {
-        return RESPCommand("FUNCTION", "HELP")
+        RESPCommand("FUNCTION", "HELP")
     }
 
     /// Terminates a function during execution.
@@ -2169,7 +2537,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionKillCommand() -> RESPCommand {
-        return RESPCommand("FUNCTION", "KILL")
+        RESPCommand("FUNCTION", "KILL")
     }
 
     /// Returns information about all libraries.
@@ -2185,7 +2553,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionListCommand(libraryNamePattern: String?, withcode: Bool) -> RESPCommand {
-        return RESPCommand("FUNCTION", "LIST", RESPWithToken("LIBRARYNAME", libraryNamePattern), RedisPureToken("WITHCODE", withcode))
+        RESPCommand("FUNCTION", "LIST", RESPWithToken("LIBRARYNAME", libraryNamePattern), RedisPureToken("WITHCODE", withcode))
     }
 
     /// Creates a library.
@@ -2201,7 +2569,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionLoadCommand(replace: Bool, functionCode: String) -> RESPCommand {
-        return RESPCommand("FUNCTION", "LOAD", RedisPureToken("REPLACE", replace), functionCode)
+        RESPCommand("FUNCTION", "LOAD", RedisPureToken("REPLACE", replace), functionCode)
     }
 
     public enum FUNCTIONRESTOREPolicy: RESPRepresentable {
@@ -2231,7 +2599,7 @@ extension RedisConnection {
 
     @inlinable
     public func functionRestoreCommand(serializedValue: String, policy: FUNCTIONRESTOREPolicy?) -> RESPCommand {
-        return RESPCommand("FUNCTION", "RESTORE", serializedValue, policy)
+        RESPCommand("FUNCTION", "RESTORE", serializedValue, policy)
     }
 
     /// Returns information about a function during execution.
@@ -2247,7 +2615,47 @@ extension RedisConnection {
 
     @inlinable
     public func functionStatsCommand() -> RESPCommand {
-        return RESPCommand("FUNCTION", "STATS")
+        RESPCommand("FUNCTION", "STATS")
+    }
+
+    public enum GEOADDCondition: RESPRepresentable {
+        case nx
+        case xx
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .nx: "NX".writeToRESPBuffer(&buffer)
+            case .xx: "XX".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEOADDData: RESPRepresentable {
+        @usableFromInline let longitude: Double
+        @usableFromInline let latitude: Double
+        @usableFromInline let member: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.longitude.writeToRESPBuffer(&buffer)
+            self.latitude.writeToRESPBuffer(&buffer)
+            self.member.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
+    ///
+    /// Version: 3.2.0
+    /// Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
+    /// Categories: @write, @geo, @slow
+    @inlinable
+    public func geoadd(key: RedisKey, condition: GEOADDCondition?, change: Bool, data: GEOADDData...) async throws -> RESP3Token {
+        let response = try await send(geoaddCommand(key: key, condition: condition, change: change, data: data))
+        return response
+    }
+
+    @inlinable
+    public func geoaddCommand(key: RedisKey, condition: GEOADDCondition?, change: Bool, data: [GEOADDData]) -> RESPCommand {
+        RESPCommand("GEOADD", key, condition, RedisPureToken("CH", change), data)
     }
 
     public enum GEODISTUnit: RESPRepresentable {
@@ -2279,7 +2687,7 @@ extension RedisConnection {
 
     @inlinable
     public func geodistCommand(key: RedisKey, member1: String, member2: String, unit: GEODISTUnit?) -> RESPCommand {
-        return RESPCommand("GEODIST", key, member1, member2, unit)
+        RESPCommand("GEODIST", key, member1, member2, unit)
     }
 
     /// Returns members from a geospatial index as geohash strings.
@@ -2295,7 +2703,7 @@ extension RedisConnection {
 
     @inlinable
     public func geohashCommand(key: RedisKey, member: [String]) -> RESPCommand {
-        return RESPCommand("GEOHASH", key, member)
+        RESPCommand("GEOHASH", key, member)
     }
 
     /// Returns the longitude and latitude of members from a geospatial index.
@@ -2311,7 +2719,499 @@ extension RedisConnection {
 
     @inlinable
     public func geoposCommand(key: RedisKey, member: [String]) -> RESPCommand {
-        return RESPCommand("GEOPOS", key, member)
+        RESPCommand("GEOPOS", key, member)
+    }
+
+    public enum GEORADIUSUnit: RESPRepresentable {
+        case m
+        case km
+        case ft
+        case mi
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .m: "M".writeToRESPBuffer(&buffer)
+            case .km: "KM".writeToRESPBuffer(&buffer)
+            case .ft: "FT".writeToRESPBuffer(&buffer)
+            case .mi: "MI".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEORADIUSCountBlock: RESPRepresentable {
+        @usableFromInline let count: Int
+        @usableFromInline let any: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.count.writeToRESPBuffer(&buffer)
+            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        }
+    }
+    public enum GEORADIUSOrder: RESPRepresentable {
+        case asc
+        case desc
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .asc: "ASC".writeToRESPBuffer(&buffer)
+            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum GEORADIUSStore: RESPRepresentable {
+        case storekey(RedisKey)
+        case storedistkey(RedisKey)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
+            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
+    ///
+    /// Version: 3.2.0
+    /// Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
+    /// Categories: @write, @geo, @slow
+    @inlinable
+    public func georadius(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSCountBlock?, order: GEORADIUSOrder?, store: GEORADIUSStore?) async throws -> RESP3Token {
+        let response = try await send(georadiusCommand(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
+        return response
+    }
+
+    @inlinable
+    public func georadiusCommand(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSCountBlock?, order: GEORADIUSOrder?, store: GEORADIUSStore?) -> RESPCommand {
+        RESPCommand("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+    }
+
+    public enum GEORADIUSBYMEMBERUnit: RESPRepresentable {
+        case m
+        case km
+        case ft
+        case mi
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .m: "M".writeToRESPBuffer(&buffer)
+            case .km: "KM".writeToRESPBuffer(&buffer)
+            case .ft: "FT".writeToRESPBuffer(&buffer)
+            case .mi: "MI".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEORADIUSBYMEMBERCountBlock: RESPRepresentable {
+        @usableFromInline let count: Int
+        @usableFromInline let any: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.count.writeToRESPBuffer(&buffer)
+            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        }
+    }
+    public enum GEORADIUSBYMEMBEROrder: RESPRepresentable {
+        case asc
+        case desc
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .asc: "ASC".writeToRESPBuffer(&buffer)
+            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum GEORADIUSBYMEMBERStore: RESPRepresentable {
+        case storekey(RedisKey)
+        case storedistkey(RedisKey)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
+            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
+    ///
+    /// Version: 3.2.0
+    /// Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
+    /// Categories: @write, @geo, @slow
+    @inlinable
+    public func georadiusbymember(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERCountBlock?, order: GEORADIUSBYMEMBEROrder?, store: GEORADIUSBYMEMBERStore?) async throws -> RESP3Token {
+        let response = try await send(georadiusbymemberCommand(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
+        return response
+    }
+
+    @inlinable
+    public func georadiusbymemberCommand(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERCountBlock?, order: GEORADIUSBYMEMBEROrder?, store: GEORADIUSBYMEMBERStore?) -> RESPCommand {
+        RESPCommand("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+    }
+
+    public enum GEORADIUSBYMEMBERROUnit: RESPRepresentable {
+        case m
+        case km
+        case ft
+        case mi
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .m: "M".writeToRESPBuffer(&buffer)
+            case .km: "KM".writeToRESPBuffer(&buffer)
+            case .ft: "FT".writeToRESPBuffer(&buffer)
+            case .mi: "MI".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEORADIUSBYMEMBERROCountBlock: RESPRepresentable {
+        @usableFromInline let count: Int
+        @usableFromInline let any: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.count.writeToRESPBuffer(&buffer)
+            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        }
+    }
+    public enum GEORADIUSBYMEMBERROOrder: RESPRepresentable {
+        case asc
+        case desc
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .asc: "ASC".writeToRESPBuffer(&buffer)
+            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Returns members from a geospatial index that are within a distance from a member.
+    ///
+    /// Version: 3.2.10
+    /// Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
+    /// Categories: @read, @geo, @slow
+    @inlinable
+    public func georadiusbymemberRo(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERROCountBlock?, order: GEORADIUSBYMEMBERROOrder?) async throws -> RESP3Token {
+        let response = try await send(georadiusbymemberRoCommand(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
+        return response
+    }
+
+    @inlinable
+    public func georadiusbymemberRoCommand(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERROCountBlock?, order: GEORADIUSBYMEMBERROOrder?) -> RESPCommand {
+        RESPCommand("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+    }
+
+    public enum GEORADIUSROUnit: RESPRepresentable {
+        case m
+        case km
+        case ft
+        case mi
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .m: "M".writeToRESPBuffer(&buffer)
+            case .km: "KM".writeToRESPBuffer(&buffer)
+            case .ft: "FT".writeToRESPBuffer(&buffer)
+            case .mi: "MI".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEORADIUSROCountBlock: RESPRepresentable {
+        @usableFromInline let count: Int
+        @usableFromInline let any: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.count.writeToRESPBuffer(&buffer)
+            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        }
+    }
+    public enum GEORADIUSROOrder: RESPRepresentable {
+        case asc
+        case desc
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .asc: "ASC".writeToRESPBuffer(&buffer)
+            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Returns members from a geospatial index that are within a distance from a coordinate.
+    ///
+    /// Version: 3.2.10
+    /// Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
+    /// Categories: @read, @geo, @slow
+    @inlinable
+    public func georadiusRo(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSROCountBlock?, order: GEORADIUSROOrder?) async throws -> RESP3Token {
+        let response = try await send(georadiusRoCommand(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
+        return response
+    }
+
+    @inlinable
+    public func georadiusRoCommand(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSROCountBlock?, order: GEORADIUSROOrder?) -> RESPCommand {
+        RESPCommand("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+    }
+
+    public struct GEOSEARCHFROMFromlonlat: RESPRepresentable {
+        @usableFromInline let longitude: Double
+        @usableFromInline let latitude: Double
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.longitude.writeToRESPBuffer(&buffer)
+            self.latitude.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum GEOSEARCHFrom: RESPRepresentable {
+        case member(String)
+        case fromlonlat(GEOSEARCHFROMFromlonlat)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
+            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum GEOSEARCHBYCIRCLEUnit: RESPRepresentable {
+        case m
+        case km
+        case ft
+        case mi
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .m: "M".writeToRESPBuffer(&buffer)
+            case .km: "KM".writeToRESPBuffer(&buffer)
+            case .ft: "FT".writeToRESPBuffer(&buffer)
+            case .mi: "MI".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEOSEARCHBYCircle: RESPRepresentable {
+        @usableFromInline let radius: Double
+        @usableFromInline let unit: GEOSEARCHBYCIRCLEUnit
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.radius.writeToRESPBuffer(&buffer)
+            self.unit.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum GEOSEARCHBYBOXUnit: RESPRepresentable {
+        case m
+        case km
+        case ft
+        case mi
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .m: "M".writeToRESPBuffer(&buffer)
+            case .km: "KM".writeToRESPBuffer(&buffer)
+            case .ft: "FT".writeToRESPBuffer(&buffer)
+            case .mi: "MI".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEOSEARCHBYBox: RESPRepresentable {
+        @usableFromInline let width: Double
+        @usableFromInline let height: Double
+        @usableFromInline let unit: GEOSEARCHBYBOXUnit
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.width.writeToRESPBuffer(&buffer)
+            self.height.writeToRESPBuffer(&buffer)
+            self.unit.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum GEOSEARCHBy: RESPRepresentable {
+        case circle(GEOSEARCHBYCircle)
+        case box(GEOSEARCHBYBox)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .circle(let circle): circle.writeToRESPBuffer(&buffer)
+            case .box(let box): box.writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum GEOSEARCHOrder: RESPRepresentable {
+        case asc
+        case desc
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .asc: "ASC".writeToRESPBuffer(&buffer)
+            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEOSEARCHCountBlock: RESPRepresentable {
+        @usableFromInline let count: Int
+        @usableFromInline let any: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.count.writeToRESPBuffer(&buffer)
+            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        }
+    }
+    /// Queries a geospatial index for members inside an area of a box or a circle.
+    ///
+    /// Version: 6.2.0
+    /// Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
+    /// Categories: @read, @geo, @slow
+    @inlinable
+    public func geosearch(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder?, countBlock: GEOSEARCHCountBlock?, withcoord: Bool, withdist: Bool, withhash: Bool) async throws -> RESP3Token {
+        let response = try await send(geosearchCommand(key: key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash))
+        return response
+    }
+
+    @inlinable
+    public func geosearchCommand(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder?, countBlock: GEOSEARCHCountBlock?, withcoord: Bool, withdist: Bool, withhash: Bool) -> RESPCommand {
+        RESPCommand("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
+    }
+
+    public struct GEOSEARCHSTOREFROMFromlonlat: RESPRepresentable {
+        @usableFromInline let longitude: Double
+        @usableFromInline let latitude: Double
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.longitude.writeToRESPBuffer(&buffer)
+            self.latitude.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum GEOSEARCHSTOREFrom: RESPRepresentable {
+        case member(String)
+        case fromlonlat(GEOSEARCHSTOREFROMFromlonlat)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
+            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum GEOSEARCHSTOREBYCIRCLEUnit: RESPRepresentable {
+        case m
+        case km
+        case ft
+        case mi
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .m: "M".writeToRESPBuffer(&buffer)
+            case .km: "KM".writeToRESPBuffer(&buffer)
+            case .ft: "FT".writeToRESPBuffer(&buffer)
+            case .mi: "MI".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEOSEARCHSTOREBYCircle: RESPRepresentable {
+        @usableFromInline let radius: Double
+        @usableFromInline let unit: GEOSEARCHSTOREBYCIRCLEUnit
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.radius.writeToRESPBuffer(&buffer)
+            self.unit.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum GEOSEARCHSTOREBYBOXUnit: RESPRepresentable {
+        case m
+        case km
+        case ft
+        case mi
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .m: "M".writeToRESPBuffer(&buffer)
+            case .km: "KM".writeToRESPBuffer(&buffer)
+            case .ft: "FT".writeToRESPBuffer(&buffer)
+            case .mi: "MI".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEOSEARCHSTOREBYBox: RESPRepresentable {
+        @usableFromInline let width: Double
+        @usableFromInline let height: Double
+        @usableFromInline let unit: GEOSEARCHSTOREBYBOXUnit
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.width.writeToRESPBuffer(&buffer)
+            self.height.writeToRESPBuffer(&buffer)
+            self.unit.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum GEOSEARCHSTOREBy: RESPRepresentable {
+        case circle(GEOSEARCHSTOREBYCircle)
+        case box(GEOSEARCHSTOREBYBox)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .circle(let circle): circle.writeToRESPBuffer(&buffer)
+            case .box(let box): box.writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum GEOSEARCHSTOREOrder: RESPRepresentable {
+        case asc
+        case desc
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .asc: "ASC".writeToRESPBuffer(&buffer)
+            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct GEOSEARCHSTORECountBlock: RESPRepresentable {
+        @usableFromInline let count: Int
+        @usableFromInline let any: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.count.writeToRESPBuffer(&buffer)
+            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        }
+    }
+    /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
+    ///
+    /// Version: 6.2.0
+    /// Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
+    /// Categories: @write, @geo, @slow
+    @inlinable
+    public func geosearchstore(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder?, countBlock: GEOSEARCHSTORECountBlock?, storedist: Bool) async throws -> RESP3Token {
+        let response = try await send(geosearchstoreCommand(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist))
+        return response
+    }
+
+    @inlinable
+    public func geosearchstoreCommand(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder?, countBlock: GEOSEARCHSTORECountBlock?, storedist: Bool) -> RESPCommand {
+        RESPCommand("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RedisPureToken("STOREDIST", storedist))
     }
 
     /// Returns the string value of a key.
@@ -2327,7 +3227,7 @@ extension RedisConnection {
 
     @inlinable
     public func getCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("GET", key)
+        RESPCommand("GET", key)
     }
 
     /// Returns a bit value by offset.
@@ -2343,7 +3243,7 @@ extension RedisConnection {
 
     @inlinable
     public func getbitCommand(key: RedisKey, offset: Int) -> RESPCommand {
-        return RESPCommand("GETBIT", key, offset)
+        RESPCommand("GETBIT", key, offset)
     }
 
     /// Returns the string value of a key after deleting the key.
@@ -2359,7 +3259,7 @@ extension RedisConnection {
 
     @inlinable
     public func getdelCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("GETDEL", key)
+        RESPCommand("GETDEL", key)
     }
 
     public enum GETEXExpiration: RESPRepresentable {
@@ -2393,7 +3293,7 @@ extension RedisConnection {
 
     @inlinable
     public func getexCommand(key: RedisKey, expiration: GETEXExpiration?) -> RESPCommand {
-        return RESPCommand("GETEX", key, expiration)
+        RESPCommand("GETEX", key, expiration)
     }
 
     /// Returns a substring of the string stored at a key.
@@ -2409,7 +3309,7 @@ extension RedisConnection {
 
     @inlinable
     public func getrangeCommand(key: RedisKey, start: Int, end: Int) -> RESPCommand {
-        return RESPCommand("GETRANGE", key, start, end)
+        RESPCommand("GETRANGE", key, start, end)
     }
 
     /// Returns the previous string value of a key after setting it to a new value.
@@ -2425,7 +3325,7 @@ extension RedisConnection {
 
     @inlinable
     public func getsetCommand(key: RedisKey, value: String) -> RESPCommand {
-        return RESPCommand("GETSET", key, value)
+        RESPCommand("GETSET", key, value)
     }
 
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
@@ -2441,7 +3341,45 @@ extension RedisConnection {
 
     @inlinable
     public func hdelCommand(key: RedisKey, field: [String]) -> RESPCommand {
-        return RESPCommand("HDEL", key, field)
+        RESPCommand("HDEL", key, field)
+    }
+
+    public struct HELLOARGUMENTSAuth: RESPRepresentable {
+        @usableFromInline let username: String
+        @usableFromInline let password: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.username.writeToRESPBuffer(&buffer)
+            self.password.writeToRESPBuffer(&buffer)
+        }
+    }
+    public struct HELLOArguments: RESPRepresentable {
+        @usableFromInline let protover: Int
+        @usableFromInline let auth: HELLOARGUMENTSAuth?
+        @usableFromInline let clientname: String?
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.protover.writeToRESPBuffer(&buffer)
+            self.auth.writeToRESPBuffer(&buffer)
+            self.clientname.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Handshakes with the Redis server.
+    ///
+    /// Version: 6.0.0
+    /// Complexity: O(1)
+    /// Categories: @fast, @connection
+    @inlinable
+    public func hello(arguments: HELLOArguments?) async throws -> RESP3Token {
+        let response = try await send(helloCommand(arguments: arguments))
+        return response
+    }
+
+    @inlinable
+    public func helloCommand(arguments: HELLOArguments?) -> RESPCommand {
+        RESPCommand("HELLO", arguments)
     }
 
     /// Determines whether a field exists in a hash.
@@ -2457,7 +3395,7 @@ extension RedisConnection {
 
     @inlinable
     public func hexistsCommand(key: RedisKey, field: String) -> RESPCommand {
-        return RESPCommand("HEXISTS", key, field)
+        RESPCommand("HEXISTS", key, field)
     }
 
     /// Returns the value of a field in a hash.
@@ -2473,7 +3411,7 @@ extension RedisConnection {
 
     @inlinable
     public func hgetCommand(key: RedisKey, field: String) -> RESPCommand {
-        return RESPCommand("HGET", key, field)
+        RESPCommand("HGET", key, field)
     }
 
     /// Returns all fields and values in a hash.
@@ -2489,7 +3427,7 @@ extension RedisConnection {
 
     @inlinable
     public func hgetallCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("HGETALL", key)
+        RESPCommand("HGETALL", key)
     }
 
     /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
@@ -2505,7 +3443,7 @@ extension RedisConnection {
 
     @inlinable
     public func hincrbyCommand(key: RedisKey, field: String, increment: Int) -> RESPCommand {
-        return RESPCommand("HINCRBY", key, field, increment)
+        RESPCommand("HINCRBY", key, field, increment)
     }
 
     /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
@@ -2521,7 +3459,7 @@ extension RedisConnection {
 
     @inlinable
     public func hincrbyfloatCommand(key: RedisKey, field: String, increment: Double) -> RESPCommand {
-        return RESPCommand("HINCRBYFLOAT", key, field, increment)
+        RESPCommand("HINCRBYFLOAT", key, field, increment)
     }
 
     /// Returns all fields in a hash.
@@ -2537,7 +3475,7 @@ extension RedisConnection {
 
     @inlinable
     public func hkeysCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("HKEYS", key)
+        RESPCommand("HKEYS", key)
     }
 
     /// Returns the number of fields in a hash.
@@ -2553,7 +3491,7 @@ extension RedisConnection {
 
     @inlinable
     public func hlenCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("HLEN", key)
+        RESPCommand("HLEN", key)
     }
 
     /// Returns the values of all fields in a hash.
@@ -2569,7 +3507,59 @@ extension RedisConnection {
 
     @inlinable
     public func hmgetCommand(key: RedisKey, field: [String]) -> RESPCommand {
-        return RESPCommand("HMGET", key, field)
+        RESPCommand("HMGET", key, field)
+    }
+
+    public struct HMSETData: RESPRepresentable {
+        @usableFromInline let field: String
+        @usableFromInline let value: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.field.writeToRESPBuffer(&buffer)
+            self.value.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Sets the values of multiple fields.
+    ///
+    /// Version: 2.0.0
+    /// Complexity: O(N) where N is the number of fields being set.
+    /// Categories: @write, @hash, @fast
+    @inlinable
+    public func hmset(key: RedisKey, data: HMSETData...) async throws -> RESP3Token {
+        let response = try await send(hmsetCommand(key: key, data: data))
+        return response
+    }
+
+    @inlinable
+    public func hmsetCommand(key: RedisKey, data: [HMSETData]) -> RESPCommand {
+        RESPCommand("HMSET", key, data)
+    }
+
+    public struct HRANDFIELDOptions: RESPRepresentable {
+        @usableFromInline let count: Int
+        @usableFromInline let withvalues: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.count.writeToRESPBuffer(&buffer)
+            if self.withvalues { "WITHVALUES".writeToRESPBuffer(&buffer) }
+        }
+    }
+    /// Returns one or more random fields from a hash.
+    ///
+    /// Version: 6.2.0
+    /// Complexity: O(N) where N is the number of fields returned
+    /// Categories: @read, @hash, @slow
+    @inlinable
+    public func hrandfield(key: RedisKey, options: HRANDFIELDOptions?) async throws -> RESP3Token {
+        let response = try await send(hrandfieldCommand(key: key, options: options))
+        return response
+    }
+
+    @inlinable
+    public func hrandfieldCommand(key: RedisKey, options: HRANDFIELDOptions?) -> RESPCommand {
+        RESPCommand("HRANDFIELD", key, options)
     }
 
     /// Iterates over fields and values of a hash.
@@ -2585,7 +3575,33 @@ extension RedisConnection {
 
     @inlinable
     public func hscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
-        return RESPCommand("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+        RESPCommand("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+    }
+
+    public struct HSETData: RESPRepresentable {
+        @usableFromInline let field: String
+        @usableFromInline let value: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.field.writeToRESPBuffer(&buffer)
+            self.value.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Creates or modifies the value of a field in a hash.
+    ///
+    /// Version: 2.0.0
+    /// Complexity: O(1) for each field/value pair added, so O(N) to add N field/value pairs when the command is called with multiple field/value pairs.
+    /// Categories: @write, @hash, @fast
+    @inlinable
+    public func hset(key: RedisKey, data: HSETData...) async throws -> RESP3Token {
+        let response = try await send(hsetCommand(key: key, data: data))
+        return response
+    }
+
+    @inlinable
+    public func hsetCommand(key: RedisKey, data: [HSETData]) -> RESPCommand {
+        RESPCommand("HSET", key, data)
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
@@ -2601,7 +3617,7 @@ extension RedisConnection {
 
     @inlinable
     public func hsetnxCommand(key: RedisKey, field: String, value: String) -> RESPCommand {
-        return RESPCommand("HSETNX", key, field, value)
+        RESPCommand("HSETNX", key, field, value)
     }
 
     /// Returns the length of the value of a field.
@@ -2617,7 +3633,7 @@ extension RedisConnection {
 
     @inlinable
     public func hstrlenCommand(key: RedisKey, field: String) -> RESPCommand {
-        return RESPCommand("HSTRLEN", key, field)
+        RESPCommand("HSTRLEN", key, field)
     }
 
     /// Returns all values in a hash.
@@ -2633,7 +3649,7 @@ extension RedisConnection {
 
     @inlinable
     public func hvalsCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("HVALS", key)
+        RESPCommand("HVALS", key)
     }
 
     /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
@@ -2649,7 +3665,7 @@ extension RedisConnection {
 
     @inlinable
     public func incrCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("INCR", key)
+        RESPCommand("INCR", key)
     }
 
     /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
@@ -2665,7 +3681,7 @@ extension RedisConnection {
 
     @inlinable
     public func incrbyCommand(key: RedisKey, increment: Int) -> RESPCommand {
-        return RESPCommand("INCRBY", key, increment)
+        RESPCommand("INCRBY", key, increment)
     }
 
     /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
@@ -2681,7 +3697,7 @@ extension RedisConnection {
 
     @inlinable
     public func incrbyfloatCommand(key: RedisKey, increment: Double) -> RESPCommand {
-        return RESPCommand("INCRBYFLOAT", key, increment)
+        RESPCommand("INCRBYFLOAT", key, increment)
     }
 
     /// Returns information and statistics about the server.
@@ -2697,7 +3713,7 @@ extension RedisConnection {
 
     @inlinable
     public func infoCommand(section: [String]) -> RESPCommand {
-        return RESPCommand("INFO", section)
+        RESPCommand("INFO", section)
     }
 
     /// Returns all key names that match a pattern.
@@ -2713,7 +3729,7 @@ extension RedisConnection {
 
     @inlinable
     public func keysCommand(pattern: String) -> RESPCommand {
-        return RESPCommand("KEYS", pattern)
+        RESPCommand("KEYS", pattern)
     }
 
     /// Returns the Unix timestamp of the last successful save to disk.
@@ -2729,7 +3745,7 @@ extension RedisConnection {
 
     @inlinable
     public func lastsaveCommand() -> RESPCommand {
-        return RESPCommand("LASTSAVE")
+        RESPCommand("LASTSAVE")
     }
 
     /// A container for latency diagnostics commands.
@@ -2745,7 +3761,7 @@ extension RedisConnection {
 
     @inlinable
     public func latencyCommand() -> RESPCommand {
-        return RESPCommand("LATENCY")
+        RESPCommand("LATENCY")
     }
 
     /// Returns a human-readable latency analysis report.
@@ -2761,7 +3777,7 @@ extension RedisConnection {
 
     @inlinable
     public func latencyDoctorCommand() -> RESPCommand {
-        return RESPCommand("LATENCY", "DOCTOR")
+        RESPCommand("LATENCY", "DOCTOR")
     }
 
     /// Returns a latency graph for an event.
@@ -2777,7 +3793,7 @@ extension RedisConnection {
 
     @inlinable
     public func latencyGraphCommand(event: String) -> RESPCommand {
-        return RESPCommand("LATENCY", "GRAPH", event)
+        RESPCommand("LATENCY", "GRAPH", event)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2793,7 +3809,7 @@ extension RedisConnection {
 
     @inlinable
     public func latencyHelpCommand() -> RESPCommand {
-        return RESPCommand("LATENCY", "HELP")
+        RESPCommand("LATENCY", "HELP")
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
@@ -2809,7 +3825,7 @@ extension RedisConnection {
 
     @inlinable
     public func latencyHistogramCommand(command: [String]) -> RESPCommand {
-        return RESPCommand("LATENCY", "HISTOGRAM", command)
+        RESPCommand("LATENCY", "HISTOGRAM", command)
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -2825,7 +3841,7 @@ extension RedisConnection {
 
     @inlinable
     public func latencyHistoryCommand(event: String) -> RESPCommand {
-        return RESPCommand("LATENCY", "HISTORY", event)
+        RESPCommand("LATENCY", "HISTORY", event)
     }
 
     /// Returns the latest latency samples for all events.
@@ -2841,7 +3857,7 @@ extension RedisConnection {
 
     @inlinable
     public func latencyLatestCommand() -> RESPCommand {
-        return RESPCommand("LATENCY", "LATEST")
+        RESPCommand("LATENCY", "LATEST")
     }
 
     /// Resets the latency data for one or more events.
@@ -2857,7 +3873,7 @@ extension RedisConnection {
 
     @inlinable
     public func latencyResetCommand(event: [String]) -> RESPCommand {
-        return RESPCommand("LATENCY", "RESET", event)
+        RESPCommand("LATENCY", "RESET", event)
     }
 
     /// Finds the longest common substring.
@@ -2873,7 +3889,7 @@ extension RedisConnection {
 
     @inlinable
     public func lcsCommand(key1: RedisKey, key2: RedisKey, len: Bool, idx: Bool, minMatchLen: Int?, withmatchlen: Bool) -> RESPCommand {
-        return RESPCommand("LCS", key1, key2, RedisPureToken("LEN", len), RedisPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RedisPureToken("WITHMATCHLEN", withmatchlen))
+        RESPCommand("LCS", key1, key2, RedisPureToken("LEN", len), RedisPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RedisPureToken("WITHMATCHLEN", withmatchlen))
     }
 
     /// Returns an element from a list by its index.
@@ -2889,7 +3905,7 @@ extension RedisConnection {
 
     @inlinable
     public func lindexCommand(key: RedisKey, index: Int) -> RESPCommand {
-        return RESPCommand("LINDEX", key, index)
+        RESPCommand("LINDEX", key, index)
     }
 
     public enum LINSERTWhere: RESPRepresentable {
@@ -2917,7 +3933,7 @@ extension RedisConnection {
 
     @inlinable
     public func linsertCommand(key: RedisKey, where: LINSERTWhere, pivot: String, element: String) -> RESPCommand {
-        return RESPCommand("LINSERT", key, `where`, pivot, element)
+        RESPCommand("LINSERT", key, `where`, pivot, element)
     }
 
     /// Returns the length of a list.
@@ -2933,7 +3949,7 @@ extension RedisConnection {
 
     @inlinable
     public func llenCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("LLEN", key)
+        RESPCommand("LLEN", key)
     }
 
     public enum LMOVEWherefrom: RESPRepresentable {
@@ -2973,7 +3989,7 @@ extension RedisConnection {
 
     @inlinable
     public func lmoveCommand(source: RedisKey, destination: RedisKey, wherefrom: LMOVEWherefrom, whereto: LMOVEWhereto) -> RESPCommand {
-        return RESPCommand("LMOVE", source, destination, wherefrom, whereto)
+        RESPCommand("LMOVE", source, destination, wherefrom, whereto)
     }
 
     public enum LMPOPWhere: RESPRepresentable {
@@ -3001,7 +4017,7 @@ extension RedisConnection {
 
     @inlinable
     public func lmpopCommand(numkeys: Int, key: [RedisKey], where: LMPOPWhere, count: Int?) -> RESPCommand {
-        return RESPCommand("LMPOP", numkeys, key, `where`, RESPWithToken("COUNT", count))
+        RESPCommand("LMPOP", numkeys, key, `where`, RESPWithToken("COUNT", count))
     }
 
     /// Displays computer art and the Redis version
@@ -3016,7 +4032,7 @@ extension RedisConnection {
 
     @inlinable
     public func lolwutCommand(version: Int?) -> RESPCommand {
-        return RESPCommand("LOLWUT", RESPWithToken("VERSION", version))
+        RESPCommand("LOLWUT", RESPWithToken("VERSION", version))
     }
 
     /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
@@ -3032,7 +4048,7 @@ extension RedisConnection {
 
     @inlinable
     public func lpopCommand(key: RedisKey, count: Int?) -> RESPCommand {
-        return RESPCommand("LPOP", key, count)
+        RESPCommand("LPOP", key, count)
     }
 
     /// Returns the index of matching elements in a list.
@@ -3048,7 +4064,7 @@ extension RedisConnection {
 
     @inlinable
     public func lposCommand(key: RedisKey, element: String, rank: Int?, numMatches: Int?, len: Int?) -> RESPCommand {
-        return RESPCommand("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
+        RESPCommand("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 
     /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
@@ -3064,7 +4080,7 @@ extension RedisConnection {
 
     @inlinable
     public func lpushCommand(key: RedisKey, element: [String]) -> RESPCommand {
-        return RESPCommand("LPUSH", key, element)
+        RESPCommand("LPUSH", key, element)
     }
 
     /// Prepends one or more elements to a list only when the list exists.
@@ -3080,7 +4096,7 @@ extension RedisConnection {
 
     @inlinable
     public func lpushxCommand(key: RedisKey, element: [String]) -> RESPCommand {
-        return RESPCommand("LPUSHX", key, element)
+        RESPCommand("LPUSHX", key, element)
     }
 
     /// Returns a range of elements from a list.
@@ -3096,7 +4112,7 @@ extension RedisConnection {
 
     @inlinable
     public func lrangeCommand(key: RedisKey, start: Int, stop: Int) -> RESPCommand {
-        return RESPCommand("LRANGE", key, start, stop)
+        RESPCommand("LRANGE", key, start, stop)
     }
 
     /// Removes elements from a list. Deletes the list if the last element was removed.
@@ -3112,7 +4128,7 @@ extension RedisConnection {
 
     @inlinable
     public func lremCommand(key: RedisKey, count: Int, element: String) -> RESPCommand {
-        return RESPCommand("LREM", key, count, element)
+        RESPCommand("LREM", key, count, element)
     }
 
     /// Sets the value of an element in a list by its index.
@@ -3128,7 +4144,7 @@ extension RedisConnection {
 
     @inlinable
     public func lsetCommand(key: RedisKey, index: Int, element: String) -> RESPCommand {
-        return RESPCommand("LSET", key, index, element)
+        RESPCommand("LSET", key, index, element)
     }
 
     /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
@@ -3144,7 +4160,7 @@ extension RedisConnection {
 
     @inlinable
     public func ltrimCommand(key: RedisKey, start: Int, stop: Int) -> RESPCommand {
-        return RESPCommand("LTRIM", key, start, stop)
+        RESPCommand("LTRIM", key, start, stop)
     }
 
     /// A container for memory diagnostics commands.
@@ -3160,7 +4176,7 @@ extension RedisConnection {
 
     @inlinable
     public func memoryCommand() -> RESPCommand {
-        return RESPCommand("MEMORY")
+        RESPCommand("MEMORY")
     }
 
     /// Outputs a memory problems report.
@@ -3176,7 +4192,7 @@ extension RedisConnection {
 
     @inlinable
     public func memoryDoctorCommand() -> RESPCommand {
-        return RESPCommand("MEMORY", "DOCTOR")
+        RESPCommand("MEMORY", "DOCTOR")
     }
 
     /// Returns helpful text about the different subcommands.
@@ -3192,7 +4208,7 @@ extension RedisConnection {
 
     @inlinable
     public func memoryHelpCommand() -> RESPCommand {
-        return RESPCommand("MEMORY", "HELP")
+        RESPCommand("MEMORY", "HELP")
     }
 
     /// Returns the allocator statistics.
@@ -3208,7 +4224,7 @@ extension RedisConnection {
 
     @inlinable
     public func memoryMallocStatsCommand() -> RESPCommand {
-        return RESPCommand("MEMORY", "MALLOC-STATS")
+        RESPCommand("MEMORY", "MALLOC-STATS")
     }
 
     /// Asks the allocator to release memory.
@@ -3224,7 +4240,7 @@ extension RedisConnection {
 
     @inlinable
     public func memoryPurgeCommand() -> RESPCommand {
-        return RESPCommand("MEMORY", "PURGE")
+        RESPCommand("MEMORY", "PURGE")
     }
 
     /// Returns details about memory usage.
@@ -3240,7 +4256,7 @@ extension RedisConnection {
 
     @inlinable
     public func memoryStatsCommand() -> RESPCommand {
-        return RESPCommand("MEMORY", "STATS")
+        RESPCommand("MEMORY", "STATS")
     }
 
     /// Estimates the memory usage of a key.
@@ -3256,7 +4272,7 @@ extension RedisConnection {
 
     @inlinable
     public func memoryUsageCommand(key: RedisKey, count: Int?) -> RESPCommand {
-        return RESPCommand("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
+        RESPCommand("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
     }
 
     /// Atomically returns the string values of one or more keys.
@@ -3272,7 +4288,7 @@ extension RedisConnection {
 
     @inlinable
     public func mgetCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("MGET", key)
+        RESPCommand("MGET", key)
     }
 
     public enum MIGRATEKeySelector: RESPRepresentable {
@@ -3287,6 +4303,44 @@ extension RedisConnection {
             }
         }
     }
+    public struct MIGRATEAUTHENTICATIONAuth2: RESPRepresentable {
+        @usableFromInline let username: String
+        @usableFromInline let password: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.username.writeToRESPBuffer(&buffer)
+            self.password.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum MIGRATEAuthentication: RESPRepresentable {
+        case auth(String)
+        case auth2(MIGRATEAUTHENTICATIONAuth2)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .auth(let auth): RESPWithToken("AUTH", auth).writeToRESPBuffer(&buffer)
+            case .auth2(let auth2): RESPWithToken("AUTH2", auth2).writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Atomically transfers a key from one Redis instance to another.
+    ///
+    /// Version: 2.6.0
+    /// Complexity: This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.
+    /// Categories: @keyspace, @write, @slow, @dangerous
+    @inlinable
+    public func migrate(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool, replace: Bool, authentication: MIGRATEAuthentication?, keys: RedisKey...) async throws -> RESP3Token {
+        let response = try await send(migrateCommand(host: host, port: port, keySelector: keySelector, destinationDb: destinationDb, timeout: timeout, copy: copy, replace: replace, authentication: authentication, keys: keys))
+        return response
+    }
+
+    @inlinable
+    public func migrateCommand(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool, replace: Bool, authentication: MIGRATEAuthentication?, keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
+    }
+
     /// A container for module commands.
     ///
     /// Version: 4.0.0
@@ -3300,7 +4354,7 @@ extension RedisConnection {
 
     @inlinable
     public func moduleCommand() -> RESPCommand {
-        return RESPCommand("MODULE")
+        RESPCommand("MODULE")
     }
 
     /// Returns helpful text about the different subcommands.
@@ -3316,7 +4370,7 @@ extension RedisConnection {
 
     @inlinable
     public func moduleHelpCommand() -> RESPCommand {
-        return RESPCommand("MODULE", "HELP")
+        RESPCommand("MODULE", "HELP")
     }
 
     /// Returns all loaded modules.
@@ -3332,7 +4386,7 @@ extension RedisConnection {
 
     @inlinable
     public func moduleListCommand() -> RESPCommand {
-        return RESPCommand("MODULE", "LIST")
+        RESPCommand("MODULE", "LIST")
     }
 
     /// Loads a module.
@@ -3348,7 +4402,33 @@ extension RedisConnection {
 
     @inlinable
     public func moduleLoadCommand(path: String, arg: [String]) -> RESPCommand {
-        return RESPCommand("MODULE", "LOAD", path, arg)
+        RESPCommand("MODULE", "LOAD", path, arg)
+    }
+
+    public struct MODULELOADEXConfigs: RESPRepresentable {
+        @usableFromInline let name: String
+        @usableFromInline let value: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.name.writeToRESPBuffer(&buffer)
+            self.value.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Loads a module using extended parameters.
+    ///
+    /// Version: 7.0.0
+    /// Complexity: O(1)
+    /// Categories: @admin, @slow, @dangerous
+    @inlinable
+    public func moduleLoadex(path: String, configs: MODULELOADEXConfigs..., args: String...) async throws -> RESP3Token {
+        let response = try await send(moduleLoadexCommand(path: path, configs: configs, args: args))
+        return response
+    }
+
+    @inlinable
+    public func moduleLoadexCommand(path: String, configs: [MODULELOADEXConfigs], args: [String]) -> RESPCommand {
+        RESPCommand("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
     }
 
     /// Unloads a module.
@@ -3364,7 +4444,7 @@ extension RedisConnection {
 
     @inlinable
     public func moduleUnloadCommand(name: String) -> RESPCommand {
-        return RESPCommand("MODULE", "UNLOAD", name)
+        RESPCommand("MODULE", "UNLOAD", name)
     }
 
     /// Listens for all requests received by the server in real-time.
@@ -3379,7 +4459,7 @@ extension RedisConnection {
 
     @inlinable
     public func monitorCommand() -> RESPCommand {
-        return RESPCommand("MONITOR")
+        RESPCommand("MONITOR")
     }
 
     /// Moves a key to another database.
@@ -3395,7 +4475,59 @@ extension RedisConnection {
 
     @inlinable
     public func moveCommand(key: RedisKey, db: Int) -> RESPCommand {
-        return RESPCommand("MOVE", key, db)
+        RESPCommand("MOVE", key, db)
+    }
+
+    public struct MSETData: RESPRepresentable {
+        @usableFromInline let key: RedisKey
+        @usableFromInline let value: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.key.writeToRESPBuffer(&buffer)
+            self.value.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Atomically creates or modifies the string values of one or more keys.
+    ///
+    /// Version: 1.0.1
+    /// Complexity: O(N) where N is the number of keys to set.
+    /// Categories: @write, @string, @slow
+    @inlinable
+    public func mset(data: MSETData...) async throws -> RESP3Token {
+        let response = try await send(msetCommand(data: data))
+        return response
+    }
+
+    @inlinable
+    public func msetCommand(data: [MSETData]) -> RESPCommand {
+        RESPCommand("MSET", data)
+    }
+
+    public struct MSETNXData: RESPRepresentable {
+        @usableFromInline let key: RedisKey
+        @usableFromInline let value: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.key.writeToRESPBuffer(&buffer)
+            self.value.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Atomically modifies the string values of one or more keys only when all keys don't exist.
+    ///
+    /// Version: 1.0.1
+    /// Complexity: O(N) where N is the number of keys to set.
+    /// Categories: @write, @string, @slow
+    @inlinable
+    public func msetnx(data: MSETNXData...) async throws -> RESP3Token {
+        let response = try await send(msetnxCommand(data: data))
+        return response
+    }
+
+    @inlinable
+    public func msetnxCommand(data: [MSETNXData]) -> RESPCommand {
+        RESPCommand("MSETNX", data)
     }
 
     /// Starts a transaction.
@@ -3411,7 +4543,7 @@ extension RedisConnection {
 
     @inlinable
     public func multiCommand() -> RESPCommand {
-        return RESPCommand("MULTI")
+        RESPCommand("MULTI")
     }
 
     /// A container for object introspection commands.
@@ -3427,7 +4559,7 @@ extension RedisConnection {
 
     @inlinable
     public func objectCommand() -> RESPCommand {
-        return RESPCommand("OBJECT")
+        RESPCommand("OBJECT")
     }
 
     /// Returns the internal encoding of a Redis object.
@@ -3443,7 +4575,7 @@ extension RedisConnection {
 
     @inlinable
     public func objectEncodingCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("OBJECT", "ENCODING", key)
+        RESPCommand("OBJECT", "ENCODING", key)
     }
 
     /// Returns the logarithmic access frequency counter of a Redis object.
@@ -3459,7 +4591,7 @@ extension RedisConnection {
 
     @inlinable
     public func objectFreqCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("OBJECT", "FREQ", key)
+        RESPCommand("OBJECT", "FREQ", key)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -3475,7 +4607,7 @@ extension RedisConnection {
 
     @inlinable
     public func objectHelpCommand() -> RESPCommand {
-        return RESPCommand("OBJECT", "HELP")
+        RESPCommand("OBJECT", "HELP")
     }
 
     /// Returns the time since the last access to a Redis object.
@@ -3491,7 +4623,7 @@ extension RedisConnection {
 
     @inlinable
     public func objectIdletimeCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("OBJECT", "IDLETIME", key)
+        RESPCommand("OBJECT", "IDLETIME", key)
     }
 
     /// Returns the reference count of a value of a key.
@@ -3507,7 +4639,7 @@ extension RedisConnection {
 
     @inlinable
     public func objectRefcountCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("OBJECT", "REFCOUNT", key)
+        RESPCommand("OBJECT", "REFCOUNT", key)
     }
 
     /// Removes the expiration time of a key.
@@ -3523,7 +4655,7 @@ extension RedisConnection {
 
     @inlinable
     public func persistCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("PERSIST", key)
+        RESPCommand("PERSIST", key)
     }
 
     public enum PEXPIRECondition: RESPRepresentable {
@@ -3555,7 +4687,7 @@ extension RedisConnection {
 
     @inlinable
     public func pexpireCommand(key: RedisKey, milliseconds: Int, condition: PEXPIRECondition?) -> RESPCommand {
-        return RESPCommand("PEXPIRE", key, milliseconds, condition)
+        RESPCommand("PEXPIRE", key, milliseconds, condition)
     }
 
     public enum PEXPIREATCondition: RESPRepresentable {
@@ -3587,7 +4719,7 @@ extension RedisConnection {
 
     @inlinable
     public func pexpireatCommand(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition?) -> RESPCommand {
-        return RESPCommand("PEXPIREAT", key, unixTimeMilliseconds, condition)
+        RESPCommand("PEXPIREAT", key, unixTimeMilliseconds, condition)
     }
 
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
@@ -3603,7 +4735,7 @@ extension RedisConnection {
 
     @inlinable
     public func pexpiretimeCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("PEXPIRETIME", key)
+        RESPCommand("PEXPIRETIME", key)
     }
 
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
@@ -3619,7 +4751,7 @@ extension RedisConnection {
 
     @inlinable
     public func pfaddCommand(key: RedisKey, element: [String]) -> RESPCommand {
-        return RESPCommand("PFADD", key, element)
+        RESPCommand("PFADD", key, element)
     }
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
@@ -3635,7 +4767,7 @@ extension RedisConnection {
 
     @inlinable
     public func pfcountCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("PFCOUNT", key)
+        RESPCommand("PFCOUNT", key)
     }
 
     /// Internal commands for debugging HyperLogLog values.
@@ -3651,7 +4783,7 @@ extension RedisConnection {
 
     @inlinable
     public func pfdebugCommand(subcommand: String, key: RedisKey) -> RESPCommand {
-        return RESPCommand("PFDEBUG", subcommand, key)
+        RESPCommand("PFDEBUG", subcommand, key)
     }
 
     /// Merges one or more HyperLogLog values into a single key.
@@ -3667,7 +4799,7 @@ extension RedisConnection {
 
     @inlinable
     public func pfmergeCommand(destkey: RedisKey, sourcekey: [RedisKey]) -> RESPCommand {
-        return RESPCommand("PFMERGE", destkey, sourcekey)
+        RESPCommand("PFMERGE", destkey, sourcekey)
     }
 
     /// An internal command for testing HyperLogLog values.
@@ -3683,7 +4815,7 @@ extension RedisConnection {
 
     @inlinable
     public func pfselftestCommand() -> RESPCommand {
-        return RESPCommand("PFSELFTEST")
+        RESPCommand("PFSELFTEST")
     }
 
     /// Returns the server's liveliness response.
@@ -3699,7 +4831,7 @@ extension RedisConnection {
 
     @inlinable
     public func pingCommand(message: String?) -> RESPCommand {
-        return RESPCommand("PING", message)
+        RESPCommand("PING", message)
     }
 
     /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
@@ -3715,7 +4847,7 @@ extension RedisConnection {
 
     @inlinable
     public func psetexCommand(key: RedisKey, milliseconds: Int, value: String) -> RESPCommand {
-        return RESPCommand("PSETEX", key, milliseconds, value)
+        RESPCommand("PSETEX", key, milliseconds, value)
     }
 
     /// Listens for messages published to channels that match one or more patterns.
@@ -3731,7 +4863,7 @@ extension RedisConnection {
 
     @inlinable
     public func psubscribeCommand(pattern: [String]) -> RESPCommand {
-        return RESPCommand("PSUBSCRIBE", pattern)
+        RESPCommand("PSUBSCRIBE", pattern)
     }
 
     /// An internal command used in replication.
@@ -3746,7 +4878,7 @@ extension RedisConnection {
 
     @inlinable
     public func psyncCommand(replicationid: String, offset: Int) -> RESPCommand {
-        return RESPCommand("PSYNC", replicationid, offset)
+        RESPCommand("PSYNC", replicationid, offset)
     }
 
     /// Returns the expiration time in milliseconds of a key.
@@ -3762,7 +4894,7 @@ extension RedisConnection {
 
     @inlinable
     public func pttlCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("PTTL", key)
+        RESPCommand("PTTL", key)
     }
 
     /// Posts a message to a channel.
@@ -3778,7 +4910,7 @@ extension RedisConnection {
 
     @inlinable
     public func publishCommand(channel: String, message: String) -> RESPCommand {
-        return RESPCommand("PUBLISH", channel, message)
+        RESPCommand("PUBLISH", channel, message)
     }
 
     /// A container for Pub/Sub commands.
@@ -3794,7 +4926,7 @@ extension RedisConnection {
 
     @inlinable
     public func pubsubCommand() -> RESPCommand {
-        return RESPCommand("PUBSUB")
+        RESPCommand("PUBSUB")
     }
 
     /// Returns the active channels.
@@ -3810,7 +4942,7 @@ extension RedisConnection {
 
     @inlinable
     public func pubsubChannelsCommand(pattern: String?) -> RESPCommand {
-        return RESPCommand("PUBSUB", "CHANNELS", pattern)
+        RESPCommand("PUBSUB", "CHANNELS", pattern)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -3826,7 +4958,7 @@ extension RedisConnection {
 
     @inlinable
     public func pubsubHelpCommand() -> RESPCommand {
-        return RESPCommand("PUBSUB", "HELP")
+        RESPCommand("PUBSUB", "HELP")
     }
 
     /// Returns a count of unique pattern subscriptions.
@@ -3842,7 +4974,7 @@ extension RedisConnection {
 
     @inlinable
     public func pubsubNumpatCommand() -> RESPCommand {
-        return RESPCommand("PUBSUB", "NUMPAT")
+        RESPCommand("PUBSUB", "NUMPAT")
     }
 
     /// Returns a count of subscribers to channels.
@@ -3858,7 +4990,7 @@ extension RedisConnection {
 
     @inlinable
     public func pubsubNumsubCommand(channel: [String]) -> RESPCommand {
-        return RESPCommand("PUBSUB", "NUMSUB", channel)
+        RESPCommand("PUBSUB", "NUMSUB", channel)
     }
 
     /// Returns the active shard channels.
@@ -3874,7 +5006,7 @@ extension RedisConnection {
 
     @inlinable
     public func pubsubShardchannelsCommand(pattern: String?) -> RESPCommand {
-        return RESPCommand("PUBSUB", "SHARDCHANNELS", pattern)
+        RESPCommand("PUBSUB", "SHARDCHANNELS", pattern)
     }
 
     /// Returns the count of subscribers of shard channels.
@@ -3890,7 +5022,7 @@ extension RedisConnection {
 
     @inlinable
     public func pubsubShardnumsubCommand(shardchannel: [String]) -> RESPCommand {
-        return RESPCommand("PUBSUB", "SHARDNUMSUB", shardchannel)
+        RESPCommand("PUBSUB", "SHARDNUMSUB", shardchannel)
     }
 
     /// Stops listening to messages published to channels that match one or more patterns.
@@ -3906,7 +5038,7 @@ extension RedisConnection {
 
     @inlinable
     public func punsubscribeCommand(pattern: [String]) -> RESPCommand {
-        return RESPCommand("PUNSUBSCRIBE", pattern)
+        RESPCommand("PUNSUBSCRIBE", pattern)
     }
 
     /// Closes the connection.
@@ -3922,7 +5054,7 @@ extension RedisConnection {
 
     @inlinable
     public func quitCommand() -> RESPCommand {
-        return RESPCommand("QUIT")
+        RESPCommand("QUIT")
     }
 
     /// Returns a random key name from the database.
@@ -3938,7 +5070,7 @@ extension RedisConnection {
 
     @inlinable
     public func randomkeyCommand() -> RESPCommand {
-        return RESPCommand("RANDOMKEY")
+        RESPCommand("RANDOMKEY")
     }
 
     /// Enables read-only queries for a connection to a Redis Cluster replica node.
@@ -3954,7 +5086,7 @@ extension RedisConnection {
 
     @inlinable
     public func readonlyCommand() -> RESPCommand {
-        return RESPCommand("READONLY")
+        RESPCommand("READONLY")
     }
 
     /// Enables read-write queries for a connection to a Reids Cluster replica node.
@@ -3970,7 +5102,7 @@ extension RedisConnection {
 
     @inlinable
     public func readwriteCommand() -> RESPCommand {
-        return RESPCommand("READWRITE")
+        RESPCommand("READWRITE")
     }
 
     /// Renames a key and overwrites the destination.
@@ -3986,7 +5118,7 @@ extension RedisConnection {
 
     @inlinable
     public func renameCommand(key: RedisKey, newkey: RedisKey) -> RESPCommand {
-        return RESPCommand("RENAME", key, newkey)
+        RESPCommand("RENAME", key, newkey)
     }
 
     /// Renames a key only when the target key name doesn't exist.
@@ -4002,7 +5134,7 @@ extension RedisConnection {
 
     @inlinable
     public func renamenxCommand(key: RedisKey, newkey: RedisKey) -> RESPCommand {
-        return RESPCommand("RENAMENX", key, newkey)
+        RESPCommand("RENAMENX", key, newkey)
     }
 
     /// An internal command for configuring the replication stream.
@@ -4018,7 +5150,55 @@ extension RedisConnection {
 
     @inlinable
     public func replconfCommand() -> RESPCommand {
-        return RESPCommand("REPLCONF")
+        RESPCommand("REPLCONF")
+    }
+
+    public struct REPLICAOFARGSHostPort: RESPRepresentable {
+        @usableFromInline let host: String
+        @usableFromInline let port: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.host.writeToRESPBuffer(&buffer)
+            self.port.writeToRESPBuffer(&buffer)
+        }
+    }
+    public struct REPLICAOFARGSNoOne: RESPRepresentable {
+        @usableFromInline let no: Bool
+        @usableFromInline let one: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            if self.no { "NO".writeToRESPBuffer(&buffer) }
+            if self.one { "ONE".writeToRESPBuffer(&buffer) }
+        }
+    }
+    public enum REPLICAOFArgs: RESPRepresentable {
+        case hostPort(REPLICAOFARGSHostPort)
+        case noOne(REPLICAOFARGSNoOne)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .hostPort(let hostPort): hostPort.writeToRESPBuffer(&buffer)
+            case .noOne(let noOne): noOne.writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Configures a server as replica of another, or promotes it to a master.
+    ///
+    /// Version: 5.0.0
+    /// Complexity: O(1)
+    /// Categories: @admin, @slow, @dangerous
+    @inlinable
+    public func replicaof(args: REPLICAOFArgs) async throws -> RESP3Token {
+        let response = try await send(replicaofCommand(args: args))
+        return response
+    }
+
+    @inlinable
+    public func replicaofCommand(args: REPLICAOFArgs) -> RESPCommand {
+        RESPCommand("REPLICAOF", args)
     }
 
     /// Resets the connection.
@@ -4034,7 +5214,7 @@ extension RedisConnection {
 
     @inlinable
     public func resetCommand() -> RESPCommand {
-        return RESPCommand("RESET")
+        RESPCommand("RESET")
     }
 
     /// Creates a key from the serialized representation of a value.
@@ -4050,7 +5230,7 @@ extension RedisConnection {
 
     @inlinable
     public func restoreCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) -> RESPCommand {
-        return RESPCommand("RESTORE", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+        RESPCommand("RESTORE", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 
     /// An internal command for migrating keys in a cluster.
@@ -4066,7 +5246,7 @@ extension RedisConnection {
 
     @inlinable
     public func restoreAskingCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) -> RESPCommand {
-        return RESPCommand("RESTORE-ASKING", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+        RESPCommand("RESTORE-ASKING", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 
     /// Returns the replication role.
@@ -4082,7 +5262,7 @@ extension RedisConnection {
 
     @inlinable
     public func roleCommand() -> RESPCommand {
-        return RESPCommand("ROLE")
+        RESPCommand("ROLE")
     }
 
     /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
@@ -4098,7 +5278,7 @@ extension RedisConnection {
 
     @inlinable
     public func rpopCommand(key: RedisKey, count: Int?) -> RESPCommand {
-        return RESPCommand("RPOP", key, count)
+        RESPCommand("RPOP", key, count)
     }
 
     /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
@@ -4114,7 +5294,7 @@ extension RedisConnection {
 
     @inlinable
     public func rpoplpushCommand(source: RedisKey, destination: RedisKey) -> RESPCommand {
-        return RESPCommand("RPOPLPUSH", source, destination)
+        RESPCommand("RPOPLPUSH", source, destination)
     }
 
     /// Appends one or more elements to a list. Creates the key if it doesn't exist.
@@ -4130,7 +5310,7 @@ extension RedisConnection {
 
     @inlinable
     public func rpushCommand(key: RedisKey, element: [String]) -> RESPCommand {
-        return RESPCommand("RPUSH", key, element)
+        RESPCommand("RPUSH", key, element)
     }
 
     /// Appends an element to a list only when the list exists.
@@ -4146,7 +5326,7 @@ extension RedisConnection {
 
     @inlinable
     public func rpushxCommand(key: RedisKey, element: [String]) -> RESPCommand {
-        return RESPCommand("RPUSHX", key, element)
+        RESPCommand("RPUSHX", key, element)
     }
 
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
@@ -4162,7 +5342,7 @@ extension RedisConnection {
 
     @inlinable
     public func saddCommand(key: RedisKey, member: [String]) -> RESPCommand {
-        return RESPCommand("SADD", key, member)
+        RESPCommand("SADD", key, member)
     }
 
     /// Synchronously saves the database(s) to disk.
@@ -4178,7 +5358,7 @@ extension RedisConnection {
 
     @inlinable
     public func saveCommand() -> RESPCommand {
-        return RESPCommand("SAVE")
+        RESPCommand("SAVE")
     }
 
     /// Iterates over the key names in the database.
@@ -4194,7 +5374,7 @@ extension RedisConnection {
 
     @inlinable
     public func scanCommand(cursor: Int, pattern: String?, count: Int?, type: String?) -> RESPCommand {
-        return RESPCommand("SCAN", cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPWithToken("TYPE", type))
+        RESPCommand("SCAN", cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPWithToken("TYPE", type))
     }
 
     /// Returns the number of members in a set.
@@ -4210,7 +5390,7 @@ extension RedisConnection {
 
     @inlinable
     public func scardCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("SCARD", key)
+        RESPCommand("SCARD", key)
     }
 
     /// A container for Lua scripts management commands.
@@ -4226,7 +5406,7 @@ extension RedisConnection {
 
     @inlinable
     public func scriptCommand() -> RESPCommand {
-        return RESPCommand("SCRIPT")
+        RESPCommand("SCRIPT")
     }
 
     public enum SCRIPTDEBUGMode: RESPRepresentable {
@@ -4256,7 +5436,7 @@ extension RedisConnection {
 
     @inlinable
     public func scriptDebugCommand(mode: SCRIPTDEBUGMode) -> RESPCommand {
-        return RESPCommand("SCRIPT", "DEBUG", mode)
+        RESPCommand("SCRIPT", "DEBUG", mode)
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
@@ -4272,7 +5452,7 @@ extension RedisConnection {
 
     @inlinable
     public func scriptExistsCommand(sha1: [String]) -> RESPCommand {
-        return RESPCommand("SCRIPT", "EXISTS", sha1)
+        RESPCommand("SCRIPT", "EXISTS", sha1)
     }
 
     public enum SCRIPTFLUSHFlushType: RESPRepresentable {
@@ -4300,7 +5480,7 @@ extension RedisConnection {
 
     @inlinable
     public func scriptFlushCommand(flushType: SCRIPTFLUSHFlushType?) -> RESPCommand {
-        return RESPCommand("SCRIPT", "FLUSH", flushType)
+        RESPCommand("SCRIPT", "FLUSH", flushType)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -4316,7 +5496,7 @@ extension RedisConnection {
 
     @inlinable
     public func scriptHelpCommand() -> RESPCommand {
-        return RESPCommand("SCRIPT", "HELP")
+        RESPCommand("SCRIPT", "HELP")
     }
 
     /// Terminates a server-side Lua script during execution.
@@ -4332,7 +5512,7 @@ extension RedisConnection {
 
     @inlinable
     public func scriptKillCommand() -> RESPCommand {
-        return RESPCommand("SCRIPT", "KILL")
+        RESPCommand("SCRIPT", "KILL")
     }
 
     /// Loads a server-side Lua script to the script cache.
@@ -4348,7 +5528,7 @@ extension RedisConnection {
 
     @inlinable
     public func scriptLoadCommand(script: String) -> RESPCommand {
-        return RESPCommand("SCRIPT", "LOAD", script)
+        RESPCommand("SCRIPT", "LOAD", script)
     }
 
     /// Returns the difference of multiple sets.
@@ -4364,7 +5544,7 @@ extension RedisConnection {
 
     @inlinable
     public func sdiffCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("SDIFF", key)
+        RESPCommand("SDIFF", key)
     }
 
     /// Stores the difference of multiple sets in a key.
@@ -4380,7 +5560,7 @@ extension RedisConnection {
 
     @inlinable
     public func sdiffstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("SDIFFSTORE", destination, key)
+        RESPCommand("SDIFFSTORE", destination, key)
     }
 
     /// Changes the selected database.
@@ -4396,7 +5576,7 @@ extension RedisConnection {
 
     @inlinable
     public func selectCommand(index: Int) -> RESPCommand {
-        return RESPCommand("SELECT", index)
+        RESPCommand("SELECT", index)
     }
 
     public enum SETCondition: RESPRepresentable {
@@ -4442,7 +5622,7 @@ extension RedisConnection {
 
     @inlinable
     public func setCommand(key: RedisKey, value: String, condition: SETCondition?, get: Bool, expiration: SETExpiration?) -> RESPCommand {
-        return RESPCommand("SET", key, value, condition, RedisPureToken("GET", get), expiration)
+        RESPCommand("SET", key, value, condition, RedisPureToken("GET", get), expiration)
     }
 
     /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
@@ -4458,7 +5638,7 @@ extension RedisConnection {
 
     @inlinable
     public func setbitCommand(key: RedisKey, offset: Int, value: Int) -> RESPCommand {
-        return RESPCommand("SETBIT", key, offset, value)
+        RESPCommand("SETBIT", key, offset, value)
     }
 
     /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
@@ -4474,7 +5654,7 @@ extension RedisConnection {
 
     @inlinable
     public func setexCommand(key: RedisKey, seconds: Int, value: String) -> RESPCommand {
-        return RESPCommand("SETEX", key, seconds, value)
+        RESPCommand("SETEX", key, seconds, value)
     }
 
     /// Set the string value of a key only when the key doesn't exist.
@@ -4490,7 +5670,7 @@ extension RedisConnection {
 
     @inlinable
     public func setnxCommand(key: RedisKey, value: String) -> RESPCommand {
-        return RESPCommand("SETNX", key, value)
+        RESPCommand("SETNX", key, value)
     }
 
     /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
@@ -4506,7 +5686,7 @@ extension RedisConnection {
 
     @inlinable
     public func setrangeCommand(key: RedisKey, offset: Int, value: String) -> RESPCommand {
-        return RESPCommand("SETRANGE", key, offset, value)
+        RESPCommand("SETRANGE", key, offset, value)
     }
 
     public enum SHUTDOWNSaveSelector: RESPRepresentable {
@@ -4534,7 +5714,7 @@ extension RedisConnection {
 
     @inlinable
     public func shutdownCommand(saveSelector: SHUTDOWNSaveSelector?, now: Bool, force: Bool, abort: Bool) -> RESPCommand {
-        return RESPCommand("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
+        RESPCommand("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
     }
 
     /// Returns the intersect of multiple sets.
@@ -4550,7 +5730,7 @@ extension RedisConnection {
 
     @inlinable
     public func sinterCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("SINTER", key)
+        RESPCommand("SINTER", key)
     }
 
     /// Returns the number of members of the intersect of multiple sets.
@@ -4566,7 +5746,7 @@ extension RedisConnection {
 
     @inlinable
     public func sintercardCommand(numkeys: Int, key: [RedisKey], limit: Int?) -> RESPCommand {
-        return RESPCommand("SINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
+        RESPCommand("SINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
     }
 
     /// Stores the intersect of multiple sets in a key.
@@ -4582,7 +5762,7 @@ extension RedisConnection {
 
     @inlinable
     public func sinterstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("SINTERSTORE", destination, key)
+        RESPCommand("SINTERSTORE", destination, key)
     }
 
     /// Determines whether a member belongs to a set.
@@ -4598,7 +5778,55 @@ extension RedisConnection {
 
     @inlinable
     public func sismemberCommand(key: RedisKey, member: String) -> RESPCommand {
-        return RESPCommand("SISMEMBER", key, member)
+        RESPCommand("SISMEMBER", key, member)
+    }
+
+    public struct SLAVEOFARGSHostPort: RESPRepresentable {
+        @usableFromInline let host: String
+        @usableFromInline let port: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.host.writeToRESPBuffer(&buffer)
+            self.port.writeToRESPBuffer(&buffer)
+        }
+    }
+    public struct SLAVEOFARGSNoOne: RESPRepresentable {
+        @usableFromInline let no: Bool
+        @usableFromInline let one: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            if self.no { "NO".writeToRESPBuffer(&buffer) }
+            if self.one { "ONE".writeToRESPBuffer(&buffer) }
+        }
+    }
+    public enum SLAVEOFArgs: RESPRepresentable {
+        case hostPort(SLAVEOFARGSHostPort)
+        case noOne(SLAVEOFARGSNoOne)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .hostPort(let hostPort): hostPort.writeToRESPBuffer(&buffer)
+            case .noOne(let noOne): noOne.writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Sets a Redis server as a replica of another, or promotes it to being a master.
+    ///
+    /// Version: 1.0.0
+    /// Complexity: O(1)
+    /// Categories: @admin, @slow, @dangerous
+    @inlinable
+    public func slaveof(args: SLAVEOFArgs) async throws -> RESP3Token {
+        let response = try await send(slaveofCommand(args: args))
+        return response
+    }
+
+    @inlinable
+    public func slaveofCommand(args: SLAVEOFArgs) -> RESPCommand {
+        RESPCommand("SLAVEOF", args)
     }
 
     /// A container for slow log commands.
@@ -4614,7 +5842,7 @@ extension RedisConnection {
 
     @inlinable
     public func slowlogCommand() -> RESPCommand {
-        return RESPCommand("SLOWLOG")
+        RESPCommand("SLOWLOG")
     }
 
     /// Returns the slow log's entries.
@@ -4630,7 +5858,7 @@ extension RedisConnection {
 
     @inlinable
     public func slowlogGetCommand(count: Int?) -> RESPCommand {
-        return RESPCommand("SLOWLOG", "GET", count)
+        RESPCommand("SLOWLOG", "GET", count)
     }
 
     /// Show helpful text about the different subcommands
@@ -4646,7 +5874,7 @@ extension RedisConnection {
 
     @inlinable
     public func slowlogHelpCommand() -> RESPCommand {
-        return RESPCommand("SLOWLOG", "HELP")
+        RESPCommand("SLOWLOG", "HELP")
     }
 
     /// Returns the number of entries in the slow log.
@@ -4662,7 +5890,7 @@ extension RedisConnection {
 
     @inlinable
     public func slowlogLenCommand() -> RESPCommand {
-        return RESPCommand("SLOWLOG", "LEN")
+        RESPCommand("SLOWLOG", "LEN")
     }
 
     /// Clears all entries from the slow log.
@@ -4678,7 +5906,7 @@ extension RedisConnection {
 
     @inlinable
     public func slowlogResetCommand() -> RESPCommand {
-        return RESPCommand("SLOWLOG", "RESET")
+        RESPCommand("SLOWLOG", "RESET")
     }
 
     /// Returns all members of a set.
@@ -4694,7 +5922,7 @@ extension RedisConnection {
 
     @inlinable
     public func smembersCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("SMEMBERS", key)
+        RESPCommand("SMEMBERS", key)
     }
 
     /// Determines whether multiple members belong to a set.
@@ -4710,7 +5938,7 @@ extension RedisConnection {
 
     @inlinable
     public func smismemberCommand(key: RedisKey, member: [String]) -> RESPCommand {
-        return RESPCommand("SMISMEMBER", key, member)
+        RESPCommand("SMISMEMBER", key, member)
     }
 
     /// Moves a member from one set to another.
@@ -4726,7 +5954,83 @@ extension RedisConnection {
 
     @inlinable
     public func smoveCommand(source: RedisKey, destination: RedisKey, member: String) -> RESPCommand {
-        return RESPCommand("SMOVE", source, destination, member)
+        RESPCommand("SMOVE", source, destination, member)
+    }
+
+    public struct SORTLimit: RESPRepresentable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.offset.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum SORTOrder: RESPRepresentable {
+        case asc
+        case desc
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .asc: "ASC".writeToRESPBuffer(&buffer)
+            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
+    ///
+    /// Version: 1.0.0
+    /// Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
+    /// Categories: @write, @set, @sortedset, @list, @slow, @dangerous
+    @inlinable
+    public func sort(key: RedisKey, byPattern: String?, limit: SORTLimit?, getPattern: String..., order: SORTOrder?, sorting: Bool, destination: RedisKey?) async throws -> RESP3Token {
+        let response = try await send(sortCommand(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting, destination: destination))
+        return response
+    }
+
+    @inlinable
+    public func sortCommand(key: RedisKey, byPattern: String?, limit: SORTLimit?, getPattern: [String], order: SORTOrder?, sorting: Bool, destination: RedisKey?) -> RESPCommand {
+        RESPCommand("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+    }
+
+    public struct SORTROLimit: RESPRepresentable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.offset.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum SORTROOrder: RESPRepresentable {
+        case asc
+        case desc
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .asc: "ASC".writeToRESPBuffer(&buffer)
+            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    /// Returns the sorted elements of a list, a set, or a sorted set.
+    ///
+    /// Version: 7.0.0
+    /// Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
+    /// Categories: @read, @set, @sortedset, @list, @slow, @dangerous
+    @inlinable
+    public func sortRo(key: RedisKey, byPattern: String?, limit: SORTROLimit?, getPattern: String..., order: SORTROOrder?, sorting: Bool) async throws -> RESP3Token {
+        let response = try await send(sortRoCommand(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
+        return response
+    }
+
+    @inlinable
+    public func sortRoCommand(key: RedisKey, byPattern: String?, limit: SORTROLimit?, getPattern: [String], order: SORTROOrder?, sorting: Bool) -> RESPCommand {
+        RESPCommand("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting))
     }
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
@@ -4742,7 +6046,7 @@ extension RedisConnection {
 
     @inlinable
     public func spopCommand(key: RedisKey, count: Int?) -> RESPCommand {
-        return RESPCommand("SPOP", key, count)
+        RESPCommand("SPOP", key, count)
     }
 
     /// Post a message to a shard channel
@@ -4758,7 +6062,7 @@ extension RedisConnection {
 
     @inlinable
     public func spublishCommand(shardchannel: String, message: String) -> RESPCommand {
-        return RESPCommand("SPUBLISH", shardchannel, message)
+        RESPCommand("SPUBLISH", shardchannel, message)
     }
 
     /// Get one or multiple random members from a set
@@ -4774,7 +6078,7 @@ extension RedisConnection {
 
     @inlinable
     public func srandmemberCommand(key: RedisKey, count: Int?) -> RESPCommand {
-        return RESPCommand("SRANDMEMBER", key, count)
+        RESPCommand("SRANDMEMBER", key, count)
     }
 
     /// Removes one or more members from a set. Deletes the set if the last member was removed.
@@ -4790,7 +6094,7 @@ extension RedisConnection {
 
     @inlinable
     public func sremCommand(key: RedisKey, member: [String]) -> RESPCommand {
-        return RESPCommand("SREM", key, member)
+        RESPCommand("SREM", key, member)
     }
 
     /// Iterates over members of a set.
@@ -4806,7 +6110,7 @@ extension RedisConnection {
 
     @inlinable
     public func sscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
-        return RESPCommand("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+        RESPCommand("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 
     /// Listens for messages published to shard channels.
@@ -4822,7 +6126,7 @@ extension RedisConnection {
 
     @inlinable
     public func ssubscribeCommand(shardchannel: [String]) -> RESPCommand {
-        return RESPCommand("SSUBSCRIBE", shardchannel)
+        RESPCommand("SSUBSCRIBE", shardchannel)
     }
 
     /// Returns the length of a string value.
@@ -4838,7 +6142,7 @@ extension RedisConnection {
 
     @inlinable
     public func strlenCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("STRLEN", key)
+        RESPCommand("STRLEN", key)
     }
 
     /// Listens for messages published to channels.
@@ -4854,7 +6158,7 @@ extension RedisConnection {
 
     @inlinable
     public func subscribeCommand(channel: [String]) -> RESPCommand {
-        return RESPCommand("SUBSCRIBE", channel)
+        RESPCommand("SUBSCRIBE", channel)
     }
 
     /// Returns a substring from a string value.
@@ -4870,7 +6174,7 @@ extension RedisConnection {
 
     @inlinable
     public func substrCommand(key: RedisKey, start: Int, end: Int) -> RESPCommand {
-        return RESPCommand("SUBSTR", key, start, end)
+        RESPCommand("SUBSTR", key, start, end)
     }
 
     /// Returns the union of multiple sets.
@@ -4886,7 +6190,7 @@ extension RedisConnection {
 
     @inlinable
     public func sunionCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("SUNION", key)
+        RESPCommand("SUNION", key)
     }
 
     /// Stores the union of multiple sets in a key.
@@ -4902,7 +6206,7 @@ extension RedisConnection {
 
     @inlinable
     public func sunionstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("SUNIONSTORE", destination, key)
+        RESPCommand("SUNIONSTORE", destination, key)
     }
 
     /// Stops listening to messages posted to shard channels.
@@ -4918,7 +6222,7 @@ extension RedisConnection {
 
     @inlinable
     public func sunsubscribeCommand(shardchannel: [String]) -> RESPCommand {
-        return RESPCommand("SUNSUBSCRIBE", shardchannel)
+        RESPCommand("SUNSUBSCRIBE", shardchannel)
     }
 
     /// Swaps two Redis databases.
@@ -4934,7 +6238,7 @@ extension RedisConnection {
 
     @inlinable
     public func swapdbCommand(index1: Int, index2: Int) -> RESPCommand {
-        return RESPCommand("SWAPDB", index1, index2)
+        RESPCommand("SWAPDB", index1, index2)
     }
 
     /// An internal command used in replication.
@@ -4949,7 +6253,7 @@ extension RedisConnection {
 
     @inlinable
     public func syncCommand() -> RESPCommand {
-        return RESPCommand("SYNC")
+        RESPCommand("SYNC")
     }
 
     /// Returns the server time.
@@ -4965,7 +6269,7 @@ extension RedisConnection {
 
     @inlinable
     public func timeCommand() -> RESPCommand {
-        return RESPCommand("TIME")
+        RESPCommand("TIME")
     }
 
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
@@ -4981,7 +6285,7 @@ extension RedisConnection {
 
     @inlinable
     public func touchCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("TOUCH", key)
+        RESPCommand("TOUCH", key)
     }
 
     /// Returns the expiration time in seconds of a key.
@@ -4997,7 +6301,7 @@ extension RedisConnection {
 
     @inlinable
     public func ttlCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("TTL", key)
+        RESPCommand("TTL", key)
     }
 
     /// Determines the type of value stored at a key.
@@ -5013,7 +6317,7 @@ extension RedisConnection {
 
     @inlinable
     public func typeCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("TYPE", key)
+        RESPCommand("TYPE", key)
     }
 
     /// Asynchronously deletes one or more keys.
@@ -5029,7 +6333,7 @@ extension RedisConnection {
 
     @inlinable
     public func unlinkCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("UNLINK", key)
+        RESPCommand("UNLINK", key)
     }
 
     /// Stops listening to messages posted to channels.
@@ -5045,7 +6349,7 @@ extension RedisConnection {
 
     @inlinable
     public func unsubscribeCommand(channel: [String]) -> RESPCommand {
-        return RESPCommand("UNSUBSCRIBE", channel)
+        RESPCommand("UNSUBSCRIBE", channel)
     }
 
     /// Forgets about watched keys of a transaction.
@@ -5061,7 +6365,7 @@ extension RedisConnection {
 
     @inlinable
     public func unwatchCommand() -> RESPCommand {
-        return RESPCommand("UNWATCH")
+        RESPCommand("UNWATCH")
     }
 
     /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
@@ -5077,7 +6381,7 @@ extension RedisConnection {
 
     @inlinable
     public func waitCommand(numreplicas: Int, timeout: Int) -> RESPCommand {
-        return RESPCommand("WAIT", numreplicas, timeout)
+        RESPCommand("WAIT", numreplicas, timeout)
     }
 
     /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
@@ -5093,7 +6397,7 @@ extension RedisConnection {
 
     @inlinable
     public func waitaofCommand(numlocal: Int, numreplicas: Int, timeout: Int) -> RESPCommand {
-        return RESPCommand("WAITAOF", numlocal, numreplicas, timeout)
+        RESPCommand("WAITAOF", numlocal, numreplicas, timeout)
     }
 
     /// Monitors changes to keys to determine the execution of a transaction.
@@ -5109,7 +6413,7 @@ extension RedisConnection {
 
     @inlinable
     public func watchCommand(key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("WATCH", key)
+        RESPCommand("WATCH", key)
     }
 
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
@@ -5125,7 +6429,83 @@ extension RedisConnection {
 
     @inlinable
     public func xackCommand(key: RedisKey, group: String, id: [String]) -> RESPCommand {
-        return RESPCommand("XACK", key, group, id)
+        RESPCommand("XACK", key, group, id)
+    }
+
+    public enum XADDTRIMStrategy: RESPRepresentable {
+        case maxlen
+        case minid
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .maxlen: "MAXLEN".writeToRESPBuffer(&buffer)
+            case .minid: "MINID".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum XADDTRIMOperator: RESPRepresentable {
+        case equal
+        case approximately
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .equal: "=".writeToRESPBuffer(&buffer)
+            case .approximately: "~".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct XADDTrim: RESPRepresentable {
+        @usableFromInline let strategy: XADDTRIMStrategy
+        @usableFromInline let `operator`: XADDTRIMOperator?
+        @usableFromInline let threshold: String
+        @usableFromInline let count: Int?
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.strategy.writeToRESPBuffer(&buffer)
+            self.operator.writeToRESPBuffer(&buffer)
+            self.threshold.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    public enum XADDIdSelector: RESPRepresentable {
+        case autoId
+        case id(String)
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .autoId: "*".writeToRESPBuffer(&buffer)
+            case .id(let id): id.writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct XADDData: RESPRepresentable {
+        @usableFromInline let field: String
+        @usableFromInline let value: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.field.writeToRESPBuffer(&buffer)
+            self.value.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Appends a new message to a stream. Creates the key if it doesn't exist.
+    ///
+    /// Version: 5.0.0
+    /// Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
+    /// Categories: @write, @stream, @fast
+    @inlinable
+    public func xadd(key: RedisKey, nomkstream: Bool, trim: XADDTrim?, idSelector: XADDIdSelector, data: XADDData...) async throws -> RESP3Token {
+        let response = try await send(xaddCommand(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
+        return response
+    }
+
+    @inlinable
+    public func xaddCommand(key: RedisKey, nomkstream: Bool, trim: XADDTrim?, idSelector: XADDIdSelector, data: [XADDData]) -> RESPCommand {
+        RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
@@ -5141,7 +6521,7 @@ extension RedisConnection {
 
     @inlinable
     public func xautoclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int?, justid: Bool) -> RESPCommand {
-        return RESPCommand("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
+        RESPCommand("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -5157,7 +6537,7 @@ extension RedisConnection {
 
     @inlinable
     public func xclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int?, unixTimeMilliseconds: Date?, count: Int?, force: Bool, justid: Bool, lastid: String?) -> RESPCommand {
-        return RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -5173,7 +6553,7 @@ extension RedisConnection {
 
     @inlinable
     public func xdelCommand(key: RedisKey, id: [String]) -> RESPCommand {
-        return RESPCommand("XDEL", key, id)
+        RESPCommand("XDEL", key, id)
     }
 
     /// A container for consumer groups commands.
@@ -5189,7 +6569,7 @@ extension RedisConnection {
 
     @inlinable
     public func xgroupCommand() -> RESPCommand {
-        return RESPCommand("XGROUP")
+        RESPCommand("XGROUP")
     }
 
     public enum XGROUPCREATEIdSelector: RESPRepresentable {
@@ -5217,7 +6597,7 @@ extension RedisConnection {
 
     @inlinable
     public func xgroupCreateCommand(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool, entriesRead: Int?) -> RESPCommand {
-        return RESPCommand("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+        RESPCommand("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
     }
 
     /// Creates a consumer in a consumer group.
@@ -5233,7 +6613,7 @@ extension RedisConnection {
 
     @inlinable
     public func xgroupCreateconsumerCommand(key: RedisKey, group: String, consumer: String) -> RESPCommand {
-        return RESPCommand("XGROUP", "CREATECONSUMER", key, group, consumer)
+        RESPCommand("XGROUP", "CREATECONSUMER", key, group, consumer)
     }
 
     /// Deletes a consumer from a consumer group.
@@ -5249,7 +6629,7 @@ extension RedisConnection {
 
     @inlinable
     public func xgroupDelconsumerCommand(key: RedisKey, group: String, consumer: String) -> RESPCommand {
-        return RESPCommand("XGROUP", "DELCONSUMER", key, group, consumer)
+        RESPCommand("XGROUP", "DELCONSUMER", key, group, consumer)
     }
 
     /// Destroys a consumer group.
@@ -5265,7 +6645,7 @@ extension RedisConnection {
 
     @inlinable
     public func xgroupDestroyCommand(key: RedisKey, group: String) -> RESPCommand {
-        return RESPCommand("XGROUP", "DESTROY", key, group)
+        RESPCommand("XGROUP", "DESTROY", key, group)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -5281,7 +6661,7 @@ extension RedisConnection {
 
     @inlinable
     public func xgroupHelpCommand() -> RESPCommand {
-        return RESPCommand("XGROUP", "HELP")
+        RESPCommand("XGROUP", "HELP")
     }
 
     public enum XGROUPSETIDIdSelector: RESPRepresentable {
@@ -5309,7 +6689,7 @@ extension RedisConnection {
 
     @inlinable
     public func xgroupSetidCommand(key: RedisKey, group: String, idSelector: XGROUPSETIDIdSelector, entriesread: Int?) -> RESPCommand {
-        return RESPCommand("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+        RESPCommand("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
     }
 
     /// A container for stream introspection commands.
@@ -5325,7 +6705,7 @@ extension RedisConnection {
 
     @inlinable
     public func xinfoCommand() -> RESPCommand {
-        return RESPCommand("XINFO")
+        RESPCommand("XINFO")
     }
 
     /// Returns a list of the consumers in a consumer group.
@@ -5341,7 +6721,7 @@ extension RedisConnection {
 
     @inlinable
     public func xinfoConsumersCommand(key: RedisKey, group: String) -> RESPCommand {
-        return RESPCommand("XINFO", "CONSUMERS", key, group)
+        RESPCommand("XINFO", "CONSUMERS", key, group)
     }
 
     /// Returns a list of the consumer groups of a stream.
@@ -5357,7 +6737,7 @@ extension RedisConnection {
 
     @inlinable
     public func xinfoGroupsCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("XINFO", "GROUPS", key)
+        RESPCommand("XINFO", "GROUPS", key)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -5373,7 +6753,33 @@ extension RedisConnection {
 
     @inlinable
     public func xinfoHelpCommand() -> RESPCommand {
-        return RESPCommand("XINFO", "HELP")
+        RESPCommand("XINFO", "HELP")
+    }
+
+    public struct XINFOSTREAMFullBlock: RESPRepresentable {
+        @usableFromInline let full: Bool
+        @usableFromInline let count: Int?
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            if self.full { "FULL".writeToRESPBuffer(&buffer) }
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns information about a stream.
+    ///
+    /// Version: 5.0.0
+    /// Complexity: O(1)
+    /// Categories: @read, @stream, @slow
+    @inlinable
+    public func xinfoStream(key: RedisKey, fullBlock: XINFOSTREAMFullBlock?) async throws -> RESP3Token {
+        let response = try await send(xinfoStreamCommand(key: key, fullBlock: fullBlock))
+        return response
+    }
+
+    @inlinable
+    public func xinfoStreamCommand(key: RedisKey, fullBlock: XINFOSTREAMFullBlock?) -> RESPCommand {
+        RESPCommand("XINFO", "STREAM", key, fullBlock)
     }
 
     /// Return the number of messages in a stream.
@@ -5389,7 +6795,39 @@ extension RedisConnection {
 
     @inlinable
     public func xlenCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("XLEN", key)
+        RESPCommand("XLEN", key)
+    }
+
+    public struct XPENDINGFilters: RESPRepresentable {
+        @usableFromInline let minIdleTime: Int?
+        @usableFromInline let start: String
+        @usableFromInline let end: String
+        @usableFromInline let count: Int
+        @usableFromInline let consumer: String?
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.minIdleTime.writeToRESPBuffer(&buffer)
+            self.start.writeToRESPBuffer(&buffer)
+            self.end.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+            self.consumer.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns the information and entries from a stream consumer group's pending entries list.
+    ///
+    /// Version: 5.0.0
+    /// Complexity: O(N) with N being the number of elements returned, so asking for a small fixed number of entries per call is O(1). O(M), where M is the total number of entries scanned when used with the IDLE filter. When the command returns just the summary and the list of consumers is small, it runs in O(1) time; otherwise, an additional O(N) time for iterating every consumer.
+    /// Categories: @read, @stream, @slow
+    @inlinable
+    public func xpending(key: RedisKey, group: String, filters: XPENDINGFilters?) async throws -> RESP3Token {
+        let response = try await send(xpendingCommand(key: key, group: group, filters: filters))
+        return response
+    }
+
+    @inlinable
+    public func xpendingCommand(key: RedisKey, group: String, filters: XPENDINGFilters?) -> RESPCommand {
+        RESPCommand("XPENDING", key, group, filters)
     }
 
     /// Returns the messages from a stream within a range of IDs.
@@ -5405,7 +6843,68 @@ extension RedisConnection {
 
     @inlinable
     public func xrangeCommand(key: RedisKey, start: String, end: String, count: Int?) -> RESPCommand {
-        return RESPCommand("XRANGE", key, start, end, RESPWithToken("COUNT", count))
+        RESPCommand("XRANGE", key, start, end, RESPWithToken("COUNT", count))
+    }
+
+    public struct XREADStreams: RESPRepresentable {
+        @usableFromInline let key: [RedisKey]
+        @usableFromInline let id: [String]
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.key.writeToRESPBuffer(&buffer)
+            self.id.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
+    ///
+    /// Version: 5.0.0
+    /// Categories: @read, @stream, @slow, @blocking
+    @inlinable
+    public func xread(count: Int?, milliseconds: Int?, streams: XREADStreams) async throws -> RESP3Token {
+        let response = try await send(xreadCommand(count: count, milliseconds: milliseconds, streams: streams))
+        return response
+    }
+
+    @inlinable
+    public func xreadCommand(count: Int?, milliseconds: Int?, streams: XREADStreams) -> RESPCommand {
+        RESPCommand("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
+    }
+
+    public struct XREADGROUPGroupBlock: RESPRepresentable {
+        @usableFromInline let group: String
+        @usableFromInline let consumer: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.group.writeToRESPBuffer(&buffer)
+            self.consumer.writeToRESPBuffer(&buffer)
+        }
+    }
+    public struct XREADGROUPStreams: RESPRepresentable {
+        @usableFromInline let key: [RedisKey]
+        @usableFromInline let id: [String]
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.key.writeToRESPBuffer(&buffer)
+            self.id.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
+    ///
+    /// Version: 5.0.0
+    /// Complexity: For each stream mentioned: O(M) with M being the number of elements returned. If M is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1). On the other side when XREADGROUP blocks, XADD will pay the O(N) time in order to serve the N clients blocked on the stream getting new data.
+    /// Categories: @write, @stream, @slow, @blocking
+    @inlinable
+    public func xreadgroup(groupBlock: XREADGROUPGroupBlock, count: Int?, milliseconds: Int?, noack: Bool, streams: XREADGROUPStreams) async throws -> RESP3Token {
+        let response = try await send(xreadgroupCommand(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
+        return response
+    }
+
+    @inlinable
+    public func xreadgroupCommand(groupBlock: XREADGROUPGroupBlock, count: Int?, milliseconds: Int?, noack: Bool, streams: XREADGROUPStreams) -> RESPCommand {
+        RESPCommand("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RedisPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
     }
 
     /// Returns the messages from a stream within a range of IDs in reverse order.
@@ -5421,7 +6920,7 @@ extension RedisConnection {
 
     @inlinable
     public func xrevrangeCommand(key: RedisKey, end: String, start: String, count: Int?) -> RESPCommand {
-        return RESPCommand("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
+        RESPCommand("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
     }
 
     /// An internal command for replicating stream values.
@@ -5437,7 +6936,111 @@ extension RedisConnection {
 
     @inlinable
     public func xsetidCommand(key: RedisKey, lastId: String, entriesAdded: Int?, maxDeletedId: String?) -> RESPCommand {
-        return RESPCommand("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
+        RESPCommand("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
+    }
+
+    public enum XTRIMTRIMStrategy: RESPRepresentable {
+        case maxlen
+        case minid
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .maxlen: "MAXLEN".writeToRESPBuffer(&buffer)
+            case .minid: "MINID".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum XTRIMTRIMOperator: RESPRepresentable {
+        case equal
+        case approximately
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .equal: "=".writeToRESPBuffer(&buffer)
+            case .approximately: "~".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct XTRIMTrim: RESPRepresentable {
+        @usableFromInline let strategy: XTRIMTRIMStrategy
+        @usableFromInline let `operator`: XTRIMTRIMOperator?
+        @usableFromInline let threshold: String
+        @usableFromInline let count: Int?
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.strategy.writeToRESPBuffer(&buffer)
+            self.operator.writeToRESPBuffer(&buffer)
+            self.threshold.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Deletes messages from the beginning of a stream.
+    ///
+    /// Version: 5.0.0
+    /// Complexity: O(N), with N being the number of evicted entries. Constant times are very small however, since entries are organized in macro nodes containing multiple entries that can be released with a single deallocation.
+    /// Categories: @write, @stream, @slow
+    @inlinable
+    public func xtrim(key: RedisKey, trim: XTRIMTrim) async throws -> RESP3Token {
+        let response = try await send(xtrimCommand(key: key, trim: trim))
+        return response
+    }
+
+    @inlinable
+    public func xtrimCommand(key: RedisKey, trim: XTRIMTrim) -> RESPCommand {
+        RESPCommand("XTRIM", key, trim)
+    }
+
+    public enum ZADDCondition: RESPRepresentable {
+        case nx
+        case xx
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .nx: "NX".writeToRESPBuffer(&buffer)
+            case .xx: "XX".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public enum ZADDComparison: RESPRepresentable {
+        case gt
+        case lt
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .gt: "GT".writeToRESPBuffer(&buffer)
+            case .lt: "LT".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct ZADDData: RESPRepresentable {
+        @usableFromInline let score: Double
+        @usableFromInline let member: String
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.score.writeToRESPBuffer(&buffer)
+            self.member.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
+    ///
+    /// Version: 1.2.0
+    /// Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
+    /// Categories: @write, @sortedset, @fast
+    @inlinable
+    public func zadd(key: RedisKey, condition: ZADDCondition?, comparison: ZADDComparison?, change: Bool, increment: Bool, data: ZADDData...) async throws -> RESP3Token {
+        let response = try await send(zaddCommand(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
+        return response
+    }
+
+    @inlinable
+    public func zaddCommand(key: RedisKey, condition: ZADDCondition?, comparison: ZADDComparison?, change: Bool, increment: Bool, data: [ZADDData]) -> RESPCommand {
+        RESPCommand("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
     }
 
     /// Returns the number of members in a sorted set.
@@ -5453,7 +7056,7 @@ extension RedisConnection {
 
     @inlinable
     public func zcardCommand(key: RedisKey) -> RESPCommand {
-        return RESPCommand("ZCARD", key)
+        RESPCommand("ZCARD", key)
     }
 
     /// Returns the count of members in a sorted set that have scores within a range.
@@ -5469,7 +7072,7 @@ extension RedisConnection {
 
     @inlinable
     public func zcountCommand(key: RedisKey, min: Double, max: Double) -> RESPCommand {
-        return RESPCommand("ZCOUNT", key, min, max)
+        RESPCommand("ZCOUNT", key, min, max)
     }
 
     /// Returns the difference between multiple sorted sets.
@@ -5485,7 +7088,7 @@ extension RedisConnection {
 
     @inlinable
     public func zdiffCommand(numkeys: Int, key: [RedisKey], withscores: Bool) -> RESPCommand {
-        return RESPCommand("ZDIFF", numkeys, key, RedisPureToken("WITHSCORES", withscores))
+        RESPCommand("ZDIFF", numkeys, key, RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Stores the difference of multiple sorted sets in a key.
@@ -5501,7 +7104,7 @@ extension RedisConnection {
 
     @inlinable
     public func zdiffstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey]) -> RESPCommand {
-        return RESPCommand("ZDIFFSTORE", destination, numkeys, key)
+        RESPCommand("ZDIFFSTORE", destination, numkeys, key)
     }
 
     /// Increments the score of a member in a sorted set.
@@ -5517,7 +7120,7 @@ extension RedisConnection {
 
     @inlinable
     public func zincrbyCommand(key: RedisKey, increment: Int, member: String) -> RESPCommand {
-        return RESPCommand("ZINCRBY", key, increment, member)
+        RESPCommand("ZINCRBY", key, increment, member)
     }
 
     public enum ZINTERAggregate: RESPRepresentable {
@@ -5547,7 +7150,7 @@ extension RedisConnection {
 
     @inlinable
     public func zinterCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERAggregate?, withscores: Bool) -> RESPCommand {
-        return RESPCommand("ZINTER", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+        RESPCommand("ZINTER", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
@@ -5563,7 +7166,7 @@ extension RedisConnection {
 
     @inlinable
     public func zintercardCommand(numkeys: Int, key: [RedisKey], limit: Int?) -> RESPCommand {
-        return RESPCommand("ZINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
+        RESPCommand("ZINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
     }
 
     public enum ZINTERSTOREAggregate: RESPRepresentable {
@@ -5593,7 +7196,7 @@ extension RedisConnection {
 
     @inlinable
     public func zinterstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERSTOREAggregate?) -> RESPCommand {
-        return RESPCommand("ZINTERSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+        RESPCommand("ZINTERSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
     /// Returns the number of members in a sorted set within a lexicographical range.
@@ -5609,7 +7212,7 @@ extension RedisConnection {
 
     @inlinable
     public func zlexcountCommand(key: RedisKey, min: String, max: String) -> RESPCommand {
-        return RESPCommand("ZLEXCOUNT", key, min, max)
+        RESPCommand("ZLEXCOUNT", key, min, max)
     }
 
     public enum ZMPOPWhere: RESPRepresentable {
@@ -5637,7 +7240,7 @@ extension RedisConnection {
 
     @inlinable
     public func zmpopCommand(numkeys: Int, key: [RedisKey], where: ZMPOPWhere, count: Int?) -> RESPCommand {
-        return RESPCommand("ZMPOP", numkeys, key, `where`, RESPWithToken("COUNT", count))
+        RESPCommand("ZMPOP", numkeys, key, `where`, RESPWithToken("COUNT", count))
     }
 
     /// Returns the score of one or more members in a sorted set.
@@ -5653,7 +7256,7 @@ extension RedisConnection {
 
     @inlinable
     public func zmscoreCommand(key: RedisKey, member: [String]) -> RESPCommand {
-        return RESPCommand("ZMSCORE", key, member)
+        RESPCommand("ZMSCORE", key, member)
     }
 
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -5669,7 +7272,7 @@ extension RedisConnection {
 
     @inlinable
     public func zpopmaxCommand(key: RedisKey, count: Int?) -> RESPCommand {
-        return RESPCommand("ZPOPMAX", key, count)
+        RESPCommand("ZPOPMAX", key, count)
     }
 
     /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -5685,7 +7288,161 @@ extension RedisConnection {
 
     @inlinable
     public func zpopminCommand(key: RedisKey, count: Int?) -> RESPCommand {
-        return RESPCommand("ZPOPMIN", key, count)
+        RESPCommand("ZPOPMIN", key, count)
+    }
+
+    public struct ZRANDMEMBEROptions: RESPRepresentable {
+        @usableFromInline let count: Int
+        @usableFromInline let withscores: Bool
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.count.writeToRESPBuffer(&buffer)
+            if self.withscores { "WITHSCORES".writeToRESPBuffer(&buffer) }
+        }
+    }
+    /// Returns one or more random members from a sorted set.
+    ///
+    /// Version: 6.2.0
+    /// Complexity: O(N) where N is the number of members returned
+    /// Categories: @read, @sortedset, @slow
+    @inlinable
+    public func zrandmember(key: RedisKey, options: ZRANDMEMBEROptions?) async throws -> RESP3Token {
+        let response = try await send(zrandmemberCommand(key: key, options: options))
+        return response
+    }
+
+    @inlinable
+    public func zrandmemberCommand(key: RedisKey, options: ZRANDMEMBEROptions?) -> RESPCommand {
+        RESPCommand("ZRANDMEMBER", key, options)
+    }
+
+    public enum ZRANGESortby: RESPRepresentable {
+        case byscore
+        case bylex
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .byscore: "BYSCORE".writeToRESPBuffer(&buffer)
+            case .bylex: "BYLEX".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct ZRANGELimit: RESPRepresentable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.offset.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns members in a sorted set within a range of indexes.
+    ///
+    /// Version: 1.2.0
+    /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
+    /// Categories: @read, @sortedset, @slow
+    @inlinable
+    public func zrange(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby?, rev: Bool, limit: ZRANGELimit?, withscores: Bool) async throws -> RESP3Token {
+        let response = try await send(zrangeCommand(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
+        return response
+    }
+
+    @inlinable
+    public func zrangeCommand(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby?, rev: Bool, limit: ZRANGELimit?, withscores: Bool) -> RESPCommand {
+        RESPCommand("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores))
+    }
+
+    public struct ZRANGEBYLEXLimit: RESPRepresentable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.offset.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns members in a sorted set within a lexicographical range.
+    ///
+    /// Version: 2.8.9
+    /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
+    /// Categories: @read, @sortedset, @slow
+    @inlinable
+    public func zrangebylex(key: RedisKey, min: String, max: String, limit: ZRANGEBYLEXLimit?) async throws -> RESP3Token {
+        let response = try await send(zrangebylexCommand(key: key, min: min, max: max, limit: limit))
+        return response
+    }
+
+    @inlinable
+    public func zrangebylexCommand(key: RedisKey, min: String, max: String, limit: ZRANGEBYLEXLimit?) -> RESPCommand {
+        RESPCommand("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
+    }
+
+    public struct ZRANGEBYSCORELimit: RESPRepresentable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.offset.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns members in a sorted set within a range of scores.
+    ///
+    /// Version: 1.0.5
+    /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
+    /// Categories: @read, @sortedset, @slow
+    @inlinable
+    public func zrangebyscore(key: RedisKey, min: Double, max: Double, withscores: Bool, limit: ZRANGEBYSCORELimit?) async throws -> RESP3Token {
+        let response = try await send(zrangebyscoreCommand(key: key, min: min, max: max, withscores: withscores, limit: limit))
+        return response
+    }
+
+    @inlinable
+    public func zrangebyscoreCommand(key: RedisKey, min: Double, max: Double, withscores: Bool, limit: ZRANGEBYSCORELimit?) -> RESPCommand {
+        RESPCommand("ZRANGEBYSCORE", key, min, max, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
+    }
+
+    public enum ZRANGESTORESortby: RESPRepresentable {
+        case byscore
+        case bylex
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            switch self {
+            case .byscore: "BYSCORE".writeToRESPBuffer(&buffer)
+            case .bylex: "BYLEX".writeToRESPBuffer(&buffer)
+            }
+        }
+    }
+    public struct ZRANGESTORELimit: RESPRepresentable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.offset.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Stores a range of members from sorted set in a key.
+    ///
+    /// Version: 6.2.0
+    /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements stored into the destination key.
+    /// Categories: @write, @sortedset, @slow
+    @inlinable
+    public func zrangestore(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby?, rev: Bool, limit: ZRANGESTORELimit?) async throws -> RESP3Token {
+        let response = try await send(zrangestoreCommand(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
+        return response
+    }
+
+    @inlinable
+    public func zrangestoreCommand(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby?, rev: Bool, limit: ZRANGESTORELimit?) -> RESPCommand {
+        RESPCommand("ZRANGESTORE", dst, src, min, max, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit))
     }
 
     /// Returns the index of a member in a sorted set ordered by ascending scores.
@@ -5701,7 +7458,7 @@ extension RedisConnection {
 
     @inlinable
     public func zrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESPCommand {
-        return RESPCommand("ZRANK", key, member, RedisPureToken("WITHSCORE", withscore))
+        RESPCommand("ZRANK", key, member, RedisPureToken("WITHSCORE", withscore))
     }
 
     /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
@@ -5717,7 +7474,7 @@ extension RedisConnection {
 
     @inlinable
     public func zremCommand(key: RedisKey, member: [String]) -> RESPCommand {
-        return RESPCommand("ZREM", key, member)
+        RESPCommand("ZREM", key, member)
     }
 
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
@@ -5733,7 +7490,7 @@ extension RedisConnection {
 
     @inlinable
     public func zremrangebylexCommand(key: RedisKey, min: String, max: String) -> RESPCommand {
-        return RESPCommand("ZREMRANGEBYLEX", key, min, max)
+        RESPCommand("ZREMRANGEBYLEX", key, min, max)
     }
 
     /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
@@ -5749,7 +7506,7 @@ extension RedisConnection {
 
     @inlinable
     public func zremrangebyrankCommand(key: RedisKey, start: Int, stop: Int) -> RESPCommand {
-        return RESPCommand("ZREMRANGEBYRANK", key, start, stop)
+        RESPCommand("ZREMRANGEBYRANK", key, start, stop)
     }
 
     /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
@@ -5765,7 +7522,7 @@ extension RedisConnection {
 
     @inlinable
     public func zremrangebyscoreCommand(key: RedisKey, min: Double, max: Double) -> RESPCommand {
-        return RESPCommand("ZREMRANGEBYSCORE", key, min, max)
+        RESPCommand("ZREMRANGEBYSCORE", key, min, max)
     }
 
     /// Returns members in a sorted set within a range of indexes in reverse order.
@@ -5781,7 +7538,59 @@ extension RedisConnection {
 
     @inlinable
     public func zrevrangeCommand(key: RedisKey, start: Int, stop: Int, withscores: Bool) -> RESPCommand {
-        return RESPCommand("ZREVRANGE", key, start, stop, RedisPureToken("WITHSCORES", withscores))
+        RESPCommand("ZREVRANGE", key, start, stop, RedisPureToken("WITHSCORES", withscores))
+    }
+
+    public struct ZREVRANGEBYLEXLimit: RESPRepresentable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.offset.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns members in a sorted set within a lexicographical range in reverse order.
+    ///
+    /// Version: 2.8.9
+    /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
+    /// Categories: @read, @sortedset, @slow
+    @inlinable
+    public func zrevrangebylex(key: RedisKey, max: String, min: String, limit: ZREVRANGEBYLEXLimit?) async throws -> RESP3Token {
+        let response = try await send(zrevrangebylexCommand(key: key, max: max, min: min, limit: limit))
+        return response
+    }
+
+    @inlinable
+    public func zrevrangebylexCommand(key: RedisKey, max: String, min: String, limit: ZREVRANGEBYLEXLimit?) -> RESPCommand {
+        RESPCommand("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
+    }
+
+    public struct ZREVRANGEBYSCORELimit: RESPRepresentable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+            self.offset.writeToRESPBuffer(&buffer)
+            self.count.writeToRESPBuffer(&buffer)
+        }
+    }
+    /// Returns members in a sorted set within a range of scores in reverse order.
+    ///
+    /// Version: 2.2.0
+    /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
+    /// Categories: @read, @sortedset, @slow
+    @inlinable
+    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool, limit: ZREVRANGEBYSCORELimit?) async throws -> RESP3Token {
+        let response = try await send(zrevrangebyscoreCommand(key: key, max: max, min: min, withscores: withscores, limit: limit))
+        return response
+    }
+
+    @inlinable
+    public func zrevrangebyscoreCommand(key: RedisKey, max: Double, min: Double, withscores: Bool, limit: ZREVRANGEBYSCORELimit?) -> RESPCommand {
+        RESPCommand("ZREVRANGEBYSCORE", key, max, min, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 
     /// Returns the index of a member in a sorted set ordered by descending scores.
@@ -5797,7 +7606,7 @@ extension RedisConnection {
 
     @inlinable
     public func zrevrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESPCommand {
-        return RESPCommand("ZREVRANK", key, member, RedisPureToken("WITHSCORE", withscore))
+        RESPCommand("ZREVRANK", key, member, RedisPureToken("WITHSCORE", withscore))
     }
 
     /// Iterates over members and scores of a sorted set.
@@ -5813,7 +7622,7 @@ extension RedisConnection {
 
     @inlinable
     public func zscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
-        return RESPCommand("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+        RESPCommand("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 
     /// Returns the score of a member in a sorted set.
@@ -5829,7 +7638,7 @@ extension RedisConnection {
 
     @inlinable
     public func zscoreCommand(key: RedisKey, member: String) -> RESPCommand {
-        return RESPCommand("ZSCORE", key, member)
+        RESPCommand("ZSCORE", key, member)
     }
 
     public enum ZUNIONAggregate: RESPRepresentable {
@@ -5859,7 +7668,7 @@ extension RedisConnection {
 
     @inlinable
     public func zunionCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONAggregate?, withscores: Bool) -> RESPCommand {
-        return RESPCommand("ZUNION", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+        RESPCommand("ZUNION", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     public enum ZUNIONSTOREAggregate: RESPRepresentable {
@@ -5889,7 +7698,7 @@ extension RedisConnection {
 
     @inlinable
     public func zunionstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONSTOREAggregate?) -> RESPCommand {
-        return RESPCommand("ZUNIONSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+        RESPCommand("ZUNIONSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
 }
