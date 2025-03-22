@@ -17,7 +17,7 @@ extension RedisConnection {
     public func acl() async throws -> RESP3Token {
         let response = try await send(aclCommand())
         return response
-   }
+    }
 
     @inlinable
     public func aclCommand() -> RESPCommand {
@@ -33,7 +33,7 @@ extension RedisConnection {
     public func aclCat(category: String?) async throws -> RESP3Token {
         let response = try await send(aclCatCommand(category: category))
         return response
-   }
+    }
 
     @inlinable
     public func aclCatCommand(category: String?) -> RESPCommand {
@@ -49,7 +49,7 @@ extension RedisConnection {
     public func aclDeluser(username: String...) async throws -> RESP3Token {
         let response = try await send(aclDeluserCommand(username: username))
         return response
-   }
+    }
 
     @inlinable
     public func aclDeluserCommand(username: [String]) -> RESPCommand {
@@ -65,7 +65,7 @@ extension RedisConnection {
     public func aclDryrun(username: String, command: String, arg: String...) async throws -> RESP3Token {
         let response = try await send(aclDryrunCommand(username: username, command: command, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func aclDryrunCommand(username: String, command: String, arg: [String]) -> RESPCommand {
@@ -81,7 +81,7 @@ extension RedisConnection {
     public func aclGenpass(bits: Int?) async throws -> RESP3Token {
         let response = try await send(aclGenpassCommand(bits: bits))
         return response
-   }
+    }
 
     @inlinable
     public func aclGenpassCommand(bits: Int?) -> RESPCommand {
@@ -97,7 +97,7 @@ extension RedisConnection {
     public func aclGetuser(username: String) async throws -> RESP3Token {
         let response = try await send(aclGetuserCommand(username: username))
         return response
-   }
+    }
 
     @inlinable
     public func aclGetuserCommand(username: String) -> RESPCommand {
@@ -113,7 +113,7 @@ extension RedisConnection {
     public func aclHelp() async throws -> RESP3Token {
         let response = try await send(aclHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func aclHelpCommand() -> RESPCommand {
@@ -129,7 +129,7 @@ extension RedisConnection {
     public func aclList() async throws -> RESP3Token {
         let response = try await send(aclListCommand())
         return response
-   }
+    }
 
     @inlinable
     public func aclListCommand() -> RESPCommand {
@@ -145,7 +145,7 @@ extension RedisConnection {
     public func aclLoad() async throws -> RESP3Token {
         let response = try await send(aclLoadCommand())
         return response
-   }
+    }
 
     @inlinable
     public func aclLoadCommand() -> RESPCommand {
@@ -173,7 +173,7 @@ extension RedisConnection {
     public func aclLog(operation: ACLLOGOperation?) async throws -> RESP3Token {
         let response = try await send(aclLogCommand(operation: operation))
         return response
-   }
+    }
 
     @inlinable
     public func aclLogCommand(operation: ACLLOGOperation?) -> RESPCommand {
@@ -189,7 +189,7 @@ extension RedisConnection {
     public func aclSave() async throws -> RESP3Token {
         let response = try await send(aclSaveCommand())
         return response
-   }
+    }
 
     @inlinable
     public func aclSaveCommand() -> RESPCommand {
@@ -205,7 +205,7 @@ extension RedisConnection {
     public func aclSetuser(username: String, rule: String...) async throws -> RESP3Token {
         let response = try await send(aclSetuserCommand(username: username, rule: rule))
         return response
-   }
+    }
 
     @inlinable
     public func aclSetuserCommand(username: String, rule: [String]) -> RESPCommand {
@@ -221,7 +221,7 @@ extension RedisConnection {
     public func aclUsers() async throws -> RESP3Token {
         let response = try await send(aclUsersCommand())
         return response
-   }
+    }
 
     @inlinable
     public func aclUsersCommand() -> RESPCommand {
@@ -237,7 +237,7 @@ extension RedisConnection {
     public func aclWhoami() async throws -> RESP3Token {
         let response = try await send(aclWhoamiCommand())
         return response
-   }
+    }
 
     @inlinable
     public func aclWhoamiCommand() -> RESPCommand {
@@ -253,7 +253,7 @@ extension RedisConnection {
     public func append(key: RedisKey, value: String) async throws -> RESP3Token {
         let response = try await send(appendCommand(key: key, value: value))
         return response
-   }
+    }
 
     @inlinable
     public func appendCommand(key: RedisKey, value: String) -> RESPCommand {
@@ -269,7 +269,7 @@ extension RedisConnection {
     public func asking() async throws -> RESP3Token {
         let response = try await send(askingCommand())
         return response
-   }
+    }
 
     @inlinable
     public func askingCommand() -> RESPCommand {
@@ -285,7 +285,7 @@ extension RedisConnection {
     public func auth(username: String?, password: String) async throws -> RESP3Token {
         let response = try await send(authCommand(username: username, password: password))
         return response
-   }
+    }
 
     @inlinable
     public func authCommand(username: String?, password: String) -> RESPCommand {
@@ -301,7 +301,7 @@ extension RedisConnection {
     public func bgrewriteaof() async throws -> RESP3Token {
         let response = try await send(bgrewriteaofCommand())
         return response
-   }
+    }
 
     @inlinable
     public func bgrewriteaofCommand() -> RESPCommand {
@@ -317,7 +317,7 @@ extension RedisConnection {
     public func bgsave(schedule: Bool) async throws -> RESP3Token {
         let response = try await send(bgsaveCommand(schedule: schedule))
         return response
-   }
+    }
 
     @inlinable
     public func bgsaveCommand(schedule: Bool) -> RESPCommand {
@@ -349,7 +349,7 @@ extension RedisConnection {
     public func bitop(operation: BITOPOperation, destkey: RedisKey, key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(bitopCommand(operation: operation, destkey: destkey, key: key))
         return response
-   }
+    }
 
     @inlinable
     public func bitopCommand(operation: BITOPOperation, destkey: RedisKey, key: [RedisKey]) -> RESPCommand {
@@ -389,7 +389,7 @@ extension RedisConnection {
     public func blmove(source: RedisKey, destination: RedisKey, wherefrom: BLMOVEWherefrom, whereto: BLMOVEWhereto, timeout: Double) async throws -> RESP3Token {
         let response = try await send(blmoveCommand(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
         return response
-   }
+    }
 
     @inlinable
     public func blmoveCommand(source: RedisKey, destination: RedisKey, wherefrom: BLMOVEWherefrom, whereto: BLMOVEWhereto, timeout: Double) -> RESPCommand {
@@ -417,7 +417,7 @@ extension RedisConnection {
     public func blmpop(timeout: Double, numkeys: Int, key: RedisKey..., where: BLMPOPWhere, count: Int?) async throws -> RESP3Token {
         let response = try await send(blmpopCommand(timeout: timeout, numkeys: numkeys, key: key, where: `where`, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func blmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BLMPOPWhere, count: Int?) -> RESPCommand {
@@ -433,7 +433,7 @@ extension RedisConnection {
     public func blpop(key: RedisKey..., timeout: Double) async throws -> RESP3Token {
         let response = try await send(blpopCommand(key: key, timeout: timeout))
         return response
-   }
+    }
 
     @inlinable
     public func blpopCommand(key: [RedisKey], timeout: Double) -> RESPCommand {
@@ -449,7 +449,7 @@ extension RedisConnection {
     public func brpop(key: RedisKey..., timeout: Double) async throws -> RESP3Token {
         let response = try await send(brpopCommand(key: key, timeout: timeout))
         return response
-   }
+    }
 
     @inlinable
     public func brpopCommand(key: [RedisKey], timeout: Double) -> RESPCommand {
@@ -465,7 +465,7 @@ extension RedisConnection {
     public func brpoplpush(source: RedisKey, destination: RedisKey, timeout: Double) async throws -> RESP3Token {
         let response = try await send(brpoplpushCommand(source: source, destination: destination, timeout: timeout))
         return response
-   }
+    }
 
     @inlinable
     public func brpoplpushCommand(source: RedisKey, destination: RedisKey, timeout: Double) -> RESPCommand {
@@ -493,7 +493,7 @@ extension RedisConnection {
     public func bzmpop(timeout: Double, numkeys: Int, key: RedisKey..., where: BZMPOPWhere, count: Int?) async throws -> RESP3Token {
         let response = try await send(bzmpopCommand(timeout: timeout, numkeys: numkeys, key: key, where: `where`, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func bzmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BZMPOPWhere, count: Int?) -> RESPCommand {
@@ -509,7 +509,7 @@ extension RedisConnection {
     public func bzpopmax(key: RedisKey..., timeout: Double) async throws -> RESP3Token {
         let response = try await send(bzpopmaxCommand(key: key, timeout: timeout))
         return response
-   }
+    }
 
     @inlinable
     public func bzpopmaxCommand(key: [RedisKey], timeout: Double) -> RESPCommand {
@@ -525,7 +525,7 @@ extension RedisConnection {
     public func bzpopmin(key: RedisKey..., timeout: Double) async throws -> RESP3Token {
         let response = try await send(bzpopminCommand(key: key, timeout: timeout))
         return response
-   }
+    }
 
     @inlinable
     public func bzpopminCommand(key: [RedisKey], timeout: Double) -> RESPCommand {
@@ -541,7 +541,7 @@ extension RedisConnection {
     public func client() async throws -> RESP3Token {
         let response = try await send(clientCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clientCommand() -> RESPCommand {
@@ -569,7 +569,7 @@ extension RedisConnection {
     public func clientCaching(mode: CLIENTCACHINGMode) async throws -> RESP3Token {
         let response = try await send(clientCachingCommand(mode: mode))
         return response
-   }
+    }
 
     @inlinable
     public func clientCachingCommand(mode: CLIENTCACHINGMode) -> RESPCommand {
@@ -585,7 +585,7 @@ extension RedisConnection {
     public func clientGetname() async throws -> RESP3Token {
         let response = try await send(clientGetnameCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clientGetnameCommand() -> RESPCommand {
@@ -601,7 +601,7 @@ extension RedisConnection {
     public func clientGetredir() async throws -> RESP3Token {
         let response = try await send(clientGetredirCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clientGetredirCommand() -> RESPCommand {
@@ -617,7 +617,7 @@ extension RedisConnection {
     public func clientHelp() async throws -> RESP3Token {
         let response = try await send(clientHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clientHelpCommand() -> RESPCommand {
@@ -633,7 +633,7 @@ extension RedisConnection {
     public func clientId() async throws -> RESP3Token {
         let response = try await send(clientIdCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clientIdCommand() -> RESPCommand {
@@ -649,7 +649,7 @@ extension RedisConnection {
     public func clientInfo() async throws -> RESP3Token {
         let response = try await send(clientInfoCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clientInfoCommand() -> RESPCommand {
@@ -677,7 +677,7 @@ extension RedisConnection {
     public func clientKill(filter: CLIENTKILLFilter) async throws -> RESP3Token {
         let response = try await send(clientKillCommand(filter: filter))
         return response
-   }
+    }
 
     @inlinable
     public func clientKillCommand(filter: CLIENTKILLFilter) -> RESPCommand {
@@ -709,7 +709,7 @@ extension RedisConnection {
     public func clientList(clientType: CLIENTLISTClientType?, clientId: Int...) async throws -> RESP3Token {
         let response = try await send(clientListCommand(clientType: clientType, clientId: clientId))
         return response
-   }
+    }
 
     @inlinable
     public func clientListCommand(clientType: CLIENTLISTClientType?, clientId: [Int]) -> RESPCommand {
@@ -737,7 +737,7 @@ extension RedisConnection {
     public func clientNoEvict(enabled: CLIENTNOEVICTEnabled) async throws -> RESP3Token {
         let response = try await send(clientNoEvictCommand(enabled: enabled))
         return response
-   }
+    }
 
     @inlinable
     public func clientNoEvictCommand(enabled: CLIENTNOEVICTEnabled) -> RESPCommand {
@@ -765,7 +765,7 @@ extension RedisConnection {
     public func clientNoTouch(enabled: CLIENTNOTOUCHEnabled) async throws -> RESP3Token {
         let response = try await send(clientNoTouchCommand(enabled: enabled))
         return response
-   }
+    }
 
     @inlinable
     public func clientNoTouchCommand(enabled: CLIENTNOTOUCHEnabled) -> RESPCommand {
@@ -793,7 +793,7 @@ extension RedisConnection {
     public func clientPause(timeout: Int, mode: CLIENTPAUSEMode?) async throws -> RESP3Token {
         let response = try await send(clientPauseCommand(timeout: timeout, mode: mode))
         return response
-   }
+    }
 
     @inlinable
     public func clientPauseCommand(timeout: Int, mode: CLIENTPAUSEMode?) -> RESPCommand {
@@ -823,7 +823,7 @@ extension RedisConnection {
     public func clientReply(action: CLIENTREPLYAction) async throws -> RESP3Token {
         let response = try await send(clientReplyCommand(action: action))
         return response
-   }
+    }
 
     @inlinable
     public func clientReplyCommand(action: CLIENTREPLYAction) -> RESPCommand {
@@ -851,7 +851,7 @@ extension RedisConnection {
     public func clientSetinfo(attr: CLIENTSETINFOAttr) async throws -> RESP3Token {
         let response = try await send(clientSetinfoCommand(attr: attr))
         return response
-   }
+    }
 
     @inlinable
     public func clientSetinfoCommand(attr: CLIENTSETINFOAttr) -> RESPCommand {
@@ -867,7 +867,7 @@ extension RedisConnection {
     public func clientSetname(connectionName: String) async throws -> RESP3Token {
         let response = try await send(clientSetnameCommand(connectionName: connectionName))
         return response
-   }
+    }
 
     @inlinable
     public func clientSetnameCommand(connectionName: String) -> RESPCommand {
@@ -895,7 +895,7 @@ extension RedisConnection {
     public func clientTracking(status: CLIENTTRACKINGStatus, clientId: Int?, prefix: String..., bcast: Bool, optin: Bool, optout: Bool, noloop: Bool) async throws -> RESP3Token {
         let response = try await send(clientTrackingCommand(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
         return response
-   }
+    }
 
     @inlinable
     public func clientTrackingCommand(status: CLIENTTRACKINGStatus, clientId: Int?, prefix: [String], bcast: Bool, optin: Bool, optout: Bool, noloop: Bool) -> RESPCommand {
@@ -911,7 +911,7 @@ extension RedisConnection {
     public func clientTrackinginfo() async throws -> RESP3Token {
         let response = try await send(clientTrackinginfoCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clientTrackinginfoCommand() -> RESPCommand {
@@ -939,7 +939,7 @@ extension RedisConnection {
     public func clientUnblock(clientId: Int, unblockType: CLIENTUNBLOCKUnblockType?) async throws -> RESP3Token {
         let response = try await send(clientUnblockCommand(clientId: clientId, unblockType: unblockType))
         return response
-   }
+    }
 
     @inlinable
     public func clientUnblockCommand(clientId: Int, unblockType: CLIENTUNBLOCKUnblockType?) -> RESPCommand {
@@ -955,7 +955,7 @@ extension RedisConnection {
     public func clientUnpause() async throws -> RESP3Token {
         let response = try await send(clientUnpauseCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clientUnpauseCommand() -> RESPCommand {
@@ -971,7 +971,7 @@ extension RedisConnection {
     public func cluster() async throws -> RESP3Token {
         let response = try await send(clusterCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterCommand() -> RESPCommand {
@@ -987,7 +987,7 @@ extension RedisConnection {
     public func clusterAddslots(slot: Int...) async throws -> RESP3Token {
         let response = try await send(clusterAddslotsCommand(slot: slot))
         return response
-   }
+    }
 
     @inlinable
     public func clusterAddslotsCommand(slot: [Int]) -> RESPCommand {
@@ -1003,7 +1003,7 @@ extension RedisConnection {
     public func clusterBumpepoch() async throws -> RESP3Token {
         let response = try await send(clusterBumpepochCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterBumpepochCommand() -> RESPCommand {
@@ -1019,7 +1019,7 @@ extension RedisConnection {
     public func clusterCountFailureReports(nodeId: String) async throws -> RESP3Token {
         let response = try await send(clusterCountFailureReportsCommand(nodeId: nodeId))
         return response
-   }
+    }
 
     @inlinable
     public func clusterCountFailureReportsCommand(nodeId: String) -> RESPCommand {
@@ -1035,7 +1035,7 @@ extension RedisConnection {
     public func clusterCountkeysinslot(slot: Int) async throws -> RESP3Token {
         let response = try await send(clusterCountkeysinslotCommand(slot: slot))
         return response
-   }
+    }
 
     @inlinable
     public func clusterCountkeysinslotCommand(slot: Int) -> RESPCommand {
@@ -1051,7 +1051,7 @@ extension RedisConnection {
     public func clusterDelslots(slot: Int...) async throws -> RESP3Token {
         let response = try await send(clusterDelslotsCommand(slot: slot))
         return response
-   }
+    }
 
     @inlinable
     public func clusterDelslotsCommand(slot: [Int]) -> RESPCommand {
@@ -1079,7 +1079,7 @@ extension RedisConnection {
     public func clusterFailover(options: CLUSTERFAILOVEROptions?) async throws -> RESP3Token {
         let response = try await send(clusterFailoverCommand(options: options))
         return response
-   }
+    }
 
     @inlinable
     public func clusterFailoverCommand(options: CLUSTERFAILOVEROptions?) -> RESPCommand {
@@ -1095,7 +1095,7 @@ extension RedisConnection {
     public func clusterFlushslots() async throws -> RESP3Token {
         let response = try await send(clusterFlushslotsCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterFlushslotsCommand() -> RESPCommand {
@@ -1111,7 +1111,7 @@ extension RedisConnection {
     public func clusterForget(nodeId: String) async throws -> RESP3Token {
         let response = try await send(clusterForgetCommand(nodeId: nodeId))
         return response
-   }
+    }
 
     @inlinable
     public func clusterForgetCommand(nodeId: String) -> RESPCommand {
@@ -1127,7 +1127,7 @@ extension RedisConnection {
     public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESP3Token {
         let response = try await send(clusterGetkeysinslotCommand(slot: slot, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func clusterGetkeysinslotCommand(slot: Int, count: Int) -> RESPCommand {
@@ -1143,7 +1143,7 @@ extension RedisConnection {
     public func clusterHelp() async throws -> RESP3Token {
         let response = try await send(clusterHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterHelpCommand() -> RESPCommand {
@@ -1159,7 +1159,7 @@ extension RedisConnection {
     public func clusterInfo() async throws -> RESP3Token {
         let response = try await send(clusterInfoCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterInfoCommand() -> RESPCommand {
@@ -1175,7 +1175,7 @@ extension RedisConnection {
     public func clusterKeyslot(key: String) async throws -> RESP3Token {
         let response = try await send(clusterKeyslotCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func clusterKeyslotCommand(key: String) -> RESPCommand {
@@ -1191,7 +1191,7 @@ extension RedisConnection {
     public func clusterLinks() async throws -> RESP3Token {
         let response = try await send(clusterLinksCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterLinksCommand() -> RESPCommand {
@@ -1207,7 +1207,7 @@ extension RedisConnection {
     public func clusterMeet(ip: String, port: Int, clusterBusPort: Int?) async throws -> RESP3Token {
         let response = try await send(clusterMeetCommand(ip: ip, port: port, clusterBusPort: clusterBusPort))
         return response
-   }
+    }
 
     @inlinable
     public func clusterMeetCommand(ip: String, port: Int, clusterBusPort: Int?) -> RESPCommand {
@@ -1223,7 +1223,7 @@ extension RedisConnection {
     public func clusterMyid() async throws -> RESP3Token {
         let response = try await send(clusterMyidCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterMyidCommand() -> RESPCommand {
@@ -1239,7 +1239,7 @@ extension RedisConnection {
     public func clusterMyshardid() async throws -> RESP3Token {
         let response = try await send(clusterMyshardidCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterMyshardidCommand() -> RESPCommand {
@@ -1255,7 +1255,7 @@ extension RedisConnection {
     public func clusterNodes() async throws -> RESP3Token {
         let response = try await send(clusterNodesCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterNodesCommand() -> RESPCommand {
@@ -1271,7 +1271,7 @@ extension RedisConnection {
     public func clusterReplicas(nodeId: String) async throws -> RESP3Token {
         let response = try await send(clusterReplicasCommand(nodeId: nodeId))
         return response
-   }
+    }
 
     @inlinable
     public func clusterReplicasCommand(nodeId: String) -> RESPCommand {
@@ -1287,7 +1287,7 @@ extension RedisConnection {
     public func clusterReplicate(nodeId: String) async throws -> RESP3Token {
         let response = try await send(clusterReplicateCommand(nodeId: nodeId))
         return response
-   }
+    }
 
     @inlinable
     public func clusterReplicateCommand(nodeId: String) -> RESPCommand {
@@ -1315,7 +1315,7 @@ extension RedisConnection {
     public func clusterReset(resetType: CLUSTERRESETResetType?) async throws -> RESP3Token {
         let response = try await send(clusterResetCommand(resetType: resetType))
         return response
-   }
+    }
 
     @inlinable
     public func clusterResetCommand(resetType: CLUSTERRESETResetType?) -> RESPCommand {
@@ -1331,7 +1331,7 @@ extension RedisConnection {
     public func clusterSaveconfig() async throws -> RESP3Token {
         let response = try await send(clusterSaveconfigCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterSaveconfigCommand() -> RESPCommand {
@@ -1347,7 +1347,7 @@ extension RedisConnection {
     public func clusterSetConfigEpoch(configEpoch: Int) async throws -> RESP3Token {
         let response = try await send(clusterSetConfigEpochCommand(configEpoch: configEpoch))
         return response
-   }
+    }
 
     @inlinable
     public func clusterSetConfigEpochCommand(configEpoch: Int) -> RESPCommand {
@@ -1379,7 +1379,7 @@ extension RedisConnection {
     public func clusterSetslot(slot: Int, subcommand: CLUSTERSETSLOTSubcommand) async throws -> RESP3Token {
         let response = try await send(clusterSetslotCommand(slot: slot, subcommand: subcommand))
         return response
-   }
+    }
 
     @inlinable
     public func clusterSetslotCommand(slot: Int, subcommand: CLUSTERSETSLOTSubcommand) -> RESPCommand {
@@ -1395,7 +1395,7 @@ extension RedisConnection {
     public func clusterShards() async throws -> RESP3Token {
         let response = try await send(clusterShardsCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterShardsCommand() -> RESPCommand {
@@ -1411,7 +1411,7 @@ extension RedisConnection {
     public func clusterSlaves(nodeId: String) async throws -> RESP3Token {
         let response = try await send(clusterSlavesCommand(nodeId: nodeId))
         return response
-   }
+    }
 
     @inlinable
     public func clusterSlavesCommand(nodeId: String) -> RESPCommand {
@@ -1427,7 +1427,7 @@ extension RedisConnection {
     public func clusterSlots() async throws -> RESP3Token {
         let response = try await send(clusterSlotsCommand())
         return response
-   }
+    }
 
     @inlinable
     public func clusterSlotsCommand() -> RESPCommand {
@@ -1443,7 +1443,7 @@ extension RedisConnection {
     public func command() async throws -> RESP3Token {
         let response = try await send(commandCommand())
         return response
-   }
+    }
 
     @inlinable
     public func commandCommand() -> RESPCommand {
@@ -1459,7 +1459,7 @@ extension RedisConnection {
     public func commandCount() async throws -> RESP3Token {
         let response = try await send(commandCountCommand())
         return response
-   }
+    }
 
     @inlinable
     public func commandCountCommand() -> RESPCommand {
@@ -1475,7 +1475,7 @@ extension RedisConnection {
     public func commandDocs(commandName: String...) async throws -> RESP3Token {
         let response = try await send(commandDocsCommand(commandName: commandName))
         return response
-   }
+    }
 
     @inlinable
     public func commandDocsCommand(commandName: [String]) -> RESPCommand {
@@ -1491,7 +1491,7 @@ extension RedisConnection {
     public func commandGetkeys(command: String, arg: String...) async throws -> RESP3Token {
         let response = try await send(commandGetkeysCommand(command: command, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func commandGetkeysCommand(command: String, arg: [String]) -> RESPCommand {
@@ -1507,7 +1507,7 @@ extension RedisConnection {
     public func commandGetkeysandflags(command: String, arg: String...) async throws -> RESP3Token {
         let response = try await send(commandGetkeysandflagsCommand(command: command, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func commandGetkeysandflagsCommand(command: String, arg: [String]) -> RESPCommand {
@@ -1523,7 +1523,7 @@ extension RedisConnection {
     public func commandHelp() async throws -> RESP3Token {
         let response = try await send(commandHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func commandHelpCommand() -> RESPCommand {
@@ -1539,7 +1539,7 @@ extension RedisConnection {
     public func commandInfo(commandName: String...) async throws -> RESP3Token {
         let response = try await send(commandInfoCommand(commandName: commandName))
         return response
-   }
+    }
 
     @inlinable
     public func commandInfoCommand(commandName: [String]) -> RESPCommand {
@@ -1569,7 +1569,7 @@ extension RedisConnection {
     public func commandList(filterby: COMMANDLISTFilterby?) async throws -> RESP3Token {
         let response = try await send(commandListCommand(filterby: filterby))
         return response
-   }
+    }
 
     @inlinable
     public func commandListCommand(filterby: COMMANDLISTFilterby?) -> RESPCommand {
@@ -1585,7 +1585,7 @@ extension RedisConnection {
     public func config() async throws -> RESP3Token {
         let response = try await send(configCommand())
         return response
-   }
+    }
 
     @inlinable
     public func configCommand() -> RESPCommand {
@@ -1601,7 +1601,7 @@ extension RedisConnection {
     public func configGet(parameter: String...) async throws -> RESP3Token {
         let response = try await send(configGetCommand(parameter: parameter))
         return response
-   }
+    }
 
     @inlinable
     public func configGetCommand(parameter: [String]) -> RESPCommand {
@@ -1617,7 +1617,7 @@ extension RedisConnection {
     public func configHelp() async throws -> RESP3Token {
         let response = try await send(configHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func configHelpCommand() -> RESPCommand {
@@ -1633,7 +1633,7 @@ extension RedisConnection {
     public func configResetstat() async throws -> RESP3Token {
         let response = try await send(configResetstatCommand())
         return response
-   }
+    }
 
     @inlinable
     public func configResetstatCommand() -> RESPCommand {
@@ -1649,7 +1649,7 @@ extension RedisConnection {
     public func configRewrite() async throws -> RESP3Token {
         let response = try await send(configRewriteCommand())
         return response
-   }
+    }
 
     @inlinable
     public func configRewriteCommand() -> RESPCommand {
@@ -1665,7 +1665,7 @@ extension RedisConnection {
     public func copy(source: RedisKey, destination: RedisKey, destinationDb: Int?, replace: Bool) async throws -> RESP3Token {
         let response = try await send(copyCommand(source: source, destination: destination, destinationDb: destinationDb, replace: replace))
         return response
-   }
+    }
 
     @inlinable
     public func copyCommand(source: RedisKey, destination: RedisKey, destinationDb: Int?, replace: Bool) -> RESPCommand {
@@ -1681,7 +1681,7 @@ extension RedisConnection {
     public func dbsize() async throws -> RESP3Token {
         let response = try await send(dbsizeCommand())
         return response
-   }
+    }
 
     @inlinable
     public func dbsizeCommand() -> RESPCommand {
@@ -1697,7 +1697,7 @@ extension RedisConnection {
     public func debug() async throws -> RESP3Token {
         let response = try await send(debugCommand())
         return response
-   }
+    }
 
     @inlinable
     public func debugCommand() -> RESPCommand {
@@ -1713,7 +1713,7 @@ extension RedisConnection {
     public func decr(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(decrCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func decrCommand(key: RedisKey) -> RESPCommand {
@@ -1729,7 +1729,7 @@ extension RedisConnection {
     public func decrby(key: RedisKey, decrement: Int) async throws -> RESP3Token {
         let response = try await send(decrbyCommand(key: key, decrement: decrement))
         return response
-   }
+    }
 
     @inlinable
     public func decrbyCommand(key: RedisKey, decrement: Int) -> RESPCommand {
@@ -1745,7 +1745,7 @@ extension RedisConnection {
     public func del(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(delCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func delCommand(key: [RedisKey]) -> RESPCommand {
@@ -1761,7 +1761,7 @@ extension RedisConnection {
     public func discard() async throws -> RESP3Token {
         let response = try await send(discardCommand())
         return response
-   }
+    }
 
     @inlinable
     public func discardCommand() -> RESPCommand {
@@ -1777,7 +1777,7 @@ extension RedisConnection {
     public func dump(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(dumpCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func dumpCommand(key: RedisKey) -> RESPCommand {
@@ -1793,7 +1793,7 @@ extension RedisConnection {
     public func echo(message: String) async throws -> RESP3Token {
         let response = try await send(echoCommand(message: message))
         return response
-   }
+    }
 
     @inlinable
     public func echoCommand(message: String) -> RESPCommand {
@@ -1809,7 +1809,7 @@ extension RedisConnection {
     public func eval(script: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
         let response = try await send(evalCommand(script: script, numkeys: numkeys, key: key, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func evalCommand(script: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
@@ -1825,7 +1825,7 @@ extension RedisConnection {
     public func evalsha(sha1: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
         let response = try await send(evalshaCommand(sha1: sha1, numkeys: numkeys, key: key, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func evalshaCommand(sha1: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
@@ -1841,7 +1841,7 @@ extension RedisConnection {
     public func evalshaRo(sha1: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
         let response = try await send(evalshaRoCommand(sha1: sha1, numkeys: numkeys, key: key, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func evalshaRoCommand(sha1: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
@@ -1857,7 +1857,7 @@ extension RedisConnection {
     public func evalRo(script: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
         let response = try await send(evalRoCommand(script: script, numkeys: numkeys, key: key, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func evalRoCommand(script: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
@@ -1873,7 +1873,7 @@ extension RedisConnection {
     public func exec() async throws -> RESP3Token {
         let response = try await send(execCommand())
         return response
-   }
+    }
 
     @inlinable
     public func execCommand() -> RESPCommand {
@@ -1889,7 +1889,7 @@ extension RedisConnection {
     public func exists(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(existsCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func existsCommand(key: [RedisKey]) -> RESPCommand {
@@ -1921,7 +1921,7 @@ extension RedisConnection {
     public func expire(key: RedisKey, seconds: Int, condition: EXPIRECondition?) async throws -> RESP3Token {
         let response = try await send(expireCommand(key: key, seconds: seconds, condition: condition))
         return response
-   }
+    }
 
     @inlinable
     public func expireCommand(key: RedisKey, seconds: Int, condition: EXPIRECondition?) -> RESPCommand {
@@ -1953,7 +1953,7 @@ extension RedisConnection {
     public func expireat(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition?) async throws -> RESP3Token {
         let response = try await send(expireatCommand(key: key, unixTimeSeconds: unixTimeSeconds, condition: condition))
         return response
-   }
+    }
 
     @inlinable
     public func expireatCommand(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition?) -> RESPCommand {
@@ -1969,7 +1969,7 @@ extension RedisConnection {
     public func expiretime(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(expiretimeCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func expiretimeCommand(key: RedisKey) -> RESPCommand {
@@ -1985,7 +1985,7 @@ extension RedisConnection {
     public func fcall(function: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
         let response = try await send(fcallCommand(function: function, numkeys: numkeys, key: key, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func fcallCommand(function: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
@@ -2001,7 +2001,7 @@ extension RedisConnection {
     public func fcallRo(function: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
         let response = try await send(fcallRoCommand(function: function, numkeys: numkeys, key: key, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func fcallRoCommand(function: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
@@ -2029,7 +2029,7 @@ extension RedisConnection {
     public func flushall(flushType: FLUSHALLFlushType?) async throws -> RESP3Token {
         let response = try await send(flushallCommand(flushType: flushType))
         return response
-   }
+    }
 
     @inlinable
     public func flushallCommand(flushType: FLUSHALLFlushType?) -> RESPCommand {
@@ -2057,7 +2057,7 @@ extension RedisConnection {
     public func flushdb(flushType: FLUSHDBFlushType?) async throws -> RESP3Token {
         let response = try await send(flushdbCommand(flushType: flushType))
         return response
-   }
+    }
 
     @inlinable
     public func flushdbCommand(flushType: FLUSHDBFlushType?) -> RESPCommand {
@@ -2073,7 +2073,7 @@ extension RedisConnection {
     public func function() async throws -> RESP3Token {
         let response = try await send(functionCommand())
         return response
-   }
+    }
 
     @inlinable
     public func functionCommand() -> RESPCommand {
@@ -2089,7 +2089,7 @@ extension RedisConnection {
     public func functionDelete(libraryName: String) async throws -> RESP3Token {
         let response = try await send(functionDeleteCommand(libraryName: libraryName))
         return response
-   }
+    }
 
     @inlinable
     public func functionDeleteCommand(libraryName: String) -> RESPCommand {
@@ -2105,7 +2105,7 @@ extension RedisConnection {
     public func functionDump() async throws -> RESP3Token {
         let response = try await send(functionDumpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func functionDumpCommand() -> RESPCommand {
@@ -2133,7 +2133,7 @@ extension RedisConnection {
     public func functionFlush(flushType: FUNCTIONFLUSHFlushType?) async throws -> RESP3Token {
         let response = try await send(functionFlushCommand(flushType: flushType))
         return response
-   }
+    }
 
     @inlinable
     public func functionFlushCommand(flushType: FUNCTIONFLUSHFlushType?) -> RESPCommand {
@@ -2149,7 +2149,7 @@ extension RedisConnection {
     public func functionHelp() async throws -> RESP3Token {
         let response = try await send(functionHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func functionHelpCommand() -> RESPCommand {
@@ -2165,7 +2165,7 @@ extension RedisConnection {
     public func functionKill() async throws -> RESP3Token {
         let response = try await send(functionKillCommand())
         return response
-   }
+    }
 
     @inlinable
     public func functionKillCommand() -> RESPCommand {
@@ -2181,7 +2181,7 @@ extension RedisConnection {
     public func functionList(libraryNamePattern: String?, withcode: Bool) async throws -> RESP3Token {
         let response = try await send(functionListCommand(libraryNamePattern: libraryNamePattern, withcode: withcode))
         return response
-   }
+    }
 
     @inlinable
     public func functionListCommand(libraryNamePattern: String?, withcode: Bool) -> RESPCommand {
@@ -2197,7 +2197,7 @@ extension RedisConnection {
     public func functionLoad(replace: Bool, functionCode: String) async throws -> RESP3Token {
         let response = try await send(functionLoadCommand(replace: replace, functionCode: functionCode))
         return response
-   }
+    }
 
     @inlinable
     public func functionLoadCommand(replace: Bool, functionCode: String) -> RESPCommand {
@@ -2227,7 +2227,7 @@ extension RedisConnection {
     public func functionRestore(serializedValue: String, policy: FUNCTIONRESTOREPolicy?) async throws -> RESP3Token {
         let response = try await send(functionRestoreCommand(serializedValue: serializedValue, policy: policy))
         return response
-   }
+    }
 
     @inlinable
     public func functionRestoreCommand(serializedValue: String, policy: FUNCTIONRESTOREPolicy?) -> RESPCommand {
@@ -2243,7 +2243,7 @@ extension RedisConnection {
     public func functionStats() async throws -> RESP3Token {
         let response = try await send(functionStatsCommand())
         return response
-   }
+    }
 
     @inlinable
     public func functionStatsCommand() -> RESPCommand {
@@ -2275,7 +2275,7 @@ extension RedisConnection {
     public func geodist(key: RedisKey, member1: String, member2: String, unit: GEODISTUnit?) async throws -> RESP3Token {
         let response = try await send(geodistCommand(key: key, member1: member1, member2: member2, unit: unit))
         return response
-   }
+    }
 
     @inlinable
     public func geodistCommand(key: RedisKey, member1: String, member2: String, unit: GEODISTUnit?) -> RESPCommand {
@@ -2291,7 +2291,7 @@ extension RedisConnection {
     public func geohash(key: RedisKey, member: String...) async throws -> RESP3Token {
         let response = try await send(geohashCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func geohashCommand(key: RedisKey, member: [String]) -> RESPCommand {
@@ -2307,7 +2307,7 @@ extension RedisConnection {
     public func geopos(key: RedisKey, member: String...) async throws -> RESP3Token {
         let response = try await send(geoposCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func geoposCommand(key: RedisKey, member: [String]) -> RESPCommand {
@@ -2323,7 +2323,7 @@ extension RedisConnection {
     public func get(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(getCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func getCommand(key: RedisKey) -> RESPCommand {
@@ -2339,7 +2339,7 @@ extension RedisConnection {
     public func getbit(key: RedisKey, offset: Int) async throws -> RESP3Token {
         let response = try await send(getbitCommand(key: key, offset: offset))
         return response
-   }
+    }
 
     @inlinable
     public func getbitCommand(key: RedisKey, offset: Int) -> RESPCommand {
@@ -2355,7 +2355,7 @@ extension RedisConnection {
     public func getdel(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(getdelCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func getdelCommand(key: RedisKey) -> RESPCommand {
@@ -2389,7 +2389,7 @@ extension RedisConnection {
     public func getex(key: RedisKey, expiration: GETEXExpiration?) async throws -> RESP3Token {
         let response = try await send(getexCommand(key: key, expiration: expiration))
         return response
-   }
+    }
 
     @inlinable
     public func getexCommand(key: RedisKey, expiration: GETEXExpiration?) -> RESPCommand {
@@ -2405,7 +2405,7 @@ extension RedisConnection {
     public func getrange(key: RedisKey, start: Int, end: Int) async throws -> RESP3Token {
         let response = try await send(getrangeCommand(key: key, start: start, end: end))
         return response
-   }
+    }
 
     @inlinable
     public func getrangeCommand(key: RedisKey, start: Int, end: Int) -> RESPCommand {
@@ -2421,7 +2421,7 @@ extension RedisConnection {
     public func getset(key: RedisKey, value: String) async throws -> RESP3Token {
         let response = try await send(getsetCommand(key: key, value: value))
         return response
-   }
+    }
 
     @inlinable
     public func getsetCommand(key: RedisKey, value: String) -> RESPCommand {
@@ -2437,7 +2437,7 @@ extension RedisConnection {
     public func hdel(key: RedisKey, field: String...) async throws -> RESP3Token {
         let response = try await send(hdelCommand(key: key, field: field))
         return response
-   }
+    }
 
     @inlinable
     public func hdelCommand(key: RedisKey, field: [String]) -> RESPCommand {
@@ -2453,7 +2453,7 @@ extension RedisConnection {
     public func hexists(key: RedisKey, field: String) async throws -> RESP3Token {
         let response = try await send(hexistsCommand(key: key, field: field))
         return response
-   }
+    }
 
     @inlinable
     public func hexistsCommand(key: RedisKey, field: String) -> RESPCommand {
@@ -2469,7 +2469,7 @@ extension RedisConnection {
     public func hget(key: RedisKey, field: String) async throws -> RESP3Token {
         let response = try await send(hgetCommand(key: key, field: field))
         return response
-   }
+    }
 
     @inlinable
     public func hgetCommand(key: RedisKey, field: String) -> RESPCommand {
@@ -2485,7 +2485,7 @@ extension RedisConnection {
     public func hgetall(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(hgetallCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func hgetallCommand(key: RedisKey) -> RESPCommand {
@@ -2501,7 +2501,7 @@ extension RedisConnection {
     public func hincrby(key: RedisKey, field: String, increment: Int) async throws -> RESP3Token {
         let response = try await send(hincrbyCommand(key: key, field: field, increment: increment))
         return response
-   }
+    }
 
     @inlinable
     public func hincrbyCommand(key: RedisKey, field: String, increment: Int) -> RESPCommand {
@@ -2517,7 +2517,7 @@ extension RedisConnection {
     public func hincrbyfloat(key: RedisKey, field: String, increment: Double) async throws -> RESP3Token {
         let response = try await send(hincrbyfloatCommand(key: key, field: field, increment: increment))
         return response
-   }
+    }
 
     @inlinable
     public func hincrbyfloatCommand(key: RedisKey, field: String, increment: Double) -> RESPCommand {
@@ -2533,7 +2533,7 @@ extension RedisConnection {
     public func hkeys(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(hkeysCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func hkeysCommand(key: RedisKey) -> RESPCommand {
@@ -2549,7 +2549,7 @@ extension RedisConnection {
     public func hlen(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(hlenCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func hlenCommand(key: RedisKey) -> RESPCommand {
@@ -2565,7 +2565,7 @@ extension RedisConnection {
     public func hmget(key: RedisKey, field: String...) async throws -> RESP3Token {
         let response = try await send(hmgetCommand(key: key, field: field))
         return response
-   }
+    }
 
     @inlinable
     public func hmgetCommand(key: RedisKey, field: [String]) -> RESPCommand {
@@ -2581,7 +2581,7 @@ extension RedisConnection {
     public func hscan(key: RedisKey, cursor: Int, pattern: String?, count: Int?) async throws -> RESP3Token {
         let response = try await send(hscanCommand(key: key, cursor: cursor, pattern: pattern, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func hscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
@@ -2597,7 +2597,7 @@ extension RedisConnection {
     public func hsetnx(key: RedisKey, field: String, value: String) async throws -> RESP3Token {
         let response = try await send(hsetnxCommand(key: key, field: field, value: value))
         return response
-   }
+    }
 
     @inlinable
     public func hsetnxCommand(key: RedisKey, field: String, value: String) -> RESPCommand {
@@ -2613,7 +2613,7 @@ extension RedisConnection {
     public func hstrlen(key: RedisKey, field: String) async throws -> RESP3Token {
         let response = try await send(hstrlenCommand(key: key, field: field))
         return response
-   }
+    }
 
     @inlinable
     public func hstrlenCommand(key: RedisKey, field: String) -> RESPCommand {
@@ -2629,7 +2629,7 @@ extension RedisConnection {
     public func hvals(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(hvalsCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func hvalsCommand(key: RedisKey) -> RESPCommand {
@@ -2645,7 +2645,7 @@ extension RedisConnection {
     public func incr(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(incrCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func incrCommand(key: RedisKey) -> RESPCommand {
@@ -2661,7 +2661,7 @@ extension RedisConnection {
     public func incrby(key: RedisKey, increment: Int) async throws -> RESP3Token {
         let response = try await send(incrbyCommand(key: key, increment: increment))
         return response
-   }
+    }
 
     @inlinable
     public func incrbyCommand(key: RedisKey, increment: Int) -> RESPCommand {
@@ -2677,7 +2677,7 @@ extension RedisConnection {
     public func incrbyfloat(key: RedisKey, increment: Double) async throws -> RESP3Token {
         let response = try await send(incrbyfloatCommand(key: key, increment: increment))
         return response
-   }
+    }
 
     @inlinable
     public func incrbyfloatCommand(key: RedisKey, increment: Double) -> RESPCommand {
@@ -2693,7 +2693,7 @@ extension RedisConnection {
     public func info(section: String...) async throws -> RESP3Token {
         let response = try await send(infoCommand(section: section))
         return response
-   }
+    }
 
     @inlinable
     public func infoCommand(section: [String]) -> RESPCommand {
@@ -2709,7 +2709,7 @@ extension RedisConnection {
     public func keys(pattern: String) async throws -> RESP3Token {
         let response = try await send(keysCommand(pattern: pattern))
         return response
-   }
+    }
 
     @inlinable
     public func keysCommand(pattern: String) -> RESPCommand {
@@ -2725,7 +2725,7 @@ extension RedisConnection {
     public func lastsave() async throws -> RESP3Token {
         let response = try await send(lastsaveCommand())
         return response
-   }
+    }
 
     @inlinable
     public func lastsaveCommand() -> RESPCommand {
@@ -2741,7 +2741,7 @@ extension RedisConnection {
     public func latency() async throws -> RESP3Token {
         let response = try await send(latencyCommand())
         return response
-   }
+    }
 
     @inlinable
     public func latencyCommand() -> RESPCommand {
@@ -2757,7 +2757,7 @@ extension RedisConnection {
     public func latencyDoctor() async throws -> RESP3Token {
         let response = try await send(latencyDoctorCommand())
         return response
-   }
+    }
 
     @inlinable
     public func latencyDoctorCommand() -> RESPCommand {
@@ -2773,7 +2773,7 @@ extension RedisConnection {
     public func latencyGraph(event: String) async throws -> RESP3Token {
         let response = try await send(latencyGraphCommand(event: event))
         return response
-   }
+    }
 
     @inlinable
     public func latencyGraphCommand(event: String) -> RESPCommand {
@@ -2789,7 +2789,7 @@ extension RedisConnection {
     public func latencyHelp() async throws -> RESP3Token {
         let response = try await send(latencyHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func latencyHelpCommand() -> RESPCommand {
@@ -2805,7 +2805,7 @@ extension RedisConnection {
     public func latencyHistogram(command: String...) async throws -> RESP3Token {
         let response = try await send(latencyHistogramCommand(command: command))
         return response
-   }
+    }
 
     @inlinable
     public func latencyHistogramCommand(command: [String]) -> RESPCommand {
@@ -2821,7 +2821,7 @@ extension RedisConnection {
     public func latencyHistory(event: String) async throws -> RESP3Token {
         let response = try await send(latencyHistoryCommand(event: event))
         return response
-   }
+    }
 
     @inlinable
     public func latencyHistoryCommand(event: String) -> RESPCommand {
@@ -2837,7 +2837,7 @@ extension RedisConnection {
     public func latencyLatest() async throws -> RESP3Token {
         let response = try await send(latencyLatestCommand())
         return response
-   }
+    }
 
     @inlinable
     public func latencyLatestCommand() -> RESPCommand {
@@ -2853,7 +2853,7 @@ extension RedisConnection {
     public func latencyReset(event: String...) async throws -> RESP3Token {
         let response = try await send(latencyResetCommand(event: event))
         return response
-   }
+    }
 
     @inlinable
     public func latencyResetCommand(event: [String]) -> RESPCommand {
@@ -2869,7 +2869,7 @@ extension RedisConnection {
     public func lcs(key1: RedisKey, key2: RedisKey, len: Bool, idx: Bool, minMatchLen: Int?, withmatchlen: Bool) async throws -> RESP3Token {
         let response = try await send(lcsCommand(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
         return response
-   }
+    }
 
     @inlinable
     public func lcsCommand(key1: RedisKey, key2: RedisKey, len: Bool, idx: Bool, minMatchLen: Int?, withmatchlen: Bool) -> RESPCommand {
@@ -2885,7 +2885,7 @@ extension RedisConnection {
     public func lindex(key: RedisKey, index: Int) async throws -> RESP3Token {
         let response = try await send(lindexCommand(key: key, index: index))
         return response
-   }
+    }
 
     @inlinable
     public func lindexCommand(key: RedisKey, index: Int) -> RESPCommand {
@@ -2913,7 +2913,7 @@ extension RedisConnection {
     public func linsert(key: RedisKey, where: LINSERTWhere, pivot: String, element: String) async throws -> RESP3Token {
         let response = try await send(linsertCommand(key: key, where: `where`, pivot: pivot, element: element))
         return response
-   }
+    }
 
     @inlinable
     public func linsertCommand(key: RedisKey, where: LINSERTWhere, pivot: String, element: String) -> RESPCommand {
@@ -2929,7 +2929,7 @@ extension RedisConnection {
     public func llen(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(llenCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func llenCommand(key: RedisKey) -> RESPCommand {
@@ -2969,7 +2969,7 @@ extension RedisConnection {
     public func lmove(source: RedisKey, destination: RedisKey, wherefrom: LMOVEWherefrom, whereto: LMOVEWhereto) async throws -> RESP3Token {
         let response = try await send(lmoveCommand(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
         return response
-   }
+    }
 
     @inlinable
     public func lmoveCommand(source: RedisKey, destination: RedisKey, wherefrom: LMOVEWherefrom, whereto: LMOVEWhereto) -> RESPCommand {
@@ -2997,7 +2997,7 @@ extension RedisConnection {
     public func lmpop(numkeys: Int, key: RedisKey..., where: LMPOPWhere, count: Int?) async throws -> RESP3Token {
         let response = try await send(lmpopCommand(numkeys: numkeys, key: key, where: `where`, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func lmpopCommand(numkeys: Int, key: [RedisKey], where: LMPOPWhere, count: Int?) -> RESPCommand {
@@ -3012,7 +3012,7 @@ extension RedisConnection {
     public func lolwut(version: Int?) async throws -> RESP3Token {
         let response = try await send(lolwutCommand(version: version))
         return response
-   }
+    }
 
     @inlinable
     public func lolwutCommand(version: Int?) -> RESPCommand {
@@ -3028,7 +3028,7 @@ extension RedisConnection {
     public func lpop(key: RedisKey, count: Int?) async throws -> RESP3Token {
         let response = try await send(lpopCommand(key: key, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func lpopCommand(key: RedisKey, count: Int?) -> RESPCommand {
@@ -3044,7 +3044,7 @@ extension RedisConnection {
     public func lpos(key: RedisKey, element: String, rank: Int?, numMatches: Int?, len: Int?) async throws -> RESP3Token {
         let response = try await send(lposCommand(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
         return response
-   }
+    }
 
     @inlinable
     public func lposCommand(key: RedisKey, element: String, rank: Int?, numMatches: Int?, len: Int?) -> RESPCommand {
@@ -3060,7 +3060,7 @@ extension RedisConnection {
     public func lpush(key: RedisKey, element: String...) async throws -> RESP3Token {
         let response = try await send(lpushCommand(key: key, element: element))
         return response
-   }
+    }
 
     @inlinable
     public func lpushCommand(key: RedisKey, element: [String]) -> RESPCommand {
@@ -3076,7 +3076,7 @@ extension RedisConnection {
     public func lpushx(key: RedisKey, element: String...) async throws -> RESP3Token {
         let response = try await send(lpushxCommand(key: key, element: element))
         return response
-   }
+    }
 
     @inlinable
     public func lpushxCommand(key: RedisKey, element: [String]) -> RESPCommand {
@@ -3092,7 +3092,7 @@ extension RedisConnection {
     public func lrange(key: RedisKey, start: Int, stop: Int) async throws -> RESP3Token {
         let response = try await send(lrangeCommand(key: key, start: start, stop: stop))
         return response
-   }
+    }
 
     @inlinable
     public func lrangeCommand(key: RedisKey, start: Int, stop: Int) -> RESPCommand {
@@ -3108,7 +3108,7 @@ extension RedisConnection {
     public func lrem(key: RedisKey, count: Int, element: String) async throws -> RESP3Token {
         let response = try await send(lremCommand(key: key, count: count, element: element))
         return response
-   }
+    }
 
     @inlinable
     public func lremCommand(key: RedisKey, count: Int, element: String) -> RESPCommand {
@@ -3124,7 +3124,7 @@ extension RedisConnection {
     public func lset(key: RedisKey, index: Int, element: String) async throws -> RESP3Token {
         let response = try await send(lsetCommand(key: key, index: index, element: element))
         return response
-   }
+    }
 
     @inlinable
     public func lsetCommand(key: RedisKey, index: Int, element: String) -> RESPCommand {
@@ -3140,7 +3140,7 @@ extension RedisConnection {
     public func ltrim(key: RedisKey, start: Int, stop: Int) async throws -> RESP3Token {
         let response = try await send(ltrimCommand(key: key, start: start, stop: stop))
         return response
-   }
+    }
 
     @inlinable
     public func ltrimCommand(key: RedisKey, start: Int, stop: Int) -> RESPCommand {
@@ -3156,7 +3156,7 @@ extension RedisConnection {
     public func memory() async throws -> RESP3Token {
         let response = try await send(memoryCommand())
         return response
-   }
+    }
 
     @inlinable
     public func memoryCommand() -> RESPCommand {
@@ -3172,7 +3172,7 @@ extension RedisConnection {
     public func memoryDoctor() async throws -> RESP3Token {
         let response = try await send(memoryDoctorCommand())
         return response
-   }
+    }
 
     @inlinable
     public func memoryDoctorCommand() -> RESPCommand {
@@ -3188,7 +3188,7 @@ extension RedisConnection {
     public func memoryHelp() async throws -> RESP3Token {
         let response = try await send(memoryHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func memoryHelpCommand() -> RESPCommand {
@@ -3204,7 +3204,7 @@ extension RedisConnection {
     public func memoryMallocStats() async throws -> RESP3Token {
         let response = try await send(memoryMallocStatsCommand())
         return response
-   }
+    }
 
     @inlinable
     public func memoryMallocStatsCommand() -> RESPCommand {
@@ -3220,7 +3220,7 @@ extension RedisConnection {
     public func memoryPurge() async throws -> RESP3Token {
         let response = try await send(memoryPurgeCommand())
         return response
-   }
+    }
 
     @inlinable
     public func memoryPurgeCommand() -> RESPCommand {
@@ -3236,7 +3236,7 @@ extension RedisConnection {
     public func memoryStats() async throws -> RESP3Token {
         let response = try await send(memoryStatsCommand())
         return response
-   }
+    }
 
     @inlinable
     public func memoryStatsCommand() -> RESPCommand {
@@ -3252,7 +3252,7 @@ extension RedisConnection {
     public func memoryUsage(key: RedisKey, count: Int?) async throws -> RESP3Token {
         let response = try await send(memoryUsageCommand(key: key, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func memoryUsageCommand(key: RedisKey, count: Int?) -> RESPCommand {
@@ -3268,7 +3268,7 @@ extension RedisConnection {
     public func mget(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(mgetCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func mgetCommand(key: [RedisKey]) -> RESPCommand {
@@ -3296,7 +3296,7 @@ extension RedisConnection {
     public func module() async throws -> RESP3Token {
         let response = try await send(moduleCommand())
         return response
-   }
+    }
 
     @inlinable
     public func moduleCommand() -> RESPCommand {
@@ -3312,7 +3312,7 @@ extension RedisConnection {
     public func moduleHelp() async throws -> RESP3Token {
         let response = try await send(moduleHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func moduleHelpCommand() -> RESPCommand {
@@ -3328,7 +3328,7 @@ extension RedisConnection {
     public func moduleList() async throws -> RESP3Token {
         let response = try await send(moduleListCommand())
         return response
-   }
+    }
 
     @inlinable
     public func moduleListCommand() -> RESPCommand {
@@ -3344,7 +3344,7 @@ extension RedisConnection {
     public func moduleLoad(path: String, arg: String...) async throws -> RESP3Token {
         let response = try await send(moduleLoadCommand(path: path, arg: arg))
         return response
-   }
+    }
 
     @inlinable
     public func moduleLoadCommand(path: String, arg: [String]) -> RESPCommand {
@@ -3360,7 +3360,7 @@ extension RedisConnection {
     public func moduleUnload(name: String) async throws -> RESP3Token {
         let response = try await send(moduleUnloadCommand(name: name))
         return response
-   }
+    }
 
     @inlinable
     public func moduleUnloadCommand(name: String) -> RESPCommand {
@@ -3375,7 +3375,7 @@ extension RedisConnection {
     public func monitor() async throws -> RESP3Token {
         let response = try await send(monitorCommand())
         return response
-   }
+    }
 
     @inlinable
     public func monitorCommand() -> RESPCommand {
@@ -3391,7 +3391,7 @@ extension RedisConnection {
     public func move(key: RedisKey, db: Int) async throws -> RESP3Token {
         let response = try await send(moveCommand(key: key, db: db))
         return response
-   }
+    }
 
     @inlinable
     public func moveCommand(key: RedisKey, db: Int) -> RESPCommand {
@@ -3407,7 +3407,7 @@ extension RedisConnection {
     public func multi() async throws -> RESP3Token {
         let response = try await send(multiCommand())
         return response
-   }
+    }
 
     @inlinable
     public func multiCommand() -> RESPCommand {
@@ -3423,7 +3423,7 @@ extension RedisConnection {
     public func object() async throws -> RESP3Token {
         let response = try await send(objectCommand())
         return response
-   }
+    }
 
     @inlinable
     public func objectCommand() -> RESPCommand {
@@ -3439,7 +3439,7 @@ extension RedisConnection {
     public func objectEncoding(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(objectEncodingCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func objectEncodingCommand(key: RedisKey) -> RESPCommand {
@@ -3455,7 +3455,7 @@ extension RedisConnection {
     public func objectFreq(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(objectFreqCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func objectFreqCommand(key: RedisKey) -> RESPCommand {
@@ -3471,7 +3471,7 @@ extension RedisConnection {
     public func objectHelp() async throws -> RESP3Token {
         let response = try await send(objectHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func objectHelpCommand() -> RESPCommand {
@@ -3487,7 +3487,7 @@ extension RedisConnection {
     public func objectIdletime(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(objectIdletimeCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func objectIdletimeCommand(key: RedisKey) -> RESPCommand {
@@ -3503,7 +3503,7 @@ extension RedisConnection {
     public func objectRefcount(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(objectRefcountCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func objectRefcountCommand(key: RedisKey) -> RESPCommand {
@@ -3519,7 +3519,7 @@ extension RedisConnection {
     public func persist(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(persistCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func persistCommand(key: RedisKey) -> RESPCommand {
@@ -3551,7 +3551,7 @@ extension RedisConnection {
     public func pexpire(key: RedisKey, milliseconds: Int, condition: PEXPIRECondition?) async throws -> RESP3Token {
         let response = try await send(pexpireCommand(key: key, milliseconds: milliseconds, condition: condition))
         return response
-   }
+    }
 
     @inlinable
     public func pexpireCommand(key: RedisKey, milliseconds: Int, condition: PEXPIRECondition?) -> RESPCommand {
@@ -3583,7 +3583,7 @@ extension RedisConnection {
     public func pexpireat(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition?) async throws -> RESP3Token {
         let response = try await send(pexpireatCommand(key: key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition))
         return response
-   }
+    }
 
     @inlinable
     public func pexpireatCommand(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition?) -> RESPCommand {
@@ -3599,7 +3599,7 @@ extension RedisConnection {
     public func pexpiretime(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(pexpiretimeCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func pexpiretimeCommand(key: RedisKey) -> RESPCommand {
@@ -3615,7 +3615,7 @@ extension RedisConnection {
     public func pfadd(key: RedisKey, element: String...) async throws -> RESP3Token {
         let response = try await send(pfaddCommand(key: key, element: element))
         return response
-   }
+    }
 
     @inlinable
     public func pfaddCommand(key: RedisKey, element: [String]) -> RESPCommand {
@@ -3631,7 +3631,7 @@ extension RedisConnection {
     public func pfcount(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(pfcountCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func pfcountCommand(key: [RedisKey]) -> RESPCommand {
@@ -3647,7 +3647,7 @@ extension RedisConnection {
     public func pfdebug(subcommand: String, key: RedisKey) async throws -> RESP3Token {
         let response = try await send(pfdebugCommand(subcommand: subcommand, key: key))
         return response
-   }
+    }
 
     @inlinable
     public func pfdebugCommand(subcommand: String, key: RedisKey) -> RESPCommand {
@@ -3663,7 +3663,7 @@ extension RedisConnection {
     public func pfmerge(destkey: RedisKey, sourcekey: RedisKey...) async throws -> RESP3Token {
         let response = try await send(pfmergeCommand(destkey: destkey, sourcekey: sourcekey))
         return response
-   }
+    }
 
     @inlinable
     public func pfmergeCommand(destkey: RedisKey, sourcekey: [RedisKey]) -> RESPCommand {
@@ -3679,7 +3679,7 @@ extension RedisConnection {
     public func pfselftest() async throws -> RESP3Token {
         let response = try await send(pfselftestCommand())
         return response
-   }
+    }
 
     @inlinable
     public func pfselftestCommand() -> RESPCommand {
@@ -3695,7 +3695,7 @@ extension RedisConnection {
     public func ping(message: String?) async throws -> RESP3Token {
         let response = try await send(pingCommand(message: message))
         return response
-   }
+    }
 
     @inlinable
     public func pingCommand(message: String?) -> RESPCommand {
@@ -3711,7 +3711,7 @@ extension RedisConnection {
     public func psetex(key: RedisKey, milliseconds: Int, value: String) async throws -> RESP3Token {
         let response = try await send(psetexCommand(key: key, milliseconds: milliseconds, value: value))
         return response
-   }
+    }
 
     @inlinable
     public func psetexCommand(key: RedisKey, milliseconds: Int, value: String) -> RESPCommand {
@@ -3727,7 +3727,7 @@ extension RedisConnection {
     public func psubscribe(pattern: String...) async throws -> RESP3Token {
         let response = try await send(psubscribeCommand(pattern: pattern))
         return response
-   }
+    }
 
     @inlinable
     public func psubscribeCommand(pattern: [String]) -> RESPCommand {
@@ -3742,7 +3742,7 @@ extension RedisConnection {
     public func psync(replicationid: String, offset: Int) async throws -> RESP3Token {
         let response = try await send(psyncCommand(replicationid: replicationid, offset: offset))
         return response
-   }
+    }
 
     @inlinable
     public func psyncCommand(replicationid: String, offset: Int) -> RESPCommand {
@@ -3758,7 +3758,7 @@ extension RedisConnection {
     public func pttl(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(pttlCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func pttlCommand(key: RedisKey) -> RESPCommand {
@@ -3774,7 +3774,7 @@ extension RedisConnection {
     public func publish(channel: String, message: String) async throws -> RESP3Token {
         let response = try await send(publishCommand(channel: channel, message: message))
         return response
-   }
+    }
 
     @inlinable
     public func publishCommand(channel: String, message: String) -> RESPCommand {
@@ -3790,7 +3790,7 @@ extension RedisConnection {
     public func pubsub() async throws -> RESP3Token {
         let response = try await send(pubsubCommand())
         return response
-   }
+    }
 
     @inlinable
     public func pubsubCommand() -> RESPCommand {
@@ -3806,7 +3806,7 @@ extension RedisConnection {
     public func pubsubChannels(pattern: String?) async throws -> RESP3Token {
         let response = try await send(pubsubChannelsCommand(pattern: pattern))
         return response
-   }
+    }
 
     @inlinable
     public func pubsubChannelsCommand(pattern: String?) -> RESPCommand {
@@ -3822,7 +3822,7 @@ extension RedisConnection {
     public func pubsubHelp() async throws -> RESP3Token {
         let response = try await send(pubsubHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func pubsubHelpCommand() -> RESPCommand {
@@ -3838,7 +3838,7 @@ extension RedisConnection {
     public func pubsubNumpat() async throws -> RESP3Token {
         let response = try await send(pubsubNumpatCommand())
         return response
-   }
+    }
 
     @inlinable
     public func pubsubNumpatCommand() -> RESPCommand {
@@ -3854,7 +3854,7 @@ extension RedisConnection {
     public func pubsubNumsub(channel: String...) async throws -> RESP3Token {
         let response = try await send(pubsubNumsubCommand(channel: channel))
         return response
-   }
+    }
 
     @inlinable
     public func pubsubNumsubCommand(channel: [String]) -> RESPCommand {
@@ -3870,7 +3870,7 @@ extension RedisConnection {
     public func pubsubShardchannels(pattern: String?) async throws -> RESP3Token {
         let response = try await send(pubsubShardchannelsCommand(pattern: pattern))
         return response
-   }
+    }
 
     @inlinable
     public func pubsubShardchannelsCommand(pattern: String?) -> RESPCommand {
@@ -3886,7 +3886,7 @@ extension RedisConnection {
     public func pubsubShardnumsub(shardchannel: String...) async throws -> RESP3Token {
         let response = try await send(pubsubShardnumsubCommand(shardchannel: shardchannel))
         return response
-   }
+    }
 
     @inlinable
     public func pubsubShardnumsubCommand(shardchannel: [String]) -> RESPCommand {
@@ -3902,7 +3902,7 @@ extension RedisConnection {
     public func punsubscribe(pattern: String...) async throws -> RESP3Token {
         let response = try await send(punsubscribeCommand(pattern: pattern))
         return response
-   }
+    }
 
     @inlinable
     public func punsubscribeCommand(pattern: [String]) -> RESPCommand {
@@ -3918,7 +3918,7 @@ extension RedisConnection {
     public func quit() async throws -> RESP3Token {
         let response = try await send(quitCommand())
         return response
-   }
+    }
 
     @inlinable
     public func quitCommand() -> RESPCommand {
@@ -3934,7 +3934,7 @@ extension RedisConnection {
     public func randomkey() async throws -> RESP3Token {
         let response = try await send(randomkeyCommand())
         return response
-   }
+    }
 
     @inlinable
     public func randomkeyCommand() -> RESPCommand {
@@ -3950,7 +3950,7 @@ extension RedisConnection {
     public func readonly() async throws -> RESP3Token {
         let response = try await send(readonlyCommand())
         return response
-   }
+    }
 
     @inlinable
     public func readonlyCommand() -> RESPCommand {
@@ -3966,7 +3966,7 @@ extension RedisConnection {
     public func readwrite() async throws -> RESP3Token {
         let response = try await send(readwriteCommand())
         return response
-   }
+    }
 
     @inlinable
     public func readwriteCommand() -> RESPCommand {
@@ -3982,7 +3982,7 @@ extension RedisConnection {
     public func rename(key: RedisKey, newkey: RedisKey) async throws -> RESP3Token {
         let response = try await send(renameCommand(key: key, newkey: newkey))
         return response
-   }
+    }
 
     @inlinable
     public func renameCommand(key: RedisKey, newkey: RedisKey) -> RESPCommand {
@@ -3998,7 +3998,7 @@ extension RedisConnection {
     public func renamenx(key: RedisKey, newkey: RedisKey) async throws -> RESP3Token {
         let response = try await send(renamenxCommand(key: key, newkey: newkey))
         return response
-   }
+    }
 
     @inlinable
     public func renamenxCommand(key: RedisKey, newkey: RedisKey) -> RESPCommand {
@@ -4014,7 +4014,7 @@ extension RedisConnection {
     public func replconf() async throws -> RESP3Token {
         let response = try await send(replconfCommand())
         return response
-   }
+    }
 
     @inlinable
     public func replconfCommand() -> RESPCommand {
@@ -4030,7 +4030,7 @@ extension RedisConnection {
     public func reset() async throws -> RESP3Token {
         let response = try await send(resetCommand())
         return response
-   }
+    }
 
     @inlinable
     public func resetCommand() -> RESPCommand {
@@ -4046,7 +4046,7 @@ extension RedisConnection {
     public func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) async throws -> RESP3Token {
         let response = try await send(restoreCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
         return response
-   }
+    }
 
     @inlinable
     public func restoreCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) -> RESPCommand {
@@ -4062,7 +4062,7 @@ extension RedisConnection {
     public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) async throws -> RESP3Token {
         let response = try await send(restoreAskingCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
         return response
-   }
+    }
 
     @inlinable
     public func restoreAskingCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) -> RESPCommand {
@@ -4078,7 +4078,7 @@ extension RedisConnection {
     public func role() async throws -> RESP3Token {
         let response = try await send(roleCommand())
         return response
-   }
+    }
 
     @inlinable
     public func roleCommand() -> RESPCommand {
@@ -4094,7 +4094,7 @@ extension RedisConnection {
     public func rpop(key: RedisKey, count: Int?) async throws -> RESP3Token {
         let response = try await send(rpopCommand(key: key, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func rpopCommand(key: RedisKey, count: Int?) -> RESPCommand {
@@ -4110,7 +4110,7 @@ extension RedisConnection {
     public func rpoplpush(source: RedisKey, destination: RedisKey) async throws -> RESP3Token {
         let response = try await send(rpoplpushCommand(source: source, destination: destination))
         return response
-   }
+    }
 
     @inlinable
     public func rpoplpushCommand(source: RedisKey, destination: RedisKey) -> RESPCommand {
@@ -4126,7 +4126,7 @@ extension RedisConnection {
     public func rpush(key: RedisKey, element: String...) async throws -> RESP3Token {
         let response = try await send(rpushCommand(key: key, element: element))
         return response
-   }
+    }
 
     @inlinable
     public func rpushCommand(key: RedisKey, element: [String]) -> RESPCommand {
@@ -4142,7 +4142,7 @@ extension RedisConnection {
     public func rpushx(key: RedisKey, element: String...) async throws -> RESP3Token {
         let response = try await send(rpushxCommand(key: key, element: element))
         return response
-   }
+    }
 
     @inlinable
     public func rpushxCommand(key: RedisKey, element: [String]) -> RESPCommand {
@@ -4158,7 +4158,7 @@ extension RedisConnection {
     public func sadd(key: RedisKey, member: String...) async throws -> RESP3Token {
         let response = try await send(saddCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func saddCommand(key: RedisKey, member: [String]) -> RESPCommand {
@@ -4174,7 +4174,7 @@ extension RedisConnection {
     public func save() async throws -> RESP3Token {
         let response = try await send(saveCommand())
         return response
-   }
+    }
 
     @inlinable
     public func saveCommand() -> RESPCommand {
@@ -4190,7 +4190,7 @@ extension RedisConnection {
     public func scan(cursor: Int, pattern: String?, count: Int?, type: String?) async throws -> RESP3Token {
         let response = try await send(scanCommand(cursor: cursor, pattern: pattern, count: count, type: type))
         return response
-   }
+    }
 
     @inlinable
     public func scanCommand(cursor: Int, pattern: String?, count: Int?, type: String?) -> RESPCommand {
@@ -4206,7 +4206,7 @@ extension RedisConnection {
     public func scard(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(scardCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func scardCommand(key: RedisKey) -> RESPCommand {
@@ -4222,7 +4222,7 @@ extension RedisConnection {
     public func script() async throws -> RESP3Token {
         let response = try await send(scriptCommand())
         return response
-   }
+    }
 
     @inlinable
     public func scriptCommand() -> RESPCommand {
@@ -4252,7 +4252,7 @@ extension RedisConnection {
     public func scriptDebug(mode: SCRIPTDEBUGMode) async throws -> RESP3Token {
         let response = try await send(scriptDebugCommand(mode: mode))
         return response
-   }
+    }
 
     @inlinable
     public func scriptDebugCommand(mode: SCRIPTDEBUGMode) -> RESPCommand {
@@ -4268,7 +4268,7 @@ extension RedisConnection {
     public func scriptExists(sha1: String...) async throws -> RESP3Token {
         let response = try await send(scriptExistsCommand(sha1: sha1))
         return response
-   }
+    }
 
     @inlinable
     public func scriptExistsCommand(sha1: [String]) -> RESPCommand {
@@ -4296,7 +4296,7 @@ extension RedisConnection {
     public func scriptFlush(flushType: SCRIPTFLUSHFlushType?) async throws -> RESP3Token {
         let response = try await send(scriptFlushCommand(flushType: flushType))
         return response
-   }
+    }
 
     @inlinable
     public func scriptFlushCommand(flushType: SCRIPTFLUSHFlushType?) -> RESPCommand {
@@ -4312,7 +4312,7 @@ extension RedisConnection {
     public func scriptHelp() async throws -> RESP3Token {
         let response = try await send(scriptHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func scriptHelpCommand() -> RESPCommand {
@@ -4328,7 +4328,7 @@ extension RedisConnection {
     public func scriptKill() async throws -> RESP3Token {
         let response = try await send(scriptKillCommand())
         return response
-   }
+    }
 
     @inlinable
     public func scriptKillCommand() -> RESPCommand {
@@ -4344,7 +4344,7 @@ extension RedisConnection {
     public func scriptLoad(script: String) async throws -> RESP3Token {
         let response = try await send(scriptLoadCommand(script: script))
         return response
-   }
+    }
 
     @inlinable
     public func scriptLoadCommand(script: String) -> RESPCommand {
@@ -4360,7 +4360,7 @@ extension RedisConnection {
     public func sdiff(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(sdiffCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func sdiffCommand(key: [RedisKey]) -> RESPCommand {
@@ -4376,7 +4376,7 @@ extension RedisConnection {
     public func sdiffstore(destination: RedisKey, key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(sdiffstoreCommand(destination: destination, key: key))
         return response
-   }
+    }
 
     @inlinable
     public func sdiffstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
@@ -4392,7 +4392,7 @@ extension RedisConnection {
     public func select(index: Int) async throws -> RESP3Token {
         let response = try await send(selectCommand(index: index))
         return response
-   }
+    }
 
     @inlinable
     public func selectCommand(index: Int) -> RESPCommand {
@@ -4438,7 +4438,7 @@ extension RedisConnection {
     public func set(key: RedisKey, value: String, condition: SETCondition?, get: Bool, expiration: SETExpiration?) async throws -> RESP3Token {
         let response = try await send(setCommand(key: key, value: value, condition: condition, get: get, expiration: expiration))
         return response
-   }
+    }
 
     @inlinable
     public func setCommand(key: RedisKey, value: String, condition: SETCondition?, get: Bool, expiration: SETExpiration?) -> RESPCommand {
@@ -4454,7 +4454,7 @@ extension RedisConnection {
     public func setbit(key: RedisKey, offset: Int, value: Int) async throws -> RESP3Token {
         let response = try await send(setbitCommand(key: key, offset: offset, value: value))
         return response
-   }
+    }
 
     @inlinable
     public func setbitCommand(key: RedisKey, offset: Int, value: Int) -> RESPCommand {
@@ -4470,7 +4470,7 @@ extension RedisConnection {
     public func setex(key: RedisKey, seconds: Int, value: String) async throws -> RESP3Token {
         let response = try await send(setexCommand(key: key, seconds: seconds, value: value))
         return response
-   }
+    }
 
     @inlinable
     public func setexCommand(key: RedisKey, seconds: Int, value: String) -> RESPCommand {
@@ -4486,7 +4486,7 @@ extension RedisConnection {
     public func setnx(key: RedisKey, value: String) async throws -> RESP3Token {
         let response = try await send(setnxCommand(key: key, value: value))
         return response
-   }
+    }
 
     @inlinable
     public func setnxCommand(key: RedisKey, value: String) -> RESPCommand {
@@ -4502,7 +4502,7 @@ extension RedisConnection {
     public func setrange(key: RedisKey, offset: Int, value: String) async throws -> RESP3Token {
         let response = try await send(setrangeCommand(key: key, offset: offset, value: value))
         return response
-   }
+    }
 
     @inlinable
     public func setrangeCommand(key: RedisKey, offset: Int, value: String) -> RESPCommand {
@@ -4530,7 +4530,7 @@ extension RedisConnection {
     public func shutdown(saveSelector: SHUTDOWNSaveSelector?, now: Bool, force: Bool, abort: Bool) async throws -> RESP3Token {
         let response = try await send(shutdownCommand(saveSelector: saveSelector, now: now, force: force, abort: abort))
         return response
-   }
+    }
 
     @inlinable
     public func shutdownCommand(saveSelector: SHUTDOWNSaveSelector?, now: Bool, force: Bool, abort: Bool) -> RESPCommand {
@@ -4546,7 +4546,7 @@ extension RedisConnection {
     public func sinter(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(sinterCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func sinterCommand(key: [RedisKey]) -> RESPCommand {
@@ -4562,7 +4562,7 @@ extension RedisConnection {
     public func sintercard(numkeys: Int, key: RedisKey..., limit: Int?) async throws -> RESP3Token {
         let response = try await send(sintercardCommand(numkeys: numkeys, key: key, limit: limit))
         return response
-   }
+    }
 
     @inlinable
     public func sintercardCommand(numkeys: Int, key: [RedisKey], limit: Int?) -> RESPCommand {
@@ -4578,7 +4578,7 @@ extension RedisConnection {
     public func sinterstore(destination: RedisKey, key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(sinterstoreCommand(destination: destination, key: key))
         return response
-   }
+    }
 
     @inlinable
     public func sinterstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
@@ -4594,7 +4594,7 @@ extension RedisConnection {
     public func sismember(key: RedisKey, member: String) async throws -> RESP3Token {
         let response = try await send(sismemberCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func sismemberCommand(key: RedisKey, member: String) -> RESPCommand {
@@ -4610,7 +4610,7 @@ extension RedisConnection {
     public func slowlog() async throws -> RESP3Token {
         let response = try await send(slowlogCommand())
         return response
-   }
+    }
 
     @inlinable
     public func slowlogCommand() -> RESPCommand {
@@ -4626,7 +4626,7 @@ extension RedisConnection {
     public func slowlogGet(count: Int?) async throws -> RESP3Token {
         let response = try await send(slowlogGetCommand(count: count))
         return response
-   }
+    }
 
     @inlinable
     public func slowlogGetCommand(count: Int?) -> RESPCommand {
@@ -4642,7 +4642,7 @@ extension RedisConnection {
     public func slowlogHelp() async throws -> RESP3Token {
         let response = try await send(slowlogHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func slowlogHelpCommand() -> RESPCommand {
@@ -4658,7 +4658,7 @@ extension RedisConnection {
     public func slowlogLen() async throws -> RESP3Token {
         let response = try await send(slowlogLenCommand())
         return response
-   }
+    }
 
     @inlinable
     public func slowlogLenCommand() -> RESPCommand {
@@ -4674,7 +4674,7 @@ extension RedisConnection {
     public func slowlogReset() async throws -> RESP3Token {
         let response = try await send(slowlogResetCommand())
         return response
-   }
+    }
 
     @inlinable
     public func slowlogResetCommand() -> RESPCommand {
@@ -4690,7 +4690,7 @@ extension RedisConnection {
     public func smembers(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(smembersCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func smembersCommand(key: RedisKey) -> RESPCommand {
@@ -4706,7 +4706,7 @@ extension RedisConnection {
     public func smismember(key: RedisKey, member: String...) async throws -> RESP3Token {
         let response = try await send(smismemberCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func smismemberCommand(key: RedisKey, member: [String]) -> RESPCommand {
@@ -4722,7 +4722,7 @@ extension RedisConnection {
     public func smove(source: RedisKey, destination: RedisKey, member: String) async throws -> RESP3Token {
         let response = try await send(smoveCommand(source: source, destination: destination, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func smoveCommand(source: RedisKey, destination: RedisKey, member: String) -> RESPCommand {
@@ -4738,7 +4738,7 @@ extension RedisConnection {
     public func spop(key: RedisKey, count: Int?) async throws -> RESP3Token {
         let response = try await send(spopCommand(key: key, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func spopCommand(key: RedisKey, count: Int?) -> RESPCommand {
@@ -4754,7 +4754,7 @@ extension RedisConnection {
     public func spublish(shardchannel: String, message: String) async throws -> RESP3Token {
         let response = try await send(spublishCommand(shardchannel: shardchannel, message: message))
         return response
-   }
+    }
 
     @inlinable
     public func spublishCommand(shardchannel: String, message: String) -> RESPCommand {
@@ -4770,7 +4770,7 @@ extension RedisConnection {
     public func srandmember(key: RedisKey, count: Int?) async throws -> RESP3Token {
         let response = try await send(srandmemberCommand(key: key, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func srandmemberCommand(key: RedisKey, count: Int?) -> RESPCommand {
@@ -4786,7 +4786,7 @@ extension RedisConnection {
     public func srem(key: RedisKey, member: String...) async throws -> RESP3Token {
         let response = try await send(sremCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func sremCommand(key: RedisKey, member: [String]) -> RESPCommand {
@@ -4802,7 +4802,7 @@ extension RedisConnection {
     public func sscan(key: RedisKey, cursor: Int, pattern: String?, count: Int?) async throws -> RESP3Token {
         let response = try await send(sscanCommand(key: key, cursor: cursor, pattern: pattern, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func sscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
@@ -4818,7 +4818,7 @@ extension RedisConnection {
     public func ssubscribe(shardchannel: String...) async throws -> RESP3Token {
         let response = try await send(ssubscribeCommand(shardchannel: shardchannel))
         return response
-   }
+    }
 
     @inlinable
     public func ssubscribeCommand(shardchannel: [String]) -> RESPCommand {
@@ -4834,7 +4834,7 @@ extension RedisConnection {
     public func strlen(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(strlenCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func strlenCommand(key: RedisKey) -> RESPCommand {
@@ -4850,7 +4850,7 @@ extension RedisConnection {
     public func subscribe(channel: String...) async throws -> RESP3Token {
         let response = try await send(subscribeCommand(channel: channel))
         return response
-   }
+    }
 
     @inlinable
     public func subscribeCommand(channel: [String]) -> RESPCommand {
@@ -4866,7 +4866,7 @@ extension RedisConnection {
     public func substr(key: RedisKey, start: Int, end: Int) async throws -> RESP3Token {
         let response = try await send(substrCommand(key: key, start: start, end: end))
         return response
-   }
+    }
 
     @inlinable
     public func substrCommand(key: RedisKey, start: Int, end: Int) -> RESPCommand {
@@ -4882,7 +4882,7 @@ extension RedisConnection {
     public func sunion(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(sunionCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func sunionCommand(key: [RedisKey]) -> RESPCommand {
@@ -4898,7 +4898,7 @@ extension RedisConnection {
     public func sunionstore(destination: RedisKey, key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(sunionstoreCommand(destination: destination, key: key))
         return response
-   }
+    }
 
     @inlinable
     public func sunionstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
@@ -4914,7 +4914,7 @@ extension RedisConnection {
     public func sunsubscribe(shardchannel: String...) async throws -> RESP3Token {
         let response = try await send(sunsubscribeCommand(shardchannel: shardchannel))
         return response
-   }
+    }
 
     @inlinable
     public func sunsubscribeCommand(shardchannel: [String]) -> RESPCommand {
@@ -4930,7 +4930,7 @@ extension RedisConnection {
     public func swapdb(index1: Int, index2: Int) async throws -> RESP3Token {
         let response = try await send(swapdbCommand(index1: index1, index2: index2))
         return response
-   }
+    }
 
     @inlinable
     public func swapdbCommand(index1: Int, index2: Int) -> RESPCommand {
@@ -4945,7 +4945,7 @@ extension RedisConnection {
     public func sync() async throws -> RESP3Token {
         let response = try await send(syncCommand())
         return response
-   }
+    }
 
     @inlinable
     public func syncCommand() -> RESPCommand {
@@ -4961,7 +4961,7 @@ extension RedisConnection {
     public func time() async throws -> RESP3Token {
         let response = try await send(timeCommand())
         return response
-   }
+    }
 
     @inlinable
     public func timeCommand() -> RESPCommand {
@@ -4977,7 +4977,7 @@ extension RedisConnection {
     public func touch(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(touchCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func touchCommand(key: [RedisKey]) -> RESPCommand {
@@ -4993,7 +4993,7 @@ extension RedisConnection {
     public func ttl(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(ttlCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func ttlCommand(key: RedisKey) -> RESPCommand {
@@ -5009,7 +5009,7 @@ extension RedisConnection {
     public func type(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(typeCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func typeCommand(key: RedisKey) -> RESPCommand {
@@ -5025,7 +5025,7 @@ extension RedisConnection {
     public func unlink(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(unlinkCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func unlinkCommand(key: [RedisKey]) -> RESPCommand {
@@ -5041,7 +5041,7 @@ extension RedisConnection {
     public func unsubscribe(channel: String...) async throws -> RESP3Token {
         let response = try await send(unsubscribeCommand(channel: channel))
         return response
-   }
+    }
 
     @inlinable
     public func unsubscribeCommand(channel: [String]) -> RESPCommand {
@@ -5057,7 +5057,7 @@ extension RedisConnection {
     public func unwatch() async throws -> RESP3Token {
         let response = try await send(unwatchCommand())
         return response
-   }
+    }
 
     @inlinable
     public func unwatchCommand() -> RESPCommand {
@@ -5073,7 +5073,7 @@ extension RedisConnection {
     public func wait(numreplicas: Int, timeout: Int) async throws -> RESP3Token {
         let response = try await send(waitCommand(numreplicas: numreplicas, timeout: timeout))
         return response
-   }
+    }
 
     @inlinable
     public func waitCommand(numreplicas: Int, timeout: Int) -> RESPCommand {
@@ -5089,7 +5089,7 @@ extension RedisConnection {
     public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> RESP3Token {
         let response = try await send(waitaofCommand(numlocal: numlocal, numreplicas: numreplicas, timeout: timeout))
         return response
-   }
+    }
 
     @inlinable
     public func waitaofCommand(numlocal: Int, numreplicas: Int, timeout: Int) -> RESPCommand {
@@ -5105,7 +5105,7 @@ extension RedisConnection {
     public func watch(key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(watchCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func watchCommand(key: [RedisKey]) -> RESPCommand {
@@ -5121,7 +5121,7 @@ extension RedisConnection {
     public func xack(key: RedisKey, group: String, id: String...) async throws -> RESP3Token {
         let response = try await send(xackCommand(key: key, group: group, id: id))
         return response
-   }
+    }
 
     @inlinable
     public func xackCommand(key: RedisKey, group: String, id: [String]) -> RESPCommand {
@@ -5137,7 +5137,7 @@ extension RedisConnection {
     public func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int?, justid: Bool) async throws -> RESP3Token {
         let response = try await send(xautoclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
         return response
-   }
+    }
 
     @inlinable
     public func xautoclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int?, justid: Bool) -> RESPCommand {
@@ -5153,7 +5153,7 @@ extension RedisConnection {
     public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String..., ms: Int?, unixTimeMilliseconds: Date?, count: Int?, force: Bool, justid: Bool, lastid: String?) async throws -> RESP3Token {
         let response = try await send(xclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
         return response
-   }
+    }
 
     @inlinable
     public func xclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int?, unixTimeMilliseconds: Date?, count: Int?, force: Bool, justid: Bool, lastid: String?) -> RESPCommand {
@@ -5169,7 +5169,7 @@ extension RedisConnection {
     public func xdel(key: RedisKey, id: String...) async throws -> RESP3Token {
         let response = try await send(xdelCommand(key: key, id: id))
         return response
-   }
+    }
 
     @inlinable
     public func xdelCommand(key: RedisKey, id: [String]) -> RESPCommand {
@@ -5185,7 +5185,7 @@ extension RedisConnection {
     public func xgroup() async throws -> RESP3Token {
         let response = try await send(xgroupCommand())
         return response
-   }
+    }
 
     @inlinable
     public func xgroupCommand() -> RESPCommand {
@@ -5213,7 +5213,7 @@ extension RedisConnection {
     public func xgroupCreate(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool, entriesRead: Int?) async throws -> RESP3Token {
         let response = try await send(xgroupCreateCommand(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
         return response
-   }
+    }
 
     @inlinable
     public func xgroupCreateCommand(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool, entriesRead: Int?) -> RESPCommand {
@@ -5229,7 +5229,7 @@ extension RedisConnection {
     public func xgroupCreateconsumer(key: RedisKey, group: String, consumer: String) async throws -> RESP3Token {
         let response = try await send(xgroupCreateconsumerCommand(key: key, group: group, consumer: consumer))
         return response
-   }
+    }
 
     @inlinable
     public func xgroupCreateconsumerCommand(key: RedisKey, group: String, consumer: String) -> RESPCommand {
@@ -5245,7 +5245,7 @@ extension RedisConnection {
     public func xgroupDelconsumer(key: RedisKey, group: String, consumer: String) async throws -> RESP3Token {
         let response = try await send(xgroupDelconsumerCommand(key: key, group: group, consumer: consumer))
         return response
-   }
+    }
 
     @inlinable
     public func xgroupDelconsumerCommand(key: RedisKey, group: String, consumer: String) -> RESPCommand {
@@ -5261,7 +5261,7 @@ extension RedisConnection {
     public func xgroupDestroy(key: RedisKey, group: String) async throws -> RESP3Token {
         let response = try await send(xgroupDestroyCommand(key: key, group: group))
         return response
-   }
+    }
 
     @inlinable
     public func xgroupDestroyCommand(key: RedisKey, group: String) -> RESPCommand {
@@ -5277,7 +5277,7 @@ extension RedisConnection {
     public func xgroupHelp() async throws -> RESP3Token {
         let response = try await send(xgroupHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func xgroupHelpCommand() -> RESPCommand {
@@ -5305,7 +5305,7 @@ extension RedisConnection {
     public func xgroupSetid(key: RedisKey, group: String, idSelector: XGROUPSETIDIdSelector, entriesread: Int?) async throws -> RESP3Token {
         let response = try await send(xgroupSetidCommand(key: key, group: group, idSelector: idSelector, entriesread: entriesread))
         return response
-   }
+    }
 
     @inlinable
     public func xgroupSetidCommand(key: RedisKey, group: String, idSelector: XGROUPSETIDIdSelector, entriesread: Int?) -> RESPCommand {
@@ -5321,7 +5321,7 @@ extension RedisConnection {
     public func xinfo() async throws -> RESP3Token {
         let response = try await send(xinfoCommand())
         return response
-   }
+    }
 
     @inlinable
     public func xinfoCommand() -> RESPCommand {
@@ -5337,7 +5337,7 @@ extension RedisConnection {
     public func xinfoConsumers(key: RedisKey, group: String) async throws -> RESP3Token {
         let response = try await send(xinfoConsumersCommand(key: key, group: group))
         return response
-   }
+    }
 
     @inlinable
     public func xinfoConsumersCommand(key: RedisKey, group: String) -> RESPCommand {
@@ -5353,7 +5353,7 @@ extension RedisConnection {
     public func xinfoGroups(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(xinfoGroupsCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func xinfoGroupsCommand(key: RedisKey) -> RESPCommand {
@@ -5369,7 +5369,7 @@ extension RedisConnection {
     public func xinfoHelp() async throws -> RESP3Token {
         let response = try await send(xinfoHelpCommand())
         return response
-   }
+    }
 
     @inlinable
     public func xinfoHelpCommand() -> RESPCommand {
@@ -5385,7 +5385,7 @@ extension RedisConnection {
     public func xlen(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(xlenCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func xlenCommand(key: RedisKey) -> RESPCommand {
@@ -5401,7 +5401,7 @@ extension RedisConnection {
     public func xrange(key: RedisKey, start: String, end: String, count: Int?) async throws -> RESP3Token {
         let response = try await send(xrangeCommand(key: key, start: start, end: end, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func xrangeCommand(key: RedisKey, start: String, end: String, count: Int?) -> RESPCommand {
@@ -5417,7 +5417,7 @@ extension RedisConnection {
     public func xrevrange(key: RedisKey, end: String, start: String, count: Int?) async throws -> RESP3Token {
         let response = try await send(xrevrangeCommand(key: key, end: end, start: start, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func xrevrangeCommand(key: RedisKey, end: String, start: String, count: Int?) -> RESPCommand {
@@ -5433,7 +5433,7 @@ extension RedisConnection {
     public func xsetid(key: RedisKey, lastId: String, entriesAdded: Int?, maxDeletedId: String?) async throws -> RESP3Token {
         let response = try await send(xsetidCommand(key: key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
         return response
-   }
+    }
 
     @inlinable
     public func xsetidCommand(key: RedisKey, lastId: String, entriesAdded: Int?, maxDeletedId: String?) -> RESPCommand {
@@ -5449,7 +5449,7 @@ extension RedisConnection {
     public func zcard(key: RedisKey) async throws -> RESP3Token {
         let response = try await send(zcardCommand(key: key))
         return response
-   }
+    }
 
     @inlinable
     public func zcardCommand(key: RedisKey) -> RESPCommand {
@@ -5465,7 +5465,7 @@ extension RedisConnection {
     public func zcount(key: RedisKey, min: Double, max: Double) async throws -> RESP3Token {
         let response = try await send(zcountCommand(key: key, min: min, max: max))
         return response
-   }
+    }
 
     @inlinable
     public func zcountCommand(key: RedisKey, min: Double, max: Double) -> RESPCommand {
@@ -5481,7 +5481,7 @@ extension RedisConnection {
     public func zdiff(numkeys: Int, key: RedisKey..., withscores: Bool) async throws -> RESP3Token {
         let response = try await send(zdiffCommand(numkeys: numkeys, key: key, withscores: withscores))
         return response
-   }
+    }
 
     @inlinable
     public func zdiffCommand(numkeys: Int, key: [RedisKey], withscores: Bool) -> RESPCommand {
@@ -5497,7 +5497,7 @@ extension RedisConnection {
     public func zdiffstore(destination: RedisKey, numkeys: Int, key: RedisKey...) async throws -> RESP3Token {
         let response = try await send(zdiffstoreCommand(destination: destination, numkeys: numkeys, key: key))
         return response
-   }
+    }
 
     @inlinable
     public func zdiffstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey]) -> RESPCommand {
@@ -5513,7 +5513,7 @@ extension RedisConnection {
     public func zincrby(key: RedisKey, increment: Int, member: String) async throws -> RESP3Token {
         let response = try await send(zincrbyCommand(key: key, increment: increment, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func zincrbyCommand(key: RedisKey, increment: Int, member: String) -> RESPCommand {
@@ -5543,7 +5543,7 @@ extension RedisConnection {
     public func zinter(numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERAggregate?, withscores: Bool) async throws -> RESP3Token {
         let response = try await send(zinterCommand(numkeys: numkeys, key: key, weight: weight, aggregate: aggregate, withscores: withscores))
         return response
-   }
+    }
 
     @inlinable
     public func zinterCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERAggregate?, withscores: Bool) -> RESPCommand {
@@ -5559,7 +5559,7 @@ extension RedisConnection {
     public func zintercard(numkeys: Int, key: RedisKey..., limit: Int?) async throws -> RESP3Token {
         let response = try await send(zintercardCommand(numkeys: numkeys, key: key, limit: limit))
         return response
-   }
+    }
 
     @inlinable
     public func zintercardCommand(numkeys: Int, key: [RedisKey], limit: Int?) -> RESPCommand {
@@ -5589,7 +5589,7 @@ extension RedisConnection {
     public func zinterstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERSTOREAggregate?) async throws -> RESP3Token {
         let response = try await send(zinterstoreCommand(destination: destination, numkeys: numkeys, key: key, weight: weight, aggregate: aggregate))
         return response
-   }
+    }
 
     @inlinable
     public func zinterstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERSTOREAggregate?) -> RESPCommand {
@@ -5605,7 +5605,7 @@ extension RedisConnection {
     public func zlexcount(key: RedisKey, min: String, max: String) async throws -> RESP3Token {
         let response = try await send(zlexcountCommand(key: key, min: min, max: max))
         return response
-   }
+    }
 
     @inlinable
     public func zlexcountCommand(key: RedisKey, min: String, max: String) -> RESPCommand {
@@ -5633,7 +5633,7 @@ extension RedisConnection {
     public func zmpop(numkeys: Int, key: RedisKey..., where: ZMPOPWhere, count: Int?) async throws -> RESP3Token {
         let response = try await send(zmpopCommand(numkeys: numkeys, key: key, where: `where`, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func zmpopCommand(numkeys: Int, key: [RedisKey], where: ZMPOPWhere, count: Int?) -> RESPCommand {
@@ -5649,7 +5649,7 @@ extension RedisConnection {
     public func zmscore(key: RedisKey, member: String...) async throws -> RESP3Token {
         let response = try await send(zmscoreCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func zmscoreCommand(key: RedisKey, member: [String]) -> RESPCommand {
@@ -5665,7 +5665,7 @@ extension RedisConnection {
     public func zpopmax(key: RedisKey, count: Int?) async throws -> RESP3Token {
         let response = try await send(zpopmaxCommand(key: key, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func zpopmaxCommand(key: RedisKey, count: Int?) -> RESPCommand {
@@ -5681,7 +5681,7 @@ extension RedisConnection {
     public func zpopmin(key: RedisKey, count: Int?) async throws -> RESP3Token {
         let response = try await send(zpopminCommand(key: key, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func zpopminCommand(key: RedisKey, count: Int?) -> RESPCommand {
@@ -5697,7 +5697,7 @@ extension RedisConnection {
     public func zrank(key: RedisKey, member: String, withscore: Bool) async throws -> RESP3Token {
         let response = try await send(zrankCommand(key: key, member: member, withscore: withscore))
         return response
-   }
+    }
 
     @inlinable
     public func zrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESPCommand {
@@ -5713,7 +5713,7 @@ extension RedisConnection {
     public func zrem(key: RedisKey, member: String...) async throws -> RESP3Token {
         let response = try await send(zremCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func zremCommand(key: RedisKey, member: [String]) -> RESPCommand {
@@ -5729,7 +5729,7 @@ extension RedisConnection {
     public func zremrangebylex(key: RedisKey, min: String, max: String) async throws -> RESP3Token {
         let response = try await send(zremrangebylexCommand(key: key, min: min, max: max))
         return response
-   }
+    }
 
     @inlinable
     public func zremrangebylexCommand(key: RedisKey, min: String, max: String) -> RESPCommand {
@@ -5745,7 +5745,7 @@ extension RedisConnection {
     public func zremrangebyrank(key: RedisKey, start: Int, stop: Int) async throws -> RESP3Token {
         let response = try await send(zremrangebyrankCommand(key: key, start: start, stop: stop))
         return response
-   }
+    }
 
     @inlinable
     public func zremrangebyrankCommand(key: RedisKey, start: Int, stop: Int) -> RESPCommand {
@@ -5761,7 +5761,7 @@ extension RedisConnection {
     public func zremrangebyscore(key: RedisKey, min: Double, max: Double) async throws -> RESP3Token {
         let response = try await send(zremrangebyscoreCommand(key: key, min: min, max: max))
         return response
-   }
+    }
 
     @inlinable
     public func zremrangebyscoreCommand(key: RedisKey, min: Double, max: Double) -> RESPCommand {
@@ -5777,7 +5777,7 @@ extension RedisConnection {
     public func zrevrange(key: RedisKey, start: Int, stop: Int, withscores: Bool) async throws -> RESP3Token {
         let response = try await send(zrevrangeCommand(key: key, start: start, stop: stop, withscores: withscores))
         return response
-   }
+    }
 
     @inlinable
     public func zrevrangeCommand(key: RedisKey, start: Int, stop: Int, withscores: Bool) -> RESPCommand {
@@ -5793,7 +5793,7 @@ extension RedisConnection {
     public func zrevrank(key: RedisKey, member: String, withscore: Bool) async throws -> RESP3Token {
         let response = try await send(zrevrankCommand(key: key, member: member, withscore: withscore))
         return response
-   }
+    }
 
     @inlinable
     public func zrevrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESPCommand {
@@ -5809,7 +5809,7 @@ extension RedisConnection {
     public func zscan(key: RedisKey, cursor: Int, pattern: String?, count: Int?) async throws -> RESP3Token {
         let response = try await send(zscanCommand(key: key, cursor: cursor, pattern: pattern, count: count))
         return response
-   }
+    }
 
     @inlinable
     public func zscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
@@ -5825,7 +5825,7 @@ extension RedisConnection {
     public func zscore(key: RedisKey, member: String) async throws -> RESP3Token {
         let response = try await send(zscoreCommand(key: key, member: member))
         return response
-   }
+    }
 
     @inlinable
     public func zscoreCommand(key: RedisKey, member: String) -> RESPCommand {
@@ -5855,7 +5855,7 @@ extension RedisConnection {
     public func zunion(numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONAggregate?, withscores: Bool) async throws -> RESP3Token {
         let response = try await send(zunionCommand(numkeys: numkeys, key: key, weight: weight, aggregate: aggregate, withscores: withscores))
         return response
-   }
+    }
 
     @inlinable
     public func zunionCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONAggregate?, withscores: Bool) -> RESPCommand {
@@ -5885,7 +5885,7 @@ extension RedisConnection {
     public func zunionstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONSTOREAggregate?) async throws -> RESP3Token {
         let response = try await send(zunionstoreCommand(destination: destination, numkeys: numkeys, key: key, weight: weight, aggregate: aggregate))
         return response
-   }
+    }
 
     @inlinable
     public func zunionstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONSTOREAggregate?) -> RESPCommand {
