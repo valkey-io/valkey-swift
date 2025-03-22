@@ -15,6 +15,15 @@ extension StringProtocol {
             .camelCased(capitalize: false)
     }
 
+    var swiftVariable: String {
+        self
+            .lowercased()
+            .replacingOccurrences(of: "-", with: "_")
+            .replacingOccurrences(of: " ", with: "_")
+            .camelCased(capitalize: false)
+            .reservedwordEscaped()
+    }
+
     func camelCased(capitalize: Bool) -> String {
         let items = self.split(separator: "_")
         let firstWord = items.first!
@@ -33,16 +42,16 @@ extension StringProtocol {
         return firstWordProcessed + remainingItems.joined()
     }
 
-    private func lowerFirst() -> String {
+    func lowerFirst() -> String {
         String(self[startIndex]).lowercased() + self[index(after: startIndex)...]
     }
 
-    fileprivate func upperFirst() -> String {
+    func upperFirst() -> String {
         String(self[self.startIndex]).uppercased() + self[index(after: startIndex)...]
     }
 
     /// Lowercase first letter, or if first word is an uppercase acronym then lowercase the whole of the acronym
-    fileprivate func lowerFirstWord() -> String {
+    func lowerFirstWord() -> String {
         var firstLowercase = self.startIndex
         var lastUppercaseOptional: Self.Index?
         // get last uppercase character, first lowercase character
@@ -77,8 +86,25 @@ extension StringProtocol {
     }
 }
 
+extension String {
+    func reservedwordEscaped() -> String {
+        if self == "self" {
+            return "_self"
+        }
+        if swiftReservedWords.contains(self) {
+            return "`\(self)`"
+        }
+        return self
+    }
+}
+
 extension Character {
     fileprivate func isSnakeUppercase() -> Bool {
         self.isNumber || ("A"..."Z").contains(self) || self == "_"
     }
 }
+
+// List of keywords we've had clashes with
+private let swiftReservedWords: Set<String> = [
+    "where"
+]
