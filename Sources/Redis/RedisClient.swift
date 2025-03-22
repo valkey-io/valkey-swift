@@ -154,7 +154,7 @@ extension RedisClient {
     ///   - logger: Logger
     ///   - process: Closure handling webSocket
     /// - Returns: WebSocket close frame details if server returned any
-    public static func connect(
+    public static func withConnection(
         _ address: ServerAddress,
         configuration: RedisClientConfiguration = .init(),
         tlsConfiguration: TLSConfiguration? = nil,
@@ -184,7 +184,7 @@ extension RedisClient {
     ///   - logger: Logger
     ///   - process: WebSocket data handler
     /// - Returns: WebSocket close frame details if server returned any
-    public static func connect(
+    public static func withConnection(
         _ address: ServerAddress,
         configuration: RedisClientConfiguration = .init(),
         transportServicesTLSOptions: TSTLSOptions,
