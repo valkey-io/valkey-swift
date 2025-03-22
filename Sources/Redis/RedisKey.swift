@@ -10,12 +10,12 @@ public struct RedisKey: RawRepresentable {
 }
 
 extension RedisKey: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
+    public init(from token: RESP3Token) throws {
         switch token.value {
         case .simpleString(let buffer), .blobString(let buffer):
             self.rawValue = String(buffer: buffer)
         default:
-            return nil
+            throw RedisClientError(.unexpectedType)
         }
     }
 }

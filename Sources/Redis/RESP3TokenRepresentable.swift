@@ -1,105 +1,118 @@
 import NIOCore
+import RESP3
 
+/// Type that can represented by a RESP3Token
 public protocol RESP3TokenRepresentable {
-    init?(from: RESP3Token)
+    init(from: RESP3Token) throws
 }
 
 extension ByteBuffer: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
+    public init(from token: RESP3Token) throws {
         switch token.value {
         case .simpleString(let buffer), .blobString(let buffer), .verbatimString(let buffer), .bigNumber(let buffer):
             self = buffer
         default:
-            return nil
+            throw RedisClientError(.unexpectedType)
         }
     }
 }
 
 extension String: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
-        guard let buffer = ByteBuffer(from: token) else { return nil }
+    public init(from token: RESP3Token) throws {
+        let buffer = try ByteBuffer(from: token)
         self.init(buffer: buffer)
     }
 }
 
 extension Int: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
+    public init(from token: RESP3Token) throws {
         switch token.value {
         case .number(let value):
             self = numericCast(value)
         default:
-            return nil
+            throw RedisClientError(.unexpectedType)
         }
     }
 }
 
 extension Double: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
+    public init(from token: RESP3Token) throws {
         switch token.value {
         case .double(let value):
             self = value
         default:
-            return nil
+            throw RedisClientError(.unexpectedType)
         }
     }
 }
 
 extension Bool: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
+    public init(from token: RESP3Token) throws {
         switch token.value {
         case .boolean(let value):
             self = value
         default:
-            return nil
+            throw RedisClientError(.unexpectedType)
         }
     }
 }
 
-extension Array where Element: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
+extension Optional: RESP3TokenRepresentable where Wrapped: RESP3TokenRepresentable {
+    public init(from token: RESP3Token) throws {
+        switch token.value {
+        case .null:
+            self = nil
+        default:
+            self = try Wrapped(from: token)
+        }
+    }
+}
+
+extension Array: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
+    public init(from token: RESP3Token) throws {
         switch token.value {
         case .array(let respArray), .push(let respArray):
             var array: [Element] = []
             for respElement in respArray {
-                guard let element = Element(from: respElement) else { return nil }
+                let element = try Element(from: respElement)
                 array.append(element)
             }
             self = array
         default:
-            return nil
+            throw RedisClientError(.unexpectedType)
         }
     }
 }
 
-extension Set where Element: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
+extension Set: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
+    public init(from token: RESP3Token) throws {
         switch token.value {
         case .set(let respSet):
             var set: Set<Element> = .init()
             for respElement in respSet {
-                guard let element = Element(from: respElement) else { return nil }
+                let element = try Element(from: respElement)
                 set.insert(element)
             }
             self = set
         default:
-            return nil
+            throw RedisClientError(.unexpectedType)
         }
     }
 }
 
-extension Dictionary where Value: RESP3TokenRepresentable, Key: RESP3TokenRepresentable {
-    public init?(from token: RESP3Token) {
+extension Dictionary: RESP3TokenRepresentable where Value: RESP3TokenRepresentable, Key: RESP3TokenRepresentable {
+    public init(from token: RESP3Token) throws {
         switch token.value {
         case .map(let respMap), .attribute(let respMap):
             var array: [(Key, Value)] = []
             for respElement in respMap {
-                guard let key = Key(from: respElement.key) else { return nil }
-                guard let value = Value(from: respElement.value) else { return nil }
+                let key = try Key(from: respElement.key)
+                let value = try Value(from: respElement.value)
                 array.append((key, value))
             }
             self = .init(array) { first, _ in first }
         default:
-            return nil
+            throw RedisClientError(.unexpectedType)
         }
     }
 }
