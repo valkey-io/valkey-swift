@@ -1,6 +1,7 @@
 import NIOCore
 import RESP3
 
+/// Type representing a RedisKey
 public struct RedisKey: RawRepresentable {
     public var rawValue: String
 

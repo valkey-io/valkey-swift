@@ -48,4 +48,9 @@ struct RedisCommand: Decodable {
 
 struct RESPReplies: Decodable {
     let commands: [String: [String]]
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self.commands = try container.decode([String: [String]].self)
+    }
 }
