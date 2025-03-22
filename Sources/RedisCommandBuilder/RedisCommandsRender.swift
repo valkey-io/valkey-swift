@@ -55,7 +55,7 @@ extension String {
             if case .pureToken = arg.type {
                 self.append("        case \(arg.name.swiftArgument)\n")
             } else {
-                self.append("        case \(arg.name.swiftArgument)(\(parameterType(arg, names: names, isArray: true)))\n")
+                self.append("        case \(arg.name.swiftArgument)(\(variableType(arg, names: names, isArray: true)))\n")
             }
         }
         self.append("\n")
@@ -93,7 +93,7 @@ extension String {
         }
         self.append("    public struct \(enumName): RESPRenderable {\n")
         for arg in arguments {
-            self.append("        @usableFromInline let \(arg.name.swiftVariable): \(parameterType(arg, names: names, isArray: true))\n")
+            self.append("        @usableFromInline let \(arg.name.swiftVariable): \(variableType(arg, names: names, isArray: true))\n")
         }
         self.append("\n")
         self.append("        @inlinable\n")
@@ -195,6 +195,16 @@ private func enumName(names: [String]) -> String {
 }
 
 private func parameterType(_ parameter: RedisCommand.Argument, names: [String], isArray: Bool = false) -> String {
+    let variableType = variableType(parameter, names: names, isArray: isArray)
+    if parameter.type == .pureToken {
+        return variableType + " = false"
+    } else if parameter.optional == true, parameter.multiple != true {
+        return variableType + " = nil"
+    }
+    return variableType
+}
+
+private func variableType(_ parameter: RedisCommand.Argument, names: [String], isArray: Bool = false) -> String {
     var parameterString = parameter.type.swiftName
     if case .oneOf = parameter.type {
         parameterString = enumName(names: names + [parameter.name.swiftTypename])
