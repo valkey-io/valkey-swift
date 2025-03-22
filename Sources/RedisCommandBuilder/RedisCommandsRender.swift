@@ -27,12 +27,19 @@ extension String {
             preconditionFailure("OneOf without arguments")
         }
         let enumName = enumName(name: argument.name, functionName: functionName)
+        for arg in arguments {
+            if case .oneOf = arg.type {
+                self.appendOneOfEnum(argument: arg, functionName: enumName)
+            } else if case .block = arg.type {
+                self.appendBlock(argument: arg, functionName: enumName)
+            }
+        }
         self.append("    public enum \(enumName): RESPRepresentable {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append("        case \(arg.name.swiftArgument)\n")
             } else {
-                self.append("        case \(arg.name.swiftArgument)(\(arg.type.swiftName))\n")
+                self.append("        case \(arg.name.swiftArgument)(\(parameterType(arg, functionName: enumName, isArray: true)))\n")
             }
         }
         self.append("\n")
@@ -55,11 +62,37 @@ extension String {
         self.append("    }\n")
     }
 
-    mutating func appendFunction(command: RedisCommand, name: String) {
-        guard command.arguments?.contains(where: { $0.type.swiftName == "Never" }) != true else {
-            print("Skipping \(name)")
-            return
+    mutating func appendBlock(argument: RedisCommand.Argument, functionName: String) {
+        guard let arguments = argument.arguments, arguments.count > 0 else {
+            preconditionFailure("OneOf without arguments")
         }
+        let enumName = enumName(name: argument.name, functionName: functionName)
+        for arg in arguments {
+            if case .oneOf = arg.type {
+                self.appendOneOfEnum(argument: arg, functionName: enumName)
+            } else if case .block = arg.type {
+                self.appendBlock(argument: arg, functionName: enumName)
+            }
+        }
+        self.append("    public struct \(enumName): RESPRepresentable {\n")
+        for arg in arguments {
+            self.append("        @usableFromInline let \(arg.name.swiftVariable): \(parameterType(arg, functionName: enumName, isArray: true))\n")
+        }
+        self.append("\n")
+        self.append("        @inlinable\n")
+        self.append("        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {\n")
+        for arg in arguments {
+            if case .pureToken = arg.type {
+                self.append("            if self.\(arg.name.swiftArgument) { \"\(arg.token!)\".writeToRESPBuffer(&buffer) }\n")
+            } else {
+                self.append("            self.\(arg.name.swiftArgument).writeToRESPBuffer(&buffer)\n")
+            }
+        }
+        self.append("        }\n")
+        self.append("    }\n")
+    }
+
+    mutating func appendFunction(command: RedisCommand, name: String) {
         var commandName = name
         var subCommand: String? = nil
         if name.contains(" ") {
@@ -71,11 +104,9 @@ extension String {
         // Enums
         for arg in arguments {
             if case .oneOf = arg.type {
-                guard arg.arguments?.contains(where: { $0.type.swiftName == "Never" }) != true else {
-                    print("Skipping \(name)")
-                    return
-                }
                 self.appendOneOfEnum(argument: arg, functionName: name)
+            } else if case .block = arg.type {
+                self.appendBlock(argument: arg, functionName: name)
             }
         }
         // Comment header
@@ -110,7 +141,7 @@ extension String {
                 ["\"\(commandName)\""] + arguments.map(\.redisRepresentable)
             }
         let commandArgumentsString = commandArguments.joined(separator: ", ")
-        self.append("        return RESPCommand(\(commandArgumentsString))\n")
+        self.append("        RESPCommand(\(commandArgumentsString))\n")
         self.append("    }\n\n")
 
     }
@@ -146,6 +177,9 @@ private func parameterType(_ parameter: RedisCommand.Argument, functionName: Str
     if case .oneOf = parameter.type {
         parameterString = enumName(name: parameter.name, functionName: functionName)
     }
+    if case .block = parameter.type {
+        parameterString = enumName(name: parameter.name, functionName: functionName)
+    }
     if parameter.multiple == true {
         if isArray {
             parameterString = "[\(parameterString)]"
@@ -161,11 +195,11 @@ private func parameterType(_ parameter: RedisCommand.Argument, functionName: Str
 extension RedisCommand.ArgumentType {
     var swiftName: String {
         switch self {
-        case .block: "Never"
+        case .block: "#"
         case .double: "Double"
         case .integer: "Int"
         case .key: "RedisKey"
-        case .oneOf: "String"
+        case .oneOf: "#"
         case .pattern: "String"
         case .pureToken: "Bool"
         case .string: "String"

@@ -106,5 +106,6 @@ extension Character {
 
 // List of keywords we've had clashes with
 private let swiftReservedWords: Set<String> = [
-    "where"
+    "where",
+    "operator",
 ]
