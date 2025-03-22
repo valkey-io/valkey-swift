@@ -152,7 +152,7 @@ extension RedisConnection {
         RESPCommand("ACL", "LOAD")
     }
 
-    public enum ACLLOGOperation: RESPRepresentable {
+    public enum ACLLOGOperation: RESPRenderable {
         case count(Int)
         case reset
 
@@ -324,7 +324,7 @@ extension RedisConnection {
         RESPCommand("BGSAVE", RedisPureToken("SCHEDULE", schedule))
     }
 
-    public enum BITCOUNTRangeUnit: RESPRepresentable {
+    public enum BITCOUNTRangeUnit: RESPRenderable {
         case byte
         case bit
 
@@ -336,7 +336,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct BITCOUNTRange: RESPRepresentable {
+    public struct BITCOUNTRange: RESPRenderable {
         @usableFromInline let start: Int
         @usableFromInline let end: Int
         @usableFromInline let unit: BITCOUNTRangeUnit?
@@ -364,7 +364,7 @@ extension RedisConnection {
         RESPCommand("BITCOUNT", key, range)
     }
 
-    public struct BITFIELDOperationGetBlock: RESPRepresentable {
+    public struct BITFIELDOperationGetBlock: RESPRenderable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
@@ -374,7 +374,7 @@ extension RedisConnection {
             self.offset.writeToRESPBuffer(&buffer)
         }
     }
-    public enum BITFIELDOperationWriteOverflowBlock: RESPRepresentable {
+    public enum BITFIELDOperationWriteOverflowBlock: RESPRenderable {
         case wrap
         case sat
         case fail
@@ -388,7 +388,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct BITFIELDOperationWriteWriteOperationSetBlock: RESPRepresentable {
+    public struct BITFIELDOperationWriteWriteOperationSetBlock: RESPRenderable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let value: Int
@@ -400,7 +400,7 @@ extension RedisConnection {
             self.value.writeToRESPBuffer(&buffer)
         }
     }
-    public struct BITFIELDOperationWriteWriteOperationIncrbyBlock: RESPRepresentable {
+    public struct BITFIELDOperationWriteWriteOperationIncrbyBlock: RESPRenderable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let increment: Int
@@ -412,7 +412,7 @@ extension RedisConnection {
             self.increment.writeToRESPBuffer(&buffer)
         }
     }
-    public enum BITFIELDOperationWriteWriteOperation: RESPRepresentable {
+    public enum BITFIELDOperationWriteWriteOperation: RESPRenderable {
         case setBlock(BITFIELDOperationWriteWriteOperationSetBlock)
         case incrbyBlock(BITFIELDOperationWriteWriteOperationIncrbyBlock)
 
@@ -424,7 +424,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct BITFIELDOperationWrite: RESPRepresentable {
+    public struct BITFIELDOperationWrite: RESPRenderable {
         @usableFromInline let overflowBlock: BITFIELDOperationWriteOverflowBlock?
         @usableFromInline let writeOperation: BITFIELDOperationWriteWriteOperation
 
@@ -434,7 +434,7 @@ extension RedisConnection {
             self.writeOperation.writeToRESPBuffer(&buffer)
         }
     }
-    public enum BITFIELDOperation: RESPRepresentable {
+    public enum BITFIELDOperation: RESPRenderable {
         case getBlock(BITFIELDOperationGetBlock)
         case write(BITFIELDOperationWrite)
 
@@ -462,7 +462,7 @@ extension RedisConnection {
         RESPCommand("BITFIELD", key, operation)
     }
 
-    public struct BITFIELDROGetBlock: RESPRepresentable {
+    public struct BITFIELDROGetBlock: RESPRenderable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
@@ -488,7 +488,7 @@ extension RedisConnection {
         RESPCommand("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
     }
 
-    public enum BITOPOperation: RESPRepresentable {
+    public enum BITOPOperation: RESPRenderable {
         case and
         case or
         case xor
@@ -520,7 +520,7 @@ extension RedisConnection {
         RESPCommand("BITOP", operation, destkey, key)
     }
 
-    public enum BITPOSRangeEndUnitBlockUnit: RESPRepresentable {
+    public enum BITPOSRangeEndUnitBlockUnit: RESPRenderable {
         case byte
         case bit
 
@@ -532,7 +532,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct BITPOSRangeEndUnitBlock: RESPRepresentable {
+    public struct BITPOSRangeEndUnitBlock: RESPRenderable {
         @usableFromInline let end: Int
         @usableFromInline let unit: BITPOSRangeEndUnitBlockUnit?
 
@@ -542,7 +542,7 @@ extension RedisConnection {
             self.unit.writeToRESPBuffer(&buffer)
         }
     }
-    public struct BITPOSRange: RESPRepresentable {
+    public struct BITPOSRange: RESPRenderable {
         @usableFromInline let start: Int
         @usableFromInline let endUnitBlock: BITPOSRangeEndUnitBlock?
 
@@ -568,7 +568,7 @@ extension RedisConnection {
         RESPCommand("BITPOS", key, bit, range)
     }
 
-    public enum BLMOVEWherefrom: RESPRepresentable {
+    public enum BLMOVEWherefrom: RESPRenderable {
         case left
         case right
 
@@ -580,7 +580,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum BLMOVEWhereto: RESPRepresentable {
+    public enum BLMOVEWhereto: RESPRenderable {
         case left
         case right
 
@@ -608,7 +608,7 @@ extension RedisConnection {
         RESPCommand("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
 
-    public enum BLMPOPWhere: RESPRepresentable {
+    public enum BLMPOPWhere: RESPRenderable {
         case left
         case right
 
@@ -684,7 +684,7 @@ extension RedisConnection {
         RESPCommand("BRPOPLPUSH", source, destination, timeout)
     }
 
-    public enum BZMPOPWhere: RESPRepresentable {
+    public enum BZMPOPWhere: RESPRenderable {
         case min
         case max
 
@@ -760,7 +760,7 @@ extension RedisConnection {
         RESPCommand("CLIENT")
     }
 
-    public enum CLIENTCACHINGMode: RESPRepresentable {
+    public enum CLIENTCACHINGMode: RESPRenderable {
         case yes
         case no
 
@@ -868,7 +868,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "INFO")
     }
 
-    public enum CLIENTKILLFilterNewFormatClientType: RESPRepresentable {
+    public enum CLIENTKILLFilterNewFormatClientType: RESPRenderable {
         case normal
         case master
         case slave
@@ -886,7 +886,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum CLIENTKILLFilterNewFormatSkipme: RESPRepresentable {
+    public enum CLIENTKILLFilterNewFormatSkipme: RESPRenderable {
         case yes
         case no
 
@@ -898,7 +898,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum CLIENTKILLFilterNewFormat: RESPRepresentable {
+    public enum CLIENTKILLFilterNewFormat: RESPRenderable {
         case clientId(Int?)
         case clientType(CLIENTKILLFilterNewFormatClientType?)
         case username(String?)
@@ -918,7 +918,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum CLIENTKILLFilter: RESPRepresentable {
+    public enum CLIENTKILLFilter: RESPRenderable {
         case oldFormat(String)
         case newFormat([CLIENTKILLFilterNewFormat])
 
@@ -946,7 +946,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "KILL", filter)
     }
 
-    public enum CLIENTLISTClientType: RESPRepresentable {
+    public enum CLIENTLISTClientType: RESPRenderable {
         case normal
         case master
         case replica
@@ -978,7 +978,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
     }
 
-    public enum CLIENTNOEVICTEnabled: RESPRepresentable {
+    public enum CLIENTNOEVICTEnabled: RESPRenderable {
         case on
         case off
 
@@ -1006,7 +1006,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "NO-EVICT", enabled)
     }
 
-    public enum CLIENTNOTOUCHEnabled: RESPRepresentable {
+    public enum CLIENTNOTOUCHEnabled: RESPRenderable {
         case on
         case off
 
@@ -1034,7 +1034,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "NO-TOUCH", enabled)
     }
 
-    public enum CLIENTPAUSEMode: RESPRepresentable {
+    public enum CLIENTPAUSEMode: RESPRenderable {
         case write
         case all
 
@@ -1062,7 +1062,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "PAUSE", timeout, mode)
     }
 
-    public enum CLIENTREPLYAction: RESPRepresentable {
+    public enum CLIENTREPLYAction: RESPRenderable {
         case on
         case off
         case skip
@@ -1092,7 +1092,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "REPLY", action)
     }
 
-    public enum CLIENTSETINFOAttr: RESPRepresentable {
+    public enum CLIENTSETINFOAttr: RESPRenderable {
         case libname(String)
         case libver(String)
 
@@ -1136,7 +1136,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "SETNAME", connectionName)
     }
 
-    public enum CLIENTTRACKINGStatus: RESPRepresentable {
+    public enum CLIENTTRACKINGStatus: RESPRenderable {
         case on
         case off
 
@@ -1180,7 +1180,7 @@ extension RedisConnection {
         RESPCommand("CLIENT", "TRACKINGINFO")
     }
 
-    public enum CLIENTUNBLOCKUnblockType: RESPRepresentable {
+    public enum CLIENTUNBLOCKUnblockType: RESPRenderable {
         case timeout
         case error
 
@@ -1256,7 +1256,7 @@ extension RedisConnection {
         RESPCommand("CLUSTER", "ADDSLOTS", slot)
     }
 
-    public struct CLUSTERADDSLOTSRANGERange: RESPRepresentable {
+    public struct CLUSTERADDSLOTSRANGERange: RESPRenderable {
         @usableFromInline let startSlot: Int
         @usableFromInline let endSlot: Int
 
@@ -1346,7 +1346,7 @@ extension RedisConnection {
         RESPCommand("CLUSTER", "DELSLOTS", slot)
     }
 
-    public struct CLUSTERDELSLOTSRANGERange: RESPRepresentable {
+    public struct CLUSTERDELSLOTSRANGERange: RESPRenderable {
         @usableFromInline let startSlot: Int
         @usableFromInline let endSlot: Int
 
@@ -1372,7 +1372,7 @@ extension RedisConnection {
         RESPCommand("CLUSTER", "DELSLOTSRANGE", range)
     }
 
-    public enum CLUSTERFAILOVEROptions: RESPRepresentable {
+    public enum CLUSTERFAILOVEROptions: RESPRenderable {
         case force
         case takeover
 
@@ -1608,7 +1608,7 @@ extension RedisConnection {
         RESPCommand("CLUSTER", "REPLICATE", nodeId)
     }
 
-    public enum CLUSTERRESETResetType: RESPRepresentable {
+    public enum CLUSTERRESETResetType: RESPRenderable {
         case hard
         case soft
 
@@ -1668,7 +1668,7 @@ extension RedisConnection {
         RESPCommand("CLUSTER", "SET-CONFIG-EPOCH", configEpoch)
     }
 
-    public enum CLUSTERSETSLOTSubcommand: RESPRepresentable {
+    public enum CLUSTERSETSLOTSubcommand: RESPRenderable {
         case importing(String)
         case migrating(String)
         case node(String)
@@ -1860,7 +1860,7 @@ extension RedisConnection {
         RESPCommand("COMMAND", "INFO", commandName)
     }
 
-    public enum COMMANDLISTFilterby: RESPRepresentable {
+    public enum COMMANDLISTFilterby: RESPRenderable {
         case moduleName(String)
         case category(String)
         case pattern(String)
@@ -1970,7 +1970,7 @@ extension RedisConnection {
         RESPCommand("CONFIG", "REWRITE")
     }
 
-    public struct CONFIGSETData: RESPRepresentable {
+    public struct CONFIGSETData: RESPRenderable {
         @usableFromInline let parameter: String
         @usableFromInline let value: String
 
@@ -2236,7 +2236,7 @@ extension RedisConnection {
         RESPCommand("EXISTS", key)
     }
 
-    public enum EXPIRECondition: RESPRepresentable {
+    public enum EXPIRECondition: RESPRenderable {
         case nx
         case xx
         case gt
@@ -2268,7 +2268,7 @@ extension RedisConnection {
         RESPCommand("EXPIRE", key, seconds, condition)
     }
 
-    public enum EXPIREATCondition: RESPRepresentable {
+    public enum EXPIREATCondition: RESPRenderable {
         case nx
         case xx
         case gt
@@ -2316,7 +2316,7 @@ extension RedisConnection {
         RESPCommand("EXPIRETIME", key)
     }
 
-    public struct FAILOVERTarget: RESPRepresentable {
+    public struct FAILOVERTarget: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
@@ -2376,7 +2376,7 @@ extension RedisConnection {
         RESPCommand("FCALL_RO", function, numkeys, key, arg)
     }
 
-    public enum FLUSHALLFlushType: RESPRepresentable {
+    public enum FLUSHALLFlushType: RESPRenderable {
         case async
         case sync
 
@@ -2404,7 +2404,7 @@ extension RedisConnection {
         RESPCommand("FLUSHALL", flushType)
     }
 
-    public enum FLUSHDBFlushType: RESPRepresentable {
+    public enum FLUSHDBFlushType: RESPRenderable {
         case async
         case sync
 
@@ -2480,7 +2480,7 @@ extension RedisConnection {
         RESPCommand("FUNCTION", "DUMP")
     }
 
-    public enum FUNCTIONFLUSHFlushType: RESPRepresentable {
+    public enum FUNCTIONFLUSHFlushType: RESPRenderable {
         case async
         case sync
 
@@ -2572,7 +2572,7 @@ extension RedisConnection {
         RESPCommand("FUNCTION", "LOAD", RedisPureToken("REPLACE", replace), functionCode)
     }
 
-    public enum FUNCTIONRESTOREPolicy: RESPRepresentable {
+    public enum FUNCTIONRESTOREPolicy: RESPRenderable {
         case flush
         case append
         case replace
@@ -2618,7 +2618,7 @@ extension RedisConnection {
         RESPCommand("FUNCTION", "STATS")
     }
 
-    public enum GEOADDCondition: RESPRepresentable {
+    public enum GEOADDCondition: RESPRenderable {
         case nx
         case xx
 
@@ -2630,7 +2630,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOADDData: RESPRepresentable {
+    public struct GEOADDData: RESPRenderable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
         @usableFromInline let member: String
@@ -2658,7 +2658,7 @@ extension RedisConnection {
         RESPCommand("GEOADD", key, condition, RedisPureToken("CH", change), data)
     }
 
-    public enum GEODISTUnit: RESPRepresentable {
+    public enum GEODISTUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -2722,7 +2722,7 @@ extension RedisConnection {
         RESPCommand("GEOPOS", key, member)
     }
 
-    public enum GEORADIUSUnit: RESPRepresentable {
+    public enum GEORADIUSUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -2738,7 +2738,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEORADIUSCountBlock: RESPRepresentable {
+    public struct GEORADIUSCountBlock: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -2748,7 +2748,7 @@ extension RedisConnection {
             if self.any { "ANY".writeToRESPBuffer(&buffer) }
         }
     }
-    public enum GEORADIUSOrder: RESPRepresentable {
+    public enum GEORADIUSOrder: RESPRenderable {
         case asc
         case desc
 
@@ -2760,7 +2760,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum GEORADIUSStore: RESPRepresentable {
+    public enum GEORADIUSStore: RESPRenderable {
         case storekey(RedisKey)
         case storedistkey(RedisKey)
 
@@ -2788,7 +2788,7 @@ extension RedisConnection {
         RESPCommand("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 
-    public enum GEORADIUSBYMEMBERUnit: RESPRepresentable {
+    public enum GEORADIUSBYMEMBERUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -2804,7 +2804,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEORADIUSBYMEMBERCountBlock: RESPRepresentable {
+    public struct GEORADIUSBYMEMBERCountBlock: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -2814,7 +2814,7 @@ extension RedisConnection {
             if self.any { "ANY".writeToRESPBuffer(&buffer) }
         }
     }
-    public enum GEORADIUSBYMEMBEROrder: RESPRepresentable {
+    public enum GEORADIUSBYMEMBEROrder: RESPRenderable {
         case asc
         case desc
 
@@ -2826,7 +2826,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum GEORADIUSBYMEMBERStore: RESPRepresentable {
+    public enum GEORADIUSBYMEMBERStore: RESPRenderable {
         case storekey(RedisKey)
         case storedistkey(RedisKey)
 
@@ -2854,7 +2854,7 @@ extension RedisConnection {
         RESPCommand("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 
-    public enum GEORADIUSBYMEMBERROUnit: RESPRepresentable {
+    public enum GEORADIUSBYMEMBERROUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -2870,7 +2870,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEORADIUSBYMEMBERROCountBlock: RESPRepresentable {
+    public struct GEORADIUSBYMEMBERROCountBlock: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -2880,7 +2880,7 @@ extension RedisConnection {
             if self.any { "ANY".writeToRESPBuffer(&buffer) }
         }
     }
-    public enum GEORADIUSBYMEMBERROOrder: RESPRepresentable {
+    public enum GEORADIUSBYMEMBERROOrder: RESPRenderable {
         case asc
         case desc
 
@@ -2908,7 +2908,7 @@ extension RedisConnection {
         RESPCommand("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 
-    public enum GEORADIUSROUnit: RESPRepresentable {
+    public enum GEORADIUSROUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -2924,7 +2924,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEORADIUSROCountBlock: RESPRepresentable {
+    public struct GEORADIUSROCountBlock: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -2934,7 +2934,7 @@ extension RedisConnection {
             if self.any { "ANY".writeToRESPBuffer(&buffer) }
         }
     }
-    public enum GEORADIUSROOrder: RESPRepresentable {
+    public enum GEORADIUSROOrder: RESPRenderable {
         case asc
         case desc
 
@@ -2962,7 +2962,7 @@ extension RedisConnection {
         RESPCommand("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 
-    public struct GEOSEARCHFromFromlonlat: RESPRepresentable {
+    public struct GEOSEARCHFromFromlonlat: RESPRenderable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
@@ -2972,7 +2972,7 @@ extension RedisConnection {
             self.latitude.writeToRESPBuffer(&buffer)
         }
     }
-    public enum GEOSEARCHFrom: RESPRepresentable {
+    public enum GEOSEARCHFrom: RESPRenderable {
         case member(String)
         case fromlonlat(GEOSEARCHFromFromlonlat)
 
@@ -2984,7 +2984,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum GEOSEARCHByCircleUnit: RESPRepresentable {
+    public enum GEOSEARCHByCircleUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -3000,7 +3000,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHByCircle: RESPRepresentable {
+    public struct GEOSEARCHByCircle: RESPRenderable {
         @usableFromInline let radius: Double
         @usableFromInline let unit: GEOSEARCHByCircleUnit
 
@@ -3010,7 +3010,7 @@ extension RedisConnection {
             self.unit.writeToRESPBuffer(&buffer)
         }
     }
-    public enum GEOSEARCHByBoxUnit: RESPRepresentable {
+    public enum GEOSEARCHByBoxUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -3026,7 +3026,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHByBox: RESPRepresentable {
+    public struct GEOSEARCHByBox: RESPRenderable {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
         @usableFromInline let unit: GEOSEARCHByBoxUnit
@@ -3038,7 +3038,7 @@ extension RedisConnection {
             self.unit.writeToRESPBuffer(&buffer)
         }
     }
-    public enum GEOSEARCHBy: RESPRepresentable {
+    public enum GEOSEARCHBy: RESPRenderable {
         case circle(GEOSEARCHByCircle)
         case box(GEOSEARCHByBox)
 
@@ -3050,7 +3050,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum GEOSEARCHOrder: RESPRepresentable {
+    public enum GEOSEARCHOrder: RESPRenderable {
         case asc
         case desc
 
@@ -3062,7 +3062,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHCountBlock: RESPRepresentable {
+    public struct GEOSEARCHCountBlock: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -3088,7 +3088,7 @@ extension RedisConnection {
         RESPCommand("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
     }
 
-    public struct GEOSEARCHSTOREFromFromlonlat: RESPRepresentable {
+    public struct GEOSEARCHSTOREFromFromlonlat: RESPRenderable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
@@ -3098,7 +3098,7 @@ extension RedisConnection {
             self.latitude.writeToRESPBuffer(&buffer)
         }
     }
-    public enum GEOSEARCHSTOREFrom: RESPRepresentable {
+    public enum GEOSEARCHSTOREFrom: RESPRenderable {
         case member(String)
         case fromlonlat(GEOSEARCHSTOREFromFromlonlat)
 
@@ -3110,7 +3110,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum GEOSEARCHSTOREByCircleUnit: RESPRepresentable {
+    public enum GEOSEARCHSTOREByCircleUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -3126,7 +3126,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHSTOREByCircle: RESPRepresentable {
+    public struct GEOSEARCHSTOREByCircle: RESPRenderable {
         @usableFromInline let radius: Double
         @usableFromInline let unit: GEOSEARCHSTOREByCircleUnit
 
@@ -3136,7 +3136,7 @@ extension RedisConnection {
             self.unit.writeToRESPBuffer(&buffer)
         }
     }
-    public enum GEOSEARCHSTOREByBoxUnit: RESPRepresentable {
+    public enum GEOSEARCHSTOREByBoxUnit: RESPRenderable {
         case m
         case km
         case ft
@@ -3152,7 +3152,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHSTOREByBox: RESPRepresentable {
+    public struct GEOSEARCHSTOREByBox: RESPRenderable {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
         @usableFromInline let unit: GEOSEARCHSTOREByBoxUnit
@@ -3164,7 +3164,7 @@ extension RedisConnection {
             self.unit.writeToRESPBuffer(&buffer)
         }
     }
-    public enum GEOSEARCHSTOREBy: RESPRepresentable {
+    public enum GEOSEARCHSTOREBy: RESPRenderable {
         case circle(GEOSEARCHSTOREByCircle)
         case box(GEOSEARCHSTOREByBox)
 
@@ -3176,7 +3176,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum GEOSEARCHSTOREOrder: RESPRepresentable {
+    public enum GEOSEARCHSTOREOrder: RESPRenderable {
         case asc
         case desc
 
@@ -3188,7 +3188,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct GEOSEARCHSTORECountBlock: RESPRepresentable {
+    public struct GEOSEARCHSTORECountBlock: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -3262,7 +3262,7 @@ extension RedisConnection {
         RESPCommand("GETDEL", key)
     }
 
-    public enum GETEXExpiration: RESPRepresentable {
+    public enum GETEXExpiration: RESPRenderable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
@@ -3344,7 +3344,7 @@ extension RedisConnection {
         RESPCommand("HDEL", key, field)
     }
 
-    public struct HELLOArgumentsAuth: RESPRepresentable {
+    public struct HELLOArgumentsAuth: RESPRenderable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -3354,7 +3354,7 @@ extension RedisConnection {
             self.password.writeToRESPBuffer(&buffer)
         }
     }
-    public struct HELLOArguments: RESPRepresentable {
+    public struct HELLOArguments: RESPRenderable {
         @usableFromInline let protover: Int
         @usableFromInline let auth: HELLOArgumentsAuth?
         @usableFromInline let clientname: String?
@@ -3510,7 +3510,7 @@ extension RedisConnection {
         RESPCommand("HMGET", key, field)
     }
 
-    public struct HMSETData: RESPRepresentable {
+    public struct HMSETData: RESPRenderable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
@@ -3536,7 +3536,7 @@ extension RedisConnection {
         RESPCommand("HMSET", key, data)
     }
 
-    public struct HRANDFIELDOptions: RESPRepresentable {
+    public struct HRANDFIELDOptions: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
 
@@ -3578,7 +3578,7 @@ extension RedisConnection {
         RESPCommand("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 
-    public struct HSETData: RESPRepresentable {
+    public struct HSETData: RESPRenderable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
@@ -3908,7 +3908,7 @@ extension RedisConnection {
         RESPCommand("LINDEX", key, index)
     }
 
-    public enum LINSERTWhere: RESPRepresentable {
+    public enum LINSERTWhere: RESPRenderable {
         case before
         case after
 
@@ -3952,7 +3952,7 @@ extension RedisConnection {
         RESPCommand("LLEN", key)
     }
 
-    public enum LMOVEWherefrom: RESPRepresentable {
+    public enum LMOVEWherefrom: RESPRenderable {
         case left
         case right
 
@@ -3964,7 +3964,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum LMOVEWhereto: RESPRepresentable {
+    public enum LMOVEWhereto: RESPRenderable {
         case left
         case right
 
@@ -3992,7 +3992,7 @@ extension RedisConnection {
         RESPCommand("LMOVE", source, destination, wherefrom, whereto)
     }
 
-    public enum LMPOPWhere: RESPRepresentable {
+    public enum LMPOPWhere: RESPRenderable {
         case left
         case right
 
@@ -4291,7 +4291,7 @@ extension RedisConnection {
         RESPCommand("MGET", key)
     }
 
-    public enum MIGRATEKeySelector: RESPRepresentable {
+    public enum MIGRATEKeySelector: RESPRenderable {
         case key(RedisKey)
         case emptyString
 
@@ -4303,7 +4303,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct MIGRATEAuthenticationAuth2: RESPRepresentable {
+    public struct MIGRATEAuthenticationAuth2: RESPRenderable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -4313,7 +4313,7 @@ extension RedisConnection {
             self.password.writeToRESPBuffer(&buffer)
         }
     }
-    public enum MIGRATEAuthentication: RESPRepresentable {
+    public enum MIGRATEAuthentication: RESPRenderable {
         case auth(String)
         case auth2(MIGRATEAuthenticationAuth2)
 
@@ -4405,7 +4405,7 @@ extension RedisConnection {
         RESPCommand("MODULE", "LOAD", path, arg)
     }
 
-    public struct MODULELOADEXConfigs: RESPRepresentable {
+    public struct MODULELOADEXConfigs: RESPRenderable {
         @usableFromInline let name: String
         @usableFromInline let value: String
 
@@ -4478,7 +4478,7 @@ extension RedisConnection {
         RESPCommand("MOVE", key, db)
     }
 
-    public struct MSETData: RESPRepresentable {
+    public struct MSETData: RESPRenderable {
         @usableFromInline let key: RedisKey
         @usableFromInline let value: String
 
@@ -4504,7 +4504,7 @@ extension RedisConnection {
         RESPCommand("MSET", data)
     }
 
-    public struct MSETNXData: RESPRepresentable {
+    public struct MSETNXData: RESPRenderable {
         @usableFromInline let key: RedisKey
         @usableFromInline let value: String
 
@@ -4658,7 +4658,7 @@ extension RedisConnection {
         RESPCommand("PERSIST", key)
     }
 
-    public enum PEXPIRECondition: RESPRepresentable {
+    public enum PEXPIRECondition: RESPRenderable {
         case nx
         case xx
         case gt
@@ -4690,7 +4690,7 @@ extension RedisConnection {
         RESPCommand("PEXPIRE", key, milliseconds, condition)
     }
 
-    public enum PEXPIREATCondition: RESPRepresentable {
+    public enum PEXPIREATCondition: RESPRenderable {
         case nx
         case xx
         case gt
@@ -5153,7 +5153,7 @@ extension RedisConnection {
         RESPCommand("REPLCONF")
     }
 
-    public struct REPLICAOFArgsHostPort: RESPRepresentable {
+    public struct REPLICAOFArgsHostPort: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -5163,7 +5163,7 @@ extension RedisConnection {
             self.port.writeToRESPBuffer(&buffer)
         }
     }
-    public struct REPLICAOFArgsNoOne: RESPRepresentable {
+    public struct REPLICAOFArgsNoOne: RESPRenderable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -5173,7 +5173,7 @@ extension RedisConnection {
             if self.one { "ONE".writeToRESPBuffer(&buffer) }
         }
     }
-    public enum REPLICAOFArgs: RESPRepresentable {
+    public enum REPLICAOFArgs: RESPRenderable {
         case hostPort(REPLICAOFArgsHostPort)
         case noOne(REPLICAOFArgsNoOne)
 
@@ -5409,7 +5409,7 @@ extension RedisConnection {
         RESPCommand("SCRIPT")
     }
 
-    public enum SCRIPTDEBUGMode: RESPRepresentable {
+    public enum SCRIPTDEBUGMode: RESPRenderable {
         case yes
         case sync
         case no
@@ -5455,7 +5455,7 @@ extension RedisConnection {
         RESPCommand("SCRIPT", "EXISTS", sha1)
     }
 
-    public enum SCRIPTFLUSHFlushType: RESPRepresentable {
+    public enum SCRIPTFLUSHFlushType: RESPRenderable {
         case async
         case sync
 
@@ -5579,7 +5579,7 @@ extension RedisConnection {
         RESPCommand("SELECT", index)
     }
 
-    public enum SETCondition: RESPRepresentable {
+    public enum SETCondition: RESPRenderable {
         case nx
         case xx
 
@@ -5591,7 +5591,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum SETExpiration: RESPRepresentable {
+    public enum SETExpiration: RESPRenderable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
@@ -5689,7 +5689,7 @@ extension RedisConnection {
         RESPCommand("SETRANGE", key, offset, value)
     }
 
-    public enum SHUTDOWNSaveSelector: RESPRepresentable {
+    public enum SHUTDOWNSaveSelector: RESPRenderable {
         case nosave
         case save
 
@@ -5781,7 +5781,7 @@ extension RedisConnection {
         RESPCommand("SISMEMBER", key, member)
     }
 
-    public struct SLAVEOFArgsHostPort: RESPRepresentable {
+    public struct SLAVEOFArgsHostPort: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -5791,7 +5791,7 @@ extension RedisConnection {
             self.port.writeToRESPBuffer(&buffer)
         }
     }
-    public struct SLAVEOFArgsNoOne: RESPRepresentable {
+    public struct SLAVEOFArgsNoOne: RESPRenderable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -5801,7 +5801,7 @@ extension RedisConnection {
             if self.one { "ONE".writeToRESPBuffer(&buffer) }
         }
     }
-    public enum SLAVEOFArgs: RESPRepresentable {
+    public enum SLAVEOFArgs: RESPRenderable {
         case hostPort(SLAVEOFArgsHostPort)
         case noOne(SLAVEOFArgsNoOne)
 
@@ -5957,7 +5957,7 @@ extension RedisConnection {
         RESPCommand("SMOVE", source, destination, member)
     }
 
-    public struct SORTLimit: RESPRepresentable {
+    public struct SORTLimit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -5967,7 +5967,7 @@ extension RedisConnection {
             self.count.writeToRESPBuffer(&buffer)
         }
     }
-    public enum SORTOrder: RESPRepresentable {
+    public enum SORTOrder: RESPRenderable {
         case asc
         case desc
 
@@ -5995,7 +5995,7 @@ extension RedisConnection {
         RESPCommand("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
     }
 
-    public struct SORTROLimit: RESPRepresentable {
+    public struct SORTROLimit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -6005,7 +6005,7 @@ extension RedisConnection {
             self.count.writeToRESPBuffer(&buffer)
         }
     }
-    public enum SORTROOrder: RESPRepresentable {
+    public enum SORTROOrder: RESPRenderable {
         case asc
         case desc
 
@@ -6432,7 +6432,7 @@ extension RedisConnection {
         RESPCommand("XACK", key, group, id)
     }
 
-    public enum XADDTrimStrategy: RESPRepresentable {
+    public enum XADDTrimStrategy: RESPRenderable {
         case maxlen
         case minid
 
@@ -6444,7 +6444,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum XADDTrimOperator: RESPRepresentable {
+    public enum XADDTrimOperator: RESPRenderable {
         case equal
         case approximately
 
@@ -6456,7 +6456,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct XADDTrim: RESPRepresentable {
+    public struct XADDTrim: RESPRenderable {
         @usableFromInline let strategy: XADDTrimStrategy
         @usableFromInline let `operator`: XADDTrimOperator?
         @usableFromInline let threshold: String
@@ -6470,7 +6470,7 @@ extension RedisConnection {
             self.count.writeToRESPBuffer(&buffer)
         }
     }
-    public enum XADDIdSelector: RESPRepresentable {
+    public enum XADDIdSelector: RESPRenderable {
         case autoId
         case id(String)
 
@@ -6482,7 +6482,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct XADDData: RESPRepresentable {
+    public struct XADDData: RESPRenderable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
@@ -6572,7 +6572,7 @@ extension RedisConnection {
         RESPCommand("XGROUP")
     }
 
-    public enum XGROUPCREATEIdSelector: RESPRepresentable {
+    public enum XGROUPCREATEIdSelector: RESPRenderable {
         case id(String)
         case newId
 
@@ -6664,7 +6664,7 @@ extension RedisConnection {
         RESPCommand("XGROUP", "HELP")
     }
 
-    public enum XGROUPSETIDIdSelector: RESPRepresentable {
+    public enum XGROUPSETIDIdSelector: RESPRenderable {
         case id(String)
         case newId
 
@@ -6756,7 +6756,7 @@ extension RedisConnection {
         RESPCommand("XINFO", "HELP")
     }
 
-    public struct XINFOSTREAMFullBlock: RESPRepresentable {
+    public struct XINFOSTREAMFullBlock: RESPRenderable {
         @usableFromInline let full: Bool
         @usableFromInline let count: Int?
 
@@ -6798,7 +6798,7 @@ extension RedisConnection {
         RESPCommand("XLEN", key)
     }
 
-    public struct XPENDINGFilters: RESPRepresentable {
+    public struct XPENDINGFilters: RESPRenderable {
         @usableFromInline let minIdleTime: Int?
         @usableFromInline let start: String
         @usableFromInline let end: String
@@ -6846,7 +6846,7 @@ extension RedisConnection {
         RESPCommand("XRANGE", key, start, end, RESPWithToken("COUNT", count))
     }
 
-    public struct XREADStreams: RESPRepresentable {
+    public struct XREADStreams: RESPRenderable {
         @usableFromInline let key: [RedisKey]
         @usableFromInline let id: [String]
 
@@ -6871,7 +6871,7 @@ extension RedisConnection {
         RESPCommand("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
     }
 
-    public struct XREADGROUPGroupBlock: RESPRepresentable {
+    public struct XREADGROUPGroupBlock: RESPRenderable {
         @usableFromInline let group: String
         @usableFromInline let consumer: String
 
@@ -6881,7 +6881,7 @@ extension RedisConnection {
             self.consumer.writeToRESPBuffer(&buffer)
         }
     }
-    public struct XREADGROUPStreams: RESPRepresentable {
+    public struct XREADGROUPStreams: RESPRenderable {
         @usableFromInline let key: [RedisKey]
         @usableFromInline let id: [String]
 
@@ -6939,7 +6939,7 @@ extension RedisConnection {
         RESPCommand("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
     }
 
-    public enum XTRIMTrimStrategy: RESPRepresentable {
+    public enum XTRIMTrimStrategy: RESPRenderable {
         case maxlen
         case minid
 
@@ -6951,7 +6951,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum XTRIMTrimOperator: RESPRepresentable {
+    public enum XTRIMTrimOperator: RESPRenderable {
         case equal
         case approximately
 
@@ -6963,7 +6963,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct XTRIMTrim: RESPRepresentable {
+    public struct XTRIMTrim: RESPRenderable {
         @usableFromInline let strategy: XTRIMTrimStrategy
         @usableFromInline let `operator`: XTRIMTrimOperator?
         @usableFromInline let threshold: String
@@ -6993,7 +6993,7 @@ extension RedisConnection {
         RESPCommand("XTRIM", key, trim)
     }
 
-    public enum ZADDCondition: RESPRepresentable {
+    public enum ZADDCondition: RESPRenderable {
         case nx
         case xx
 
@@ -7005,7 +7005,7 @@ extension RedisConnection {
             }
         }
     }
-    public enum ZADDComparison: RESPRepresentable {
+    public enum ZADDComparison: RESPRenderable {
         case gt
         case lt
 
@@ -7017,7 +7017,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct ZADDData: RESPRepresentable {
+    public struct ZADDData: RESPRenderable {
         @usableFromInline let score: Double
         @usableFromInline let member: String
 
@@ -7123,7 +7123,7 @@ extension RedisConnection {
         RESPCommand("ZINCRBY", key, increment, member)
     }
 
-    public enum ZINTERAggregate: RESPRepresentable {
+    public enum ZINTERAggregate: RESPRenderable {
         case sum
         case min
         case max
@@ -7169,7 +7169,7 @@ extension RedisConnection {
         RESPCommand("ZINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
     }
 
-    public enum ZINTERSTOREAggregate: RESPRepresentable {
+    public enum ZINTERSTOREAggregate: RESPRenderable {
         case sum
         case min
         case max
@@ -7215,7 +7215,7 @@ extension RedisConnection {
         RESPCommand("ZLEXCOUNT", key, min, max)
     }
 
-    public enum ZMPOPWhere: RESPRepresentable {
+    public enum ZMPOPWhere: RESPRenderable {
         case min
         case max
 
@@ -7291,7 +7291,7 @@ extension RedisConnection {
         RESPCommand("ZPOPMIN", key, count)
     }
 
-    public struct ZRANDMEMBEROptions: RESPRepresentable {
+    public struct ZRANDMEMBEROptions: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let withscores: Bool
 
@@ -7317,7 +7317,7 @@ extension RedisConnection {
         RESPCommand("ZRANDMEMBER", key, options)
     }
 
-    public enum ZRANGESortby: RESPRepresentable {
+    public enum ZRANGESortby: RESPRenderable {
         case byscore
         case bylex
 
@@ -7329,7 +7329,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct ZRANGELimit: RESPRepresentable {
+    public struct ZRANGELimit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -7355,7 +7355,7 @@ extension RedisConnection {
         RESPCommand("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores))
     }
 
-    public struct ZRANGEBYLEXLimit: RESPRepresentable {
+    public struct ZRANGEBYLEXLimit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -7381,7 +7381,7 @@ extension RedisConnection {
         RESPCommand("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
     }
 
-    public struct ZRANGEBYSCORELimit: RESPRepresentable {
+    public struct ZRANGEBYSCORELimit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -7407,7 +7407,7 @@ extension RedisConnection {
         RESPCommand("ZRANGEBYSCORE", key, min, max, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 
-    public enum ZRANGESTORESortby: RESPRepresentable {
+    public enum ZRANGESTORESortby: RESPRenderable {
         case byscore
         case bylex
 
@@ -7419,7 +7419,7 @@ extension RedisConnection {
             }
         }
     }
-    public struct ZRANGESTORELimit: RESPRepresentable {
+    public struct ZRANGESTORELimit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -7541,7 +7541,7 @@ extension RedisConnection {
         RESPCommand("ZREVRANGE", key, start, stop, RedisPureToken("WITHSCORES", withscores))
     }
 
-    public struct ZREVRANGEBYLEXLimit: RESPRepresentable {
+    public struct ZREVRANGEBYLEXLimit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -7567,7 +7567,7 @@ extension RedisConnection {
         RESPCommand("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
     }
 
-    public struct ZREVRANGEBYSCORELimit: RESPRepresentable {
+    public struct ZREVRANGEBYSCORELimit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -7641,7 +7641,7 @@ extension RedisConnection {
         RESPCommand("ZSCORE", key, member)
     }
 
-    public enum ZUNIONAggregate: RESPRepresentable {
+    public enum ZUNIONAggregate: RESPRenderable {
         case sum
         case min
         case max
@@ -7671,7 +7671,7 @@ extension RedisConnection {
         RESPCommand("ZUNION", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
-    public enum ZUNIONSTOREAggregate: RESPRepresentable {
+    public enum ZUNIONSTOREAggregate: RESPRenderable {
         case sum
         case min
         case max
