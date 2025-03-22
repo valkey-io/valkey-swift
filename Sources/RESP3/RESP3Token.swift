@@ -84,7 +84,7 @@ public struct RESP3Token: Hashable, Sendable {
         case number(Int64)
         case double(Double)
         case boolean(Bool)
-        case null
+        case null, nullBulkString
         case bigNumber(ByteBuffer)
         case array(Array)
         case attribute(Map)
@@ -109,6 +109,11 @@ public struct RESP3Token: Hashable, Sendable {
             var lengthSlice = try! local.readCRLFTerminatedSlice2()!
             let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
             let length = Int(lengthString)!
+
+            if length < 0 {
+                return .nullBulkString
+            }
+
             return .blobString(local.readSlice(length: length)!)
 
         case .blobError:
@@ -308,6 +313,23 @@ extension ByteBuffer {
         let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
         guard let blobLength = Int(lengthString) else {
             throw RESP3ParsingError(code: .canNotParseInteger, buffer: self)
+        }
+
+        // blob length is negative, this may be a null bulk string
+        if blobLength < 0 {
+            // null bulk string is -1
+            guard blobLength == -1 else {
+                // -1 is the 
+                throw RESP3ParsingError(code: .invalidData, buffer: self)
+            }
+
+            guard self.getInteger(at: self.readerIndex, as: UInt16.self) == .crlf else {
+                throw RESP3ParsingError(code: .invalidData, buffer: self)
+            }
+
+            // null bulk string is 1 byte for the $ prefix, 2 bytes for the ss-1, and 2 bytes for the \r\n
+            let respLength = 1 + 2 + 2
+            return self.readSlice(length: respLength)!
         }
 
         let respLength = 1 + lengthLineLength + blobLength + 2
