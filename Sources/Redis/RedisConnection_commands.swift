@@ -10,6 +10,8 @@ import Foundation
 extension RedisConnection {
     /// Lists the ACL categories, or the commands inside a category.
     ///
+    /// Documentation: [ACL CAT](https:/redis.io/docs/latest/commands/acl-cat)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(1) since the categories and commands are a fixed set.
     /// Categories: @slow
@@ -29,6 +31,8 @@ extension RedisConnection {
 
     /// Deletes ACL users, and terminates their connections.
     ///
+    /// Documentation: [ACL DELUSER](https:/redis.io/docs/latest/commands/acl-deluser)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(1) amortized time considering the typical user.
     /// Categories: @admin, @slow, @dangerous
@@ -45,6 +49,8 @@ extension RedisConnection {
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
+    ///
+    /// Documentation: [ACL DRYRUN](https:/redis.io/docs/latest/commands/acl-dryrun)
     ///
     /// Version: 7.0.0
     /// Complexity: O(1).
@@ -65,6 +71,8 @@ extension RedisConnection {
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     ///
+    /// Documentation: [ACL GENPASS](https:/redis.io/docs/latest/commands/acl-genpass)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -81,6 +89,8 @@ extension RedisConnection {
     }
 
     /// Lists the ACL rules of a user.
+    ///
+    /// Documentation: [ACL GETUSER](https:/redis.io/docs/latest/commands/acl-getuser)
     ///
     /// Version: 6.0.0
     /// Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
@@ -101,6 +111,8 @@ extension RedisConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
+    /// Documentation: [ACL HELP](https:/redis.io/docs/latest/commands/acl-help)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -117,6 +129,8 @@ extension RedisConnection {
     }
 
     /// Dumps the effective rules in ACL file format.
+    ///
+    /// Documentation: [ACL LIST](https:/redis.io/docs/latest/commands/acl-list)
     ///
     /// Version: 6.0.0
     /// Complexity: O(N). Where N is the number of configured users.
@@ -135,11 +149,13 @@ extension RedisConnection {
 
     /// Reloads the rules from the configured ACL file.
     ///
+    /// Documentation: [ACL LOAD](https:/redis.io/docs/latest/commands/acl-load)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(N). Where N is the number of configured users.
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///
+    ///     
     ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
     @inlinable
@@ -167,6 +183,8 @@ extension RedisConnection {
     }
     /// Lists recent security events generated due to ACL rules.
     ///
+    /// Documentation: [ACL LOG](https:/redis.io/docs/latest/commands/acl-log)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(N) with N being the number of entries shown.
     /// Categories: @admin, @slow, @dangerous
@@ -187,6 +205,8 @@ extension RedisConnection {
 
     /// Saves the effective ACL rules in the configured ACL file.
     ///
+    /// Documentation: [ACL SAVE](https:/redis.io/docs/latest/commands/acl-save)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(N). Where N is the number of configured users.
     /// Categories: @admin, @slow, @dangerous
@@ -204,6 +224,8 @@ extension RedisConnection {
     }
 
     /// Creates and modifies an ACL user and its rules.
+    ///
+    /// Documentation: [ACL SETUSER](https:/redis.io/docs/latest/commands/acl-setuser)
     ///
     /// Version: 6.0.0
     /// Complexity: O(N). Where N is the number of rules provided.
@@ -223,6 +245,8 @@ extension RedisConnection {
 
     /// Lists all ACL users.
     ///
+    /// Documentation: [ACL USERS](https:/redis.io/docs/latest/commands/acl-users)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(N). Where N is the number of configured users.
     /// Categories: @admin, @slow, @dangerous
@@ -239,6 +263,8 @@ extension RedisConnection {
     }
 
     /// Returns the authenticated username of the current connection.
+    ///
+    /// Documentation: [ACL WHOAMI](https:/redis.io/docs/latest/commands/acl-whoami)
     ///
     /// Version: 6.0.0
     /// Complexity: O(1)
@@ -257,6 +283,8 @@ extension RedisConnection {
 
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [APPEND](https:/redis.io/docs/latest/commands/append)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by Redis will double the free space available on every reallocation.
     /// Categories: @write, @string, @fast
@@ -273,6 +301,8 @@ extension RedisConnection {
     }
 
     /// Signals that a cluster client is following an -ASK redirect.
+    ///
+    /// Documentation: [ASKING](https:/redis.io/docs/latest/commands/asking)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -291,6 +321,8 @@ extension RedisConnection {
 
     /// Authenticates the connection.
     ///
+    /// Documentation: [AUTH](https:/redis.io/docs/latest/commands/auth)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of passwords defined for the user
     /// Categories: @fast, @connection
@@ -308,11 +340,13 @@ extension RedisConnection {
 
     /// Asynchronously rewrites the append-only file to disk.
     ///
+    /// Documentation: [BGREWRITEAOF](https:/redis.io/docs/latest/commands/bgrewriteaof)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
-    ///
+    ///     
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
     public func bgrewriteaof() async throws -> RESP3Token {
@@ -326,6 +360,8 @@ extension RedisConnection {
     }
 
     /// Asynchronously saves the database(s) to disk.
+    ///
+    /// Documentation: [BGSAVE](https:/redis.io/docs/latest/commands/bgsave)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -369,6 +405,8 @@ extension RedisConnection {
         }
     }
     /// Counts the number of set bits (population counting) in a string.
+    ///
+    /// Documentation: [BITCOUNT](https:/redis.io/docs/latest/commands/bitcount)
     ///
     /// Version: 2.6.0
     /// Complexity: O(N)
@@ -469,6 +507,8 @@ extension RedisConnection {
     }
     /// Performs arbitrary bitfield integer operations on strings.
     ///
+    /// Documentation: [BITFIELD](https:/redis.io/docs/latest/commands/bitfield)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(1) for each subcommand specified
     /// Categories: @write, @bitmap, @slow
@@ -497,6 +537,8 @@ extension RedisConnection {
         }
     }
     /// Performs arbitrary read-only bitfield integer operations on strings.
+    ///
+    /// Documentation: [BITFIELD_RO](https:/redis.io/docs/latest/commands/bitfield_ro)
     ///
     /// Version: 6.0.0
     /// Complexity: O(1) for each subcommand specified
@@ -530,6 +572,8 @@ extension RedisConnection {
         }
     }
     /// Performs bitwise operations on multiple strings, and stores the result.
+    ///
+    /// Documentation: [BITOP](https:/redis.io/docs/latest/commands/bitop)
     ///
     /// Version: 2.6.0
     /// Complexity: O(N)
@@ -580,19 +624,21 @@ extension RedisConnection {
     }
     /// Finds the first set (1) or clear (0) bit in a string.
     ///
+    /// Documentation: [BITPOS](https:/redis.io/docs/latest/commands/bitpos)
+    ///
     /// Version: 2.8.7
     /// Complexity: O(N)
     /// Categories: @read, @bitmap, @slow
     /// - Returns: One of the following:
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the position of the first bit set to 1 or 0 according to the request
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1`. In case the `bit` argument is 1 and the string is empty or composed of just zero bytes
-    ///
+    ///     
     ///     If we look for set bits (the bit argument is 1) and the string is empty or composed of just zero bytes, -1 is returned.
-    ///
+    ///     
     ///     If we look for clear bits (the bit argument is 0) and the string only contains bits set to 1, the function returns the first bit not part of the string on the right. So if the string is three bytes set to the value `0xff` the command `BITPOS key 0` will return 24, since up to bit 23 all the bits are 1.
-    ///
+    ///     
     ///     The function considers the right of the string as padded with zeros if you look for clear bits and specify no range or the _start_ argument **only**.
-    ///
+    ///     
     ///     However, this behavior changes if you are looking for clear bits and specify a range with both _start_ and _end_.
     ///     If a clear bit isn't found in the specified range, the function returns -1 as the user specified a clear range and there are no 0 bits in that range.
     @inlinable
@@ -632,6 +678,8 @@ extension RedisConnection {
     }
     /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
     ///
+    /// Documentation: [BLMOVE](https:/redis.io/docs/latest/commands/blmove)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(1)
     /// Categories: @write, @list, @slow, @blocking
@@ -639,27 +687,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the operation timed-out
     @inlinable
-    public func blmove(
-        source: RedisKey,
-        destination: RedisKey,
-        wherefrom: BLMOVEWherefrom,
-        whereto: BLMOVEWhereto,
-        timeout: Double
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            blmoveCommand(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout)
-        )
+    public func blmove(source: RedisKey, destination: RedisKey, wherefrom: BLMOVEWherefrom, whereto: BLMOVEWhereto, timeout: Double) async throws -> RESP3Token {
+        let response = try await send(blmoveCommand(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
         return response
     }
 
     @inlinable
-    public func blmoveCommand(
-        source: RedisKey,
-        destination: RedisKey,
-        wherefrom: BLMOVEWherefrom,
-        whereto: BLMOVEWhereto,
-        timeout: Double
-    ) -> RESPCommand {
+    public func blmoveCommand(source: RedisKey, destination: RedisKey, wherefrom: BLMOVEWherefrom, whereto: BLMOVEWhereto, timeout: Double) -> RESPCommand {
         RESPCommand("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
 
@@ -676,6 +710,8 @@ extension RedisConnection {
         }
     }
     /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
+    ///
+    /// Documentation: [BLMPOP](https:/redis.io/docs/latest/commands/blmpop)
     ///
     /// Version: 7.0.0
     /// Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
@@ -696,6 +732,8 @@ extension RedisConnection {
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
+    /// Documentation: [BLPOP](https:/redis.io/docs/latest/commands/blpop)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of provided keys.
     /// Categories: @write, @list, @slow, @blocking
@@ -715,6 +753,8 @@ extension RedisConnection {
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
+    /// Documentation: [BRPOP](https:/redis.io/docs/latest/commands/brpop)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of provided keys.
     /// Categories: @write, @list, @slow, @blocking
@@ -733,6 +773,8 @@ extension RedisConnection {
     }
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
+    ///
+    /// Documentation: [BRPOPLPUSH](https:/redis.io/docs/latest/commands/brpoplpush)
     ///
     /// Version: 2.2.0
     /// Complexity: O(1)
@@ -765,6 +807,8 @@ extension RedisConnection {
     }
     /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
     ///
+    /// Documentation: [BZMPOP](https:/redis.io/docs/latest/commands/bzmpop)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// Categories: @write, @sortedset, @slow, @blocking
@@ -784,6 +828,8 @@ extension RedisConnection {
 
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
     ///
+    /// Documentation: [BZPOPMAX](https:/redis.io/docs/latest/commands/bzpopmax)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// Categories: @write, @sortedset, @fast, @blocking
@@ -802,6 +848,8 @@ extension RedisConnection {
     }
 
     /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
+    ///
+    /// Documentation: [BZPOPMIN](https:/redis.io/docs/latest/commands/bzpopmin)
     ///
     /// Version: 5.0.0
     /// Complexity: O(log(N)) with N being the number of elements in the sorted set.
@@ -834,6 +882,8 @@ extension RedisConnection {
     }
     /// Instructs the server whether to track the keys in the next request.
     ///
+    /// Documentation: [CLIENT CACHING](https:/redis.io/docs/latest/commands/client-caching)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(1)
     /// Categories: @slow, @connection
@@ -850,6 +900,8 @@ extension RedisConnection {
     }
 
     /// Returns the name of the connection.
+    ///
+    /// Documentation: [CLIENT GETNAME](https:/redis.io/docs/latest/commands/client-getname)
     ///
     /// Version: 2.6.9
     /// Complexity: O(1)
@@ -869,6 +921,8 @@ extension RedisConnection {
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
+    ///
+    /// Documentation: [CLIENT GETREDIR](https:/redis.io/docs/latest/commands/client-getredir)
     ///
     /// Version: 6.0.0
     /// Complexity: O(1)
@@ -890,6 +944,8 @@ extension RedisConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
+    /// Documentation: [CLIENT HELP](https:/redis.io/docs/latest/commands/client-help)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @slow, @connection
@@ -907,6 +963,8 @@ extension RedisConnection {
 
     /// Returns the unique client ID of the connection.
     ///
+    /// Documentation: [CLIENT ID](https:/redis.io/docs/latest/commands/client-id)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @slow, @connection
@@ -923,6 +981,8 @@ extension RedisConnection {
     }
 
     /// Returns information about the connection.
+    ///
+    /// Documentation: [CLIENT INFO](https:/redis.io/docs/latest/commands/client-info)
     ///
     /// Version: 6.2.0
     /// Complexity: O(1)
@@ -1003,6 +1063,8 @@ extension RedisConnection {
     }
     /// Terminates open connections.
     ///
+    /// Documentation: [CLIENT KILL](https:/redis.io/docs/latest/commands/client-kill)
+    ///
     /// Version: 2.4.0
     /// Complexity: O(N) where N is the number of client connections
     /// Categories: @admin, @slow, @dangerous, @connection
@@ -1038,6 +1100,8 @@ extension RedisConnection {
     }
     /// Lists open connections.
     ///
+    /// Documentation: [CLIENT LIST](https:/redis.io/docs/latest/commands/client-list)
+    ///
     /// Version: 2.4.0
     /// Complexity: O(N) where N is the number of client connections
     /// Categories: @admin, @slow, @dangerous, @connection
@@ -1066,6 +1130,8 @@ extension RedisConnection {
         }
     }
     /// Sets the client eviction mode of the connection.
+    ///
+    /// Documentation: [CLIENT NO-EVICT](https:/redis.io/docs/latest/commands/client-no-evict)
     ///
     /// Version: 7.0.0
     /// Complexity: O(1)
@@ -1096,6 +1162,8 @@ extension RedisConnection {
     }
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
     ///
+    /// Documentation: [CLIENT NO-TOUCH](https:/redis.io/docs/latest/commands/client-no-touch)
+    ///
     /// Version: 7.2.0
     /// Complexity: O(1)
     /// Categories: @slow, @connection
@@ -1124,6 +1192,8 @@ extension RedisConnection {
         }
     }
     /// Suspends commands processing.
+    ///
+    /// Documentation: [CLIENT PAUSE](https:/redis.io/docs/latest/commands/client-pause)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -1156,6 +1226,8 @@ extension RedisConnection {
     }
     /// Instructs the server whether to reply to commands.
     ///
+    /// Documentation: [CLIENT REPLY](https:/redis.io/docs/latest/commands/client-reply)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(1)
     /// Categories: @slow, @connection
@@ -1185,6 +1257,8 @@ extension RedisConnection {
     }
     /// Sets information specific to the client or connection.
     ///
+    /// Documentation: [CLIENT SETINFO](https:/redis.io/docs/latest/commands/client-setinfo)
+    ///
     /// Version: 7.2.0
     /// Complexity: O(1)
     /// Categories: @slow, @connection
@@ -1201,6 +1275,8 @@ extension RedisConnection {
     }
 
     /// Sets the connection name.
+    ///
+    /// Documentation: [CLIENT SETNAME](https:/redis.io/docs/latest/commands/client-setname)
     ///
     /// Version: 2.6.9
     /// Complexity: O(1)
@@ -1231,50 +1307,26 @@ extension RedisConnection {
     }
     /// Controls server-assisted client-side caching for the connection.
     ///
+    /// Documentation: [CLIENT TRACKING](https:/redis.io/docs/latest/commands/client-tracking)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(1). Some options may introduce additional complexity.
     /// Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(
-        status: CLIENTTRACKINGStatus,
-        clientId: Int?,
-        prefix: String...,
-        bcast: Bool,
-        optin: Bool,
-        optout: Bool,
-        noloop: Bool
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            clientTrackingCommand(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
-        )
+    public func clientTracking(status: CLIENTTRACKINGStatus, clientId: Int?, prefix: String..., bcast: Bool, optin: Bool, optout: Bool, noloop: Bool) async throws -> RESP3Token {
+        let response = try await send(clientTrackingCommand(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
         return response
     }
 
     @inlinable
-    public func clientTrackingCommand(
-        status: CLIENTTRACKINGStatus,
-        clientId: Int?,
-        prefix: [String],
-        bcast: Bool,
-        optin: Bool,
-        optout: Bool,
-        noloop: Bool
-    ) -> RESPCommand {
-        RESPCommand(
-            "CLIENT",
-            "TRACKING",
-            status,
-            RESPWithToken("REDIRECT", clientId),
-            RESPWithToken("PREFIX", prefix),
-            RedisPureToken("BCAST", bcast),
-            RedisPureToken("OPTIN", optin),
-            RedisPureToken("OPTOUT", optout),
-            RedisPureToken("NOLOOP", noloop)
-        )
+    public func clientTrackingCommand(status: CLIENTTRACKINGStatus, clientId: Int?, prefix: [String], bcast: Bool, optin: Bool, optout: Bool, noloop: Bool) -> RESPCommand {
+        RESPCommand("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
+    ///
+    /// Documentation: [CLIENT TRACKINGINFO](https:/redis.io/docs/latest/commands/client-trackinginfo)
     ///
     /// Version: 6.2.0
     /// Complexity: O(1)
@@ -1305,6 +1357,8 @@ extension RedisConnection {
     }
     /// Unblocks a client blocked by a blocking command from a different connection.
     ///
+    /// Documentation: [CLIENT UNBLOCK](https:/redis.io/docs/latest/commands/client-unblock)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(log N) where N is the number of client connections
     /// Categories: @admin, @slow, @dangerous, @connection
@@ -1324,6 +1378,8 @@ extension RedisConnection {
 
     /// Resumes processing commands from paused clients.
     ///
+    /// Documentation: [CLIENT UNPAUSE](https:/redis.io/docs/latest/commands/client-unpause)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(N) Where N is the number of paused clients
     /// Categories: @admin, @slow, @dangerous, @connection
@@ -1340,6 +1396,8 @@ extension RedisConnection {
     }
 
     /// Assigns new hash slots to a node.
+    ///
+    /// Documentation: [CLUSTER ADDSLOTS](https:/redis.io/docs/latest/commands/cluster-addslots)
     ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the total number of hash slot arguments
@@ -1368,6 +1426,8 @@ extension RedisConnection {
     }
     /// Assigns new hash slot ranges to a node.
     ///
+    /// Documentation: [CLUSTER ADDSLOTSRANGE](https:/redis.io/docs/latest/commands/cluster-addslotsrange)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
     /// Categories: @admin, @slow, @dangerous
@@ -1384,6 +1444,8 @@ extension RedisConnection {
     }
 
     /// Advances the cluster config epoch.
+    ///
+    /// Documentation: [CLUSTER BUMPEPOCH](https:/redis.io/docs/latest/commands/cluster-bumpepoch)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -1404,6 +1466,8 @@ extension RedisConnection {
 
     /// Returns the number of active failure reports active for a node.
     ///
+    /// Documentation: [CLUSTER COUNT-FAILURE-REPORTS](https:/redis.io/docs/latest/commands/cluster-count-failure-reports)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the number of failure reports
     /// Categories: @admin, @slow, @dangerous
@@ -1421,6 +1485,8 @@ extension RedisConnection {
 
     /// Returns the number of keys in a hash slot.
     ///
+    /// Documentation: [CLUSTER COUNTKEYSINSLOT](https:/redis.io/docs/latest/commands/cluster-countkeysinslot)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -1437,6 +1503,8 @@ extension RedisConnection {
     }
 
     /// Sets hash slots as unbound for a node.
+    ///
+    /// Documentation: [CLUSTER DELSLOTS](https:/redis.io/docs/latest/commands/cluster-delslots)
     ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the total number of hash slot arguments
@@ -1464,6 +1532,8 @@ extension RedisConnection {
         }
     }
     /// Sets hash slot ranges as unbound for a node.
+    ///
+    /// Documentation: [CLUSTER DELSLOTSRANGE](https:/redis.io/docs/latest/commands/cluster-delslotsrange)
     ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
@@ -1494,6 +1564,8 @@ extension RedisConnection {
     }
     /// Forces a replica to perform a manual failover of its master.
     ///
+    /// Documentation: [CLUSTER FAILOVER](https:/redis.io/docs/latest/commands/cluster-failover)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -1510,6 +1582,8 @@ extension RedisConnection {
     }
 
     /// Deletes all slots information from a node.
+    ///
+    /// Documentation: [CLUSTER FLUSHSLOTS](https:/redis.io/docs/latest/commands/cluster-flushslots)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -1528,6 +1602,8 @@ extension RedisConnection {
 
     /// Removes a node from the nodes table.
     ///
+    /// Documentation: [CLUSTER FORGET](https:/redis.io/docs/latest/commands/cluster-forget)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -1544,6 +1620,8 @@ extension RedisConnection {
     }
 
     /// Returns the key names in a hash slot.
+    ///
+    /// Documentation: [CLUSTER GETKEYSINSLOT](https:/redis.io/docs/latest/commands/cluster-getkeysinslot)
     ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the number of requested keys
@@ -1562,6 +1640,8 @@ extension RedisConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
+    /// Documentation: [CLUSTER HELP](https:/redis.io/docs/latest/commands/cluster-help)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -1578,6 +1658,8 @@ extension RedisConnection {
     }
 
     /// Returns information about the state of a node.
+    ///
+    /// Documentation: [CLUSTER INFO](https:/redis.io/docs/latest/commands/cluster-info)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -1596,6 +1678,8 @@ extension RedisConnection {
 
     /// Returns the hash slot for a key.
     ///
+    /// Documentation: [CLUSTER KEYSLOT](https:/redis.io/docs/latest/commands/cluster-keyslot)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the number of bytes in the key
     /// Categories: @slow
@@ -1612,6 +1696,8 @@ extension RedisConnection {
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
+    ///
+    /// Documentation: [CLUSTER LINKS](https:/redis.io/docs/latest/commands/cluster-links)
     ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the total number of Cluster nodes
@@ -1630,6 +1716,8 @@ extension RedisConnection {
 
     /// Forces a node to handshake with another node.
     ///
+    /// Documentation: [CLUSTER MEET](https:/redis.io/docs/latest/commands/cluster-meet)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -1646,6 +1734,8 @@ extension RedisConnection {
     }
 
     /// Returns the ID of a node.
+    ///
+    /// Documentation: [CLUSTER MYID](https:/redis.io/docs/latest/commands/cluster-myid)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -1664,6 +1754,8 @@ extension RedisConnection {
 
     /// Returns the shard ID of a node.
     ///
+    /// Documentation: [CLUSTER MYSHARDID](https:/redis.io/docs/latest/commands/cluster-myshardid)
+    ///
     /// Version: 7.2.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -1680,6 +1772,8 @@ extension RedisConnection {
     }
 
     /// Returns the cluster configuration for a node.
+    ///
+    /// Documentation: [CLUSTER NODES](https:/redis.io/docs/latest/commands/cluster-nodes)
     ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the total number of Cluster nodes
@@ -1698,6 +1792,8 @@ extension RedisConnection {
 
     /// Lists the replica nodes of a master node.
     ///
+    /// Documentation: [CLUSTER REPLICAS](https:/redis.io/docs/latest/commands/cluster-replicas)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(N) where N is the number of replicas.
     /// Categories: @admin, @slow, @dangerous
@@ -1714,6 +1810,8 @@ extension RedisConnection {
     }
 
     /// Configure a node as replica of a master node.
+    ///
+    /// Documentation: [CLUSTER REPLICATE](https:/redis.io/docs/latest/commands/cluster-replicate)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -1744,6 +1842,8 @@ extension RedisConnection {
     }
     /// Resets a node.
     ///
+    /// Documentation: [CLUSTER RESET](https:/redis.io/docs/latest/commands/cluster-reset)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the number of known nodes. The command may execute a FLUSHALL as a side effect.
     /// Categories: @admin, @slow, @dangerous
@@ -1761,6 +1861,8 @@ extension RedisConnection {
 
     /// Forces a node to save the cluster configuration to disk.
     ///
+    /// Documentation: [CLUSTER SAVECONFIG](https:/redis.io/docs/latest/commands/cluster-saveconfig)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -1777,6 +1879,8 @@ extension RedisConnection {
     }
 
     /// Sets the configuration epoch for a new node.
+    ///
+    /// Documentation: [CLUSTER SET-CONFIG-EPOCH](https:/redis.io/docs/latest/commands/cluster-set-config-epoch)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -1811,6 +1915,8 @@ extension RedisConnection {
     }
     /// Binds a hash slot to a node.
     ///
+    /// Documentation: [CLUSTER SETSLOT](https:/redis.io/docs/latest/commands/cluster-setslot)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -1827,6 +1933,8 @@ extension RedisConnection {
     }
 
     /// Returns the mapping of cluster slots to shards.
+    ///
+    /// Documentation: [CLUSTER SHARDS](https:/redis.io/docs/latest/commands/cluster-shards)
     ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the total number of cluster nodes
@@ -1845,6 +1953,8 @@ extension RedisConnection {
 
     /// Lists the replica nodes of a master node.
     ///
+    /// Documentation: [CLUSTER SLAVES](https:/redis.io/docs/latest/commands/cluster-slaves)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the number of replicas.
     /// Categories: @admin, @slow, @dangerous
@@ -1861,6 +1971,8 @@ extension RedisConnection {
     }
 
     /// Returns the mapping of cluster slots to nodes.
+    ///
+    /// Documentation: [CLUSTER SLOTS](https:/redis.io/docs/latest/commands/cluster-slots)
     ///
     /// Version: 3.0.0
     /// Complexity: O(N) where N is the total number of Cluster nodes
@@ -1879,6 +1991,8 @@ extension RedisConnection {
 
     /// Returns detailed information about all commands.
     ///
+    /// Documentation: [COMMAND](https:/redis.io/docs/latest/commands/command)
+    ///
     /// Version: 2.8.13
     /// Complexity: O(N) where N is the total number of Redis commands
     /// Categories: @slow, @connection
@@ -1895,6 +2009,8 @@ extension RedisConnection {
     }
 
     /// Returns a count of commands.
+    ///
+    /// Documentation: [COMMAND COUNT](https:/redis.io/docs/latest/commands/command-count)
     ///
     /// Version: 2.8.13
     /// Complexity: O(1)
@@ -1913,6 +2029,8 @@ extension RedisConnection {
 
     /// Returns documentary information about one, multiple or all commands.
     ///
+    /// Documentation: [COMMAND DOCS](https:/redis.io/docs/latest/commands/command-docs)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of commands to look up
     /// Categories: @slow, @connection
@@ -1929,6 +2047,8 @@ extension RedisConnection {
     }
 
     /// Extracts the key names from an arbitrary command.
+    ///
+    /// Documentation: [COMMAND GETKEYS](https:/redis.io/docs/latest/commands/command-getkeys)
     ///
     /// Version: 2.8.13
     /// Complexity: O(N) where N is the number of arguments to the command
@@ -1947,6 +2067,8 @@ extension RedisConnection {
 
     /// Extracts the key names and access flags for an arbitrary command.
     ///
+    /// Documentation: [COMMAND GETKEYSANDFLAGS](https:/redis.io/docs/latest/commands/command-getkeysandflags)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of arguments to the command
     /// Categories: @slow, @connection
@@ -1964,6 +2086,8 @@ extension RedisConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
+    /// Documentation: [COMMAND HELP](https:/redis.io/docs/latest/commands/command-help)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @slow, @connection
@@ -1980,6 +2104,8 @@ extension RedisConnection {
     }
 
     /// Returns information about one, multiple or all commands.
+    ///
+    /// Documentation: [COMMAND INFO](https:/redis.io/docs/latest/commands/command-info)
     ///
     /// Version: 2.8.13
     /// Complexity: O(N) where N is the number of commands to look up
@@ -2012,6 +2138,8 @@ extension RedisConnection {
     }
     /// Returns a list of command names.
     ///
+    /// Documentation: [COMMAND LIST](https:/redis.io/docs/latest/commands/command-list)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the total number of Redis commands
     /// Categories: @slow, @connection
@@ -2028,6 +2156,8 @@ extension RedisConnection {
     }
 
     /// Returns the effective values of configuration parameters.
+    ///
+    /// Documentation: [CONFIG GET](https:/redis.io/docs/latest/commands/config-get)
     ///
     /// Version: 2.0.0
     /// Complexity: O(N) when N is the number of configuration parameters provided
@@ -2046,6 +2176,8 @@ extension RedisConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
+    /// Documentation: [CONFIG HELP](https:/redis.io/docs/latest/commands/config-help)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -2063,6 +2195,8 @@ extension RedisConnection {
 
     /// Resets the server's statistics.
     ///
+    /// Documentation: [CONFIG RESETSTAT](https:/redis.io/docs/latest/commands/config-resetstat)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -2079,6 +2213,8 @@ extension RedisConnection {
     }
 
     /// Persists the effective configuration to file.
+    ///
+    /// Documentation: [CONFIG REWRITE](https:/redis.io/docs/latest/commands/config-rewrite)
     ///
     /// Version: 2.8.0
     /// Complexity: O(1)
@@ -2107,6 +2243,8 @@ extension RedisConnection {
     }
     /// Sets configuration parameters in-flight.
     ///
+    /// Documentation: [CONFIG SET](https:/redis.io/docs/latest/commands/config-set)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N) when N is the number of configuration parameters provided
     /// Categories: @admin, @slow, @dangerous
@@ -2123,6 +2261,8 @@ extension RedisConnection {
     }
 
     /// Copies the value of a key to a new key.
+    ///
+    /// Documentation: [COPY](https:/redis.io/docs/latest/commands/copy)
     ///
     /// Version: 6.2.0
     /// Complexity: O(N) worst case for collections, where N is the number of nested items. O(1) for string values.
@@ -2143,6 +2283,8 @@ extension RedisConnection {
 
     /// Returns the number of keys in the database.
     ///
+    /// Documentation: [DBSIZE](https:/redis.io/docs/latest/commands/dbsize)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @keyspace, @read, @fast
@@ -2159,6 +2301,8 @@ extension RedisConnection {
     }
 
     /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
+    ///
+    /// Documentation: [DECR](https:/redis.io/docs/latest/commands/decr)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -2177,6 +2321,8 @@ extension RedisConnection {
 
     /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
     ///
+    /// Documentation: [DECRBY](https:/redis.io/docs/latest/commands/decrby)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @write, @string, @fast
@@ -2193,6 +2339,8 @@ extension RedisConnection {
     }
 
     /// Deletes one or more keys.
+    ///
+    /// Documentation: [DEL](https:/redis.io/docs/latest/commands/del)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
@@ -2211,6 +2359,8 @@ extension RedisConnection {
 
     /// Discards a transaction.
     ///
+    /// Documentation: [DISCARD](https:/redis.io/docs/latest/commands/discard)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N), when N is the number of queued commands
     /// Categories: @fast, @transaction
@@ -2227,6 +2377,8 @@ extension RedisConnection {
     }
 
     /// Returns a serialized representation of the value stored at a key.
+    ///
+    /// Documentation: [DUMP](https:/redis.io/docs/latest/commands/dump)
     ///
     /// Version: 2.6.0
     /// Complexity: O(1) to access the key and additional O(N*M) to serialize it, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).
@@ -2247,6 +2399,8 @@ extension RedisConnection {
 
     /// Returns the given string.
     ///
+    /// Documentation: [ECHO](https:/redis.io/docs/latest/commands/echo)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @fast, @connection
@@ -2263,6 +2417,8 @@ extension RedisConnection {
     }
 
     /// Executes a server-side Lua script.
+    ///
+    /// Documentation: [EVAL](https:/redis.io/docs/latest/commands/eval)
     ///
     /// Version: 2.6.0
     /// Complexity: Depends on the script that is executed.
@@ -2281,6 +2437,8 @@ extension RedisConnection {
 
     /// Executes a server-side Lua script by SHA1 digest.
     ///
+    /// Documentation: [EVALSHA](https:/redis.io/docs/latest/commands/evalsha)
+    ///
     /// Version: 2.6.0
     /// Complexity: Depends on the script that is executed.
     /// Categories: @slow, @scripting
@@ -2297,6 +2455,8 @@ extension RedisConnection {
     }
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
+    ///
+    /// Documentation: [EVALSHA_RO](https:/redis.io/docs/latest/commands/evalsha_ro)
     ///
     /// Version: 7.0.0
     /// Complexity: Depends on the script that is executed.
@@ -2315,6 +2475,8 @@ extension RedisConnection {
 
     /// Executes a read-only server-side Lua script.
     ///
+    /// Documentation: [EVAL_RO](https:/redis.io/docs/latest/commands/eval_ro)
+    ///
     /// Version: 7.0.0
     /// Complexity: Depends on the script that is executed.
     /// Categories: @slow, @scripting
@@ -2331,6 +2493,8 @@ extension RedisConnection {
     }
 
     /// Executes all commands in a transaction.
+    ///
+    /// Documentation: [EXEC](https:/redis.io/docs/latest/commands/exec)
     ///
     /// Version: 1.2.0
     /// Complexity: Depends on commands in the transaction
@@ -2350,6 +2514,8 @@ extension RedisConnection {
     }
 
     /// Determines whether one or more keys exist.
+    ///
+    /// Documentation: [EXISTS](https:/redis.io/docs/latest/commands/exists)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of keys to check.
@@ -2383,6 +2549,8 @@ extension RedisConnection {
         }
     }
     /// Sets the expiration time of a key in seconds.
+    ///
+    /// Documentation: [EXPIRE](https:/redis.io/docs/latest/commands/expire)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -2419,6 +2587,8 @@ extension RedisConnection {
     }
     /// Sets the expiration time of a key to a Unix timestamp.
     ///
+    /// Documentation: [EXPIREAT](https:/redis.io/docs/latest/commands/expireat)
+    ///
     /// Version: 1.2.0
     /// Complexity: O(1)
     /// Categories: @keyspace, @write, @fast
@@ -2437,6 +2607,8 @@ extension RedisConnection {
     }
 
     /// Returns the expiration time of a key as a Unix timestamp.
+    ///
+    /// Documentation: [EXPIRETIME](https:/redis.io/docs/latest/commands/expiretime)
     ///
     /// Version: 7.0.0
     /// Complexity: O(1)
@@ -2470,6 +2642,8 @@ extension RedisConnection {
     }
     /// Starts a coordinated failover from a server to one of its replicas.
     ///
+    /// Documentation: [FAILOVER](https:/redis.io/docs/latest/commands/failover)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -2487,6 +2661,8 @@ extension RedisConnection {
 
     /// Invokes a function.
     ///
+    /// Documentation: [FCALL](https:/redis.io/docs/latest/commands/fcall)
+    ///
     /// Version: 7.0.0
     /// Complexity: Depends on the function that is executed.
     /// Categories: @slow, @scripting
@@ -2503,6 +2679,8 @@ extension RedisConnection {
     }
 
     /// Invokes a read-only function.
+    ///
+    /// Documentation: [FCALL_RO](https:/redis.io/docs/latest/commands/fcall_ro)
     ///
     /// Version: 7.0.0
     /// Complexity: Depends on the function that is executed.
@@ -2533,6 +2711,8 @@ extension RedisConnection {
     }
     /// Removes all keys from all databases.
     ///
+    /// Documentation: [FLUSHALL](https:/redis.io/docs/latest/commands/flushall)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the total number of keys in all databases
     /// Categories: @keyspace, @write, @slow, @dangerous
@@ -2562,6 +2742,8 @@ extension RedisConnection {
     }
     /// Remove all keys from the current database.
     ///
+    /// Documentation: [FLUSHDB](https:/redis.io/docs/latest/commands/flushdb)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of keys in the selected database
     /// Categories: @keyspace, @write, @slow, @dangerous
@@ -2579,6 +2761,8 @@ extension RedisConnection {
 
     /// Deletes a library and its functions.
     ///
+    /// Documentation: [FUNCTION DELETE](https:/redis.io/docs/latest/commands/function-delete)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(1)
     /// Categories: @write, @slow, @scripting
@@ -2595,6 +2779,8 @@ extension RedisConnection {
     }
 
     /// Dumps all libraries into a serialized binary payload.
+    ///
+    /// Documentation: [FUNCTION DUMP](https:/redis.io/docs/latest/commands/function-dump)
     ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of functions
@@ -2625,6 +2811,8 @@ extension RedisConnection {
     }
     /// Deletes all libraries and functions.
     ///
+    /// Documentation: [FUNCTION FLUSH](https:/redis.io/docs/latest/commands/function-flush)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of functions deleted
     /// Categories: @write, @slow, @scripting
@@ -2641,6 +2829,8 @@ extension RedisConnection {
     }
 
     /// Returns helpful text about the different subcommands.
+    ///
+    /// Documentation: [FUNCTION HELP](https:/redis.io/docs/latest/commands/function-help)
     ///
     /// Version: 7.0.0
     /// Complexity: O(1)
@@ -2659,6 +2849,8 @@ extension RedisConnection {
 
     /// Terminates a function during execution.
     ///
+    /// Documentation: [FUNCTION KILL](https:/redis.io/docs/latest/commands/function-kill)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(1)
     /// Categories: @slow, @scripting
@@ -2676,6 +2868,8 @@ extension RedisConnection {
 
     /// Returns information about all libraries.
     ///
+    /// Documentation: [FUNCTION LIST](https:/redis.io/docs/latest/commands/function-list)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of functions
     /// Categories: @slow, @scripting
@@ -2692,6 +2886,8 @@ extension RedisConnection {
     }
 
     /// Creates a library.
+    ///
+    /// Documentation: [FUNCTION LOAD](https:/redis.io/docs/latest/commands/function-load)
     ///
     /// Version: 7.0.0
     /// Complexity: O(1) (considering compilation time is redundant)
@@ -2724,6 +2920,8 @@ extension RedisConnection {
     }
     /// Restores all libraries from a payload.
     ///
+    /// Documentation: [FUNCTION RESTORE](https:/redis.io/docs/latest/commands/function-restore)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of functions on the payload
     /// Categories: @write, @slow, @scripting
@@ -2740,6 +2938,8 @@ extension RedisConnection {
     }
 
     /// Returns information about a function during execution.
+    ///
+    /// Documentation: [FUNCTION STATS](https:/redis.io/docs/latest/commands/function-stats)
     ///
     /// Version: 7.0.0
     /// Complexity: O(1)
@@ -2782,6 +2982,8 @@ extension RedisConnection {
     }
     /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
     ///
+    /// Documentation: [GEOADD](https:/redis.io/docs/latest/commands/geoadd)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// Categories: @write, @geo, @slow
@@ -2815,6 +3017,8 @@ extension RedisConnection {
     }
     /// Returns the distance between two members of a geospatial index.
     ///
+    /// Documentation: [GEODIST](https:/redis.io/docs/latest/commands/geodist)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(1)
     /// Categories: @read, @geo, @slow
@@ -2834,6 +3038,8 @@ extension RedisConnection {
 
     /// Returns members from a geospatial index as geohash strings.
     ///
+    /// Documentation: [GEOHASH](https:/redis.io/docs/latest/commands/geohash)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(1) for each member requested.
     /// Categories: @read, @geo, @slow
@@ -2850,6 +3056,8 @@ extension RedisConnection {
     }
 
     /// Returns the longitude and latitude of members from a geospatial index.
+    ///
+    /// Documentation: [GEOPOS](https:/redis.io/docs/latest/commands/geopos)
     ///
     /// Version: 3.2.0
     /// Complexity: O(1) for each member requested.
@@ -2918,6 +3126,8 @@ extension RedisConnection {
     }
     /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
     ///
+    /// Documentation: [GEORADIUS](https:/redis.io/docs/latest/commands/georadius)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// Categories: @write, @geo, @slow
@@ -2927,70 +3137,19 @@ extension RedisConnection {
     ///         1. The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         1. The Geohash integer.
     ///         1. The coordinates as a two items x,y array (longitude,latitude).
-    ///
+    ///     
     ///     For example, the command `GEORADIUS Sicily 15 37 200 km WITHCOORD WITHDIST` will return each item in the following way:
-    ///
+    ///     
     ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
     @inlinable
-    public func georadius(
-        key: RedisKey,
-        longitude: Double,
-        latitude: Double,
-        radius: Double,
-        unit: GEORADIUSUnit,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool,
-        countBlock: GEORADIUSCountBlock?,
-        order: GEORADIUSOrder?,
-        store: GEORADIUSStore?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            georadiusCommand(
-                key: key,
-                longitude: longitude,
-                latitude: latitude,
-                radius: radius,
-                unit: unit,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash,
-                countBlock: countBlock,
-                order: order,
-                store: store
-            )
-        )
+    public func georadius(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSCountBlock?, order: GEORADIUSOrder?, store: GEORADIUSStore?) async throws -> RESP3Token {
+        let response = try await send(georadiusCommand(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
         return response
     }
 
     @inlinable
-    public func georadiusCommand(
-        key: RedisKey,
-        longitude: Double,
-        latitude: Double,
-        radius: Double,
-        unit: GEORADIUSUnit,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool,
-        countBlock: GEORADIUSCountBlock?,
-        order: GEORADIUSOrder?,
-        store: GEORADIUSStore?
-    ) -> RESPCommand {
-        RESPCommand(
-            "GEORADIUS",
-            key,
-            longitude,
-            latitude,
-            radius,
-            unit,
-            RedisPureToken("WITHCOORD", withcoord),
-            RedisPureToken("WITHDIST", withdist),
-            RedisPureToken("WITHHASH", withhash),
-            countBlock,
-            order,
-            store
-        )
+    public func georadiusCommand(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSCountBlock?, order: GEORADIUSOrder?, store: GEORADIUSStore?) -> RESPCommand {
+        RESPCommand("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 
     public enum GEORADIUSBYMEMBERUnit: RESPRenderable {
@@ -3045,6 +3204,8 @@ extension RedisConnection {
     }
     /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
     ///
+    /// Documentation: [GEORADIUSBYMEMBER](https:/redis.io/docs/latest/commands/georadiusbymember)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// Categories: @write, @geo, @slow
@@ -3055,61 +3216,14 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymember(
-        key: RedisKey,
-        member: String,
-        radius: Double,
-        unit: GEORADIUSBYMEMBERUnit,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool,
-        countBlock: GEORADIUSBYMEMBERCountBlock?,
-        order: GEORADIUSBYMEMBEROrder?,
-        store: GEORADIUSBYMEMBERStore?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            georadiusbymemberCommand(
-                key: key,
-                member: member,
-                radius: radius,
-                unit: unit,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash,
-                countBlock: countBlock,
-                order: order,
-                store: store
-            )
-        )
+    public func georadiusbymember(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERCountBlock?, order: GEORADIUSBYMEMBEROrder?, store: GEORADIUSBYMEMBERStore?) async throws -> RESP3Token {
+        let response = try await send(georadiusbymemberCommand(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
         return response
     }
 
     @inlinable
-    public func georadiusbymemberCommand(
-        key: RedisKey,
-        member: String,
-        radius: Double,
-        unit: GEORADIUSBYMEMBERUnit,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool,
-        countBlock: GEORADIUSBYMEMBERCountBlock?,
-        order: GEORADIUSBYMEMBEROrder?,
-        store: GEORADIUSBYMEMBERStore?
-    ) -> RESPCommand {
-        RESPCommand(
-            "GEORADIUSBYMEMBER",
-            key,
-            member,
-            radius,
-            unit,
-            RedisPureToken("WITHCOORD", withcoord),
-            RedisPureToken("WITHDIST", withdist),
-            RedisPureToken("WITHHASH", withhash),
-            countBlock,
-            order,
-            store
-        )
+    public func georadiusbymemberCommand(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERCountBlock?, order: GEORADIUSBYMEMBEROrder?, store: GEORADIUSBYMEMBERStore?) -> RESPCommand {
+        RESPCommand("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 
     public enum GEORADIUSBYMEMBERROUnit: RESPRenderable {
@@ -3152,6 +3266,8 @@ extension RedisConnection {
     }
     /// Returns members from a geospatial index that are within a distance from a member.
     ///
+    /// Documentation: [GEORADIUSBYMEMBER_RO](https:/redis.io/docs/latest/commands/georadiusbymember_ro)
+    ///
     /// Version: 3.2.10
     /// Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// Categories: @read, @geo, @slow
@@ -3162,57 +3278,14 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymemberRo(
-        key: RedisKey,
-        member: String,
-        radius: Double,
-        unit: GEORADIUSBYMEMBERROUnit,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool,
-        countBlock: GEORADIUSBYMEMBERROCountBlock?,
-        order: GEORADIUSBYMEMBERROOrder?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            georadiusbymemberRoCommand(
-                key: key,
-                member: member,
-                radius: radius,
-                unit: unit,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash,
-                countBlock: countBlock,
-                order: order
-            )
-        )
+    public func georadiusbymemberRo(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERROCountBlock?, order: GEORADIUSBYMEMBERROOrder?) async throws -> RESP3Token {
+        let response = try await send(georadiusbymemberRoCommand(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
         return response
     }
 
     @inlinable
-    public func georadiusbymemberRoCommand(
-        key: RedisKey,
-        member: String,
-        radius: Double,
-        unit: GEORADIUSBYMEMBERROUnit,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool,
-        countBlock: GEORADIUSBYMEMBERROCountBlock?,
-        order: GEORADIUSBYMEMBERROOrder?
-    ) -> RESPCommand {
-        RESPCommand(
-            "GEORADIUSBYMEMBER_RO",
-            key,
-            member,
-            radius,
-            unit,
-            RedisPureToken("WITHCOORD", withcoord),
-            RedisPureToken("WITHDIST", withdist),
-            RedisPureToken("WITHHASH", withhash),
-            countBlock,
-            order
-        )
+    public func georadiusbymemberRoCommand(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERROCountBlock?, order: GEORADIUSBYMEMBERROOrder?) -> RESPCommand {
+        RESPCommand("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 
     public enum GEORADIUSROUnit: RESPRenderable {
@@ -3255,6 +3328,8 @@ extension RedisConnection {
     }
     /// Returns members from a geospatial index that are within a distance from a coordinate.
     ///
+    /// Documentation: [GEORADIUS_RO](https:/redis.io/docs/latest/commands/georadius_ro)
+    ///
     /// Version: 3.2.10
     /// Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// Categories: @read, @geo, @slow
@@ -3265,61 +3340,14 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusRo(
-        key: RedisKey,
-        longitude: Double,
-        latitude: Double,
-        radius: Double,
-        unit: GEORADIUSROUnit,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool,
-        countBlock: GEORADIUSROCountBlock?,
-        order: GEORADIUSROOrder?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            georadiusRoCommand(
-                key: key,
-                longitude: longitude,
-                latitude: latitude,
-                radius: radius,
-                unit: unit,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash,
-                countBlock: countBlock,
-                order: order
-            )
-        )
+    public func georadiusRo(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSROCountBlock?, order: GEORADIUSROOrder?) async throws -> RESP3Token {
+        let response = try await send(georadiusRoCommand(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
         return response
     }
 
     @inlinable
-    public func georadiusRoCommand(
-        key: RedisKey,
-        longitude: Double,
-        latitude: Double,
-        radius: Double,
-        unit: GEORADIUSROUnit,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool,
-        countBlock: GEORADIUSROCountBlock?,
-        order: GEORADIUSROOrder?
-    ) -> RESPCommand {
-        RESPCommand(
-            "GEORADIUS_RO",
-            key,
-            longitude,
-            latitude,
-            radius,
-            unit,
-            RedisPureToken("WITHCOORD", withcoord),
-            RedisPureToken("WITHDIST", withdist),
-            RedisPureToken("WITHHASH", withhash),
-            countBlock,
-            order
-        )
+    public func georadiusRoCommand(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSROCountBlock?, order: GEORADIUSROOrder?) -> RESPCommand {
+        RESPCommand("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 
     public struct GEOSEARCHFromFromlonlat: RESPRenderable {
@@ -3434,6 +3462,8 @@ extension RedisConnection {
     }
     /// Queries a geospatial index for members inside an area of a box or a circle.
     ///
+    /// Documentation: [GEOSEARCH](https:/redis.io/docs/latest/commands/geosearch)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// Categories: @read, @geo, @slow
@@ -3444,53 +3474,14 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func geosearch(
-        key: RedisKey,
-        from: GEOSEARCHFrom,
-        by: GEOSEARCHBy,
-        order: GEOSEARCHOrder?,
-        countBlock: GEOSEARCHCountBlock?,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            geosearchCommand(
-                key: key,
-                from: from,
-                by: by,
-                order: order,
-                countBlock: countBlock,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash
-            )
-        )
+    public func geosearch(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder?, countBlock: GEOSEARCHCountBlock?, withcoord: Bool, withdist: Bool, withhash: Bool) async throws -> RESP3Token {
+        let response = try await send(geosearchCommand(key: key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash))
         return response
     }
 
     @inlinable
-    public func geosearchCommand(
-        key: RedisKey,
-        from: GEOSEARCHFrom,
-        by: GEOSEARCHBy,
-        order: GEOSEARCHOrder?,
-        countBlock: GEOSEARCHCountBlock?,
-        withcoord: Bool,
-        withdist: Bool,
-        withhash: Bool
-    ) -> RESPCommand {
-        RESPCommand(
-            "GEOSEARCH",
-            key,
-            from,
-            by,
-            order,
-            countBlock,
-            RedisPureToken("WITHCOORD", withcoord),
-            RedisPureToken("WITHDIST", withdist),
-            RedisPureToken("WITHHASH", withhash)
-        )
+    public func geosearchCommand(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder?, countBlock: GEOSEARCHCountBlock?, withcoord: Bool, withdist: Bool, withhash: Bool) -> RESPCommand {
+        RESPCommand("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
     }
 
     public struct GEOSEARCHSTOREFromFromlonlat: RESPRenderable {
@@ -3605,48 +3596,26 @@ extension RedisConnection {
     }
     /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
     ///
+    /// Documentation: [GEOSEARCHSTORE](https:/redis.io/docs/latest/commands/geosearchstore)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set
     @inlinable
-    public func geosearchstore(
-        destination: RedisKey,
-        source: RedisKey,
-        from: GEOSEARCHSTOREFrom,
-        by: GEOSEARCHSTOREBy,
-        order: GEOSEARCHSTOREOrder?,
-        countBlock: GEOSEARCHSTORECountBlock?,
-        storedist: Bool
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            geosearchstoreCommand(
-                destination: destination,
-                source: source,
-                from: from,
-                by: by,
-                order: order,
-                countBlock: countBlock,
-                storedist: storedist
-            )
-        )
+    public func geosearchstore(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder?, countBlock: GEOSEARCHSTORECountBlock?, storedist: Bool) async throws -> RESP3Token {
+        let response = try await send(geosearchstoreCommand(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist))
         return response
     }
 
     @inlinable
-    public func geosearchstoreCommand(
-        destination: RedisKey,
-        source: RedisKey,
-        from: GEOSEARCHSTOREFrom,
-        by: GEOSEARCHSTOREBy,
-        order: GEOSEARCHSTOREOrder?,
-        countBlock: GEOSEARCHSTORECountBlock?,
-        storedist: Bool
-    ) -> RESPCommand {
+    public func geosearchstoreCommand(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder?, countBlock: GEOSEARCHSTORECountBlock?, storedist: Bool) -> RESPCommand {
         RESPCommand("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RedisPureToken("STOREDIST", storedist))
     }
 
     /// Returns the string value of a key.
+    ///
+    /// Documentation: [GET](https:/redis.io/docs/latest/commands/get)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -3667,6 +3636,8 @@ extension RedisConnection {
 
     /// Returns a bit value by offset.
     ///
+    /// Documentation: [GETBIT](https:/redis.io/docs/latest/commands/getbit)
+    ///
     /// Version: 2.2.0
     /// Complexity: O(1)
     /// Categories: @read, @bitmap, @fast
@@ -3685,6 +3656,8 @@ extension RedisConnection {
     }
 
     /// Returns the string value of a key after deleting the key.
+    ///
+    /// Documentation: [GETDEL](https:/redis.io/docs/latest/commands/getdel)
     ///
     /// Version: 6.2.0
     /// Complexity: O(1)
@@ -3723,6 +3696,8 @@ extension RedisConnection {
     }
     /// Returns the string value of a key after setting its expiration time.
     ///
+    /// Documentation: [GETEX](https:/redis.io/docs/latest/commands/getex)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(1)
     /// Categories: @write, @string, @fast
@@ -3741,6 +3716,8 @@ extension RedisConnection {
 
     /// Returns a substring of the string stored at a key.
     ///
+    /// Documentation: [GETRANGE](https:/redis.io/docs/latest/commands/getrange)
+    ///
     /// Version: 2.4.0
     /// Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// Categories: @read, @string, @slow
@@ -3757,6 +3734,8 @@ extension RedisConnection {
     }
 
     /// Returns the previous string value of a key after setting it to a new value.
+    ///
+    /// Documentation: [GETSET](https:/redis.io/docs/latest/commands/getset)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -3776,6 +3755,8 @@ extension RedisConnection {
     }
 
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
+    ///
+    /// Documentation: [HDEL](https:/redis.io/docs/latest/commands/hdel)
     ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of fields to be removed.
@@ -3816,6 +3797,8 @@ extension RedisConnection {
     }
     /// Handshakes with the Redis server.
     ///
+    /// Documentation: [HELLO](https:/redis.io/docs/latest/commands/hello)
+    ///
     /// Version: 6.0.0
     /// Complexity: O(1)
     /// Categories: @fast, @connection
@@ -3833,6 +3816,8 @@ extension RedisConnection {
     }
 
     /// Determines whether a field exists in a hash.
+    ///
+    /// Documentation: [HEXISTS](https:/redis.io/docs/latest/commands/hexists)
     ///
     /// Version: 2.0.0
     /// Complexity: O(1)
@@ -3853,6 +3838,8 @@ extension RedisConnection {
 
     /// Returns the value of a field in a hash.
     ///
+    /// Documentation: [HGET](https:/redis.io/docs/latest/commands/hget)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(1)
     /// Categories: @read, @hash, @fast
@@ -3872,6 +3859,8 @@ extension RedisConnection {
 
     /// Returns all fields and values in a hash.
     ///
+    /// Documentation: [HGETALL](https:/redis.io/docs/latest/commands/hgetall)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the size of the hash.
     /// Categories: @read, @hash, @slow
@@ -3888,6 +3877,8 @@ extension RedisConnection {
     }
 
     /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
+    ///
+    /// Documentation: [HINCRBY](https:/redis.io/docs/latest/commands/hincrby)
     ///
     /// Version: 2.0.0
     /// Complexity: O(1)
@@ -3906,6 +3897,8 @@ extension RedisConnection {
 
     /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
     ///
+    /// Documentation: [HINCRBYFLOAT](https:/redis.io/docs/latest/commands/hincrbyfloat)
+    ///
     /// Version: 2.6.0
     /// Complexity: O(1)
     /// Categories: @write, @hash, @fast
@@ -3922,6 +3915,8 @@ extension RedisConnection {
     }
 
     /// Returns all fields in a hash.
+    ///
+    /// Documentation: [HKEYS](https:/redis.io/docs/latest/commands/hkeys)
     ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the size of the hash.
@@ -3940,6 +3935,8 @@ extension RedisConnection {
 
     /// Returns the number of fields in a hash.
     ///
+    /// Documentation: [HLEN](https:/redis.io/docs/latest/commands/hlen)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(1)
     /// Categories: @read, @hash, @fast
@@ -3956,6 +3953,8 @@ extension RedisConnection {
     }
 
     /// Returns the values of all fields in a hash.
+    ///
+    /// Documentation: [HMGET](https:/redis.io/docs/latest/commands/hmget)
     ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of fields being requested.
@@ -3984,6 +3983,8 @@ extension RedisConnection {
     }
     /// Sets the values of multiple fields.
     ///
+    /// Documentation: [HMSET](https:/redis.io/docs/latest/commands/hmset)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of fields being set.
     /// Categories: @write, @hash, @fast
@@ -4011,6 +4012,8 @@ extension RedisConnection {
     }
     /// Returns one or more random fields from a hash.
     ///
+    /// Documentation: [HRANDFIELD](https:/redis.io/docs/latest/commands/hrandfield)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(N) where N is the number of fields returned
     /// Categories: @read, @hash, @slow
@@ -4031,6 +4034,8 @@ extension RedisConnection {
     }
 
     /// Iterates over fields and values of a hash.
+    ///
+    /// Documentation: [HSCAN](https:/redis.io/docs/latest/commands/hscan)
     ///
     /// Version: 2.8.0
     /// Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
@@ -4061,6 +4066,8 @@ extension RedisConnection {
     }
     /// Creates or modifies the value of a field in a hash.
     ///
+    /// Documentation: [HSET](https:/redis.io/docs/latest/commands/hset)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(1) for each field/value pair added, so O(N) to add N field/value pairs when the command is called with multiple field/value pairs.
     /// Categories: @write, @hash, @fast
@@ -4077,6 +4084,8 @@ extension RedisConnection {
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
+    ///
+    /// Documentation: [HSETNX](https:/redis.io/docs/latest/commands/hsetnx)
     ///
     /// Version: 2.0.0
     /// Complexity: O(1)
@@ -4097,6 +4106,8 @@ extension RedisConnection {
 
     /// Returns the length of the value of a field.
     ///
+    /// Documentation: [HSTRLEN](https:/redis.io/docs/latest/commands/hstrlen)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(1)
     /// Categories: @read, @hash, @fast
@@ -4113,6 +4124,8 @@ extension RedisConnection {
     }
 
     /// Returns all values in a hash.
+    ///
+    /// Documentation: [HVALS](https:/redis.io/docs/latest/commands/hvals)
     ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the size of the hash.
@@ -4131,6 +4144,8 @@ extension RedisConnection {
 
     /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
     ///
+    /// Documentation: [INCR](https:/redis.io/docs/latest/commands/incr)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @write, @string, @fast
@@ -4147,6 +4162,8 @@ extension RedisConnection {
     }
 
     /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
+    ///
+    /// Documentation: [INCRBY](https:/redis.io/docs/latest/commands/incrby)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -4165,6 +4182,8 @@ extension RedisConnection {
 
     /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
     ///
+    /// Documentation: [INCRBYFLOAT](https:/redis.io/docs/latest/commands/incrbyfloat)
+    ///
     /// Version: 2.6.0
     /// Complexity: O(1)
     /// Categories: @write, @string, @fast
@@ -4182,11 +4201,13 @@ extension RedisConnection {
 
     /// Returns information and statistics about the server.
     ///
+    /// Documentation: [INFO](https:/redis.io/docs/latest/commands/info)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///
+    ///     
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
     public func info(section: String...) async throws -> RESP3Token {
@@ -4200,6 +4221,8 @@ extension RedisConnection {
     }
 
     /// Returns all key names that match a pattern.
+    ///
+    /// Documentation: [KEYS](https:/redis.io/docs/latest/commands/keys)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) with N being the number of keys in the database, under the assumption that the key names in the database and the given pattern have limited length.
@@ -4218,6 +4241,8 @@ extension RedisConnection {
 
     /// Returns the Unix timestamp of the last successful save to disk.
     ///
+    /// Documentation: [LASTSAVE](https:/redis.io/docs/latest/commands/lastsave)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @fast, @dangerous
@@ -4234,6 +4259,8 @@ extension RedisConnection {
     }
 
     /// Returns a human-readable latency analysis report.
+    ///
+    /// Documentation: [LATENCY DOCTOR](https:/redis.io/docs/latest/commands/latency-doctor)
     ///
     /// Version: 2.8.13
     /// Complexity: O(1)
@@ -4252,6 +4279,8 @@ extension RedisConnection {
 
     /// Returns a latency graph for an event.
     ///
+    /// Documentation: [LATENCY GRAPH](https:/redis.io/docs/latest/commands/latency-graph)
+    ///
     /// Version: 2.8.13
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -4268,6 +4297,8 @@ extension RedisConnection {
     }
 
     /// Returns helpful text about the different subcommands.
+    ///
+    /// Documentation: [LATENCY HELP](https:/redis.io/docs/latest/commands/latency-help)
     ///
     /// Version: 2.8.13
     /// Complexity: O(1)
@@ -4286,6 +4317,8 @@ extension RedisConnection {
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
     ///
+    /// Documentation: [LATENCY HISTOGRAM](https:/redis.io/docs/latest/commands/latency-histogram)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of commands with latency information being retrieved.
     /// Categories: @admin, @slow, @dangerous
@@ -4302,6 +4335,8 @@ extension RedisConnection {
     }
 
     /// Returns timestamp-latency samples for an event.
+    ///
+    /// Documentation: [LATENCY HISTORY](https:/redis.io/docs/latest/commands/latency-history)
     ///
     /// Version: 2.8.13
     /// Complexity: O(1)
@@ -4320,6 +4355,8 @@ extension RedisConnection {
 
     /// Returns the latest latency samples for all events.
     ///
+    /// Documentation: [LATENCY LATEST](https:/redis.io/docs/latest/commands/latency-latest)
+    ///
     /// Version: 2.8.13
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -4336,6 +4373,8 @@ extension RedisConnection {
     }
 
     /// Resets the latency data for one or more events.
+    ///
+    /// Documentation: [LATENCY RESET](https:/redis.io/docs/latest/commands/latency-reset)
     ///
     /// Version: 2.8.13
     /// Complexity: O(1)
@@ -4354,6 +4393,8 @@ extension RedisConnection {
 
     /// Finds the longest common substring.
     ///
+    /// Documentation: [LCS](https:/redis.io/docs/latest/commands/lcs)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N*M) where N and M are the lengths of s1 and s2, respectively
     /// Categories: @read, @string, @slow
@@ -4369,18 +4410,12 @@ extension RedisConnection {
 
     @inlinable
     public func lcsCommand(key1: RedisKey, key2: RedisKey, len: Bool, idx: Bool, minMatchLen: Int?, withmatchlen: Bool) -> RESPCommand {
-        RESPCommand(
-            "LCS",
-            key1,
-            key2,
-            RedisPureToken("LEN", len),
-            RedisPureToken("IDX", idx),
-            RESPWithToken("MINMATCHLEN", minMatchLen),
-            RedisPureToken("WITHMATCHLEN", withmatchlen)
-        )
+        RESPCommand("LCS", key1, key2, RedisPureToken("LEN", len), RedisPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RedisPureToken("WITHMATCHLEN", withmatchlen))
     }
 
     /// Returns an element from a list by its index.
+    ///
+    /// Documentation: [LINDEX](https:/redis.io/docs/latest/commands/lindex)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of elements to traverse to get to the element at index. This makes asking for the first or the last element of the list O(1).
@@ -4413,6 +4448,8 @@ extension RedisConnection {
     }
     /// Inserts an element before or after another element in a list.
     ///
+    /// Documentation: [LINSERT](https:/redis.io/docs/latest/commands/linsert)
+    ///
     /// Version: 2.2.0
     /// Complexity: O(N) where N is the number of elements to traverse before seeing the value pivot. This means that inserting somewhere on the left end on the list (head) can be considered O(1) and inserting somewhere on the right end (tail) is O(N).
     /// Categories: @write, @list, @slow
@@ -4432,6 +4469,8 @@ extension RedisConnection {
     }
 
     /// Returns the length of a list.
+    ///
+    /// Documentation: [LLEN](https:/redis.io/docs/latest/commands/llen)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -4474,6 +4513,8 @@ extension RedisConnection {
     }
     /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
     ///
+    /// Documentation: [LMOVE](https:/redis.io/docs/latest/commands/lmove)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(1)
     /// Categories: @write, @list, @slow
@@ -4503,6 +4544,8 @@ extension RedisConnection {
     }
     /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
     ///
+    /// Documentation: [LMPOP](https:/redis.io/docs/latest/commands/lmpop)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
     /// Categories: @write, @list, @slow
@@ -4522,6 +4565,8 @@ extension RedisConnection {
 
     /// Displays computer art and the Redis version
     ///
+    /// Documentation: [LOLWUT](https:/redis.io/docs/latest/commands/lolwut)
+    ///
     /// Version: 5.0.0
     /// Categories: @read, @fast
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a string containing generative computer art and the Redis version.
@@ -4537,6 +4582,8 @@ extension RedisConnection {
     }
 
     /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
+    ///
+    /// Documentation: [LPOP](https:/redis.io/docs/latest/commands/lpop)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of elements returned
@@ -4558,6 +4605,8 @@ extension RedisConnection {
 
     /// Returns the index of matching elements in a list.
     ///
+    /// Documentation: [LPOS](https:/redis.io/docs/latest/commands/lpos)
+    ///
     /// Version: 6.0.6
     /// Complexity: O(N) where N is the number of elements in the list, for the average case. When searching for elements near the head or the tail of the list, or when the MAXLEN option is provided, the command may run in constant time.
     /// Categories: @read, @list, @slow
@@ -4578,6 +4627,8 @@ extension RedisConnection {
 
     /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [LPUSH](https:/redis.io/docs/latest/commands/lpush)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// Categories: @write, @list, @fast
@@ -4594,6 +4645,8 @@ extension RedisConnection {
     }
 
     /// Prepends one or more elements to a list only when the list exists.
+    ///
+    /// Documentation: [LPUSHX](https:/redis.io/docs/latest/commands/lpushx)
     ///
     /// Version: 2.2.0
     /// Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
@@ -4612,6 +4665,8 @@ extension RedisConnection {
 
     /// Returns a range of elements from a list.
     ///
+    /// Documentation: [LRANGE](https:/redis.io/docs/latest/commands/lrange)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(S+N) where S is the distance of start offset from HEAD for small lists, from nearest end (HEAD or TAIL) for large lists; and N is the number of elements in the specified range.
     /// Categories: @read, @list, @slow
@@ -4628,6 +4683,8 @@ extension RedisConnection {
     }
 
     /// Removes elements from a list. Deletes the list if the last element was removed.
+    ///
+    /// Documentation: [LREM](https:/redis.io/docs/latest/commands/lrem)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N+M) where N is the length of the list and M is the number of elements removed.
@@ -4646,6 +4703,8 @@ extension RedisConnection {
 
     /// Sets the value of an element in a list by its index.
     ///
+    /// Documentation: [LSET](https:/redis.io/docs/latest/commands/lset)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the length of the list. Setting either the first or the last element of the list is O(1).
     /// Categories: @write, @list, @slow
@@ -4662,6 +4721,8 @@ extension RedisConnection {
     }
 
     /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
+    ///
+    /// Documentation: [LTRIM](https:/redis.io/docs/latest/commands/ltrim)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of elements to be removed by the operation.
@@ -4680,6 +4741,8 @@ extension RedisConnection {
 
     /// Outputs a memory problems report.
     ///
+    /// Documentation: [MEMORY DOCTOR](https:/redis.io/docs/latest/commands/memory-doctor)
+    ///
     /// Version: 4.0.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -4696,6 +4759,8 @@ extension RedisConnection {
     }
 
     /// Returns helpful text about the different subcommands.
+    ///
+    /// Documentation: [MEMORY HELP](https:/redis.io/docs/latest/commands/memory-help)
     ///
     /// Version: 4.0.0
     /// Complexity: O(1)
@@ -4714,6 +4779,8 @@ extension RedisConnection {
 
     /// Returns the allocator statistics.
     ///
+    /// Documentation: [MEMORY MALLOC-STATS](https:/redis.io/docs/latest/commands/memory-malloc-stats)
+    ///
     /// Version: 4.0.0
     /// Complexity: Depends on how much memory is allocated, could be slow
     /// Categories: @slow
@@ -4730,6 +4797,8 @@ extension RedisConnection {
     }
 
     /// Asks the allocator to release memory.
+    ///
+    /// Documentation: [MEMORY PURGE](https:/redis.io/docs/latest/commands/memory-purge)
     ///
     /// Version: 4.0.0
     /// Complexity: Depends on how much memory is allocated, could be slow
@@ -4748,6 +4817,8 @@ extension RedisConnection {
 
     /// Returns details about memory usage.
     ///
+    /// Documentation: [MEMORY STATS](https:/redis.io/docs/latest/commands/memory-stats)
+    ///
     /// Version: 4.0.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -4764,6 +4835,8 @@ extension RedisConnection {
     }
 
     /// Estimates the memory usage of a key.
+    ///
+    /// Documentation: [MEMORY USAGE](https:/redis.io/docs/latest/commands/memory-usage)
     ///
     /// Version: 4.0.0
     /// Complexity: O(N) where N is the number of samples.
@@ -4783,6 +4856,8 @@ extension RedisConnection {
     }
 
     /// Atomically returns the string values of one or more keys.
+    ///
+    /// Documentation: [MGET](https:/redis.io/docs/latest/commands/mget)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of keys to retrieve.
@@ -4835,6 +4910,8 @@ extension RedisConnection {
     }
     /// Atomically transfers a key from one Redis instance to another.
     ///
+    /// Documentation: [MIGRATE](https:/redis.io/docs/latest/commands/migrate)
+    ///
     /// Version: 2.6.0
     /// Complexity: This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.
     /// Categories: @keyspace, @write, @slow, @dangerous
@@ -4842,60 +4919,19 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(
-        host: String,
-        port: Int,
-        keySelector: MIGRATEKeySelector,
-        destinationDb: Int,
-        timeout: Int,
-        copy: Bool,
-        replace: Bool,
-        authentication: MIGRATEAuthentication?,
-        keys: RedisKey...
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            migrateCommand(
-                host: host,
-                port: port,
-                keySelector: keySelector,
-                destinationDb: destinationDb,
-                timeout: timeout,
-                copy: copy,
-                replace: replace,
-                authentication: authentication,
-                keys: keys
-            )
-        )
+    public func migrate(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool, replace: Bool, authentication: MIGRATEAuthentication?, keys: RedisKey...) async throws -> RESP3Token {
+        let response = try await send(migrateCommand(host: host, port: port, keySelector: keySelector, destinationDb: destinationDb, timeout: timeout, copy: copy, replace: replace, authentication: authentication, keys: keys))
         return response
     }
 
     @inlinable
-    public func migrateCommand(
-        host: String,
-        port: Int,
-        keySelector: MIGRATEKeySelector,
-        destinationDb: Int,
-        timeout: Int,
-        copy: Bool,
-        replace: Bool,
-        authentication: MIGRATEAuthentication?,
-        keys: [RedisKey]
-    ) -> RESPCommand {
-        RESPCommand(
-            "MIGRATE",
-            host,
-            port,
-            keySelector,
-            destinationDb,
-            timeout,
-            RedisPureToken("COPY", copy),
-            RedisPureToken("REPLACE", replace),
-            authentication,
-            RESPWithToken("KEYS", keys)
-        )
+    public func migrateCommand(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool, replace: Bool, authentication: MIGRATEAuthentication?, keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
     }
 
     /// Returns helpful text about the different subcommands.
+    ///
+    /// Documentation: [MODULE HELP](https:/redis.io/docs/latest/commands/module-help)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1)
@@ -4913,6 +4949,8 @@ extension RedisConnection {
     }
 
     /// Returns all loaded modules.
+    ///
+    /// Documentation: [MODULE LIST](https:/redis.io/docs/latest/commands/module-list)
     ///
     /// Version: 4.0.0
     /// Complexity: O(N) where N is the number of loaded modules.
@@ -4932,6 +4970,8 @@ extension RedisConnection {
     }
 
     /// Loads a module.
+    ///
+    /// Documentation: [MODULE LOAD](https:/redis.io/docs/latest/commands/module-load)
     ///
     /// Version: 4.0.0
     /// Complexity: O(1)
@@ -4960,6 +5000,8 @@ extension RedisConnection {
     }
     /// Loads a module using extended parameters.
     ///
+    /// Documentation: [MODULE LOADEX](https:/redis.io/docs/latest/commands/module-loadex)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -4976,6 +5018,8 @@ extension RedisConnection {
     }
 
     /// Unloads a module.
+    ///
+    /// Documentation: [MODULE UNLOAD](https:/redis.io/docs/latest/commands/module-unload)
     ///
     /// Version: 4.0.0
     /// Complexity: O(1)
@@ -4994,6 +5038,8 @@ extension RedisConnection {
 
     /// Listens for all requests received by the server in real-time.
     ///
+    /// Documentation: [MONITOR](https:/redis.io/docs/latest/commands/monitor)
+    ///
     /// Version: 1.0.0
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: **Non-standard return value**. Dumps the received commands in an infinite flow.
@@ -5009,6 +5055,8 @@ extension RedisConnection {
     }
 
     /// Moves a key to another database.
+    ///
+    /// Documentation: [MOVE](https:/redis.io/docs/latest/commands/move)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -5039,6 +5087,8 @@ extension RedisConnection {
     }
     /// Atomically creates or modifies the string values of one or more keys.
     ///
+    /// Documentation: [MSET](https:/redis.io/docs/latest/commands/mset)
+    ///
     /// Version: 1.0.1
     /// Complexity: O(N) where N is the number of keys to set.
     /// Categories: @write, @string, @slow
@@ -5066,6 +5116,8 @@ extension RedisConnection {
     }
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
     ///
+    /// Documentation: [MSETNX](https:/redis.io/docs/latest/commands/msetnx)
+    ///
     /// Version: 1.0.1
     /// Complexity: O(N) where N is the number of keys to set.
     /// Categories: @write, @string, @slow
@@ -5085,6 +5137,8 @@ extension RedisConnection {
 
     /// Starts a transaction.
     ///
+    /// Documentation: [MULTI](https:/redis.io/docs/latest/commands/multi)
+    ///
     /// Version: 1.2.0
     /// Complexity: O(1)
     /// Categories: @fast, @transaction
@@ -5101,6 +5155,8 @@ extension RedisConnection {
     }
 
     /// Returns the internal encoding of a Redis object.
+    ///
+    /// Documentation: [OBJECT ENCODING](https:/redis.io/docs/latest/commands/object-encoding)
     ///
     /// Version: 2.2.3
     /// Complexity: O(1)
@@ -5121,6 +5177,8 @@ extension RedisConnection {
 
     /// Returns the logarithmic access frequency counter of a Redis object.
     ///
+    /// Documentation: [OBJECT FREQ](https:/redis.io/docs/latest/commands/object-freq)
+    ///
     /// Version: 4.0.0
     /// Complexity: O(1)
     /// Categories: @keyspace, @read, @slow
@@ -5140,6 +5198,8 @@ extension RedisConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
+    /// Documentation: [OBJECT HELP](https:/redis.io/docs/latest/commands/object-help)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(1)
     /// Categories: @keyspace, @slow
@@ -5156,6 +5216,8 @@ extension RedisConnection {
     }
 
     /// Returns the time since the last access to a Redis object.
+    ///
+    /// Documentation: [OBJECT IDLETIME](https:/redis.io/docs/latest/commands/object-idletime)
     ///
     /// Version: 2.2.3
     /// Complexity: O(1)
@@ -5176,6 +5238,8 @@ extension RedisConnection {
 
     /// Returns the reference count of a value of a key.
     ///
+    /// Documentation: [OBJECT REFCOUNT](https:/redis.io/docs/latest/commands/object-refcount)
+    ///
     /// Version: 2.2.3
     /// Complexity: O(1)
     /// Categories: @keyspace, @read, @slow
@@ -5194,6 +5258,8 @@ extension RedisConnection {
     }
 
     /// Removes the expiration time of a key.
+    ///
+    /// Documentation: [PERSIST](https:/redis.io/docs/latest/commands/persist)
     ///
     /// Version: 2.2.0
     /// Complexity: O(1)
@@ -5230,6 +5296,8 @@ extension RedisConnection {
     }
     /// Sets the expiration time of a key in milliseconds.
     ///
+    /// Documentation: [PEXPIRE](https:/redis.io/docs/latest/commands/pexpire)
+    ///
     /// Version: 2.6.0
     /// Complexity: O(1)
     /// Categories: @keyspace, @write, @fast
@@ -5265,6 +5333,8 @@ extension RedisConnection {
     }
     /// Sets the expiration time of a key to a Unix milliseconds timestamp.
     ///
+    /// Documentation: [PEXPIREAT](https:/redis.io/docs/latest/commands/pexpireat)
+    ///
     /// Version: 2.6.0
     /// Complexity: O(1)
     /// Categories: @keyspace, @write, @fast
@@ -5283,6 +5353,8 @@ extension RedisConnection {
     }
 
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
+    ///
+    /// Documentation: [PEXPIRETIME](https:/redis.io/docs/latest/commands/pexpiretime)
     ///
     /// Version: 7.0.0
     /// Complexity: O(1)
@@ -5304,6 +5376,8 @@ extension RedisConnection {
 
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [PFADD](https:/redis.io/docs/latest/commands/pfadd)
+    ///
     /// Version: 2.8.9
     /// Complexity: O(1) to add every element.
     /// Categories: @write, @hyperloglog, @fast
@@ -5323,6 +5397,8 @@ extension RedisConnection {
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
     ///
+    /// Documentation: [PFCOUNT](https:/redis.io/docs/latest/commands/pfcount)
+    ///
     /// Version: 2.8.9
     /// Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
     /// Categories: @read, @hyperloglog, @slow
@@ -5339,6 +5415,8 @@ extension RedisConnection {
     }
 
     /// Merges one or more HyperLogLog values into a single key.
+    ///
+    /// Documentation: [PFMERGE](https:/redis.io/docs/latest/commands/pfmerge)
     ///
     /// Version: 2.8.9
     /// Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
@@ -5357,6 +5435,8 @@ extension RedisConnection {
 
     /// An internal command for testing HyperLogLog values.
     ///
+    /// Documentation: [PFSELFTEST](https:/redis.io/docs/latest/commands/pfselftest)
+    ///
     /// Version: 2.8.9
     /// Complexity: N/A
     /// Categories: @hyperloglog, @admin, @slow, @dangerous
@@ -5373,6 +5453,8 @@ extension RedisConnection {
     }
 
     /// Returns the server's liveliness response.
+    ///
+    /// Documentation: [PING](https:/redis.io/docs/latest/commands/ping)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -5393,6 +5475,8 @@ extension RedisConnection {
 
     /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
     ///
+    /// Documentation: [PSETEX](https:/redis.io/docs/latest/commands/psetex)
+    ///
     /// Version: 2.6.0
     /// Complexity: O(1)
     /// Categories: @write, @string, @slow
@@ -5409,6 +5493,8 @@ extension RedisConnection {
     }
 
     /// Listens for messages published to channels that match one or more patterns.
+    ///
+    /// Documentation: [PSUBSCRIBE](https:/redis.io/docs/latest/commands/psubscribe)
     ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of patterns to subscribe to.
@@ -5427,6 +5513,8 @@ extension RedisConnection {
 
     /// An internal command used in replication.
     ///
+    /// Documentation: [PSYNC](https:/redis.io/docs/latest/commands/psync)
+    ///
     /// Version: 2.8.0
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
@@ -5442,6 +5530,8 @@ extension RedisConnection {
     }
 
     /// Returns the expiration time in milliseconds of a key.
+    ///
+    /// Documentation: [PTTL](https:/redis.io/docs/latest/commands/pttl)
     ///
     /// Version: 2.6.0
     /// Complexity: O(1)
@@ -5463,6 +5553,8 @@ extension RedisConnection {
 
     /// Posts a message to a channel.
     ///
+    /// Documentation: [PUBLISH](https:/redis.io/docs/latest/commands/publish)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
     /// Categories: @pubsub, @fast
@@ -5479,6 +5571,8 @@ extension RedisConnection {
     }
 
     /// Returns the active channels.
+    ///
+    /// Documentation: [PUBSUB CHANNELS](https:/redis.io/docs/latest/commands/pubsub-channels)
     ///
     /// Version: 2.8.0
     /// Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
@@ -5497,6 +5591,8 @@ extension RedisConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
+    /// Documentation: [PUBSUB HELP](https:/redis.io/docs/latest/commands/pubsub-help)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -5513,6 +5609,8 @@ extension RedisConnection {
     }
 
     /// Returns a count of unique pattern subscriptions.
+    ///
+    /// Documentation: [PUBSUB NUMPAT](https:/redis.io/docs/latest/commands/pubsub-numpat)
     ///
     /// Version: 2.8.0
     /// Complexity: O(1)
@@ -5531,6 +5629,8 @@ extension RedisConnection {
 
     /// Returns a count of subscribers to channels.
     ///
+    /// Documentation: [PUBSUB NUMSUB](https:/redis.io/docs/latest/commands/pubsub-numsub)
+    ///
     /// Version: 2.8.0
     /// Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
     /// Categories: @pubsub, @slow
@@ -5547,6 +5647,8 @@ extension RedisConnection {
     }
 
     /// Returns the active shard channels.
+    ///
+    /// Documentation: [PUBSUB SHARDCHANNELS](https:/redis.io/docs/latest/commands/pubsub-shardchannels)
     ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
@@ -5565,6 +5667,8 @@ extension RedisConnection {
 
     /// Returns the count of subscribers of shard channels.
     ///
+    /// Documentation: [PUBSUB SHARDNUMSUB](https:/redis.io/docs/latest/commands/pubsub-shardnumsub)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
     /// Categories: @pubsub, @slow
@@ -5581,6 +5685,8 @@ extension RedisConnection {
     }
 
     /// Stops listening to messages published to channels that match one or more patterns.
+    ///
+    /// Documentation: [PUNSUBSCRIBE](https:/redis.io/docs/latest/commands/punsubscribe)
     ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of patterns to unsubscribe.
@@ -5599,6 +5705,8 @@ extension RedisConnection {
 
     /// Closes the connection.
     ///
+    /// Documentation: [QUIT](https:/redis.io/docs/latest/commands/quit)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @fast, @connection
@@ -5615,6 +5723,8 @@ extension RedisConnection {
     }
 
     /// Returns a random key name from the database.
+    ///
+    /// Documentation: [RANDOMKEY](https:/redis.io/docs/latest/commands/randomkey)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -5635,6 +5745,8 @@ extension RedisConnection {
 
     /// Enables read-only queries for a connection to a Redis Cluster replica node.
     ///
+    /// Documentation: [READONLY](https:/redis.io/docs/latest/commands/readonly)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(1)
     /// Categories: @fast, @connection
@@ -5651,6 +5763,8 @@ extension RedisConnection {
     }
 
     /// Enables read-write queries for a connection to a Reids Cluster replica node.
+    ///
+    /// Documentation: [READWRITE](https:/redis.io/docs/latest/commands/readwrite)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -5669,6 +5783,8 @@ extension RedisConnection {
 
     /// Renames a key and overwrites the destination.
     ///
+    /// Documentation: [RENAME](https:/redis.io/docs/latest/commands/rename)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @keyspace, @write, @slow
@@ -5685,6 +5801,8 @@ extension RedisConnection {
     }
 
     /// Renames a key only when the target key name doesn't exist.
+    ///
+    /// Documentation: [RENAMENX](https:/redis.io/docs/latest/commands/renamenx)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -5704,6 +5822,8 @@ extension RedisConnection {
     }
 
     /// An internal command for configuring the replication stream.
+    ///
+    /// Documentation: [REPLCONF](https:/redis.io/docs/latest/commands/replconf)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1)
@@ -5754,6 +5874,8 @@ extension RedisConnection {
     }
     /// Configures a server as replica of another, or promotes it to a master.
     ///
+    /// Documentation: [REPLICAOF](https:/redis.io/docs/latest/commands/replicaof)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -5770,6 +5892,8 @@ extension RedisConnection {
     }
 
     /// Resets the connection.
+    ///
+    /// Documentation: [RESET](https:/redis.io/docs/latest/commands/reset)
     ///
     /// Version: 6.2.0
     /// Complexity: O(1)
@@ -5788,109 +5912,45 @@ extension RedisConnection {
 
     /// Creates a key from the serialized representation of a value.
     ///
+    /// Documentation: [RESTORE](https:/redis.io/docs/latest/commands/restore)
+    ///
     /// Version: 2.6.0
     /// Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restore(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool,
-        absttl: Bool,
-        seconds: Int?,
-        frequency: Int?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            restoreCommand(
-                key: key,
-                ttl: ttl,
-                serializedValue: serializedValue,
-                replace: replace,
-                absttl: absttl,
-                seconds: seconds,
-                frequency: frequency
-            )
-        )
+    public func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) async throws -> RESP3Token {
+        let response = try await send(restoreCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
         return response
     }
 
     @inlinable
-    public func restoreCommand(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool,
-        absttl: Bool,
-        seconds: Int?,
-        frequency: Int?
-    ) -> RESPCommand {
-        RESPCommand(
-            "RESTORE",
-            key,
-            ttl,
-            serializedValue,
-            RedisPureToken("REPLACE", replace),
-            RedisPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
-        )
+    public func restoreCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) -> RESPCommand {
+        RESPCommand("RESTORE", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 
     /// An internal command for migrating keys in a cluster.
+    ///
+    /// Documentation: [RESTORE-ASKING](https:/redis.io/docs/latest/commands/restore-asking)
     ///
     /// Version: 3.0.0
     /// Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool,
-        absttl: Bool,
-        seconds: Int?,
-        frequency: Int?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            restoreAskingCommand(
-                key: key,
-                ttl: ttl,
-                serializedValue: serializedValue,
-                replace: replace,
-                absttl: absttl,
-                seconds: seconds,
-                frequency: frequency
-            )
-        )
+    public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) async throws -> RESP3Token {
+        let response = try await send(restoreAskingCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
         return response
     }
 
     @inlinable
-    public func restoreAskingCommand(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool,
-        absttl: Bool,
-        seconds: Int?,
-        frequency: Int?
-    ) -> RESPCommand {
-        RESPCommand(
-            "RESTORE-ASKING",
-            key,
-            ttl,
-            serializedValue,
-            RedisPureToken("REPLACE", replace),
-            RedisPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
-        )
+    public func restoreAskingCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) -> RESPCommand {
+        RESPCommand("RESTORE-ASKING", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 
     /// Returns the replication role.
+    ///
+    /// Documentation: [ROLE](https:/redis.io/docs/latest/commands/role)
     ///
     /// Version: 2.8.12
     /// Complexity: O(1)
@@ -5908,6 +5968,8 @@ extension RedisConnection {
     }
 
     /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
+    ///
+    /// Documentation: [RPOP](https:/redis.io/docs/latest/commands/rpop)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of elements returned
@@ -5929,6 +5991,8 @@ extension RedisConnection {
 
     /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
     ///
+    /// Documentation: [RPOPLPUSH](https:/redis.io/docs/latest/commands/rpoplpush)
+    ///
     /// Version: 1.2.0
     /// Complexity: O(1)
     /// Categories: @write, @list, @slow
@@ -5948,6 +6012,8 @@ extension RedisConnection {
 
     /// Appends one or more elements to a list. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [RPUSH](https:/redis.io/docs/latest/commands/rpush)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// Categories: @write, @list, @fast
@@ -5964,6 +6030,8 @@ extension RedisConnection {
     }
 
     /// Appends an element to a list only when the list exists.
+    ///
+    /// Documentation: [RPUSHX](https:/redis.io/docs/latest/commands/rpushx)
     ///
     /// Version: 2.2.0
     /// Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
@@ -5982,6 +6050,8 @@ extension RedisConnection {
 
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [SADD](https:/redis.io/docs/latest/commands/sadd)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// Categories: @write, @set, @fast
@@ -5999,6 +6069,8 @@ extension RedisConnection {
 
     /// Synchronously saves the database(s) to disk.
     ///
+    /// Documentation: [SAVE](https:/redis.io/docs/latest/commands/save)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the total number of keys in all databases
     /// Categories: @admin, @slow, @dangerous
@@ -6015,6 +6087,8 @@ extension RedisConnection {
     }
 
     /// Iterates over the key names in the database.
+    ///
+    /// Documentation: [SCAN](https:/redis.io/docs/latest/commands/scan)
     ///
     /// Version: 2.8.0
     /// Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
@@ -6034,6 +6108,8 @@ extension RedisConnection {
     }
 
     /// Returns the number of members in a set.
+    ///
+    /// Documentation: [SCARD](https:/redis.io/docs/latest/commands/scard)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -6066,6 +6142,8 @@ extension RedisConnection {
     }
     /// Sets the debug mode of server-side Lua scripts.
     ///
+    /// Documentation: [SCRIPT DEBUG](https:/redis.io/docs/latest/commands/script-debug)
+    ///
     /// Version: 3.2.0
     /// Complexity: O(1)
     /// Categories: @slow, @scripting
@@ -6082,6 +6160,8 @@ extension RedisConnection {
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
+    ///
+    /// Documentation: [SCRIPT EXISTS](https:/redis.io/docs/latest/commands/script-exists)
     ///
     /// Version: 2.6.0
     /// Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
@@ -6112,6 +6192,8 @@ extension RedisConnection {
     }
     /// Removes all server-side Lua scripts from the script cache.
     ///
+    /// Documentation: [SCRIPT FLUSH](https:/redis.io/docs/latest/commands/script-flush)
+    ///
     /// Version: 2.6.0
     /// Complexity: O(N) with N being the number of scripts in cache
     /// Categories: @slow, @scripting
@@ -6128,6 +6210,8 @@ extension RedisConnection {
     }
 
     /// Returns helpful text about the different subcommands.
+    ///
+    /// Documentation: [SCRIPT HELP](https:/redis.io/docs/latest/commands/script-help)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1)
@@ -6146,6 +6230,8 @@ extension RedisConnection {
 
     /// Terminates a server-side Lua script during execution.
     ///
+    /// Documentation: [SCRIPT KILL](https:/redis.io/docs/latest/commands/script-kill)
+    ///
     /// Version: 2.6.0
     /// Complexity: O(1)
     /// Categories: @slow, @scripting
@@ -6162,6 +6248,8 @@ extension RedisConnection {
     }
 
     /// Loads a server-side Lua script to the script cache.
+    ///
+    /// Documentation: [SCRIPT LOAD](https:/redis.io/docs/latest/commands/script-load)
     ///
     /// Version: 2.6.0
     /// Complexity: O(N) with N being the length in bytes of the script body.
@@ -6180,6 +6268,8 @@ extension RedisConnection {
 
     /// Returns the difference of multiple sets.
     ///
+    /// Documentation: [SDIFF](https:/redis.io/docs/latest/commands/sdiff)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the total number of elements in all given sets.
     /// Categories: @read, @set, @slow
@@ -6197,6 +6287,8 @@ extension RedisConnection {
 
     /// Stores the difference of multiple sets in a key.
     ///
+    /// Documentation: [SDIFFSTORE](https:/redis.io/docs/latest/commands/sdiffstore)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the total number of elements in all given sets.
     /// Categories: @write, @set, @slow
@@ -6213,6 +6305,8 @@ extension RedisConnection {
     }
 
     /// Changes the selected database.
+    ///
+    /// Documentation: [SELECT](https:/redis.io/docs/latest/commands/select)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -6261,6 +6355,8 @@ extension RedisConnection {
     }
     /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
     ///
+    /// Documentation: [SET](https:/redis.io/docs/latest/commands/set)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @write, @string, @slow
@@ -6282,6 +6378,8 @@ extension RedisConnection {
 
     /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [SETBIT](https:/redis.io/docs/latest/commands/setbit)
+    ///
     /// Version: 2.2.0
     /// Complexity: O(1)
     /// Categories: @write, @bitmap, @slow
@@ -6299,6 +6397,8 @@ extension RedisConnection {
 
     /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [SETEX](https:/redis.io/docs/latest/commands/setex)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(1)
     /// Categories: @write, @string, @slow
@@ -6315,6 +6415,8 @@ extension RedisConnection {
     }
 
     /// Set the string value of a key only when the key doesn't exist.
+    ///
+    /// Documentation: [SETNX](https:/redis.io/docs/latest/commands/setnx)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -6334,6 +6436,8 @@ extension RedisConnection {
     }
 
     /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
+    ///
+    /// Documentation: [SETRANGE](https:/redis.io/docs/latest/commands/setrange)
     ///
     /// Version: 2.2.0
     /// Complexity: O(1), not counting the time taken to copy the new string in place. Usually, this string is very small so the amortized complexity is O(1). Otherwise, complexity is O(M) with M being the length of the value argument.
@@ -6364,6 +6468,8 @@ extension RedisConnection {
     }
     /// Synchronously saves the database(s) to disk and shuts down the Redis server.
     ///
+    /// Documentation: [SHUTDOWN](https:/redis.io/docs/latest/commands/shutdown)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -6380,6 +6486,8 @@ extension RedisConnection {
     }
 
     /// Returns the intersect of multiple sets.
+    ///
+    /// Documentation: [SINTER](https:/redis.io/docs/latest/commands/sinter)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
@@ -6398,6 +6506,8 @@ extension RedisConnection {
 
     /// Returns the number of members of the intersect of multiple sets.
     ///
+    /// Documentation: [SINTERCARD](https:/redis.io/docs/latest/commands/sintercard)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// Categories: @read, @set, @slow
@@ -6415,6 +6525,8 @@ extension RedisConnection {
 
     /// Stores the intersect of multiple sets in a key.
     ///
+    /// Documentation: [SINTERSTORE](https:/redis.io/docs/latest/commands/sinterstore)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// Categories: @write, @set, @slow
@@ -6431,6 +6543,8 @@ extension RedisConnection {
     }
 
     /// Determines whether a member belongs to a set.
+    ///
+    /// Documentation: [SISMEMBER](https:/redis.io/docs/latest/commands/sismember)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -6483,6 +6597,8 @@ extension RedisConnection {
     }
     /// Sets a Redis server as a replica of another, or promotes it to being a master.
     ///
+    /// Documentation: [SLAVEOF](https:/redis.io/docs/latest/commands/slaveof)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @admin, @slow, @dangerous
@@ -6499,6 +6615,8 @@ extension RedisConnection {
     }
 
     /// Returns the slow log's entries.
+    ///
+    /// Documentation: [SLOWLOG GET](https:/redis.io/docs/latest/commands/slowlog-get)
     ///
     /// Version: 2.2.12
     /// Complexity: O(N) where N is the number of entries returned
@@ -6517,6 +6635,8 @@ extension RedisConnection {
 
     /// Show helpful text about the different subcommands
     ///
+    /// Documentation: [SLOWLOG HELP](https:/redis.io/docs/latest/commands/slowlog-help)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(1)
     /// Categories: @slow
@@ -6533,6 +6653,8 @@ extension RedisConnection {
     }
 
     /// Returns the number of entries in the slow log.
+    ///
+    /// Documentation: [SLOWLOG LEN](https:/redis.io/docs/latest/commands/slowlog-len)
     ///
     /// Version: 2.2.12
     /// Complexity: O(1)
@@ -6551,6 +6673,8 @@ extension RedisConnection {
 
     /// Clears all entries from the slow log.
     ///
+    /// Documentation: [SLOWLOG RESET](https:/redis.io/docs/latest/commands/slowlog-reset)
+    ///
     /// Version: 2.2.12
     /// Complexity: O(N) where N is the number of entries in the slowlog
     /// Categories: @admin, @slow, @dangerous
@@ -6567,6 +6691,8 @@ extension RedisConnection {
     }
 
     /// Returns all members of a set.
+    ///
+    /// Documentation: [SMEMBERS](https:/redis.io/docs/latest/commands/smembers)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the set cardinality.
@@ -6585,6 +6711,8 @@ extension RedisConnection {
 
     /// Determines whether multiple members belong to a set.
     ///
+    /// Documentation: [SMISMEMBER](https:/redis.io/docs/latest/commands/smismember)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(N) where N is the number of elements being checked for membership
     /// Categories: @read, @set, @fast
@@ -6601,6 +6729,8 @@ extension RedisConnection {
     }
 
     /// Moves a member from one set to another.
+    ///
+    /// Documentation: [SMOVE](https:/redis.io/docs/latest/commands/smove)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -6643,55 +6773,22 @@ extension RedisConnection {
     }
     /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
     ///
+    /// Documentation: [SORT](https:/redis.io/docs/latest/commands/sort)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
     /// Categories: @write, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(
-        key: RedisKey,
-        byPattern: String?,
-        limit: SORTLimit?,
-        getPattern: String...,
-        order: SORTOrder?,
-        sorting: Bool,
-        destination: RedisKey?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            sortCommand(
-                key: key,
-                byPattern: byPattern,
-                limit: limit,
-                getPattern: getPattern,
-                order: order,
-                sorting: sorting,
-                destination: destination
-            )
-        )
+    public func sort(key: RedisKey, byPattern: String?, limit: SORTLimit?, getPattern: String..., order: SORTOrder?, sorting: Bool, destination: RedisKey?) async throws -> RESP3Token {
+        let response = try await send(sortCommand(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting, destination: destination))
         return response
     }
 
     @inlinable
-    public func sortCommand(
-        key: RedisKey,
-        byPattern: String?,
-        limit: SORTLimit?,
-        getPattern: [String],
-        order: SORTOrder?,
-        sorting: Bool,
-        destination: RedisKey?
-    ) -> RESPCommand {
-        RESPCommand(
-            "SORT",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
-            order,
-            RedisPureToken("ALPHA", sorting),
-            RESPWithToken("STORE", destination)
-        )
+    public func sortCommand(key: RedisKey, byPattern: String?, limit: SORTLimit?, getPattern: [String], order: SORTOrder?, sorting: Bool, destination: RedisKey?) -> RESPCommand {
+        RESPCommand("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
     }
 
     public struct SORTROLimit: RESPRenderable {
@@ -6718,46 +6815,26 @@ extension RedisConnection {
     }
     /// Returns the sorted elements of a list, a set, or a sorted set.
     ///
+    /// Documentation: [SORT_RO](https:/redis.io/docs/latest/commands/sort_ro)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
     /// Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(
-        key: RedisKey,
-        byPattern: String?,
-        limit: SORTROLimit?,
-        getPattern: String...,
-        order: SORTROOrder?,
-        sorting: Bool
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            sortRoCommand(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting)
-        )
+    public func sortRo(key: RedisKey, byPattern: String?, limit: SORTROLimit?, getPattern: String..., order: SORTROOrder?, sorting: Bool) async throws -> RESP3Token {
+        let response = try await send(sortRoCommand(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
         return response
     }
 
     @inlinable
-    public func sortRoCommand(
-        key: RedisKey,
-        byPattern: String?,
-        limit: SORTROLimit?,
-        getPattern: [String],
-        order: SORTROOrder?,
-        sorting: Bool
-    ) -> RESPCommand {
-        RESPCommand(
-            "SORT_RO",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
-            order,
-            RedisPureToken("ALPHA", sorting)
-        )
+    public func sortRoCommand(key: RedisKey, byPattern: String?, limit: SORTROLimit?, getPattern: [String], order: SORTROOrder?, sorting: Bool) -> RESPCommand {
+        RESPCommand("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting))
     }
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
+    ///
+    /// Documentation: [SPOP](https:/redis.io/docs/latest/commands/spop)
     ///
     /// Version: 1.0.0
     /// Complexity: Without the count argument O(1), otherwise O(N) where N is the value of the passed count.
@@ -6779,6 +6856,8 @@ extension RedisConnection {
 
     /// Post a message to a shard channel
     ///
+    /// Documentation: [SPUBLISH](https:/redis.io/docs/latest/commands/spublish)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
     /// Categories: @pubsub, @fast
@@ -6795,6 +6874,8 @@ extension RedisConnection {
     }
 
     /// Get one or multiple random members from a set
+    ///
+    /// Documentation: [SRANDMEMBER](https:/redis.io/docs/latest/commands/srandmember)
     ///
     /// Version: 1.0.0
     /// Complexity: Without the count argument O(1), otherwise O(N) where N is the absolute value of the passed count.
@@ -6815,6 +6896,8 @@ extension RedisConnection {
 
     /// Removes one or more members from a set. Deletes the set if the last member was removed.
     ///
+    /// Documentation: [SREM](https:/redis.io/docs/latest/commands/srem)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the number of members to be removed.
     /// Categories: @write, @set, @fast
@@ -6831,6 +6914,8 @@ extension RedisConnection {
     }
 
     /// Iterates over members of a set.
+    ///
+    /// Documentation: [SSCAN](https:/redis.io/docs/latest/commands/sscan)
     ///
     /// Version: 2.8.0
     /// Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
@@ -6851,6 +6936,8 @@ extension RedisConnection {
 
     /// Listens for messages published to shard channels.
     ///
+    /// Documentation: [SSUBSCRIBE](https:/redis.io/docs/latest/commands/ssubscribe)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of shard channels to subscribe to.
     /// Categories: @pubsub, @slow
@@ -6867,6 +6954,8 @@ extension RedisConnection {
     }
 
     /// Returns the length of a string value.
+    ///
+    /// Documentation: [STRLEN](https:/redis.io/docs/latest/commands/strlen)
     ///
     /// Version: 2.2.0
     /// Complexity: O(1)
@@ -6885,6 +6974,8 @@ extension RedisConnection {
 
     /// Listens for messages published to channels.
     ///
+    /// Documentation: [SUBSCRIBE](https:/redis.io/docs/latest/commands/subscribe)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of channels to subscribe to.
     /// Categories: @pubsub, @slow
@@ -6901,6 +6992,8 @@ extension RedisConnection {
     }
 
     /// Returns a substring from a string value.
+    ///
+    /// Documentation: [SUBSTR](https:/redis.io/docs/latest/commands/substr)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
@@ -6919,6 +7012,8 @@ extension RedisConnection {
 
     /// Returns the union of multiple sets.
     ///
+    /// Documentation: [SUNION](https:/redis.io/docs/latest/commands/sunion)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the total number of elements in all given sets.
     /// Categories: @read, @set, @slow
@@ -6935,6 +7030,8 @@ extension RedisConnection {
     }
 
     /// Stores the union of multiple sets in a key.
+    ///
+    /// Documentation: [SUNIONSTORE](https:/redis.io/docs/latest/commands/sunionstore)
     ///
     /// Version: 1.0.0
     /// Complexity: O(N) where N is the total number of elements in all given sets.
@@ -6953,6 +7050,8 @@ extension RedisConnection {
 
     /// Stops listening to messages posted to shard channels.
     ///
+    /// Documentation: [SUNSUBSCRIBE](https:/redis.io/docs/latest/commands/sunsubscribe)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(N) where N is the number of shard channels to unsubscribe.
     /// Categories: @pubsub, @slow
@@ -6969,6 +7068,8 @@ extension RedisConnection {
     }
 
     /// Swaps two Redis databases.
+    ///
+    /// Documentation: [SWAPDB](https:/redis.io/docs/latest/commands/swapdb)
     ///
     /// Version: 4.0.0
     /// Complexity: O(N) where N is the count of clients watching or blocking on keys from both databases.
@@ -6987,6 +7088,8 @@ extension RedisConnection {
 
     /// An internal command used in replication.
     ///
+    /// Documentation: [SYNC](https:/redis.io/docs/latest/commands/sync)
+    ///
     /// Version: 1.0.0
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
@@ -7002,6 +7105,8 @@ extension RedisConnection {
     }
 
     /// Returns the server time.
+    ///
+    /// Documentation: [TIME](https:/redis.io/docs/latest/commands/time)
     ///
     /// Version: 2.6.0
     /// Complexity: O(1)
@@ -7020,6 +7125,8 @@ extension RedisConnection {
 
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
     ///
+    /// Documentation: [TOUCH](https:/redis.io/docs/latest/commands/touch)
+    ///
     /// Version: 3.2.1
     /// Complexity: O(N) where N is the number of keys that will be touched.
     /// Categories: @keyspace, @read, @fast
@@ -7036,6 +7143,8 @@ extension RedisConnection {
     }
 
     /// Returns the expiration time in seconds of a key.
+    ///
+    /// Documentation: [TTL](https:/redis.io/docs/latest/commands/ttl)
     ///
     /// Version: 1.0.0
     /// Complexity: O(1)
@@ -7057,6 +7166,8 @@ extension RedisConnection {
 
     /// Determines the type of value stored at a key.
     ///
+    /// Documentation: [TYPE](https:/redis.io/docs/latest/commands/type)
+    ///
     /// Version: 1.0.0
     /// Complexity: O(1)
     /// Categories: @keyspace, @read, @fast
@@ -7073,6 +7184,8 @@ extension RedisConnection {
     }
 
     /// Asynchronously deletes one or more keys.
+    ///
+    /// Documentation: [UNLINK](https:/redis.io/docs/latest/commands/unlink)
     ///
     /// Version: 4.0.0
     /// Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
@@ -7091,6 +7204,8 @@ extension RedisConnection {
 
     /// Stops listening to messages posted to channels.
     ///
+    /// Documentation: [UNSUBSCRIBE](https:/redis.io/docs/latest/commands/unsubscribe)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N) where N is the number of channels to unsubscribe.
     /// Categories: @pubsub, @slow
@@ -7107,6 +7222,8 @@ extension RedisConnection {
     }
 
     /// Forgets about watched keys of a transaction.
+    ///
+    /// Documentation: [UNWATCH](https:/redis.io/docs/latest/commands/unwatch)
     ///
     /// Version: 2.2.0
     /// Complexity: O(1)
@@ -7125,6 +7242,8 @@ extension RedisConnection {
 
     /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
     ///
+    /// Documentation: [WAIT](https:/redis.io/docs/latest/commands/wait)
+    ///
     /// Version: 3.0.0
     /// Complexity: O(1)
     /// Categories: @slow, @connection
@@ -7141,6 +7260,8 @@ extension RedisConnection {
     }
 
     /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
+    ///
+    /// Documentation: [WAITAOF](https:/redis.io/docs/latest/commands/waitaof)
     ///
     /// Version: 7.2.0
     /// Complexity: O(1)
@@ -7161,6 +7282,8 @@ extension RedisConnection {
 
     /// Monitors changes to keys to determine the execution of a transaction.
     ///
+    /// Documentation: [WATCH](https:/redis.io/docs/latest/commands/watch)
+    ///
     /// Version: 2.2.0
     /// Complexity: O(1) for every key.
     /// Categories: @fast, @transaction
@@ -7177,6 +7300,8 @@ extension RedisConnection {
     }
 
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
+    ///
+    /// Documentation: [XACK](https:/redis.io/docs/latest/commands/xack)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1) for each message ID processed.
@@ -7255,6 +7380,8 @@ extension RedisConnection {
     }
     /// Appends a new message to a stream. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [XADD](https:/redis.io/docs/latest/commands/xadd)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
     /// Categories: @write, @stream, @fast
@@ -7274,6 +7401,8 @@ extension RedisConnection {
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
     ///
+    /// Documentation: [XAUTOCLAIM](https:/redis.io/docs/latest/commands/xautoclaim)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(1) if COUNT is small.
     /// Categories: @write, @stream, @fast
@@ -7282,35 +7411,19 @@ extension RedisConnection {
     ///     2. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
     ///     3. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
     @inlinable
-    public func xautoclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        start: String,
-        count: Int?,
-        justid: Bool
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            xautoclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid)
-        )
+    public func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int?, justid: Bool) async throws -> RESP3Token {
+        let response = try await send(xautoclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
         return response
     }
 
     @inlinable
-    public func xautoclaimCommand(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        start: String,
-        count: Int?,
-        justid: Bool
-    ) -> RESPCommand {
+    public func xautoclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int?, justid: Bool) -> RESPCommand {
         RESPCommand("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
+    ///
+    /// Documentation: [XCLAIM](https:/redis.io/docs/latest/commands/xclaim)
     ///
     /// Version: 5.0.0
     /// Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
@@ -7319,68 +7432,19 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        id: String...,
-        ms: Int?,
-        unixTimeMilliseconds: Date?,
-        count: Int?,
-        force: Bool,
-        justid: Bool,
-        lastid: String?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            xclaimCommand(
-                key: key,
-                group: group,
-                consumer: consumer,
-                minIdleTime: minIdleTime,
-                id: id,
-                ms: ms,
-                unixTimeMilliseconds: unixTimeMilliseconds,
-                count: count,
-                force: force,
-                justid: justid,
-                lastid: lastid
-            )
-        )
+    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String..., ms: Int?, unixTimeMilliseconds: Date?, count: Int?, force: Bool, justid: Bool, lastid: String?) async throws -> RESP3Token {
+        let response = try await send(xclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
         return response
     }
 
     @inlinable
-    public func xclaimCommand(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        id: [String],
-        ms: Int?,
-        unixTimeMilliseconds: Date?,
-        count: Int?,
-        force: Bool,
-        justid: Bool,
-        lastid: String?
-    ) -> RESPCommand {
-        RESPCommand(
-            "XCLAIM",
-            key,
-            group,
-            consumer,
-            minIdleTime,
-            id,
-            RESPWithToken("IDLE", ms),
-            RESPWithToken("TIME", unixTimeMilliseconds),
-            RESPWithToken("RETRYCOUNT", count),
-            RedisPureToken("FORCE", force),
-            RedisPureToken("JUSTID", justid),
-            RESPWithToken("LASTID", lastid)
-        )
+    public func xclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int?, unixTimeMilliseconds: Date?, count: Int?, force: Bool, justid: Bool, lastid: String?) -> RESPCommand {
+        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 
     /// Returns the number of messages after removing them from a stream.
+    ///
+    /// Documentation: [XDEL](https:/redis.io/docs/latest/commands/xdel)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1) for each single item to delete in the stream, regardless of the stream size.
@@ -7411,36 +7475,26 @@ extension RedisConnection {
     }
     /// Creates a consumer group.
     ///
+    /// Documentation: [XGROUP CREATE](https:/redis.io/docs/latest/commands/xgroup-create)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate(
-        key: RedisKey,
-        group: String,
-        idSelector: XGROUPCREATEIdSelector,
-        mkstream: Bool,
-        entriesRead: Int?
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            xgroupCreateCommand(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead)
-        )
+    public func xgroupCreate(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool, entriesRead: Int?) async throws -> RESP3Token {
+        let response = try await send(xgroupCreateCommand(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
         return response
     }
 
     @inlinable
-    public func xgroupCreateCommand(
-        key: RedisKey,
-        group: String,
-        idSelector: XGROUPCREATEIdSelector,
-        mkstream: Bool,
-        entriesRead: Int?
-    ) -> RESPCommand {
+    public func xgroupCreateCommand(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool, entriesRead: Int?) -> RESPCommand {
         RESPCommand("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
     }
 
     /// Creates a consumer in a consumer group.
+    ///
+    /// Documentation: [XGROUP CREATECONSUMER](https:/redis.io/docs/latest/commands/xgroup-createconsumer)
     ///
     /// Version: 6.2.0
     /// Complexity: O(1)
@@ -7459,6 +7513,8 @@ extension RedisConnection {
 
     /// Deletes a consumer from a consumer group.
     ///
+    /// Documentation: [XGROUP DELCONSUMER](https:/redis.io/docs/latest/commands/xgroup-delconsumer)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @write, @stream, @slow
@@ -7476,6 +7532,8 @@ extension RedisConnection {
 
     /// Destroys a consumer group.
     ///
+    /// Documentation: [XGROUP DESTROY](https:/redis.io/docs/latest/commands/xgroup-destroy)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(N) where N is the number of entries in the group's pending entries list (PEL).
     /// Categories: @write, @stream, @slow
@@ -7492,6 +7550,8 @@ extension RedisConnection {
     }
 
     /// Returns helpful text about the different subcommands.
+    ///
+    /// Documentation: [XGROUP HELP](https:/redis.io/docs/latest/commands/xgroup-help)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1)
@@ -7522,6 +7582,8 @@ extension RedisConnection {
     }
     /// Sets the last-delivered ID of a consumer group.
     ///
+    /// Documentation: [XGROUP SETID](https:/redis.io/docs/latest/commands/xgroup-setid)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @write, @stream, @slow
@@ -7538,6 +7600,8 @@ extension RedisConnection {
     }
 
     /// Returns a list of the consumers in a consumer group.
+    ///
+    /// Documentation: [XINFO CONSUMERS](https:/redis.io/docs/latest/commands/xinfo-consumers)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1)
@@ -7556,6 +7620,8 @@ extension RedisConnection {
 
     /// Returns a list of the consumer groups of a stream.
     ///
+    /// Documentation: [XINFO GROUPS](https:/redis.io/docs/latest/commands/xinfo-groups)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @read, @stream, @slow
@@ -7572,6 +7638,8 @@ extension RedisConnection {
     }
 
     /// Returns helpful text about the different subcommands.
+    ///
+    /// Documentation: [XINFO HELP](https:/redis.io/docs/latest/commands/xinfo-help)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1)
@@ -7600,6 +7668,8 @@ extension RedisConnection {
     }
     /// Returns information about a stream.
     ///
+    /// Documentation: [XINFO STREAM](https:/redis.io/docs/latest/commands/xinfo-stream)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(1)
     /// Categories: @read, @stream, @slow
@@ -7618,6 +7688,8 @@ extension RedisConnection {
     }
 
     /// Return the number of messages in a stream.
+    ///
+    /// Documentation: [XLEN](https:/redis.io/docs/latest/commands/xlen)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1)
@@ -7652,6 +7724,8 @@ extension RedisConnection {
     }
     /// Returns the information and entries from a stream consumer group's pending entries list.
     ///
+    /// Documentation: [XPENDING](https:/redis.io/docs/latest/commands/xpending)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(N) with N being the number of elements returned, so asking for a small fixed number of entries per call is O(1). O(M), where M is the total number of entries scanned when used with the IDLE filter. When the command returns just the summary and the list of consumers is small, it runs in O(1) time; otherwise, an additional O(N) time for iterating every consumer.
     /// Categories: @read, @stream, @slow
@@ -7668,6 +7742,8 @@ extension RedisConnection {
     }
 
     /// Returns the messages from a stream within a range of IDs.
+    ///
+    /// Documentation: [XRANGE](https:/redis.io/docs/latest/commands/xrange)
     ///
     /// Version: 5.0.0
     /// Complexity: O(N) with N being the number of elements being returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
@@ -7695,6 +7771,8 @@ extension RedisConnection {
         }
     }
     /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
+    ///
+    /// Documentation: [XREAD](https:/redis.io/docs/latest/commands/xread)
     ///
     /// Version: 5.0.0
     /// Categories: @read, @stream, @slow, @blocking
@@ -7734,6 +7812,8 @@ extension RedisConnection {
     }
     /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
     ///
+    /// Documentation: [XREADGROUP](https:/redis.io/docs/latest/commands/xreadgroup)
+    ///
     /// Version: 5.0.0
     /// Complexity: For each stream mentioned: O(M) with M being the number of elements returned. If M is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1). On the other side when XREADGROUP blocks, XADD will pay the O(N) time in order to serve the N clients blocked on the stream getting new data.
     /// Categories: @write, @stream, @slow, @blocking
@@ -7741,38 +7821,19 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(
-        groupBlock: XREADGROUPGroupBlock,
-        count: Int?,
-        milliseconds: Int?,
-        noack: Bool,
-        streams: XREADGROUPStreams
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            xreadgroupCommand(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams)
-        )
+    public func xreadgroup(groupBlock: XREADGROUPGroupBlock, count: Int?, milliseconds: Int?, noack: Bool, streams: XREADGROUPStreams) async throws -> RESP3Token {
+        let response = try await send(xreadgroupCommand(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
         return response
     }
 
     @inlinable
-    public func xreadgroupCommand(
-        groupBlock: XREADGROUPGroupBlock,
-        count: Int?,
-        milliseconds: Int?,
-        noack: Bool,
-        streams: XREADGROUPStreams
-    ) -> RESPCommand {
-        RESPCommand(
-            "XREADGROUP",
-            RESPWithToken("GROUP", groupBlock),
-            RESPWithToken("COUNT", count),
-            RESPWithToken("BLOCK", milliseconds),
-            RedisPureToken("NOACK", noack),
-            RESPWithToken("STREAMS", streams)
-        )
+    public func xreadgroupCommand(groupBlock: XREADGROUPGroupBlock, count: Int?, milliseconds: Int?, noack: Bool, streams: XREADGROUPStreams) -> RESPCommand {
+        RESPCommand("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RedisPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
     }
 
     /// Returns the messages from a stream within a range of IDs in reverse order.
+    ///
+    /// Documentation: [XREVRANGE](https:/redis.io/docs/latest/commands/xrevrange)
     ///
     /// Version: 5.0.0
     /// Complexity: O(N) with N being the number of elements returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
@@ -7790,6 +7851,8 @@ extension RedisConnection {
     }
 
     /// An internal command for replicating stream values.
+    ///
+    /// Documentation: [XSETID](https:/redis.io/docs/latest/commands/xsetid)
     ///
     /// Version: 5.0.0
     /// Complexity: O(1)
@@ -7846,6 +7909,8 @@ extension RedisConnection {
     }
     /// Deletes messages from the beginning of a stream.
     ///
+    /// Documentation: [XTRIM](https:/redis.io/docs/latest/commands/xtrim)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(N), with N being the number of evicted entries. Constant times are very small however, since entries are organized in macro nodes containing multiple entries that can be released with a single deallocation.
     /// Categories: @write, @stream, @slow
@@ -7897,6 +7962,8 @@ extension RedisConnection {
     }
     /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
     ///
+    /// Documentation: [ZADD](https:/redis.io/docs/latest/commands/zadd)
+    ///
     /// Version: 1.2.0
     /// Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// Categories: @write, @sortedset, @fast
@@ -7906,33 +7973,19 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(
-        key: RedisKey,
-        condition: ZADDCondition?,
-        comparison: ZADDComparison?,
-        change: Bool,
-        increment: Bool,
-        data: ZADDData...
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            zaddCommand(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data)
-        )
+    public func zadd(key: RedisKey, condition: ZADDCondition?, comparison: ZADDComparison?, change: Bool, increment: Bool, data: ZADDData...) async throws -> RESP3Token {
+        let response = try await send(zaddCommand(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
         return response
     }
 
     @inlinable
-    public func zaddCommand(
-        key: RedisKey,
-        condition: ZADDCondition?,
-        comparison: ZADDComparison?,
-        change: Bool,
-        increment: Bool,
-        data: [ZADDData]
-    ) -> RESPCommand {
+    public func zaddCommand(key: RedisKey, condition: ZADDCondition?, comparison: ZADDComparison?, change: Bool, increment: Bool, data: [ZADDData]) -> RESPCommand {
         RESPCommand("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
     }
 
     /// Returns the number of members in a sorted set.
+    ///
+    /// Documentation: [ZCARD](https:/redis.io/docs/latest/commands/zcard)
     ///
     /// Version: 1.2.0
     /// Complexity: O(1)
@@ -7951,6 +8004,8 @@ extension RedisConnection {
 
     /// Returns the count of members in a sorted set that have scores within a range.
     ///
+    /// Documentation: [ZCOUNT](https:/redis.io/docs/latest/commands/zcount)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// Categories: @read, @sortedset, @fast
@@ -7967,6 +8022,8 @@ extension RedisConnection {
     }
 
     /// Returns the difference between multiple sorted sets.
+    ///
+    /// Documentation: [ZDIFF](https:/redis.io/docs/latest/commands/zdiff)
     ///
     /// Version: 6.2.0
     /// Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
@@ -7985,6 +8042,8 @@ extension RedisConnection {
 
     /// Stores the difference of multiple sorted sets in a key.
     ///
+    /// Documentation: [ZDIFFSTORE](https:/redis.io/docs/latest/commands/zdiffstore)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
     /// Categories: @write, @sortedset, @slow
@@ -8001,6 +8060,8 @@ extension RedisConnection {
     }
 
     /// Increments the score of a member in a sorted set.
+    ///
+    /// Documentation: [ZINCRBY](https:/redis.io/docs/latest/commands/zincrby)
     ///
     /// Version: 1.2.0
     /// Complexity: O(log(N)) where N is the number of elements in the sorted set.
@@ -8033,6 +8094,8 @@ extension RedisConnection {
     }
     /// Returns the intersect of multiple sorted sets.
     ///
+    /// Documentation: [ZINTER](https:/redis.io/docs/latest/commands/zinter)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// Categories: @read, @sortedset, @slow
@@ -8045,17 +8108,12 @@ extension RedisConnection {
 
     @inlinable
     public func zinterCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERAggregate?, withscores: Bool) -> RESPCommand {
-        RESPCommand(
-            "ZINTER",
-            numkeys,
-            key,
-            RESPWithToken("WEIGHTS", weight),
-            RESPWithToken("AGGREGATE", aggregate),
-            RedisPureToken("WITHSCORES", withscores)
-        )
+        RESPCommand("ZINTER", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
+    ///
+    /// Documentation: [ZINTERCARD](https:/redis.io/docs/latest/commands/zintercard)
     ///
     /// Version: 7.0.0
     /// Complexity: O(N*K) worst case with N being the smallest input sorted set, K being the number of input sorted sets.
@@ -8088,34 +8146,26 @@ extension RedisConnection {
     }
     /// Stores the intersect of multiple sorted sets in a key.
     ///
+    /// Documentation: [ZINTERSTORE](https:/redis.io/docs/latest/commands/zinterstore)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public func zinterstore(
-        destination: RedisKey,
-        numkeys: Int,
-        key: RedisKey...,
-        weight: Int...,
-        aggregate: ZINTERSTOREAggregate?
-    ) async throws -> RESP3Token {
+    public func zinterstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERSTOREAggregate?) async throws -> RESP3Token {
         let response = try await send(zinterstoreCommand(destination: destination, numkeys: numkeys, key: key, weight: weight, aggregate: aggregate))
         return response
     }
 
     @inlinable
-    public func zinterstoreCommand(
-        destination: RedisKey,
-        numkeys: Int,
-        key: [RedisKey],
-        weight: [Int],
-        aggregate: ZINTERSTOREAggregate?
-    ) -> RESPCommand {
+    public func zinterstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERSTOREAggregate?) -> RESPCommand {
         RESPCommand("ZINTERSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
     /// Returns the number of members in a sorted set within a lexicographical range.
+    ///
+    /// Documentation: [ZLEXCOUNT](https:/redis.io/docs/latest/commands/zlexcount)
     ///
     /// Version: 2.8.9
     /// Complexity: O(log(N)) with N being the number of elements in the sorted set.
@@ -8146,6 +8196,8 @@ extension RedisConnection {
     }
     /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
     ///
+    /// Documentation: [ZMPOP](https:/redis.io/docs/latest/commands/zmpop)
+    ///
     /// Version: 7.0.0
     /// Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// Categories: @write, @sortedset, @slow
@@ -8164,6 +8216,8 @@ extension RedisConnection {
     }
 
     /// Returns the score of one or more members in a sorted set.
+    ///
+    /// Documentation: [ZMSCORE](https:/redis.io/docs/latest/commands/zmscore)
     ///
     /// Version: 6.2.0
     /// Complexity: O(N) where N is the number of members being requested.
@@ -8184,6 +8238,8 @@ extension RedisConnection {
 
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
     ///
+    /// Documentation: [ZPOPMAX](https:/redis.io/docs/latest/commands/zpopmax)
+    ///
     /// Version: 5.0.0
     /// Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
     /// Categories: @write, @sortedset, @fast
@@ -8200,6 +8256,8 @@ extension RedisConnection {
     }
 
     /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
+    ///
+    /// Documentation: [ZPOPMIN](https:/redis.io/docs/latest/commands/zpopmin)
     ///
     /// Version: 5.0.0
     /// Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
@@ -8227,6 +8285,8 @@ extension RedisConnection {
         }
     }
     /// Returns one or more random members from a sorted set.
+    ///
+    /// Documentation: [ZRANDMEMBER](https:/redis.io/docs/latest/commands/zrandmember)
     ///
     /// Version: 6.2.0
     /// Complexity: O(N) where N is the number of members returned
@@ -8268,46 +8328,21 @@ extension RedisConnection {
     }
     /// Returns members in a sorted set within a range of indexes.
     ///
+    /// Documentation: [ZRANGE](https:/redis.io/docs/latest/commands/zrange)
+    ///
     /// Version: 1.2.0
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
-    public func zrange(
-        key: RedisKey,
-        start: String,
-        stop: String,
-        sortby: ZRANGESortby?,
-        rev: Bool,
-        limit: ZRANGELimit?,
-        withscores: Bool
-    ) async throws -> RESP3Token {
-        let response = try await send(
-            zrangeCommand(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores)
-        )
+    public func zrange(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby?, rev: Bool, limit: ZRANGELimit?, withscores: Bool) async throws -> RESP3Token {
+        let response = try await send(zrangeCommand(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zrangeCommand(
-        key: RedisKey,
-        start: String,
-        stop: String,
-        sortby: ZRANGESortby?,
-        rev: Bool,
-        limit: ZRANGELimit?,
-        withscores: Bool
-    ) -> RESPCommand {
-        RESPCommand(
-            "ZRANGE",
-            key,
-            start,
-            stop,
-            sortby,
-            RedisPureToken("REV", rev),
-            RESPWithToken("LIMIT", limit),
-            RedisPureToken("WITHSCORES", withscores)
-        )
+    public func zrangeCommand(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby?, rev: Bool, limit: ZRANGELimit?, withscores: Bool) -> RESPCommand {
+        RESPCommand("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores))
     }
 
     public struct ZRANGEBYLEXLimit: RESPRenderable {
@@ -8321,6 +8356,8 @@ extension RedisConnection {
         }
     }
     /// Returns members in a sorted set within a lexicographical range.
+    ///
+    /// Documentation: [ZRANGEBYLEX](https:/redis.io/docs/latest/commands/zrangebylex)
     ///
     /// Version: 2.8.9
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
@@ -8348,6 +8385,8 @@ extension RedisConnection {
         }
     }
     /// Returns members in a sorted set within a range of scores.
+    ///
+    /// Documentation: [ZRANGEBYSCORE](https:/redis.io/docs/latest/commands/zrangebyscore)
     ///
     /// Version: 1.0.5
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
@@ -8388,38 +8427,26 @@ extension RedisConnection {
     }
     /// Stores a range of members from sorted set in a key.
     ///
+    /// Documentation: [ZRANGESTORE](https:/redis.io/docs/latest/commands/zrangestore)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements stored into the destination key.
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zrangestore(
-        dst: RedisKey,
-        src: RedisKey,
-        min: String,
-        max: String,
-        sortby: ZRANGESTORESortby?,
-        rev: Bool,
-        limit: ZRANGESTORELimit?
-    ) async throws -> RESP3Token {
+    public func zrangestore(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby?, rev: Bool, limit: ZRANGESTORELimit?) async throws -> RESP3Token {
         let response = try await send(zrangestoreCommand(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
         return response
     }
 
     @inlinable
-    public func zrangestoreCommand(
-        dst: RedisKey,
-        src: RedisKey,
-        min: String,
-        max: String,
-        sortby: ZRANGESTORESortby?,
-        rev: Bool,
-        limit: ZRANGESTORELimit?
-    ) -> RESPCommand {
+    public func zrangestoreCommand(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby?, rev: Bool, limit: ZRANGESTORELimit?) -> RESPCommand {
         RESPCommand("ZRANGESTORE", dst, src, min, max, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit))
     }
 
     /// Returns the index of a member in a sorted set ordered by ascending scores.
+    ///
+    /// Documentation: [ZRANK](https:/redis.io/docs/latest/commands/zrank)
     ///
     /// Version: 2.0.0
     /// Complexity: O(log(N))
@@ -8441,6 +8468,8 @@ extension RedisConnection {
 
     /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
     ///
+    /// Documentation: [ZREM](https:/redis.io/docs/latest/commands/zrem)
+    ///
     /// Version: 1.2.0
     /// Complexity: O(M*log(N)) with N being the number of elements in the sorted set and M the number of elements to be removed.
     /// Categories: @write, @sortedset, @fast
@@ -8457,6 +8486,8 @@ extension RedisConnection {
     }
 
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
+    ///
+    /// Documentation: [ZREMRANGEBYLEX](https:/redis.io/docs/latest/commands/zremrangebylex)
     ///
     /// Version: 2.8.9
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
@@ -8475,6 +8506,8 @@ extension RedisConnection {
 
     /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
     ///
+    /// Documentation: [ZREMRANGEBYRANK](https:/redis.io/docs/latest/commands/zremrangebyrank)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// Categories: @write, @sortedset, @slow
@@ -8492,6 +8525,8 @@ extension RedisConnection {
 
     /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
     ///
+    /// Documentation: [ZREMRANGEBYSCORE](https:/redis.io/docs/latest/commands/zremrangebyscore)
+    ///
     /// Version: 1.2.0
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// Categories: @write, @sortedset, @slow
@@ -8508,6 +8543,8 @@ extension RedisConnection {
     }
 
     /// Returns members in a sorted set within a range of indexes in reverse order.
+    ///
+    /// Documentation: [ZREVRANGE](https:/redis.io/docs/latest/commands/zrevrange)
     ///
     /// Version: 1.2.0
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
@@ -8536,6 +8573,8 @@ extension RedisConnection {
     }
     /// Returns members in a sorted set within a lexicographical range in reverse order.
     ///
+    /// Documentation: [ZREVRANGEBYLEX](https:/redis.io/docs/latest/commands/zrevrangebylex)
+    ///
     /// Version: 2.8.9
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// Categories: @read, @sortedset, @slow
@@ -8563,13 +8602,14 @@ extension RedisConnection {
     }
     /// Returns members in a sorted set within a range of scores in reverse order.
     ///
+    /// Documentation: [ZREVRANGEBYSCORE](https:/redis.io/docs/latest/commands/zrevrangebyscore)
+    ///
     /// Version: 2.2.0
     /// Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
-    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool, limit: ZREVRANGEBYSCORELimit?) async throws -> RESP3Token
-    {
+    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool, limit: ZREVRANGEBYSCORELimit?) async throws -> RESP3Token {
         let response = try await send(zrevrangebyscoreCommand(key: key, max: max, min: min, withscores: withscores, limit: limit))
         return response
     }
@@ -8580,6 +8620,8 @@ extension RedisConnection {
     }
 
     /// Returns the index of a member in a sorted set ordered by descending scores.
+    ///
+    /// Documentation: [ZREVRANK](https:/redis.io/docs/latest/commands/zrevrank)
     ///
     /// Version: 2.0.0
     /// Complexity: O(log(N))
@@ -8601,6 +8643,8 @@ extension RedisConnection {
 
     /// Iterates over members and scores of a sorted set.
     ///
+    /// Documentation: [ZSCAN](https:/redis.io/docs/latest/commands/zscan)
+    ///
     /// Version: 2.8.0
     /// Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// Categories: @read, @sortedset, @slow
@@ -8617,6 +8661,8 @@ extension RedisConnection {
     }
 
     /// Returns the score of a member in a sorted set.
+    ///
+    /// Documentation: [ZSCORE](https:/redis.io/docs/latest/commands/zscore)
     ///
     /// Version: 1.2.0
     /// Complexity: O(1)
@@ -8651,6 +8697,8 @@ extension RedisConnection {
     }
     /// Returns the union of multiple sorted sets.
     ///
+    /// Documentation: [ZUNION](https:/redis.io/docs/latest/commands/zunion)
+    ///
     /// Version: 6.2.0
     /// Complexity: O(N)+O(M*log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// Categories: @read, @sortedset, @slow
@@ -8663,14 +8711,7 @@ extension RedisConnection {
 
     @inlinable
     public func zunionCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONAggregate?, withscores: Bool) -> RESPCommand {
-        RESPCommand(
-            "ZUNION",
-            numkeys,
-            key,
-            RESPWithToken("WEIGHTS", weight),
-            RESPWithToken("AGGREGATE", aggregate),
-            RedisPureToken("WITHSCORES", withscores)
-        )
+        RESPCommand("ZUNION", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     public enum ZUNIONSTOREAggregate: RESPRenderable {
@@ -8689,30 +8730,20 @@ extension RedisConnection {
     }
     /// Stores the union of multiple sorted sets in a key.
     ///
+    /// Documentation: [ZUNIONSTORE](https:/redis.io/docs/latest/commands/zunionstore)
+    ///
     /// Version: 2.0.0
     /// Complexity: O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(
-        destination: RedisKey,
-        numkeys: Int,
-        key: RedisKey...,
-        weight: Int...,
-        aggregate: ZUNIONSTOREAggregate?
-    ) async throws -> RESP3Token {
+    public func zunionstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONSTOREAggregate?) async throws -> RESP3Token {
         let response = try await send(zunionstoreCommand(destination: destination, numkeys: numkeys, key: key, weight: weight, aggregate: aggregate))
         return response
     }
 
     @inlinable
-    public func zunionstoreCommand(
-        destination: RedisKey,
-        numkeys: Int,
-        key: [RedisKey],
-        weight: [Int],
-        aggregate: ZUNIONSTOREAggregate?
-    ) -> RESPCommand {
+    public func zunionstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONSTOREAggregate?) -> RESPCommand {
         RESPCommand("ZUNIONSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 

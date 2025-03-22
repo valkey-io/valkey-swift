@@ -18,8 +18,11 @@ extension String {
             .replacing(" reply]", with: "]")
     }
 
-    mutating func appendFunctionCommentHeader(command: RedisCommand, reply: [String]) {
+    mutating func appendFunctionCommentHeader(command: RedisCommand, name: String, reply: [String]) {
+        let linkName = name.replacing(" ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
+        self.append("    ///\n")
+        self.append("    /// Documentation: [\(name)](https:/redis.io/docs/latest/commands/\(linkName))\n")
         self.append("    ///\n")
         self.append("    /// Version: \(command.since)\n")
         if let complexity = command.complexity {
@@ -124,7 +127,7 @@ extension String {
             }
         }
         // Comment header
-        self.appendFunctionCommentHeader(command: command, reply: reply)
+        self.appendFunctionCommentHeader(command: command, name: name, reply: reply)
         // Operation function
         let parametersString =
             arguments
@@ -176,10 +179,9 @@ func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> Str
 
         """
     for key in commands.commands.keys.sorted() {
+        // if there is no reply info assume command is a container command
         if let reply = replies.commands[key], reply.count > 0 {
             string.appendFunction(command: commands.commands[key]!, reply: reply, name: key)
-        } else {
-            print("Skipping \(key)")
         }
     }
     string.append("}\n")
