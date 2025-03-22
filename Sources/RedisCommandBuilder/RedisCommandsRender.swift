@@ -95,7 +95,7 @@ extension String {
             "        let response = try await send(\(name.swiftFunction)Command(\(argumentsString)))\n"
         )
         self.append("        return response\n")
-        self.append("   }\n\n")
+        self.append("    }\n\n")
         // Command function
         let commandParametersString =
             arguments
