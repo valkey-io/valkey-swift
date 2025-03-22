@@ -736,14 +736,14 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public func blmpop(timeout: Double, numkeys: Int, key: RedisKey..., where: BLMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
-        let response = try await send(blmpopCommand(timeout: timeout, numkeys: numkeys, key: key, where: `where`, count: count))
+    public func blmpop(timeout: Double, key: RedisKey..., where: BLMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
+        let response = try await send(blmpopCommand(timeout: timeout, key: key, where: `where`, count: count))
         return response
     }
 
     @inlinable
-    public func blmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("BLMPOP", timeout, numkeys, key, `where`, RESPWithToken("COUNT", count))
+    public func blmpopCommand(timeout: Double, key: [RedisKey], where: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
+        RESPCommand("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -832,14 +832,14 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func bzmpop(timeout: Double, numkeys: Int, key: RedisKey..., where: BZMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
-        let response = try await send(bzmpopCommand(timeout: timeout, numkeys: numkeys, key: key, where: `where`, count: count))
+    public func bzmpop(timeout: Double, key: RedisKey..., where: BZMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
+        let response = try await send(bzmpopCommand(timeout: timeout, key: key, where: `where`, count: count))
         return response
     }
 
     @inlinable
-    public func bzmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BZMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("BZMPOP", timeout, numkeys, key, `where`, RESPWithToken("COUNT", count))
+    public func bzmpopCommand(timeout: Double, key: [RedisKey], where: BZMPOPWhere, count: Int? = nil) -> RESPCommand {
+        RESPCommand("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
@@ -2447,14 +2447,14 @@ extension RedisConnection {
     /// Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func eval(script: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
-        let response = try await send(evalCommand(script: script, numkeys: numkeys, key: key, arg: arg))
+    public func eval(script: String, key: RedisKey..., arg: String...) async throws -> RESP3Token {
+        let response = try await send(evalCommand(script: script, key: key, arg: arg))
         return response
     }
 
     @inlinable
-    public func evalCommand(script: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("EVAL", script, numkeys, key, arg)
+    public func evalCommand(script: String, key: [RedisKey], arg: [String]) -> RESPCommand {
+        RESPCommand("EVAL", script, RESPArrayWithCount(key), arg)
     }
 
     /// Executes a server-side Lua script by SHA1 digest.
@@ -2466,14 +2466,14 @@ extension RedisConnection {
     /// Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalsha(sha1: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
-        let response = try await send(evalshaCommand(sha1: sha1, numkeys: numkeys, key: key, arg: arg))
+    public func evalsha(sha1: String, key: RedisKey..., arg: String...) async throws -> RESP3Token {
+        let response = try await send(evalshaCommand(sha1: sha1, key: key, arg: arg))
         return response
     }
 
     @inlinable
-    public func evalshaCommand(sha1: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("EVALSHA", sha1, numkeys, key, arg)
+    public func evalshaCommand(sha1: String, key: [RedisKey], arg: [String]) -> RESPCommand {
+        RESPCommand("EVALSHA", sha1, RESPArrayWithCount(key), arg)
     }
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
@@ -2485,14 +2485,14 @@ extension RedisConnection {
     /// Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalshaRo(sha1: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
-        let response = try await send(evalshaRoCommand(sha1: sha1, numkeys: numkeys, key: key, arg: arg))
+    public func evalshaRo(sha1: String, key: RedisKey..., arg: String...) async throws -> RESP3Token {
+        let response = try await send(evalshaRoCommand(sha1: sha1, key: key, arg: arg))
         return response
     }
 
     @inlinable
-    public func evalshaRoCommand(sha1: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("EVALSHA_RO", sha1, numkeys, key, arg)
+    public func evalshaRoCommand(sha1: String, key: [RedisKey], arg: [String]) -> RESPCommand {
+        RESPCommand("EVALSHA_RO", sha1, RESPArrayWithCount(key), arg)
     }
 
     /// Executes a read-only server-side Lua script.
@@ -2504,14 +2504,14 @@ extension RedisConnection {
     /// Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalRo(script: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
-        let response = try await send(evalRoCommand(script: script, numkeys: numkeys, key: key, arg: arg))
+    public func evalRo(script: String, key: RedisKey..., arg: String...) async throws -> RESP3Token {
+        let response = try await send(evalRoCommand(script: script, key: key, arg: arg))
         return response
     }
 
     @inlinable
-    public func evalRoCommand(script: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("EVAL_RO", script, numkeys, key, arg)
+    public func evalRoCommand(script: String, key: [RedisKey], arg: [String]) -> RESPCommand {
+        RESPCommand("EVAL_RO", script, RESPArrayWithCount(key), arg)
     }
 
     /// Executes all commands in a transaction.
@@ -2692,14 +2692,14 @@ extension RedisConnection {
     /// Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcall(function: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
-        let response = try await send(fcallCommand(function: function, numkeys: numkeys, key: key, arg: arg))
+    public func fcall(function: String, key: RedisKey..., arg: String...) async throws -> RESP3Token {
+        let response = try await send(fcallCommand(function: function, key: key, arg: arg))
         return response
     }
 
     @inlinable
-    public func fcallCommand(function: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("FCALL", function, numkeys, key, arg)
+    public func fcallCommand(function: String, key: [RedisKey], arg: [String]) -> RESPCommand {
+        RESPCommand("FCALL", function, RESPArrayWithCount(key), arg)
     }
 
     /// Invokes a read-only function.
@@ -2711,14 +2711,14 @@ extension RedisConnection {
     /// Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcallRo(function: String, numkeys: Int, key: RedisKey..., arg: String...) async throws -> RESP3Token {
-        let response = try await send(fcallRoCommand(function: function, numkeys: numkeys, key: key, arg: arg))
+    public func fcallRo(function: String, key: RedisKey..., arg: String...) async throws -> RESP3Token {
+        let response = try await send(fcallRoCommand(function: function, key: key, arg: arg))
         return response
     }
 
     @inlinable
-    public func fcallRoCommand(function: String, numkeys: Int, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("FCALL_RO", function, numkeys, key, arg)
+    public func fcallRoCommand(function: String, key: [RedisKey], arg: [String]) -> RESPCommand {
+        RESPCommand("FCALL_RO", function, RESPArrayWithCount(key), arg)
     }
 
     public enum FLUSHALLFlushType: RESPRenderable {
@@ -4613,14 +4613,14 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public func lmpop(numkeys: Int, key: RedisKey..., where: LMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
-        let response = try await send(lmpopCommand(numkeys: numkeys, key: key, where: `where`, count: count))
+    public func lmpop(key: RedisKey..., where: LMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
+        let response = try await send(lmpopCommand(key: key, where: `where`, count: count))
         return response
     }
 
     @inlinable
-    public func lmpopCommand(numkeys: Int, key: [RedisKey], where: LMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("LMPOP", numkeys, key, `where`, RESPWithToken("COUNT", count))
+    public func lmpopCommand(key: [RedisKey], where: LMPOPWhere, count: Int? = nil) -> RESPCommand {
+        RESPCommand("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 
     /// Displays computer art and the Redis version
@@ -6585,14 +6585,14 @@ extension RedisConnection {
     /// Categories: @read, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
     @inlinable
-    public func sintercard(numkeys: Int, key: RedisKey..., limit: Int? = nil) async throws -> RESP3Token {
-        let response = try await send(sintercardCommand(numkeys: numkeys, key: key, limit: limit))
+    public func sintercard(key: RedisKey..., limit: Int? = nil) async throws -> RESP3Token {
+        let response = try await send(sintercardCommand(key: key, limit: limit))
         return response
     }
 
     @inlinable
-    public func sintercardCommand(numkeys: Int, key: [RedisKey], limit: Int? = nil) -> RESPCommand {
-        RESPCommand("SINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
+    public func sintercardCommand(key: [RedisKey], limit: Int? = nil) -> RESPCommand {
+        RESPCommand("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
     }
 
     /// Stores the intersect of multiple sets in a key.
@@ -8128,14 +8128,14 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zdiff(numkeys: Int, key: RedisKey..., withscores: Bool = false) async throws -> RESP3Token {
-        let response = try await send(zdiffCommand(numkeys: numkeys, key: key, withscores: withscores))
+    public func zdiff(key: RedisKey..., withscores: Bool = false) async throws -> RESP3Token {
+        let response = try await send(zdiffCommand(key: key, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zdiffCommand(numkeys: Int, key: [RedisKey], withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZDIFF", numkeys, key, RedisPureToken("WITHSCORES", withscores))
+    public func zdiffCommand(key: [RedisKey], withscores: Bool = false) -> RESPCommand {
+        RESPCommand("ZDIFF", RESPArrayWithCount(key), RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Stores the difference of multiple sorted sets in a key.
@@ -8147,14 +8147,14 @@ extension RedisConnection {
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at _destination_.
     @inlinable
-    public func zdiffstore(destination: RedisKey, numkeys: Int, key: RedisKey...) async throws -> RESP3Token {
-        let response = try await send(zdiffstoreCommand(destination: destination, numkeys: numkeys, key: key))
+    public func zdiffstore(destination: RedisKey, key: RedisKey...) async throws -> RESP3Token {
+        let response = try await send(zdiffstoreCommand(destination: destination, key: key))
         return response
     }
 
     @inlinable
-    public func zdiffstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey]) -> RESPCommand {
-        RESPCommand("ZDIFFSTORE", destination, numkeys, key)
+    public func zdiffstoreCommand(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
+        RESPCommand("ZDIFFSTORE", destination, RESPArrayWithCount(key))
     }
 
     /// Increments the score of a member in a sorted set.
@@ -8199,14 +8199,14 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
-        let response = try await send(zinterCommand(numkeys: numkeys, key: key, weight: weight, aggregate: aggregate, withscores: withscores))
+    public func zinter(key: RedisKey..., weight: Int..., aggregate: ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
+        let response = try await send(zinterCommand(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zinterCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZINTER", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    public func zinterCommand(key: [RedisKey], weight: [Int], aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
+        RESPCommand("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
@@ -8218,14 +8218,14 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting intersection.
     @inlinable
-    public func zintercard(numkeys: Int, key: RedisKey..., limit: Int? = nil) async throws -> RESP3Token {
-        let response = try await send(zintercardCommand(numkeys: numkeys, key: key, limit: limit))
+    public func zintercard(key: RedisKey..., limit: Int? = nil) async throws -> RESP3Token {
+        let response = try await send(zintercardCommand(key: key, limit: limit))
         return response
     }
 
     @inlinable
-    public func zintercardCommand(numkeys: Int, key: [RedisKey], limit: Int? = nil) -> RESPCommand {
-        RESPCommand("ZINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
+    public func zintercardCommand(key: [RedisKey], limit: Int? = nil) -> RESPCommand {
+        RESPCommand("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
     }
 
     public enum ZINTERSTOREAggregate: RESPRenderable {
@@ -8251,14 +8251,14 @@ extension RedisConnection {
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public func zinterstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERSTOREAggregate? = nil) async throws -> RESP3Token {
-        let response = try await send(zinterstoreCommand(destination: destination, numkeys: numkeys, key: key, weight: weight, aggregate: aggregate))
+    public func zinterstore(destination: RedisKey, key: RedisKey..., weight: Int..., aggregate: ZINTERSTOREAggregate? = nil) async throws -> RESP3Token {
+        let response = try await send(zinterstoreCommand(destination: destination, key: key, weight: weight, aggregate: aggregate))
         return response
     }
 
     @inlinable
-    public func zinterstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERSTOREAggregate? = nil) -> RESPCommand {
-        RESPCommand("ZINTERSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+    public func zinterstoreCommand(destination: RedisKey, key: [RedisKey], weight: [Int], aggregate: ZINTERSTOREAggregate? = nil) -> RESPCommand {
+        RESPCommand("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
     /// Returns the number of members in a sorted set within a lexicographical range.
@@ -8303,14 +8303,14 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func zmpop(numkeys: Int, key: RedisKey..., where: ZMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
-        let response = try await send(zmpopCommand(numkeys: numkeys, key: key, where: `where`, count: count))
+    public func zmpop(key: RedisKey..., where: ZMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
+        let response = try await send(zmpopCommand(key: key, where: `where`, count: count))
         return response
     }
 
     @inlinable
-    public func zmpopCommand(numkeys: Int, key: [RedisKey], where: ZMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("ZMPOP", numkeys, key, `where`, RESPWithToken("COUNT", count))
+    public func zmpopCommand(key: [RedisKey], where: ZMPOPWhere, count: Int? = nil) -> RESPCommand {
+        RESPCommand("ZMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 
     /// Returns the score of one or more members in a sorted set.
@@ -8816,14 +8816,14 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public func zunion(numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
-        let response = try await send(zunionCommand(numkeys: numkeys, key: key, weight: weight, aggregate: aggregate, withscores: withscores))
+    public func zunion(key: RedisKey..., weight: Int..., aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
+        let response = try await send(zunionCommand(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zunionCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZUNION", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    public func zunionCommand(key: [RedisKey], weight: [Int], aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
+        RESPCommand("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     public enum ZUNIONSTOREAggregate: RESPRenderable {
@@ -8849,14 +8849,14 @@ extension RedisConnection {
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONSTOREAggregate? = nil) async throws -> RESP3Token {
-        let response = try await send(zunionstoreCommand(destination: destination, numkeys: numkeys, key: key, weight: weight, aggregate: aggregate))
+    public func zunionstore(destination: RedisKey, key: RedisKey..., weight: Int..., aggregate: ZUNIONSTOREAggregate? = nil) async throws -> RESP3Token {
+        let response = try await send(zunionstoreCommand(destination: destination, key: key, weight: weight, aggregate: aggregate))
         return response
     }
 
     @inlinable
-    public func zunionstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONSTOREAggregate? = nil) -> RESPCommand {
-        RESPCommand("ZUNIONSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+    public func zunionstoreCommand(destination: RedisKey, key: [RedisKey], weight: [Int], aggregate: ZUNIONSTOREAggregate? = nil) -> RESPCommand {
+        RESPCommand("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
 }

@@ -52,6 +52,22 @@ public struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
     }
 }
 
+public struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
+    @usableFromInline
+    let array: [Element]
+
+    @inlinable
+    public init(_ array: [Element]) {
+        self.array = array
+    }
+    @inlinable
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        _ = array.count.writeToRESPBuffer(&buffer)
+        let count = array.writeToRESPBuffer(&buffer)
+        return count + 1
+    }
+}
+
 extension Optional: RESPRenderable where Wrapped: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {

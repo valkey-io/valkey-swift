@@ -249,6 +249,8 @@ extension RedisCommand.Argument {
         default:
             if let token = self.token {
                 "RESPWithToken(\"\(token)\", \(self.swiftVariable))"
+            } else if multiple == true, combinedWithCount == true {
+                "RESPArrayWithCount(\(self.swiftVariable))"
             } else {
                 self.swiftVariable
             }

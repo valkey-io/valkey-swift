@@ -21,6 +21,25 @@ struct RedisCommand: Decodable {
         case unixTime = "unix-time"
         case pattern
     }
+    struct InternalArgument: Decodable {
+        let name: String
+        let type: ArgumentType
+        let multiple: Bool?
+        let optional: Bool?
+        let token: String?
+        let arguments: [Argument]?
+        let keySpecIndex: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case name
+            case type
+            case multiple
+            case optional
+            case token
+            case arguments
+            case keySpecIndex = "key_spec_index"
+        }
+    }
     struct Argument: Decodable {
         let name: String
         let type: ArgumentType
@@ -28,6 +47,17 @@ struct RedisCommand: Decodable {
         let optional: Bool?
         let token: String?
         let arguments: [Argument]?
+        let combinedWithCount: Bool?
+
+        init(argument: InternalArgument, keySpec: KeySpec?) {
+            self.name = argument.name
+            self.type = argument.type
+            self.multiple = argument.multiple
+            self.optional = argument.optional
+            self.token = argument.token
+            self.arguments = argument.arguments
+            self.combinedWithCount = keySpec?.findKeys.type == .keynum
+        }
     }
     struct KeySpec: Decodable {
         struct BeginSearch: Decodable {
@@ -51,6 +81,7 @@ struct RedisCommand: Decodable {
                 case unknown
             }
             struct Spec: Decodable {
+                let keynumidx: Int?
                 let lastkey: Int
                 let keystep: Int
                 let limit: Int
@@ -71,7 +102,33 @@ struct RedisCommand: Decodable {
     let complexity: String?
     let aclCategories: [String]
     let arguments: [Argument]?
-    let keySpecs: [KeySpec]?
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.summary = try container.decode(String.self, forKey: .summary)
+        self.since = try container.decode(String.self, forKey: .since)
+        self.group = try container.decode(String.self, forKey: .group)
+        self.complexity = try container.decodeIfPresent(String.self, forKey: .complexity)
+        self.aclCategories = try container.decode([String].self, forKey: .aclCategories)
+        if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
+            if let keySpecs = try container.decodeIfPresent([KeySpec].self, forKey: .keySpecs) {
+                // combine argument and keyspec
+                var arguments = arguments.map { Argument(argument: $0, keySpec: $0.keySpecIndex.map { keySpecs[$0] }) }
+                // remove array counts before arrays
+                if let index = arguments.firstIndex(where: { $0.combinedWithCount == true }) {
+                    let previousIndex = arguments.index(before: index)
+                    arguments.remove(at: previousIndex)
+                    self.arguments = arguments
+                } else {
+                    self.arguments = arguments
+                }
+            } else {
+                self.arguments = arguments.map { .init(argument: $0, keySpec: nil) }
+            }
+        } else {
+            self.arguments = nil
+        }
+    }
 
     private enum CodingKeys: String, CodingKey {
         case summary
