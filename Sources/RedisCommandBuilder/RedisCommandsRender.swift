@@ -53,9 +53,9 @@ extension String {
         self.append("    public enum \(enumName): RESPRenderable {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
-                self.append("        case \(arg.name.swiftArgument)\n")
+                self.append("        case \(arg.swiftArgument)\n")
             } else {
-                self.append("        case \(arg.name.swiftArgument)(\(variableType(arg, names: names, isArray: true)))\n")
+                self.append("        case \(arg.swiftArgument)(\(variableType(arg, names: names, isArray: true)))\n")
             }
         }
         self.append("\n")
@@ -65,11 +65,11 @@ extension String {
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append(
-                    "            case .\(arg.name.swiftArgument): \"\(arg.token!)\".writeToRESPBuffer(&buffer)\n"
+                    "            case .\(arg.swiftArgument): \"\(arg.token!)\".writeToRESPBuffer(&buffer)\n"
                 )
             } else {
                 self.append(
-                    "            case .\(arg.name.swiftArgument)(let \(arg.name.swiftArgument)): \(arg.redisRepresentable).writeToRESPBuffer(&buffer)\n"
+                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable).writeToRESPBuffer(&buffer)\n"
                 )
             }
         }
@@ -93,7 +93,7 @@ extension String {
         }
         self.append("    public struct \(enumName): RESPRenderable {\n")
         for arg in arguments {
-            self.append("        @usableFromInline let \(arg.name.swiftVariable): \(variableType(arg, names: names, isArray: true))\n")
+            self.append("        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, isArray: true))\n")
         }
         self.append("\n")
         self.append("        @inlinable\n")
@@ -101,9 +101,9 @@ extension String {
         self.append("            var count = 0\n")
         for arg in arguments {
             if case .pureToken = arg.type {
-                self.append("            if self.\(arg.name.swiftArgument) { count += \"\(arg.token!)\".writeToRESPBuffer(&buffer) }\n")
+                self.append("            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".writeToRESPBuffer(&buffer) }\n")
             } else {
-                self.append("            count += self.\(arg.name.swiftArgument).writeToRESPBuffer(&buffer)\n")
+                self.append("            count += self.\(arg.swiftArgument).writeToRESPBuffer(&buffer)\n")
             }
         }
         self.append("            return count\n")
@@ -133,13 +133,13 @@ extension String {
         // Operation function
         let parametersString =
             arguments
-            .map { "\($0.name.swiftArgument): \(parameterType($0, names: [name]))" }
+            .map { "\($0.swiftArgument): \(parameterType($0, names: [name]))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
         self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws -> RESP3Token {\n")
         let argumentsString =
             arguments
-            .map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
+            .map { "\($0.swiftArgument): \($0.swiftVariable)" }
             .joined(separator: ", ")
         self.append(
             "        let response = try await send(\(name.swiftFunction)Command(\(argumentsString)))\n"
@@ -149,7 +149,7 @@ extension String {
         // Command function
         let commandParametersString =
             arguments
-            .map { "\($0.name.swiftArgument): \(parameterType($0, names: [name], isArray: true))" }
+            .map { "\($0.swiftArgument): \(parameterType($0, names: [name], isArray: true))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
         self.append("    public func \(name.swiftFunction)Command(\(commandParametersString)) -> RESPCommand {\n")
@@ -245,13 +245,21 @@ extension RedisCommand.ArgumentType {
 extension RedisCommand.Argument {
     var redisRepresentable: String {
         switch self.type {
-        case .pureToken: "RedisPureToken(\"\(self.token!)\", \(self.name.swiftVariable))"
+        case .pureToken: "RedisPureToken(\"\(self.token!)\", \(self.swiftVariable))"
         default:
             if let token = self.token {
-                "RESPWithToken(\"\(token)\", \(self.name.swiftVariable))"
+                "RESPWithToken(\"\(token)\", \(self.swiftVariable))"
             } else {
-                self.name.swiftVariable
+                self.swiftVariable
             }
         }
+    }
+
+    var swiftVariable: String {
+        self.name.swiftVariable
+    }
+
+    var swiftArgument: String {
+        self.name.swiftArgument
     }
 }
