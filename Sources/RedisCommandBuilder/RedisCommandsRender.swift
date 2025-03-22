@@ -35,7 +35,7 @@ extension String {
                 self.appendBlock(argument: arg, names: names)
             }
         }
-        self.append("    public enum \(enumName): RESPRepresentable {\n")
+        self.append("    public enum \(enumName): RESPRenderable {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append("        case \(arg.name.swiftArgument)\n")
@@ -76,7 +76,7 @@ extension String {
                 self.appendBlock(argument: arg, names: names)
             }
         }
-        self.append("    public struct \(enumName): RESPRepresentable {\n")
+        self.append("    public struct \(enumName): RESPRenderable {\n")
         for arg in arguments {
             self.append("        @usableFromInline let \(arg.name.swiftVariable): \(parameterType(arg, names: names, isArray: true))\n")
         }

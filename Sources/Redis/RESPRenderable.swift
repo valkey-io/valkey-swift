@@ -2,11 +2,12 @@ import Foundation
 import NIOCore
 import RESP3
 
-public protocol RESPRepresentable {
+/// Type that can be rendered into a RESP buffer
+public protocol RESPRenderable {
     func writeToRESPBuffer(_ buffer: inout ByteBuffer)
 }
 
-public struct RedisPureToken: RESPRepresentable {
+public struct RedisPureToken: RESPRenderable {
     @usableFromInline
     let token: String?
     @inlinable
@@ -23,7 +24,7 @@ public struct RedisPureToken: RESPRepresentable {
     }
 }
 
-public struct RESPWithToken<Value : RESPRepresentable>: RESPRepresentable {
+public struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
     @usableFromInline
     let value: Value?
     @usableFromInline
@@ -43,7 +44,7 @@ public struct RESPWithToken<Value : RESPRepresentable>: RESPRepresentable {
     }
 }
 
-extension Optional: RESPRepresentable where Wrapped: RESPRepresentable {
+extension Optional: RESPRenderable where Wrapped: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
         switch self {
@@ -55,7 +56,7 @@ extension Optional: RESPRepresentable where Wrapped: RESPRepresentable {
     }
 }
 
-extension Array: RESPRepresentable where Element: RESPRepresentable {
+extension Array: RESPRenderable where Element: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
         for element in self {
@@ -64,7 +65,7 @@ extension Array: RESPRepresentable where Element: RESPRepresentable {
     }
 }
 
-extension Bool: RESPRepresentable {
+extension Bool: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
         if self {
@@ -73,35 +74,35 @@ extension Bool: RESPRepresentable {
     }
 }
 
-extension String: RESPRepresentable {
+extension String: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
         buffer.writeBulkString(self)
     }
 }
 
-extension Int: RESPRepresentable {
+extension Int: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
         buffer.writeBulkString(String(self))
     }
 }
 
-extension Double: RESPRepresentable {
+extension Double: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
         buffer.writeBulkString(String(self))
     }
 }
 
-extension Date: RESPRepresentable {
+extension Date: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
         buffer.writeBulkString(String(self.timeIntervalSince1970))
     }
 }
 
-extension RedisKey: RESPRepresentable {
+extension RedisKey: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
         buffer.writeBulkString(self.rawValue)
