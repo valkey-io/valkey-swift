@@ -2,8 +2,10 @@ import NIOCore
 import RESP3
 
 public struct RESPCommand: Sendable {
+    @usableFromInline
     let buffer: ByteBuffer
 
+    @inlinable
     public init<each Arg: RESPRepresentable>(_ command: repeat each Arg) {
         var count = 0
         for _ in repeat each command {

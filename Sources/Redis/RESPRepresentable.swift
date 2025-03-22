@@ -6,14 +6,42 @@ public protocol RESPRepresentable {
     func writeToRESPBuffer(_ buffer: inout ByteBuffer)
 }
 
-/*struct RedisToken: RESPRepresentable {
-    let token: String
-    let value: Bool
-    init(_ token: String, value: Bool) {
-        self.token = token
-        self.value = value
+public struct RedisPureToken: RESPRepresentable {
+    @usableFromInline
+    let token: String?
+    @inlinable
+    init(_ token: String, _ value: Bool) {
+        if value {
+            self.token = token
+        } else {
+            self.token = nil
+        }
     }
-}*/
+    @inlinable
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        self.token.writeToRESPBuffer(&buffer)
+    }
+}
+
+public struct RESPWithToken<Value : RESPRepresentable>: RESPRepresentable {
+    @usableFromInline
+    let value: Value?
+    @usableFromInline
+    let token: String
+
+    @inlinable
+    public init(_ token: String, _ value: Value?) {
+        self.value = value
+        self.token = token
+    }
+    @inlinable
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        if let value {
+            self.token.writeToRESPBuffer(&buffer)
+            value.writeToRESPBuffer(&buffer)
+        }
+    }
+}
 
 extension Optional: RESPRepresentable where Wrapped: RESPRepresentable {
     @inlinable
