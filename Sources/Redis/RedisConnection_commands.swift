@@ -19,13 +19,13 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements representing ACL categories or commands in a given category.
     ///     * [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): the command returns an error if an invalid category name is given.
     @inlinable
-    public func aclCat(category: String?) async throws -> RESP3Token {
+    public func aclCat(category: String? = nil) async throws -> RESP3Token {
         let response = try await send(aclCatCommand(category: category))
         return response
     }
 
     @inlinable
-    public func aclCatCommand(category: String?) -> RESPCommand {
+    public func aclCatCommand(category: String? = nil) -> RESPCommand {
         RESPCommand("ACL", "CAT", category)
     }
 
@@ -78,13 +78,13 @@ extension RedisConnection {
     /// Categories: @slow
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
-    public func aclGenpass(bits: Int?) async throws -> RESP3Token {
+    public func aclGenpass(bits: Int? = nil) async throws -> RESP3Token {
         let response = try await send(aclGenpassCommand(bits: bits))
         return response
     }
 
     @inlinable
-    public func aclGenpassCommand(bits: Int?) -> RESPCommand {
+    public func aclGenpassCommand(bits: Int? = nil) -> RESPCommand {
         RESPCommand("ACL", "GENPASS", bits)
     }
 
@@ -193,13 +193,13 @@ extension RedisConnection {
     ///     When called with `RESET`:
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the security log was cleared.
     @inlinable
-    public func aclLog(operation: ACLLOGOperation?) async throws -> RESP3Token {
+    public func aclLog(operation: ACLLOGOperation? = nil) async throws -> RESP3Token {
         let response = try await send(aclLogCommand(operation: operation))
         return response
     }
 
     @inlinable
-    public func aclLogCommand(operation: ACLLOGOperation?) -> RESPCommand {
+    public func aclLogCommand(operation: ACLLOGOperation? = nil) -> RESPCommand {
         RESPCommand("ACL", "LOG", operation)
     }
 
@@ -328,13 +328,13 @@ extension RedisConnection {
     /// Categories: @fast, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
     @inlinable
-    public func auth(username: String?, password: String) async throws -> RESP3Token {
+    public func auth(username: String? = nil, password: String) async throws -> RESP3Token {
         let response = try await send(authCommand(username: username, password: password))
         return response
     }
 
     @inlinable
-    public func authCommand(username: String?, password: String) -> RESPCommand {
+    public func authCommand(username: String? = nil, password: String) -> RESPCommand {
         RESPCommand("AUTH", username, password)
     }
 
@@ -370,13 +370,13 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `Background saving started`.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `Background saving scheduled`.
     @inlinable
-    public func bgsave(schedule: Bool) async throws -> RESP3Token {
+    public func bgsave(schedule: Bool = false) async throws -> RESP3Token {
         let response = try await send(bgsaveCommand(schedule: schedule))
         return response
     }
 
     @inlinable
-    public func bgsaveCommand(schedule: Bool) -> RESPCommand {
+    public func bgsaveCommand(schedule: Bool = false) -> RESPCommand {
         RESPCommand("BGSAVE", RedisPureToken("SCHEDULE", schedule))
     }
 
@@ -413,13 +413,13 @@ extension RedisConnection {
     /// Categories: @read, @bitmap, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of bits set to 1.
     @inlinable
-    public func bitcount(key: RedisKey, range: BITCOUNTRange?) async throws -> RESP3Token {
+    public func bitcount(key: RedisKey, range: BITCOUNTRange? = nil) async throws -> RESP3Token {
         let response = try await send(bitcountCommand(key: key, range: range))
         return response
     }
 
     @inlinable
-    public func bitcountCommand(key: RedisKey, range: BITCOUNTRange?) -> RESPCommand {
+    public func bitcountCommand(key: RedisKey, range: BITCOUNTRange? = nil) -> RESPCommand {
         RESPCommand("BITCOUNT", key, range)
     }
 
@@ -642,13 +642,13 @@ extension RedisConnection {
     ///     However, this behavior changes if you are looking for clear bits and specify a range with both _start_ and _end_.
     ///     If a clear bit isn't found in the specified range, the function returns -1 as the user specified a clear range and there are no 0 bits in that range.
     @inlinable
-    public func bitpos(key: RedisKey, bit: Int, range: BITPOSRange?) async throws -> RESP3Token {
+    public func bitpos(key: RedisKey, bit: Int, range: BITPOSRange? = nil) async throws -> RESP3Token {
         let response = try await send(bitposCommand(key: key, bit: bit, range: range))
         return response
     }
 
     @inlinable
-    public func bitposCommand(key: RedisKey, bit: Int, range: BITPOSRange?) -> RESPCommand {
+    public func bitposCommand(key: RedisKey, bit: Int, range: BITPOSRange? = nil) -> RESPCommand {
         RESPCommand("BITPOS", key, bit, range)
     }
 
@@ -720,13 +720,13 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public func blmpop(timeout: Double, numkeys: Int, key: RedisKey..., where: BLMPOPWhere, count: Int?) async throws -> RESP3Token {
+    public func blmpop(timeout: Double, numkeys: Int, key: RedisKey..., where: BLMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(blmpopCommand(timeout: timeout, numkeys: numkeys, key: key, where: `where`, count: count))
         return response
     }
 
     @inlinable
-    public func blmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BLMPOPWhere, count: Int?) -> RESPCommand {
+    public func blmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
         RESPCommand("BLMPOP", timeout, numkeys, key, `where`, RESPWithToken("COUNT", count))
     }
 
@@ -816,13 +816,13 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func bzmpop(timeout: Double, numkeys: Int, key: RedisKey..., where: BZMPOPWhere, count: Int?) async throws -> RESP3Token {
+    public func bzmpop(timeout: Double, numkeys: Int, key: RedisKey..., where: BZMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(bzmpopCommand(timeout: timeout, numkeys: numkeys, key: key, where: `where`, count: count))
         return response
     }
 
     @inlinable
-    public func bzmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BZMPOPWhere, count: Int?) -> RESPCommand {
+    public func bzmpopCommand(timeout: Double, numkeys: Int, key: [RedisKey], where: BZMPOPWhere, count: Int? = nil) -> RESPCommand {
         RESPCommand("BZMPOP", timeout, numkeys, key, `where`, RESPWithToken("COUNT", count))
     }
 
@@ -1107,13 +1107,13 @@ extension RedisConnection {
     /// Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): information and statistics about client connections.
     @inlinable
-    public func clientList(clientType: CLIENTLISTClientType?, clientId: Int...) async throws -> RESP3Token {
+    public func clientList(clientType: CLIENTLISTClientType? = nil, clientId: Int...) async throws -> RESP3Token {
         let response = try await send(clientListCommand(clientType: clientType, clientId: clientId))
         return response
     }
 
     @inlinable
-    public func clientListCommand(clientType: CLIENTLISTClientType?, clientId: [Int]) -> RESPCommand {
+    public func clientListCommand(clientType: CLIENTLISTClientType? = nil, clientId: [Int]) -> RESPCommand {
         RESPCommand("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
     }
 
@@ -1200,13 +1200,13 @@ extension RedisConnection {
     /// Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` or an error if the timeout is invalid.
     @inlinable
-    public func clientPause(timeout: Int, mode: CLIENTPAUSEMode?) async throws -> RESP3Token {
+    public func clientPause(timeout: Int, mode: CLIENTPAUSEMode? = nil) async throws -> RESP3Token {
         let response = try await send(clientPauseCommand(timeout: timeout, mode: mode))
         return response
     }
 
     @inlinable
-    public func clientPauseCommand(timeout: Int, mode: CLIENTPAUSEMode?) -> RESPCommand {
+    public func clientPauseCommand(timeout: Int, mode: CLIENTPAUSEMode? = nil) -> RESPCommand {
         RESPCommand("CLIENT", "PAUSE", timeout, mode)
     }
 
@@ -1314,13 +1314,13 @@ extension RedisConnection {
     /// Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(status: CLIENTTRACKINGStatus, clientId: Int?, prefix: String..., bcast: Bool, optin: Bool, optout: Bool, noloop: Bool) async throws -> RESP3Token {
+    public func clientTracking(status: CLIENTTRACKINGStatus, clientId: Int? = nil, prefix: String..., bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws -> RESP3Token {
         let response = try await send(clientTrackingCommand(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
         return response
     }
 
     @inlinable
-    public func clientTrackingCommand(status: CLIENTTRACKINGStatus, clientId: Int?, prefix: [String], bcast: Bool, optin: Bool, optout: Bool, noloop: Bool) -> RESPCommand {
+    public func clientTrackingCommand(status: CLIENTTRACKINGStatus, clientId: Int? = nil, prefix: [String], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) -> RESPCommand {
         RESPCommand("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
     }
 
@@ -1366,13 +1366,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the client was unblocked successfully.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the client wasn't unblocked.
     @inlinable
-    public func clientUnblock(clientId: Int, unblockType: CLIENTUNBLOCKUnblockType?) async throws -> RESP3Token {
+    public func clientUnblock(clientId: Int, unblockType: CLIENTUNBLOCKUnblockType? = nil) async throws -> RESP3Token {
         let response = try await send(clientUnblockCommand(clientId: clientId, unblockType: unblockType))
         return response
     }
 
     @inlinable
-    public func clientUnblockCommand(clientId: Int, unblockType: CLIENTUNBLOCKUnblockType?) -> RESPCommand {
+    public func clientUnblockCommand(clientId: Int, unblockType: CLIENTUNBLOCKUnblockType? = nil) -> RESPCommand {
         RESPCommand("CLIENT", "UNBLOCK", clientId, unblockType)
     }
 
@@ -1571,13 +1571,13 @@ extension RedisConnection {
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was accepted and a manual failover is going to be attempted. An error if the operation cannot be executed, for example if the client is connected to a node that is already a master.
     @inlinable
-    public func clusterFailover(options: CLUSTERFAILOVEROptions?) async throws -> RESP3Token {
+    public func clusterFailover(options: CLUSTERFAILOVEROptions? = nil) async throws -> RESP3Token {
         let response = try await send(clusterFailoverCommand(options: options))
         return response
     }
 
     @inlinable
-    public func clusterFailoverCommand(options: CLUSTERFAILOVEROptions?) -> RESPCommand {
+    public func clusterFailoverCommand(options: CLUSTERFAILOVEROptions? = nil) -> RESPCommand {
         RESPCommand("CLUSTER", "FAILOVER", options)
     }
 
@@ -1723,13 +1723,13 @@ extension RedisConnection {
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. If the address or port specified are invalid an error is returned.
     @inlinable
-    public func clusterMeet(ip: String, port: Int, clusterBusPort: Int?) async throws -> RESP3Token {
+    public func clusterMeet(ip: String, port: Int, clusterBusPort: Int? = nil) async throws -> RESP3Token {
         let response = try await send(clusterMeetCommand(ip: ip, port: port, clusterBusPort: clusterBusPort))
         return response
     }
 
     @inlinable
-    public func clusterMeetCommand(ip: String, port: Int, clusterBusPort: Int?) -> RESPCommand {
+    public func clusterMeetCommand(ip: String, port: Int, clusterBusPort: Int? = nil) -> RESPCommand {
         RESPCommand("CLUSTER", "MEET", ip, port, clusterBusPort)
     }
 
@@ -1849,13 +1849,13 @@ extension RedisConnection {
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterReset(resetType: CLUSTERRESETResetType?) async throws -> RESP3Token {
+    public func clusterReset(resetType: CLUSTERRESETResetType? = nil) async throws -> RESP3Token {
         let response = try await send(clusterResetCommand(resetType: resetType))
         return response
     }
 
     @inlinable
-    public func clusterResetCommand(resetType: CLUSTERRESETResetType?) -> RESPCommand {
+    public func clusterResetCommand(resetType: CLUSTERRESETResetType? = nil) -> RESPCommand {
         RESPCommand("CLUSTER", "RESET", resetType)
     }
 
@@ -2145,13 +2145,13 @@ extension RedisConnection {
     /// Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of command names.
     @inlinable
-    public func commandList(filterby: COMMANDLISTFilterby?) async throws -> RESP3Token {
+    public func commandList(filterby: COMMANDLISTFilterby? = nil) async throws -> RESP3Token {
         let response = try await send(commandListCommand(filterby: filterby))
         return response
     }
 
     @inlinable
-    public func commandListCommand(filterby: COMMANDLISTFilterby?) -> RESPCommand {
+    public func commandListCommand(filterby: COMMANDLISTFilterby? = nil) -> RESPCommand {
         RESPCommand("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
     }
 
@@ -2271,13 +2271,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if _source_ was copied.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if _source_ was not copied.
     @inlinable
-    public func copy(source: RedisKey, destination: RedisKey, destinationDb: Int?, replace: Bool) async throws -> RESP3Token {
+    public func copy(source: RedisKey, destination: RedisKey, destinationDb: Int? = nil, replace: Bool = false) async throws -> RESP3Token {
         let response = try await send(copyCommand(source: source, destination: destination, destinationDb: destinationDb, replace: replace))
         return response
     }
 
     @inlinable
-    public func copyCommand(source: RedisKey, destination: RedisKey, destinationDb: Int?, replace: Bool) -> RESPCommand {
+    public func copyCommand(source: RedisKey, destination: RedisKey, destinationDb: Int? = nil, replace: Bool = false) -> RESPCommand {
         RESPCommand("COPY", source, destination, RESPWithToken("DB", destinationDb), RedisPureToken("REPLACE", replace))
     }
 
@@ -2559,13 +2559,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set; for example, the key doesn't exist, or the operation was skipped because of the provided arguments.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     @inlinable
-    public func expire(key: RedisKey, seconds: Int, condition: EXPIRECondition?) async throws -> RESP3Token {
+    public func expire(key: RedisKey, seconds: Int, condition: EXPIRECondition? = nil) async throws -> RESP3Token {
         let response = try await send(expireCommand(key: key, seconds: seconds, condition: condition))
         return response
     }
 
     @inlinable
-    public func expireCommand(key: RedisKey, seconds: Int, condition: EXPIRECondition?) -> RESPCommand {
+    public func expireCommand(key: RedisKey, seconds: Int, condition: EXPIRECondition? = nil) -> RESPCommand {
         RESPCommand("EXPIRE", key, seconds, condition)
     }
 
@@ -2596,13 +2596,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set; for example, the key doesn't exist, or the operation was skipped because of the provided arguments.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     @inlinable
-    public func expireat(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition?) async throws -> RESP3Token {
+    public func expireat(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition? = nil) async throws -> RESP3Token {
         let response = try await send(expireatCommand(key: key, unixTimeSeconds: unixTimeSeconds, condition: condition))
         return response
     }
 
     @inlinable
-    public func expireatCommand(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition?) -> RESPCommand {
+    public func expireatCommand(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition? = nil) -> RESPCommand {
         RESPCommand("EXPIREAT", key, unixTimeSeconds, condition)
     }
 
@@ -2649,13 +2649,13 @@ extension RedisConnection {
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was accepted and a coordinated failover is in progress. An error if the operation cannot be executed.
     @inlinable
-    public func failover(target: FAILOVERTarget?, abort: Bool, milliseconds: Int?) async throws -> RESP3Token {
+    public func failover(target: FAILOVERTarget? = nil, abort: Bool = false, milliseconds: Int? = nil) async throws -> RESP3Token {
         let response = try await send(failoverCommand(target: target, abort: abort, milliseconds: milliseconds))
         return response
     }
 
     @inlinable
-    public func failoverCommand(target: FAILOVERTarget?, abort: Bool, milliseconds: Int?) -> RESPCommand {
+    public func failoverCommand(target: FAILOVERTarget? = nil, abort: Bool = false, milliseconds: Int? = nil) -> RESPCommand {
         RESPCommand("FAILOVER", RESPWithToken("TO", target), RedisPureToken("ABORT", abort), RESPWithToken("TIMEOUT", milliseconds))
     }
 
@@ -2718,13 +2718,13 @@ extension RedisConnection {
     /// Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func flushall(flushType: FLUSHALLFlushType?) async throws -> RESP3Token {
+    public func flushall(flushType: FLUSHALLFlushType? = nil) async throws -> RESP3Token {
         let response = try await send(flushallCommand(flushType: flushType))
         return response
     }
 
     @inlinable
-    public func flushallCommand(flushType: FLUSHALLFlushType?) -> RESPCommand {
+    public func flushallCommand(flushType: FLUSHALLFlushType? = nil) -> RESPCommand {
         RESPCommand("FLUSHALL", flushType)
     }
 
@@ -2749,13 +2749,13 @@ extension RedisConnection {
     /// Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func flushdb(flushType: FLUSHDBFlushType?) async throws -> RESP3Token {
+    public func flushdb(flushType: FLUSHDBFlushType? = nil) async throws -> RESP3Token {
         let response = try await send(flushdbCommand(flushType: flushType))
         return response
     }
 
     @inlinable
-    public func flushdbCommand(flushType: FLUSHDBFlushType?) -> RESPCommand {
+    public func flushdbCommand(flushType: FLUSHDBFlushType? = nil) -> RESPCommand {
         RESPCommand("FLUSHDB", flushType)
     }
 
@@ -2818,13 +2818,13 @@ extension RedisConnection {
     /// Categories: @write, @slow, @scripting
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func functionFlush(flushType: FUNCTIONFLUSHFlushType?) async throws -> RESP3Token {
+    public func functionFlush(flushType: FUNCTIONFLUSHFlushType? = nil) async throws -> RESP3Token {
         let response = try await send(functionFlushCommand(flushType: flushType))
         return response
     }
 
     @inlinable
-    public func functionFlushCommand(flushType: FUNCTIONFLUSHFlushType?) -> RESPCommand {
+    public func functionFlushCommand(flushType: FUNCTIONFLUSHFlushType? = nil) -> RESPCommand {
         RESPCommand("FUNCTION", "FLUSH", flushType)
     }
 
@@ -2875,13 +2875,13 @@ extension RedisConnection {
     /// Categories: @slow, @scripting
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): information about functions and libraries.
     @inlinable
-    public func functionList(libraryNamePattern: String?, withcode: Bool) async throws -> RESP3Token {
+    public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> RESP3Token {
         let response = try await send(functionListCommand(libraryNamePattern: libraryNamePattern, withcode: withcode))
         return response
     }
 
     @inlinable
-    public func functionListCommand(libraryNamePattern: String?, withcode: Bool) -> RESPCommand {
+    public func functionListCommand(libraryNamePattern: String? = nil, withcode: Bool = false) -> RESPCommand {
         RESPCommand("FUNCTION", "LIST", RESPWithToken("LIBRARYNAME", libraryNamePattern), RedisPureToken("WITHCODE", withcode))
     }
 
@@ -2894,13 +2894,13 @@ extension RedisConnection {
     /// Categories: @write, @slow, @scripting
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the library name that was loaded.
     @inlinable
-    public func functionLoad(replace: Bool, functionCode: String) async throws -> RESP3Token {
+    public func functionLoad(replace: Bool = false, functionCode: String) async throws -> RESP3Token {
         let response = try await send(functionLoadCommand(replace: replace, functionCode: functionCode))
         return response
     }
 
     @inlinable
-    public func functionLoadCommand(replace: Bool, functionCode: String) -> RESPCommand {
+    public func functionLoadCommand(replace: Bool = false, functionCode: String) -> RESPCommand {
         RESPCommand("FUNCTION", "LOAD", RedisPureToken("REPLACE", replace), functionCode)
     }
 
@@ -2927,13 +2927,13 @@ extension RedisConnection {
     /// Categories: @write, @slow, @scripting
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func functionRestore(serializedValue: String, policy: FUNCTIONRESTOREPolicy?) async throws -> RESP3Token {
+    public func functionRestore(serializedValue: String, policy: FUNCTIONRESTOREPolicy? = nil) async throws -> RESP3Token {
         let response = try await send(functionRestoreCommand(serializedValue: serializedValue, policy: policy))
         return response
     }
 
     @inlinable
-    public func functionRestoreCommand(serializedValue: String, policy: FUNCTIONRESTOREPolicy?) -> RESPCommand {
+    public func functionRestoreCommand(serializedValue: String, policy: FUNCTIONRESTOREPolicy? = nil) -> RESPCommand {
         RESPCommand("FUNCTION", "RESTORE", serializedValue, policy)
     }
 
@@ -2989,13 +2989,13 @@ extension RedisConnection {
     /// Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public func geoadd(key: RedisKey, condition: GEOADDCondition?, change: Bool, data: GEOADDData...) async throws -> RESP3Token {
+    public func geoadd(key: RedisKey, condition: GEOADDCondition? = nil, change: Bool = false, data: GEOADDData...) async throws -> RESP3Token {
         let response = try await send(geoaddCommand(key: key, condition: condition, change: change, data: data))
         return response
     }
 
     @inlinable
-    public func geoaddCommand(key: RedisKey, condition: GEOADDCondition?, change: Bool, data: [GEOADDData]) -> RESPCommand {
+    public func geoaddCommand(key: RedisKey, condition: GEOADDCondition? = nil, change: Bool = false, data: [GEOADDData]) -> RESPCommand {
         RESPCommand("GEOADD", key, condition, RedisPureToken("CH", change), data)
     }
 
@@ -3026,13 +3026,13 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): one or both of the elements are missing.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): distance as a double (represented as a string) in the specified units.
     @inlinable
-    public func geodist(key: RedisKey, member1: String, member2: String, unit: GEODISTUnit?) async throws -> RESP3Token {
+    public func geodist(key: RedisKey, member1: String, member2: String, unit: GEODISTUnit? = nil) async throws -> RESP3Token {
         let response = try await send(geodistCommand(key: key, member1: member1, member2: member2, unit: unit))
         return response
     }
 
     @inlinable
-    public func geodistCommand(key: RedisKey, member1: String, member2: String, unit: GEODISTUnit?) -> RESPCommand {
+    public func geodistCommand(key: RedisKey, member1: String, member2: String, unit: GEODISTUnit? = nil) -> RESPCommand {
         RESPCommand("GEODIST", key, member1, member2, unit)
     }
 
@@ -3142,13 +3142,13 @@ extension RedisConnection {
     ///     
     ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
     @inlinable
-    public func georadius(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSCountBlock?, order: GEORADIUSOrder?, store: GEORADIUSStore?) async throws -> RESP3Token {
+    public func georadius(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSCountBlock? = nil, order: GEORADIUSOrder? = nil, store: GEORADIUSStore? = nil) async throws -> RESP3Token {
         let response = try await send(georadiusCommand(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
         return response
     }
 
     @inlinable
-    public func georadiusCommand(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSCountBlock?, order: GEORADIUSOrder?, store: GEORADIUSStore?) -> RESPCommand {
+    public func georadiusCommand(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSCountBlock? = nil, order: GEORADIUSOrder? = nil, store: GEORADIUSStore? = nil) -> RESPCommand {
         RESPCommand("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 
@@ -3216,13 +3216,13 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymember(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERCountBlock?, order: GEORADIUSBYMEMBEROrder?, store: GEORADIUSBYMEMBERStore?) async throws -> RESP3Token {
+    public func georadiusbymember(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERCountBlock? = nil, order: GEORADIUSBYMEMBEROrder? = nil, store: GEORADIUSBYMEMBERStore? = nil) async throws -> RESP3Token {
         let response = try await send(georadiusbymemberCommand(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
         return response
     }
 
     @inlinable
-    public func georadiusbymemberCommand(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERCountBlock?, order: GEORADIUSBYMEMBEROrder?, store: GEORADIUSBYMEMBERStore?) -> RESPCommand {
+    public func georadiusbymemberCommand(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERCountBlock? = nil, order: GEORADIUSBYMEMBEROrder? = nil, store: GEORADIUSBYMEMBERStore? = nil) -> RESPCommand {
         RESPCommand("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 
@@ -3278,13 +3278,13 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymemberRo(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERROCountBlock?, order: GEORADIUSBYMEMBERROOrder?) async throws -> RESP3Token {
+    public func georadiusbymemberRo(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERROCountBlock? = nil, order: GEORADIUSBYMEMBERROOrder? = nil) async throws -> RESP3Token {
         let response = try await send(georadiusbymemberRoCommand(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
         return response
     }
 
     @inlinable
-    public func georadiusbymemberRoCommand(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSBYMEMBERROCountBlock?, order: GEORADIUSBYMEMBERROOrder?) -> RESPCommand {
+    public func georadiusbymemberRoCommand(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERROCountBlock? = nil, order: GEORADIUSBYMEMBERROOrder? = nil) -> RESPCommand {
         RESPCommand("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 
@@ -3340,13 +3340,13 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusRo(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSROCountBlock?, order: GEORADIUSROOrder?) async throws -> RESP3Token {
+    public func georadiusRo(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSROCountBlock? = nil, order: GEORADIUSROOrder? = nil) async throws -> RESP3Token {
         let response = try await send(georadiusRoCommand(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
         return response
     }
 
     @inlinable
-    public func georadiusRoCommand(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool, withdist: Bool, withhash: Bool, countBlock: GEORADIUSROCountBlock?, order: GEORADIUSROOrder?) -> RESPCommand {
+    public func georadiusRoCommand(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSROCountBlock? = nil, order: GEORADIUSROOrder? = nil) -> RESPCommand {
         RESPCommand("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 
@@ -3474,13 +3474,13 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func geosearch(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder?, countBlock: GEOSEARCHCountBlock?, withcoord: Bool, withdist: Bool, withhash: Bool) async throws -> RESP3Token {
+    public func geosearch(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder? = nil, countBlock: GEOSEARCHCountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> RESP3Token {
         let response = try await send(geosearchCommand(key: key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash))
         return response
     }
 
     @inlinable
-    public func geosearchCommand(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder?, countBlock: GEOSEARCHCountBlock?, withcoord: Bool, withdist: Bool, withhash: Bool) -> RESPCommand {
+    public func geosearchCommand(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder? = nil, countBlock: GEOSEARCHCountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) -> RESPCommand {
         RESPCommand("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
     }
 
@@ -3603,13 +3603,13 @@ extension RedisConnection {
     /// Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set
     @inlinable
-    public func geosearchstore(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder?, countBlock: GEOSEARCHSTORECountBlock?, storedist: Bool) async throws -> RESP3Token {
+    public func geosearchstore(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder? = nil, countBlock: GEOSEARCHSTORECountBlock? = nil, storedist: Bool = false) async throws -> RESP3Token {
         let response = try await send(geosearchstoreCommand(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist))
         return response
     }
 
     @inlinable
-    public func geosearchstoreCommand(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder?, countBlock: GEOSEARCHSTORECountBlock?, storedist: Bool) -> RESPCommand {
+    public func geosearchstoreCommand(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder? = nil, countBlock: GEOSEARCHSTORECountBlock? = nil, storedist: Bool = false) -> RESPCommand {
         RESPCommand("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RedisPureToken("STOREDIST", storedist))
     }
 
@@ -3704,13 +3704,13 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the value of `key`
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if `key` does not exist.
     @inlinable
-    public func getex(key: RedisKey, expiration: GETEXExpiration?) async throws -> RESP3Token {
+    public func getex(key: RedisKey, expiration: GETEXExpiration? = nil) async throws -> RESP3Token {
         let response = try await send(getexCommand(key: key, expiration: expiration))
         return response
     }
 
     @inlinable
-    public func getexCommand(key: RedisKey, expiration: GETEXExpiration?) -> RESPCommand {
+    public func getexCommand(key: RedisKey, expiration: GETEXExpiration? = nil) -> RESPCommand {
         RESPCommand("GETEX", key, expiration)
     }
 
@@ -3805,13 +3805,13 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of server properties.
     ///     [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): if the `protover` requested does not exist.
     @inlinable
-    public func hello(arguments: HELLOArguments?) async throws -> RESP3Token {
+    public func hello(arguments: HELLOArguments? = nil) async throws -> RESP3Token {
         let response = try await send(helloCommand(arguments: arguments))
         return response
     }
 
     @inlinable
-    public func helloCommand(arguments: HELLOArguments?) -> RESPCommand {
+    public func helloCommand(arguments: HELLOArguments? = nil) -> RESPCommand {
         RESPCommand("HELLO", arguments)
     }
 
@@ -4023,13 +4023,13 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list containing `count` fields when the `count` option is used, or an empty array if the key does not exists.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of fields and their values when `count` and `WITHVALUES` were both used.
     @inlinable
-    public func hrandfield(key: RedisKey, options: HRANDFIELDOptions?) async throws -> RESP3Token {
+    public func hrandfield(key: RedisKey, options: HRANDFIELDOptions? = nil) async throws -> RESP3Token {
         let response = try await send(hrandfieldCommand(key: key, options: options))
         return response
     }
 
     @inlinable
-    public func hrandfieldCommand(key: RedisKey, options: HRANDFIELDOptions?) -> RESPCommand {
+    public func hrandfieldCommand(key: RedisKey, options: HRANDFIELDOptions? = nil) -> RESPCommand {
         RESPCommand("HRANDFIELD", key, options)
     }
 
@@ -4044,13 +4044,13 @@ extension RedisConnection {
     ///     * The first element is a [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of field/value pairs that were scanned.
     @inlinable
-    public func hscan(key: RedisKey, cursor: Int, pattern: String?, count: Int?) async throws -> RESP3Token {
+    public func hscan(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(hscanCommand(key: key, cursor: cursor, pattern: pattern, count: count))
         return response
     }
 
     @inlinable
-    public func hscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
+    public func hscanCommand(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) -> RESPCommand {
         RESPCommand("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 
@@ -4403,13 +4403,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
     @inlinable
-    public func lcs(key1: RedisKey, key2: RedisKey, len: Bool, idx: Bool, minMatchLen: Int?, withmatchlen: Bool) async throws -> RESP3Token {
+    public func lcs(key1: RedisKey, key2: RedisKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> RESP3Token {
         let response = try await send(lcsCommand(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
         return response
     }
 
     @inlinable
-    public func lcsCommand(key1: RedisKey, key2: RedisKey, len: Bool, idx: Bool, minMatchLen: Int?, withmatchlen: Bool) -> RESPCommand {
+    public func lcsCommand(key1: RedisKey, key2: RedisKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) -> RESPCommand {
         RESPCommand("LCS", key1, key2, RedisPureToken("LEN", len), RedisPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RedisPureToken("WITHMATCHLEN", withmatchlen))
     }
 
@@ -4553,13 +4553,13 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public func lmpop(numkeys: Int, key: RedisKey..., where: LMPOPWhere, count: Int?) async throws -> RESP3Token {
+    public func lmpop(numkeys: Int, key: RedisKey..., where: LMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(lmpopCommand(numkeys: numkeys, key: key, where: `where`, count: count))
         return response
     }
 
     @inlinable
-    public func lmpopCommand(numkeys: Int, key: [RedisKey], where: LMPOPWhere, count: Int?) -> RESPCommand {
+    public func lmpopCommand(numkeys: Int, key: [RedisKey], where: LMPOPWhere, count: Int? = nil) -> RESPCommand {
         RESPCommand("LMPOP", numkeys, key, `where`, RESPWithToken("COUNT", count))
     }
 
@@ -4571,13 +4571,13 @@ extension RedisConnection {
     /// Categories: @read, @fast
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a string containing generative computer art and the Redis version.
     @inlinable
-    public func lolwut(version: Int?) async throws -> RESP3Token {
+    public func lolwut(version: Int? = nil) async throws -> RESP3Token {
         let response = try await send(lolwutCommand(version: version))
         return response
     }
 
     @inlinable
-    public func lolwutCommand(version: Int?) -> RESPCommand {
+    public func lolwutCommand(version: Int? = nil) -> RESPCommand {
         RESPCommand("LOLWUT", RESPWithToken("VERSION", version))
     }
 
@@ -4593,13 +4593,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the value of the first element.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of popped elements.
     @inlinable
-    public func lpop(key: RedisKey, count: Int?) async throws -> RESP3Token {
+    public func lpop(key: RedisKey, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(lpopCommand(key: key, count: count))
         return response
     }
 
     @inlinable
-    public func lpopCommand(key: RedisKey, count: Int?) -> RESPCommand {
+    public func lpopCommand(key: RedisKey, count: Int? = nil) -> RESPCommand {
         RESPCommand("LPOP", key, count)
     }
 
@@ -4615,13 +4615,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): an integer representing the matching element.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): If the COUNT option is given, an array of integers representing the matching elements (or an empty array if there are no matches).
     @inlinable
-    public func lpos(key: RedisKey, element: String, rank: Int?, numMatches: Int?, len: Int?) async throws -> RESP3Token {
+    public func lpos(key: RedisKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> RESP3Token {
         let response = try await send(lposCommand(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
         return response
     }
 
     @inlinable
-    public func lposCommand(key: RedisKey, element: String, rank: Int?, numMatches: Int?, len: Int?) -> RESPCommand {
+    public func lposCommand(key: RedisKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) -> RESPCommand {
         RESPCommand("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 
@@ -4845,13 +4845,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the memory usage in bytes.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
     @inlinable
-    public func memoryUsage(key: RedisKey, count: Int?) async throws -> RESP3Token {
+    public func memoryUsage(key: RedisKey, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(memoryUsageCommand(key: key, count: count))
         return response
     }
 
     @inlinable
-    public func memoryUsageCommand(key: RedisKey, count: Int?) -> RESPCommand {
+    public func memoryUsageCommand(key: RedisKey, count: Int? = nil) -> RESPCommand {
         RESPCommand("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
     }
 
@@ -4919,13 +4919,13 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool, replace: Bool, authentication: MIGRATEAuthentication?, keys: RedisKey...) async throws -> RESP3Token {
+    public func migrate(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATEAuthentication? = nil, keys: RedisKey...) async throws -> RESP3Token {
         let response = try await send(migrateCommand(host: host, port: port, keySelector: keySelector, destinationDb: destinationDb, timeout: timeout, copy: copy, replace: replace, authentication: authentication, keys: keys))
         return response
     }
 
     @inlinable
-    public func migrateCommand(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool, replace: Bool, authentication: MIGRATEAuthentication?, keys: [RedisKey]) -> RESPCommand {
+    public func migrateCommand(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATEAuthentication? = nil, keys: [RedisKey]) -> RESPCommand {
         RESPCommand("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
     }
 
@@ -5305,13 +5305,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0`if the timeout was not set. For example, if the key doesn't exist, or the operation skipped because of the provided arguments.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     @inlinable
-    public func pexpire(key: RedisKey, milliseconds: Int, condition: PEXPIRECondition?) async throws -> RESP3Token {
+    public func pexpire(key: RedisKey, milliseconds: Int, condition: PEXPIRECondition? = nil) async throws -> RESP3Token {
         let response = try await send(pexpireCommand(key: key, milliseconds: milliseconds, condition: condition))
         return response
     }
 
     @inlinable
-    public func pexpireCommand(key: RedisKey, milliseconds: Int, condition: PEXPIRECondition?) -> RESPCommand {
+    public func pexpireCommand(key: RedisKey, milliseconds: Int, condition: PEXPIRECondition? = nil) -> RESPCommand {
         RESPCommand("PEXPIRE", key, milliseconds, condition)
     }
 
@@ -5342,13 +5342,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set. For example, if the key doesn't exist, or the operation was skipped due to the provided arguments.
     @inlinable
-    public func pexpireat(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition?) async throws -> RESP3Token {
+    public func pexpireat(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition? = nil) async throws -> RESP3Token {
         let response = try await send(pexpireatCommand(key: key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition))
         return response
     }
 
     @inlinable
-    public func pexpireatCommand(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition?) -> RESPCommand {
+    public func pexpireatCommand(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition? = nil) -> RESPCommand {
         RESPCommand("PEXPIREAT", key, unixTimeMilliseconds, condition)
     }
 
@@ -5463,13 +5463,13 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `PONG` when no argument is provided.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the provided argument.
     @inlinable
-    public func ping(message: String?) async throws -> RESP3Token {
+    public func ping(message: String? = nil) async throws -> RESP3Token {
         let response = try await send(pingCommand(message: message))
         return response
     }
 
     @inlinable
-    public func pingCommand(message: String?) -> RESPCommand {
+    public func pingCommand(message: String? = nil) -> RESPCommand {
         RESPCommand("PING", message)
     }
 
@@ -5579,13 +5579,13 @@ extension RedisConnection {
     /// Categories: @pubsub, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
-    public func pubsubChannels(pattern: String?) async throws -> RESP3Token {
+    public func pubsubChannels(pattern: String? = nil) async throws -> RESP3Token {
         let response = try await send(pubsubChannelsCommand(pattern: pattern))
         return response
     }
 
     @inlinable
-    public func pubsubChannelsCommand(pattern: String?) -> RESPCommand {
+    public func pubsubChannelsCommand(pattern: String? = nil) -> RESPCommand {
         RESPCommand("PUBSUB", "CHANNELS", pattern)
     }
 
@@ -5655,13 +5655,13 @@ extension RedisConnection {
     /// Categories: @pubsub, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
-    public func pubsubShardchannels(pattern: String?) async throws -> RESP3Token {
+    public func pubsubShardchannels(pattern: String? = nil) async throws -> RESP3Token {
         let response = try await send(pubsubShardchannelsCommand(pattern: pattern))
         return response
     }
 
     @inlinable
-    public func pubsubShardchannelsCommand(pattern: String?) -> RESPCommand {
+    public func pubsubShardchannelsCommand(pattern: String? = nil) -> RESPCommand {
         RESPCommand("PUBSUB", "SHARDCHANNELS", pattern)
     }
 
@@ -5919,13 +5919,13 @@ extension RedisConnection {
     /// Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) async throws -> RESP3Token {
+    public func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESP3Token {
         let response = try await send(restoreCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
         return response
     }
 
     @inlinable
-    public func restoreCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) -> RESPCommand {
+    public func restoreCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) -> RESPCommand {
         RESPCommand("RESTORE", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 
@@ -5938,13 +5938,13 @@ extension RedisConnection {
     /// Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) async throws -> RESP3Token {
+    public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESP3Token {
         let response = try await send(restoreAskingCommand(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
         return response
     }
 
     @inlinable
-    public func restoreAskingCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool, absttl: Bool, seconds: Int?, frequency: Int?) -> RESPCommand {
+    public func restoreAskingCommand(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) -> RESPCommand {
         RESPCommand("RESTORE-ASKING", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 
@@ -5979,13 +5979,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the value of the last element.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of popped elements.
     @inlinable
-    public func rpop(key: RedisKey, count: Int?) async throws -> RESP3Token {
+    public func rpop(key: RedisKey, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(rpopCommand(key: key, count: count))
         return response
     }
 
     @inlinable
-    public func rpopCommand(key: RedisKey, count: Int?) -> RESPCommand {
+    public func rpopCommand(key: RedisKey, count: Int? = nil) -> RESPCommand {
         RESPCommand("RPOP", key, count)
     }
 
@@ -6097,13 +6097,13 @@ extension RedisConnection {
     ///     * The first element is a [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) with the names of scanned keys.
     @inlinable
-    public func scan(cursor: Int, pattern: String?, count: Int?, type: String?) async throws -> RESP3Token {
+    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> RESP3Token {
         let response = try await send(scanCommand(cursor: cursor, pattern: pattern, count: count, type: type))
         return response
     }
 
     @inlinable
-    public func scanCommand(cursor: Int, pattern: String?, count: Int?, type: String?) -> RESPCommand {
+    public func scanCommand(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) -> RESPCommand {
         RESPCommand("SCAN", cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPWithToken("TYPE", type))
     }
 
@@ -6199,13 +6199,13 @@ extension RedisConnection {
     /// Categories: @slow, @scripting
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func scriptFlush(flushType: SCRIPTFLUSHFlushType?) async throws -> RESP3Token {
+    public func scriptFlush(flushType: SCRIPTFLUSHFlushType? = nil) async throws -> RESP3Token {
         let response = try await send(scriptFlushCommand(flushType: flushType))
         return response
     }
 
     @inlinable
-    public func scriptFlushCommand(flushType: SCRIPTFLUSHFlushType?) -> RESPCommand {
+    public func scriptFlushCommand(flushType: SCRIPTFLUSHFlushType? = nil) -> RESPCommand {
         RESPCommand("SCRIPT", "FLUSH", flushType)
     }
 
@@ -6366,13 +6366,13 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): `GET` given: The key didn't exist before the `SET`.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): `GET` given: The previous value of the key.
     @inlinable
-    public func set(key: RedisKey, value: String, condition: SETCondition?, get: Bool, expiration: SETExpiration?) async throws -> RESP3Token {
+    public func set(key: RedisKey, value: String, condition: SETCondition? = nil, get: Bool = false, expiration: SETExpiration? = nil) async throws -> RESP3Token {
         let response = try await send(setCommand(key: key, value: value, condition: condition, get: get, expiration: expiration))
         return response
     }
 
     @inlinable
-    public func setCommand(key: RedisKey, value: String, condition: SETCondition?, get: Bool, expiration: SETExpiration?) -> RESPCommand {
+    public func setCommand(key: RedisKey, value: String, condition: SETCondition? = nil, get: Bool = false, expiration: SETExpiration? = nil) -> RESPCommand {
         RESPCommand("SET", key, value, condition, RedisPureToken("GET", get), expiration)
     }
 
@@ -6475,13 +6475,13 @@ extension RedisConnection {
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
-    public func shutdown(saveSelector: SHUTDOWNSaveSelector?, now: Bool, force: Bool, abort: Bool) async throws -> RESP3Token {
+    public func shutdown(saveSelector: SHUTDOWNSaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) async throws -> RESP3Token {
         let response = try await send(shutdownCommand(saveSelector: saveSelector, now: now, force: force, abort: abort))
         return response
     }
 
     @inlinable
-    public func shutdownCommand(saveSelector: SHUTDOWNSaveSelector?, now: Bool, force: Bool, abort: Bool) -> RESPCommand {
+    public func shutdownCommand(saveSelector: SHUTDOWNSaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) -> RESPCommand {
         RESPCommand("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
     }
 
@@ -6513,13 +6513,13 @@ extension RedisConnection {
     /// Categories: @read, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
     @inlinable
-    public func sintercard(numkeys: Int, key: RedisKey..., limit: Int?) async throws -> RESP3Token {
+    public func sintercard(numkeys: Int, key: RedisKey..., limit: Int? = nil) async throws -> RESP3Token {
         let response = try await send(sintercardCommand(numkeys: numkeys, key: key, limit: limit))
         return response
     }
 
     @inlinable
-    public func sintercardCommand(numkeys: Int, key: [RedisKey], limit: Int?) -> RESPCommand {
+    public func sintercardCommand(numkeys: Int, key: [RedisKey], limit: Int? = nil) -> RESPCommand {
         RESPCommand("SINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
     }
 
@@ -6623,13 +6623,13 @@ extension RedisConnection {
     /// Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of slow log entries per the above format.
     @inlinable
-    public func slowlogGet(count: Int?) async throws -> RESP3Token {
+    public func slowlogGet(count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(slowlogGetCommand(count: count))
         return response
     }
 
     @inlinable
-    public func slowlogGetCommand(count: Int?) -> RESPCommand {
+    public func slowlogGetCommand(count: Int? = nil) -> RESPCommand {
         RESPCommand("SLOWLOG", "GET", count)
     }
 
@@ -6781,13 +6781,13 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(key: RedisKey, byPattern: String?, limit: SORTLimit?, getPattern: String..., order: SORTOrder?, sorting: Bool, destination: RedisKey?) async throws -> RESP3Token {
+    public func sort(key: RedisKey, byPattern: String? = nil, limit: SORTLimit? = nil, getPattern: String..., order: SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) async throws -> RESP3Token {
         let response = try await send(sortCommand(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting, destination: destination))
         return response
     }
 
     @inlinable
-    public func sortCommand(key: RedisKey, byPattern: String?, limit: SORTLimit?, getPattern: [String], order: SORTOrder?, sorting: Bool, destination: RedisKey?) -> RESPCommand {
+    public func sortCommand(key: RedisKey, byPattern: String? = nil, limit: SORTLimit? = nil, getPattern: [String], order: SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) -> RESPCommand {
         RESPCommand("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
     }
 
@@ -6822,13 +6822,13 @@ extension RedisConnection {
     /// Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(key: RedisKey, byPattern: String?, limit: SORTROLimit?, getPattern: String..., order: SORTROOrder?, sorting: Bool) async throws -> RESP3Token {
+    public func sortRo(key: RedisKey, byPattern: String? = nil, limit: SORTROLimit? = nil, getPattern: String..., order: SORTROOrder? = nil, sorting: Bool = false) async throws -> RESP3Token {
         let response = try await send(sortRoCommand(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
         return response
     }
 
     @inlinable
-    public func sortRoCommand(key: RedisKey, byPattern: String?, limit: SORTROLimit?, getPattern: [String], order: SORTROOrder?, sorting: Bool) -> RESPCommand {
+    public func sortRoCommand(key: RedisKey, byPattern: String? = nil, limit: SORTROLimit? = nil, getPattern: [String], order: SORTROOrder? = nil, sorting: Bool = false) -> RESPCommand {
         RESPCommand("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting))
     }
 
@@ -6844,13 +6844,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the removed member.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of the removed members.
     @inlinable
-    public func spop(key: RedisKey, count: Int?) async throws -> RESP3Token {
+    public func spop(key: RedisKey, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(spopCommand(key: key, count: count))
         return response
     }
 
     @inlinable
-    public func spopCommand(key: RedisKey, count: Int?) -> RESPCommand {
+    public func spopCommand(key: RedisKey, count: Int? = nil) -> RESPCommand {
         RESPCommand("SPOP", key, count)
     }
 
@@ -6884,13 +6884,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or a [Null](https:/redis.io/docs/reference/protocol-spec#nulls) when _key_ doesn't exist.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the optional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist.
     @inlinable
-    public func srandmember(key: RedisKey, count: Int?) async throws -> RESP3Token {
+    public func srandmember(key: RedisKey, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(srandmemberCommand(key: key, count: count))
         return response
     }
 
     @inlinable
-    public func srandmemberCommand(key: RedisKey, count: Int?) -> RESPCommand {
+    public func srandmemberCommand(key: RedisKey, count: Int? = nil) -> RESPCommand {
         RESPCommand("SRANDMEMBER", key, count)
     }
 
@@ -6924,13 +6924,13 @@ extension RedisConnection {
     ///     * The first element is a [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) with the names of scanned members.
     @inlinable
-    public func sscan(key: RedisKey, cursor: Int, pattern: String?, count: Int?) async throws -> RESP3Token {
+    public func sscan(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(sscanCommand(key: key, cursor: cursor, pattern: pattern, count: count))
         return response
     }
 
     @inlinable
-    public func sscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
+    public func sscanCommand(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) -> RESPCommand {
         RESPCommand("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 
@@ -7389,13 +7389,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(key: RedisKey, nomkstream: Bool, trim: XADDTrim?, idSelector: XADDIdSelector, data: XADDData...) async throws -> RESP3Token {
+    public func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, data: XADDData...) async throws -> RESP3Token {
         let response = try await send(xaddCommand(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
         return response
     }
 
     @inlinable
-    public func xaddCommand(key: RedisKey, nomkstream: Bool, trim: XADDTrim?, idSelector: XADDIdSelector, data: [XADDData]) -> RESPCommand {
+    public func xaddCommand(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, data: [XADDData]) -> RESPCommand {
         RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
     }
 
@@ -7411,13 +7411,13 @@ extension RedisConnection {
     ///     2. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
     ///     3. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
     @inlinable
-    public func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int?, justid: Bool) async throws -> RESP3Token {
+    public func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) async throws -> RESP3Token {
         let response = try await send(xautoclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
         return response
     }
 
     @inlinable
-    public func xautoclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int?, justid: Bool) -> RESPCommand {
+    public func xautoclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) -> RESPCommand {
         RESPCommand("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
     }
 
@@ -7432,13 +7432,13 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String..., ms: Int?, unixTimeMilliseconds: Date?, count: Int?, force: Bool, justid: Bool, lastid: String?) async throws -> RESP3Token {
+    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String..., ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> RESP3Token {
         let response = try await send(xclaimCommand(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
         return response
     }
 
     @inlinable
-    public func xclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int?, unixTimeMilliseconds: Date?, count: Int?, force: Bool, justid: Bool, lastid: String?) -> RESPCommand {
+    public func xclaimCommand(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
         RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 
@@ -7482,13 +7482,13 @@ extension RedisConnection {
     /// Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool, entriesRead: Int?) async throws -> RESP3Token {
+    public func xgroupCreate(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws -> RESP3Token {
         let response = try await send(xgroupCreateCommand(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
         return response
     }
 
     @inlinable
-    public func xgroupCreateCommand(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool, entriesRead: Int?) -> RESPCommand {
+    public func xgroupCreateCommand(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool = false, entriesRead: Int? = nil) -> RESPCommand {
         RESPCommand("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
     }
 
@@ -7589,13 +7589,13 @@ extension RedisConnection {
     /// Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupSetid(key: RedisKey, group: String, idSelector: XGROUPSETIDIdSelector, entriesread: Int?) async throws -> RESP3Token {
+    public func xgroupSetid(key: RedisKey, group: String, idSelector: XGROUPSETIDIdSelector, entriesread: Int? = nil) async throws -> RESP3Token {
         let response = try await send(xgroupSetidCommand(key: key, group: group, idSelector: idSelector, entriesread: entriesread))
         return response
     }
 
     @inlinable
-    public func xgroupSetidCommand(key: RedisKey, group: String, idSelector: XGROUPSETIDIdSelector, entriesread: Int?) -> RESPCommand {
+    public func xgroupSetidCommand(key: RedisKey, group: String, idSelector: XGROUPSETIDIdSelector, entriesread: Int? = nil) -> RESPCommand {
         RESPCommand("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
     }
 
@@ -7677,13 +7677,13 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was not given, a list of information about a stream in summary form.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was given, a list of information about a stream in extended form.
     @inlinable
-    public func xinfoStream(key: RedisKey, fullBlock: XINFOSTREAMFullBlock?) async throws -> RESP3Token {
+    public func xinfoStream(key: RedisKey, fullBlock: XINFOSTREAMFullBlock? = nil) async throws -> RESP3Token {
         let response = try await send(xinfoStreamCommand(key: key, fullBlock: fullBlock))
         return response
     }
 
     @inlinable
-    public func xinfoStreamCommand(key: RedisKey, fullBlock: XINFOSTREAMFullBlock?) -> RESPCommand {
+    public func xinfoStreamCommand(key: RedisKey, fullBlock: XINFOSTREAMFullBlock? = nil) -> RESPCommand {
         RESPCommand("XINFO", "STREAM", key, fullBlock)
     }
 
@@ -7731,13 +7731,13 @@ extension RedisConnection {
     /// Categories: @read, @stream, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): different data depending on the way XPENDING is called, as explained on this page.
     @inlinable
-    public func xpending(key: RedisKey, group: String, filters: XPENDINGFilters?) async throws -> RESP3Token {
+    public func xpending(key: RedisKey, group: String, filters: XPENDINGFilters? = nil) async throws -> RESP3Token {
         let response = try await send(xpendingCommand(key: key, group: group, filters: filters))
         return response
     }
 
     @inlinable
-    public func xpendingCommand(key: RedisKey, group: String, filters: XPENDINGFilters?) -> RESPCommand {
+    public func xpendingCommand(key: RedisKey, group: String, filters: XPENDINGFilters? = nil) -> RESPCommand {
         RESPCommand("XPENDING", key, group, filters)
     }
 
@@ -7750,13 +7750,13 @@ extension RedisConnection {
     /// Categories: @read, @stream, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of stream entries with IDs matching the specified range.
     @inlinable
-    public func xrange(key: RedisKey, start: String, end: String, count: Int?) async throws -> RESP3Token {
+    public func xrange(key: RedisKey, start: String, end: String, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(xrangeCommand(key: key, start: start, end: end, count: count))
         return response
     }
 
     @inlinable
-    public func xrangeCommand(key: RedisKey, start: String, end: String, count: Int?) -> RESPCommand {
+    public func xrangeCommand(key: RedisKey, start: String, end: String, count: Int? = nil) -> RESPCommand {
         RESPCommand("XRANGE", key, start, end, RESPWithToken("COUNT", count))
     }
 
@@ -7780,13 +7780,13 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xread(count: Int?, milliseconds: Int?, streams: XREADStreams) async throws -> RESP3Token {
+    public func xread(count: Int? = nil, milliseconds: Int? = nil, streams: XREADStreams) async throws -> RESP3Token {
         let response = try await send(xreadCommand(count: count, milliseconds: milliseconds, streams: streams))
         return response
     }
 
     @inlinable
-    public func xreadCommand(count: Int?, milliseconds: Int?, streams: XREADStreams) -> RESPCommand {
+    public func xreadCommand(count: Int? = nil, milliseconds: Int? = nil, streams: XREADStreams) -> RESPCommand {
         RESPCommand("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
     }
 
@@ -7821,13 +7821,13 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(groupBlock: XREADGROUPGroupBlock, count: Int?, milliseconds: Int?, noack: Bool, streams: XREADGROUPStreams) async throws -> RESP3Token {
+    public func xreadgroup(groupBlock: XREADGROUPGroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUPStreams) async throws -> RESP3Token {
         let response = try await send(xreadgroupCommand(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
         return response
     }
 
     @inlinable
-    public func xreadgroupCommand(groupBlock: XREADGROUPGroupBlock, count: Int?, milliseconds: Int?, noack: Bool, streams: XREADGROUPStreams) -> RESPCommand {
+    public func xreadgroupCommand(groupBlock: XREADGROUPGroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUPStreams) -> RESPCommand {
         RESPCommand("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RedisPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
     }
 
@@ -7840,13 +7840,13 @@ extension RedisConnection {
     /// Categories: @read, @stream, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): The command returns the entries with IDs matching the specified range. The returned entries are complete, which means that the ID and all the fields they are composed of are returned. Moreover, the entries are returned with their fields and values in the same order as `XADD` added them.
     @inlinable
-    public func xrevrange(key: RedisKey, end: String, start: String, count: Int?) async throws -> RESP3Token {
+    public func xrevrange(key: RedisKey, end: String, start: String, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(xrevrangeCommand(key: key, end: end, start: start, count: count))
         return response
     }
 
     @inlinable
-    public func xrevrangeCommand(key: RedisKey, end: String, start: String, count: Int?) -> RESPCommand {
+    public func xrevrangeCommand(key: RedisKey, end: String, start: String, count: Int? = nil) -> RESPCommand {
         RESPCommand("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
     }
 
@@ -7859,13 +7859,13 @@ extension RedisConnection {
     /// Categories: @write, @stream, @fast
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xsetid(key: RedisKey, lastId: String, entriesAdded: Int?, maxDeletedId: String?) async throws -> RESP3Token {
+    public func xsetid(key: RedisKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) async throws -> RESP3Token {
         let response = try await send(xsetidCommand(key: key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
         return response
     }
 
     @inlinable
-    public func xsetidCommand(key: RedisKey, lastId: String, entriesAdded: Int?, maxDeletedId: String?) -> RESPCommand {
+    public func xsetidCommand(key: RedisKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) -> RESPCommand {
         RESPCommand("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
     }
 
@@ -7973,13 +7973,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RedisKey, condition: ZADDCondition?, comparison: ZADDComparison?, change: Bool, increment: Bool, data: ZADDData...) async throws -> RESP3Token {
+    public func zadd(key: RedisKey, condition: ZADDCondition? = nil, comparison: ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: ZADDData...) async throws -> RESP3Token {
         let response = try await send(zaddCommand(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
         return response
     }
 
     @inlinable
-    public func zaddCommand(key: RedisKey, condition: ZADDCondition?, comparison: ZADDComparison?, change: Bool, increment: Bool, data: [ZADDData]) -> RESPCommand {
+    public func zaddCommand(key: RedisKey, condition: ZADDCondition? = nil, comparison: ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADDData]) -> RESPCommand {
         RESPCommand("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
     }
 
@@ -8030,13 +8030,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zdiff(numkeys: Int, key: RedisKey..., withscores: Bool) async throws -> RESP3Token {
+    public func zdiff(numkeys: Int, key: RedisKey..., withscores: Bool = false) async throws -> RESP3Token {
         let response = try await send(zdiffCommand(numkeys: numkeys, key: key, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zdiffCommand(numkeys: Int, key: [RedisKey], withscores: Bool) -> RESPCommand {
+    public func zdiffCommand(numkeys: Int, key: [RedisKey], withscores: Bool = false) -> RESPCommand {
         RESPCommand("ZDIFF", numkeys, key, RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -8101,13 +8101,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERAggregate?, withscores: Bool) async throws -> RESP3Token {
+    public func zinter(numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
         let response = try await send(zinterCommand(numkeys: numkeys, key: key, weight: weight, aggregate: aggregate, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zinterCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERAggregate?, withscores: Bool) -> RESPCommand {
+    public func zinterCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
         RESPCommand("ZINTER", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -8120,13 +8120,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting intersection.
     @inlinable
-    public func zintercard(numkeys: Int, key: RedisKey..., limit: Int?) async throws -> RESP3Token {
+    public func zintercard(numkeys: Int, key: RedisKey..., limit: Int? = nil) async throws -> RESP3Token {
         let response = try await send(zintercardCommand(numkeys: numkeys, key: key, limit: limit))
         return response
     }
 
     @inlinable
-    public func zintercardCommand(numkeys: Int, key: [RedisKey], limit: Int?) -> RESPCommand {
+    public func zintercardCommand(numkeys: Int, key: [RedisKey], limit: Int? = nil) -> RESPCommand {
         RESPCommand("ZINTERCARD", numkeys, key, RESPWithToken("LIMIT", limit))
     }
 
@@ -8153,13 +8153,13 @@ extension RedisConnection {
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public func zinterstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERSTOREAggregate?) async throws -> RESP3Token {
+    public func zinterstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZINTERSTOREAggregate? = nil) async throws -> RESP3Token {
         let response = try await send(zinterstoreCommand(destination: destination, numkeys: numkeys, key: key, weight: weight, aggregate: aggregate))
         return response
     }
 
     @inlinable
-    public func zinterstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERSTOREAggregate?) -> RESPCommand {
+    public func zinterstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZINTERSTOREAggregate? = nil) -> RESPCommand {
         RESPCommand("ZINTERSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
@@ -8205,13 +8205,13 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func zmpop(numkeys: Int, key: RedisKey..., where: ZMPOPWhere, count: Int?) async throws -> RESP3Token {
+    public func zmpop(numkeys: Int, key: RedisKey..., where: ZMPOPWhere, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(zmpopCommand(numkeys: numkeys, key: key, where: `where`, count: count))
         return response
     }
 
     @inlinable
-    public func zmpopCommand(numkeys: Int, key: [RedisKey], where: ZMPOPWhere, count: Int?) -> RESPCommand {
+    public func zmpopCommand(numkeys: Int, key: [RedisKey], where: ZMPOPWhere, count: Int? = nil) -> RESPCommand {
         RESPCommand("ZMPOP", numkeys, key, `where`, RESPWithToken("COUNT", count))
     }
 
@@ -8245,13 +8245,13 @@ extension RedisConnection {
     /// Categories: @write, @sortedset, @fast
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of popped elements and scores.
     @inlinable
-    public func zpopmax(key: RedisKey, count: Int?) async throws -> RESP3Token {
+    public func zpopmax(key: RedisKey, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(zpopmaxCommand(key: key, count: count))
         return response
     }
 
     @inlinable
-    public func zpopmaxCommand(key: RedisKey, count: Int?) -> RESPCommand {
+    public func zpopmaxCommand(key: RedisKey, count: Int? = nil) -> RESPCommand {
         RESPCommand("ZPOPMAX", key, count)
     }
 
@@ -8264,13 +8264,13 @@ extension RedisConnection {
     /// Categories: @write, @sortedset, @fast
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of popped elements and scores.
     @inlinable
-    public func zpopmin(key: RedisKey, count: Int?) async throws -> RESP3Token {
+    public func zpopmin(key: RedisKey, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(zpopminCommand(key: key, count: count))
         return response
     }
 
     @inlinable
-    public func zpopminCommand(key: RedisKey, count: Int?) -> RESPCommand {
+    public func zpopminCommand(key: RedisKey, count: Int? = nil) -> RESPCommand {
         RESPCommand("ZPOPMIN", key, count)
     }
 
@@ -8294,13 +8294,13 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or [Null](https:/redis.io/docs/reference/protocol-spec#nulls) when _key_ doesn't exist.
     ///     [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the additional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist. If the _WITHSCORES_ modifier is used, the reply is a list of members and their scores from the sorted set.
     @inlinable
-    public func zrandmember(key: RedisKey, options: ZRANDMEMBEROptions?) async throws -> RESP3Token {
+    public func zrandmember(key: RedisKey, options: ZRANDMEMBEROptions? = nil) async throws -> RESP3Token {
         let response = try await send(zrandmemberCommand(key: key, options: options))
         return response
     }
 
     @inlinable
-    public func zrandmemberCommand(key: RedisKey, options: ZRANDMEMBEROptions?) -> RESPCommand {
+    public func zrandmemberCommand(key: RedisKey, options: ZRANDMEMBEROptions? = nil) -> RESPCommand {
         RESPCommand("ZRANDMEMBER", key, options)
     }
 
@@ -8335,13 +8335,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
-    public func zrange(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby?, rev: Bool, limit: ZRANGELimit?, withscores: Bool) async throws -> RESP3Token {
+    public func zrange(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby? = nil, rev: Bool = false, limit: ZRANGELimit? = nil, withscores: Bool = false) async throws -> RESP3Token {
         let response = try await send(zrangeCommand(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zrangeCommand(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby?, rev: Bool, limit: ZRANGELimit?, withscores: Bool) -> RESPCommand {
+    public func zrangeCommand(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby? = nil, rev: Bool = false, limit: ZRANGELimit? = nil, withscores: Bool = false) -> RESPCommand {
         RESPCommand("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -8364,13 +8364,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of elements in the specified score range.
     @inlinable
-    public func zrangebylex(key: RedisKey, min: String, max: String, limit: ZRANGEBYLEXLimit?) async throws -> RESP3Token {
+    public func zrangebylex(key: RedisKey, min: String, max: String, limit: ZRANGEBYLEXLimit? = nil) async throws -> RESP3Token {
         let response = try await send(zrangebylexCommand(key: key, min: min, max: max, limit: limit))
         return response
     }
 
     @inlinable
-    public func zrangebylexCommand(key: RedisKey, min: String, max: String, limit: ZRANGEBYLEXLimit?) -> RESPCommand {
+    public func zrangebylexCommand(key: RedisKey, min: String, max: String, limit: ZRANGEBYLEXLimit? = nil) -> RESPCommand {
         RESPCommand("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
     }
 
@@ -8393,13 +8393,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
-    public func zrangebyscore(key: RedisKey, min: Double, max: Double, withscores: Bool, limit: ZRANGEBYSCORELimit?) async throws -> RESP3Token {
+    public func zrangebyscore(key: RedisKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORELimit? = nil) async throws -> RESP3Token {
         let response = try await send(zrangebyscoreCommand(key: key, min: min, max: max, withscores: withscores, limit: limit))
         return response
     }
 
     @inlinable
-    public func zrangebyscoreCommand(key: RedisKey, min: Double, max: Double, withscores: Bool, limit: ZRANGEBYSCORELimit?) -> RESPCommand {
+    public func zrangebyscoreCommand(key: RedisKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORELimit? = nil) -> RESPCommand {
         RESPCommand("ZRANGEBYSCORE", key, min, max, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 
@@ -8434,13 +8434,13 @@ extension RedisConnection {
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zrangestore(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby?, rev: Bool, limit: ZRANGESTORELimit?) async throws -> RESP3Token {
+    public func zrangestore(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby? = nil, rev: Bool = false, limit: ZRANGESTORELimit? = nil) async throws -> RESP3Token {
         let response = try await send(zrangestoreCommand(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
         return response
     }
 
     @inlinable
-    public func zrangestoreCommand(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby?, rev: Bool, limit: ZRANGESTORELimit?) -> RESPCommand {
+    public func zrangestoreCommand(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby? = nil, rev: Bool = false, limit: ZRANGESTORELimit? = nil) -> RESPCommand {
         RESPCommand("ZRANGESTORE", dst, src, min, max, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit))
     }
 
@@ -8456,13 +8456,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrank(key: RedisKey, member: String, withscore: Bool) async throws -> RESP3Token {
+    public func zrank(key: RedisKey, member: String, withscore: Bool = false) async throws -> RESP3Token {
         let response = try await send(zrankCommand(key: key, member: member, withscore: withscore))
         return response
     }
 
     @inlinable
-    public func zrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESPCommand {
+    public func zrankCommand(key: RedisKey, member: String, withscore: Bool = false) -> RESPCommand {
         RESPCommand("ZRANK", key, member, RedisPureToken("WITHSCORE", withscore))
     }
 
@@ -8551,13 +8551,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range, optionally with their scores if _WITHSCORE_ was used.
     @inlinable
-    public func zrevrange(key: RedisKey, start: Int, stop: Int, withscores: Bool) async throws -> RESP3Token {
+    public func zrevrange(key: RedisKey, start: Int, stop: Int, withscores: Bool = false) async throws -> RESP3Token {
         let response = try await send(zrevrangeCommand(key: key, start: start, stop: stop, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zrevrangeCommand(key: RedisKey, start: Int, stop: Int, withscores: Bool) -> RESPCommand {
+    public func zrevrangeCommand(key: RedisKey, start: Int, stop: Int, withscores: Bool = false) -> RESPCommand {
         RESPCommand("ZREVRANGE", key, start, stop, RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -8580,13 +8580,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): List of the elements in the specified score range.
     @inlinable
-    public func zrevrangebylex(key: RedisKey, max: String, min: String, limit: ZREVRANGEBYLEXLimit?) async throws -> RESP3Token {
+    public func zrevrangebylex(key: RedisKey, max: String, min: String, limit: ZREVRANGEBYLEXLimit? = nil) async throws -> RESP3Token {
         let response = try await send(zrevrangebylexCommand(key: key, max: max, min: min, limit: limit))
         return response
     }
 
     @inlinable
-    public func zrevrangebylexCommand(key: RedisKey, max: String, min: String, limit: ZREVRANGEBYLEXLimit?) -> RESPCommand {
+    public func zrevrangebylexCommand(key: RedisKey, max: String, min: String, limit: ZREVRANGEBYLEXLimit? = nil) -> RESPCommand {
         RESPCommand("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
     }
 
@@ -8609,13 +8609,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
-    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool, limit: ZREVRANGEBYSCORELimit?) async throws -> RESP3Token {
+    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORELimit? = nil) async throws -> RESP3Token {
         let response = try await send(zrevrangebyscoreCommand(key: key, max: max, min: min, withscores: withscores, limit: limit))
         return response
     }
 
     @inlinable
-    public func zrevrangebyscoreCommand(key: RedisKey, max: Double, min: Double, withscores: Bool, limit: ZREVRANGEBYSCORELimit?) -> RESPCommand {
+    public func zrevrangebyscoreCommand(key: RedisKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORELimit? = nil) -> RESPCommand {
         RESPCommand("ZREVRANGEBYSCORE", key, max, min, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 
@@ -8631,13 +8631,13 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): The rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrevrank(key: RedisKey, member: String, withscore: Bool) async throws -> RESP3Token {
+    public func zrevrank(key: RedisKey, member: String, withscore: Bool = false) async throws -> RESP3Token {
         let response = try await send(zrevrankCommand(key: key, member: member, withscore: withscore))
         return response
     }
 
     @inlinable
-    public func zrevrankCommand(key: RedisKey, member: String, withscore: Bool) -> RESPCommand {
+    public func zrevrankCommand(key: RedisKey, member: String, withscore: Bool = false) -> RESPCommand {
         RESPCommand("ZREVRANK", key, member, RedisPureToken("WITHSCORE", withscore))
     }
 
@@ -8650,13 +8650,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): cursor and scan response in array form.
     @inlinable
-    public func zscan(key: RedisKey, cursor: Int, pattern: String?, count: Int?) async throws -> RESP3Token {
+    public func zscan(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESP3Token {
         let response = try await send(zscanCommand(key: key, cursor: cursor, pattern: pattern, count: count))
         return response
     }
 
     @inlinable
-    public func zscanCommand(key: RedisKey, cursor: Int, pattern: String?, count: Int?) -> RESPCommand {
+    public func zscanCommand(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) -> RESPCommand {
         RESPCommand("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 
@@ -8704,13 +8704,13 @@ extension RedisConnection {
     /// Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public func zunion(numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONAggregate?, withscores: Bool) async throws -> RESP3Token {
+    public func zunion(numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
         let response = try await send(zunionCommand(numkeys: numkeys, key: key, weight: weight, aggregate: aggregate, withscores: withscores))
         return response
     }
 
     @inlinable
-    public func zunionCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONAggregate?, withscores: Bool) -> RESPCommand {
+    public func zunionCommand(numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
         RESPCommand("ZUNION", numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -8737,13 +8737,13 @@ extension RedisConnection {
     /// Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONSTOREAggregate?) async throws -> RESP3Token {
+    public func zunionstore(destination: RedisKey, numkeys: Int, key: RedisKey..., weight: Int..., aggregate: ZUNIONSTOREAggregate? = nil) async throws -> RESP3Token {
         let response = try await send(zunionstoreCommand(destination: destination, numkeys: numkeys, key: key, weight: weight, aggregate: aggregate))
         return response
     }
 
     @inlinable
-    public func zunionstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONSTOREAggregate?) -> RESPCommand {
+    public func zunionstoreCommand(destination: RedisKey, numkeys: Int, key: [RedisKey], weight: [Int], aggregate: ZUNIONSTOREAggregate? = nil) -> RESPCommand {
         RESPCommand("ZUNIONSTORE", destination, numkeys, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
