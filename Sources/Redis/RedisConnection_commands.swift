@@ -174,7 +174,7 @@ extension RedisConnection {
         case reset
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .count(let count): count.writeToRESPBuffer(&buffer)
             case .reset: "RESET".writeToRESPBuffer(&buffer)
@@ -385,7 +385,7 @@ extension RedisConnection {
         case bit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .byte: "BYTE".writeToRESPBuffer(&buffer)
             case .bit: "BIT".writeToRESPBuffer(&buffer)
@@ -398,10 +398,12 @@ extension RedisConnection {
         @usableFromInline let unit: BITCOUNTRangeUnit?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.start.writeToRESPBuffer(&buffer)
-            self.end.writeToRESPBuffer(&buffer)
-            self.unit.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.start.writeToRESPBuffer(&buffer)
+            count += self.end.writeToRESPBuffer(&buffer)
+            count += self.unit.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Counts the number of set bits (population counting) in a string.
@@ -428,9 +430,11 @@ extension RedisConnection {
         @usableFromInline let offset: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.encoding.writeToRESPBuffer(&buffer)
-            self.offset.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.encoding.writeToRESPBuffer(&buffer)
+            count += self.offset.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum BITFIELDOperationWriteOverflowBlock: RESPRenderable {
@@ -439,7 +443,7 @@ extension RedisConnection {
         case fail
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .wrap: "WRAP".writeToRESPBuffer(&buffer)
             case .sat: "SAT".writeToRESPBuffer(&buffer)
@@ -453,10 +457,12 @@ extension RedisConnection {
         @usableFromInline let value: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.encoding.writeToRESPBuffer(&buffer)
-            self.offset.writeToRESPBuffer(&buffer)
-            self.value.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.encoding.writeToRESPBuffer(&buffer)
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.value.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public struct BITFIELDOperationWriteWriteOperationIncrbyBlock: RESPRenderable {
@@ -465,10 +471,12 @@ extension RedisConnection {
         @usableFromInline let increment: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.encoding.writeToRESPBuffer(&buffer)
-            self.offset.writeToRESPBuffer(&buffer)
-            self.increment.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.encoding.writeToRESPBuffer(&buffer)
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.increment.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum BITFIELDOperationWriteWriteOperation: RESPRenderable {
@@ -476,7 +484,7 @@ extension RedisConnection {
         case incrbyBlock(BITFIELDOperationWriteWriteOperationIncrbyBlock)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .setBlock(let setBlock): RESPWithToken("SET", setBlock).writeToRESPBuffer(&buffer)
             case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).writeToRESPBuffer(&buffer)
@@ -488,9 +496,11 @@ extension RedisConnection {
         @usableFromInline let writeOperation: BITFIELDOperationWriteWriteOperation
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.overflowBlock.writeToRESPBuffer(&buffer)
-            self.writeOperation.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.overflowBlock.writeToRESPBuffer(&buffer)
+            count += self.writeOperation.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum BITFIELDOperation: RESPRenderable {
@@ -498,7 +508,7 @@ extension RedisConnection {
         case write(BITFIELDOperationWrite)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .getBlock(let getBlock): RESPWithToken("GET", getBlock).writeToRESPBuffer(&buffer)
             case .write(let write): write.writeToRESPBuffer(&buffer)
@@ -531,9 +541,11 @@ extension RedisConnection {
         @usableFromInline let offset: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.encoding.writeToRESPBuffer(&buffer)
-            self.offset.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.encoding.writeToRESPBuffer(&buffer)
+            count += self.offset.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Performs arbitrary read-only bitfield integer operations on strings.
@@ -562,7 +574,7 @@ extension RedisConnection {
         case not
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .and: "AND".writeToRESPBuffer(&buffer)
             case .or: "OR".writeToRESPBuffer(&buffer)
@@ -595,7 +607,7 @@ extension RedisConnection {
         case bit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .byte: "BYTE".writeToRESPBuffer(&buffer)
             case .bit: "BIT".writeToRESPBuffer(&buffer)
@@ -607,9 +619,11 @@ extension RedisConnection {
         @usableFromInline let unit: BITPOSRangeEndUnitBlockUnit?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.end.writeToRESPBuffer(&buffer)
-            self.unit.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.end.writeToRESPBuffer(&buffer)
+            count += self.unit.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public struct BITPOSRange: RESPRenderable {
@@ -617,9 +631,11 @@ extension RedisConnection {
         @usableFromInline let endUnitBlock: BITPOSRangeEndUnitBlock?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.start.writeToRESPBuffer(&buffer)
-            self.endUnitBlock.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.start.writeToRESPBuffer(&buffer)
+            count += self.endUnitBlock.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Finds the first set (1) or clear (0) bit in a string.
@@ -657,7 +673,7 @@ extension RedisConnection {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .left: "LEFT".writeToRESPBuffer(&buffer)
             case .right: "RIGHT".writeToRESPBuffer(&buffer)
@@ -669,7 +685,7 @@ extension RedisConnection {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .left: "LEFT".writeToRESPBuffer(&buffer)
             case .right: "RIGHT".writeToRESPBuffer(&buffer)
@@ -702,7 +718,7 @@ extension RedisConnection {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .left: "LEFT".writeToRESPBuffer(&buffer)
             case .right: "RIGHT".writeToRESPBuffer(&buffer)
@@ -798,7 +814,7 @@ extension RedisConnection {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .min: "MIN".writeToRESPBuffer(&buffer)
             case .max: "MAX".writeToRESPBuffer(&buffer)
@@ -873,7 +889,7 @@ extension RedisConnection {
         case no
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .yes: "YES".writeToRESPBuffer(&buffer)
             case .no: "NO".writeToRESPBuffer(&buffer)
@@ -1007,7 +1023,7 @@ extension RedisConnection {
         case pubsub
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .normal: "NORMAL".writeToRESPBuffer(&buffer)
             case .master: "MASTER".writeToRESPBuffer(&buffer)
@@ -1022,7 +1038,7 @@ extension RedisConnection {
         case no
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .yes: "YES".writeToRESPBuffer(&buffer)
             case .no: "NO".writeToRESPBuffer(&buffer)
@@ -1038,7 +1054,7 @@ extension RedisConnection {
         case skipme(CLIENTKILLFilterNewFormatSkipme?)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .clientId(let clientId): RESPWithToken("ID", clientId).writeToRESPBuffer(&buffer)
             case .clientType(let clientType): RESPWithToken("TYPE", clientType).writeToRESPBuffer(&buffer)
@@ -1054,7 +1070,7 @@ extension RedisConnection {
         case newFormat([CLIENTKILLFilterNewFormat])
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .oldFormat(let oldFormat): oldFormat.writeToRESPBuffer(&buffer)
             case .newFormat(let newFormat): newFormat.writeToRESPBuffer(&buffer)
@@ -1089,7 +1105,7 @@ extension RedisConnection {
         case pubsub
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .normal: "NORMAL".writeToRESPBuffer(&buffer)
             case .master: "MASTER".writeToRESPBuffer(&buffer)
@@ -1122,7 +1138,7 @@ extension RedisConnection {
         case off
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .on: "ON".writeToRESPBuffer(&buffer)
             case .off: "OFF".writeToRESPBuffer(&buffer)
@@ -1153,7 +1169,7 @@ extension RedisConnection {
         case off
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .on: "ON".writeToRESPBuffer(&buffer)
             case .off: "OFF".writeToRESPBuffer(&buffer)
@@ -1184,7 +1200,7 @@ extension RedisConnection {
         case all
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .write: "WRITE".writeToRESPBuffer(&buffer)
             case .all: "ALL".writeToRESPBuffer(&buffer)
@@ -1216,7 +1232,7 @@ extension RedisConnection {
         case skip
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .on: "ON".writeToRESPBuffer(&buffer)
             case .off: "OFF".writeToRESPBuffer(&buffer)
@@ -1248,7 +1264,7 @@ extension RedisConnection {
         case libver(String)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .libname(let libname): RESPWithToken("LIB-NAME", libname).writeToRESPBuffer(&buffer)
             case .libver(let libver): RESPWithToken("LIB-VER", libver).writeToRESPBuffer(&buffer)
@@ -1298,7 +1314,7 @@ extension RedisConnection {
         case off
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .on: "ON".writeToRESPBuffer(&buffer)
             case .off: "OFF".writeToRESPBuffer(&buffer)
@@ -1348,7 +1364,7 @@ extension RedisConnection {
         case error
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .timeout: "TIMEOUT".writeToRESPBuffer(&buffer)
             case .error: "ERROR".writeToRESPBuffer(&buffer)
@@ -1419,9 +1435,11 @@ extension RedisConnection {
         @usableFromInline let endSlot: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.startSlot.writeToRESPBuffer(&buffer)
-            self.endSlot.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.startSlot.writeToRESPBuffer(&buffer)
+            count += self.endSlot.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Assigns new hash slot ranges to a node.
@@ -1526,9 +1544,11 @@ extension RedisConnection {
         @usableFromInline let endSlot: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.startSlot.writeToRESPBuffer(&buffer)
-            self.endSlot.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.startSlot.writeToRESPBuffer(&buffer)
+            count += self.endSlot.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Sets hash slot ranges as unbound for a node.
@@ -1555,7 +1575,7 @@ extension RedisConnection {
         case takeover
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .force: "FORCE".writeToRESPBuffer(&buffer)
             case .takeover: "TAKEOVER".writeToRESPBuffer(&buffer)
@@ -1833,7 +1853,7 @@ extension RedisConnection {
         case soft
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .hard: "HARD".writeToRESPBuffer(&buffer)
             case .soft: "SOFT".writeToRESPBuffer(&buffer)
@@ -1904,7 +1924,7 @@ extension RedisConnection {
         case stable
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .importing(let importing): RESPWithToken("IMPORTING", importing).writeToRESPBuffer(&buffer)
             case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).writeToRESPBuffer(&buffer)
@@ -2128,7 +2148,7 @@ extension RedisConnection {
         case pattern(String)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).writeToRESPBuffer(&buffer)
             case .category(let category): RESPWithToken("ACLCAT", category).writeToRESPBuffer(&buffer)
@@ -2236,9 +2256,11 @@ extension RedisConnection {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.parameter.writeToRESPBuffer(&buffer)
-            self.value.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.parameter.writeToRESPBuffer(&buffer)
+            count += self.value.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Sets configuration parameters in-flight.
@@ -2539,7 +2561,7 @@ extension RedisConnection {
         case lt
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .nx: "NX".writeToRESPBuffer(&buffer)
             case .xx: "XX".writeToRESPBuffer(&buffer)
@@ -2576,7 +2598,7 @@ extension RedisConnection {
         case lt
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .nx: "NX".writeToRESPBuffer(&buffer)
             case .xx: "XX".writeToRESPBuffer(&buffer)
@@ -2634,10 +2656,12 @@ extension RedisConnection {
         @usableFromInline let force: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.host.writeToRESPBuffer(&buffer)
-            self.port.writeToRESPBuffer(&buffer)
-            if self.force { "FORCE".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.host.writeToRESPBuffer(&buffer)
+            count += self.port.writeToRESPBuffer(&buffer)
+            if self.force { count += "FORCE".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     /// Starts a coordinated failover from a server to one of its replicas.
@@ -2702,7 +2726,7 @@ extension RedisConnection {
         case sync
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .async: "ASYNC".writeToRESPBuffer(&buffer)
             case .sync: "SYNC".writeToRESPBuffer(&buffer)
@@ -2733,7 +2757,7 @@ extension RedisConnection {
         case sync
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .async: "ASYNC".writeToRESPBuffer(&buffer)
             case .sync: "SYNC".writeToRESPBuffer(&buffer)
@@ -2802,7 +2826,7 @@ extension RedisConnection {
         case sync
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .async: "ASYNC".writeToRESPBuffer(&buffer)
             case .sync: "SYNC".writeToRESPBuffer(&buffer)
@@ -2910,7 +2934,7 @@ extension RedisConnection {
         case replace
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .flush: "FLUSH".writeToRESPBuffer(&buffer)
             case .append: "APPEND".writeToRESPBuffer(&buffer)
@@ -2961,7 +2985,7 @@ extension RedisConnection {
         case xx
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .nx: "NX".writeToRESPBuffer(&buffer)
             case .xx: "XX".writeToRESPBuffer(&buffer)
@@ -2974,10 +2998,12 @@ extension RedisConnection {
         @usableFromInline let member: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.longitude.writeToRESPBuffer(&buffer)
-            self.latitude.writeToRESPBuffer(&buffer)
-            self.member.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.longitude.writeToRESPBuffer(&buffer)
+            count += self.latitude.writeToRESPBuffer(&buffer)
+            count += self.member.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
@@ -3006,7 +3032,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3081,7 +3107,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3095,9 +3121,11 @@ extension RedisConnection {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.count.writeToRESPBuffer(&buffer)
-            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.count.writeToRESPBuffer(&buffer)
+            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     public enum GEORADIUSOrder: RESPRenderable {
@@ -3105,7 +3133,7 @@ extension RedisConnection {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .asc: "ASC".writeToRESPBuffer(&buffer)
             case .desc: "DESC".writeToRESPBuffer(&buffer)
@@ -3117,7 +3145,7 @@ extension RedisConnection {
         case storedistkey(RedisKey)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
             case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
@@ -3159,7 +3187,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3173,9 +3201,11 @@ extension RedisConnection {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.count.writeToRESPBuffer(&buffer)
-            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.count.writeToRESPBuffer(&buffer)
+            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     public enum GEORADIUSBYMEMBEROrder: RESPRenderable {
@@ -3183,7 +3213,7 @@ extension RedisConnection {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .asc: "ASC".writeToRESPBuffer(&buffer)
             case .desc: "DESC".writeToRESPBuffer(&buffer)
@@ -3195,7 +3225,7 @@ extension RedisConnection {
         case storedistkey(RedisKey)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
             case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
@@ -3233,7 +3263,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3247,9 +3277,11 @@ extension RedisConnection {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.count.writeToRESPBuffer(&buffer)
-            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.count.writeToRESPBuffer(&buffer)
+            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     public enum GEORADIUSBYMEMBERROOrder: RESPRenderable {
@@ -3257,7 +3289,7 @@ extension RedisConnection {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .asc: "ASC".writeToRESPBuffer(&buffer)
             case .desc: "DESC".writeToRESPBuffer(&buffer)
@@ -3295,7 +3327,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3309,9 +3341,11 @@ extension RedisConnection {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.count.writeToRESPBuffer(&buffer)
-            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.count.writeToRESPBuffer(&buffer)
+            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     public enum GEORADIUSROOrder: RESPRenderable {
@@ -3319,7 +3353,7 @@ extension RedisConnection {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .asc: "ASC".writeToRESPBuffer(&buffer)
             case .desc: "DESC".writeToRESPBuffer(&buffer)
@@ -3355,9 +3389,11 @@ extension RedisConnection {
         @usableFromInline let latitude: Double
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.longitude.writeToRESPBuffer(&buffer)
-            self.latitude.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.longitude.writeToRESPBuffer(&buffer)
+            count += self.latitude.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum GEOSEARCHFrom: RESPRenderable {
@@ -3365,7 +3401,7 @@ extension RedisConnection {
         case fromlonlat(GEOSEARCHFromFromlonlat)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
             case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
@@ -3379,7 +3415,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3393,9 +3429,11 @@ extension RedisConnection {
         @usableFromInline let unit: GEOSEARCHByCircleUnit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.radius.writeToRESPBuffer(&buffer)
-            self.unit.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.radius.writeToRESPBuffer(&buffer)
+            count += self.unit.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum GEOSEARCHByBoxUnit: RESPRenderable {
@@ -3405,7 +3443,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3420,10 +3458,12 @@ extension RedisConnection {
         @usableFromInline let unit: GEOSEARCHByBoxUnit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.width.writeToRESPBuffer(&buffer)
-            self.height.writeToRESPBuffer(&buffer)
-            self.unit.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.width.writeToRESPBuffer(&buffer)
+            count += self.height.writeToRESPBuffer(&buffer)
+            count += self.unit.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum GEOSEARCHBy: RESPRenderable {
@@ -3431,7 +3471,7 @@ extension RedisConnection {
         case box(GEOSEARCHByBox)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .circle(let circle): circle.writeToRESPBuffer(&buffer)
             case .box(let box): box.writeToRESPBuffer(&buffer)
@@ -3443,7 +3483,7 @@ extension RedisConnection {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .asc: "ASC".writeToRESPBuffer(&buffer)
             case .desc: "DESC".writeToRESPBuffer(&buffer)
@@ -3455,9 +3495,11 @@ extension RedisConnection {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.count.writeToRESPBuffer(&buffer)
-            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.count.writeToRESPBuffer(&buffer)
+            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     /// Queries a geospatial index for members inside an area of a box or a circle.
@@ -3489,9 +3531,11 @@ extension RedisConnection {
         @usableFromInline let latitude: Double
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.longitude.writeToRESPBuffer(&buffer)
-            self.latitude.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.longitude.writeToRESPBuffer(&buffer)
+            count += self.latitude.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum GEOSEARCHSTOREFrom: RESPRenderable {
@@ -3499,7 +3543,7 @@ extension RedisConnection {
         case fromlonlat(GEOSEARCHSTOREFromFromlonlat)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
             case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
@@ -3513,7 +3557,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3527,9 +3571,11 @@ extension RedisConnection {
         @usableFromInline let unit: GEOSEARCHSTOREByCircleUnit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.radius.writeToRESPBuffer(&buffer)
-            self.unit.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.radius.writeToRESPBuffer(&buffer)
+            count += self.unit.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum GEOSEARCHSTOREByBoxUnit: RESPRenderable {
@@ -3539,7 +3585,7 @@ extension RedisConnection {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .m: "M".writeToRESPBuffer(&buffer)
             case .km: "KM".writeToRESPBuffer(&buffer)
@@ -3554,10 +3600,12 @@ extension RedisConnection {
         @usableFromInline let unit: GEOSEARCHSTOREByBoxUnit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.width.writeToRESPBuffer(&buffer)
-            self.height.writeToRESPBuffer(&buffer)
-            self.unit.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.width.writeToRESPBuffer(&buffer)
+            count += self.height.writeToRESPBuffer(&buffer)
+            count += self.unit.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum GEOSEARCHSTOREBy: RESPRenderable {
@@ -3565,7 +3613,7 @@ extension RedisConnection {
         case box(GEOSEARCHSTOREByBox)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .circle(let circle): circle.writeToRESPBuffer(&buffer)
             case .box(let box): box.writeToRESPBuffer(&buffer)
@@ -3577,7 +3625,7 @@ extension RedisConnection {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .asc: "ASC".writeToRESPBuffer(&buffer)
             case .desc: "DESC".writeToRESPBuffer(&buffer)
@@ -3589,9 +3637,11 @@ extension RedisConnection {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.count.writeToRESPBuffer(&buffer)
-            if self.any { "ANY".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.count.writeToRESPBuffer(&buffer)
+            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
@@ -3684,7 +3734,7 @@ extension RedisConnection {
         case persist
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
@@ -3778,9 +3828,11 @@ extension RedisConnection {
         @usableFromInline let password: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.username.writeToRESPBuffer(&buffer)
-            self.password.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.username.writeToRESPBuffer(&buffer)
+            count += self.password.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public struct HELLOArguments: RESPRenderable {
@@ -3789,10 +3841,12 @@ extension RedisConnection {
         @usableFromInline let clientname: String?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.protover.writeToRESPBuffer(&buffer)
-            self.auth.writeToRESPBuffer(&buffer)
-            self.clientname.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.protover.writeToRESPBuffer(&buffer)
+            count += self.auth.writeToRESPBuffer(&buffer)
+            count += self.clientname.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Handshakes with the Redis server.
@@ -3976,9 +4030,11 @@ extension RedisConnection {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.field.writeToRESPBuffer(&buffer)
-            self.value.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.field.writeToRESPBuffer(&buffer)
+            count += self.value.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Sets the values of multiple fields.
@@ -4005,9 +4061,11 @@ extension RedisConnection {
         @usableFromInline let withvalues: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.count.writeToRESPBuffer(&buffer)
-            if self.withvalues { "WITHVALUES".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.count.writeToRESPBuffer(&buffer)
+            if self.withvalues { count += "WITHVALUES".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     /// Returns one or more random fields from a hash.
@@ -4059,9 +4117,11 @@ extension RedisConnection {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.field.writeToRESPBuffer(&buffer)
-            self.value.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.field.writeToRESPBuffer(&buffer)
+            count += self.value.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Creates or modifies the value of a field in a hash.
@@ -4439,7 +4499,7 @@ extension RedisConnection {
         case after
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .before: "BEFORE".writeToRESPBuffer(&buffer)
             case .after: "AFTER".writeToRESPBuffer(&buffer)
@@ -4492,7 +4552,7 @@ extension RedisConnection {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .left: "LEFT".writeToRESPBuffer(&buffer)
             case .right: "RIGHT".writeToRESPBuffer(&buffer)
@@ -4504,7 +4564,7 @@ extension RedisConnection {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .left: "LEFT".writeToRESPBuffer(&buffer)
             case .right: "RIGHT".writeToRESPBuffer(&buffer)
@@ -4535,7 +4595,7 @@ extension RedisConnection {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .left: "LEFT".writeToRESPBuffer(&buffer)
             case .right: "RIGHT".writeToRESPBuffer(&buffer)
@@ -4879,7 +4939,7 @@ extension RedisConnection {
         case emptyString
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .key(let key): key.writeToRESPBuffer(&buffer)
             case .emptyString: "".writeToRESPBuffer(&buffer)
@@ -4891,9 +4951,11 @@ extension RedisConnection {
         @usableFromInline let password: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.username.writeToRESPBuffer(&buffer)
-            self.password.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.username.writeToRESPBuffer(&buffer)
+            count += self.password.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum MIGRATEAuthentication: RESPRenderable {
@@ -4901,7 +4963,7 @@ extension RedisConnection {
         case auth2(MIGRATEAuthenticationAuth2)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .auth(let auth): RESPWithToken("AUTH", auth).writeToRESPBuffer(&buffer)
             case .auth2(let auth2): RESPWithToken("AUTH2", auth2).writeToRESPBuffer(&buffer)
@@ -4993,9 +5055,11 @@ extension RedisConnection {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.name.writeToRESPBuffer(&buffer)
-            self.value.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.name.writeToRESPBuffer(&buffer)
+            count += self.value.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Loads a module using extended parameters.
@@ -5080,9 +5144,11 @@ extension RedisConnection {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.key.writeToRESPBuffer(&buffer)
-            self.value.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.key.writeToRESPBuffer(&buffer)
+            count += self.value.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Atomically creates or modifies the string values of one or more keys.
@@ -5109,9 +5175,11 @@ extension RedisConnection {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.key.writeToRESPBuffer(&buffer)
-            self.value.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.key.writeToRESPBuffer(&buffer)
+            count += self.value.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
@@ -5285,7 +5353,7 @@ extension RedisConnection {
         case lt
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .nx: "NX".writeToRESPBuffer(&buffer)
             case .xx: "XX".writeToRESPBuffer(&buffer)
@@ -5322,7 +5390,7 @@ extension RedisConnection {
         case lt
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .nx: "NX".writeToRESPBuffer(&buffer)
             case .xx: "XX".writeToRESPBuffer(&buffer)
@@ -5845,9 +5913,11 @@ extension RedisConnection {
         @usableFromInline let port: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.host.writeToRESPBuffer(&buffer)
-            self.port.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.host.writeToRESPBuffer(&buffer)
+            count += self.port.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public struct REPLICAOFArgsNoOne: RESPRenderable {
@@ -5855,9 +5925,11 @@ extension RedisConnection {
         @usableFromInline let one: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            if self.no { "NO".writeToRESPBuffer(&buffer) }
-            if self.one { "ONE".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            if self.no { count += "NO".writeToRESPBuffer(&buffer) }
+            if self.one { count += "ONE".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     public enum REPLICAOFArgs: RESPRenderable {
@@ -5865,7 +5937,7 @@ extension RedisConnection {
         case noOne(REPLICAOFArgsNoOne)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .hostPort(let hostPort): hostPort.writeToRESPBuffer(&buffer)
             case .noOne(let noOne): noOne.writeToRESPBuffer(&buffer)
@@ -6132,7 +6204,7 @@ extension RedisConnection {
         case no
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .yes: "YES".writeToRESPBuffer(&buffer)
             case .sync: "SYNC".writeToRESPBuffer(&buffer)
@@ -6183,7 +6255,7 @@ extension RedisConnection {
         case sync
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .async: "ASYNC".writeToRESPBuffer(&buffer)
             case .sync: "SYNC".writeToRESPBuffer(&buffer)
@@ -6328,7 +6400,7 @@ extension RedisConnection {
         case xx
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .nx: "NX".writeToRESPBuffer(&buffer)
             case .xx: "XX".writeToRESPBuffer(&buffer)
@@ -6343,7 +6415,7 @@ extension RedisConnection {
         case keepttl
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
@@ -6459,7 +6531,7 @@ extension RedisConnection {
         case save
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .nosave: "NOSAVE".writeToRESPBuffer(&buffer)
             case .save: "SAVE".writeToRESPBuffer(&buffer)
@@ -6568,9 +6640,11 @@ extension RedisConnection {
         @usableFromInline let port: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.host.writeToRESPBuffer(&buffer)
-            self.port.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.host.writeToRESPBuffer(&buffer)
+            count += self.port.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public struct SLAVEOFArgsNoOne: RESPRenderable {
@@ -6578,9 +6652,11 @@ extension RedisConnection {
         @usableFromInline let one: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            if self.no { "NO".writeToRESPBuffer(&buffer) }
-            if self.one { "ONE".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            if self.no { count += "NO".writeToRESPBuffer(&buffer) }
+            if self.one { count += "ONE".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     public enum SLAVEOFArgs: RESPRenderable {
@@ -6588,7 +6664,7 @@ extension RedisConnection {
         case noOne(SLAVEOFArgsNoOne)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .hostPort(let hostPort): hostPort.writeToRESPBuffer(&buffer)
             case .noOne(let noOne): noOne.writeToRESPBuffer(&buffer)
@@ -6754,9 +6830,11 @@ extension RedisConnection {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.offset.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum SORTOrder: RESPRenderable {
@@ -6764,7 +6842,7 @@ extension RedisConnection {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .asc: "ASC".writeToRESPBuffer(&buffer)
             case .desc: "DESC".writeToRESPBuffer(&buffer)
@@ -6796,9 +6874,11 @@ extension RedisConnection {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.offset.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum SORTROOrder: RESPRenderable {
@@ -6806,7 +6886,7 @@ extension RedisConnection {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .asc: "ASC".writeToRESPBuffer(&buffer)
             case .desc: "DESC".writeToRESPBuffer(&buffer)
@@ -7323,7 +7403,7 @@ extension RedisConnection {
         case minid
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .maxlen: "MAXLEN".writeToRESPBuffer(&buffer)
             case .minid: "MINID".writeToRESPBuffer(&buffer)
@@ -7335,7 +7415,7 @@ extension RedisConnection {
         case approximately
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .equal: "=".writeToRESPBuffer(&buffer)
             case .approximately: "~".writeToRESPBuffer(&buffer)
@@ -7349,11 +7429,13 @@ extension RedisConnection {
         @usableFromInline let count: Int?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.strategy.writeToRESPBuffer(&buffer)
-            self.operator.writeToRESPBuffer(&buffer)
-            self.threshold.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.strategy.writeToRESPBuffer(&buffer)
+            count += self.operator.writeToRESPBuffer(&buffer)
+            count += self.threshold.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public enum XADDIdSelector: RESPRenderable {
@@ -7361,7 +7443,7 @@ extension RedisConnection {
         case id(String)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .autoId: "*".writeToRESPBuffer(&buffer)
             case .id(let id): id.writeToRESPBuffer(&buffer)
@@ -7373,9 +7455,11 @@ extension RedisConnection {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.field.writeToRESPBuffer(&buffer)
-            self.value.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.field.writeToRESPBuffer(&buffer)
+            count += self.value.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Appends a new message to a stream. Creates the key if it doesn't exist.
@@ -7466,7 +7550,7 @@ extension RedisConnection {
         case newId
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .id(let id): id.writeToRESPBuffer(&buffer)
             case .newId: "$".writeToRESPBuffer(&buffer)
@@ -7573,7 +7657,7 @@ extension RedisConnection {
         case newId
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .id(let id): id.writeToRESPBuffer(&buffer)
             case .newId: "$".writeToRESPBuffer(&buffer)
@@ -7661,9 +7745,11 @@ extension RedisConnection {
         @usableFromInline let count: Int?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            if self.full { "FULL".writeToRESPBuffer(&buffer) }
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            if self.full { count += "FULL".writeToRESPBuffer(&buffer) }
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns information about a stream.
@@ -7714,12 +7800,14 @@ extension RedisConnection {
         @usableFromInline let consumer: String?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.minIdleTime.writeToRESPBuffer(&buffer)
-            self.start.writeToRESPBuffer(&buffer)
-            self.end.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
-            self.consumer.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.minIdleTime.writeToRESPBuffer(&buffer)
+            count += self.start.writeToRESPBuffer(&buffer)
+            count += self.end.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            count += self.consumer.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns the information and entries from a stream consumer group's pending entries list.
@@ -7765,9 +7853,11 @@ extension RedisConnection {
         @usableFromInline let id: [String]
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.key.writeToRESPBuffer(&buffer)
-            self.id.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.key.writeToRESPBuffer(&buffer)
+            count += self.id.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
@@ -7795,9 +7885,11 @@ extension RedisConnection {
         @usableFromInline let consumer: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.group.writeToRESPBuffer(&buffer)
-            self.consumer.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.group.writeToRESPBuffer(&buffer)
+            count += self.consumer.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     public struct XREADGROUPStreams: RESPRenderable {
@@ -7805,9 +7897,11 @@ extension RedisConnection {
         @usableFromInline let id: [String]
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.key.writeToRESPBuffer(&buffer)
-            self.id.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.key.writeToRESPBuffer(&buffer)
+            count += self.id.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
@@ -7874,7 +7968,7 @@ extension RedisConnection {
         case minid
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .maxlen: "MAXLEN".writeToRESPBuffer(&buffer)
             case .minid: "MINID".writeToRESPBuffer(&buffer)
@@ -7886,7 +7980,7 @@ extension RedisConnection {
         case approximately
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .equal: "=".writeToRESPBuffer(&buffer)
             case .approximately: "~".writeToRESPBuffer(&buffer)
@@ -7900,11 +7994,13 @@ extension RedisConnection {
         @usableFromInline let count: Int?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.strategy.writeToRESPBuffer(&buffer)
-            self.operator.writeToRESPBuffer(&buffer)
-            self.threshold.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.strategy.writeToRESPBuffer(&buffer)
+            count += self.operator.writeToRESPBuffer(&buffer)
+            count += self.threshold.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Deletes messages from the beginning of a stream.
@@ -7931,7 +8027,7 @@ extension RedisConnection {
         case xx
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .nx: "NX".writeToRESPBuffer(&buffer)
             case .xx: "XX".writeToRESPBuffer(&buffer)
@@ -7943,7 +8039,7 @@ extension RedisConnection {
         case lt
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .gt: "GT".writeToRESPBuffer(&buffer)
             case .lt: "LT".writeToRESPBuffer(&buffer)
@@ -7955,9 +8051,11 @@ extension RedisConnection {
         @usableFromInline let member: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.score.writeToRESPBuffer(&buffer)
-            self.member.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.score.writeToRESPBuffer(&buffer)
+            count += self.member.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
@@ -8084,7 +8182,7 @@ extension RedisConnection {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .sum: "SUM".writeToRESPBuffer(&buffer)
             case .min: "MIN".writeToRESPBuffer(&buffer)
@@ -8136,7 +8234,7 @@ extension RedisConnection {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .sum: "SUM".writeToRESPBuffer(&buffer)
             case .min: "MIN".writeToRESPBuffer(&buffer)
@@ -8187,7 +8285,7 @@ extension RedisConnection {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .min: "MIN".writeToRESPBuffer(&buffer)
             case .max: "MAX".writeToRESPBuffer(&buffer)
@@ -8279,9 +8377,11 @@ extension RedisConnection {
         @usableFromInline let withscores: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.count.writeToRESPBuffer(&buffer)
-            if self.withscores { "WITHSCORES".writeToRESPBuffer(&buffer) }
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.count.writeToRESPBuffer(&buffer)
+            if self.withscores { count += "WITHSCORES".writeToRESPBuffer(&buffer) }
+            return count
         }
     }
     /// Returns one or more random members from a sorted set.
@@ -8309,7 +8409,7 @@ extension RedisConnection {
         case bylex
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .byscore: "BYSCORE".writeToRESPBuffer(&buffer)
             case .bylex: "BYLEX".writeToRESPBuffer(&buffer)
@@ -8321,9 +8421,11 @@ extension RedisConnection {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.offset.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns members in a sorted set within a range of indexes.
@@ -8350,9 +8452,11 @@ extension RedisConnection {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.offset.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns members in a sorted set within a lexicographical range.
@@ -8379,9 +8483,11 @@ extension RedisConnection {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.offset.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns members in a sorted set within a range of scores.
@@ -8408,7 +8514,7 @@ extension RedisConnection {
         case bylex
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .byscore: "BYSCORE".writeToRESPBuffer(&buffer)
             case .bylex: "BYLEX".writeToRESPBuffer(&buffer)
@@ -8420,9 +8526,11 @@ extension RedisConnection {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.offset.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Stores a range of members from sorted set in a key.
@@ -8566,9 +8674,11 @@ extension RedisConnection {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.offset.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns members in a sorted set within a lexicographical range in reverse order.
@@ -8595,9 +8705,11 @@ extension RedisConnection {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-            self.offset.writeToRESPBuffer(&buffer)
-            self.count.writeToRESPBuffer(&buffer)
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+            var count = 0
+            count += self.offset.writeToRESPBuffer(&buffer)
+            count += self.count.writeToRESPBuffer(&buffer)
+            return count
         }
     }
     /// Returns members in a sorted set within a range of scores in reverse order.
@@ -8687,7 +8799,7 @@ extension RedisConnection {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .sum: "SUM".writeToRESPBuffer(&buffer)
             case .min: "MIN".writeToRESPBuffer(&buffer)
@@ -8720,7 +8832,7 @@ extension RedisConnection {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
             case .sum: "SUM".writeToRESPBuffer(&buffer)
             case .min: "MIN".writeToRESPBuffer(&buffer)

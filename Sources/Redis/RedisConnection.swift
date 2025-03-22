@@ -1,16 +1,24 @@
+import Logging
 import NIOCore
 import RESP3
 
 public final class RedisConnection {
     var inboundIterator: NIOAsyncChannelInboundStream<RESP3Token>.AsyncIterator
     let outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>
+    let logger: Logger
 
-    public init(inbound: NIOAsyncChannelInboundStream<RESP3Token>, outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>) {
+    public init(inbound: NIOAsyncChannelInboundStream<RESP3Token>, outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>, logger: Logger) {
         self.inboundIterator = inbound.makeAsyncIterator()
         self.outbound = outbound
+        self.logger = logger
     }
 
     public func send(_ command: RESPCommand) async throws -> RESP3Token {
+        if logger.logLevel <= .debug {
+            var buffer = command.buffer
+            let sending = try [String](from: RESP3Token(consuming: &buffer)!).joined(separator: " ")
+            self.logger.debug("send: \(sending)")
+        }
         try await self.outbound.write(command.buffer)
         guard let response = try await self.inboundIterator.next() else { throw RedisClientError(.connectionClosed) }
         if let value = response.errorString {

@@ -43,7 +43,7 @@ struct RedisClientChannel: ClientConnectionChannel {
     func handle(value asyncChannel: Value, logger: Logger) async throws {
         try await withTaskCancellationHandler {
             try await asyncChannel.executeThenClose { inbound, outbound in
-                let connection = RedisConnection(inbound: inbound, outbound: outbound)
+                let connection = RedisConnection(inbound: inbound, outbound: outbound, logger: logger)
                 // Switch to RESP3 protocol
                 _ = try await connection.send("HELLO", 3)
                 try await handler(connection, logger)
