@@ -22,16 +22,17 @@ extension String {
         self.append("    /// Categories: \(command.aclCategories.joined(separator: ", "))\n")
     }
 
-    mutating func appendOneOfEnum(argument: RedisCommand.Argument, functionName: String) {
+    mutating func appendOneOfEnum(argument: RedisCommand.Argument, names: [String]) {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
-        let enumName = enumName(name: argument.name, functionName: functionName)
+        let names = names + [argument.name.swiftTypename]
+        let enumName = enumName(names: names)
         for arg in arguments {
             if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, functionName: enumName)
+                self.appendOneOfEnum(argument: arg, names: names)
             } else if case .block = arg.type {
-                self.appendBlock(argument: arg, functionName: enumName)
+                self.appendBlock(argument: arg, names: names)
             }
         }
         self.append("    public enum \(enumName): RESPRepresentable {\n")
@@ -39,7 +40,7 @@ extension String {
             if case .pureToken = arg.type {
                 self.append("        case \(arg.name.swiftArgument)\n")
             } else {
-                self.append("        case \(arg.name.swiftArgument)(\(parameterType(arg, functionName: enumName, isArray: true)))\n")
+                self.append("        case \(arg.name.swiftArgument)(\(parameterType(arg, names: names, isArray: true)))\n")
             }
         }
         self.append("\n")
@@ -62,21 +63,22 @@ extension String {
         self.append("    }\n")
     }
 
-    mutating func appendBlock(argument: RedisCommand.Argument, functionName: String) {
+    mutating func appendBlock(argument: RedisCommand.Argument, names: [String]) {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
-        let enumName = enumName(name: argument.name, functionName: functionName)
+        let names = names + [argument.name.swiftTypename]
+        let enumName = enumName(names: names)
         for arg in arguments {
             if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, functionName: enumName)
+                self.appendOneOfEnum(argument: arg, names: names)
             } else if case .block = arg.type {
-                self.appendBlock(argument: arg, functionName: enumName)
+                self.appendBlock(argument: arg, names: names)
             }
         }
         self.append("    public struct \(enumName): RESPRepresentable {\n")
         for arg in arguments {
-            self.append("        @usableFromInline let \(arg.name.swiftVariable): \(parameterType(arg, functionName: enumName, isArray: true))\n")
+            self.append("        @usableFromInline let \(arg.name.swiftVariable): \(parameterType(arg, names: names, isArray: true))\n")
         }
         self.append("\n")
         self.append("        @inlinable\n")
@@ -104,9 +106,9 @@ extension String {
         // Enums
         for arg in arguments {
             if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, functionName: name)
+                self.appendOneOfEnum(argument: arg, names: [name])
             } else if case .block = arg.type {
-                self.appendBlock(argument: arg, functionName: name)
+                self.appendBlock(argument: arg, names: [name])
             }
         }
         // Comment header
@@ -114,7 +116,7 @@ extension String {
         // Operation function
         let parametersString =
             arguments
-            .map { "\($0.name.swiftArgument): \(parameterType($0, functionName: name))" }
+            .map { "\($0.name.swiftArgument): \(parameterType($0, names: [name]))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
         self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws -> RESP3Token {\n")
@@ -130,7 +132,7 @@ extension String {
         // Command function
         let commandParametersString =
             arguments
-            .map { "\($0.name.swiftArgument): \(parameterType($0, functionName: name, isArray: true))" }
+            .map { "\($0.name.swiftArgument): \(parameterType($0, names: [name], isArray: true))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
         self.append("    public func \(name.swiftFunction)Command(\(commandParametersString)) -> RESPCommand {\n")
@@ -168,17 +170,19 @@ func renderRedisCommands(_ commands: RedisCommands) -> String {
     return string
 }
 
-private func enumName(name: String, functionName: String) -> String {
-    "\(functionName.swiftFunction.uppercased())\(name.swiftArgument.upperFirst())"
+private func enumName(names: [String]) -> String {
+    var names = names
+    let functionName = names.removeFirst()
+    return "\(functionName.swiftFunction.uppercased())\(names.map { $0.upperFirst()}.joined())"
 }
 
-private func parameterType(_ parameter: RedisCommand.Argument, functionName: String, isArray: Bool = false) -> String {
+private func parameterType(_ parameter: RedisCommand.Argument, names: [String], isArray: Bool = false) -> String {
     var parameterString = parameter.type.swiftName
     if case .oneOf = parameter.type {
-        parameterString = enumName(name: parameter.name, functionName: functionName)
+        parameterString = enumName(names: names + [parameter.name.swiftTypename])
     }
     if case .block = parameter.type {
-        parameterString = enumName(name: parameter.name, functionName: functionName)
+        parameterString = enumName(names: names + [parameter.name.swiftTypename])
     }
     if parameter.multiple == true {
         if isArray {
