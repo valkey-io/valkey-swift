@@ -31,7 +31,38 @@ struct RedisCommand: Decodable {
     }
     struct KeySpec: Decodable {
         struct BeginSearch: Decodable {
+            enum SearchType: String, Decodable {
+                case index
+                case keyword
+                case unknown
+            }
+            struct Spec: Decodable {
+                let index: Int?
+                let keyword: String?
+                let startFrom: Int?
+            }
+            let type: SearchType
+            let spec: Spec
+        }
+        struct FindKeys: Decodable {
+            enum FindKeysType: String, Decodable {
+                case range
+                case keynum
+                case unknown
+            }
+            struct Spec: Decodable {
+                let lastkey: Int
+                let keystep: Int
+                let limit: Int
+            }
+            let type: FindKeysType
+        }
+        let beginSearch: BeginSearch
+        let findKeys: FindKeys
 
+        private enum CodingKeys: String, CodingKey {
+            case beginSearch = "begin_search"
+            case findKeys = "find_keys"
         }
     }
     let summary: String
@@ -40,6 +71,7 @@ struct RedisCommand: Decodable {
     let complexity: String?
     let aclCategories: [String]
     let arguments: [Argument]?
+    let keySpecs: [KeySpec]?
 
     private enum CodingKeys: String, CodingKey {
         case summary
@@ -48,6 +80,7 @@ struct RedisCommand: Decodable {
         case complexity
         case aclCategories = "acl_categories"
         case arguments
+        case keySpecs = "key_specs"
     }
 }
 
