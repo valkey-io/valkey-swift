@@ -12,7 +12,13 @@ extension String {
         """
     }
 
-    mutating func appendFunctionCommentHeader(command: RedisCommand) {
+    var cleanupReplyComment: String {
+        self
+            .replacing("/docs/reference", with: "https:/redis.io/docs/reference")
+            .replacing(" reply]", with: "]")
+    }
+
+    mutating func appendFunctionCommentHeader(command: RedisCommand, reply: [String]) {
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
         self.append("    /// Version: \(command.since)\n")
@@ -20,6 +26,12 @@ extension String {
             self.append("    /// Complexity: \(complexity)\n")
         }
         self.append("    /// Categories: \(command.aclCategories.joined(separator: ", "))\n")
+        var reply = reply
+        let firstReply = reply.removeFirst()
+        self.append("    /// - Returns: \(firstReply.cleanupReplyComment)\n")
+        for line in reply {
+            self.append("    ///     \(line.cleanupReplyComment)\n")
+        }
     }
 
     mutating func appendOneOfEnum(argument: RedisCommand.Argument, names: [String]) {
@@ -94,7 +106,7 @@ extension String {
         self.append("    }\n")
     }
 
-    mutating func appendFunction(command: RedisCommand, name: String) {
+    mutating func appendFunction(command: RedisCommand, reply: [String], name: String) {
         var commandName = name
         var subCommand: String? = nil
         if name.contains(" ") {
@@ -112,7 +124,7 @@ extension String {
             }
         }
         // Comment header
-        self.appendFunctionCommentHeader(command: command)
+        self.appendFunctionCommentHeader(command: command, reply: reply)
         // Operation function
         let parametersString =
             arguments
@@ -149,7 +161,7 @@ extension String {
     }
 }
 
-func renderRedisCommands(_ commands: RedisCommands) -> String {
+func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> String {
     var string = """
         import NIOCore
         import RESP3
@@ -164,7 +176,11 @@ func renderRedisCommands(_ commands: RedisCommands) -> String {
 
         """
     for key in commands.commands.keys.sorted() {
-        string.appendFunction(command: commands.commands[key]!, name: key)
+        if let reply = replies.commands[key], reply.count > 0 {
+            string.appendFunction(command: commands.commands[key]!, reply: reply, name: key)
+        } else {
+            print("Skipping \(key)")
+        }
     }
     string.append("}\n")
     return string

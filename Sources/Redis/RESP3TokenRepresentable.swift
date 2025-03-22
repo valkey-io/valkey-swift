@@ -6,6 +6,12 @@ public protocol RESP3TokenRepresentable {
     init(from: RESP3Token) throws
 }
 
+extension RESP3Token: RESP3TokenRepresentable {
+    public init(from token: RESP3Token) throws {
+        self = token
+    }
+}
+
 extension ByteBuffer: RESP3TokenRepresentable {
     public init(from token: RESP3Token) throws {
         switch token.value {
