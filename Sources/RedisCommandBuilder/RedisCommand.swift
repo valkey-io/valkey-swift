@@ -29,6 +29,11 @@ struct RedisCommand: Decodable {
         let token: String?
         let arguments: [Argument]?
     }
+    struct KeySpec: Decodable {
+        struct BeginSearch: Decodable {
+
+        }
+    }
     let summary: String
     let since: String
     let group: String

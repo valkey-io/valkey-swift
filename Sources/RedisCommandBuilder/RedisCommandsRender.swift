@@ -60,7 +60,7 @@ extension String {
         }
         self.append("\n")
         self.append("        @inlinable\n")
-        self.append("        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {\n")
+        self.append("        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {\n")
         self.append("            switch self {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
@@ -97,14 +97,16 @@ extension String {
         }
         self.append("\n")
         self.append("        @inlinable\n")
-        self.append("        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {\n")
+        self.append("        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {\n")
+        self.append("            var count = 0\n")
         for arg in arguments {
             if case .pureToken = arg.type {
-                self.append("            if self.\(arg.name.swiftArgument) { \"\(arg.token!)\".writeToRESPBuffer(&buffer) }\n")
+                self.append("            if self.\(arg.name.swiftArgument) { count += \"\(arg.token!)\".writeToRESPBuffer(&buffer) }\n")
             } else {
-                self.append("            self.\(arg.name.swiftArgument).writeToRESPBuffer(&buffer)\n")
+                self.append("            count += self.\(arg.name.swiftArgument).writeToRESPBuffer(&buffer)\n")
             }
         }
+        self.append("            return count\n")
         self.append("        }\n")
         self.append("    }\n")
     }

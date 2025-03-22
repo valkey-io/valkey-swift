@@ -4,7 +4,7 @@ import RESP3
 
 /// Type that can be rendered into a RESP buffer
 public protocol RESPRenderable {
-    func writeToRESPBuffer(_ buffer: inout ByteBuffer)
+    func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int
 }
 
 public struct RedisPureToken: RESPRenderable {
@@ -19,7 +19,7 @@ public struct RedisPureToken: RESPRenderable {
         }
     }
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         self.token.writeToRESPBuffer(&buffer)
     }
 }
@@ -36,76 +36,82 @@ public struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
         self.token = token
     }
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         if let value {
-            self.token.writeToRESPBuffer(&buffer)
-            value.writeToRESPBuffer(&buffer)
+            let writerIndex = buffer.writerIndex
+            _ = self.token.writeToRESPBuffer(&buffer)
+            let count = value.writeToRESPBuffer(&buffer)
+            if count == 0 {
+                buffer.moveWriterIndex(to: writerIndex)
+                return 0
+            }
+            return count + 1
+        } else {
+            return 0
         }
     }
 }
 
 extension Optional: RESPRenderable where Wrapped: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         switch self {
         case .some(let wrapped):
-            wrapped.writeToRESPBuffer(&buffer)
+            return wrapped.writeToRESPBuffer(&buffer)
         case .none:
-            break
+            return 0
         }
     }
 }
 
 extension Array: RESPRenderable where Element: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        var count = 0
         for element in self {
-            element.writeToRESPBuffer(&buffer)
+            count += element.writeToRESPBuffer(&buffer)
         }
-    }
-}
-
-extension Bool: RESPRenderable {
-    @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
-        if self {
-            buffer.writeBulkString("TRUE")
-        }
+        return count
     }
 }
 
 extension String: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         buffer.writeBulkString(self)
+        return 1
     }
 }
 
 extension Int: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         buffer.writeBulkString(String(self))
+        return 1
     }
 }
 
 extension Double: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         buffer.writeBulkString(String(self))
+        return 1
     }
 }
 
 extension Date: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         buffer.writeBulkString(String(self.timeIntervalSince1970))
+        return 1
     }
 }
 
 extension RedisKey: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) {
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         buffer.writeBulkString(self.rawValue)
+        return 1
     }
 }
 
