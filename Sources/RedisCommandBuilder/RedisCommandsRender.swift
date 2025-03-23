@@ -142,7 +142,7 @@ extension String {
             .map { "\($0.swiftArgument): \($0.swiftVariable)" }
             .joined(separator: ", ")
         self.append(
-            "        let response = try await send(\(name.swiftFunction)Command(\(argumentsString)))\n"
+            "        let response = try await send(Self.\(name.swiftFunction)Command(\(argumentsString)))\n"
         )
         self.append("        return response\n")
         self.append("    }\n\n")
@@ -152,7 +152,7 @@ extension String {
             .map { "\($0.swiftArgument): \(parameterType($0, names: [name], isArray: true))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
-        self.append("    public func \(name.swiftFunction)Command(\(commandParametersString)) -> RESPCommand {\n")
+        self.append("    public static func \(name.swiftFunction)Command(\(commandParametersString)) -> RESPCommand {\n")
         let commandArguments =
             if let subCommand {
                 ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map(\.redisRepresentable)
