@@ -19,6 +19,23 @@ struct GeneratedCommands {
     }
 
     @Test
+    func testPipelinedSetGet() async throws {
+        var logger = Logger(label: "Redis")
+        logger.logLevel = .debug
+        try await RedisClient.withConnection(.hostname("localhost", port: 6379), logger: logger) { connection, logger in
+            let key = RedisKey(rawValue: UUID().uuidString)
+            let responses = try await connection.pipeline(
+                [
+                    RedisConnection.setCommand(key: key, value: "Pipelined Hello"),
+                    RedisConnection.getCommand(key: key),
+                ]
+            )
+            let value = try responses[1].converting(to: String.self)
+            #expect(value == "Pipelined Hello")
+        }
+    }
+
+    @Test
     func testSort() async throws {
         var logger = Logger(label: "Redis")
         logger.logLevel = .debug
