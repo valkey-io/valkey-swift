@@ -111,7 +111,7 @@ extension String {
         self.append("    }\n")
     }
 
-    mutating func appendFunction(command: RedisCommand, reply: [String], name: String) {
+    mutating func appendCommand(command: RedisCommand, reply: [String], name: String) {
         var commandName = name
         var subCommand: String? = nil
         if name.contains(" ") {
@@ -130,29 +130,13 @@ extension String {
         }
         // Comment header
         self.appendFunctionCommentHeader(command: command, name: name, reply: reply)
-        // Operation function
-        let parametersString =
-            arguments
-            .map { "\($0.swiftArgument): \(parameterType($0, names: [name]))" }
-            .joined(separator: ", ")
-        self.append("    @inlinable\n")
-        self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws -> RESP3Token {\n")
-        let argumentsString =
-            arguments
-            .map { "\($0.swiftArgument): \($0.swiftVariable)" }
-            .joined(separator: ", ")
-        self.append(
-            "        let response = try await send(Self.\(name.swiftFunction)Command(\(argumentsString)))\n"
-        )
-        self.append("        return response\n")
-        self.append("    }\n\n")
         // Command function
         let commandParametersString =
             arguments
             .map { "\($0.swiftArgument): \(parameterType($0, names: [name], isArray: true))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
-        self.append("    public static func \(name.swiftFunction)Command(\(commandParametersString)) -> RESPCommand {\n")
+        self.append("    public static func \(name.swiftFunction)(\(commandParametersString)) -> RESPCommand {\n")
         let commandArguments =
             if let subCommand {
                 ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map(\.redisRepresentable)
@@ -163,6 +147,37 @@ extension String {
         self.append("        RESPCommand(\(commandArgumentsString))\n")
         self.append("    }\n\n")
 
+    }
+
+    mutating func appendFunction(command: RedisCommand, reply: [String], name: String) {
+        var commandName = name
+        var subCommand: String? = nil
+        if name.contains(" ") {
+            var split = name.split(separator: " ", maxSplits: 1)
+            commandName = .init(split.removeFirst())
+            subCommand = .init(split.last!)
+        }
+        let arguments = (command.arguments ?? [])
+        // Comment header
+        self.appendFunctionCommentHeader(command: command, name: name, reply: reply)
+        // Operation function
+        let parametersString =
+            arguments
+            .map { "\($0.swiftArgument): \(parameterType($0, names: [name]))" }
+            .joined(separator: ", ")
+        self.append("    @inlinable\n")
+        self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws -> RESP3Token {\n")
+        let commandArguments =
+            if let subCommand {
+                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map(\.redisRepresentable)
+            } else {
+                ["\"\(commandName)\""] + arguments.map(\.redisRepresentable)
+            }
+        let argumentsString = commandArguments.joined(separator: ", ")
+        self.append(
+            "        try await send(\(argumentsString))\n"
+        )
+        self.append("    }\n\n")
     }
 }
 
@@ -177,9 +192,18 @@ func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> Str
         import Foundation
         #endif
 
-        extension RedisConnection {
+        extension RESPCommand {
 
         """
+    for key in commands.commands.keys.sorted() {
+        // if there is no reply info assume command is a container command
+        if let reply = replies.commands[key], reply.count > 0 {
+            string.appendCommand(command: commands.commands[key]!, reply: reply, name: key)
+        }
+    }
+    string.append("}\n")
+    string.append("\n")
+    string.append("extension RedisConnection {\n")
     for key in commands.commands.keys.sorted() {
         // if there is no reply info assume command is a container command
         if let reply = replies.commands[key], reply.count > 0 {
@@ -209,10 +233,10 @@ private func parameterType(_ parameter: RedisCommand.Argument, names: [String], 
 private func variableType(_ parameter: RedisCommand.Argument, names: [String], isArray: Bool = false) -> String {
     var parameterString = parameter.type.swiftName
     if case .oneOf = parameter.type {
-        parameterString = enumName(names: names + [parameter.name.swiftTypename])
+        parameterString = "RESPCommand.\(enumName(names: names + [parameter.name.swiftTypename]))"
     }
     if case .block = parameter.type {
-        parameterString = enumName(names: names + [parameter.name.swiftTypename])
+        parameterString = "RESPCommand.\(enumName(names: names + [parameter.name.swiftTypename]))"
     }
     if parameter.multiple == true {
         if isArray {

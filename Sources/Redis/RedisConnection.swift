@@ -29,12 +29,7 @@ public final class RedisConnection {
 
     public func send<each Arg: RESPRenderable>(_ command: repeat each Arg) async throws -> RESP3Token {
         let command = RESPCommand(repeat each command)
-        try await self.outbound.write(command.buffer)
-        guard let response = try await self.inboundIterator.next() else { throw RedisClientError(.connectionClosed) }
-        if let value = response.errorString {
-            throw RedisClientError(.commandError, message: String(buffer: value))
-        }
-        return response
+        return try await self.send(command)
     }
 
     public func pipeline(_ commands: [RESPCommand]) async throws -> [RESP3Token] {
