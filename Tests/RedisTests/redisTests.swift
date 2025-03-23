@@ -26,8 +26,8 @@ struct GeneratedCommands {
             let key = RedisKey(rawValue: UUID().uuidString)
             let responses = try await connection.pipeline(
                 [
-                    RedisConnection.setCommand(key: key, value: "Pipelined Hello"),
-                    RedisConnection.getCommand(key: key),
+                    .set(key: key, value: "Pipelined Hello"),
+                    .get(key: key),
                 ]
             )
             let value = try responses[1].converting(to: String.self)
