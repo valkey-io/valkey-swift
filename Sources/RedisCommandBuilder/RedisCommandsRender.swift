@@ -164,8 +164,20 @@ extension String {
             commandName = .init(split.removeFirst())
             subCommand = .init(split.last!)
         }
+        if name == "BGSAVE" {
+            print(name)
+        }
         let arguments = (command.arguments ?? [])
-
+        var converting: Bool = false
+        var returnType: String = " -> RESP3Token"
+        if let type = getReturnType(reply: reply) {
+            if type == "Void" {
+                returnType = ""
+            } else {
+                converting = true
+                returnType = " -> \(type)"
+            }
+        }
         func _appendFunction(isArray: Bool) {
             // Comment header
             self.appendFunctionCommentHeader(command: command, name: name, reply: reply, inRedisCommand: false)
@@ -175,7 +187,7 @@ extension String {
                 .map { "\($0.swiftArgument): \(parameterType($0, names: [name], inRESPCommand: false, isArray: isArray))" }
                 .joined(separator: ", ")
             self.append("    @inlinable\n")
-            self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws -> RESP3Token {\n")
+            self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws\(returnType) {\n")
             let commandArguments =
                 if let subCommand {
                     ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.redisRepresentable(isArray: isArray) }
@@ -184,7 +196,7 @@ extension String {
                 }
             let argumentsString = commandArguments.joined(separator: ", ")
             self.append(
-                "        try await send(\(argumentsString))\n"
+                "        try await send(\(argumentsString))\(converting ? ".converting()": "")\n"
             )
             self.append("    }\n\n")
         }
@@ -262,6 +274,66 @@ private func variableType(_ parameter: RedisCommand.Argument, names: [String], i
         parameterString.append("?")
     }
     return parameterString
+}
+
+private func getReturnType(reply replies: [String]) -> String? {
+    let replies = replies.filter { $0.hasPrefix("[") || $0.hasPrefix("* [") }
+    if replies.count == 1 {
+        return getReturnType(reply: replies[0])
+    } else if replies.count > 1 {
+        var returnType = getReturnType(reply: replies[0].dropFirst(2))
+        var `optional` = false
+        for value in replies.dropFirst(1) {
+            if let returnType2 = getReturnType(reply: value.dropFirst(2)) {
+                if returnType == "Void" {
+                    returnType = returnType2
+                    optional = true
+                } else if returnType2 != returnType {
+                    if returnType2 == "Void" {
+                        optional = true
+                    } else {
+                        return nil
+                    }
+                }
+            }
+        }
+        if returnType != "Void", optional == true {
+            return "\(returnType ?? "RESP3Token")?"
+        } else {
+            return returnType
+        }
+    }
+    return nil
+}
+private func getReturnType(reply: some StringProtocol) -> String? {
+    if reply.hasPrefix("[") {
+        if reply.hasPrefix("[Integer") {
+            return "Int"
+        } else if reply.hasPrefix("[Double") {
+            return "Double"
+        } else if reply.hasPrefix("[Bulk string") {
+            return "String"
+        } else if reply.hasPrefix("[Simple string") {
+            if reply.contains("`OK`") {
+                return "Void"
+            } else {
+                return "String"
+            }
+        } else if reply.hasPrefix("[Array") {
+            if let range: Range = reply.firstRange(of: "): an array of ") {
+                if let element = getReturnType(reply: reply[range.upperBound...]) {
+                    return "[\(element)]"
+                }
+            }
+            return "[RESP3Token]"
+        } else if reply.hasPrefix("[Null") {
+            return "Void"
+        } else if reply.hasPrefix("[Simple error") {
+            return nil
+        }
+        return "RESP3Token"
+    }
+    return nil
 }
 
 extension RedisCommand.ArgumentType {
