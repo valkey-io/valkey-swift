@@ -324,7 +324,7 @@ private func getReturnType(reply: some StringProtocol) -> String? {
                     return "[\(element)]"
                 }
             }
-            return "RESP3Token"
+            return "[RESP3Token]"
         } else if reply.hasPrefix("[Null") {
             return "Void"
         } else if reply.hasPrefix("[Simple error") {
