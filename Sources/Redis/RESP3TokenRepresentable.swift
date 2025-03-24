@@ -11,7 +11,7 @@ extension RESP3Token: RESP3TokenRepresentable {
     /// - Parameter type: Type to convert to
     /// - Throws: RedisClientError.unexpectedType
     /// - Returns: Value
-    func converting<Value: RESP3TokenRepresentable>(to type: Value.Type = Value.self) throws -> Value {
+    public func converting<Value: RESP3TokenRepresentable>(to type: Value.Type = Value.self) throws -> Value {
         try Value(from: self)
     }
 
