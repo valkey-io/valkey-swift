@@ -310,6 +310,8 @@ private func getReturnType(reply: some StringProtocol) -> String? {
             return "Double"
         } else if reply.hasPrefix("[Bulk string") {
             return "String"
+        } else if reply.hasPrefix("[Verbatim string") {
+            return "String"
         } else if reply.hasPrefix("[Simple string") {
             if reply.contains("`OK`") {
                 return "Void"

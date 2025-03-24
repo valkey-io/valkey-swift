@@ -10117,7 +10117,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a human readable latency analysis report.
     @inlinable
-    public func latencyDoctor() async throws -> RESP3Token {
+    public func latencyDoctor() async throws -> String {
         try await send("LATENCY", "DOCTOR").converting()
     }
 
@@ -10320,7 +10320,7 @@ extension RedisConnection {
     /// - Categories: @read, @fast
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a string containing generative computer art and the Redis version.
     @inlinable
-    public func lolwut(version: Int? = nil) async throws -> RESP3Token {
+    public func lolwut(version: Int? = nil) async throws -> String {
         try await send("LOLWUT", RESPWithToken("VERSION", version)).converting()
     }
 
@@ -10458,7 +10458,7 @@ extension RedisConnection {
     /// - Categories: @slow
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a memory problems report.
     @inlinable
-    public func memoryDoctor() async throws -> RESP3Token {
+    public func memoryDoctor() async throws -> String {
         try await send("MEMORY", "DOCTOR").converting()
     }
 
