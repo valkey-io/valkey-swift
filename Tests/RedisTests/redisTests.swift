@@ -65,6 +65,19 @@ struct GeneratedCommands {
         }
     }
 
+    @Test
+    func testCommandWithMoreThan9Strings() async throws {
+        var logger = Logger(label: "Redis")
+        logger.logLevel = .debug
+        try await RedisClient.withConnection(.hostname("localhost", port: 6379), logger: logger) { connection, logger in
+            try await withKey(connection: connection) { key in
+                _ = try await connection.rpush(key: key, element: "0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+                let values: [String] = try await connection.lrange(key: key, start: 0, stop: -1).converting()
+                #expect(values == ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+            }
+        }
+    }
+
     @Test("Array with count using LMPOP")
     func testArrayWithCount() async throws {
         var logger = Logger(label: "Redis")
