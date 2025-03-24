@@ -68,7 +68,7 @@ extension String {
                 )
             } else {
                 self.append(
-                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable).writeToRESPBuffer(&buffer)\n"
+                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable(isArray: true)).writeToRESPBuffer(&buffer)\n"
                 )
             }
         }
@@ -129,25 +129,31 @@ extension String {
                 self.appendBlock(argument: arg, names: [name])
             }
         }
-        // Comment header
-        self.appendFunctionCommentHeader(command: command, name: name, reply: reply, inRedisCommand: true)
-        // Command function
-        let commandParametersString =
-            arguments
-            .map { "\($0.swiftArgument): \(parameterType($0, names: [name], inRESPCommand: true))" }
-            .joined(separator: ", ")
-        self.append("    @inlinable\n")
-        self.append("    public static func \(name.swiftFunction)(\(commandParametersString)) -> RESPCommand {\n")
-        let commandArguments =
-            if let subCommand {
-                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map(\.redisRepresentable)
-            } else {
-                ["\"\(commandName)\""] + arguments.map(\.redisRepresentable)
-            }
-        let commandArgumentsString = commandArguments.joined(separator: ", ")
-        self.append("        RESPCommand(\(commandArgumentsString))\n")
-        self.append("    }\n\n")
 
+        func _appendCommandFunction(isArray: Bool) {
+            // Comment header
+            self.appendFunctionCommentHeader(command: command, name: name, reply: reply, inRedisCommand: true)
+            // Command function
+            let commandParametersString =
+                arguments
+                .map { "\($0.swiftArgument): \(parameterType($0, names: [name], inRESPCommand: true, isArray: isArray))" }
+                .joined(separator: ", ")
+            self.append("    @inlinable\n")
+            self.append("    public static func \(name.swiftFunction)(\(commandParametersString)) -> RESPCommand {\n")
+            let commandArguments =
+                if let subCommand {
+                    ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.redisRepresentable(isArray: isArray) }
+                } else {
+                    ["\"\(commandName)\""] + arguments.map { $0.redisRepresentable(isArray: isArray) }
+                }
+            let commandArgumentsString = commandArguments.joined(separator: ", ")
+            self.append("        RESPCommand(\(commandArgumentsString))\n")
+            self.append("    }\n\n")
+        }
+        _appendCommandFunction(isArray: false)
+        if arguments.contains(where: { $0.multiple == true }) {
+            _appendCommandFunction(isArray: true)
+        }
     }
 
     mutating func appendFunction(command: RedisCommand, reply: [String], name: String) {
@@ -159,26 +165,33 @@ extension String {
             subCommand = .init(split.last!)
         }
         let arguments = (command.arguments ?? [])
-        // Comment header
-        self.appendFunctionCommentHeader(command: command, name: name, reply: reply, inRedisCommand: false)
-        // Operation function
-        let parametersString =
-            arguments
-            .map { "\($0.swiftArgument): \(parameterType($0, names: [name], inRESPCommand: false))" }
-            .joined(separator: ", ")
-        self.append("    @inlinable\n")
-        self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws -> RESP3Token {\n")
-        let commandArguments =
-            if let subCommand {
-                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map(\.redisRepresentable)
-            } else {
-                ["\"\(commandName)\""] + arguments.map(\.redisRepresentable)
-            }
-        let argumentsString = commandArguments.joined(separator: ", ")
-        self.append(
-            "        try await send(\(argumentsString))\n"
-        )
-        self.append("    }\n\n")
+
+        func _appendFunction(isArray: Bool) {
+            // Comment header
+            self.appendFunctionCommentHeader(command: command, name: name, reply: reply, inRedisCommand: false)
+            // Operation function
+            let parametersString =
+                arguments
+                .map { "\($0.swiftArgument): \(parameterType($0, names: [name], inRESPCommand: false, isArray: isArray))" }
+                .joined(separator: ", ")
+            self.append("    @inlinable\n")
+            self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws -> RESP3Token {\n")
+            let commandArguments =
+                if let subCommand {
+                    ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.redisRepresentable(isArray: isArray) }
+                } else {
+                    ["\"\(commandName)\""] + arguments.map { $0.redisRepresentable(isArray: isArray) }
+                }
+            let argumentsString = commandArguments.joined(separator: ", ")
+            self.append(
+                "        try await send(\(argumentsString))\n"
+            )
+            self.append("    }\n\n")
+        }
+        _appendFunction(isArray: false)
+        if arguments.contains(where: { $0.multiple == true }) {
+            _appendFunction(isArray: true)
+        }
     }
 }
 
@@ -221,17 +234,19 @@ private func enumName(names: [String]) -> String {
     return "\(functionName.swiftFunction.uppercased())\(names.map { $0.upperFirst()}.joined())"
 }
 
-private func parameterType(_ parameter: RedisCommand.Argument, names: [String], inRESPCommand: Bool, isArray: Bool = false) -> String {
+private func parameterType(_ parameter: RedisCommand.Argument, names: [String], inRESPCommand: Bool, isArray: Bool) -> String {
     let variableType = variableType(parameter, names: names, inRESPCommand: inRESPCommand, isArray: isArray)
     if parameter.type == .pureToken {
         return variableType + " = false"
     } else if parameter.optional == true, parameter.multiple != true {
         return variableType + " = nil"
+    } else if parameter.multiple == true, isArray == false {
+        return variableType + "? = nil"
     }
     return variableType
 }
 
-private func variableType(_ parameter: RedisCommand.Argument, names: [String], inRESPCommand: Bool, isArray: Bool = false) -> String {
+private func variableType(_ parameter: RedisCommand.Argument, names: [String], inRESPCommand: Bool, isArray: Bool) -> String {
     var parameterString = parameter.type.swiftName
     if case .oneOf = parameter.type {
         parameterString = "\(inRESPCommand ? "" : "RESPCommand.")\(enumName(names: names + [parameter.name.swiftTypename]))"
@@ -242,8 +257,6 @@ private func variableType(_ parameter: RedisCommand.Argument, names: [String], i
     if parameter.multiple == true {
         if isArray {
             parameterString = "[\(parameterString)]"
-        } else {
-            parameterString.append("...")
         }
     } else if parameter.optional == true, parameter.type != .pureToken {
         parameterString.append("?")
@@ -268,14 +281,18 @@ extension RedisCommand.ArgumentType {
 }
 
 extension RedisCommand.Argument {
-    var redisRepresentable: String {
+    func redisRepresentable(isArray: Bool) -> String {
         switch self.type {
         case .pureToken: "RedisPureToken(\"\(self.token!)\", \(self.swiftVariable))"
         default:
             if let token = self.token {
                 "RESPWithToken(\"\(token)\", \(self.swiftVariable))"
             } else if multiple == true, combinedWithCount == true {
-                "RESPArrayWithCount(\(self.swiftVariable))"
+                if isArray {
+                    "RESPArrayWithCount(\(self.swiftVariable))"
+                } else {
+                    "1, \(self.swiftVariable)"
+                }
             } else {
                 self.swiftVariable
             }
