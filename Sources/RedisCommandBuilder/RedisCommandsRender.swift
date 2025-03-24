@@ -18,20 +18,19 @@ extension String {
             .replacing(" reply]", with: "]")
     }
 
-    mutating func appendFunctionCommentHeader(command: RedisCommand, name: String, reply: [String]) {
+    mutating func appendFunctionCommentHeader(command: RedisCommand, name: String, reply: [String], inRedisCommand: Bool) {
         let linkName = name.replacing(" ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
-        self.append("    /// Documentation: [\(name)](https:/redis.io/docs/latest/commands/\(linkName))\n")
-        self.append("    ///\n")
-        self.append("    /// Version: \(command.since)\n")
+        self.append("    /// - Documentation: [\(name)](https:/redis.io/docs/latest/commands/\(linkName))\n")
+        self.append("    /// - Version: \(command.since)\n")
         if let complexity = command.complexity {
-            self.append("    /// Complexity: \(complexity)\n")
+            self.append("    /// - Complexity: \(complexity)\n")
         }
-        self.append("    /// Categories: \(command.aclCategories.joined(separator: ", "))\n")
+        self.append("    /// - Categories: \(command.aclCategories.joined(separator: ", "))\n")
         var reply = reply
         let firstReply = reply.removeFirst()
-        self.append("    /// - Returns: \(firstReply.cleanupReplyComment)\n")
+        self.append("    /// - \(inRedisCommand ? "Response:" : "Returns:") \(firstReply.cleanupReplyComment)\n")
         for line in reply {
             self.append("    ///     \(line.cleanupReplyComment)\n")
         }
@@ -55,7 +54,7 @@ extension String {
             if case .pureToken = arg.type {
                 self.append("        case \(arg.swiftArgument)\n")
             } else {
-                self.append("        case \(arg.swiftArgument)(\(variableType(arg, names: names, isArray: true)))\n")
+                self.append("        case \(arg.swiftArgument)(\(variableType(arg, names: names, inRESPCommand: true, isArray: true)))\n")
             }
         }
         self.append("\n")
@@ -93,7 +92,9 @@ extension String {
         }
         self.append("    public struct \(enumName): RESPRenderable {\n")
         for arg in arguments {
-            self.append("        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, isArray: true))\n")
+            self.append(
+                "        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, inRESPCommand: true, isArray: true))\n"
+            )
         }
         self.append("\n")
         self.append("        @inlinable\n")
@@ -111,7 +112,7 @@ extension String {
         self.append("    }\n")
     }
 
-    mutating func appendCommand(command: RedisCommand, reply: [String], name: String) {
+    mutating func appendCommandFunction(command: RedisCommand, reply: [String], name: String) {
         var commandName = name
         var subCommand: String? = nil
         if name.contains(" ") {
@@ -129,11 +130,11 @@ extension String {
             }
         }
         // Comment header
-        self.appendFunctionCommentHeader(command: command, name: name, reply: reply)
+        self.appendFunctionCommentHeader(command: command, name: name, reply: reply, inRedisCommand: true)
         // Command function
         let commandParametersString =
             arguments
-            .map { "\($0.swiftArgument): \(parameterType($0, names: [name]))" }
+            .map { "\($0.swiftArgument): \(parameterType($0, names: [name], inRESPCommand: true))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
         self.append("    public static func \(name.swiftFunction)(\(commandParametersString)) -> RESPCommand {\n")
@@ -159,11 +160,11 @@ extension String {
         }
         let arguments = (command.arguments ?? [])
         // Comment header
-        self.appendFunctionCommentHeader(command: command, name: name, reply: reply)
+        self.appendFunctionCommentHeader(command: command, name: name, reply: reply, inRedisCommand: false)
         // Operation function
         let parametersString =
             arguments
-            .map { "\($0.swiftArgument): \(parameterType($0, names: [name]))" }
+            .map { "\($0.swiftArgument): \(parameterType($0, names: [name], inRESPCommand: false))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
         self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws -> RESP3Token {\n")
@@ -198,7 +199,7 @@ func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> Str
     for key in commands.commands.keys.sorted() {
         // if there is no reply info assume command is a container command
         if let reply = replies.commands[key], reply.count > 0 {
-            string.appendCommand(command: commands.commands[key]!, reply: reply, name: key)
+            string.appendCommandFunction(command: commands.commands[key]!, reply: reply, name: key)
         }
     }
     string.append("}\n")
@@ -220,8 +221,8 @@ private func enumName(names: [String]) -> String {
     return "\(functionName.swiftFunction.uppercased())\(names.map { $0.upperFirst()}.joined())"
 }
 
-private func parameterType(_ parameter: RedisCommand.Argument, names: [String], isArray: Bool = false) -> String {
-    let variableType = variableType(parameter, names: names, isArray: isArray)
+private func parameterType(_ parameter: RedisCommand.Argument, names: [String], inRESPCommand: Bool, isArray: Bool = false) -> String {
+    let variableType = variableType(parameter, names: names, inRESPCommand: inRESPCommand, isArray: isArray)
     if parameter.type == .pureToken {
         return variableType + " = false"
     } else if parameter.optional == true, parameter.multiple != true {
@@ -230,13 +231,13 @@ private func parameterType(_ parameter: RedisCommand.Argument, names: [String], 
     return variableType
 }
 
-private func variableType(_ parameter: RedisCommand.Argument, names: [String], isArray: Bool = false) -> String {
+private func variableType(_ parameter: RedisCommand.Argument, names: [String], inRESPCommand: Bool, isArray: Bool = false) -> String {
     var parameterString = parameter.type.swiftName
     if case .oneOf = parameter.type {
-        parameterString = "RESPCommand.\(enumName(names: names + [parameter.name.swiftTypename]))"
+        parameterString = "\(inRESPCommand ? "" : "RESPCommand.")\(enumName(names: names + [parameter.name.swiftTypename]))"
     }
     if case .block = parameter.type {
-        parameterString = "RESPCommand.\(enumName(names: names + [parameter.name.swiftTypename]))"
+        parameterString = "\(inRESPCommand ? "" : "RESPCommand.")\(enumName(names: names + [parameter.name.swiftTypename]))"
     }
     if parameter.multiple == true {
         if isArray {
