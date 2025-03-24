@@ -133,7 +133,7 @@ extension String {
         // Command function
         let commandParametersString =
             arguments
-            .map { "\($0.swiftArgument): \(parameterType($0, names: [name], isArray: true))" }
+            .map { "\($0.swiftArgument): \(parameterType($0, names: [name]))" }
             .joined(separator: ", ")
         self.append("    @inlinable\n")
         self.append("    public static func \(name.swiftFunction)(\(commandParametersString)) -> RESPCommand {\n")

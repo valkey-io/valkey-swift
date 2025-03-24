@@ -13,7 +13,7 @@ public final class RedisConnection {
         self.logger = logger
     }
 
-    public func send(_ command: RESPCommand) async throws -> RESP3Token {
+    @discardableResult public func send(_ command: RESPCommand) async throws -> RESP3Token {
         if logger.logLevel <= .debug {
             var buffer = command.buffer
             let sending = try [String](from: RESP3Token(consuming: &buffer)!).joined(separator: " ")
@@ -27,12 +27,12 @@ public final class RedisConnection {
         return response
     }
 
-    public func send<each Arg: RESPRenderable>(_ command: repeat each Arg) async throws -> RESP3Token {
+    @discardableResult public func send<each Arg: RESPRenderable>(_ command: repeat each Arg) async throws -> RESP3Token {
         let command = RESPCommand(repeat each command)
         return try await self.send(command)
     }
 
-    public func pipeline(_ commands: [RESPCommand]) async throws -> [RESP3Token] {
+    @discardableResult public func pipeline(_ commands: [RESPCommand]) async throws -> [RESP3Token] {
         try await self.outbound.write(contentsOf: commands.map { $0.buffer })
         var responses: [RESP3Token] = .init()
         for _ in 0..<commands.count {
