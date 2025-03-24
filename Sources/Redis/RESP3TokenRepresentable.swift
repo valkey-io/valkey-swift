@@ -20,6 +20,16 @@ extension RESP3Token: RESP3TokenRepresentable {
     }
 }
 
+extension Array where Element == RESP3Token {
+    /// Convert RESP3Token Array to a value array
+    /// - Parameter type: Type to convert to
+    /// - Throws: RedisClientError.unexpectedType
+    /// - Returns: Array of Value
+    public func converting<Value: RESP3TokenRepresentable>(to type: [Value].Type = [Value].self) throws -> [Value] {
+        try self.map { try $0.converting() }
+    }
+}
+
 extension ByteBuffer: RESP3TokenRepresentable {
     public init(from token: RESP3Token) throws {
         switch token.value {
