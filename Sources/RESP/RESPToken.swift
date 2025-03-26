@@ -328,10 +328,6 @@ extension ByteBuffer {
                 throw RESPParsingError(code: .invalidData, buffer: self)
             }
 
-            guard self.getInteger(at: self.readerIndex, as: UInt16.self) == .crlf else {
-                throw RESPParsingError(code: .invalidData, buffer: self)
-            }
-
             // null bulk string is 1 byte for the $ prefix, 2 bytes for the -1, and 2 bytes for the \r\n
             let respLength = 1 + 2 + 2
             return self.readSlice(length: respLength)!
@@ -401,10 +397,6 @@ extension ByteBuffer {
         if elementCount < 0 {
             guard elementCount == -1, marker == .array else {
                 // -1 is the only supported negative value
-                throw RESPParsingError(code: .invalidData, buffer: self)
-            }
-
-            guard self.getInteger(at: self.readerIndex, as: UInt16.self) == .crlf else {
                 throw RESPParsingError(code: .invalidData, buffer: self)
             }
 

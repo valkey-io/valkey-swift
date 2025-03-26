@@ -53,5 +53,12 @@ let package = Package(
             name: "RedisTests",
             dependencies: ["Redis", "RedisCommands"]
         ),
+        .testTarget(
+            name: "RESPTests",
+            dependencies: [
+                "RESP",
+                .product(name: "NIOTestUtils", package: "swift-nio"),
+            ]
+        ),
     ]
 )
