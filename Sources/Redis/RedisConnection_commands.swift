@@ -392,8 +392,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .setBlock(let setBlock): setBlock.writeToRESPBuffer(&buffer)
-            case .incrbyBlock(let incrbyBlock): incrbyBlock.writeToRESPBuffer(&buffer)
+            case .setBlock(let setBlock): RESPWithToken("SET", setBlock).writeToRESPBuffer(&buffer)
+            case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -416,7 +416,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .getBlock(let getBlock): getBlock.writeToRESPBuffer(&buffer)
+            case .getBlock(let getBlock): RESPWithToken("GET", getBlock).writeToRESPBuffer(&buffer)
             case .write(let write): write.writeToRESPBuffer(&buffer)
             }
         }
@@ -958,12 +958,12 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .clientId(let clientId): clientId.writeToRESPBuffer(&buffer)
-            case .clientType(let clientType): clientType.writeToRESPBuffer(&buffer)
-            case .username(let username): username.writeToRESPBuffer(&buffer)
-            case .addr(let addr): addr.writeToRESPBuffer(&buffer)
-            case .laddr(let laddr): laddr.writeToRESPBuffer(&buffer)
-            case .skipme(let skipme): skipme.writeToRESPBuffer(&buffer)
+            case .clientId(let clientId): RESPWithToken("ID", clientId).writeToRESPBuffer(&buffer)
+            case .clientType(let clientType): RESPWithToken("TYPE", clientType).writeToRESPBuffer(&buffer)
+            case .username(let username): RESPWithToken("USER", username).writeToRESPBuffer(&buffer)
+            case .addr(let addr): RESPWithToken("ADDR", addr).writeToRESPBuffer(&buffer)
+            case .laddr(let laddr): RESPWithToken("LADDR", laddr).writeToRESPBuffer(&buffer)
+            case .skipme(let skipme): RESPWithToken("SKIPME", skipme).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -1138,8 +1138,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .libname(let libname): libname.writeToRESPBuffer(&buffer)
-            case .libver(let libver): libver.writeToRESPBuffer(&buffer)
+            case .libname(let libname): RESPWithToken("LIB-NAME", libname).writeToRESPBuffer(&buffer)
+            case .libver(let libver): RESPWithToken("LIB-VER", libver).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -1648,9 +1648,9 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .importing(let importing): importing.writeToRESPBuffer(&buffer)
-            case .migrating(let migrating): migrating.writeToRESPBuffer(&buffer)
-            case .node(let node): node.writeToRESPBuffer(&buffer)
+            case .importing(let importing): RESPWithToken("IMPORTING", importing).writeToRESPBuffer(&buffer)
+            case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).writeToRESPBuffer(&buffer)
+            case .node(let node): RESPWithToken("NODE", node).writeToRESPBuffer(&buffer)
             case .stable: "STABLE".writeToRESPBuffer(&buffer)
             }
         }
@@ -1843,9 +1843,9 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .moduleName(let moduleName): moduleName.writeToRESPBuffer(&buffer)
-            case .category(let category): category.writeToRESPBuffer(&buffer)
-            case .pattern(let pattern): pattern.writeToRESPBuffer(&buffer)
+            case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).writeToRESPBuffer(&buffer)
+            case .category(let category): RESPWithToken("ACLCAT", category).writeToRESPBuffer(&buffer)
+            case .pattern(let pattern): RESPWithToken("PATTERN", pattern).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -2709,8 +2709,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .storekey(let storekey): storekey.writeToRESPBuffer(&buffer)
-            case .storedistkey(let storedistkey): storedistkey.writeToRESPBuffer(&buffer)
+            case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
+            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -2782,8 +2782,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .storekey(let storekey): storekey.writeToRESPBuffer(&buffer)
-            case .storedistkey(let storedistkey): storedistkey.writeToRESPBuffer(&buffer)
+            case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
+            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -2937,8 +2937,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .member(let member): member.writeToRESPBuffer(&buffer)
-            case .fromlonlat(let fromlonlat): fromlonlat.writeToRESPBuffer(&buffer)
+            case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
+            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -3072,8 +3072,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .member(let member): member.writeToRESPBuffer(&buffer)
-            case .fromlonlat(let fromlonlat): fromlonlat.writeToRESPBuffer(&buffer)
+            case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
+            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -3235,10 +3235,10 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .seconds(let seconds): seconds.writeToRESPBuffer(&buffer)
-            case .milliseconds(let milliseconds): milliseconds.writeToRESPBuffer(&buffer)
-            case .unixTimeSeconds(let unixTimeSeconds): unixTimeSeconds.writeToRESPBuffer(&buffer)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): unixTimeMilliseconds.writeToRESPBuffer(&buffer)
+            case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", unixTimeSeconds).writeToRESPBuffer(&buffer)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", unixTimeMilliseconds).writeToRESPBuffer(&buffer)
             case .persist: "PERSIST".writeToRESPBuffer(&buffer)
             }
         }
@@ -4215,8 +4215,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .auth(let auth): auth.writeToRESPBuffer(&buffer)
-            case .auth2(let auth2): auth2.writeToRESPBuffer(&buffer)
+            case .auth(let auth): RESPWithToken("AUTH", auth).writeToRESPBuffer(&buffer)
+            case .auth2(let auth2): RESPWithToken("AUTH2", auth2).writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -5427,10 +5427,10 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .seconds(let seconds): seconds.writeToRESPBuffer(&buffer)
-            case .milliseconds(let milliseconds): milliseconds.writeToRESPBuffer(&buffer)
-            case .unixTimeSeconds(let unixTimeSeconds): unixTimeSeconds.writeToRESPBuffer(&buffer)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): unixTimeMilliseconds.writeToRESPBuffer(&buffer)
+            case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", unixTimeSeconds).writeToRESPBuffer(&buffer)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", unixTimeMilliseconds).writeToRESPBuffer(&buffer)
             case .keepttl: "KEEPTTL".writeToRESPBuffer(&buffer)
             }
         }
