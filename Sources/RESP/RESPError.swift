@@ -21,7 +21,7 @@ import NIOCore
 ///   1. The Swift RESP3 implementation is wrong
 ///   2. You are contacting an untrusted backend
 ///
-struct RESP3ParsingError: Error {
+struct RESPParsingError: Error {
     struct Code: Hashable, Sendable, CustomStringConvertible {
         private enum Base {
             case invalidLeadingByte

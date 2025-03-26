@@ -1,12 +1,12 @@
 import NIOCore
-import RESP3
+import RESP
 
 /// Type that can represented by a RESP3Token
 public protocol RESP3TokenRepresentable {
-    init(from: RESP3Token) throws
+    init(from: RESPToken) throws
 }
 
-extension RESP3Token: RESP3TokenRepresentable {
+extension RESPToken: RESP3TokenRepresentable {
     /// Convert RESP3Token to a value
     /// - Parameter type: Type to convert to
     /// - Throws: RedisClientError.unexpectedType
@@ -15,12 +15,12 @@ extension RESP3Token: RESP3TokenRepresentable {
         try Value(from: self)
     }
 
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         self = token
     }
 }
 
-extension Array where Element == RESP3Token {
+extension Array where Element == RESPToken {
     /// Convert RESP3Token Array to a value array
     /// - Parameter type: Type to convert to
     /// - Throws: RedisClientError.unexpectedType
@@ -31,7 +31,7 @@ extension Array where Element == RESP3Token {
 }
 
 extension ByteBuffer: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .blobString(let buffer), .verbatimString(let buffer), .bigNumber(let buffer):
             self = buffer
@@ -42,14 +42,14 @@ extension ByteBuffer: RESP3TokenRepresentable {
 }
 
 extension String: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         let buffer = try ByteBuffer(from: token)
         self.init(buffer: buffer)
     }
 }
 
 extension Int: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .number(let value):
             self = numericCast(value)
@@ -60,7 +60,7 @@ extension Int: RESP3TokenRepresentable {
 }
 
 extension Double: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .double(let value):
             self = value
@@ -71,7 +71,7 @@ extension Double: RESP3TokenRepresentable {
 }
 
 extension Bool: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .boolean(let value):
             self = value
@@ -82,7 +82,7 @@ extension Bool: RESP3TokenRepresentable {
 }
 
 extension Optional: RESP3TokenRepresentable where Wrapped: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .null:
             self = nil
@@ -93,7 +93,7 @@ extension Optional: RESP3TokenRepresentable where Wrapped: RESP3TokenRepresentab
 }
 
 extension Array: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .array(let respArray), .push(let respArray):
             var array: [Element] = []
@@ -109,7 +109,7 @@ extension Array: RESP3TokenRepresentable where Element: RESP3TokenRepresentable 
 }
 
 extension Set: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .set(let respSet):
             var set: Set<Element> = .init()
@@ -125,7 +125,7 @@ extension Set: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
 }
 
 extension Dictionary: RESP3TokenRepresentable where Value: RESP3TokenRepresentable, Key: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .map(let respMap), .attribute(let respMap):
             var array: [(Key, Value)] = []

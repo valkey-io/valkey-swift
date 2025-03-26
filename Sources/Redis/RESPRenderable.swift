@@ -1,6 +1,6 @@
 import Foundation
 import NIOCore
-import RESP3
+import RESP
 
 /// Type that can be rendered into a RESP buffer
 public protocol RESPRenderable {
@@ -72,7 +72,7 @@ extension RedisKey: RESPRenderable {
 
 extension ByteBuffer {
     @usableFromInline
-    mutating func writeRESP3TypeIdentifier(_ identifier: RESP3TypeIdentifier) {
+    mutating func writeRESP3TypeIdentifier(_ identifier: RESPTypeIdentifier) {
         self.writeInteger(identifier.rawValue)
     }
 

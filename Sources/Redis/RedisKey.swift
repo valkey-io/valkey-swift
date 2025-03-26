@@ -1,5 +1,5 @@
 import NIOCore
-import RESP3
+import RESP
 
 /// Type representing a RedisKey
 public struct RedisKey: RawRepresentable {
@@ -11,7 +11,7 @@ public struct RedisKey: RawRepresentable {
 }
 
 extension RedisKey: RESP3TokenRepresentable {
-    public init(from token: RESP3Token) throws {
+    public init(from token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .blobString(let buffer):
             self.rawValue = String(buffer: buffer)

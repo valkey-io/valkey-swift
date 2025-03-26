@@ -1,5 +1,5 @@
 import NIOCore
-import RESP3
+import RESP
 
 public struct RESPCommand: Sendable {
     @usableFromInline

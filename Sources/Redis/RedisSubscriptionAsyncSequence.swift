@@ -1,6 +1,6 @@
-import RESP3
+import RESP
 
-struct RedisSubscriptionAsyncSequence<Base: AsyncSequence>: AsyncSequence where Base.Element == RESP3Token {
+struct RedisSubscriptionAsyncSequence<Base: AsyncSequence>: AsyncSequence where Base.Element == RESPToken {
     typealias Element = Base.Element
     typealias AsyncIterator = Base.AsyncIterator
     let baseIterator: Base.AsyncIterator
