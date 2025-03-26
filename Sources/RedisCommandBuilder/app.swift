@@ -2,31 +2,22 @@ import Foundation
 
 @main
 struct App {
-    let resourceFolder: URL
-
-    init() {
-        self.resourceFolder = Bundle.module.resourceURL!
-    }
-
     static func main() async throws {
         let app = App()
         try await app.run()
     }
 
     func run() async throws {
-        let commands = try loadCommandsJSON()
-        let resp3Replies = try loadRESP3Replies()
+        let outputFile = "Sources/RedisCommands/redis_commands.swift"
+        let resourceFolder = Bundle.module.resourceURL!
+        let commands = try load(fileURL: resourceFolder.appending(path: "commands.json"), as: RedisCommands.self)
+        let resp3Replies = try load(fileURL: resourceFolder.appending(path: "resp3_replies.json"), as: RESPReplies.self)
         let output = renderRedisCommands(commands, replies: resp3Replies)
-        try output.write(toFile: "Sources/Redis/RedisConnection_commands.swift", atomically: true, encoding: .utf8)
+        try output.write(toFile: outputFile, atomically: true, encoding: .utf8)
     }
 
-    func loadCommandsJSON() throws -> RedisCommands {
-        let data = try Data(contentsOf: self.resourceFolder.appending(component: "commands.json"))
-        return try JSONDecoder().decode(RedisCommands.self, from: data)
-    }
-
-    func loadRESP3Replies() throws -> RESPReplies {
-        let data = try Data(contentsOf: self.resourceFolder.appending(component: "resp3_replies.json"))
-        return try JSONDecoder().decode(RESPReplies.self, from: data)
+    func load<Value: Decodable>(fileURL: URL, as: Value.Type = Value.self) throws -> Value {
+        let data = try Data(contentsOf: fileURL)
+        return try JSONDecoder().decode(Value.self, from: data)
     }
 }

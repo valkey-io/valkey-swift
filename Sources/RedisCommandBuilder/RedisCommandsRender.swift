@@ -1,17 +1,4 @@
 extension String {
-    var redisFileHeader: Self {
-        """
-        import NIOCore
-        import RESP3
-
-        #if canImport(FoundationEssentials)
-        import FoundationEssentials
-        #else
-        import Foundation
-        #endif
-        """
-    }
-
     var cleanupReplyComment: String {
         self
             .replacing("/docs/reference", with: "https:/redis.io/docs/reference")
@@ -214,6 +201,7 @@ extension String {
 func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> String {
     var string = """
         import NIOCore
+        import Redis
         import RESP3
 
         #if canImport(FoundationEssentials)
@@ -225,20 +213,21 @@ func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> Str
         extension RESPCommand {
 
         """
+
     for key in commands.commands.keys.sorted() {
+        let command = commands.commands[key]!
         // if there is no reply info assume command is a container command
-        if let reply = replies.commands[key], reply.count > 0 {
-            string.appendCommandFunction(command: commands.commands[key]!, reply: reply, name: key)
-        }
+        guard let reply = replies.commands[key], reply.count > 0 else { continue }
+        string.appendCommandFunction(command: command, reply: reply, name: key)
     }
     string.append("}\n")
     string.append("\n")
     string.append("extension RedisConnection {\n")
     for key in commands.commands.keys.sorted() {
+        let command = commands.commands[key]!
         // if there is no reply info assume command is a container command
-        if let reply = replies.commands[key], reply.count > 0 {
-            string.appendFunction(command: commands.commands[key]!, reply: reply, name: key)
-        }
+        guard let reply = replies.commands[key], reply.count > 0 else { continue }
+        string.appendFunction(command: command, reply: reply, name: key)
     }
     string.append("}\n")
     return string

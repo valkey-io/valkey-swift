@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the Hummingbird server framework project
+// This source file is part of the swift-redis project
 //
 // Copyright (c) 2025 the Hummingbird authors
 // Licensed under Apache License v2.0

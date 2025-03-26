@@ -32,6 +32,14 @@ let package = Package(
             ]
         ),
         .target(
+            name: "RedisCommands",
+            dependencies: [
+                "RESP3",
+                "Redis",
+                .product(name: "NIOCore", package: "swift-nio"),
+            ]
+        ),
+        .target(
             name: "RESP3",
             dependencies: [
                 .product(name: "NIOCore", package: "swift-nio")
@@ -43,7 +51,7 @@ let package = Package(
         ),
         .testTarget(
             name: "RedisTests",
-            dependencies: ["Redis"]
+            dependencies: ["Redis", "RedisCommands"]
         ),
     ]
 )
