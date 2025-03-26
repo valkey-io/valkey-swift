@@ -14,11 +14,11 @@
 
 import NIOCore
 import NIOTestUtils
-import XCTest
+import Testing
 
 @testable import RESP
 
-final class RESPCommandTests: XCTestCase {
+struct RESPCommandTests {
     func decode(command: RESPCommand) throws -> [String] {
         struct DecodeError: Error, CustomStringConvertible {
             var description: String { "Decoding command failed" }
@@ -28,35 +28,40 @@ final class RESPCommandTests: XCTestCase {
         return try token.converting(to: [String].self)
     }
 
+    @Test
     func testStrings() throws {
         let command = RESPCommand("test", "this")
         let decodedCommand = try decode(command: command)
-        XCTAssertEqual(decodedCommand, ["test", "this"])
+        #expect(decodedCommand == ["test", "this"])
     }
 
+    @Test
     func testIntegers() throws {
         let command = RESPCommand("test", 1, -1)
         let decodedCommand = try decode(command: command)
-        XCTAssertEqual(decodedCommand, ["test", "1", "-1"])
+        #expect(decodedCommand == ["test", "1", "-1"])
     }
 
+    @Test
     func testStringArray() throws {
         let command = RESPCommand("test", ["this", "and", "that"])
         let decodedCommand = try decode(command: command)
-        XCTAssertEqual(decodedCommand, ["test", "this", "and", "that"])
+        #expect(decodedCommand == ["test", "this", "and", "that"])
     }
 
+    @Test
     func testOptionalString() throws {
         let string: String? = "this"
         let command = RESPCommand("test", string)
         let decodedCommand = try decode(command: command)
-        XCTAssertEqual(decodedCommand, ["test", "this"])
+        #expect(decodedCommand == ["test", "this"])
     }
 
+    @Test
     func testNullOptionalString() throws {
         let string: String? = nil
         let command = RESPCommand("test", string)
         let decodedCommand = try decode(command: command)
-        XCTAssertEqual(decodedCommand, ["test"])
+        #expect(decodedCommand == ["test"])
     }
 }

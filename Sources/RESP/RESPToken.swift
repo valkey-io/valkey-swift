@@ -367,7 +367,7 @@ extension ByteBuffer {
 
     fileprivate mutating func readRESPAggregateSlice(depth: Int) throws -> ByteBuffer? {
         let marker = try self.getRESP3TypeIdentifier(at: self.readerIndex)!
-        guard depth < 1000 else {
+        guard depth < 100 else {
             throw RESPParsingError(code: .tooDeeplyNestedAggregatedTypes, buffer: self)
         }
 
