@@ -43,8 +43,8 @@ struct RedisCommand: Decodable {
     struct Argument: Decodable {
         let name: String
         let type: ArgumentType
-        let multiple: Bool?
-        let optional: Bool?
+        let multiple: Bool
+        let optional: Bool
         let token: String?
         let arguments: [Argument]?
         let combinedWithCount: Bool?
@@ -52,11 +52,31 @@ struct RedisCommand: Decodable {
         init(argument: InternalArgument, keySpec: KeySpec?) {
             self.name = argument.name
             self.type = argument.type
-            self.multiple = argument.multiple
-            self.optional = argument.optional
+            self.multiple = argument.multiple ?? false
+            self.optional = argument.optional ?? false
             self.token = argument.token
             self.arguments = argument.arguments
             self.combinedWithCount = keySpec?.findKeys.type == .keynum
+        }
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.name = try container.decode(String.self, forKey: .name)
+            self.type = try container.decode(ArgumentType.self, forKey: .type)
+            self.multiple = try container.decodeIfPresent(Bool.self, forKey: .multiple) ?? false
+            self.optional = try container.decodeIfPresent(Bool.self, forKey: .optional) ?? false
+            self.token = try container.decodeIfPresent(String.self, forKey: .token)
+            self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
+            self.combinedWithCount = false
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case name
+            case type
+            case multiple
+            case optional
+            case token
+            case arguments
         }
     }
     struct KeySpec: Decodable {
