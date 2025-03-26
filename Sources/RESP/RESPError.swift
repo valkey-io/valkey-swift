@@ -21,8 +21,8 @@ import NIOCore
 ///   1. The Swift RESP3 implementation is wrong
 ///   2. You are contacting an untrusted backend
 ///
-struct RESPParsingError: Error {
-    struct Code: Hashable, Sendable, CustomStringConvertible {
+public struct RESPParsingError: Error {
+    public struct Code: Hashable, Sendable, CustomStringConvertible {
         private enum Base {
             case invalidLeadingByte
             case invalidData
@@ -40,16 +40,16 @@ struct RESPParsingError: Error {
             self.base = base
         }
 
-        static let invalidLeadingByte = Self.init(.invalidLeadingByte)
-        static let invalidData = Self.init(.invalidData)
-        static let tooDeeplyNestedAggregatedTypes = Self.init(.tooDeeplyNestedAggregatedTypes)
-        static let missingColonInVerbatimString = Self.init(.missingColonInVerbatimString)
-        static let canNotParseInteger = Self.init(.canNotParseInteger)
-        static let canNotParseDouble = Self.init(.canNotParseDouble)
-        static let canNotParseBigNumber = Self.init(.canNotParseBigNumber)
-        static let unexpectedType = Self.init(.unexpectedType)
+        public static let invalidLeadingByte = Self.init(.invalidLeadingByte)
+        public static let invalidData = Self.init(.invalidData)
+        public static let tooDeeplyNestedAggregatedTypes = Self.init(.tooDeeplyNestedAggregatedTypes)
+        public static let missingColonInVerbatimString = Self.init(.missingColonInVerbatimString)
+        public static let canNotParseInteger = Self.init(.canNotParseInteger)
+        public static let canNotParseDouble = Self.init(.canNotParseDouble)
+        public static let canNotParseBigNumber = Self.init(.canNotParseBigNumber)
+        public static let unexpectedType = Self.init(.unexpectedType)
 
-        var description: String {
+        public var description: String {
             switch self.base {
             case .invalidLeadingByte:
                 return "invalidLeadingByte"
@@ -71,7 +71,11 @@ struct RESPParsingError: Error {
         }
     }
 
-    var code: Code
+    public var code: Code
+    public var buffer: ByteBuffer
 
-    var buffer: ByteBuffer
+    package init(code: Code, buffer: ByteBuffer) {
+        self.code = code
+        self.buffer = buffer
+    }
 }
