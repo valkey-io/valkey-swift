@@ -1,5 +1,4 @@
 import NIOCore
-import RESP
 
 /// Type that can represented by a RESP3Token
 public protocol RESP3TokenRepresentable {
@@ -36,7 +35,7 @@ extension ByteBuffer: RESP3TokenRepresentable {
         case .simpleString(let buffer), .blobString(let buffer), .verbatimString(let buffer), .bigNumber(let buffer):
             self = buffer
         default:
-            throw RedisClientError(.unexpectedType)
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
 }
@@ -54,7 +53,7 @@ extension Int: RESP3TokenRepresentable {
         case .number(let value):
             self = numericCast(value)
         default:
-            throw RedisClientError(.unexpectedType)
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
 }
@@ -65,7 +64,7 @@ extension Double: RESP3TokenRepresentable {
         case .double(let value):
             self = value
         default:
-            throw RedisClientError(.unexpectedType)
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
 }
@@ -76,7 +75,7 @@ extension Bool: RESP3TokenRepresentable {
         case .boolean(let value):
             self = value
         default:
-            throw RedisClientError(.unexpectedType)
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
 }
@@ -103,7 +102,7 @@ extension Array: RESP3TokenRepresentable where Element: RESP3TokenRepresentable 
             }
             self = array
         default:
-            throw RedisClientError(.unexpectedType)
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
 }
@@ -119,7 +118,7 @@ extension Set: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
             }
             self = set
         default:
-            throw RedisClientError(.unexpectedType)
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
 }
@@ -136,7 +135,7 @@ extension Dictionary: RESP3TokenRepresentable where Value: RESP3TokenRepresentab
             }
             self = .init(array) { first, _ in first }
         default:
-            throw RedisClientError(.unexpectedType)
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
 }

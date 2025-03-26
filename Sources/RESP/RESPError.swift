@@ -31,6 +31,7 @@ struct RESPParsingError: Error {
             case canNotParseInteger
             case canNotParseDouble
             case canNotParseBigNumber
+            case unexpectedType
         }
 
         private let base: Base
@@ -46,6 +47,7 @@ struct RESPParsingError: Error {
         static let canNotParseInteger = Self.init(.canNotParseInteger)
         static let canNotParseDouble = Self.init(.canNotParseDouble)
         static let canNotParseBigNumber = Self.init(.canNotParseBigNumber)
+        static let unexpectedType = Self.init(.unexpectedType)
 
         var description: String {
             switch self.base {
@@ -63,6 +65,8 @@ struct RESPParsingError: Error {
                 return "canNotParseDouble"
             case .canNotParseBigNumber:
                 return "canNotParseBigNumber"
+            case .unexpectedType:
+                return "unexpectedType"
             }
         }
     }
@@ -70,10 +74,4 @@ struct RESPParsingError: Error {
     var code: Code
 
     var buffer: ByteBuffer
-}
-
-enum RESP3Error: Error, Equatable {
-    case dataMalformed
-    case invalidType(UInt8)
-    case tooDepplyNestedAggregatedTypes
 }
