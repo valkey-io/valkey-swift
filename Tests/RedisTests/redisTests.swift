@@ -1,6 +1,7 @@
 import Foundation
 import Logging
 import RESP3
+import RedisCommands
 import Testing
 
 @testable import Redis
@@ -89,18 +90,6 @@ struct GeneratedCommands {
                 _ = try await connection.lpush(key: key, element: "b")
                 let list = try await connection.sort(key: key, sorting: true).converting(to: [String].self)
                 #expect(list == ["a", "b", "c"])
-            }
-        }
-    }
-
-    @Test
-    func testHelp() async throws {
-        var logger = Logger(label: "Redis")
-        logger.logLevel = .debug
-        try await RedisClient.withConnection(.hostname("localhost", port: 6379), logger: logger) { connection, logger in
-            try await withKey(connection: connection) { key in
-                let help = try await connection.aclHelp().converting(to: [String].self)
-                print(help)
             }
         }
     }

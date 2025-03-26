@@ -1,4 +1,5 @@
 import NIOCore
+import Redis
 import RESP3
 
 #if canImport(FoundationEssentials)
