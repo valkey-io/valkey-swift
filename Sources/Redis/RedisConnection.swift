@@ -41,4 +41,12 @@ public final class RedisConnection {
         }
         return responses
     }
+
+    var subscriptions: RedisSubscriptionAsyncSequence<NIOAsyncChannelInboundStream<RESP3Token>> {
+        RedisSubscriptionAsyncSequence(baseIterator: self.inboundIterator)
+    }
+}
+
+@available(*, unavailable)
+extension RedisConnection: Sendable {
 }
