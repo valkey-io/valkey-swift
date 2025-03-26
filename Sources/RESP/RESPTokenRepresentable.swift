@@ -15,16 +15,16 @@
 import NIOCore
 
 /// Type that can represented by a RESP3Token
-public protocol RESP3TokenRepresentable {
+public protocol RESPTokenRepresentable {
     init(from: RESPToken) throws
 }
 
-extension RESPToken: RESP3TokenRepresentable {
+extension RESPToken: RESPTokenRepresentable {
     /// Convert RESP3Token to a value
     /// - Parameter type: Type to convert to
     /// - Throws: RedisClientError.unexpectedType
     /// - Returns: Value
-    public func converting<Value: RESP3TokenRepresentable>(to type: Value.Type = Value.self) throws -> Value {
+    public func converting<Value: RESPTokenRepresentable>(to type: Value.Type = Value.self) throws -> Value {
         try Value(from: self)
     }
 
@@ -38,12 +38,12 @@ extension Array where Element == RESPToken {
     /// - Parameter type: Type to convert to
     /// - Throws: RedisClientError.unexpectedType
     /// - Returns: Array of Value
-    public func converting<Value: RESP3TokenRepresentable>(to type: [Value].Type = [Value].self) throws -> [Value] {
+    public func converting<Value: RESPTokenRepresentable>(to type: [Value].Type = [Value].self) throws -> [Value] {
         try self.map { try $0.converting() }
     }
 }
 
-extension ByteBuffer: RESP3TokenRepresentable {
+extension ByteBuffer: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .blobString(let buffer), .verbatimString(let buffer), .bigNumber(let buffer):
@@ -54,14 +54,14 @@ extension ByteBuffer: RESP3TokenRepresentable {
     }
 }
 
-extension String: RESP3TokenRepresentable {
+extension String: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         let buffer = try ByteBuffer(from: token)
         self.init(buffer: buffer)
     }
 }
 
-extension Int: RESP3TokenRepresentable {
+extension Int: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .number(let value):
@@ -72,7 +72,7 @@ extension Int: RESP3TokenRepresentable {
     }
 }
 
-extension Double: RESP3TokenRepresentable {
+extension Double: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .double(let value):
@@ -83,7 +83,7 @@ extension Double: RESP3TokenRepresentable {
     }
 }
 
-extension Bool: RESP3TokenRepresentable {
+extension Bool: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .boolean(let value):
@@ -94,7 +94,7 @@ extension Bool: RESP3TokenRepresentable {
     }
 }
 
-extension Optional: RESP3TokenRepresentable where Wrapped: RESP3TokenRepresentable {
+extension Optional: RESPTokenRepresentable where Wrapped: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .null:
@@ -105,7 +105,7 @@ extension Optional: RESP3TokenRepresentable where Wrapped: RESP3TokenRepresentab
     }
 }
 
-extension Array: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
+extension Array: RESPTokenRepresentable where Element: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .array(let respArray), .push(let respArray):
@@ -121,7 +121,7 @@ extension Array: RESP3TokenRepresentable where Element: RESP3TokenRepresentable 
     }
 }
 
-extension Set: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
+extension Set: RESPTokenRepresentable where Element: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .set(let respSet):
@@ -137,7 +137,7 @@ extension Set: RESP3TokenRepresentable where Element: RESP3TokenRepresentable {
     }
 }
 
-extension Dictionary: RESP3TokenRepresentable where Value: RESP3TokenRepresentable, Key: RESP3TokenRepresentable {
+extension Dictionary: RESPTokenRepresentable where Value: RESPTokenRepresentable, Key: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .map(let respMap), .attribute(let respMap):

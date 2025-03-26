@@ -32,7 +32,7 @@ struct RedisClientChannel: ClientConnectionChannel {
 
     func setup(channel: any Channel, logger: Logger) -> NIOCore.EventLoopFuture<Value> {
         channel.eventLoop.makeCompletedFuture {
-            try channel.pipeline.syncOperations.addHandler(RESP3TokenHandler())
+            try channel.pipeline.syncOperations.addHandler(RESPTokenHandler())
             return try RedisAsyncChannel(
                 wrappingChannelSynchronously: channel,
                 configuration: .init()

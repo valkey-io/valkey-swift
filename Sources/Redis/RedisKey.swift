@@ -24,7 +24,7 @@ public struct RedisKey: RawRepresentable {
     }
 }
 
-extension RedisKey: RESP3TokenRepresentable {
+extension RedisKey: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .blobString(let buffer):
