@@ -11,9 +11,3 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 //===----------------------------------------------------------------------===//
-
-/// Configuration for the redis client
-public struct RedisClientConfiguration: Sendable {
-    public init() {
-    }
-}

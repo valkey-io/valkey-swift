@@ -5,18 +5,18 @@
             "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:swift-redis}",
-            "name": "Debug RedisCommandBuilder",
-            "program": "${workspaceFolder:swift-redis}/.build/debug/RedisCommandBuilder",
-            "preLaunchTask": "swift: Build Debug RedisCommandBuilder"
+            "name": "Debug RedisCommandsBuilder",
+            "program": "${workspaceFolder:swift-redis}/.build/debug/RedisCommandsBuilder",
+            "preLaunchTask": "swift: Build Debug RedisCommandsBuilder"
         },
         {
             "type": "lldb",
             "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:swift-redis}",
-            "name": "Release RedisCommandBuilder",
-            "program": "${workspaceFolder:swift-redis}/.build/release/RedisCommandBuilder",
-            "preLaunchTask": "swift: Build Release RedisCommandBuilder"
+            "name": "Release RedisCommandsBuilder",
+            "program": "${workspaceFolder:swift-redis}/.build/release/RedisCommandsBuilder",
+            "preLaunchTask": "swift: Build Release RedisCommandsBuilder"
         }
     ]
 }

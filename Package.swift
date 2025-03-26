@@ -46,7 +46,7 @@ let package = Package(
             ]
         ),
         .executableTarget(
-            name: "RedisCommandBuilder",
+            name: "RedisCommandsBuilder",
             resources: [.process("Resources")]
         ),
         .testTarget(
