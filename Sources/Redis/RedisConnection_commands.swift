@@ -30,7 +30,7 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
     @inlinable
-    public static func aclDeluser(username: String? = nil) -> RESPCommand {
+    public static func aclDeluser(username: String) -> RESPCommand {
         RESPCommand("ACL", "DELUSER", username)
     }
 
@@ -42,8 +42,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
     @inlinable
-    public static func aclDeluser(username: [String]) -> RESPCommand {
-        RESPCommand("ACL", "DELUSER", username)
+    public static func aclDeluser(usernames: [String]) -> RESPCommand {
+        RESPCommand("ACL", "DELUSER", usernames)
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -70,8 +70,8 @@ extension RESPCommand {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
-    public static func aclDryrun(username: String, command: String, arg: [String]) -> RESPCommand {
-        RESPCommand("ACL", "DRYRUN", username, command, arg)
+    public static func aclDryrun(username: String, command: String, args: [String]) -> RESPCommand {
+        RESPCommand("ACL", "DRYRUN", username, command, args)
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
@@ -201,8 +201,8 @@ extension RESPCommand {
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     ///     If the rules contain errors, the error is returned.
     @inlinable
-    public static func aclSetuser(username: String, rule: [String]) -> RESPCommand {
-        RESPCommand("ACL", "SETUSER", username, rule)
+    public static func aclSetuser(username: String, rules: [String]) -> RESPCommand {
+        RESPCommand("ACL", "SETUSER", username, rules)
     }
 
     /// Lists all ACL users.
@@ -392,8 +392,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .setBlock(let setBlock): RESPWithToken("SET", setBlock).writeToRESPBuffer(&buffer)
-            case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).writeToRESPBuffer(&buffer)
+            case .setBlock(let setBlock): setBlock.writeToRESPBuffer(&buffer)
+            case .incrbyBlock(let incrbyBlock): incrbyBlock.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -416,7 +416,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .getBlock(let getBlock): RESPWithToken("GET", getBlock).writeToRESPBuffer(&buffer)
+            case .getBlock(let getBlock): getBlock.writeToRESPBuffer(&buffer)
             case .write(let write): write.writeToRESPBuffer(&buffer)
             }
         }
@@ -445,8 +445,8 @@ extension RESPCommand {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each entry being the corresponding result of the sub-command given at the same position.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if OVERFLOW FAIL was given and overflows or underflows are detected.
     @inlinable
-    public static func bitfield(key: RedisKey, operation: [BITFIELDOperation]) -> RESPCommand {
-        RESPCommand("BITFIELD", key, operation)
+    public static func bitfield(key: RedisKey, operations: [BITFIELDOperation]) -> RESPCommand {
+        RESPCommand("BITFIELD", key, operations)
     }
 
     public struct BITFIELDROGetBlock: RESPRenderable {
@@ -481,8 +481,8 @@ extension RESPCommand {
     /// - Categories: @read, @bitmap, @fast
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each entry being the corresponding result of the sub-command given at the same position.
     @inlinable
-    public static func bitfieldRo(key: RedisKey, getBlock: [BITFIELDROGetBlock]) -> RESPCommand {
-        RESPCommand("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
+    public static func bitfieldRo(key: RedisKey, getBlocks: [BITFIELDROGetBlock]) -> RESPCommand {
+        RESPCommand("BITFIELD_RO", key, RESPWithToken("GET", getBlocks))
     }
 
     public enum BITOPOperation: RESPRenderable {
@@ -509,7 +509,7 @@ extension RESPCommand {
     /// - Categories: @write, @bitmap, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
     @inlinable
-    public static func bitop(operation: BITOPOperation, destkey: RedisKey, key: RedisKey? = nil) -> RESPCommand {
+    public static func bitop(operation: BITOPOperation, destkey: RedisKey, key: RedisKey) -> RESPCommand {
         RESPCommand("BITOP", operation, destkey, key)
     }
 
@@ -521,8 +521,8 @@ extension RESPCommand {
     /// - Categories: @write, @bitmap, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
     @inlinable
-    public static func bitop(operation: BITOPOperation, destkey: RedisKey, key: [RedisKey]) -> RESPCommand {
-        RESPCommand("BITOP", operation, destkey, key)
+    public static func bitop(operation: BITOPOperation, destkey: RedisKey, keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("BITOP", operation, destkey, keys)
     }
 
     public enum BITPOSRangeEndUnitBlockUnit: RESPRenderable {
@@ -644,7 +644,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public static func blmpop(timeout: Double, key: RedisKey? = nil, where: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
+    public static func blmpop(timeout: Double, key: RedisKey, `where`: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
         RESPCommand("BLMPOP", timeout, 1, key, `where`, RESPWithToken("COUNT", count))
     }
 
@@ -658,8 +658,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public static func blmpop(timeout: Double, key: [RedisKey], where: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+    public static func blmpop(timeout: Double, keys: [RedisKey], `where`: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
+        RESPCommand("BLMPOP", timeout, RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count))
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -672,7 +672,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
     @inlinable
-    public static func blpop(key: RedisKey? = nil, timeout: Double) -> RESPCommand {
+    public static func blpop(key: RedisKey, timeout: Double) -> RESPCommand {
         RESPCommand("BLPOP", key, timeout)
     }
 
@@ -686,8 +686,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
     @inlinable
-    public static func blpop(key: [RedisKey], timeout: Double) -> RESPCommand {
-        RESPCommand("BLPOP", key, timeout)
+    public static func blpop(keys: [RedisKey], timeout: Double) -> RESPCommand {
+        RESPCommand("BLPOP", keys, timeout)
     }
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -700,7 +700,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
     @inlinable
-    public static func brpop(key: RedisKey? = nil, timeout: Double) -> RESPCommand {
+    public static func brpop(key: RedisKey, timeout: Double) -> RESPCommand {
         RESPCommand("BRPOP", key, timeout)
     }
 
@@ -714,8 +714,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
     @inlinable
-    public static func brpop(key: [RedisKey], timeout: Double) -> RESPCommand {
-        RESPCommand("BRPOP", key, timeout)
+    public static func brpop(keys: [RedisKey], timeout: Double) -> RESPCommand {
+        RESPCommand("BRPOP", keys, timeout)
     }
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
@@ -754,7 +754,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public static func bzmpop(timeout: Double, key: RedisKey? = nil, where: BZMPOPWhere, count: Int? = nil) -> RESPCommand {
+    public static func bzmpop(timeout: Double, key: RedisKey, `where`: BZMPOPWhere, count: Int? = nil) -> RESPCommand {
         RESPCommand("BZMPOP", timeout, 1, key, `where`, RESPWithToken("COUNT", count))
     }
 
@@ -768,8 +768,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public static func bzmpop(timeout: Double, key: [RedisKey], where: BZMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+    public static func bzmpop(timeout: Double, keys: [RedisKey], `where`: BZMPOPWhere, count: Int? = nil) -> RESPCommand {
+        RESPCommand("BZMPOP", timeout, RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count))
     }
 
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
@@ -782,7 +782,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public static func bzpopmax(key: RedisKey? = nil, timeout: Double) -> RESPCommand {
+    public static func bzpopmax(key: RedisKey, timeout: Double) -> RESPCommand {
         RESPCommand("BZPOPMAX", key, timeout)
     }
 
@@ -796,8 +796,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public static func bzpopmax(key: [RedisKey], timeout: Double) -> RESPCommand {
-        RESPCommand("BZPOPMAX", key, timeout)
+    public static func bzpopmax(keys: [RedisKey], timeout: Double) -> RESPCommand {
+        RESPCommand("BZPOPMAX", keys, timeout)
     }
 
     /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
@@ -810,7 +810,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public static func bzpopmin(key: RedisKey? = nil, timeout: Double) -> RESPCommand {
+    public static func bzpopmin(key: RedisKey, timeout: Double) -> RESPCommand {
         RESPCommand("BZPOPMIN", key, timeout)
     }
 
@@ -824,8 +824,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public static func bzpopmin(key: [RedisKey], timeout: Double) -> RESPCommand {
-        RESPCommand("BZPOPMIN", key, timeout)
+    public static func bzpopmin(keys: [RedisKey], timeout: Double) -> RESPCommand {
+        RESPCommand("BZPOPMIN", keys, timeout)
     }
 
     public enum CLIENTCACHINGMode: RESPRenderable {
@@ -958,12 +958,12 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .clientId(let clientId): RESPWithToken("ID", clientId).writeToRESPBuffer(&buffer)
-            case .clientType(let clientType): RESPWithToken("TYPE", clientType).writeToRESPBuffer(&buffer)
-            case .username(let username): RESPWithToken("USER", username).writeToRESPBuffer(&buffer)
-            case .addr(let addr): RESPWithToken("ADDR", addr).writeToRESPBuffer(&buffer)
-            case .laddr(let laddr): RESPWithToken("LADDR", laddr).writeToRESPBuffer(&buffer)
-            case .skipme(let skipme): RESPWithToken("SKIPME", skipme).writeToRESPBuffer(&buffer)
+            case .clientId(let clientId): clientId.writeToRESPBuffer(&buffer)
+            case .clientType(let clientType): clientType.writeToRESPBuffer(&buffer)
+            case .username(let username): username.writeToRESPBuffer(&buffer)
+            case .addr(let addr): addr.writeToRESPBuffer(&buffer)
+            case .laddr(let laddr): laddr.writeToRESPBuffer(&buffer)
+            case .skipme(let skipme): skipme.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -1029,8 +1029,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): information and statistics about client connections.
     @inlinable
-    public static func clientList(clientType: CLIENTLISTClientType? = nil, clientId: [Int]) -> RESPCommand {
-        RESPCommand("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
+    public static func clientList(clientType: CLIENTLISTClientType? = nil, clientIds: [Int]) -> RESPCommand {
+        RESPCommand("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientIds))
     }
 
     public enum CLIENTNOEVICTEnabled: RESPRenderable {
@@ -1138,8 +1138,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .libname(let libname): RESPWithToken("LIB-NAME", libname).writeToRESPBuffer(&buffer)
-            case .libver(let libver): RESPWithToken("LIB-VER", libver).writeToRESPBuffer(&buffer)
+            case .libname(let libname): libname.writeToRESPBuffer(&buffer)
+            case .libver(let libver): libver.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -1199,8 +1199,8 @@ extension RESPCommand {
     /// - Categories: @slow, @connection
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public static func clientTracking(status: CLIENTTRACKINGStatus, clientId: Int? = nil, prefix: [String], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) -> RESPCommand {
-        RESPCommand("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+    public static func clientTracking(status: CLIENTTRACKINGStatus, clientId: Int? = nil, prefixs: [String], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) -> RESPCommand {
+        RESPCommand("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefixs), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
@@ -1261,7 +1261,7 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public static func clusterAddslots(slot: Int? = nil) -> RESPCommand {
+    public static func clusterAddslots(slot: Int) -> RESPCommand {
         RESPCommand("CLUSTER", "ADDSLOTS", slot)
     }
 
@@ -1273,8 +1273,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public static func clusterAddslots(slot: [Int]) -> RESPCommand {
-        RESPCommand("CLUSTER", "ADDSLOTS", slot)
+    public static func clusterAddslots(slots: [Int]) -> RESPCommand {
+        RESPCommand("CLUSTER", "ADDSLOTS", slots)
     }
 
     public struct CLUSTERADDSLOTSRANGERange: RESPRenderable {
@@ -1297,7 +1297,7 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public static func clusterAddslotsrange(range: CLUSTERADDSLOTSRANGERange? = nil) -> RESPCommand {
+    public static func clusterAddslotsrange(range: CLUSTERADDSLOTSRANGERange) -> RESPCommand {
         RESPCommand("CLUSTER", "ADDSLOTSRANGE", range)
     }
 
@@ -1309,8 +1309,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public static func clusterAddslotsrange(range: [CLUSTERADDSLOTSRANGERange]) -> RESPCommand {
-        RESPCommand("CLUSTER", "ADDSLOTSRANGE", range)
+    public static func clusterAddslotsrange(ranges: [CLUSTERADDSLOTSRANGERange]) -> RESPCommand {
+        RESPCommand("CLUSTER", "ADDSLOTSRANGE", ranges)
     }
 
     /// Advances the cluster config epoch.
@@ -1359,7 +1359,7 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public static func clusterDelslots(slot: Int? = nil) -> RESPCommand {
+    public static func clusterDelslots(slot: Int) -> RESPCommand {
         RESPCommand("CLUSTER", "DELSLOTS", slot)
     }
 
@@ -1371,8 +1371,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public static func clusterDelslots(slot: [Int]) -> RESPCommand {
-        RESPCommand("CLUSTER", "DELSLOTS", slot)
+    public static func clusterDelslots(slots: [Int]) -> RESPCommand {
+        RESPCommand("CLUSTER", "DELSLOTS", slots)
     }
 
     public struct CLUSTERDELSLOTSRANGERange: RESPRenderable {
@@ -1395,7 +1395,7 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public static func clusterDelslotsrange(range: CLUSTERDELSLOTSRANGERange? = nil) -> RESPCommand {
+    public static func clusterDelslotsrange(range: CLUSTERDELSLOTSRANGERange) -> RESPCommand {
         RESPCommand("CLUSTER", "DELSLOTSRANGE", range)
     }
 
@@ -1407,8 +1407,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public static func clusterDelslotsrange(range: [CLUSTERDELSLOTSRANGERange]) -> RESPCommand {
-        RESPCommand("CLUSTER", "DELSLOTSRANGE", range)
+    public static func clusterDelslotsrange(ranges: [CLUSTERDELSLOTSRANGERange]) -> RESPCommand {
+        RESPCommand("CLUSTER", "DELSLOTSRANGE", ranges)
     }
 
     public enum CLUSTERFAILOVEROptions: RESPRenderable {
@@ -1648,9 +1648,9 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .importing(let importing): RESPWithToken("IMPORTING", importing).writeToRESPBuffer(&buffer)
-            case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).writeToRESPBuffer(&buffer)
-            case .node(let node): RESPWithToken("NODE", node).writeToRESPBuffer(&buffer)
+            case .importing(let importing): importing.writeToRESPBuffer(&buffer)
+            case .migrating(let migrating): migrating.writeToRESPBuffer(&buffer)
+            case .node(let node): node.writeToRESPBuffer(&buffer)
             case .stable: "STABLE".writeToRESPBuffer(&buffer)
             }
         }
@@ -1747,8 +1747,8 @@ extension RESPCommand {
     /// - Categories: @slow, @connection
     /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
-    public static func commandDocs(commandName: [String]) -> RESPCommand {
-        RESPCommand("COMMAND", "DOCS", commandName)
+    public static func commandDocs(commandNames: [String]) -> RESPCommand {
+        RESPCommand("COMMAND", "DOCS", commandNames)
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -1771,8 +1771,8 @@ extension RESPCommand {
     /// - Categories: @slow, @connection
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command.
     @inlinable
-    public static func commandGetkeys(command: String, arg: [String]) -> RESPCommand {
-        RESPCommand("COMMAND", "GETKEYS", command, arg)
+    public static func commandGetkeys(command: String, args: [String]) -> RESPCommand {
+        RESPCommand("COMMAND", "GETKEYS", command, args)
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
@@ -1795,8 +1795,8 @@ extension RESPCommand {
     /// - Categories: @slow, @connection
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command and their usage flags.
     @inlinable
-    public static func commandGetkeysandflags(command: String, arg: [String]) -> RESPCommand {
-        RESPCommand("COMMAND", "GETKEYSANDFLAGS", command, arg)
+    public static func commandGetkeysandflags(command: String, args: [String]) -> RESPCommand {
+        RESPCommand("COMMAND", "GETKEYSANDFLAGS", command, args)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1831,8 +1831,8 @@ extension RESPCommand {
     /// - Categories: @slow, @connection
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details.
     @inlinable
-    public static func commandInfo(commandName: [String]) -> RESPCommand {
-        RESPCommand("COMMAND", "INFO", commandName)
+    public static func commandInfo(commandNames: [String]) -> RESPCommand {
+        RESPCommand("COMMAND", "INFO", commandNames)
     }
 
     public enum COMMANDLISTFilterby: RESPRenderable {
@@ -1843,9 +1843,9 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).writeToRESPBuffer(&buffer)
-            case .category(let category): RESPWithToken("ACLCAT", category).writeToRESPBuffer(&buffer)
-            case .pattern(let pattern): RESPWithToken("PATTERN", pattern).writeToRESPBuffer(&buffer)
+            case .moduleName(let moduleName): moduleName.writeToRESPBuffer(&buffer)
+            case .category(let category): category.writeToRESPBuffer(&buffer)
+            case .pattern(let pattern): pattern.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -1869,7 +1869,7 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
-    public static func configGet(parameter: String? = nil) -> RESPCommand {
+    public static func configGet(parameter: String) -> RESPCommand {
         RESPCommand("CONFIG", "GET", parameter)
     }
 
@@ -1881,8 +1881,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
-    public static func configGet(parameter: [String]) -> RESPCommand {
-        RESPCommand("CONFIG", "GET", parameter)
+    public static func configGet(parameters: [String]) -> RESPCommand {
+        RESPCommand("CONFIG", "GET", parameters)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1941,7 +1941,7 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
-    public static func configSet(data: CONFIGSETData? = nil) -> RESPCommand {
+    public static func configSet(data: CONFIGSETData) -> RESPCommand {
         RESPCommand("CONFIG", "SET", data)
     }
 
@@ -1953,8 +1953,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
-    public static func configSet(data: [CONFIGSETData]) -> RESPCommand {
-        RESPCommand("CONFIG", "SET", data)
+    public static func configSet(datas: [CONFIGSETData]) -> RESPCommand {
+        RESPCommand("CONFIG", "SET", datas)
     }
 
     /// Copies the value of a key to a new key.
@@ -2015,7 +2015,7 @@ extension RESPCommand {
     /// - Categories: @keyspace, @write, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were removed.
     @inlinable
-    public static func del(key: RedisKey? = nil) -> RESPCommand {
+    public static func del(key: RedisKey) -> RESPCommand {
         RESPCommand("DEL", key)
     }
 
@@ -2027,8 +2027,8 @@ extension RESPCommand {
     /// - Categories: @keyspace, @write, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were removed.
     @inlinable
-    public static func del(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("DEL", key)
+    public static func del(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("DEL", keys)
     }
 
     /// Discards a transaction.
@@ -2089,8 +2089,8 @@ extension RESPCommand {
     /// - Categories: @slow, @scripting
     /// - Response: The return value depends on the script that was executed.
     @inlinable
-    public static func eval(script: String, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("EVAL", script, RESPArrayWithCount(key), arg)
+    public static func eval(script: String, keys: [RedisKey], args: [String]) -> RESPCommand {
+        RESPCommand("EVAL", script, RESPArrayWithCount(keys), args)
     }
 
     /// Executes a server-side Lua script by SHA1 digest.
@@ -2113,8 +2113,8 @@ extension RESPCommand {
     /// - Categories: @slow, @scripting
     /// - Response: The return value depends on the script that was executed.
     @inlinable
-    public static func evalsha(sha1: String, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("EVALSHA", sha1, RESPArrayWithCount(key), arg)
+    public static func evalsha(sha1: String, keys: [RedisKey], args: [String]) -> RESPCommand {
+        RESPCommand("EVALSHA", sha1, RESPArrayWithCount(keys), args)
     }
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
@@ -2137,8 +2137,8 @@ extension RESPCommand {
     /// - Categories: @slow, @scripting
     /// - Response: The return value depends on the script that was executed.
     @inlinable
-    public static func evalshaRo(sha1: String, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("EVALSHA_RO", sha1, RESPArrayWithCount(key), arg)
+    public static func evalshaRo(sha1: String, keys: [RedisKey], args: [String]) -> RESPCommand {
+        RESPCommand("EVALSHA_RO", sha1, RESPArrayWithCount(keys), args)
     }
 
     /// Executes a read-only server-side Lua script.
@@ -2161,8 +2161,8 @@ extension RESPCommand {
     /// - Categories: @slow, @scripting
     /// - Response: The return value depends on the script that was executed.
     @inlinable
-    public static func evalRo(script: String, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("EVAL_RO", script, RESPArrayWithCount(key), arg)
+    public static func evalRo(script: String, keys: [RedisKey], args: [String]) -> RESPCommand {
+        RESPCommand("EVAL_RO", script, RESPArrayWithCount(keys), args)
     }
 
     /// Executes all commands in a transaction.
@@ -2187,7 +2187,7 @@ extension RESPCommand {
     /// - Categories: @keyspace, @read, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that exist from those specified as arguments.
     @inlinable
-    public static func exists(key: RedisKey? = nil) -> RESPCommand {
+    public static func exists(key: RedisKey) -> RESPCommand {
         RESPCommand("EXISTS", key)
     }
 
@@ -2199,8 +2199,8 @@ extension RESPCommand {
     /// - Categories: @keyspace, @read, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that exist from those specified as arguments.
     @inlinable
-    public static func exists(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("EXISTS", key)
+    public static func exists(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("EXISTS", keys)
     }
 
     public enum EXPIRECondition: RESPRenderable {
@@ -2324,8 +2324,8 @@ extension RESPCommand {
     /// - Categories: @slow, @scripting
     /// - Response: The return value depends on the function that was executed.
     @inlinable
-    public static func fcall(function: String, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("FCALL", function, RESPArrayWithCount(key), arg)
+    public static func fcall(function: String, keys: [RedisKey], args: [String]) -> RESPCommand {
+        RESPCommand("FCALL", function, RESPArrayWithCount(keys), args)
     }
 
     /// Invokes a read-only function.
@@ -2348,8 +2348,8 @@ extension RESPCommand {
     /// - Categories: @slow, @scripting
     /// - Response: The return value depends on the function that was executed.
     @inlinable
-    public static func fcallRo(function: String, key: [RedisKey], arg: [String]) -> RESPCommand {
-        RESPCommand("FCALL_RO", function, RESPArrayWithCount(key), arg)
+    public static func fcallRo(function: String, keys: [RedisKey], args: [String]) -> RESPCommand {
+        RESPCommand("FCALL_RO", function, RESPArrayWithCount(keys), args)
     }
 
     public enum FLUSHALLFlushType: RESPRenderable {
@@ -2568,7 +2568,7 @@ extension RESPCommand {
     /// - Categories: @write, @geo, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public static func geoadd(key: RedisKey, condition: GEOADDCondition? = nil, change: Bool = false, data: GEOADDData? = nil) -> RESPCommand {
+    public static func geoadd(key: RedisKey, condition: GEOADDCondition? = nil, change: Bool = false, data: GEOADDData) -> RESPCommand {
         RESPCommand("GEOADD", key, condition, RedisPureToken("CH", change), data)
     }
 
@@ -2580,8 +2580,8 @@ extension RESPCommand {
     /// - Categories: @write, @geo, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public static func geoadd(key: RedisKey, condition: GEOADDCondition? = nil, change: Bool = false, data: [GEOADDData]) -> RESPCommand {
-        RESPCommand("GEOADD", key, condition, RedisPureToken("CH", change), data)
+    public static func geoadd(key: RedisKey, condition: GEOADDCondition? = nil, change: Bool = false, datas: [GEOADDData]) -> RESPCommand {
+        RESPCommand("GEOADD", key, condition, RedisPureToken("CH", change), datas)
     }
 
     public enum GEODISTUnit: RESPRenderable {
@@ -2634,8 +2634,8 @@ extension RESPCommand {
     /// - Categories: @read, @geo, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): An array where each element is the Geohash corresponding to each member name passed as an argument to the command.
     @inlinable
-    public static func geohash(key: RedisKey, member: [String]) -> RESPCommand {
-        RESPCommand("GEOHASH", key, member)
+    public static func geohash(key: RedisKey, members: [String]) -> RESPCommand {
+        RESPCommand("GEOHASH", key, members)
     }
 
     /// Returns the longitude and latitude of members from a geospatial index.
@@ -2658,8 +2658,8 @@ extension RESPCommand {
     /// - Categories: @read, @geo, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/redis.io/docs/reference/protocol-spec#nulls) elements of the array.
     @inlinable
-    public static func geopos(key: RedisKey, member: [String]) -> RESPCommand {
-        RESPCommand("GEOPOS", key, member)
+    public static func geopos(key: RedisKey, members: [String]) -> RESPCommand {
+        RESPCommand("GEOPOS", key, members)
     }
 
     public enum GEORADIUSUnit: RESPRenderable {
@@ -2709,8 +2709,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
-            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
+            case .storekey(let storekey): storekey.writeToRESPBuffer(&buffer)
+            case .storedistkey(let storedistkey): storedistkey.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -2782,8 +2782,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
-            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
+            case .storekey(let storekey): storekey.writeToRESPBuffer(&buffer)
+            case .storedistkey(let storedistkey): storedistkey.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -2937,8 +2937,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
-            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
+            case .member(let member): member.writeToRESPBuffer(&buffer)
+            case .fromlonlat(let fromlonlat): fromlonlat.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -3072,8 +3072,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
-            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
+            case .member(let member): member.writeToRESPBuffer(&buffer)
+            case .fromlonlat(let fromlonlat): fromlonlat.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -3235,10 +3235,10 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
-            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
-            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", unixTimeSeconds).writeToRESPBuffer(&buffer)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", unixTimeMilliseconds).writeToRESPBuffer(&buffer)
+            case .seconds(let seconds): seconds.writeToRESPBuffer(&buffer)
+            case .milliseconds(let milliseconds): milliseconds.writeToRESPBuffer(&buffer)
+            case .unixTimeSeconds(let unixTimeSeconds): unixTimeSeconds.writeToRESPBuffer(&buffer)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): unixTimeMilliseconds.writeToRESPBuffer(&buffer)
             case .persist: "PERSIST".writeToRESPBuffer(&buffer)
             }
         }
@@ -3290,7 +3290,7 @@ extension RESPCommand {
     /// - Categories: @write, @hash, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The number of fields that were removed from the hash, excluding any specified but non-existing fields.
     @inlinable
-    public static func hdel(key: RedisKey, field: String? = nil) -> RESPCommand {
+    public static func hdel(key: RedisKey, field: String) -> RESPCommand {
         RESPCommand("HDEL", key, field)
     }
 
@@ -3302,8 +3302,8 @@ extension RESPCommand {
     /// - Categories: @write, @hash, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The number of fields that were removed from the hash, excluding any specified but non-existing fields.
     @inlinable
-    public static func hdel(key: RedisKey, field: [String]) -> RESPCommand {
-        RESPCommand("HDEL", key, field)
+    public static func hdel(key: RedisKey, fields: [String]) -> RESPCommand {
+        RESPCommand("HDEL", key, fields)
     }
 
     public struct HELLOArgumentsAuth: RESPRenderable {
@@ -3441,7 +3441,7 @@ extension RESPCommand {
     /// - Categories: @read, @hash, @fast
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values associated with the given fields, in the same order as they are requested.
     @inlinable
-    public static func hmget(key: RedisKey, field: String? = nil) -> RESPCommand {
+    public static func hmget(key: RedisKey, field: String) -> RESPCommand {
         RESPCommand("HMGET", key, field)
     }
 
@@ -3453,8 +3453,8 @@ extension RESPCommand {
     /// - Categories: @read, @hash, @fast
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values associated with the given fields, in the same order as they are requested.
     @inlinable
-    public static func hmget(key: RedisKey, field: [String]) -> RESPCommand {
-        RESPCommand("HMGET", key, field)
+    public static func hmget(key: RedisKey, fields: [String]) -> RESPCommand {
+        RESPCommand("HMGET", key, fields)
     }
 
     public struct HMSETData: RESPRenderable {
@@ -3477,7 +3477,7 @@ extension RESPCommand {
     /// - Categories: @write, @hash, @fast
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public static func hmset(key: RedisKey, data: HMSETData? = nil) -> RESPCommand {
+    public static func hmset(key: RedisKey, data: HMSETData) -> RESPCommand {
         RESPCommand("HMSET", key, data)
     }
 
@@ -3489,8 +3489,8 @@ extension RESPCommand {
     /// - Categories: @write, @hash, @fast
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public static func hmset(key: RedisKey, data: [HMSETData]) -> RESPCommand {
-        RESPCommand("HMSET", key, data)
+    public static func hmset(key: RedisKey, datas: [HMSETData]) -> RESPCommand {
+        RESPCommand("HMSET", key, datas)
     }
 
     public struct HRANDFIELDOptions: RESPRenderable {
@@ -3555,7 +3555,7 @@ extension RESPCommand {
     /// - Categories: @write, @hash, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of fields that were added.
     @inlinable
-    public static func hset(key: RedisKey, data: HSETData? = nil) -> RESPCommand {
+    public static func hset(key: RedisKey, data: HSETData) -> RESPCommand {
         RESPCommand("HSET", key, data)
     }
 
@@ -3567,8 +3567,8 @@ extension RESPCommand {
     /// - Categories: @write, @hash, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of fields that were added.
     @inlinable
-    public static func hset(key: RedisKey, data: [HSETData]) -> RESPCommand {
-        RESPCommand("HSET", key, data)
+    public static func hset(key: RedisKey, datas: [HSETData]) -> RESPCommand {
+        RESPCommand("HSET", key, datas)
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
@@ -3669,8 +3669,8 @@ extension RESPCommand {
     ///     
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
-    public static func info(section: [String]) -> RESPCommand {
-        RESPCommand("INFO", section)
+    public static func info(sections: [String]) -> RESPCommand {
+        RESPCommand("INFO", sections)
     }
 
     /// Returns all key names that match a pattern.
@@ -3753,8 +3753,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
-    public static func latencyHistogram(command: [String]) -> RESPCommand {
-        RESPCommand("LATENCY", "HISTOGRAM", command)
+    public static func latencyHistogram(commands: [String]) -> RESPCommand {
+        RESPCommand("LATENCY", "HISTOGRAM", commands)
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -3801,8 +3801,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of event time series that were reset.
     @inlinable
-    public static func latencyReset(event: [String]) -> RESPCommand {
-        RESPCommand("LATENCY", "RESET", event)
+    public static func latencyReset(events: [String]) -> RESPCommand {
+        RESPCommand("LATENCY", "RESET", events)
     }
 
     /// Finds the longest common substring.
@@ -3857,7 +3857,7 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` when the key doesn't exist.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` when the pivot wasn't found.
     @inlinable
-    public static func linsert(key: RedisKey, where: LINSERTWhere, pivot: String, element: String) -> RESPCommand {
+    public static func linsert(key: RedisKey, `where`: LINSERTWhere, pivot: String, element: String) -> RESPCommand {
         RESPCommand("LINSERT", key, `where`, pivot, element)
     }
 
@@ -3931,7 +3931,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public static func lmpop(key: RedisKey? = nil, where: LMPOPWhere, count: Int? = nil) -> RESPCommand {
+    public static func lmpop(key: RedisKey, `where`: LMPOPWhere, count: Int? = nil) -> RESPCommand {
         RESPCommand("LMPOP", 1, key, `where`, RESPWithToken("COUNT", count))
     }
 
@@ -3945,8 +3945,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public static func lmpop(key: [RedisKey], where: LMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+    public static func lmpop(keys: [RedisKey], `where`: LMPOPWhere, count: Int? = nil) -> RESPCommand {
+        RESPCommand("LMPOP", RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count))
     }
 
     /// Displays computer art and the Redis version
@@ -3998,7 +3998,7 @@ extension RESPCommand {
     /// - Categories: @write, @list, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public static func lpush(key: RedisKey, element: String? = nil) -> RESPCommand {
+    public static func lpush(key: RedisKey, element: String) -> RESPCommand {
         RESPCommand("LPUSH", key, element)
     }
 
@@ -4010,8 +4010,8 @@ extension RESPCommand {
     /// - Categories: @write, @list, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public static func lpush(key: RedisKey, element: [String]) -> RESPCommand {
-        RESPCommand("LPUSH", key, element)
+    public static func lpush(key: RedisKey, elements: [String]) -> RESPCommand {
+        RESPCommand("LPUSH", key, elements)
     }
 
     /// Prepends one or more elements to a list only when the list exists.
@@ -4022,7 +4022,7 @@ extension RESPCommand {
     /// - Categories: @write, @list, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public static func lpushx(key: RedisKey, element: String? = nil) -> RESPCommand {
+    public static func lpushx(key: RedisKey, element: String) -> RESPCommand {
         RESPCommand("LPUSHX", key, element)
     }
 
@@ -4034,8 +4034,8 @@ extension RESPCommand {
     /// - Categories: @write, @list, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public static func lpushx(key: RedisKey, element: [String]) -> RESPCommand {
-        RESPCommand("LPUSHX", key, element)
+    public static func lpushx(key: RedisKey, elements: [String]) -> RESPCommand {
+        RESPCommand("LPUSHX", key, elements)
     }
 
     /// Returns a range of elements from a list.
@@ -4168,7 +4168,7 @@ extension RESPCommand {
     /// - Categories: @read, @string, @fast
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values at the specified keys.
     @inlinable
-    public static func mget(key: RedisKey? = nil) -> RESPCommand {
+    public static func mget(key: RedisKey) -> RESPCommand {
         RESPCommand("MGET", key)
     }
 
@@ -4180,8 +4180,8 @@ extension RESPCommand {
     /// - Categories: @read, @string, @fast
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values at the specified keys.
     @inlinable
-    public static func mget(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("MGET", key)
+    public static func mget(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("MGET", keys)
     }
 
     public enum MIGRATEKeySelector: RESPRenderable {
@@ -4215,8 +4215,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .auth(let auth): RESPWithToken("AUTH", auth).writeToRESPBuffer(&buffer)
-            case .auth2(let auth2): RESPWithToken("AUTH2", auth2).writeToRESPBuffer(&buffer)
+            case .auth(let auth): auth.writeToRESPBuffer(&buffer)
+            case .auth2(let auth2): auth2.writeToRESPBuffer(&buffer)
             }
         }
     }
@@ -4244,8 +4244,8 @@ extension RESPCommand {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public static func migrate(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATEAuthentication? = nil, keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
+    public static func migrate(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATEAuthentication? = nil, keyss: [RedisKey]) -> RESPCommand {
+        RESPCommand("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keyss))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -4294,8 +4294,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public static func moduleLoad(path: String, arg: [String]) -> RESPCommand {
-        RESPCommand("MODULE", "LOAD", path, arg)
+    public static func moduleLoad(path: String, args: [String]) -> RESPCommand {
+        RESPCommand("MODULE", "LOAD", path, args)
     }
 
     public struct MODULELOADEXConfigs: RESPRenderable {
@@ -4330,8 +4330,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public static func moduleLoadex(path: String, configs: [MODULELOADEXConfigs], args: [String]) -> RESPCommand {
-        RESPCommand("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+    public static func moduleLoadex(path: String, configss: [MODULELOADEXConfigs], argss: [String]) -> RESPCommand {
+        RESPCommand("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configss), RESPWithToken("ARGS", argss))
     }
 
     /// Unloads a module.
@@ -4391,7 +4391,7 @@ extension RESPCommand {
     /// - Categories: @write, @string, @slow
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): always `OK` because `MSET` can't fail.
     @inlinable
-    public static func mset(data: MSETData? = nil) -> RESPCommand {
+    public static func mset(data: MSETData) -> RESPCommand {
         RESPCommand("MSET", data)
     }
 
@@ -4403,8 +4403,8 @@ extension RESPCommand {
     /// - Categories: @write, @string, @slow
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): always `OK` because `MSET` can't fail.
     @inlinable
-    public static func mset(data: [MSETData]) -> RESPCommand {
-        RESPCommand("MSET", data)
+    public static func mset(datas: [MSETData]) -> RESPCommand {
+        RESPCommand("MSET", datas)
     }
 
     public struct MSETNXData: RESPRenderable {
@@ -4429,7 +4429,7 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no key was set (at least one key already existed).
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if all the keys were set.
     @inlinable
-    public static func msetnx(data: MSETNXData? = nil) -> RESPCommand {
+    public static func msetnx(data: MSETNXData) -> RESPCommand {
         RESPCommand("MSETNX", data)
     }
 
@@ -4443,8 +4443,8 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no key was set (at least one key already existed).
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if all the keys were set.
     @inlinable
-    public static func msetnx(data: [MSETNXData]) -> RESPCommand {
-        RESPCommand("MSETNX", data)
+    public static func msetnx(datas: [MSETNXData]) -> RESPCommand {
+        RESPCommand("MSETNX", datas)
     }
 
     /// Starts a transaction.
@@ -4640,8 +4640,8 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if at least one HyperLogLog internal register was altered.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no HyperLogLog internal registers were altered.
     @inlinable
-    public static func pfadd(key: RedisKey, element: [String]) -> RESPCommand {
-        RESPCommand("PFADD", key, element)
+    public static func pfadd(key: RedisKey, elements: [String]) -> RESPCommand {
+        RESPCommand("PFADD", key, elements)
     }
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
@@ -4652,7 +4652,7 @@ extension RESPCommand {
     /// - Categories: @read, @hyperloglog, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
     @inlinable
-    public static func pfcount(key: RedisKey? = nil) -> RESPCommand {
+    public static func pfcount(key: RedisKey) -> RESPCommand {
         RESPCommand("PFCOUNT", key)
     }
 
@@ -4664,8 +4664,8 @@ extension RESPCommand {
     /// - Categories: @read, @hyperloglog, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
     @inlinable
-    public static func pfcount(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("PFCOUNT", key)
+    public static func pfcount(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("PFCOUNT", keys)
     }
 
     /// Merges one or more HyperLogLog values into a single key.
@@ -4688,8 +4688,8 @@ extension RESPCommand {
     /// - Categories: @write, @hyperloglog, @slow
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public static func pfmerge(destkey: RedisKey, sourcekey: [RedisKey]) -> RESPCommand {
-        RESPCommand("PFMERGE", destkey, sourcekey)
+    public static func pfmerge(destkey: RedisKey, sourcekeys: [RedisKey]) -> RESPCommand {
+        RESPCommand("PFMERGE", destkey, sourcekeys)
     }
 
     /// An internal command for testing HyperLogLog values.
@@ -4738,7 +4738,7 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public static func psubscribe(pattern: String? = nil) -> RESPCommand {
+    public static func psubscribe(pattern: String) -> RESPCommand {
         RESPCommand("PSUBSCRIBE", pattern)
     }
 
@@ -4750,8 +4750,8 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public static func psubscribe(pattern: [String]) -> RESPCommand {
-        RESPCommand("PSUBSCRIBE", pattern)
+    public static func psubscribe(patterns: [String]) -> RESPCommand {
+        RESPCommand("PSUBSCRIBE", patterns)
     }
 
     /// An internal command used in replication.
@@ -4848,8 +4848,8 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
     @inlinable
-    public static func pubsubNumsub(channel: [String]) -> RESPCommand {
-        RESPCommand("PUBSUB", "NUMSUB", channel)
+    public static func pubsubNumsub(channels: [String]) -> RESPCommand {
+        RESPCommand("PUBSUB", "NUMSUB", channels)
     }
 
     /// Returns the active shard channels.
@@ -4884,8 +4884,8 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
-    public static func pubsubShardnumsub(shardchannel: [String]) -> RESPCommand {
-        RESPCommand("PUBSUB", "SHARDNUMSUB", shardchannel)
+    public static func pubsubShardnumsub(shardchannels: [String]) -> RESPCommand {
+        RESPCommand("PUBSUB", "SHARDNUMSUB", shardchannels)
     }
 
     /// Stops listening to messages published to channels that match one or more patterns.
@@ -4908,8 +4908,8 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `punsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public static func punsubscribe(pattern: [String]) -> RESPCommand {
-        RESPCommand("PUNSUBSCRIBE", pattern)
+    public static func punsubscribe(patterns: [String]) -> RESPCommand {
+        RESPCommand("PUNSUBSCRIBE", patterns)
     }
 
     /// Closes the connection.
@@ -5133,7 +5133,7 @@ extension RESPCommand {
     /// - Categories: @write, @list, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public static func rpush(key: RedisKey, element: String? = nil) -> RESPCommand {
+    public static func rpush(key: RedisKey, element: String) -> RESPCommand {
         RESPCommand("RPUSH", key, element)
     }
 
@@ -5145,8 +5145,8 @@ extension RESPCommand {
     /// - Categories: @write, @list, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public static func rpush(key: RedisKey, element: [String]) -> RESPCommand {
-        RESPCommand("RPUSH", key, element)
+    public static func rpush(key: RedisKey, elements: [String]) -> RESPCommand {
+        RESPCommand("RPUSH", key, elements)
     }
 
     /// Appends an element to a list only when the list exists.
@@ -5157,7 +5157,7 @@ extension RESPCommand {
     /// - Categories: @write, @list, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public static func rpushx(key: RedisKey, element: String? = nil) -> RESPCommand {
+    public static func rpushx(key: RedisKey, element: String) -> RESPCommand {
         RESPCommand("RPUSHX", key, element)
     }
 
@@ -5169,8 +5169,8 @@ extension RESPCommand {
     /// - Categories: @write, @list, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public static func rpushx(key: RedisKey, element: [String]) -> RESPCommand {
-        RESPCommand("RPUSHX", key, element)
+    public static func rpushx(key: RedisKey, elements: [String]) -> RESPCommand {
+        RESPCommand("RPUSHX", key, elements)
     }
 
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
@@ -5181,7 +5181,7 @@ extension RESPCommand {
     /// - Categories: @write, @set, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public static func sadd(key: RedisKey, member: String? = nil) -> RESPCommand {
+    public static func sadd(key: RedisKey, member: String) -> RESPCommand {
         RESPCommand("SADD", key, member)
     }
 
@@ -5193,8 +5193,8 @@ extension RESPCommand {
     /// - Categories: @write, @set, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public static func sadd(key: RedisKey, member: [String]) -> RESPCommand {
-        RESPCommand("SADD", key, member)
+    public static func sadd(key: RedisKey, members: [String]) -> RESPCommand {
+        RESPCommand("SADD", key, members)
     }
 
     /// Synchronously saves the database(s) to disk.
@@ -5269,7 +5269,7 @@ extension RESPCommand {
     /// - Categories: @slow, @scripting
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
-    public static func scriptExists(sha1: String? = nil) -> RESPCommand {
+    public static func scriptExists(sha1: String) -> RESPCommand {
         RESPCommand("SCRIPT", "EXISTS", sha1)
     }
 
@@ -5281,8 +5281,8 @@ extension RESPCommand {
     /// - Categories: @slow, @scripting
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
-    public static func scriptExists(sha1: [String]) -> RESPCommand {
-        RESPCommand("SCRIPT", "EXISTS", sha1)
+    public static func scriptExists(sha1s: [String]) -> RESPCommand {
+        RESPCommand("SCRIPT", "EXISTS", sha1s)
     }
 
     public enum SCRIPTFLUSHFlushType: RESPRenderable {
@@ -5353,7 +5353,7 @@ extension RESPCommand {
     /// - Categories: @read, @set, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public static func sdiff(key: RedisKey? = nil) -> RESPCommand {
+    public static func sdiff(key: RedisKey) -> RESPCommand {
         RESPCommand("SDIFF", key)
     }
 
@@ -5365,8 +5365,8 @@ extension RESPCommand {
     /// - Categories: @read, @set, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public static func sdiff(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("SDIFF", key)
+    public static func sdiff(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("SDIFF", keys)
     }
 
     /// Stores the difference of multiple sets in a key.
@@ -5377,7 +5377,7 @@ extension RESPCommand {
     /// - Categories: @write, @set, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
     @inlinable
-    public static func sdiffstore(destination: RedisKey, key: RedisKey? = nil) -> RESPCommand {
+    public static func sdiffstore(destination: RedisKey, key: RedisKey) -> RESPCommand {
         RESPCommand("SDIFFSTORE", destination, key)
     }
 
@@ -5389,8 +5389,8 @@ extension RESPCommand {
     /// - Categories: @write, @set, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
     @inlinable
-    public static func sdiffstore(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
-        RESPCommand("SDIFFSTORE", destination, key)
+    public static func sdiffstore(destination: RedisKey, keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("SDIFFSTORE", destination, keys)
     }
 
     /// Changes the selected database.
@@ -5427,10 +5427,10 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             switch self {
-            case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
-            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
-            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", unixTimeSeconds).writeToRESPBuffer(&buffer)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", unixTimeMilliseconds).writeToRESPBuffer(&buffer)
+            case .seconds(let seconds): seconds.writeToRESPBuffer(&buffer)
+            case .milliseconds(let milliseconds): milliseconds.writeToRESPBuffer(&buffer)
+            case .unixTimeSeconds(let unixTimeSeconds): unixTimeSeconds.writeToRESPBuffer(&buffer)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): unixTimeMilliseconds.writeToRESPBuffer(&buffer)
             case .keepttl: "KEEPTTL".writeToRESPBuffer(&buffer)
             }
         }
@@ -5533,7 +5533,7 @@ extension RESPCommand {
     /// - Categories: @read, @set, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public static func sinter(key: RedisKey? = nil) -> RESPCommand {
+    public static func sinter(key: RedisKey) -> RESPCommand {
         RESPCommand("SINTER", key)
     }
 
@@ -5545,8 +5545,8 @@ extension RESPCommand {
     /// - Categories: @read, @set, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public static func sinter(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("SINTER", key)
+    public static func sinter(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("SINTER", keys)
     }
 
     /// Returns the number of members of the intersect of multiple sets.
@@ -5557,7 +5557,7 @@ extension RESPCommand {
     /// - Categories: @read, @set, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
     @inlinable
-    public static func sintercard(key: RedisKey? = nil, limit: Int? = nil) -> RESPCommand {
+    public static func sintercard(key: RedisKey, limit: Int? = nil) -> RESPCommand {
         RESPCommand("SINTERCARD", 1, key, RESPWithToken("LIMIT", limit))
     }
 
@@ -5569,8 +5569,8 @@ extension RESPCommand {
     /// - Categories: @read, @set, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
     @inlinable
-    public static func sintercard(key: [RedisKey], limit: Int? = nil) -> RESPCommand {
-        RESPCommand("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
+    public static func sintercard(keys: [RedisKey], limit: Int? = nil) -> RESPCommand {
+        RESPCommand("SINTERCARD", RESPArrayWithCount(keys), RESPWithToken("LIMIT", limit))
     }
 
     /// Stores the intersect of multiple sets in a key.
@@ -5581,7 +5581,7 @@ extension RESPCommand {
     /// - Categories: @write, @set, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
     @inlinable
-    public static func sinterstore(destination: RedisKey, key: RedisKey? = nil) -> RESPCommand {
+    public static func sinterstore(destination: RedisKey, key: RedisKey) -> RESPCommand {
         RESPCommand("SINTERSTORE", destination, key)
     }
 
@@ -5593,8 +5593,8 @@ extension RESPCommand {
     /// - Categories: @write, @set, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
     @inlinable
-    public static func sinterstore(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
-        RESPCommand("SINTERSTORE", destination, key)
+    public static func sinterstore(destination: RedisKey, keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("SINTERSTORE", destination, keys)
     }
 
     /// Determines whether a member belongs to a set.
@@ -5727,7 +5727,7 @@ extension RESPCommand {
     /// - Categories: @read, @set, @fast
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public static func smismember(key: RedisKey, member: String? = nil) -> RESPCommand {
+    public static func smismember(key: RedisKey, member: String) -> RESPCommand {
         RESPCommand("SMISMEMBER", key, member)
     }
 
@@ -5739,8 +5739,8 @@ extension RESPCommand {
     /// - Categories: @read, @set, @fast
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public static func smismember(key: RedisKey, member: [String]) -> RESPCommand {
-        RESPCommand("SMISMEMBER", key, member)
+    public static func smismember(key: RedisKey, members: [String]) -> RESPCommand {
+        RESPCommand("SMISMEMBER", key, members)
     }
 
     /// Moves a member from one set to another.
@@ -5803,8 +5803,8 @@ extension RESPCommand {
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public static func sort(key: RedisKey, byPattern: String? = nil, limit: SORTLimit? = nil, getPattern: [String], order: SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) -> RESPCommand {
-        RESPCommand("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+    public static func sort(key: RedisKey, byPattern: String? = nil, limit: SORTLimit? = nil, getPatterns: [String], order: SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) -> RESPCommand {
+        RESPCommand("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPatterns), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
     }
 
     public struct SORTROLimit: RESPRenderable {
@@ -5851,8 +5851,8 @@ extension RESPCommand {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public static func sortRo(key: RedisKey, byPattern: String? = nil, limit: SORTROLimit? = nil, getPattern: [String], order: SORTROOrder? = nil, sorting: Bool = false) -> RESPCommand {
-        RESPCommand("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting))
+    public static func sortRo(key: RedisKey, byPattern: String? = nil, limit: SORTROLimit? = nil, getPatterns: [String], order: SORTROOrder? = nil, sorting: Bool = false) -> RESPCommand {
+        RESPCommand("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPatterns), order, RedisPureToken("ALPHA", sorting))
     }
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
@@ -5904,7 +5904,7 @@ extension RESPCommand {
     /// - Categories: @write, @set, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
     @inlinable
-    public static func srem(key: RedisKey, member: String? = nil) -> RESPCommand {
+    public static func srem(key: RedisKey, member: String) -> RESPCommand {
         RESPCommand("SREM", key, member)
     }
 
@@ -5916,8 +5916,8 @@ extension RESPCommand {
     /// - Categories: @write, @set, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
     @inlinable
-    public static func srem(key: RedisKey, member: [String]) -> RESPCommand {
-        RESPCommand("SREM", key, member)
+    public static func srem(key: RedisKey, members: [String]) -> RESPCommand {
+        RESPCommand("SREM", key, members)
     }
 
     /// Iterates over members of a set.
@@ -5942,7 +5942,7 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
     @inlinable
-    public static func ssubscribe(shardchannel: String? = nil) -> RESPCommand {
+    public static func ssubscribe(shardchannel: String) -> RESPCommand {
         RESPCommand("SSUBSCRIBE", shardchannel)
     }
 
@@ -5954,8 +5954,8 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
     @inlinable
-    public static func ssubscribe(shardchannel: [String]) -> RESPCommand {
-        RESPCommand("SSUBSCRIBE", shardchannel)
+    public static func ssubscribe(shardchannels: [String]) -> RESPCommand {
+        RESPCommand("SSUBSCRIBE", shardchannels)
     }
 
     /// Returns the length of a string value.
@@ -5978,7 +5978,7 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public static func subscribe(channel: String? = nil) -> RESPCommand {
+    public static func subscribe(channel: String) -> RESPCommand {
         RESPCommand("SUBSCRIBE", channel)
     }
 
@@ -5990,8 +5990,8 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public static func subscribe(channel: [String]) -> RESPCommand {
-        RESPCommand("SUBSCRIBE", channel)
+    public static func subscribe(channels: [String]) -> RESPCommand {
+        RESPCommand("SUBSCRIBE", channels)
     }
 
     /// Returns a substring from a string value.
@@ -6014,7 +6014,7 @@ extension RESPCommand {
     /// - Categories: @read, @set, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public static func sunion(key: RedisKey? = nil) -> RESPCommand {
+    public static func sunion(key: RedisKey) -> RESPCommand {
         RESPCommand("SUNION", key)
     }
 
@@ -6026,8 +6026,8 @@ extension RESPCommand {
     /// - Categories: @read, @set, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public static func sunion(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("SUNION", key)
+    public static func sunion(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("SUNION", keys)
     }
 
     /// Stores the union of multiple sets in a key.
@@ -6038,7 +6038,7 @@ extension RESPCommand {
     /// - Categories: @write, @set, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
     @inlinable
-    public static func sunionstore(destination: RedisKey, key: RedisKey? = nil) -> RESPCommand {
+    public static func sunionstore(destination: RedisKey, key: RedisKey) -> RESPCommand {
         RESPCommand("SUNIONSTORE", destination, key)
     }
 
@@ -6050,8 +6050,8 @@ extension RESPCommand {
     /// - Categories: @write, @set, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
     @inlinable
-    public static func sunionstore(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
-        RESPCommand("SUNIONSTORE", destination, key)
+    public static func sunionstore(destination: RedisKey, keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("SUNIONSTORE", destination, keys)
     }
 
     /// Stops listening to messages posted to shard channels.
@@ -6074,8 +6074,8 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `sunsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public static func sunsubscribe(shardchannel: [String]) -> RESPCommand {
-        RESPCommand("SUNSUBSCRIBE", shardchannel)
+    public static func sunsubscribe(shardchannels: [String]) -> RESPCommand {
+        RESPCommand("SUNSUBSCRIBE", shardchannels)
     }
 
     /// Swaps two Redis databases.
@@ -6121,7 +6121,7 @@ extension RESPCommand {
     /// - Categories: @keyspace, @read, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of touched keys.
     @inlinable
-    public static func touch(key: RedisKey? = nil) -> RESPCommand {
+    public static func touch(key: RedisKey) -> RESPCommand {
         RESPCommand("TOUCH", key)
     }
 
@@ -6133,8 +6133,8 @@ extension RESPCommand {
     /// - Categories: @keyspace, @read, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of touched keys.
     @inlinable
-    public static func touch(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("TOUCH", key)
+    public static func touch(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("TOUCH", keys)
     }
 
     /// Returns the expiration time in seconds of a key.
@@ -6172,7 +6172,7 @@ extension RESPCommand {
     /// - Categories: @keyspace, @write, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were unlinked.
     @inlinable
-    public static func unlink(key: RedisKey? = nil) -> RESPCommand {
+    public static func unlink(key: RedisKey) -> RESPCommand {
         RESPCommand("UNLINK", key)
     }
 
@@ -6184,8 +6184,8 @@ extension RESPCommand {
     /// - Categories: @keyspace, @write, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were unlinked.
     @inlinable
-    public static func unlink(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("UNLINK", key)
+    public static func unlink(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("UNLINK", keys)
     }
 
     /// Stops listening to messages posted to channels.
@@ -6208,8 +6208,8 @@ extension RESPCommand {
     /// - Categories: @pubsub, @slow
     /// - Response: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `unsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public static func unsubscribe(channel: [String]) -> RESPCommand {
-        RESPCommand("UNSUBSCRIBE", channel)
+    public static func unsubscribe(channels: [String]) -> RESPCommand {
+        RESPCommand("UNSUBSCRIBE", channels)
     }
 
     /// Forgets about watched keys of a transaction.
@@ -6258,7 +6258,7 @@ extension RESPCommand {
     /// - Categories: @fast, @transaction
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public static func watch(key: RedisKey? = nil) -> RESPCommand {
+    public static func watch(key: RedisKey) -> RESPCommand {
         RESPCommand("WATCH", key)
     }
 
@@ -6270,8 +6270,8 @@ extension RESPCommand {
     /// - Categories: @fast, @transaction
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public static func watch(key: [RedisKey]) -> RESPCommand {
-        RESPCommand("WATCH", key)
+    public static func watch(keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("WATCH", keys)
     }
 
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
@@ -6282,7 +6282,7 @@ extension RESPCommand {
     /// - Categories: @write, @stream, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
-    public static func xack(key: RedisKey, group: String, id: String? = nil) -> RESPCommand {
+    public static func xack(key: RedisKey, group: String, id: String) -> RESPCommand {
         RESPCommand("XACK", key, group, id)
     }
 
@@ -6294,8 +6294,8 @@ extension RESPCommand {
     /// - Categories: @write, @stream, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
-    public static func xack(key: RedisKey, group: String, id: [String]) -> RESPCommand {
-        RESPCommand("XACK", key, group, id)
+    public static func xack(key: RedisKey, group: String, ids: [String]) -> RESPCommand {
+        RESPCommand("XACK", key, group, ids)
     }
 
     public enum XADDTrimStrategy: RESPRenderable {
@@ -6372,7 +6372,7 @@ extension RESPCommand {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public static func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, data: XADDData? = nil) -> RESPCommand {
+    public static func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, data: XADDData) -> RESPCommand {
         RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
     }
 
@@ -6386,8 +6386,8 @@ extension RESPCommand {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public static func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, data: [XADDData]) -> RESPCommand {
-        RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
+    public static func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, datas: [XADDData]) -> RESPCommand {
+        RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, datas)
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
@@ -6415,7 +6415,7 @@ extension RESPCommand {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public static func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String? = nil, ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
+    public static func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String, ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
         RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 
@@ -6429,8 +6429,8 @@ extension RESPCommand {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public static func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
-        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+    public static func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, ids: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
+        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, ids, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -6441,7 +6441,7 @@ extension RESPCommand {
     /// - Categories: @write, @stream, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries that were deleted.
     @inlinable
-    public static func xdel(key: RedisKey, id: String? = nil) -> RESPCommand {
+    public static func xdel(key: RedisKey, id: String) -> RESPCommand {
         RESPCommand("XDEL", key, id)
     }
 
@@ -6453,8 +6453,8 @@ extension RESPCommand {
     /// - Categories: @write, @stream, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries that were deleted.
     @inlinable
-    public static func xdel(key: RedisKey, id: [String]) -> RESPCommand {
-        RESPCommand("XDEL", key, id)
+    public static func xdel(key: RedisKey, ids: [String]) -> RESPCommand {
+        RESPCommand("XDEL", key, ids)
     }
 
     public enum XGROUPCREATEIdSelector: RESPRenderable {
@@ -6856,7 +6856,7 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public static func zadd(key: RedisKey, condition: ZADDCondition? = nil, comparison: ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: ZADDData? = nil) -> RESPCommand {
+    public static func zadd(key: RedisKey, condition: ZADDCondition? = nil, comparison: ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: ZADDData) -> RESPCommand {
         RESPCommand("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
     }
 
@@ -6872,8 +6872,8 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public static func zadd(key: RedisKey, condition: ZADDCondition? = nil, comparison: ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADDData]) -> RESPCommand {
-        RESPCommand("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
+    public static func zadd(key: RedisKey, condition: ZADDCondition? = nil, comparison: ZADDComparison? = nil, change: Bool = false, increment: Bool = false, datas: [ZADDData]) -> RESPCommand {
+        RESPCommand("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), datas)
     }
 
     /// Returns the number of members in a sorted set.
@@ -6908,7 +6908,7 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public static func zdiff(key: RedisKey? = nil, withscores: Bool = false) -> RESPCommand {
+    public static func zdiff(key: RedisKey, withscores: Bool = false) -> RESPCommand {
         RESPCommand("ZDIFF", 1, key, RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -6920,8 +6920,8 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public static func zdiff(key: [RedisKey], withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZDIFF", RESPArrayWithCount(key), RedisPureToken("WITHSCORES", withscores))
+    public static func zdiff(keys: [RedisKey], withscores: Bool = false) -> RESPCommand {
+        RESPCommand("ZDIFF", RESPArrayWithCount(keys), RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Stores the difference of multiple sorted sets in a key.
@@ -6932,7 +6932,7 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at _destination_.
     @inlinable
-    public static func zdiffstore(destination: RedisKey, key: RedisKey? = nil) -> RESPCommand {
+    public static func zdiffstore(destination: RedisKey, key: RedisKey) -> RESPCommand {
         RESPCommand("ZDIFFSTORE", destination, 1, key)
     }
 
@@ -6944,8 +6944,8 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at _destination_.
     @inlinable
-    public static func zdiffstore(destination: RedisKey, key: [RedisKey]) -> RESPCommand {
-        RESPCommand("ZDIFFSTORE", destination, RESPArrayWithCount(key))
+    public static func zdiffstore(destination: RedisKey, keys: [RedisKey]) -> RESPCommand {
+        RESPCommand("ZDIFFSTORE", destination, RESPArrayWithCount(keys))
     }
 
     /// Increments the score of a member in a sorted set.
@@ -6982,7 +6982,7 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public static func zinter(key: RedisKey? = nil, weight: Int? = nil, aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
+    public static func zinter(key: RedisKey, weight: Int? = nil, aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
         RESPCommand("ZINTER", 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -6994,8 +6994,8 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public static func zinter(key: [RedisKey], weight: [Int], aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    public static func zinter(keys: [RedisKey], weights: [Int], aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
+        RESPCommand("ZINTER", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
@@ -7006,7 +7006,7 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting intersection.
     @inlinable
-    public static func zintercard(key: RedisKey? = nil, limit: Int? = nil) -> RESPCommand {
+    public static func zintercard(key: RedisKey, limit: Int? = nil) -> RESPCommand {
         RESPCommand("ZINTERCARD", 1, key, RESPWithToken("LIMIT", limit))
     }
 
@@ -7018,8 +7018,8 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting intersection.
     @inlinable
-    public static func zintercard(key: [RedisKey], limit: Int? = nil) -> RESPCommand {
-        RESPCommand("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
+    public static func zintercard(keys: [RedisKey], limit: Int? = nil) -> RESPCommand {
+        RESPCommand("ZINTERCARD", RESPArrayWithCount(keys), RESPWithToken("LIMIT", limit))
     }
 
     public enum ZINTERSTOREAggregate: RESPRenderable {
@@ -7044,7 +7044,7 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public static func zinterstore(destination: RedisKey, key: RedisKey? = nil, weight: Int? = nil, aggregate: ZINTERSTOREAggregate? = nil) -> RESPCommand {
+    public static func zinterstore(destination: RedisKey, key: RedisKey, weight: Int? = nil, aggregate: ZINTERSTOREAggregate? = nil) -> RESPCommand {
         RESPCommand("ZINTERSTORE", destination, 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
@@ -7056,8 +7056,8 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public static func zinterstore(destination: RedisKey, key: [RedisKey], weight: [Int], aggregate: ZINTERSTOREAggregate? = nil) -> RESPCommand {
-        RESPCommand("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+    public static func zinterstore(destination: RedisKey, keys: [RedisKey], weights: [Int], aggregate: ZINTERSTOREAggregate? = nil) -> RESPCommand {
+        RESPCommand("ZINTERSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate))
     }
 
     /// Returns the number of members in a sorted set within a lexicographical range.
@@ -7094,7 +7094,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public static func zmpop(key: RedisKey? = nil, where: ZMPOPWhere, count: Int? = nil) -> RESPCommand {
+    public static func zmpop(key: RedisKey, `where`: ZMPOPWhere, count: Int? = nil) -> RESPCommand {
         RESPCommand("ZMPOP", 1, key, `where`, RESPWithToken("COUNT", count))
     }
 
@@ -7108,8 +7108,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public static func zmpop(key: [RedisKey], where: ZMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("ZMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+    public static func zmpop(keys: [RedisKey], `where`: ZMPOPWhere, count: Int? = nil) -> RESPCommand {
+        RESPCommand("ZMPOP", RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count))
     }
 
     /// Returns the score of one or more members in a sorted set.
@@ -7122,7 +7122,7 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the member does not exist in the sorted set.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of [Double](https:/redis.io/docs/reference/protocol-spec#doubles) _member_ scores as double-precision floating point numbers.
     @inlinable
-    public static func zmscore(key: RedisKey, member: String? = nil) -> RESPCommand {
+    public static func zmscore(key: RedisKey, member: String) -> RESPCommand {
         RESPCommand("ZMSCORE", key, member)
     }
 
@@ -7136,8 +7136,8 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the member does not exist in the sorted set.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of [Double](https:/redis.io/docs/reference/protocol-spec#doubles) _member_ scores as double-precision floating point numbers.
     @inlinable
-    public static func zmscore(key: RedisKey, member: [String]) -> RESPCommand {
-        RESPCommand("ZMSCORE", key, member)
+    public static func zmscore(key: RedisKey, members: [String]) -> RESPCommand {
+        RESPCommand("ZMSCORE", key, members)
     }
 
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -7332,7 +7332,7 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members removed from the sorted set, not including non-existing members.
     @inlinable
-    public static func zrem(key: RedisKey, member: String? = nil) -> RESPCommand {
+    public static func zrem(key: RedisKey, member: String) -> RESPCommand {
         RESPCommand("ZREM", key, member)
     }
 
@@ -7344,8 +7344,8 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @fast
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members removed from the sorted set, not including non-existing members.
     @inlinable
-    public static func zrem(key: RedisKey, member: [String]) -> RESPCommand {
-        RESPCommand("ZREM", key, member)
+    public static func zrem(key: RedisKey, members: [String]) -> RESPCommand {
+        RESPCommand("ZREM", key, members)
     }
 
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
@@ -7507,7 +7507,7 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public static func zunion(key: RedisKey? = nil, weight: Int? = nil, aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
+    public static func zunion(key: RedisKey, weight: Int? = nil, aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
         RESPCommand("ZUNION", 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -7519,8 +7519,8 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public static func zunion(key: [RedisKey], weight: [Int], aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    public static func zunion(keys: [RedisKey], weights: [Int], aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
+        RESPCommand("ZUNION", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     public enum ZUNIONSTOREAggregate: RESPRenderable {
@@ -7545,7 +7545,7 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public static func zunionstore(destination: RedisKey, key: RedisKey? = nil, weight: Int? = nil, aggregate: ZUNIONSTOREAggregate? = nil) -> RESPCommand {
+    public static func zunionstore(destination: RedisKey, key: RedisKey, weight: Int? = nil, aggregate: ZUNIONSTOREAggregate? = nil) -> RESPCommand {
         RESPCommand("ZUNIONSTORE", destination, 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 
@@ -7557,8 +7557,8 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public static func zunionstore(destination: RedisKey, key: [RedisKey], weight: [Int], aggregate: ZUNIONSTOREAggregate? = nil) -> RESPCommand {
-        RESPCommand("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+    public static func zunionstore(destination: RedisKey, keys: [RedisKey], weights: [Int], aggregate: ZUNIONSTOREAggregate? = nil) -> RESPCommand {
+        RESPCommand("ZUNIONSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate))
     }
 
 }
@@ -7586,7 +7586,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
     @inlinable
-    public func aclDeluser(username: String? = nil) async throws -> Int {
+    public func aclDeluser(username: String) async throws -> Int {
         try await send("ACL", "DELUSER", username).converting()
     }
 
@@ -7598,8 +7598,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
     @inlinable
-    public func aclDeluser(username: [String]) async throws -> Int {
-        try await send("ACL", "DELUSER", username).converting()
+    public func aclDeluser(usernames: [String]) async throws -> Int {
+        try await send("ACL", "DELUSER", usernames).converting()
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -7626,8 +7626,8 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
-    public func aclDryrun(username: String, command: String, arg: [String]) async throws -> String? {
-        try await send("ACL", "DRYRUN", username, command, arg).converting()
+    public func aclDryrun(username: String, command: String, args: [String]) async throws -> String? {
+        try await send("ACL", "DRYRUN", username, command, args).converting()
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
@@ -7745,8 +7745,8 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     ///     If the rules contain errors, the error is returned.
     @inlinable
-    public func aclSetuser(username: String, rule: [String]) async throws {
-        try await send("ACL", "SETUSER", username, rule)
+    public func aclSetuser(username: String, rules: [String]) async throws {
+        try await send("ACL", "SETUSER", username, rules)
     }
 
     /// Lists all ACL users.
@@ -7873,8 +7873,8 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each entry being the corresponding result of the sub-command given at the same position.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if OVERFLOW FAIL was given and overflows or underflows are detected.
     @inlinable
-    public func bitfield(key: RedisKey, operation: [RESPCommand.BITFIELDOperation]) async throws -> [RESP3Token]? {
-        try await send("BITFIELD", key, operation).converting()
+    public func bitfield(key: RedisKey, operations: [RESPCommand.BITFIELDOperation]) async throws -> [RESP3Token]? {
+        try await send("BITFIELD", key, operations).converting()
     }
 
     /// Performs arbitrary read-only bitfield integer operations on strings.
@@ -7897,8 +7897,8 @@ extension RedisConnection {
     /// - Categories: @read, @bitmap, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each entry being the corresponding result of the sub-command given at the same position.
     @inlinable
-    public func bitfieldRo(key: RedisKey, getBlock: [RESPCommand.BITFIELDROGetBlock]) async throws -> [RESP3Token] {
-        try await send("BITFIELD_RO", key, RESPWithToken("GET", getBlock)).converting()
+    public func bitfieldRo(key: RedisKey, getBlocks: [RESPCommand.BITFIELDROGetBlock]) async throws -> [RESP3Token] {
+        try await send("BITFIELD_RO", key, RESPWithToken("GET", getBlocks)).converting()
     }
 
     /// Performs bitwise operations on multiple strings, and stores the result.
@@ -7909,7 +7909,7 @@ extension RedisConnection {
     /// - Categories: @write, @bitmap, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
     @inlinable
-    public func bitop(operation: RESPCommand.BITOPOperation, destkey: RedisKey, key: RedisKey? = nil) async throws -> Int {
+    public func bitop(operation: RESPCommand.BITOPOperation, destkey: RedisKey, key: RedisKey) async throws -> Int {
         try await send("BITOP", operation, destkey, key).converting()
     }
 
@@ -7921,8 +7921,8 @@ extension RedisConnection {
     /// - Categories: @write, @bitmap, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
     @inlinable
-    public func bitop(operation: RESPCommand.BITOPOperation, destkey: RedisKey, key: [RedisKey]) async throws -> Int {
-        try await send("BITOP", operation, destkey, key).converting()
+    public func bitop(operation: RESPCommand.BITOPOperation, destkey: RedisKey, keys: [RedisKey]) async throws -> Int {
+        try await send("BITOP", operation, destkey, keys).converting()
     }
 
     /// Finds the first set (1) or clear (0) bit in a string.
@@ -7972,7 +7972,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public func blmpop(timeout: Double, key: RedisKey? = nil, where: RESPCommand.BLMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
+    public func blmpop(timeout: Double, key: RedisKey, `where`: RESPCommand.BLMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
         try await send("BLMPOP", timeout, 1, key, `where`, RESPWithToken("COUNT", count)).converting()
     }
 
@@ -7986,8 +7986,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public func blmpop(timeout: Double, key: [RedisKey], where: RESPCommand.BLMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
-        try await send("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count)).converting()
+    public func blmpop(timeout: Double, keys: [RedisKey], `where`: RESPCommand.BLMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
+        try await send("BLMPOP", timeout, RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count)).converting()
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -8000,7 +8000,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
     @inlinable
-    public func blpop(key: RedisKey? = nil, timeout: Double) async throws -> [RESP3Token]? {
+    public func blpop(key: RedisKey, timeout: Double) async throws -> [RESP3Token]? {
         try await send("BLPOP", key, timeout).converting()
     }
 
@@ -8014,8 +8014,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
     @inlinable
-    public func blpop(key: [RedisKey], timeout: Double) async throws -> [RESP3Token]? {
-        try await send("BLPOP", key, timeout).converting()
+    public func blpop(keys: [RedisKey], timeout: Double) async throws -> [RESP3Token]? {
+        try await send("BLPOP", keys, timeout).converting()
     }
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -8028,7 +8028,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
     @inlinable
-    public func brpop(key: RedisKey? = nil, timeout: Double) async throws -> [RESP3Token]? {
+    public func brpop(key: RedisKey, timeout: Double) async throws -> [RESP3Token]? {
         try await send("BRPOP", key, timeout).converting()
     }
 
@@ -8042,8 +8042,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
     @inlinable
-    public func brpop(key: [RedisKey], timeout: Double) async throws -> [RESP3Token]? {
-        try await send("BRPOP", key, timeout).converting()
+    public func brpop(keys: [RedisKey], timeout: Double) async throws -> [RESP3Token]? {
+        try await send("BRPOP", keys, timeout).converting()
     }
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
@@ -8070,7 +8070,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func bzmpop(timeout: Double, key: RedisKey? = nil, where: RESPCommand.BZMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
+    public func bzmpop(timeout: Double, key: RedisKey, `where`: RESPCommand.BZMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
         try await send("BZMPOP", timeout, 1, key, `where`, RESPWithToken("COUNT", count)).converting()
     }
 
@@ -8084,8 +8084,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func bzmpop(timeout: Double, key: [RedisKey], where: RESPCommand.BZMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
-        try await send("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count)).converting()
+    public func bzmpop(timeout: Double, keys: [RedisKey], `where`: RESPCommand.BZMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
+        try await send("BZMPOP", timeout, RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count)).converting()
     }
 
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
@@ -8098,7 +8098,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public func bzpopmax(key: RedisKey? = nil, timeout: Double) async throws -> [RESP3Token]? {
+    public func bzpopmax(key: RedisKey, timeout: Double) async throws -> [RESP3Token]? {
         try await send("BZPOPMAX", key, timeout).converting()
     }
 
@@ -8112,8 +8112,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public func bzpopmax(key: [RedisKey], timeout: Double) async throws -> [RESP3Token]? {
-        try await send("BZPOPMAX", key, timeout).converting()
+    public func bzpopmax(keys: [RedisKey], timeout: Double) async throws -> [RESP3Token]? {
+        try await send("BZPOPMAX", keys, timeout).converting()
     }
 
     /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
@@ -8126,7 +8126,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public func bzpopmin(key: RedisKey? = nil, timeout: Double) async throws -> [RESP3Token]? {
+    public func bzpopmin(key: RedisKey, timeout: Double) async throws -> [RESP3Token]? {
         try await send("BZPOPMIN", key, timeout).converting()
     }
 
@@ -8140,8 +8140,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public func bzpopmin(key: [RedisKey], timeout: Double) async throws -> [RESP3Token]? {
-        try await send("BZPOPMIN", key, timeout).converting()
+    public func bzpopmin(keys: [RedisKey], timeout: Double) async throws -> [RESP3Token]? {
+        try await send("BZPOPMIN", keys, timeout).converting()
     }
 
     /// Instructs the server whether to track the keys in the next request.
@@ -8255,8 +8255,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): information and statistics about client connections.
     @inlinable
-    public func clientList(clientType: RESPCommand.CLIENTLISTClientType? = nil, clientId: [Int]) async throws -> String {
-        try await send("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId)).converting()
+    public func clientList(clientType: RESPCommand.CLIENTLISTClientType? = nil, clientIds: [Int]) async throws -> String {
+        try await send("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientIds)).converting()
     }
 
     /// Sets the client eviction mode of the connection.
@@ -8351,8 +8351,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(status: RESPCommand.CLIENTTRACKINGStatus, clientId: Int? = nil, prefix: [String], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
-        try await send("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+    public func clientTracking(status: RESPCommand.CLIENTTRACKINGStatus, clientId: Int? = nil, prefixs: [String], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
+        try await send("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefixs), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
@@ -8401,7 +8401,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterAddslots(slot: Int? = nil) async throws {
+    public func clusterAddslots(slot: Int) async throws {
         try await send("CLUSTER", "ADDSLOTS", slot)
     }
 
@@ -8413,8 +8413,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterAddslots(slot: [Int]) async throws {
-        try await send("CLUSTER", "ADDSLOTS", slot)
+    public func clusterAddslots(slots: [Int]) async throws {
+        try await send("CLUSTER", "ADDSLOTS", slots)
     }
 
     /// Assigns new hash slot ranges to a node.
@@ -8425,7 +8425,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterAddslotsrange(range: RESPCommand.CLUSTERADDSLOTSRANGERange? = nil) async throws {
+    public func clusterAddslotsrange(range: RESPCommand.CLUSTERADDSLOTSRANGERange) async throws {
         try await send("CLUSTER", "ADDSLOTSRANGE", range)
     }
 
@@ -8437,8 +8437,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterAddslotsrange(range: [RESPCommand.CLUSTERADDSLOTSRANGERange]) async throws {
-        try await send("CLUSTER", "ADDSLOTSRANGE", range)
+    public func clusterAddslotsrange(ranges: [RESPCommand.CLUSTERADDSLOTSRANGERange]) async throws {
+        try await send("CLUSTER", "ADDSLOTSRANGE", ranges)
     }
 
     /// Advances the cluster config epoch.
@@ -8487,7 +8487,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterDelslots(slot: Int? = nil) async throws {
+    public func clusterDelslots(slot: Int) async throws {
         try await send("CLUSTER", "DELSLOTS", slot)
     }
 
@@ -8499,8 +8499,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterDelslots(slot: [Int]) async throws {
-        try await send("CLUSTER", "DELSLOTS", slot)
+    public func clusterDelslots(slots: [Int]) async throws {
+        try await send("CLUSTER", "DELSLOTS", slots)
     }
 
     /// Sets hash slot ranges as unbound for a node.
@@ -8511,7 +8511,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterDelslotsrange(range: RESPCommand.CLUSTERDELSLOTSRANGERange? = nil) async throws {
+    public func clusterDelslotsrange(range: RESPCommand.CLUSTERDELSLOTSRANGERange) async throws {
         try await send("CLUSTER", "DELSLOTSRANGE", range)
     }
 
@@ -8523,8 +8523,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterDelslotsrange(range: [RESPCommand.CLUSTERDELSLOTSRANGERange]) async throws {
-        try await send("CLUSTER", "DELSLOTSRANGE", range)
+    public func clusterDelslotsrange(ranges: [RESPCommand.CLUSTERDELSLOTSRANGERange]) async throws {
+        try await send("CLUSTER", "DELSLOTSRANGE", ranges)
     }
 
     /// Forces a replica to perform a manual failover of its master.
@@ -8823,8 +8823,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
-    public func commandDocs(commandName: [String]) async throws -> RESP3Token {
-        try await send("COMMAND", "DOCS", commandName).converting()
+    public func commandDocs(commandNames: [String]) async throws -> RESP3Token {
+        try await send("COMMAND", "DOCS", commandNames).converting()
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -8847,8 +8847,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command.
     @inlinable
-    public func commandGetkeys(command: String, arg: [String]) async throws -> [RESP3Token] {
-        try await send("COMMAND", "GETKEYS", command, arg).converting()
+    public func commandGetkeys(command: String, args: [String]) async throws -> [RESP3Token] {
+        try await send("COMMAND", "GETKEYS", command, args).converting()
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
@@ -8871,8 +8871,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command and their usage flags.
     @inlinable
-    public func commandGetkeysandflags(command: String, arg: [String]) async throws -> [RESP3Token] {
-        try await send("COMMAND", "GETKEYSANDFLAGS", command, arg).converting()
+    public func commandGetkeysandflags(command: String, args: [String]) async throws -> [RESP3Token] {
+        try await send("COMMAND", "GETKEYSANDFLAGS", command, args).converting()
     }
 
     /// Returns helpful text about the different subcommands.
@@ -8907,8 +8907,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details.
     @inlinable
-    public func commandInfo(commandName: [String]) async throws -> [RESP3Token] {
-        try await send("COMMAND", "INFO", commandName).converting()
+    public func commandInfo(commandNames: [String]) async throws -> [RESP3Token] {
+        try await send("COMMAND", "INFO", commandNames).converting()
     }
 
     /// Returns a list of command names.
@@ -8931,7 +8931,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
-    public func configGet(parameter: String? = nil) async throws -> RESP3Token {
+    public func configGet(parameter: String) async throws -> RESP3Token {
         try await send("CONFIG", "GET", parameter).converting()
     }
 
@@ -8943,8 +8943,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
-    public func configGet(parameter: [String]) async throws -> RESP3Token {
-        try await send("CONFIG", "GET", parameter).converting()
+    public func configGet(parameters: [String]) async throws -> RESP3Token {
+        try await send("CONFIG", "GET", parameters).converting()
     }
 
     /// Returns helpful text about the different subcommands.
@@ -8991,7 +8991,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
-    public func configSet(data: RESPCommand.CONFIGSETData? = nil) async throws {
+    public func configSet(data: RESPCommand.CONFIGSETData) async throws {
         try await send("CONFIG", "SET", data)
     }
 
@@ -9003,8 +9003,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
-    public func configSet(data: [RESPCommand.CONFIGSETData]) async throws {
-        try await send("CONFIG", "SET", data)
+    public func configSet(datas: [RESPCommand.CONFIGSETData]) async throws {
+        try await send("CONFIG", "SET", datas)
     }
 
     /// Copies the value of a key to a new key.
@@ -9065,7 +9065,7 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were removed.
     @inlinable
-    public func del(key: RedisKey? = nil) async throws -> Int {
+    public func del(key: RedisKey) async throws -> Int {
         try await send("DEL", key).converting()
     }
 
@@ -9077,8 +9077,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were removed.
     @inlinable
-    public func del(key: [RedisKey]) async throws -> Int {
-        try await send("DEL", key).converting()
+    public func del(keys: [RedisKey]) async throws -> Int {
+        try await send("DEL", keys).converting()
     }
 
     /// Discards a transaction.
@@ -9139,8 +9139,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func eval(script: String, key: [RedisKey], arg: [String]) async throws -> RESP3Token {
-        try await send("EVAL", script, RESPArrayWithCount(key), arg)
+    public func eval(script: String, keys: [RedisKey], args: [String]) async throws -> RESP3Token {
+        try await send("EVAL", script, RESPArrayWithCount(keys), args)
     }
 
     /// Executes a server-side Lua script by SHA1 digest.
@@ -9163,8 +9163,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalsha(sha1: String, key: [RedisKey], arg: [String]) async throws -> RESP3Token {
-        try await send("EVALSHA", sha1, RESPArrayWithCount(key), arg)
+    public func evalsha(sha1: String, keys: [RedisKey], args: [String]) async throws -> RESP3Token {
+        try await send("EVALSHA", sha1, RESPArrayWithCount(keys), args)
     }
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
@@ -9187,8 +9187,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalshaRo(sha1: String, key: [RedisKey], arg: [String]) async throws -> RESP3Token {
-        try await send("EVALSHA_RO", sha1, RESPArrayWithCount(key), arg)
+    public func evalshaRo(sha1: String, keys: [RedisKey], args: [String]) async throws -> RESP3Token {
+        try await send("EVALSHA_RO", sha1, RESPArrayWithCount(keys), args)
     }
 
     /// Executes a read-only server-side Lua script.
@@ -9211,8 +9211,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalRo(script: String, key: [RedisKey], arg: [String]) async throws -> RESP3Token {
-        try await send("EVAL_RO", script, RESPArrayWithCount(key), arg)
+    public func evalRo(script: String, keys: [RedisKey], args: [String]) async throws -> RESP3Token {
+        try await send("EVAL_RO", script, RESPArrayWithCount(keys), args)
     }
 
     /// Executes all commands in a transaction.
@@ -9237,7 +9237,7 @@ extension RedisConnection {
     /// - Categories: @keyspace, @read, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that exist from those specified as arguments.
     @inlinable
-    public func exists(key: RedisKey? = nil) async throws -> Int {
+    public func exists(key: RedisKey) async throws -> Int {
         try await send("EXISTS", key).converting()
     }
 
@@ -9249,8 +9249,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @read, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that exist from those specified as arguments.
     @inlinable
-    public func exists(key: [RedisKey]) async throws -> Int {
-        try await send("EXISTS", key).converting()
+    public func exists(keys: [RedisKey]) async throws -> Int {
+        try await send("EXISTS", keys).converting()
     }
 
     /// Sets the expiration time of a key in seconds.
@@ -9328,8 +9328,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcall(function: String, key: [RedisKey], arg: [String]) async throws -> RESP3Token {
-        try await send("FCALL", function, RESPArrayWithCount(key), arg)
+    public func fcall(function: String, keys: [RedisKey], args: [String]) async throws -> RESP3Token {
+        try await send("FCALL", function, RESPArrayWithCount(keys), args)
     }
 
     /// Invokes a read-only function.
@@ -9352,8 +9352,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcallRo(function: String, key: [RedisKey], arg: [String]) async throws -> RESP3Token {
-        try await send("FCALL_RO", function, RESPArrayWithCount(key), arg)
+    public func fcallRo(function: String, keys: [RedisKey], args: [String]) async throws -> RESP3Token {
+        try await send("FCALL_RO", function, RESPArrayWithCount(keys), args)
     }
 
     /// Removes all keys from all databases.
@@ -9496,7 +9496,7 @@ extension RedisConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public func geoadd(key: RedisKey, condition: RESPCommand.GEOADDCondition? = nil, change: Bool = false, data: RESPCommand.GEOADDData? = nil) async throws -> Int {
+    public func geoadd(key: RedisKey, condition: RESPCommand.GEOADDCondition? = nil, change: Bool = false, data: RESPCommand.GEOADDData) async throws -> Int {
         try await send("GEOADD", key, condition, RedisPureToken("CH", change), data).converting()
     }
 
@@ -9508,8 +9508,8 @@ extension RedisConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public func geoadd(key: RedisKey, condition: RESPCommand.GEOADDCondition? = nil, change: Bool = false, data: [RESPCommand.GEOADDData]) async throws -> Int {
-        try await send("GEOADD", key, condition, RedisPureToken("CH", change), data).converting()
+    public func geoadd(key: RedisKey, condition: RESPCommand.GEOADDCondition? = nil, change: Bool = false, datas: [RESPCommand.GEOADDData]) async throws -> Int {
+        try await send("GEOADD", key, condition, RedisPureToken("CH", change), datas).converting()
     }
 
     /// Returns the distance between two members of a geospatial index.
@@ -9546,8 +9546,8 @@ extension RedisConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): An array where each element is the Geohash corresponding to each member name passed as an argument to the command.
     @inlinable
-    public func geohash(key: RedisKey, member: [String]) async throws -> [RESP3Token] {
-        try await send("GEOHASH", key, member).converting()
+    public func geohash(key: RedisKey, members: [String]) async throws -> [RESP3Token] {
+        try await send("GEOHASH", key, members).converting()
     }
 
     /// Returns the longitude and latitude of members from a geospatial index.
@@ -9570,8 +9570,8 @@ extension RedisConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/redis.io/docs/reference/protocol-spec#nulls) elements of the array.
     @inlinable
-    public func geopos(key: RedisKey, member: [String]) async throws -> [RESP3Token] {
-        try await send("GEOPOS", key, member).converting()
+    public func geopos(key: RedisKey, members: [String]) async throws -> [RESP3Token] {
+        try await send("GEOPOS", key, members).converting()
     }
 
     /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
@@ -9764,7 +9764,7 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The number of fields that were removed from the hash, excluding any specified but non-existing fields.
     @inlinable
-    public func hdel(key: RedisKey, field: String? = nil) async throws -> Int {
+    public func hdel(key: RedisKey, field: String) async throws -> Int {
         try await send("HDEL", key, field).converting()
     }
 
@@ -9776,8 +9776,8 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The number of fields that were removed from the hash, excluding any specified but non-existing fields.
     @inlinable
-    public func hdel(key: RedisKey, field: [String]) async throws -> Int {
-        try await send("HDEL", key, field).converting()
+    public func hdel(key: RedisKey, fields: [String]) async throws -> Int {
+        try await send("HDEL", key, fields).converting()
     }
 
     /// Handshakes with the Redis server.
@@ -9889,7 +9889,7 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values associated with the given fields, in the same order as they are requested.
     @inlinable
-    public func hmget(key: RedisKey, field: String? = nil) async throws -> [RESP3Token] {
+    public func hmget(key: RedisKey, field: String) async throws -> [RESP3Token] {
         try await send("HMGET", key, field).converting()
     }
 
@@ -9901,8 +9901,8 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values associated with the given fields, in the same order as they are requested.
     @inlinable
-    public func hmget(key: RedisKey, field: [String]) async throws -> [RESP3Token] {
-        try await send("HMGET", key, field).converting()
+    public func hmget(key: RedisKey, fields: [String]) async throws -> [RESP3Token] {
+        try await send("HMGET", key, fields).converting()
     }
 
     /// Sets the values of multiple fields.
@@ -9913,7 +9913,7 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func hmset(key: RedisKey, data: RESPCommand.HMSETData? = nil) async throws {
+    public func hmset(key: RedisKey, data: RESPCommand.HMSETData) async throws {
         try await send("HMSET", key, data)
     }
 
@@ -9925,8 +9925,8 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func hmset(key: RedisKey, data: [RESPCommand.HMSETData]) async throws {
-        try await send("HMSET", key, data)
+    public func hmset(key: RedisKey, datas: [RESPCommand.HMSETData]) async throws {
+        try await send("HMSET", key, datas)
     }
 
     /// Returns one or more random fields from a hash.
@@ -9967,7 +9967,7 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of fields that were added.
     @inlinable
-    public func hset(key: RedisKey, data: RESPCommand.HSETData? = nil) async throws -> Int {
+    public func hset(key: RedisKey, data: RESPCommand.HSETData) async throws -> Int {
         try await send("HSET", key, data).converting()
     }
 
@@ -9979,8 +9979,8 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of fields that were added.
     @inlinable
-    public func hset(key: RedisKey, data: [RESPCommand.HSETData]) async throws -> Int {
-        try await send("HSET", key, data).converting()
+    public func hset(key: RedisKey, datas: [RESPCommand.HSETData]) async throws -> Int {
+        try await send("HSET", key, datas).converting()
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
@@ -10081,8 +10081,8 @@ extension RedisConnection {
     ///     
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
-    public func info(section: [String]) async throws -> String {
-        try await send("INFO", section).converting()
+    public func info(sections: [String]) async throws -> String {
+        try await send("INFO", sections).converting()
     }
 
     /// Returns all key names that match a pattern.
@@ -10165,8 +10165,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
-    public func latencyHistogram(command: [String]) async throws -> RESP3Token {
-        try await send("LATENCY", "HISTOGRAM", command).converting()
+    public func latencyHistogram(commands: [String]) async throws -> RESP3Token {
+        try await send("LATENCY", "HISTOGRAM", commands).converting()
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -10213,8 +10213,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of event time series that were reset.
     @inlinable
-    public func latencyReset(event: [String]) async throws -> Int {
-        try await send("LATENCY", "RESET", event).converting()
+    public func latencyReset(events: [String]) async throws -> Int {
+        try await send("LATENCY", "RESET", events).converting()
     }
 
     /// Finds the longest common substring.
@@ -10257,7 +10257,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` when the key doesn't exist.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` when the pivot wasn't found.
     @inlinable
-    public func linsert(key: RedisKey, where: RESPCommand.LINSERTWhere, pivot: String, element: String) async throws -> Int {
+    public func linsert(key: RedisKey, `where`: RESPCommand.LINSERTWhere, pivot: String, element: String) async throws -> Int {
         try await send("LINSERT", key, `where`, pivot, element).converting()
     }
 
@@ -10295,7 +10295,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public func lmpop(key: RedisKey? = nil, where: RESPCommand.LMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
+    public func lmpop(key: RedisKey, `where`: RESPCommand.LMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
         try await send("LMPOP", 1, key, `where`, RESPWithToken("COUNT", count)).converting()
     }
 
@@ -10309,8 +10309,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public func lmpop(key: [RedisKey], where: RESPCommand.LMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
-        try await send("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count)).converting()
+    public func lmpop(keys: [RedisKey], `where`: RESPCommand.LMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
+        try await send("LMPOP", RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count)).converting()
     }
 
     /// Displays computer art and the Redis version
@@ -10362,7 +10362,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func lpush(key: RedisKey, element: String? = nil) async throws -> Int {
+    public func lpush(key: RedisKey, element: String) async throws -> Int {
         try await send("LPUSH", key, element).converting()
     }
 
@@ -10374,8 +10374,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func lpush(key: RedisKey, element: [String]) async throws -> Int {
-        try await send("LPUSH", key, element).converting()
+    public func lpush(key: RedisKey, elements: [String]) async throws -> Int {
+        try await send("LPUSH", key, elements).converting()
     }
 
     /// Prepends one or more elements to a list only when the list exists.
@@ -10386,7 +10386,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func lpushx(key: RedisKey, element: String? = nil) async throws -> Int {
+    public func lpushx(key: RedisKey, element: String) async throws -> Int {
         try await send("LPUSHX", key, element).converting()
     }
 
@@ -10398,8 +10398,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func lpushx(key: RedisKey, element: [String]) async throws -> Int {
-        try await send("LPUSHX", key, element).converting()
+    public func lpushx(key: RedisKey, elements: [String]) async throws -> Int {
+        try await send("LPUSHX", key, elements).converting()
     }
 
     /// Returns a range of elements from a list.
@@ -10532,7 +10532,7 @@ extension RedisConnection {
     /// - Categories: @read, @string, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values at the specified keys.
     @inlinable
-    public func mget(key: RedisKey? = nil) async throws -> [RESP3Token] {
+    public func mget(key: RedisKey) async throws -> [RESP3Token] {
         try await send("MGET", key).converting()
     }
 
@@ -10544,8 +10544,8 @@ extension RedisConnection {
     /// - Categories: @read, @string, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values at the specified keys.
     @inlinable
-    public func mget(key: [RedisKey]) async throws -> [RESP3Token] {
-        try await send("MGET", key).converting()
+    public func mget(keys: [RedisKey]) async throws -> [RESP3Token] {
+        try await send("MGET", keys).converting()
     }
 
     /// Atomically transfers a key from one Redis instance to another.
@@ -10572,8 +10572,8 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(host: String, port: Int, keySelector: RESPCommand.MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: RESPCommand.MIGRATEAuthentication? = nil, keys: [RedisKey]) async throws -> String? {
-        try await send("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys)).converting()
+    public func migrate(host: String, port: Int, keySelector: RESPCommand.MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: RESPCommand.MIGRATEAuthentication? = nil, keyss: [RedisKey]) async throws -> String? {
+        try await send("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keyss)).converting()
     }
 
     /// Returns helpful text about the different subcommands.
@@ -10622,8 +10622,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoad(path: String, arg: [String]) async throws {
-        try await send("MODULE", "LOAD", path, arg)
+    public func moduleLoad(path: String, args: [String]) async throws {
+        try await send("MODULE", "LOAD", path, args)
     }
 
     /// Loads a module using extended parameters.
@@ -10646,8 +10646,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoadex(path: String, configs: [RESPCommand.MODULELOADEXConfigs], args: [String]) async throws {
-        try await send("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+    public func moduleLoadex(path: String, configss: [RESPCommand.MODULELOADEXConfigs], argss: [String]) async throws {
+        try await send("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configss), RESPWithToken("ARGS", argss))
     }
 
     /// Unloads a module.
@@ -10695,7 +10695,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): always `OK` because `MSET` can't fail.
     @inlinable
-    public func mset(data: RESPCommand.MSETData? = nil) async throws {
+    public func mset(data: RESPCommand.MSETData) async throws {
         try await send("MSET", data)
     }
 
@@ -10707,8 +10707,8 @@ extension RedisConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): always `OK` because `MSET` can't fail.
     @inlinable
-    public func mset(data: [RESPCommand.MSETData]) async throws {
-        try await send("MSET", data)
+    public func mset(datas: [RESPCommand.MSETData]) async throws {
+        try await send("MSET", datas)
     }
 
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
@@ -10721,7 +10721,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no key was set (at least one key already existed).
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if all the keys were set.
     @inlinable
-    public func msetnx(data: RESPCommand.MSETNXData? = nil) async throws -> Int {
+    public func msetnx(data: RESPCommand.MSETNXData) async throws -> Int {
         try await send("MSETNX", data).converting()
     }
 
@@ -10735,8 +10735,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no key was set (at least one key already existed).
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if all the keys were set.
     @inlinable
-    public func msetnx(data: [RESPCommand.MSETNXData]) async throws -> Int {
-        try await send("MSETNX", data).converting()
+    public func msetnx(datas: [RESPCommand.MSETNXData]) async throws -> Int {
+        try await send("MSETNX", datas).converting()
     }
 
     /// Starts a transaction.
@@ -10900,8 +10900,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if at least one HyperLogLog internal register was altered.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no HyperLogLog internal registers were altered.
     @inlinable
-    public func pfadd(key: RedisKey, element: [String]) async throws -> Int {
-        try await send("PFADD", key, element).converting()
+    public func pfadd(key: RedisKey, elements: [String]) async throws -> Int {
+        try await send("PFADD", key, elements).converting()
     }
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
@@ -10912,7 +10912,7 @@ extension RedisConnection {
     /// - Categories: @read, @hyperloglog, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
     @inlinable
-    public func pfcount(key: RedisKey? = nil) async throws -> Int {
+    public func pfcount(key: RedisKey) async throws -> Int {
         try await send("PFCOUNT", key).converting()
     }
 
@@ -10924,8 +10924,8 @@ extension RedisConnection {
     /// - Categories: @read, @hyperloglog, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
     @inlinable
-    public func pfcount(key: [RedisKey]) async throws -> Int {
-        try await send("PFCOUNT", key).converting()
+    public func pfcount(keys: [RedisKey]) async throws -> Int {
+        try await send("PFCOUNT", keys).converting()
     }
 
     /// Merges one or more HyperLogLog values into a single key.
@@ -10948,8 +10948,8 @@ extension RedisConnection {
     /// - Categories: @write, @hyperloglog, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func pfmerge(destkey: RedisKey, sourcekey: [RedisKey]) async throws {
-        try await send("PFMERGE", destkey, sourcekey)
+    public func pfmerge(destkey: RedisKey, sourcekeys: [RedisKey]) async throws {
+        try await send("PFMERGE", destkey, sourcekeys)
     }
 
     /// An internal command for testing HyperLogLog values.
@@ -10998,7 +10998,7 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func psubscribe(pattern: String? = nil) async throws -> RESP3Token {
+    public func psubscribe(pattern: String) async throws -> RESP3Token {
         try await send("PSUBSCRIBE", pattern)
     }
 
@@ -11010,8 +11010,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func psubscribe(pattern: [String]) async throws -> RESP3Token {
-        try await send("PSUBSCRIBE", pattern)
+    public func psubscribe(patterns: [String]) async throws -> RESP3Token {
+        try await send("PSUBSCRIBE", patterns)
     }
 
     /// An internal command used in replication.
@@ -11108,8 +11108,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
     @inlinable
-    public func pubsubNumsub(channel: [String]) async throws -> [RESP3Token] {
-        try await send("PUBSUB", "NUMSUB", channel).converting()
+    public func pubsubNumsub(channels: [String]) async throws -> [RESP3Token] {
+        try await send("PUBSUB", "NUMSUB", channels).converting()
     }
 
     /// Returns the active shard channels.
@@ -11144,8 +11144,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
-    public func pubsubShardnumsub(shardchannel: [String]) async throws -> [RESP3Token] {
-        try await send("PUBSUB", "SHARDNUMSUB", shardchannel).converting()
+    public func pubsubShardnumsub(shardchannels: [String]) async throws -> [RESP3Token] {
+        try await send("PUBSUB", "SHARDNUMSUB", shardchannels).converting()
     }
 
     /// Stops listening to messages published to channels that match one or more patterns.
@@ -11168,8 +11168,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `punsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func punsubscribe(pattern: [String]) async throws -> RESP3Token {
-        try await send("PUNSUBSCRIBE", pattern)
+    public func punsubscribe(patterns: [String]) async throws -> RESP3Token {
+        try await send("PUNSUBSCRIBE", patterns)
     }
 
     /// Closes the connection.
@@ -11357,7 +11357,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func rpush(key: RedisKey, element: String? = nil) async throws -> Int {
+    public func rpush(key: RedisKey, element: String) async throws -> Int {
         try await send("RPUSH", key, element).converting()
     }
 
@@ -11369,8 +11369,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func rpush(key: RedisKey, element: [String]) async throws -> Int {
-        try await send("RPUSH", key, element).converting()
+    public func rpush(key: RedisKey, elements: [String]) async throws -> Int {
+        try await send("RPUSH", key, elements).converting()
     }
 
     /// Appends an element to a list only when the list exists.
@@ -11381,7 +11381,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func rpushx(key: RedisKey, element: String? = nil) async throws -> Int {
+    public func rpushx(key: RedisKey, element: String) async throws -> Int {
         try await send("RPUSHX", key, element).converting()
     }
 
@@ -11393,8 +11393,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func rpushx(key: RedisKey, element: [String]) async throws -> Int {
-        try await send("RPUSHX", key, element).converting()
+    public func rpushx(key: RedisKey, elements: [String]) async throws -> Int {
+        try await send("RPUSHX", key, elements).converting()
     }
 
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
@@ -11405,7 +11405,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public func sadd(key: RedisKey, member: String? = nil) async throws -> Int {
+    public func sadd(key: RedisKey, member: String) async throws -> Int {
         try await send("SADD", key, member).converting()
     }
 
@@ -11417,8 +11417,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public func sadd(key: RedisKey, member: [String]) async throws -> Int {
-        try await send("SADD", key, member).converting()
+    public func sadd(key: RedisKey, members: [String]) async throws -> Int {
+        try await send("SADD", key, members).converting()
     }
 
     /// Synchronously saves the database(s) to disk.
@@ -11479,7 +11479,7 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
-    public func scriptExists(sha1: String? = nil) async throws -> [RESP3Token] {
+    public func scriptExists(sha1: String) async throws -> [RESP3Token] {
         try await send("SCRIPT", "EXISTS", sha1).converting()
     }
 
@@ -11491,8 +11491,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
-    public func scriptExists(sha1: [String]) async throws -> [RESP3Token] {
-        try await send("SCRIPT", "EXISTS", sha1).converting()
+    public func scriptExists(sha1s: [String]) async throws -> [RESP3Token] {
+        try await send("SCRIPT", "EXISTS", sha1s).converting()
     }
 
     /// Removes all server-side Lua scripts from the script cache.
@@ -11551,7 +11551,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sdiff(key: RedisKey? = nil) async throws -> [RESP3Token] {
+    public func sdiff(key: RedisKey) async throws -> [RESP3Token] {
         try await send("SDIFF", key).converting()
     }
 
@@ -11563,8 +11563,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sdiff(key: [RedisKey]) async throws -> [RESP3Token] {
-        try await send("SDIFF", key).converting()
+    public func sdiff(keys: [RedisKey]) async throws -> [RESP3Token] {
+        try await send("SDIFF", keys).converting()
     }
 
     /// Stores the difference of multiple sets in a key.
@@ -11575,7 +11575,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
     @inlinable
-    public func sdiffstore(destination: RedisKey, key: RedisKey? = nil) async throws -> Int {
+    public func sdiffstore(destination: RedisKey, key: RedisKey) async throws -> Int {
         try await send("SDIFFSTORE", destination, key).converting()
     }
 
@@ -11587,8 +11587,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
     @inlinable
-    public func sdiffstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
-        try await send("SDIFFSTORE", destination, key).converting()
+    public func sdiffstore(destination: RedisKey, keys: [RedisKey]) async throws -> Int {
+        try await send("SDIFFSTORE", destination, keys).converting()
     }
 
     /// Changes the selected database.
@@ -11689,7 +11689,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sinter(key: RedisKey? = nil) async throws -> [RESP3Token] {
+    public func sinter(key: RedisKey) async throws -> [RESP3Token] {
         try await send("SINTER", key).converting()
     }
 
@@ -11701,8 +11701,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sinter(key: [RedisKey]) async throws -> [RESP3Token] {
-        try await send("SINTER", key).converting()
+    public func sinter(keys: [RedisKey]) async throws -> [RESP3Token] {
+        try await send("SINTER", keys).converting()
     }
 
     /// Returns the number of members of the intersect of multiple sets.
@@ -11713,7 +11713,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
     @inlinable
-    public func sintercard(key: RedisKey? = nil, limit: Int? = nil) async throws -> Int {
+    public func sintercard(key: RedisKey, limit: Int? = nil) async throws -> Int {
         try await send("SINTERCARD", 1, key, RESPWithToken("LIMIT", limit)).converting()
     }
 
@@ -11725,8 +11725,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
     @inlinable
-    public func sintercard(key: [RedisKey], limit: Int? = nil) async throws -> Int {
-        try await send("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit)).converting()
+    public func sintercard(keys: [RedisKey], limit: Int? = nil) async throws -> Int {
+        try await send("SINTERCARD", RESPArrayWithCount(keys), RESPWithToken("LIMIT", limit)).converting()
     }
 
     /// Stores the intersect of multiple sets in a key.
@@ -11737,7 +11737,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
     @inlinable
-    public func sinterstore(destination: RedisKey, key: RedisKey? = nil) async throws -> Int {
+    public func sinterstore(destination: RedisKey, key: RedisKey) async throws -> Int {
         try await send("SINTERSTORE", destination, key).converting()
     }
 
@@ -11749,8 +11749,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
     @inlinable
-    public func sinterstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
-        try await send("SINTERSTORE", destination, key).converting()
+    public func sinterstore(destination: RedisKey, keys: [RedisKey]) async throws -> Int {
+        try await send("SINTERSTORE", destination, keys).converting()
     }
 
     /// Determines whether a member belongs to a set.
@@ -11847,7 +11847,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember(key: RedisKey, member: String? = nil) async throws -> [RESP3Token] {
+    public func smismember(key: RedisKey, member: String) async throws -> [RESP3Token] {
         try await send("SMISMEMBER", key, member).converting()
     }
 
@@ -11859,8 +11859,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember(key: RedisKey, member: [String]) async throws -> [RESP3Token] {
-        try await send("SMISMEMBER", key, member).converting()
+    public func smismember(key: RedisKey, members: [String]) async throws -> [RESP3Token] {
+        try await send("SMISMEMBER", key, members).converting()
     }
 
     /// Moves a member from one set to another.
@@ -11899,8 +11899,8 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(key: RedisKey, byPattern: String? = nil, limit: RESPCommand.SORTLimit? = nil, getPattern: [String], order: RESPCommand.SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) async throws -> RESP3Token {
-        try await send("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+    public func sort(key: RedisKey, byPattern: String? = nil, limit: RESPCommand.SORTLimit? = nil, getPatterns: [String], order: RESPCommand.SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) async throws -> RESP3Token {
+        try await send("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPatterns), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
     }
 
     /// Returns the sorted elements of a list, a set, or a sorted set.
@@ -11923,8 +11923,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(key: RedisKey, byPattern: String? = nil, limit: RESPCommand.SORTROLimit? = nil, getPattern: [String], order: RESPCommand.SORTROOrder? = nil, sorting: Bool = false) async throws -> [RESP3Token] {
-        try await send("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting)).converting()
+    public func sortRo(key: RedisKey, byPattern: String? = nil, limit: RESPCommand.SORTROLimit? = nil, getPatterns: [String], order: RESPCommand.SORTROOrder? = nil, sorting: Bool = false) async throws -> [RESP3Token] {
+        try await send("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPatterns), order, RedisPureToken("ALPHA", sorting)).converting()
     }
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
@@ -11976,7 +11976,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
     @inlinable
-    public func srem(key: RedisKey, member: String? = nil) async throws -> Int {
+    public func srem(key: RedisKey, member: String) async throws -> Int {
         try await send("SREM", key, member).converting()
     }
 
@@ -11988,8 +11988,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
     @inlinable
-    public func srem(key: RedisKey, member: [String]) async throws -> Int {
-        try await send("SREM", key, member).converting()
+    public func srem(key: RedisKey, members: [String]) async throws -> Int {
+        try await send("SREM", key, members).converting()
     }
 
     /// Iterates over members of a set.
@@ -12014,7 +12014,7 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
     @inlinable
-    public func ssubscribe(shardchannel: String? = nil) async throws -> RESP3Token {
+    public func ssubscribe(shardchannel: String) async throws -> RESP3Token {
         try await send("SSUBSCRIBE", shardchannel)
     }
 
@@ -12026,8 +12026,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
     @inlinable
-    public func ssubscribe(shardchannel: [String]) async throws -> RESP3Token {
-        try await send("SSUBSCRIBE", shardchannel)
+    public func ssubscribe(shardchannels: [String]) async throws -> RESP3Token {
+        try await send("SSUBSCRIBE", shardchannels)
     }
 
     /// Returns the length of a string value.
@@ -12050,7 +12050,7 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func subscribe(channel: String? = nil) async throws -> RESP3Token {
+    public func subscribe(channel: String) async throws -> RESP3Token {
         try await send("SUBSCRIBE", channel)
     }
 
@@ -12062,8 +12062,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func subscribe(channel: [String]) async throws -> RESP3Token {
-        try await send("SUBSCRIBE", channel)
+    public func subscribe(channels: [String]) async throws -> RESP3Token {
+        try await send("SUBSCRIBE", channels)
     }
 
     /// Returns a substring from a string value.
@@ -12086,7 +12086,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sunion(key: RedisKey? = nil) async throws -> [RESP3Token] {
+    public func sunion(key: RedisKey) async throws -> [RESP3Token] {
         try await send("SUNION", key).converting()
     }
 
@@ -12098,8 +12098,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sunion(key: [RedisKey]) async throws -> [RESP3Token] {
-        try await send("SUNION", key).converting()
+    public func sunion(keys: [RedisKey]) async throws -> [RESP3Token] {
+        try await send("SUNION", keys).converting()
     }
 
     /// Stores the union of multiple sets in a key.
@@ -12110,7 +12110,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
     @inlinable
-    public func sunionstore(destination: RedisKey, key: RedisKey? = nil) async throws -> Int {
+    public func sunionstore(destination: RedisKey, key: RedisKey) async throws -> Int {
         try await send("SUNIONSTORE", destination, key).converting()
     }
 
@@ -12122,8 +12122,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
     @inlinable
-    public func sunionstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
-        try await send("SUNIONSTORE", destination, key).converting()
+    public func sunionstore(destination: RedisKey, keys: [RedisKey]) async throws -> Int {
+        try await send("SUNIONSTORE", destination, keys).converting()
     }
 
     /// Stops listening to messages posted to shard channels.
@@ -12146,8 +12146,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `sunsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func sunsubscribe(shardchannel: [String]) async throws -> RESP3Token {
-        try await send("SUNSUBSCRIBE", shardchannel)
+    public func sunsubscribe(shardchannels: [String]) async throws -> RESP3Token {
+        try await send("SUNSUBSCRIBE", shardchannels)
     }
 
     /// Swaps two Redis databases.
@@ -12193,7 +12193,7 @@ extension RedisConnection {
     /// - Categories: @keyspace, @read, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of touched keys.
     @inlinable
-    public func touch(key: RedisKey? = nil) async throws -> Int {
+    public func touch(key: RedisKey) async throws -> Int {
         try await send("TOUCH", key).converting()
     }
 
@@ -12205,8 +12205,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @read, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of touched keys.
     @inlinable
-    public func touch(key: [RedisKey]) async throws -> Int {
-        try await send("TOUCH", key).converting()
+    public func touch(keys: [RedisKey]) async throws -> Int {
+        try await send("TOUCH", keys).converting()
     }
 
     /// Returns the expiration time in seconds of a key.
@@ -12244,7 +12244,7 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were unlinked.
     @inlinable
-    public func unlink(key: RedisKey? = nil) async throws -> Int {
+    public func unlink(key: RedisKey) async throws -> Int {
         try await send("UNLINK", key).converting()
     }
 
@@ -12256,8 +12256,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were unlinked.
     @inlinable
-    public func unlink(key: [RedisKey]) async throws -> Int {
-        try await send("UNLINK", key).converting()
+    public func unlink(keys: [RedisKey]) async throws -> Int {
+        try await send("UNLINK", keys).converting()
     }
 
     /// Stops listening to messages posted to channels.
@@ -12280,8 +12280,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `unsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func unsubscribe(channel: [String]) async throws -> RESP3Token {
-        try await send("UNSUBSCRIBE", channel)
+    public func unsubscribe(channels: [String]) async throws -> RESP3Token {
+        try await send("UNSUBSCRIBE", channels)
     }
 
     /// Forgets about watched keys of a transaction.
@@ -12330,7 +12330,7 @@ extension RedisConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func watch(key: RedisKey? = nil) async throws {
+    public func watch(key: RedisKey) async throws {
         try await send("WATCH", key)
     }
 
@@ -12342,8 +12342,8 @@ extension RedisConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func watch(key: [RedisKey]) async throws {
-        try await send("WATCH", key)
+    public func watch(keys: [RedisKey]) async throws {
+        try await send("WATCH", keys)
     }
 
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
@@ -12354,7 +12354,7 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
-    public func xack(key: RedisKey, group: String, id: String? = nil) async throws -> Int {
+    public func xack(key: RedisKey, group: String, id: String) async throws -> Int {
         try await send("XACK", key, group, id).converting()
     }
 
@@ -12366,8 +12366,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
-    public func xack(key: RedisKey, group: String, id: [String]) async throws -> Int {
-        try await send("XACK", key, group, id).converting()
+    public func xack(key: RedisKey, group: String, ids: [String]) async throws -> Int {
+        try await send("XACK", key, group, ids).converting()
     }
 
     /// Appends a new message to a stream. Creates the key if it doesn't exist.
@@ -12380,7 +12380,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(key: RedisKey, nomkstream: Bool = false, trim: RESPCommand.XADDTrim? = nil, idSelector: RESPCommand.XADDIdSelector, data: RESPCommand.XADDData? = nil) async throws -> String? {
+    public func xadd(key: RedisKey, nomkstream: Bool = false, trim: RESPCommand.XADDTrim? = nil, idSelector: RESPCommand.XADDIdSelector, data: RESPCommand.XADDData) async throws -> String? {
         try await send("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data).converting()
     }
 
@@ -12394,8 +12394,8 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(key: RedisKey, nomkstream: Bool = false, trim: RESPCommand.XADDTrim? = nil, idSelector: RESPCommand.XADDIdSelector, data: [RESPCommand.XADDData]) async throws -> String? {
-        try await send("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data).converting()
+    public func xadd(key: RedisKey, nomkstream: Bool = false, trim: RESPCommand.XADDTrim? = nil, idSelector: RESPCommand.XADDIdSelector, datas: [RESPCommand.XADDData]) async throws -> String? {
+        try await send("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, datas).converting()
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
@@ -12423,7 +12423,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String? = nil, ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESP3Token] {
+    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String, ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESP3Token] {
         try await send("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
     }
 
@@ -12437,8 +12437,8 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESP3Token] {
-        try await send("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
+    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, ids: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESP3Token] {
+        try await send("XCLAIM", key, group, consumer, minIdleTime, ids, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -12449,7 +12449,7 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries that were deleted.
     @inlinable
-    public func xdel(key: RedisKey, id: String? = nil) async throws -> Int {
+    public func xdel(key: RedisKey, id: String) async throws -> Int {
         try await send("XDEL", key, id).converting()
     }
 
@@ -12461,8 +12461,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries that were deleted.
     @inlinable
-    public func xdel(key: RedisKey, id: [String]) async throws -> Int {
-        try await send("XDEL", key, id).converting()
+    public func xdel(key: RedisKey, ids: [String]) async throws -> Int {
+        try await send("XDEL", key, ids).converting()
     }
 
     /// Creates a consumer group.
@@ -12698,7 +12698,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RedisKey, condition: RESPCommand.ZADDCondition? = nil, comparison: RESPCommand.ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: RESPCommand.ZADDData? = nil) async throws -> RESP3Token {
+    public func zadd(key: RedisKey, condition: RESPCommand.ZADDCondition? = nil, comparison: RESPCommand.ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: RESPCommand.ZADDData) async throws -> RESP3Token {
         try await send("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
     }
 
@@ -12714,8 +12714,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RedisKey, condition: RESPCommand.ZADDCondition? = nil, comparison: RESPCommand.ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: [RESPCommand.ZADDData]) async throws -> RESP3Token {
-        try await send("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
+    public func zadd(key: RedisKey, condition: RESPCommand.ZADDCondition? = nil, comparison: RESPCommand.ZADDComparison? = nil, change: Bool = false, increment: Bool = false, datas: [RESPCommand.ZADDData]) async throws -> RESP3Token {
+        try await send("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), datas)
     }
 
     /// Returns the number of members in a sorted set.
@@ -12750,7 +12750,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zdiff(key: RedisKey? = nil, withscores: Bool = false) async throws -> RESP3Token {
+    public func zdiff(key: RedisKey, withscores: Bool = false) async throws -> RESP3Token {
         try await send("ZDIFF", 1, key, RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -12762,8 +12762,8 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zdiff(key: [RedisKey], withscores: Bool = false) async throws -> RESP3Token {
-        try await send("ZDIFF", RESPArrayWithCount(key), RedisPureToken("WITHSCORES", withscores))
+    public func zdiff(keys: [RedisKey], withscores: Bool = false) async throws -> RESP3Token {
+        try await send("ZDIFF", RESPArrayWithCount(keys), RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Stores the difference of multiple sorted sets in a key.
@@ -12774,7 +12774,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at _destination_.
     @inlinable
-    public func zdiffstore(destination: RedisKey, key: RedisKey? = nil) async throws -> Int {
+    public func zdiffstore(destination: RedisKey, key: RedisKey) async throws -> Int {
         try await send("ZDIFFSTORE", destination, 1, key).converting()
     }
 
@@ -12786,8 +12786,8 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at _destination_.
     @inlinable
-    public func zdiffstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
-        try await send("ZDIFFSTORE", destination, RESPArrayWithCount(key)).converting()
+    public func zdiffstore(destination: RedisKey, keys: [RedisKey]) async throws -> Int {
+        try await send("ZDIFFSTORE", destination, RESPArrayWithCount(keys)).converting()
     }
 
     /// Increments the score of a member in a sorted set.
@@ -12810,7 +12810,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(key: RedisKey? = nil, weight: Int? = nil, aggregate: RESPCommand.ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
+    public func zinter(key: RedisKey, weight: Int? = nil, aggregate: RESPCommand.ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
         try await send("ZINTER", 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
@@ -12822,8 +12822,8 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(key: [RedisKey], weight: [Int], aggregate: RESPCommand.ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
-        try await send("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    public func zinter(keys: [RedisKey], weights: [Int], aggregate: RESPCommand.ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESP3Token {
+        try await send("ZINTER", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
@@ -12834,7 +12834,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting intersection.
     @inlinable
-    public func zintercard(key: RedisKey? = nil, limit: Int? = nil) async throws -> Int {
+    public func zintercard(key: RedisKey, limit: Int? = nil) async throws -> Int {
         try await send("ZINTERCARD", 1, key, RESPWithToken("LIMIT", limit)).converting()
     }
 
@@ -12846,8 +12846,8 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting intersection.
     @inlinable
-    public func zintercard(key: [RedisKey], limit: Int? = nil) async throws -> Int {
-        try await send("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit)).converting()
+    public func zintercard(keys: [RedisKey], limit: Int? = nil) async throws -> Int {
+        try await send("ZINTERCARD", RESPArrayWithCount(keys), RESPWithToken("LIMIT", limit)).converting()
     }
 
     /// Stores the intersect of multiple sorted sets in a key.
@@ -12858,7 +12858,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public func zinterstore(destination: RedisKey, key: RedisKey? = nil, weight: Int? = nil, aggregate: RESPCommand.ZINTERSTOREAggregate? = nil) async throws -> Int {
+    public func zinterstore(destination: RedisKey, key: RedisKey, weight: Int? = nil, aggregate: RESPCommand.ZINTERSTOREAggregate? = nil) async throws -> Int {
         try await send("ZINTERSTORE", destination, 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate)).converting()
     }
 
@@ -12870,8 +12870,8 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public func zinterstore(destination: RedisKey, key: [RedisKey], weight: [Int], aggregate: RESPCommand.ZINTERSTOREAggregate? = nil) async throws -> Int {
-        try await send("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate)).converting()
+    public func zinterstore(destination: RedisKey, keys: [RedisKey], weights: [Int], aggregate: RESPCommand.ZINTERSTOREAggregate? = nil) async throws -> Int {
+        try await send("ZINTERSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate)).converting()
     }
 
     /// Returns the number of members in a sorted set within a lexicographical range.
@@ -12896,7 +12896,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func zmpop(key: RedisKey? = nil, where: RESPCommand.ZMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
+    public func zmpop(key: RedisKey, `where`: RESPCommand.ZMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
         try await send("ZMPOP", 1, key, `where`, RESPWithToken("COUNT", count)).converting()
     }
 
@@ -12910,8 +12910,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func zmpop(key: [RedisKey], where: RESPCommand.ZMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
-        try await send("ZMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count)).converting()
+    public func zmpop(keys: [RedisKey], `where`: RESPCommand.ZMPOPWhere, count: Int? = nil) async throws -> [RESP3Token]? {
+        try await send("ZMPOP", RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count)).converting()
     }
 
     /// Returns the score of one or more members in a sorted set.
@@ -12924,7 +12924,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the member does not exist in the sorted set.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of [Double](https:/redis.io/docs/reference/protocol-spec#doubles) _member_ scores as double-precision floating point numbers.
     @inlinable
-    public func zmscore(key: RedisKey, member: String? = nil) async throws -> [RESP3Token]? {
+    public func zmscore(key: RedisKey, member: String) async throws -> [RESP3Token]? {
         try await send("ZMSCORE", key, member).converting()
     }
 
@@ -12938,8 +12938,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the member does not exist in the sorted set.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of [Double](https:/redis.io/docs/reference/protocol-spec#doubles) _member_ scores as double-precision floating point numbers.
     @inlinable
-    public func zmscore(key: RedisKey, member: [String]) async throws -> [RESP3Token]? {
-        try await send("ZMSCORE", key, member).converting()
+    public func zmscore(key: RedisKey, members: [String]) async throws -> [RESP3Token]? {
+        try await send("ZMSCORE", key, members).converting()
     }
 
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -13050,7 +13050,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members removed from the sorted set, not including non-existing members.
     @inlinable
-    public func zrem(key: RedisKey, member: String? = nil) async throws -> Int {
+    public func zrem(key: RedisKey, member: String) async throws -> Int {
         try await send("ZREM", key, member).converting()
     }
 
@@ -13062,8 +13062,8 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members removed from the sorted set, not including non-existing members.
     @inlinable
-    public func zrem(key: RedisKey, member: [String]) async throws -> Int {
-        try await send("ZREM", key, member).converting()
+    public func zrem(key: RedisKey, members: [String]) async throws -> Int {
+        try await send("ZREM", key, members).converting()
     }
 
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
@@ -13187,7 +13187,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public func zunion(key: RedisKey? = nil, weight: Int? = nil, aggregate: RESPCommand.ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> [RESP3Token] {
+    public func zunion(key: RedisKey, weight: Int? = nil, aggregate: RESPCommand.ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> [RESP3Token] {
         try await send("ZUNION", 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores)).converting()
     }
 
@@ -13199,8 +13199,8 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public func zunion(key: [RedisKey], weight: [Int], aggregate: RESPCommand.ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> [RESP3Token] {
-        try await send("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores)).converting()
+    public func zunion(keys: [RedisKey], weights: [Int], aggregate: RESPCommand.ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> [RESP3Token] {
+        try await send("ZUNION", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores)).converting()
     }
 
     /// Stores the union of multiple sorted sets in a key.
@@ -13211,7 +13211,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(destination: RedisKey, key: RedisKey? = nil, weight: Int? = nil, aggregate: RESPCommand.ZUNIONSTOREAggregate? = nil) async throws -> Int {
+    public func zunionstore(destination: RedisKey, key: RedisKey, weight: Int? = nil, aggregate: RESPCommand.ZUNIONSTOREAggregate? = nil) async throws -> Int {
         try await send("ZUNIONSTORE", destination, 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate)).converting()
     }
 
@@ -13223,8 +13223,8 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(destination: RedisKey, key: [RedisKey], weight: [Int], aggregate: RESPCommand.ZUNIONSTOREAggregate? = nil) async throws -> Int {
-        try await send("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate)).converting()
+    public func zunionstore(destination: RedisKey, keys: [RedisKey], weights: [Int], aggregate: RESPCommand.ZUNIONSTOREAggregate? = nil) async throws -> Int {
+        try await send("ZUNIONSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate)).converting()
     }
 
 }
