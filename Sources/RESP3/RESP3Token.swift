@@ -109,6 +109,11 @@ public struct RESP3Token: Hashable, Sendable {
             var lengthSlice = try! local.readCRLFTerminatedSlice2()!
             let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
             let length = Int(lengthString)!
+
+            if length < 0 {
+                return .null
+            }
+
             return .blobString(local.readSlice(length: length)!)
 
         case .blobError:
@@ -129,6 +134,11 @@ public struct RESP3Token: Hashable, Sendable {
             var countSlice = try! local.readCRLFTerminatedSlice2()!
             let countString = countSlice.readString(length: countSlice.readableBytes)!
             let count = Int(countString)!
+
+            if count < 0 {
+                return .null
+            }
+
             return .array(.init(count: count, buffer: local))
 
         case .push:
@@ -310,6 +320,23 @@ extension ByteBuffer {
             throw RESP3ParsingError(code: .canNotParseInteger, buffer: self)
         }
 
+        // blob length is negative, this may be a null bulk string
+        if blobLength < 0 {
+            // null bulk string is -1
+            guard blobLength == -1 else {
+                // -1 is the only supported negative value
+                throw RESP3ParsingError(code: .invalidData, buffer: self)
+            }
+
+            guard self.getInteger(at: self.readerIndex, as: UInt16.self) == .crlf else {
+                throw RESP3ParsingError(code: .invalidData, buffer: self)
+            }
+
+            // null bulk string is 1 byte for the $ prefix, 2 bytes for the -1, and 2 bytes for the \r\n
+            let respLength = 1 + 2 + 2
+            return self.readSlice(length: respLength)!
+        }
+
         let respLength = 1 + lengthLineLength + blobLength + 2
 
         guard let slice = self.readSlice(length: respLength) else {
@@ -371,6 +398,20 @@ extension ByteBuffer {
         localCopy.moveReaderIndex(forwardBy: prefixLength)
 
         let elementCount = arrayLength * multiplier
+        if elementCount < 0 {
+            guard elementCount == -1, marker == .array else {
+                // -1 is the only supported negative value
+                throw RESP3ParsingError(code: .invalidData, buffer: self)
+            }
+
+            guard self.getInteger(at: self.readerIndex, as: UInt16.self) == .crlf else {
+                throw RESP3ParsingError(code: .invalidData, buffer: self)
+            }
+
+            // null bulk string is 1 byte for the * prefix, 2 bytes for the -1, and 2 bytes for the \r\n
+            let respLength = 1 + 2 + 2
+            return self.readSlice(length: respLength)!
+        }
 
         func iterateChildren(consuming localCopy: inout ByteBuffer, count: Int, depth: Int) throws -> Int? {
             var bodyLength = 0
