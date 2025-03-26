@@ -76,13 +76,11 @@ extension Date: RESPRenderable {
 }
 
 extension ByteBuffer {
-    @usableFromInline
-    mutating func writeRESP3TypeIdentifier(_ identifier: RESPTypeIdentifier) {
+    public mutating func writeRESP3TypeIdentifier(_ identifier: RESPTypeIdentifier) {
         self.writeInteger(identifier.rawValue)
     }
 
-    @usableFromInline
-    mutating func writeBulkString(_ string: String) {
+    public mutating func writeBulkString(_ string: String) {
         self.writeRESP3TypeIdentifier(.blobString)
         self.writeString(String(string.utf8.count))
         self.writeStaticString("\r\n")
