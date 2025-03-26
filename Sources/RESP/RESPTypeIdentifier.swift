@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-public enum RESP3TypeIdentifier: UInt8 {
+public enum RESPTypeIdentifier: UInt8 {
     case integer = 58  // UInt8(ascii: ":")
     case double = 44  // UInt8.comma
     case simpleString = 43  // UInt8.plus

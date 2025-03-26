@@ -1,22 +1,22 @@
 import Logging
 import NIOCore
-import RESP3
+import RESP
 
 public final class RedisConnection {
-    var inboundIterator: NIOAsyncChannelInboundStream<RESP3Token>.AsyncIterator
+    var inboundIterator: NIOAsyncChannelInboundStream<RESPToken>.AsyncIterator
     let outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>
     let logger: Logger
 
-    public init(inbound: NIOAsyncChannelInboundStream<RESP3Token>, outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>, logger: Logger) {
+    public init(inbound: NIOAsyncChannelInboundStream<RESPToken>, outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>, logger: Logger) {
         self.inboundIterator = inbound.makeAsyncIterator()
         self.outbound = outbound
         self.logger = logger
     }
 
-    @discardableResult public func send(_ command: RESPCommand) async throws -> RESP3Token {
+    @discardableResult public func send(_ command: RESPCommand) async throws -> RESPToken {
         if logger.logLevel <= .debug {
             var buffer = command.buffer
-            let sending = try [String](from: RESP3Token(consuming: &buffer)!).joined(separator: " ")
+            let sending = try [String](from: RESPToken(consuming: &buffer)!).joined(separator: " ")
             self.logger.debug("send: \(sending)")
         }
         try await self.outbound.write(command.buffer)
@@ -27,14 +27,14 @@ public final class RedisConnection {
         return response
     }
 
-    @discardableResult public func send<each Arg: RESPRenderable>(_ command: repeat each Arg) async throws -> RESP3Token {
+    @discardableResult public func send<each Arg: RESPRenderable>(_ command: repeat each Arg) async throws -> RESPToken {
         let command = RESPCommand(repeat each command)
         return try await self.send(command)
     }
 
-    @discardableResult public func pipeline(_ commands: [RESPCommand]) async throws -> [RESP3Token] {
+    @discardableResult public func pipeline(_ commands: [RESPCommand]) async throws -> [RESPToken] {
         try await self.outbound.write(contentsOf: commands.map { $0.buffer })
-        var responses: [RESP3Token] = .init()
+        var responses: [RESPToken] = .init()
         for _ in 0..<commands.count {
             guard let response = try await self.inboundIterator.next() else { throw RedisClientError(.connectionClosed) }
             responses.append(response)
@@ -42,7 +42,7 @@ public final class RedisConnection {
         return responses
     }
 
-    var subscriptions: RedisSubscriptionAsyncSequence<NIOAsyncChannelInboundStream<RESP3Token>> {
+    var subscriptions: RedisSubscriptionAsyncSequence<NIOAsyncChannelInboundStream<RESPToken>> {
         RedisSubscriptionAsyncSequence(baseIterator: self.inboundIterator)
     }
 }

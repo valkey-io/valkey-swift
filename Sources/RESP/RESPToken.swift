@@ -14,9 +14,9 @@
 
 import NIOCore
 
-public struct RESP3Token: Hashable, Sendable {
+public struct RESPToken: Hashable, Sendable {
     public struct Array: Sequence, Sendable, Hashable {
-        public typealias Element = RESP3Token
+        public typealias Element = RESPToken
 
         public let count: Int
         let buffer: ByteBuffer
@@ -26,7 +26,7 @@ public struct RESP3Token: Hashable, Sendable {
         }
 
         public struct Iterator: IteratorProtocol {
-            public typealias Element = RESP3Token
+            public typealias Element = RESPToken
 
             private var buffer: ByteBuffer
 
@@ -34,14 +34,14 @@ public struct RESP3Token: Hashable, Sendable {
                 self.buffer = buffer
             }
 
-            public mutating func next() -> RESP3Token? {
-                try! RESP3Token(consuming: &self.buffer)
+            public mutating func next() -> RESPToken? {
+                try! RESPToken(consuming: &self.buffer)
             }
         }
     }
 
     public struct Map: Sequence, Sendable, Hashable {
-        public typealias Element = (key: RESP3Token, value: RESP3Token)
+        public typealias Element = (key: RESPToken, value: RESPToken)
 
         public let count: Int
         let underlying: Array
@@ -56,7 +56,7 @@ public struct RESP3Token: Hashable, Sendable {
         }
 
         public struct Iterator: IteratorProtocol {
-            public typealias Element = (key: RESP3Token, value: RESP3Token)
+            public typealias Element = (key: RESPToken, value: RESPToken)
 
             private var underlying: Array.Iterator
 
@@ -64,7 +64,7 @@ public struct RESP3Token: Hashable, Sendable {
                 self.underlying = underlying
             }
 
-            public mutating func next() -> (key: RESP3Token, value: RESP3Token)? {
+            public mutating func next() -> (key: RESPToken, value: RESPToken)? {
                 guard let key = self.underlying.next() else {
                     return nil
                 }
@@ -259,21 +259,21 @@ public struct RESP3Token: Hashable, Sendable {
 }
 
 extension ByteBuffer {
-    fileprivate mutating func getRESP3TypeIdentifier(at index: Int) throws -> RESP3TypeIdentifier? {
+    fileprivate mutating func getRESP3TypeIdentifier(at index: Int) throws -> RESPTypeIdentifier? {
         guard let int = self.getInteger(at: index, as: UInt8.self) else {
             return nil
         }
 
-        guard let id = RESP3TypeIdentifier(rawValue: int) else {
-            throw RESP3ParsingError(code: .invalidLeadingByte, buffer: self)
+        guard let id = RESPTypeIdentifier(rawValue: int) else {
+            throw RESPParsingError(code: .invalidLeadingByte, buffer: self)
         }
 
         return id
     }
 
-    fileprivate mutating func readValidatedRESP3TypeIdentifier() -> RESP3TypeIdentifier {
+    fileprivate mutating func readValidatedRESP3TypeIdentifier() -> RESPTypeIdentifier {
         let int = self.readInteger(as: UInt8.self)!
-        return RESP3TypeIdentifier(rawValue: int)!
+        return RESPTypeIdentifier(rawValue: int)!
     }
 
     fileprivate mutating func readRESPNullSlice() throws -> ByteBuffer? {
@@ -283,14 +283,14 @@ extension ByteBuffer {
             return nil
         }
 
-        let resp3ID = RESP3TypeIdentifier(rawValue: marker)!
+        let resp3ID = RESPTypeIdentifier(rawValue: marker)!
         precondition(resp3ID == .null)
 
         if crlf == .crlf {
             return copy.getSlice(at: markerIndex, length: 3)!
         }
 
-        throw RESP3ParsingError(code: .invalidData, buffer: copy)
+        throw RESPParsingError(code: .invalidData, buffer: copy)
     }
 
     fileprivate mutating func readRESPBooleanSlice() throws -> ByteBuffer? {
@@ -304,7 +304,7 @@ extension ByteBuffer {
         case .respFalse:
             return copy.readSlice(length: 4)!
         default:
-            throw RESP3ParsingError(code: .invalidData, buffer: copy)
+            throw RESPParsingError(code: .invalidData, buffer: copy)
         }
     }
 
@@ -317,7 +317,7 @@ extension ByteBuffer {
         let lengthLineLength = lengthSlice.readableBytes + 2
         let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
         guard let blobLength = Int(lengthString) else {
-            throw RESP3ParsingError(code: .canNotParseInteger, buffer: self)
+            throw RESPParsingError(code: .canNotParseInteger, buffer: self)
         }
 
         // blob length is negative, this may be a null bulk string
@@ -325,11 +325,11 @@ extension ByteBuffer {
             // null bulk string is -1
             guard blobLength == -1 else {
                 // -1 is the only supported negative value
-                throw RESP3ParsingError(code: .invalidData, buffer: self)
+                throw RESPParsingError(code: .invalidData, buffer: self)
             }
 
             guard self.getInteger(at: self.readerIndex, as: UInt16.self) == .crlf else {
-                throw RESP3ParsingError(code: .invalidData, buffer: self)
+                throw RESPParsingError(code: .invalidData, buffer: self)
             }
 
             // null bulk string is 1 byte for the $ prefix, 2 bytes for the -1, and 2 bytes for the \r\n
@@ -345,14 +345,14 @@ extension ByteBuffer {
 
         // validate that the last two characters are \r\n
         if slice.getInteger(at: slice.readableBytes - 2, as: UInt16.self) != .crlf {
-            throw RESP3ParsingError(code: .invalidData, buffer: slice)
+            throw RESPParsingError(code: .invalidData, buffer: slice)
         }
 
         // validate that the fourth character is colon, if we have a verbatim string
         if marker == .verbatimString {
             let colonIndex = 1 + lengthLineLength + 3
             guard slice.readableBytes > colonIndex && slice.readableBytesView[colonIndex] == .colon else {
-                throw RESP3ParsingError(code: .missingColonInVerbatimString, buffer: slice)
+                throw RESPParsingError(code: .missingColonInVerbatimString, buffer: slice)
             }
         }
 
@@ -372,7 +372,7 @@ extension ByteBuffer {
     fileprivate mutating func readRESPAggregateSlice(depth: Int) throws -> ByteBuffer? {
         let marker = try self.getRESP3TypeIdentifier(at: self.readerIndex)!
         guard depth < 1000 else {
-            throw RESP3ParsingError(code: .tooDeeplyNestedAggregatedTypes, buffer: self)
+            throw RESPParsingError(code: .tooDeeplyNestedAggregatedTypes, buffer: self)
         }
 
         let multiplier: Int
@@ -391,7 +391,7 @@ extension ByteBuffer {
         let prefixLength = lengthSlice.readableBytes + 3
         let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
         guard let arrayLength = Int(lengthString) else {
-            throw RESP3ParsingError(code: .canNotParseInteger, buffer: self)
+            throw RESPParsingError(code: .canNotParseInteger, buffer: self)
         }
 
         var localCopy = self
@@ -401,11 +401,11 @@ extension ByteBuffer {
         if elementCount < 0 {
             guard elementCount == -1, marker == .array else {
                 // -1 is the only supported negative value
-                throw RESP3ParsingError(code: .invalidData, buffer: self)
+                throw RESPParsingError(code: .invalidData, buffer: self)
             }
 
             guard self.getInteger(at: self.readerIndex, as: UInt16.self) == .crlf else {
-                throw RESP3ParsingError(code: .invalidData, buffer: self)
+                throw RESPParsingError(code: .invalidData, buffer: self)
             }
 
             // null bulk string is 1 byte for the * prefix, 2 bytes for the -1, and 2 bytes for the \r\n
@@ -416,7 +416,7 @@ extension ByteBuffer {
         func iterateChildren(consuming localCopy: inout ByteBuffer, count: Int, depth: Int) throws -> Int? {
             var bodyLength = 0
             for _ in 0..<elementCount {
-                guard let new = try RESP3Token(consuming: &localCopy, depth: depth + 1) else {
+                guard let new = try RESPToken(consuming: &localCopy, depth: depth + 1) else {
                     return nil
                 }
                 bodyLength += new.base.readableBytes
@@ -431,7 +431,7 @@ extension ByteBuffer {
         } else {
             do {
                 bodyLength = try iterateChildren(consuming: &localCopy, count: elementCount, depth: depth)
-            } catch var error as RESP3ParsingError {
+            } catch var error as RESPParsingError {
                 error.buffer = self
                 throw error
             }
@@ -453,7 +453,7 @@ extension ByteBuffer {
         let lineLength = slice.readableBytes + 3
         let string = slice.readString(length: slice.readableBytes)!
         if Int64(string) == nil {
-            throw RESP3ParsingError(code: .canNotParseInteger, buffer: self)
+            throw RESPParsingError(code: .canNotParseInteger, buffer: self)
         }
 
         return self.readSlice(length: lineLength)!
@@ -470,7 +470,7 @@ extension ByteBuffer {
         let lineLength = slice.readableBytes + 3
         let string = slice.readString(length: slice.readableBytes)!
         if Double(string) == nil {
-            throw RESP3ParsingError(code: .canNotParseDouble, buffer: self)
+            throw RESPParsingError(code: .canNotParseDouble, buffer: self)
         }
 
         return self.readSlice(length: lineLength)!
@@ -497,12 +497,12 @@ extension ByteBuffer {
                 continue
 
             default:
-                throw RESP3ParsingError(code: .canNotParseBigNumber, buffer: self)
+                throw RESPParsingError(code: .canNotParseBigNumber, buffer: self)
             }
         }
 
         if slice.readableBytes == 0 || (negative && slice.readableBytes <= 1) {
-            throw RESP3ParsingError(code: .canNotParseBigNumber, buffer: self)
+            throw RESPParsingError(code: .canNotParseBigNumber, buffer: self)
         }
 
         return self.readSlice(length: slice.readableBytes + 3)!
@@ -536,16 +536,16 @@ extension ByteBuffer {
         }
 
         guard self.getInteger(at: crIndex + 1, as: UInt8.self)! == .newline else {
-            throw RESP3ParsingError(code: .invalidData, buffer: self)
+            throw RESPParsingError(code: .invalidData, buffer: self)
         }
 
         return crIndex
     }
 
-    public mutating func writeRESP3Token(_ token: RESP3Token.Value) {
+    public mutating func writeRESP3Token(_ token: RESPToken.Value) {
         switch token {
         case .simpleString(var string):
-            self.writeInteger(RESP3TypeIdentifier.simpleString.rawValue)
+            self.writeInteger(RESPTypeIdentifier.simpleString.rawValue)
             self.writeBuffer(&string)
             self.writeString("\r\n")
         default:

@@ -160,7 +160,7 @@ extension String {
         }
         let arguments = (command.arguments ?? [])
         var converting: Bool = false
-        var returnType: String = " -> RESP3Token"
+        var returnType: String = " -> RESPToken"
         if let type = getReturnType(reply: reply) {
             if type == "Void" {
                 returnType = ""
@@ -202,7 +202,7 @@ func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> Str
     var string = """
         import NIOCore
         import Redis
-        import RESP3
+        import RESP
 
         #if canImport(FoundationEssentials)
         import FoundationEssentials
@@ -291,7 +291,7 @@ private func getReturnType(reply replies: [String]) -> String? {
             }
         }
         if returnType != "Void", optional {
-            return "\(returnType ?? "RESP3Token")?"
+            return "\(returnType ?? "RESPToken")?"
         } else {
             return returnType
         }
@@ -320,13 +320,13 @@ private func getReturnType(reply: some StringProtocol) -> String? {
                     return "[\(element)]"
                 }
             }
-            return "[RESP3Token]"
+            return "[RESPToken]"
         } else if reply.hasPrefix("[Null") {
             return "Void"
         } else if reply.hasPrefix("[Simple error") {
             return nil
         }
-        return "RESP3Token"
+        return "RESPToken"
     }
     return nil
 }

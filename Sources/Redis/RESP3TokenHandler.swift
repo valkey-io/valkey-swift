@@ -15,15 +15,15 @@
 import Logging
 import NIO
 import NIOCore
-import RESP3
+import RESP
 
 class RESP3TokenHandler: ChannelInboundHandler {
     typealias InboundIn = ByteBuffer
-    typealias InboundOut = RESP3Token
+    typealias InboundOut = RESPToken
     typealias OutboundIn = ByteBuffer
     typealias OutboundOut = ByteBuffer
 
-    var decoder: NIOSingleStepByteToMessageProcessor<RESP3TokenDecoder>
+    var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
 
     init() {
         self.decoder = .init(.init())
