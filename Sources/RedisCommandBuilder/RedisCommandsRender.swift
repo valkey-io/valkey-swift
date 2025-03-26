@@ -104,7 +104,11 @@ extension String {
             if case .pureToken = arg.type {
                 self.append("            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".writeToRESPBuffer(&buffer) }\n")
             } else {
-                self.append("            count += self.\(arg.swiftArgument).writeToRESPBuffer(&buffer)\n")
+                if let token = arg.token {
+                    self.append("            count += RESPWithToken(\"\(token)\", \(arg.swiftArgument)).writeToRESPBuffer(&buffer)\n")
+                } else {
+                    self.append("            count += self.\(arg.swiftArgument).writeToRESPBuffer(&buffer)\n")
+                }
             }
         }
         self.append("            return count\n")

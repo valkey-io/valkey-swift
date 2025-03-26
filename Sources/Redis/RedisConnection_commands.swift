@@ -404,7 +404,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.overflowBlock.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("OVERFLOW", overflowBlock).writeToRESPBuffer(&buffer)
             count += self.writeOperation.writeToRESPBuffer(&buffer)
             return count
         }
@@ -2685,7 +2685,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
             if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
             return count
         }
@@ -2758,7 +2758,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
             if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
             return count
         }
@@ -2827,7 +2827,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
             if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
             return count
         }
@@ -2884,7 +2884,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
             if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
             return count
         }
@@ -2965,7 +2965,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.radius.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("BYRADIUS", radius).writeToRESPBuffer(&buffer)
             count += self.unit.writeToRESPBuffer(&buffer)
             return count
         }
@@ -2994,7 +2994,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.width.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("BYBOX", width).writeToRESPBuffer(&buffer)
             count += self.height.writeToRESPBuffer(&buffer)
             count += self.unit.writeToRESPBuffer(&buffer)
             return count
@@ -3031,7 +3031,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
             if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
             return count
         }
@@ -3100,7 +3100,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.radius.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("BYRADIUS", radius).writeToRESPBuffer(&buffer)
             count += self.unit.writeToRESPBuffer(&buffer)
             return count
         }
@@ -3129,7 +3129,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.width.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("BYBOX", width).writeToRESPBuffer(&buffer)
             count += self.height.writeToRESPBuffer(&buffer)
             count += self.unit.writeToRESPBuffer(&buffer)
             return count
@@ -3166,7 +3166,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
             if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
             return count
         }
@@ -3327,8 +3327,8 @@ extension RESPCommand {
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
             count += self.protover.writeToRESPBuffer(&buffer)
-            count += self.auth.writeToRESPBuffer(&buffer)
-            count += self.clientname.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("AUTH", auth).writeToRESPBuffer(&buffer)
+            count += RESPWithToken("SETNAME", clientname).writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -6334,7 +6334,7 @@ extension RESPCommand {
             count += self.strategy.writeToRESPBuffer(&buffer)
             count += self.operator.writeToRESPBuffer(&buffer)
             count += self.threshold.writeToRESPBuffer(&buffer)
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("LIMIT", count).writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -6597,7 +6597,7 @@ extension RESPCommand {
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
             if self.full { count += "FULL".writeToRESPBuffer(&buffer) }
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -6637,7 +6637,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.minIdleTime.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("IDLE", minIdleTime).writeToRESPBuffer(&buffer)
             count += self.start.writeToRESPBuffer(&buffer)
             count += self.end.writeToRESPBuffer(&buffer)
             count += self.count.writeToRESPBuffer(&buffer)
@@ -6792,7 +6792,7 @@ extension RESPCommand {
             count += self.strategy.writeToRESPBuffer(&buffer)
             count += self.operator.writeToRESPBuffer(&buffer)
             count += self.threshold.writeToRESPBuffer(&buffer)
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("LIMIT", count).writeToRESPBuffer(&buffer)
             return count
         }
     }
