@@ -1,5 +1,5 @@
 import NIOCore
-import Redis
+import RESP
 
 public struct RedisPureToken: RESPRenderable {
     @usableFromInline

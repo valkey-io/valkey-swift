@@ -1,9 +1,8 @@
 import NIOCore
-import RESP
 
 public struct RESPCommand: Sendable {
     @usableFromInline
-    let buffer: ByteBuffer
+    package let buffer: ByteBuffer
 
     @inlinable
     public init<each Arg: RESPRenderable>(_ command: repeat each Arg) {

@@ -1,6 +1,5 @@
 import Foundation
 import NIOCore
-import RESP
 
 /// Type that can be rendered into a RESP buffer
 public protocol RESPRenderable {
@@ -58,14 +57,6 @@ extension Date: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         buffer.writeBulkString(String(self.timeIntervalSince1970))
-        return 1
-    }
-}
-
-extension RedisKey: RESPRenderable {
-    @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-        buffer.writeBulkString(self.rawValue)
         return 1
     }
 }

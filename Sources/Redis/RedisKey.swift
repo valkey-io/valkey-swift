@@ -24,3 +24,10 @@ extension RedisKey: RESP3TokenRepresentable {
 extension RedisKey: CustomStringConvertible {
     public var description: String { rawValue.description }
 }
+
+extension RedisKey: RESPRenderable {
+    @inlinable
+    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        self.rawValue.writeToRESPBuffer(&buffer)
+    }
+}
