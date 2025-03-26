@@ -17,7 +17,7 @@ import NIO
 import NIOCore
 import RESP
 
-class RESP3TokenHandler: ChannelInboundHandler {
+class RESPTokenHandler: ChannelInboundHandler {
     typealias InboundIn = ByteBuffer
     typealias InboundOut = RESPToken
     typealias OutboundIn = ByteBuffer
