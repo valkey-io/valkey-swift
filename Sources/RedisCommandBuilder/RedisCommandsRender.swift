@@ -66,6 +66,10 @@ extension String {
                 self.append(
                     "            case .\(arg.swiftArgument): \"\(arg.token!)\".writeToRESPBuffer(&buffer)\n"
                 )
+            } else if let token = arg.token {
+                self.append(
+                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): RESPWithToken(\"\(token)\", \(arg.swiftArgument)).writeToRESPBuffer(&buffer)\n"
+                )
             } else {
                 self.append(
                     "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.swiftArgument).writeToRESPBuffer(&buffer)\n"
