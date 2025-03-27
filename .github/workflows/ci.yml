@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**.swift"
+      - "**.yml"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macOS-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: SPM tests
+        run: swift test --enable-code-coverage
+      - name: Convert coverage files
+        run: |
+          xcrun llvm-cov export -format "lcov" \
+            .build/debug/swift-zip-archivePackageTests.xctest/Contents/MacOs/swift-zip-archivePackageTests \
+            -ignore-filename-regex="\/Tests\/" \
+            -instr-profile=.build/debug/codecov/default.profdata > info.lcov
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v4
+        with:
+          files: info.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        image: ["swift:6.0", "swiftlang/swift:nightly-6.1-jammy"]
+
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Test
+        run: |
+          swift test --enable-code-coverage
+      - name: Convert coverage files
+        run: |
+          llvm-cov export -format="lcov" \
+            .build/debug/swift-zip-archivePackageTests.xctest \
+            -ignore-filename-regex="\/Tests\/" \
+            -instr-profile .build/debug/codecov/default.profdata > info.lcov
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v4
+        with:
+          files: info.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
