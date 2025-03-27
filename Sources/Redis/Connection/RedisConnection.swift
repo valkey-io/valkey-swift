@@ -15,6 +15,7 @@
 import Logging
 import NIOCore
 import NIOPosix
+import NIOSSL
 import RESP
 
 #if canImport(Network)
@@ -80,24 +81,6 @@ public struct RedisConnection: Sendable {
         #endif
         (self.requestStream, self.requestContinuation) = AsyncStream.makeStream(of: RequestStreamElement.self)
     }
-
-    #if canImport(Network)
-    /// Initialize Client with TLS options
-    public init(
-        address: ServerAddress,
-        configuration: RedisClientConfiguration,
-        transportServicesTLSOptions: TSTLSOptions,
-        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
-        logger: Logger
-    ) throws {
-        self.address = address
-        self.configuration = configuration
-        self.eventLoopGroup = eventLoopGroup
-        self.logger = logger
-        self.tlsOptions = transportServicesTLSOptions.options
-        (self.requestStream, self.requestContinuation) = AsyncStream.makeStream(of: RequestStreamElement.self)
-    }
-    #endif
 
     public func run() async throws {
         let asyncChannel = try await self.makeClient(
@@ -265,32 +248,33 @@ public struct RedisConnection: Sendable {
                 result =
                     try await bootstrap
                     .connect(host: host, port: port) { channel in
-                        channel.eventLoop.makeCompletedFuture {
-                            try channel.pipeline.syncOperations.addHandler(RESPTokenHandler())
-                            return try NIOAsyncChannel<RESPToken, ByteBuffer>(
-                                wrappingChannelSynchronously: channel,
-                                configuration: .init()
-                            )
-                        }
+                        setupChannel(channel)
                     }
                 self.logger.debug("Client connnected to \(host):\(port)")
             case .unixDomainSocket(let path):
                 result =
                     try await bootstrap
                     .connect(unixDomainSocketPath: path) { channel in
-                        channel.eventLoop.makeCompletedFuture {
-                            try channel.pipeline.syncOperations.addHandler(RESPTokenHandler())
-                            return try NIOAsyncChannel<RESPToken, ByteBuffer>(
-                                wrappingChannelSynchronously: channel,
-                                configuration: .init()
-                            )
-                        }
+                        setupChannel(channel)
                     }
                 self.logger.debug("Client connnected to socket path \(path)")
             }
             return result
         } catch {
             throw error
+        }
+    }
+
+    private func setupChannel(_ channel: Channel) -> EventLoopFuture<NIOAsyncChannel<RESPToken, ByteBuffer>> {
+        channel.eventLoop.makeCompletedFuture {
+            if case .enable(let sslContext, let tlsServerName) = self.configuration.tls.base {
+                try channel.pipeline.syncOperations.addHandler(NIOSSLClientHandler(context: sslContext, serverHostname: tlsServerName))
+            }
+            try channel.pipeline.syncOperations.addHandler(RESPTokenHandler())
+            return try NIOAsyncChannel<RESPToken, ByteBuffer>(
+                wrappingChannelSynchronously: channel,
+                configuration: .init()
+            )
         }
     }
 
