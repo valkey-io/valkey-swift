@@ -8,12 +8,24 @@ struct App {
     }
 
     func run() async throws {
-        let outputFile = "Sources/RedisCommands/redis_commands.swift"
         let resourceFolder = Bundle.module.resourceURL!
         let commands = try load(fileURL: resourceFolder.appending(path: "commands.json"), as: RedisCommands.self)
         let resp3Replies = try load(fileURL: resourceFolder.appending(path: "resp3_replies.json"), as: RESPReplies.self)
-        let output = renderRedisCommands(commands, replies: resp3Replies)
-        try output.write(toFile: outputFile, atomically: true, encoding: .utf8)
+        try writeRedisCommands(toFolder: "Sources/RedisCommands/", commands: commands, replies: resp3Replies)
+    }
+
+    func writeRedisCommands(toFolder: String, commands: RedisCommands, replies: RESPReplies) throws {
+        // get list of groups
+        var groups: Set<String> = .init()
+        for command in commands.commands.values {
+            groups.insert(command.group)
+        }
+        for group in groups {
+            let commands = commands.commands.filter { $0.value.group == group }
+            let output = renderRedisCommands(commands, replies: replies)
+            let filename = "\(toFolder)\(group.swiftTypename)Commands.swift"
+            try output.write(toFile: filename, atomically: true, encoding: .utf8)
+        }
     }
 
     func load<Value: Decodable>(fileURL: URL, as: Value.Type = Value.self) throws -> Value {

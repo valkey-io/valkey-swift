@@ -198,7 +198,7 @@ extension String {
     }
 }
 
-func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> String {
+func renderRedisCommands(_ commands: [String: RedisCommand], replies: RESPReplies) -> String {
     var string = """
         //===----------------------------------------------------------------------===//
         //
@@ -230,8 +230,8 @@ func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> Str
 
         """
 
-    for key in commands.commands.keys.sorted() {
-        let command = commands.commands[key]!
+    for key in commands.keys.sorted() {
+        let command = commands[key]!
         // if there is no reply info assume command is a container command
         guard let reply = replies.commands[key], reply.count > 0 else { continue }
         string.appendCommandFunction(command: command, reply: reply, name: key)
@@ -239,8 +239,8 @@ func renderRedisCommands(_ commands: RedisCommands, replies: RESPReplies) -> Str
     string.append("}\n")
     string.append("\n")
     string.append("extension RedisConnection {\n")
-    for key in commands.commands.keys.sorted() {
-        let command = commands.commands[key]!
+    for key in commands.keys.sorted() {
+        let command = commands[key]!
         // if there is no reply info assume command is a container command
         guard let reply = replies.commands[key], reply.count > 0 else { continue }
         string.appendFunction(command: command, reply: reply, name: key)
