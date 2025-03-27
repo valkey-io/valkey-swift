@@ -55,10 +55,10 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await RedisClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.set(key: key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 0.1))
+                _ = try await connection.set(key: key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 1))
                 let response = try await connection.get(key: key)
                 #expect(response == "Hello")
-                try await Task.sleep(for: .seconds(1))
+                try await Task.sleep(for: .seconds(2))
                 let response2 = try await connection.get(key: key)
                 #expect(response2 == nil)
             }
