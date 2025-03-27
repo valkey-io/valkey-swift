@@ -7,11 +7,8 @@ let package = Package(
     name: "swift-redis",
     platforms: [.macOS(.v13)],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
-        .library(
-            name: "Redis",
-            targets: ["Redis"]
-        )
+        .library(name: "Redis", targets: ["Redis"]),
+        .library(name: "RedisCommands", targets: ["RedisCommands"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
