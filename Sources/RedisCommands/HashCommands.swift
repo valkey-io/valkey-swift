@@ -168,8 +168,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.field.writeToRESPBuffer(&buffer)
-            count += self.value.writeToRESPBuffer(&buffer)
+            count += field.writeToRESPBuffer(&buffer)
+            count += value.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -204,7 +204,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += count.writeToRESPBuffer(&buffer)
             if self.withvalues { count += "WITHVALUES".writeToRESPBuffer(&buffer) }
             return count
         }
@@ -246,8 +246,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.field.writeToRESPBuffer(&buffer)
-            count += self.value.writeToRESPBuffer(&buffer)
+            count += field.writeToRESPBuffer(&buffer)
+            count += value.writeToRESPBuffer(&buffer)
             return count
         }
     }

@@ -15,11 +15,12 @@
 import NIOCore
 import RESP
 
-public struct RedisPureToken: RESPRenderable {
+@usableFromInline
+package struct RedisPureToken: RESPRenderable {
     @usableFromInline
     let token: String?
     @inlinable
-    public init(_ token: String, _ value: Bool) {
+    package init(_ token: String, _ value: Bool) {
         if value {
             self.token = token
         } else {
@@ -27,24 +28,25 @@ public struct RedisPureToken: RESPRenderable {
         }
     }
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+    package func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         self.token.writeToRESPBuffer(&buffer)
     }
 }
 
-public struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
+@usableFromInline
+package struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
     @usableFromInline
     let value: Value?
     @usableFromInline
     let token: String
 
     @inlinable
-    public init(_ token: String, _ value: Value?) {
+    package init(_ token: String, _ value: Value?) {
         self.value = value
         self.token = token
     }
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+    package func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         if let value {
             let writerIndex = buffer.writerIndex
             _ = self.token.writeToRESPBuffer(&buffer)
@@ -60,16 +62,17 @@ public struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
     }
 }
 
-public struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
+@usableFromInline
+package struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
     @usableFromInline
     let array: [Element]
 
     @inlinable
-    public init(_ array: [Element]) {
+    package init(_ array: [Element]) {
         self.array = array
     }
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+    package func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         _ = array.count.writeToRESPBuffer(&buffer)
         let count = array.writeToRESPBuffer(&buffer)
         return count + 1

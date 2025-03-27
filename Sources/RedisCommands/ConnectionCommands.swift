@@ -481,8 +481,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.username.writeToRESPBuffer(&buffer)
-            count += self.password.writeToRESPBuffer(&buffer)
+            count += username.writeToRESPBuffer(&buffer)
+            count += password.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -494,7 +494,7 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.protover.writeToRESPBuffer(&buffer)
+            count += protover.writeToRESPBuffer(&buffer)
             count += RESPWithToken("AUTH", auth).writeToRESPBuffer(&buffer)
             count += RESPWithToken("SETNAME", clientname).writeToRESPBuffer(&buffer)
             return count

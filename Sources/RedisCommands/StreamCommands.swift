@@ -82,9 +82,9 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.strategy.writeToRESPBuffer(&buffer)
-            count += self.operator.writeToRESPBuffer(&buffer)
-            count += self.threshold.writeToRESPBuffer(&buffer)
+            count += strategy.writeToRESPBuffer(&buffer)
+            count += `operator`.writeToRESPBuffer(&buffer)
+            count += threshold.writeToRESPBuffer(&buffer)
             count += RESPWithToken("LIMIT", count).writeToRESPBuffer(&buffer)
             return count
         }
@@ -108,8 +108,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.field.writeToRESPBuffer(&buffer)
-            count += self.value.writeToRESPBuffer(&buffer)
+            count += field.writeToRESPBuffer(&buffer)
+            count += value.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -167,7 +167,7 @@ extension RESPCommand {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
     public static func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String, ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
-        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -181,7 +181,7 @@ extension RESPCommand {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
     public static func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, ids: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
-        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, ids, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, ids, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -389,10 +389,10 @@ extension RESPCommand {
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
             count += RESPWithToken("IDLE", minIdleTime).writeToRESPBuffer(&buffer)
-            count += self.start.writeToRESPBuffer(&buffer)
-            count += self.end.writeToRESPBuffer(&buffer)
-            count += self.count.writeToRESPBuffer(&buffer)
-            count += self.consumer.writeToRESPBuffer(&buffer)
+            count += start.writeToRESPBuffer(&buffer)
+            count += end.writeToRESPBuffer(&buffer)
+            count += count.writeToRESPBuffer(&buffer)
+            count += consumer.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -427,8 +427,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.key.writeToRESPBuffer(&buffer)
-            count += self.id.writeToRESPBuffer(&buffer)
+            count += key.writeToRESPBuffer(&buffer)
+            count += id.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -452,8 +452,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.group.writeToRESPBuffer(&buffer)
-            count += self.consumer.writeToRESPBuffer(&buffer)
+            count += group.writeToRESPBuffer(&buffer)
+            count += consumer.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -464,8 +464,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.key.writeToRESPBuffer(&buffer)
-            count += self.id.writeToRESPBuffer(&buffer)
+            count += key.writeToRESPBuffer(&buffer)
+            count += id.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -540,9 +540,9 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.strategy.writeToRESPBuffer(&buffer)
-            count += self.operator.writeToRESPBuffer(&buffer)
-            count += self.threshold.writeToRESPBuffer(&buffer)
+            count += strategy.writeToRESPBuffer(&buffer)
+            count += `operator`.writeToRESPBuffer(&buffer)
+            count += threshold.writeToRESPBuffer(&buffer)
             count += RESPWithToken("LIMIT", count).writeToRESPBuffer(&buffer)
             return count
         }
@@ -640,7 +640,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
     public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String, ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESPToken] {
-        try await send("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
+        try await send("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -654,7 +654,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
     public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, ids: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESPToken] {
-        try await send("XCLAIM", key, group, consumer, minIdleTime, ids, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
+        try await send("XCLAIM", key, group, consumer, minIdleTime, ids, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
     }
 
     /// Returns the number of messages after removing them from a stream.

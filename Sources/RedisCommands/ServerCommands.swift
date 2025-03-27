@@ -499,8 +499,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.parameter.writeToRESPBuffer(&buffer)
-            count += self.value.writeToRESPBuffer(&buffer)
+            count += parameter.writeToRESPBuffer(&buffer)
+            count += value.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -548,8 +548,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.host.writeToRESPBuffer(&buffer)
-            count += self.port.writeToRESPBuffer(&buffer)
+            count += host.writeToRESPBuffer(&buffer)
+            count += port.writeToRESPBuffer(&buffer)
             if self.force { count += "FORCE".writeToRESPBuffer(&buffer) }
             return count
         }
@@ -904,8 +904,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.name.writeToRESPBuffer(&buffer)
-            count += self.value.writeToRESPBuffer(&buffer)
+            count += name.writeToRESPBuffer(&buffer)
+            count += value.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -986,8 +986,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.host.writeToRESPBuffer(&buffer)
-            count += self.port.writeToRESPBuffer(&buffer)
+            count += host.writeToRESPBuffer(&buffer)
+            count += port.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -1094,8 +1094,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.host.writeToRESPBuffer(&buffer)
-            count += self.port.writeToRESPBuffer(&buffer)
+            count += host.writeToRESPBuffer(&buffer)
+            count += port.writeToRESPBuffer(&buffer)
             return count
         }
     }

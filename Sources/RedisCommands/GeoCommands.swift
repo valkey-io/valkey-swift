@@ -45,9 +45,9 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.longitude.writeToRESPBuffer(&buffer)
-            count += self.latitude.writeToRESPBuffer(&buffer)
-            count += self.member.writeToRESPBuffer(&buffer)
+            count += longitude.writeToRESPBuffer(&buffer)
+            count += latitude.writeToRESPBuffer(&buffer)
+            count += member.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -416,8 +416,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.longitude.writeToRESPBuffer(&buffer)
-            count += self.latitude.writeToRESPBuffer(&buffer)
+            count += longitude.writeToRESPBuffer(&buffer)
+            count += latitude.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -457,7 +457,7 @@ extension RESPCommand {
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
             count += RESPWithToken("BYRADIUS", radius).writeToRESPBuffer(&buffer)
-            count += self.unit.writeToRESPBuffer(&buffer)
+            count += unit.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -486,8 +486,8 @@ extension RESPCommand {
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
             count += RESPWithToken("BYBOX", width).writeToRESPBuffer(&buffer)
-            count += self.height.writeToRESPBuffer(&buffer)
-            count += self.unit.writeToRESPBuffer(&buffer)
+            count += height.writeToRESPBuffer(&buffer)
+            count += unit.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -551,8 +551,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.longitude.writeToRESPBuffer(&buffer)
-            count += self.latitude.writeToRESPBuffer(&buffer)
+            count += longitude.writeToRESPBuffer(&buffer)
+            count += latitude.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -592,7 +592,7 @@ extension RESPCommand {
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
             count += RESPWithToken("BYRADIUS", radius).writeToRESPBuffer(&buffer)
-            count += self.unit.writeToRESPBuffer(&buffer)
+            count += unit.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -621,8 +621,8 @@ extension RESPCommand {
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
             count += RESPWithToken("BYBOX", width).writeToRESPBuffer(&buffer)
-            count += self.height.writeToRESPBuffer(&buffer)
-            count += self.unit.writeToRESPBuffer(&buffer)
+            count += height.writeToRESPBuffer(&buffer)
+            count += unit.writeToRESPBuffer(&buffer)
             return count
         }
     }

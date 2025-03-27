@@ -158,7 +158,7 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     @inlinable
     public static func expireat(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition? = nil) -> RESPCommand {
-        RESPCommand("EXPIREAT", key, unixTimeSeconds, condition)
+        RESPCommand("EXPIREAT", key, Int(unixTimeSeconds.timeIntervalSince1970), condition)
     }
 
     /// Returns the expiration time of a key as a Unix timestamp.
@@ -207,8 +207,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.username.writeToRESPBuffer(&buffer)
-            count += self.password.writeToRESPBuffer(&buffer)
+            count += username.writeToRESPBuffer(&buffer)
+            count += password.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -405,7 +405,7 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set. For example, if the key doesn't exist, or the operation was skipped due to the provided arguments.
     @inlinable
     public static func pexpireat(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition? = nil) -> RESPCommand {
-        RESPCommand("PEXPIREAT", key, unixTimeMilliseconds, condition)
+        RESPCommand("PEXPIREAT", key, Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000), condition)
     }
 
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
@@ -511,8 +511,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.offset.writeToRESPBuffer(&buffer)
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += offset.writeToRESPBuffer(&buffer)
+            count += count.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -561,8 +561,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.offset.writeToRESPBuffer(&buffer)
-            count += self.count.writeToRESPBuffer(&buffer)
+            count += offset.writeToRESPBuffer(&buffer)
+            count += count.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -807,7 +807,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     @inlinable
     public func expireat(key: RedisKey, unixTimeSeconds: Date, condition: RESPCommand.EXPIREATCondition? = nil) async throws -> Int {
-        try await send("EXPIREAT", key, unixTimeSeconds, condition).converting()
+        try await send("EXPIREAT", key, Int(unixTimeSeconds.timeIntervalSince1970), condition).converting()
     }
 
     /// Returns the expiration time of a key as a Unix timestamp.
@@ -986,7 +986,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set. For example, if the key doesn't exist, or the operation was skipped due to the provided arguments.
     @inlinable
     public func pexpireat(key: RedisKey, unixTimeMilliseconds: Date, condition: RESPCommand.PEXPIREATCondition? = nil) async throws -> Int {
-        try await send("PEXPIREAT", key, unixTimeMilliseconds, condition).converting()
+        try await send("PEXPIREAT", key, Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000), condition).converting()
     }
 
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
