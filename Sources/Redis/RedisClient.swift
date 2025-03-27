@@ -37,8 +37,6 @@ public struct RedisClient {
 
     /// Server address
     let serverAddress: ServerAddress
-    /// Redis data handler
-    let handler: RedisClientHandler
     /// configuration
     let configuration: RedisClientConfiguration
     /// EventLoopGroup to use
@@ -62,11 +60,9 @@ public struct RedisClient {
         configuration: RedisClientConfiguration = .init(),
         tlsConfiguration: TLSConfiguration? = nil,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
-        logger: Logger,
-        handler: @escaping RedisClientHandler
+        logger: Logger
     ) {
         self.serverAddress = address
-        self.handler = handler
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
@@ -79,7 +75,6 @@ public struct RedisClient {
     /// - Parametes:
     ///   - url: URL of websocket
     ///   - transportServicesTLSOptions: TLS options for NIOTransportServices
-    ///   - handler: WebSocket data handler
     ///   - maxFrameSize: Max frame size for a single packet
     ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
     ///   - logger: Logger
@@ -88,119 +83,40 @@ public struct RedisClient {
         configuration: RedisClientConfiguration = .init(),
         transportServicesTLSOptions: TSTLSOptions,
         eventLoopGroup: NIOTSEventLoopGroup = NIOTSEventLoopGroup.singleton,
-        logger: Logger,
-        handler: @escaping RedisClientHandler
+        logger: Logger
     ) {
         self.serverAddress = address
-        self.handler = handler
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
         self.tlsConfiguration = .ts(transportServicesTLSOptions)
     }
     #endif
-
-    /// Connect and run handler
-    /// - Returns: WebSocket close frame details if server returned any
-    public func run() async throws {
-        if let tlsConfiguration {
-            switch tlsConfiguration {
-            case .niossl(let tlsConfiguration):
-                let client = try ClientConnection(
-                    TLSClientChannel(
-                        RedisClientChannel(configuration: self.configuration, handler: handler),
-                        tlsConfiguration: tlsConfiguration,
-                        serverHostname: "sdf"
-                    ),
-                    address: serverAddress,
-                    eventLoopGroup: self.eventLoopGroup,
-                    logger: self.logger
-                )
-                return try await client.run()
-
-            #if canImport(Network)
-            case .ts(let tlsOptions):
-                let client = try ClientConnection(
-                    RedisClientChannel(configuration: self.configuration, handler: handler),
-                    address: serverAddress,
-                    transportServicesTLSOptions: tlsOptions,
-                    eventLoopGroup: self.eventLoopGroup,
-                    logger: self.logger
-                )
-                return try await client.run()
-
-            #endif
-            }
-        } else {
-            let client = try ClientConnection(
-                RedisClientChannel(configuration: self.configuration, handler: handler),
-                address: serverAddress,
-                eventLoopGroup: self.eventLoopGroup,
-                logger: self.logger
-            )
-            return try await client.run()
-        }
-    }
 }
 
 extension RedisClient {
-    /// Create websocket client, connect and handle connection
+    /// Create connection and run operation using connection
     ///
-    /// - Parametes:
-    ///   - url: URL of websocket
-    ///   - tlsConfiguration: TLS configuration
-    ///   - maxFrameSize: Max frame size for a single packet
-    ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
+    /// - Parameters:
+    ///   - operation: Closure handling webSocket
     ///   - logger: Logger
-    ///   - process: Closure handling webSocket
-    /// - Returns: WebSocket close frame details if server returned any
-    public static func withConnection(
-        _ address: ServerAddress,
-        configuration: RedisClientConfiguration = .init(),
-        tlsConfiguration: TLSConfiguration? = nil,
-        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+    public func withConnection<Value: Sendable>(
         logger: Logger,
-        handler: @escaping RedisClientHandler
-    ) async throws {
-        let redis = self.init(
-            address,
-            configuration: configuration,
-            tlsConfiguration: tlsConfiguration,
-            eventLoopGroup: eventLoopGroup,
-            logger: logger,
-            handler: handler
+        operation: @escaping @Sendable (RedisClientConnection) async throws -> Value
+    ) async throws -> Value {
+        let redisConnection = RedisClientConnection(
+            address: self.serverAddress,
+            configuration: self.configuration,
+            eventLoopGroup: self.eventLoopGroup,
+            logger: logger
         )
-        return try await redis.run()
+        return try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                try await redisConnection.run()
+            }
+            let value: Value = try await operation(redisConnection)
+            group.cancelAll()
+            return value
+        }
     }
-
-    #if canImport(Network)
-    /// Create websocket client, connect and handle connection
-    ///
-    /// - Parametes:
-    ///   - url: URL of websocket
-    ///   - transportServicesTLSOptions: TLS options for NIOTransportServices
-    ///   - maxFrameSize: Max frame size for a single packet
-    ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
-    ///   - logger: Logger
-    ///   - process: WebSocket data handler
-    /// - Returns: WebSocket close frame details if server returned any
-    public static func withConnection(
-        _ address: ServerAddress,
-        configuration: RedisClientConfiguration = .init(),
-        transportServicesTLSOptions: TSTLSOptions,
-        eventLoopGroup: NIOTSEventLoopGroup = NIOTSEventLoopGroup.singleton,
-        logger: Logger,
-        handler: @escaping RedisClientHandler
-    ) async throws {
-        let redis = self.init(
-            address,
-            configuration: configuration,
-            transportServicesTLSOptions: transportServicesTLSOptions,
-            eventLoopGroup: eventLoopGroup,
-            logger: logger,
-            handler: handler
-        )
-        return try await redis.run()
-    }
-    #endif
 }

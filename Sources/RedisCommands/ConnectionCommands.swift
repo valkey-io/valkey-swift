@@ -565,7 +565,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Authenticates the connection.
     ///
     /// - Documentation: [AUTH](https:/redis.io/docs/latest/commands/auth)

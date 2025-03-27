@@ -561,7 +561,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
     ///
     /// - Documentation: [XACK](https:/redis.io/docs/latest/commands/xack)

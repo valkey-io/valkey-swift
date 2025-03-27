@@ -419,7 +419,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [APPEND](https:/redis.io/docs/latest/commands/append)

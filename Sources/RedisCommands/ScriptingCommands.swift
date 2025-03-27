@@ -415,7 +415,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Executes a server-side Lua script.
     ///
     /// - Documentation: [EVAL](https:/redis.io/docs/latest/commands/eval)

@@ -101,7 +101,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Discards a transaction.
     ///
     /// - Documentation: [DISCARD](https:/redis.io/docs/latest/commands/discard)

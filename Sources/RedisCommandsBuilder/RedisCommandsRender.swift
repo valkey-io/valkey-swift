@@ -157,9 +157,6 @@ extension String {
         let arguments = (command.arguments ?? [])
         var converting: Bool = false
         var returnType: String = " -> RESPToken"
-        if name == "OBJECT REFCOUNT" {
-            print("sdf")
-        }
         if let type = getReturnType(reply: reply) {
             if type == "Void" {
                 returnType = ""
@@ -237,7 +234,7 @@ func renderRedisCommands(_ commands: [String: RedisCommand], replies: RESPReplie
     }
     string.append("}\n")
     string.append("\n")
-    string.append("extension RedisConnection {\n")
+    string.append("extension RedisClientConnection {\n")
     for key in commands.keys.sorted() {
         let command = commands[key]!
         // if there is no reply info assume command is a container command

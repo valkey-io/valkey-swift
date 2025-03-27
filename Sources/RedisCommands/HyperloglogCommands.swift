@@ -115,7 +115,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [PFADD](https:/redis.io/docs/latest/commands/pfadd)

@@ -362,7 +362,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [SADD](https:/redis.io/docs/latest/commands/sadd)

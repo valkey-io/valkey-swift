@@ -315,7 +315,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
     ///
     /// - Documentation: [HDEL](https:/redis.io/docs/latest/commands/hdel)

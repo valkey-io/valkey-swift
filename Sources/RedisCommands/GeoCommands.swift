@@ -676,7 +676,7 @@ extension RESPCommand {
 
 }
 
-extension RedisConnection {
+extension RedisClientConnection {
     /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
     ///
     /// - Documentation: [GEOADD](https:/redis.io/docs/latest/commands/geoadd)
