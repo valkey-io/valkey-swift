@@ -92,6 +92,14 @@ extension StringProtocol {
         }
         return true
     }
+
+    func dropPrefix<S: StringProtocol>(_ prefix: S) -> Self.SubSequence {
+        if hasPrefix(prefix) {
+            return self.dropFirst(prefix.count)
+        } else {
+            return self[...]
+        }
+    }
 }
 
 extension String {

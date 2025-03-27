@@ -377,7 +377,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map of fields and their values stored in the hash, or an empty list when key does not exist.
     @inlinable
     public func hgetall(key: RedisKey) async throws -> RESPToken {
-        try await send("HGETALL", key).converting()
+        try await send("HGETALL", key)
     }
 
     /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.

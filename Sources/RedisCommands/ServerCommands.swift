@@ -1491,7 +1491,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
     public func commandDocs(commandName: String? = nil) async throws -> RESPToken {
-        try await send("COMMAND", "DOCS", commandName).converting()
+        try await send("COMMAND", "DOCS", commandName)
     }
 
     /// Returns documentary information about one, multiple or all commands.
@@ -1503,7 +1503,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
     public func commandDocs(commandNames: [String]) async throws -> RESPToken {
-        try await send("COMMAND", "DOCS", commandNames).converting()
+        try await send("COMMAND", "DOCS", commandNames)
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -1611,7 +1611,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
     public func configGet(parameter: String) async throws -> RESPToken {
-        try await send("CONFIG", "GET", parameter).converting()
+        try await send("CONFIG", "GET", parameter)
     }
 
     /// Returns the effective values of configuration parameters.
@@ -1623,7 +1623,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
     public func configGet(parameters: [String]) async throws -> RESPToken {
-        try await send("CONFIG", "GET", parameters).converting()
+        try await send("CONFIG", "GET", parameters)
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1819,7 +1819,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
     public func latencyHistogram(command: String? = nil) async throws -> RESPToken {
-        try await send("LATENCY", "HISTOGRAM", command).converting()
+        try await send("LATENCY", "HISTOGRAM", command)
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
@@ -1831,7 +1831,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
     public func latencyHistogram(commands: [String]) async throws -> RESPToken {
-        try await send("LATENCY", "HISTOGRAM", commands).converting()
+        try await send("LATENCY", "HISTOGRAM", commands)
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -1950,7 +1950,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): memory usage metrics and their values.
     @inlinable
     public func memoryStats() async throws -> RESPToken {
-        try await send("MEMORY", "STATS").converting()
+        try await send("MEMORY", "STATS")
     }
 
     /// Estimates the memory usage of a key.

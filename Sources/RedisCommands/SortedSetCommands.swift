@@ -1450,8 +1450,8 @@ extension RedisConnection {
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the score of the member (a double-precision floating point number).
     ///     * [Nil](https:/redis.io/docs/reference/protocol-spec#bulk-strings): if _member_ does not exist in the sorted set, or the key does not exist.
     @inlinable
-    public func zscore(key: RedisKey, member: String) async throws -> RESPToken {
-        try await send("ZSCORE", key, member)
+    public func zscore(key: RedisKey, member: String) async throws -> Double? {
+        try await send("ZSCORE", key, member).converting()
     }
 
     /// Returns the union of multiple sorted sets.

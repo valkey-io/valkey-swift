@@ -665,7 +665,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): information about the function that's currently running and information about the available execution engines.
     @inlinable
     public func functionStats() async throws -> RESPToken {
-        try await send("FUNCTION", "STATS").converting()
+        try await send("FUNCTION", "STATS")
     }
 
     /// Sets the debug mode of server-side Lua scripts.
