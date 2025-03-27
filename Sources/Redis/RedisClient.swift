@@ -24,13 +24,6 @@ import NIOTransportServices
 ///
 /// Supports TLS via both NIOSSL and Network framework.
 public struct RedisClient {
-    enum MultiPlatformTLSConfiguration: Sendable {
-        case niossl(TLSConfiguration)
-        #if canImport(Network)
-        case ts(TSTLSOptions)
-        #endif
-    }
-
     /// Server address
     let serverAddress: ServerAddress
     /// configuration
@@ -39,8 +32,6 @@ public struct RedisClient {
     let eventLoopGroup: EventLoopGroup
     /// Logger
     let logger: Logger
-    /// TLS configuration
-    let tlsConfiguration: MultiPlatformTLSConfiguration?
 
     /// Initialize Redis client
     ///
@@ -53,7 +44,6 @@ public struct RedisClient {
     public init(
         _ address: ServerAddress,
         configuration: RedisClientConfiguration = .init(),
-        tlsConfiguration: TLSConfiguration? = nil,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
     ) {
@@ -61,32 +51,7 @@ public struct RedisClient {
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
-        self.tlsConfiguration = tlsConfiguration.map { .niossl($0) }
     }
-
-    #if canImport(Network)
-    /// Initialize Redis client
-    ///
-    /// - Parameters:
-    ///   - address: redis database address
-    ///   - configuration: Redis client configuration
-    ///   - transportServicesTLSOptions: Redis TLS connection configuration
-    ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
-    ///   - logger: Logger
-    public init(
-        _ address: ServerAddress,
-        configuration: RedisClientConfiguration = .init(),
-        transportServicesTLSOptions: TSTLSOptions,
-        eventLoopGroup: NIOTSEventLoopGroup = NIOTSEventLoopGroup.singleton,
-        logger: Logger
-    ) {
-        self.serverAddress = address
-        self.configuration = configuration
-        self.eventLoopGroup = eventLoopGroup
-        self.logger = logger
-        self.tlsConfiguration = .ts(transportServicesTLSOptions)
-    }
-    #endif
 }
 
 extension RedisClient {
