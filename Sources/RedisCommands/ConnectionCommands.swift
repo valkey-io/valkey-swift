@@ -798,7 +798,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of tracking information sections and their respective values.
     @inlinable
     public func clientTrackinginfo() async throws -> RESPToken {
-        try await send("CLIENT", "TRACKINGINFO").converting()
+        try await send("CLIENT", "TRACKINGINFO")
     }
 
     /// Unblocks a client blocked by a blocking command from a different connection.

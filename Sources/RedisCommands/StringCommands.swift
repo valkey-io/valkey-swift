@@ -493,8 +493,8 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the value of `key`
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if `key` does not exist.
     @inlinable
-    public func getex(key: RedisKey, expiration: RESPCommand.GETEXExpiration? = nil) async throws -> RESPToken {
-        try await send("GETEX", key, expiration)
+    public func getex(key: RedisKey, expiration: RESPCommand.GETEXExpiration? = nil) async throws -> String? {
+        try await send("GETEX", key, expiration).converting()
     }
 
     /// Returns a substring of the string stored at a key.

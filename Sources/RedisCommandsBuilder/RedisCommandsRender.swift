@@ -157,10 +157,13 @@ extension String {
         let arguments = (command.arguments ?? [])
         var converting: Bool = false
         var returnType: String = " -> RESPToken"
+        if name == "OBJECT REFCOUNT" {
+            print("sdf")
+        }
         if let type = getReturnType(reply: reply) {
             if type == "Void" {
                 returnType = ""
-            } else {
+            } else if type != "RESPToken" {
                 converting = true
                 returnType = " -> \(type)"
             }
@@ -286,10 +289,10 @@ private func getReturnType(reply replies: [String]) -> String? {
     if replies.count == 1 {
         return getReturnType(reply: replies[0])
     } else if replies.count > 1 {
-        var returnType = getReturnType(reply: replies[0].dropFirst(2))
+        var returnType = getReturnType(reply: replies[0].dropPrefix("* "))
         var `optional` = false
         for value in replies.dropFirst(1) {
-            if let returnType2 = getReturnType(reply: value.dropFirst(2)) {
+            if let returnType2 = getReturnType(reply: value.dropPrefix("* ")) {
                 if returnType == "Void" {
                     returnType = returnType2
                     optional = true
@@ -333,7 +336,7 @@ private func getReturnType(reply: some StringProtocol) -> String? {
                 }
             }
             return "[RESPToken]"
-        } else if reply.hasPrefix("[Null") {
+        } else if reply.hasPrefix("[Null") || reply.hasPrefix("[Nil") {
             return "Void"
         } else if reply.hasPrefix("[Simple error") {
             return nil

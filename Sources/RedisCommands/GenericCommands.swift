@@ -903,8 +903,8 @@ extension RedisConnection {
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the counter's value.
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
-    public func objectFreq(key: RedisKey) async throws -> RESPToken {
-        try await send("OBJECT", "FREQ", key)
+    public func objectFreq(key: RedisKey) async throws -> Int? {
+        try await send("OBJECT", "FREQ", key).converting()
     }
 
     /// Returns helpful text about the different subcommands.
@@ -929,8 +929,8 @@ extension RedisConnection {
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the idle time in seconds.
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
-    public func objectIdletime(key: RedisKey) async throws -> RESPToken {
-        try await send("OBJECT", "IDLETIME", key)
+    public func objectIdletime(key: RedisKey) async throws -> Int? {
+        try await send("OBJECT", "IDLETIME", key).converting()
     }
 
     /// Returns the reference count of a value of a key.
@@ -943,8 +943,8 @@ extension RedisConnection {
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of references.
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
-    public func objectRefcount(key: RedisKey) async throws -> RESPToken {
-        try await send("OBJECT", "REFCOUNT", key)
+    public func objectRefcount(key: RedisKey) async throws -> Int? {
+        try await send("OBJECT", "REFCOUNT", key).converting()
     }
 
     /// Removes the expiration time of a key.

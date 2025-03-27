@@ -800,7 +800,7 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was given, a list of information about a stream in extended form.
     @inlinable
     public func xinfoStream(key: RedisKey, fullBlock: RESPCommand.XINFOSTREAMFullBlock? = nil) async throws -> RESPToken {
-        try await send("XINFO", "STREAM", key, fullBlock).converting()
+        try await send("XINFO", "STREAM", key, fullBlock)
     }
 
     /// Return the number of messages in a stream.
