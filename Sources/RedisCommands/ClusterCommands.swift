@@ -68,8 +68,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.startSlot.writeToRESPBuffer(&buffer)
-            count += self.endSlot.writeToRESPBuffer(&buffer)
+            count += startSlot.writeToRESPBuffer(&buffer)
+            count += endSlot.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -166,8 +166,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.startSlot.writeToRESPBuffer(&buffer)
-            count += self.endSlot.writeToRESPBuffer(&buffer)
+            count += startSlot.writeToRESPBuffer(&buffer)
+            count += endSlot.writeToRESPBuffer(&buffer)
             return count
         }
     }

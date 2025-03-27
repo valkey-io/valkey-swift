@@ -12,7 +12,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
 import NIOCore
 
 /// Type that can be rendered into a RESP buffer
@@ -63,14 +62,6 @@ extension Double: RESPRenderable {
     @inlinable
     public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
         buffer.writeBulkString(String(self))
-        return 1
-    }
-}
-
-extension Date: RESPRenderable {
-    @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-        buffer.writeBulkString(String(self.timeIntervalSince1970))
         return 1
     }
 }

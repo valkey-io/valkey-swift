@@ -101,8 +101,8 @@ extension RESPCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
-            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", unixTimeSeconds).writeToRESPBuffer(&buffer)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", unixTimeMilliseconds).writeToRESPBuffer(&buffer)
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).writeToRESPBuffer(&buffer)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).writeToRESPBuffer(&buffer)
             case .persist: "PERSIST".writeToRESPBuffer(&buffer)
             }
         }
@@ -228,8 +228,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.key.writeToRESPBuffer(&buffer)
-            count += self.value.writeToRESPBuffer(&buffer)
+            count += key.writeToRESPBuffer(&buffer)
+            count += value.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -264,8 +264,8 @@ extension RESPCommand {
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
             var count = 0
-            count += self.key.writeToRESPBuffer(&buffer)
-            count += self.value.writeToRESPBuffer(&buffer)
+            count += key.writeToRESPBuffer(&buffer)
+            count += value.writeToRESPBuffer(&buffer)
             return count
         }
     }
@@ -333,8 +333,8 @@ extension RESPCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
-            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", unixTimeSeconds).writeToRESPBuffer(&buffer)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", unixTimeMilliseconds).writeToRESPBuffer(&buffer)
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).writeToRESPBuffer(&buffer)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).writeToRESPBuffer(&buffer)
             case .keepttl: "KEEPTTL".writeToRESPBuffer(&buffer)
             }
         }

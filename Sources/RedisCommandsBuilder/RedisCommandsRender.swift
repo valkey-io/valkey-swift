@@ -53,13 +53,9 @@ extension String {
                 self.append(
                     "            case .\(arg.swiftArgument): \"\(arg.token!)\".writeToRESPBuffer(&buffer)\n"
                 )
-            } else if let token = arg.token {
-                self.append(
-                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): RESPWithToken(\"\(token)\", \(arg.swiftArgument)).writeToRESPBuffer(&buffer)\n"
-                )
             } else {
                 self.append(
-                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.swiftArgument).writeToRESPBuffer(&buffer)\n"
+                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable(isArray: false)).writeToRESPBuffer(&buffer)\n"
                 )
             }
         }
@@ -95,11 +91,11 @@ extension String {
             if case .pureToken = arg.type {
                 self.append("            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".writeToRESPBuffer(&buffer) }\n")
             } else {
-                if let token = arg.token {
-                    self.append("            count += RESPWithToken(\"\(token)\", \(arg.swiftArgument)).writeToRESPBuffer(&buffer)\n")
-                } else {
-                    self.append("            count += self.\(arg.swiftArgument).writeToRESPBuffer(&buffer)\n")
-                }
+                //if let token = arg.token {
+                //    self.append("            count += RESPWithToken(\"\(token)\", \(arg.swiftArgument)).writeToRESPBuffer(&buffer)\n")
+                //} else {
+                self.append("            count += \(arg.redisRepresentable(isArray: false)).writeToRESPBuffer(&buffer)\n")
+                //}
             }
         }
         self.append("            return count\n")
@@ -365,22 +361,36 @@ extension RedisCommand.ArgumentType {
 
 extension RedisCommand.Argument {
     func redisRepresentable(isArray: Bool) -> String {
-        let variable = self.functionLabel(isArray: multiple && isArray)
-        return
-            switch self.type
+        var variable = self.functionLabel(isArray: multiple && isArray)
+        switch self.type
         {
-        case .pureToken: "RedisPureToken(\"\(self.token!)\", \(variable))"
+        case .pureToken: return "RedisPureToken(\"\(self.token!)\", \(variable))"
         default:
+            if self.type == .unixTime {
+                if self.optional {
+                    if self.name.contains("millisecond") {
+                        variable = "\(variable).map { Int($0.timeIntervalSince1970 * 1000) }"
+                    } else {
+                        variable = "\(variable).map { Int($0.timeIntervalSince1970) }"
+                    }
+                } else {
+                    if self.name.contains("millisecond") {
+                        variable = "Int(\(variable).timeIntervalSince1970 * 1000)"
+                    } else {
+                        variable = "Int(\(variable).timeIntervalSince1970)"
+                    }
+                }
+            }
             if let token = self.token {
-                "RESPWithToken(\"\(token)\", \(variable))"
+                return "RESPWithToken(\"\(token)\", \(variable))"
             } else if multiple, combinedWithCount == true {
                 if isArray {
-                    "RESPArrayWithCount(\(variable))"
+                    return "RESPArrayWithCount(\(variable))"
                 } else {
-                    "1, \(variable)"
+                    return "1, \(variable)"
                 }
             } else {
-                variable
+                return variable
             }
         }
     }

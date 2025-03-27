@@ -49,6 +49,22 @@ struct GeneratedCommands {
     }
 
     @Test
+    func testUnixTime() async throws {
+        var logger = Logger(label: "Redis")
+        logger.logLevel = .debug
+        try await RedisClient.withConnection(.hostname("localhost", port: 6379), logger: logger) { connection, logger in
+            try await withKey(connection: connection) { key in
+                _ = try await connection.set(key: key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 0.1))
+                let response = try await connection.get(key: key)
+                #expect(response == "Hello")
+                try await Task.sleep(for: .seconds(1))
+                let response2 = try await connection.get(key: key)
+                #expect(response2 == nil)
+            }
+        }
+    }
+
+    @Test
     func testPipelinedSetGet() async throws {
         var logger = Logger(label: "Redis")
         logger.logLevel = .debug
