@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the Hummingbird server framework project
+// This source file is part of the swift-redis project
 //
-// Copyright (c) 2024 the Hummingbird authors
+// Copyright (c) 2024 the swift-redis authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See hummingbird/CONTRIBUTORS.txt for the list of Hummingbird authors
+// See swift-redis/CONTRIBUTORS.txt for the list of swift-redis authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -105,33 +105,21 @@ public struct RedisClientConnection: Sendable {
         let asyncChannel = try await self.makeClient(
             address: self.address
         )
-        try await withTaskCancellationHandler {
-            try await asyncChannel.executeThenClose { inbound, outbound in
-                var inboundIterator = inbound.makeAsyncIterator()
-                for await (request, continuation) in requestStream {
-                    do {
-                        switch request {
-                        case .command(let command):
-                            try await outbound.write(command.buffer)
-                            let response = try await inboundIterator.next()
-                            if let response {
-                                continuation.resume(returning: .token(response))
-                            } else {
-                                requestContinuation.finish()
-                                continuation.resume(
-                                    throwing: RedisClientError(
-                                        .connectionClosed,
-                                        message: "The connection to the Redis database was unexpectedly closed."
-                                    )
-                                )
-                            }
-                        case .pipelinedCommands(let commands):
-                            try await outbound.write(contentsOf: commands.map { $0.buffer })
-                            var responses: [RESPToken] = .init()
-                            for _ in 0..<commands.count {
+        do {
+            try await withTaskCancellationHandler {
+                try await asyncChannel.executeThenClose { inbound, outbound in
+                    var inboundIterator = inbound.makeAsyncIterator()
+                    if self.configuration.respVersion == .v3 {
+                        try await resp3Upgrade(outbound: outbound, inboundIterator: &inboundIterator)
+                    }
+                    for await (request, continuation) in requestStream {
+                        do {
+                            switch request {
+                            case .command(let command):
+                                try await outbound.write(command.buffer)
                                 let response = try await inboundIterator.next()
                                 if let response {
-                                    responses.append(response)
+                                    continuation.resume(returning: .token(response))
                                 } else {
                                     requestContinuation.finish()
                                     continuation.resume(
@@ -140,24 +128,47 @@ public struct RedisClientConnection: Sendable {
                                             message: "The connection to the Redis database was unexpectedly closed."
                                         )
                                     )
-                                    return
                                 }
+                            case .pipelinedCommands(let commands):
+                                try await outbound.write(contentsOf: commands.map { $0.buffer })
+                                var responses: [RESPToken] = .init()
+                                for _ in 0..<commands.count {
+                                    let response = try await inboundIterator.next()
+                                    if let response {
+                                        responses.append(response)
+                                    } else {
+                                        requestContinuation.finish()
+                                        continuation.resume(
+                                            throwing: RedisClientError(
+                                                .connectionClosed,
+                                                message: "The connection to the Redis database was unexpectedly closed."
+                                            )
+                                        )
+                                        return
+                                    }
+                                }
+                                continuation.resume(returning: .pipelinedResponse(responses))
                             }
-                            continuation.resume(returning: .pipelinedResponse(responses))
-                        }
-                    } catch {
-                        requestContinuation.finish()
-                        continuation.resume(
-                            throwing: RedisClientError(
-                                .connectionClosed,
-                                message: "The connection to the Redis database has shut down while processing a request."
+                        } catch {
+                            requestContinuation.finish()
+                            continuation.resume(
+                                throwing: RedisClientError(
+                                    .connectionClosed,
+                                    message: "The connection to the Redis database has shut down while processing a request."
+                                )
                             )
-                        )
+                        }
                     }
                 }
+            } onCancel: {
+                asyncChannel.channel.close(mode: .input, promise: nil)
             }
-        } onCancel: {
-            asyncChannel.channel.close(mode: .input, promise: nil)
+        } catch {
+            for await (_, continuation) in requestStream {
+                continuation.resume(
+                    throwing: error
+                )
+            }
         }
     }
 
@@ -209,6 +220,24 @@ public struct RedisClientConnection: Sendable {
     @discardableResult public func send<each Arg: RESPRenderable>(_ command: repeat each Arg) async throws -> RESPToken {
         let command = RESPCommand(repeat each command)
         return try await self.send(command: command)
+    }
+
+    /// Try to upgrade to RESP3
+    private func resp3Upgrade(
+        outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>,
+        inboundIterator: inout NIOAsyncChannelInboundStream<RESPToken>.AsyncIterator
+    ) async throws {
+        let helloCommand = RESPCommand("HELLO", "3")
+        try await outbound.write(helloCommand.buffer)
+        let response = try await inboundIterator.next()
+        guard let response else {
+            requestContinuation.finish()
+            throw RedisClientError(.connectionClosed, message: "The connection to the Redis database was unexpectedly closed.")
+        }
+        if let value = response.errorString {
+            requestContinuation.finish()
+            throw RedisClientError(.commandError, message: String(buffer: value))
+        }
     }
 
     /// Connect to server
