@@ -23,10 +23,6 @@ import NIOTransportServices
 /// Connect to redis server.
 ///
 /// Supports TLS via both NIOSSL and Network framework.
-///
-/// Initialize the RedisClient with your handler and then call ``WebSocketClient/run()``
-/// to connect. The handler is provider with an `inbound` stream of RESP3Token packets coming
-/// from the server and an `outbound` writer that can be used to write RESP3Token to the server.
 public struct RedisClient {
     enum MultiPlatformTLSConfiguration: Sendable {
         case niossl(TLSConfiguration)
@@ -46,13 +42,12 @@ public struct RedisClient {
     /// TLS configuration
     let tlsConfiguration: MultiPlatformTLSConfiguration?
 
-    /// Initialize redis client
+    /// Initialize Redis client
     ///
     /// - Parametes:
-    ///   - url: URL of websocket
-    ///   - tlsConfiguration: TLS configuration
-    ///   - handler: WebSocket data handler
-    ///   - maxFrameSize: Max frame size for a single packet
+    ///   - address: Redis database address
+    ///   - configuration: Redis client configuration
+    ///   - tlsConfiguration: Redis TLS connection configuration
     ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
     ///   - logger: Logger
     public init(
@@ -70,12 +65,12 @@ public struct RedisClient {
     }
 
     #if canImport(Network)
-    /// Initialize websocket client
+    /// Initialize Redis client
     ///
-    /// - Parametes:
-    ///   - url: URL of websocket
-    ///   - transportServicesTLSOptions: TLS options for NIOTransportServices
-    ///   - maxFrameSize: Max frame size for a single packet
+    /// - Parameters:
+    ///   - address: redis database address
+    ///   - configuration: Redis client configuration
+    ///   - transportServicesTLSOptions: Redis TLS connection configuration
     ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
     ///   - logger: Logger
     public init(
@@ -98,13 +93,13 @@ extension RedisClient {
     /// Create connection and run operation using connection
     ///
     /// - Parameters:
-    ///   - operation: Closure handling webSocket
     ///   - logger: Logger
+    ///   - operation: Closure handling redis connection
     public func withConnection<Value: Sendable>(
         logger: Logger,
-        operation: @escaping @Sendable (RedisClientConnection) async throws -> Value
+        operation: @escaping @Sendable (RedisConnection) async throws -> Value
     ) async throws -> Value {
-        let redisConnection = RedisClientConnection(
+        let redisConnection = RedisConnection(
             address: self.serverAddress,
             configuration: self.configuration,
             eventLoopGroup: self.eventLoopGroup,

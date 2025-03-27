@@ -22,7 +22,7 @@ import Testing
 @testable import Redis
 
 struct GeneratedCommands {
-    func withKey<Value>(connection: RedisClientConnection, _ operation: (RedisKey) async throws -> Value) async throws -> Value {
+    func withKey<Value>(connection: RedisConnection, _ operation: (RedisKey) async throws -> Value) async throws -> Value {
         let key = RedisKey(rawValue: UUID().uuidString)
         let value: Value
         do {

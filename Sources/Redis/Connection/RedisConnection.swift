@@ -44,7 +44,7 @@ public struct ServerAddress: Sendable, Equatable {
 ///
 /// Actual client protocol is implemented in `ClientChannel` generic parameter
 @_documentation(visibility: internal)
-public struct RedisClientConnection: Sendable {
+public struct RedisConnection: Sendable {
     enum Request {
         case command(RESPCommand)
         case pipelinedCommands([RESPCommand])
