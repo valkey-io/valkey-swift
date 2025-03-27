@@ -78,7 +78,7 @@ public struct RESPToken: Hashable, Sendable {
     public enum Value: Hashable, Sendable {
         case simpleString(ByteBuffer)
         case simpleError(ByteBuffer)
-        case blobString(ByteBuffer)
+        case bulkString(ByteBuffer)
         case blobError(ByteBuffer)
         case verbatimString(ByteBuffer)
         case number(Int64)
@@ -105,7 +105,7 @@ public struct RESPToken: Hashable, Sendable {
         case .boolean:
             return .boolean(local.readInteger(as: UInt8.self)! == .t)
 
-        case .blobString:
+        case .bulkString:
             var lengthSlice = try! local.readCRLFTerminatedSlice2()!
             let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
             let length = Int(lengthString)!
@@ -114,7 +114,7 @@ public struct RESPToken: Hashable, Sendable {
                 return .null
             }
 
-            return .blobString(local.readSlice(length: length)!)
+            return .bulkString(local.readSlice(length: length)!)
 
         case .blobError:
             var lengthSlice = try! local.readCRLFTerminatedSlice2()!
@@ -220,7 +220,7 @@ public struct RESPToken: Hashable, Sendable {
         case .some(.boolean):
             validated = try buffer.readRESPBooleanSlice()
 
-        case .some(.blobString),
+        case .some(.bulkString),
             .some(.verbatimString),
             .some(.blobError):
             validated = try buffer.readRESPBlobStringSlice()
@@ -310,7 +310,7 @@ extension ByteBuffer {
 
     fileprivate mutating func readRESPBlobStringSlice() throws -> ByteBuffer? {
         let marker = try self.getRESP3TypeIdentifier(at: self.readerIndex)!
-        precondition(marker == .blobString || marker == .verbatimString || marker == .blobError)
+        precondition(marker == .bulkString || marker == .verbatimString || marker == .blobError)
         guard var lengthSlice = try self.getCRLFTerminatedSlice(at: self.readerIndex + 1) else {
             return nil
         }

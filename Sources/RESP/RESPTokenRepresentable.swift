@@ -46,7 +46,7 @@ extension Array where Element == RESPToken {
 extension ByteBuffer: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
-        case .simpleString(let buffer), .blobString(let buffer), .verbatimString(let buffer), .bigNumber(let buffer):
+        case .simpleString(let buffer), .bulkString(let buffer), .verbatimString(let buffer), .bigNumber(let buffer):
             self = buffer
         default:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
