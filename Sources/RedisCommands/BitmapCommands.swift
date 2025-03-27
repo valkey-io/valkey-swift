@@ -344,7 +344,7 @@ extension RESPCommand {
 
 }
 
-extension RedisClientConnection {
+extension RedisConnection {
     /// Counts the number of set bits (population counting) in a string.
     ///
     /// - Documentation: [BITCOUNT](https:/redis.io/docs/latest/commands/bitcount)

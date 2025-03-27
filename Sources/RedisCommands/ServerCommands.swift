@@ -1220,7 +1220,7 @@ extension RESPCommand {
 
 }
 
-extension RedisClientConnection {
+extension RedisConnection {
     /// Lists the ACL categories, or the commands inside a category.
     ///
     /// - Documentation: [ACL CAT](https:/redis.io/docs/latest/commands/acl-cat)

@@ -40,9 +40,7 @@ public struct ServerAddress: Sendable, Equatable {
     public static func unixDomainSocket(path: String) -> Self { .init(.unixDomainSocket(path: path)) }
 }
 
-/// A generic client connection to a server.
-///
-/// Actual client protocol is implemented in `ClientChannel` generic parameter
+/// Single connection to a Redis database
 @_documentation(visibility: internal)
 public struct RedisConnection: Sendable {
     enum Request {

@@ -234,7 +234,7 @@ func renderRedisCommands(_ commands: [String: RedisCommand], replies: RESPReplie
     }
     string.append("}\n")
     string.append("\n")
-    string.append("extension RedisClientConnection {\n")
+    string.append("extension RedisConnection {\n")
     for key in commands.keys.sorted() {
         let command = commands[key]!
         // if there is no reply info assume command is a container command

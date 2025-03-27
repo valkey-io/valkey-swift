@@ -513,7 +513,7 @@ extension RESPCommand {
 
 }
 
-extension RedisClientConnection {
+extension RedisConnection {
     /// Signals that a cluster client is following an -ASK redirect.
     ///
     /// - Documentation: [ASKING](https:/redis.io/docs/latest/commands/asking)

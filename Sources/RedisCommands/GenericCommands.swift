@@ -705,7 +705,7 @@ extension RESPCommand {
 
 }
 
-extension RedisClientConnection {
+extension RedisConnection {
     /// Copies the value of a key to a new key.
     ///
     /// - Documentation: [COPY](https:/redis.io/docs/latest/commands/copy)

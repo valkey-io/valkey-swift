@@ -291,7 +291,7 @@ extension RESPCommand {
 
 }
 
-extension RedisClientConnection {
+extension RedisConnection {
     /// Listens for messages published to channels that match one or more patterns.
     ///
     /// - Documentation: [PSUBSCRIBE](https:/redis.io/docs/latest/commands/psubscribe)

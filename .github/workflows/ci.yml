@@ -9,38 +9,27 @@ on:
       - "**.yml"
   pull_request:
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-ci
+  cancel-in-progress: true
 
+env:
+  REDIS_HOSTNAME: redis
 jobs:
-  macos:
-    runs-on: macOS-15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      - name: SPM tests
-        run: swift test --enable-code-coverage
-      - name: Convert coverage files
-        run: |
-          xcrun llvm-cov export -format "lcov" \
-            .build/debug/swift-zip-archivePackageTests.xctest/Contents/MacOs/swift-zip-archivePackageTests \
-            -ignore-filename-regex="\/Tests\/" \
-            -instr-profile=.build/debug/codecov/default.profdata > info.lcov
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v4
-        with:
-          files: info.lcov
-          token: ${{ secrets.CODECOV_TOKEN }}
-
   linux:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       matrix:
         image: ["swift:6.0", "swiftlang/swift:nightly-6.1-jammy"]
-
     container:
       image: ${{ matrix.image }}
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: --entrypoint redis-server
     steps:
       - name: Checkout
         uses: actions/checkout@v4
