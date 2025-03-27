@@ -12,19 +12,46 @@
 //
 //===----------------------------------------------------------------------===//
 
+import NIOSSL
+
 /// Configuration for the redis client
 public struct RedisClientConfiguration: Sendable {
-    public enum RESPVersion: Sendable {
-        case v2
-        case v3
+    public struct RESPVersion: Sendable, Equatable {
+        enum Base {
+            case v2
+            case v3
+        }
+        let base: Base
+
+        public static var v2: Self { .init(base: .v2) }
+        public static var v3: Self { .init(base: .v3) }
+    }
+
+    public struct TLS: Sendable {
+        enum Base {
+            case disable
+            case enable(NIOSSLContext, String?)
+        }
+        let base: Base
+
+        public static var disable: Self { .init(base: .disable) }
+        public static func enable(tlsConfiguration: TLSConfiguration, tlsServerName: String?) throws -> Self {
+            .init(base: .enable(try NIOSSLContext(configuration: tlsConfiguration), tlsServerName))
+        }
     }
 
     public var respVersion: RESPVersion
+    public var tls: TLS
 
     ///  Initialize RedisClientConfiguration
     /// - Parameters
     ///   - respVersion: RESP version to use
-    public init(respVersion: RESPVersion = .v3) {
+    ///   - tlsConfiguration: TLS configuration
+    public init(
+        respVersion: RESPVersion = .v3,
+        tls: TLS = .disable
+    ) {
         self.respVersion = respVersion
+        self.tls = tls
     }
 }
