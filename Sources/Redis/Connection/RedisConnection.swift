@@ -162,6 +162,7 @@ public struct RedisConnection: Sendable {
                 asyncChannel.channel.close(mode: .input, promise: nil)
             }
         } catch {
+            requestContinuation.finish()
             for await (_, continuation) in requestStream {
                 continuation.resume(
                     throwing: error
@@ -229,11 +230,10 @@ public struct RedisConnection: Sendable {
         try await outbound.write(helloCommand.buffer)
         let response = try await inboundIterator.next()
         guard let response else {
-            requestContinuation.finish()
             throw RedisClientError(.connectionClosed, message: "The connection to the Redis database was unexpectedly closed.")
         }
+        // if returned value is an error then throw that error
         if let value = response.errorString {
-            requestContinuation.finish()
             throw RedisClientError(.commandError, message: String(buffer: value))
         }
     }
