@@ -72,7 +72,7 @@ extension ByteBuffer {
     }
 
     public mutating func writeBulkString(_ string: String) {
-        self.writeRESP3TypeIdentifier(.blobString)
+        self.writeRESP3TypeIdentifier(.bulkString)
         self.writeString(String(string.utf8.count))
         self.writeStaticString("\r\n")
         self.writeString(string)

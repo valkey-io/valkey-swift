@@ -270,7 +270,7 @@ struct RESPTokenTests {
             decoderFactory: { RESPTokenDecoder() }
         )
 
-        #expect(respString.value == .blobString(ByteBuffer(string: "aaaabbbbcccc")))
+        #expect(respString.value == .bulkString(ByteBuffer(string: "aaaabbbbcccc")))
         #expect(respError.value == .blobError(ByteBuffer(string: "SYNTAX invalid syntax")))
         #expect(respVerbatim.value == .verbatimString(ByteBuffer(string: "txt:aaaabbbbcccc")))
     }
