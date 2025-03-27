@@ -14,6 +14,17 @@
 
 /// Configuration for the redis client
 public struct RedisClientConfiguration: Sendable {
-    public init() {
+    public enum RESPVersion: Sendable {
+        case v2
+        case v3
+    }
+
+    public var respVersion: RESPVersion
+
+    ///  Initialize RedisClientConfiguration
+    /// - Parameters
+    ///   - respVersion: RESP version to use
+    public init(respVersion: RESPVersion = .v3) {
+        self.respVersion = respVersion
     }
 }
