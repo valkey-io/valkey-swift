@@ -270,7 +270,7 @@ public struct RedisConnection: Sendable {
             if case .enable(let sslContext, let tlsServerName) = self.configuration.tls.base {
                 try channel.pipeline.syncOperations.addHandler(NIOSSLClientHandler(context: sslContext, serverHostname: tlsServerName))
             }
-            try channel.pipeline.syncOperations.addHandler(RESPTokenHandler())
+            try channel.pipeline.syncOperations.addHandler(ByteToMessageHandler(RESPTokenDecoder()))
             return try NIOAsyncChannel<RESPToken, ByteBuffer>(
                 wrappingChannelSynchronously: channel,
                 configuration: .init()
