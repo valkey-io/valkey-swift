@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-redis open source project
 //
-// Copyright (c) 2023 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -169,7 +169,14 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public static func zadd(key: RedisKey, condition: ZADDCondition? = nil, comparison: ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: ZADDData) -> RESPCommand {
+    public static func zadd(
+        key: RedisKey,
+        condition: ZADDCondition? = nil,
+        comparison: ZADDComparison? = nil,
+        change: Bool = false,
+        increment: Bool = false,
+        data: ZADDData
+    ) -> RESPCommand {
         RESPCommand("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
     }
 
@@ -185,7 +192,14 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public static func zadd(key: RedisKey, condition: ZADDCondition? = nil, comparison: ZADDComparison? = nil, change: Bool = false, increment: Bool = false, datas: [ZADDData]) -> RESPCommand {
+    public static func zadd(
+        key: RedisKey,
+        condition: ZADDCondition? = nil,
+        comparison: ZADDComparison? = nil,
+        change: Bool = false,
+        increment: Bool = false,
+        datas: [ZADDData]
+    ) -> RESPCommand {
         RESPCommand("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), datas)
     }
 
@@ -296,7 +310,14 @@ extension RESPCommand {
     /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
     public static func zinter(key: RedisKey, weight: Int? = nil, aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZINTER", 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+        RESPCommand(
+            "ZINTER",
+            1,
+            key,
+            RESPWithToken("WEIGHTS", weight),
+            RESPWithToken("AGGREGATE", aggregate),
+            RedisPureToken("WITHSCORES", withscores)
+        )
     }
 
     /// Returns the intersect of multiple sorted sets.
@@ -308,7 +329,13 @@ extension RESPCommand {
     /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
     public static func zinter(keys: [RedisKey], weights: [Int], aggregate: ZINTERAggregate? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZINTER", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+        RESPCommand(
+            "ZINTER",
+            RESPArrayWithCount(keys),
+            RESPWithToken("WEIGHTS", weights),
+            RESPWithToken("AGGREGATE", aggregate),
+            RedisPureToken("WITHSCORES", withscores)
+        )
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
@@ -534,8 +561,25 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
-    public static func zrange(key: RedisKey, start: String, stop: String, sortby: ZRANGESortby? = nil, rev: Bool = false, limit: ZRANGELimit? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores))
+    public static func zrange(
+        key: RedisKey,
+        start: String,
+        stop: String,
+        sortby: ZRANGESortby? = nil,
+        rev: Bool = false,
+        limit: ZRANGELimit? = nil,
+        withscores: Bool = false
+    ) -> RESPCommand {
+        RESPCommand(
+            "ZRANGE",
+            key,
+            start,
+            stop,
+            sortby,
+            RedisPureToken("REV", rev),
+            RESPWithToken("LIMIT", limit),
+            RedisPureToken("WITHSCORES", withscores)
+        )
     }
 
     public struct ZRANGEBYLEXLimit: RESPRenderable {
@@ -582,7 +626,13 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
-    public static func zrangebyscore(key: RedisKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORELimit? = nil) -> RESPCommand {
+    public static func zrangebyscore(
+        key: RedisKey,
+        min: Double,
+        max: Double,
+        withscores: Bool = false,
+        limit: ZRANGEBYSCORELimit? = nil
+    ) -> RESPCommand {
         RESPCommand("ZRANGEBYSCORE", key, min, max, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 
@@ -618,7 +668,15 @@ extension RESPCommand {
     /// - Categories: @write, @sortedset, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public static func zrangestore(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORESortby? = nil, rev: Bool = false, limit: ZRANGESTORELimit? = nil) -> RESPCommand {
+    public static func zrangestore(
+        dst: RedisKey,
+        src: RedisKey,
+        min: String,
+        max: String,
+        sortby: ZRANGESTORESortby? = nil,
+        rev: Bool = false,
+        limit: ZRANGESTORELimit? = nil
+    ) -> RESPCommand {
         RESPCommand("ZRANGESTORE", dst, src, min, max, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit))
     }
 
@@ -753,7 +811,13 @@ extension RESPCommand {
     /// - Categories: @read, @sortedset, @slow
     /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
-    public static func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORELimit? = nil) -> RESPCommand {
+    public static func zrevrangebyscore(
+        key: RedisKey,
+        max: Double,
+        min: Double,
+        withscores: Bool = false,
+        limit: ZREVRANGEBYSCORELimit? = nil
+    ) -> RESPCommand {
         RESPCommand("ZREVRANGEBYSCORE", key, max, min, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 
@@ -821,7 +885,14 @@ extension RESPCommand {
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
     public static func zunion(key: RedisKey, weight: Int? = nil, aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZUNION", 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+        RESPCommand(
+            "ZUNION",
+            1,
+            key,
+            RESPWithToken("WEIGHTS", weight),
+            RESPWithToken("AGGREGATE", aggregate),
+            RedisPureToken("WITHSCORES", withscores)
+        )
     }
 
     /// Returns the union of multiple sorted sets.
@@ -833,7 +904,13 @@ extension RESPCommand {
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
     public static func zunion(keys: [RedisKey], weights: [Int], aggregate: ZUNIONAggregate? = nil, withscores: Bool = false) -> RESPCommand {
-        RESPCommand("ZUNION", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+        RESPCommand(
+            "ZUNION",
+            RESPArrayWithCount(keys),
+            RESPWithToken("WEIGHTS", weights),
+            RESPWithToken("AGGREGATE", aggregate),
+            RedisPureToken("WITHSCORES", withscores)
+        )
     }
 
     public enum ZUNIONSTOREAggregate: RESPRenderable {
@@ -973,7 +1050,14 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RedisKey, condition: RESPCommand.ZADDCondition? = nil, comparison: RESPCommand.ZADDComparison? = nil, change: Bool = false, increment: Bool = false, data: RESPCommand.ZADDData) async throws -> RESPToken {
+    public func zadd(
+        key: RedisKey,
+        condition: RESPCommand.ZADDCondition? = nil,
+        comparison: RESPCommand.ZADDComparison? = nil,
+        change: Bool = false,
+        increment: Bool = false,
+        data: RESPCommand.ZADDData
+    ) async throws -> RESPToken {
         try await send("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
     }
 
@@ -989,7 +1073,14 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RedisKey, condition: RESPCommand.ZADDCondition? = nil, comparison: RESPCommand.ZADDComparison? = nil, change: Bool = false, increment: Bool = false, datas: [RESPCommand.ZADDData]) async throws -> RESPToken {
+    public func zadd(
+        key: RedisKey,
+        condition: RESPCommand.ZADDCondition? = nil,
+        comparison: RESPCommand.ZADDComparison? = nil,
+        change: Bool = false,
+        increment: Bool = false,
+        datas: [RESPCommand.ZADDData]
+    ) async throws -> RESPToken {
         try await send("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), datas)
     }
 
@@ -1085,8 +1176,20 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(key: RedisKey, weight: Int? = nil, aggregate: RESPCommand.ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESPToken {
-        try await send("ZINTER", 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    public func zinter(
+        key: RedisKey,
+        weight: Int? = nil,
+        aggregate: RESPCommand.ZINTERAggregate? = nil,
+        withscores: Bool = false
+    ) async throws -> RESPToken {
+        try await send(
+            "ZINTER",
+            1,
+            key,
+            RESPWithToken("WEIGHTS", weight),
+            RESPWithToken("AGGREGATE", aggregate),
+            RedisPureToken("WITHSCORES", withscores)
+        )
     }
 
     /// Returns the intersect of multiple sorted sets.
@@ -1097,8 +1200,19 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(keys: [RedisKey], weights: [Int], aggregate: RESPCommand.ZINTERAggregate? = nil, withscores: Bool = false) async throws -> RESPToken {
-        try await send("ZINTER", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    public func zinter(
+        keys: [RedisKey],
+        weights: [Int],
+        aggregate: RESPCommand.ZINTERAggregate? = nil,
+        withscores: Bool = false
+    ) async throws -> RESPToken {
+        try await send(
+            "ZINTER",
+            RESPArrayWithCount(keys),
+            RESPWithToken("WEIGHTS", weights),
+            RESPWithToken("AGGREGATE", aggregate),
+            RedisPureToken("WITHSCORES", withscores)
+        )
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
@@ -1133,7 +1247,12 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public func zinterstore(destination: RedisKey, key: RedisKey, weight: Int? = nil, aggregate: RESPCommand.ZINTERSTOREAggregate? = nil) async throws -> Int {
+    public func zinterstore(
+        destination: RedisKey,
+        key: RedisKey,
+        weight: Int? = nil,
+        aggregate: RESPCommand.ZINTERSTOREAggregate? = nil
+    ) async throws -> Int {
         try await send("ZINTERSTORE", destination, 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate)).converting()
     }
 
@@ -1145,8 +1264,14 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public func zinterstore(destination: RedisKey, keys: [RedisKey], weights: [Int], aggregate: RESPCommand.ZINTERSTOREAggregate? = nil) async throws -> Int {
-        try await send("ZINTERSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate)).converting()
+    public func zinterstore(
+        destination: RedisKey,
+        keys: [RedisKey],
+        weights: [Int],
+        aggregate: RESPCommand.ZINTERSTOREAggregate? = nil
+    ) async throws -> Int {
+        try await send("ZINTERSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate))
+            .converting()
     }
 
     /// Returns the number of members in a sorted set within a lexicographical range.
@@ -1262,8 +1387,25 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
-    public func zrange(key: RedisKey, start: String, stop: String, sortby: RESPCommand.ZRANGESortby? = nil, rev: Bool = false, limit: RESPCommand.ZRANGELimit? = nil, withscores: Bool = false) async throws -> [RESPToken] {
-        try await send("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores)).converting()
+    public func zrange(
+        key: RedisKey,
+        start: String,
+        stop: String,
+        sortby: RESPCommand.ZRANGESortby? = nil,
+        rev: Bool = false,
+        limit: RESPCommand.ZRANGELimit? = nil,
+        withscores: Bool = false
+    ) async throws -> [RESPToken] {
+        try await send(
+            "ZRANGE",
+            key,
+            start,
+            stop,
+            sortby,
+            RedisPureToken("REV", rev),
+            RESPWithToken("LIMIT", limit),
+            RedisPureToken("WITHSCORES", withscores)
+        ).converting()
     }
 
     /// Returns members in a sorted set within a lexicographical range.
@@ -1286,7 +1428,13 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
-    public func zrangebyscore(key: RedisKey, min: Double, max: Double, withscores: Bool = false, limit: RESPCommand.ZRANGEBYSCORELimit? = nil) async throws -> RESPToken {
+    public func zrangebyscore(
+        key: RedisKey,
+        min: Double,
+        max: Double,
+        withscores: Bool = false,
+        limit: RESPCommand.ZRANGEBYSCORELimit? = nil
+    ) async throws -> RESPToken {
         try await send("ZRANGEBYSCORE", key, min, max, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 
@@ -1298,7 +1446,15 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zrangestore(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: RESPCommand.ZRANGESTORESortby? = nil, rev: Bool = false, limit: RESPCommand.ZRANGESTORELimit? = nil) async throws -> Int {
+    public func zrangestore(
+        dst: RedisKey,
+        src: RedisKey,
+        min: String,
+        max: String,
+        sortby: RESPCommand.ZRANGESTORESortby? = nil,
+        rev: Bool = false,
+        limit: RESPCommand.ZRANGESTORELimit? = nil
+    ) async throws -> Int {
         try await send("ZRANGESTORE", dst, src, min, max, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit)).converting()
     }
 
@@ -1409,7 +1565,13 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
-    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool = false, limit: RESPCommand.ZREVRANGEBYSCORELimit? = nil) async throws -> RESPToken {
+    public func zrevrangebyscore(
+        key: RedisKey,
+        max: Double,
+        min: Double,
+        withscores: Bool = false,
+        limit: RESPCommand.ZREVRANGEBYSCORELimit? = nil
+    ) async throws -> RESPToken {
         try await send("ZREVRANGEBYSCORE", key, max, min, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 
@@ -1462,8 +1624,20 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public func zunion(key: RedisKey, weight: Int? = nil, aggregate: RESPCommand.ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
-        try await send("ZUNION", 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores)).converting()
+    public func zunion(
+        key: RedisKey,
+        weight: Int? = nil,
+        aggregate: RESPCommand.ZUNIONAggregate? = nil,
+        withscores: Bool = false
+    ) async throws -> [RESPToken] {
+        try await send(
+            "ZUNION",
+            1,
+            key,
+            RESPWithToken("WEIGHTS", weight),
+            RESPWithToken("AGGREGATE", aggregate),
+            RedisPureToken("WITHSCORES", withscores)
+        ).converting()
     }
 
     /// Returns the union of multiple sorted sets.
@@ -1474,8 +1648,19 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public func zunion(keys: [RedisKey], weights: [Int], aggregate: RESPCommand.ZUNIONAggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
-        try await send("ZUNION", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores)).converting()
+    public func zunion(
+        keys: [RedisKey],
+        weights: [Int],
+        aggregate: RESPCommand.ZUNIONAggregate? = nil,
+        withscores: Bool = false
+    ) async throws -> [RESPToken] {
+        try await send(
+            "ZUNION",
+            RESPArrayWithCount(keys),
+            RESPWithToken("WEIGHTS", weights),
+            RESPWithToken("AGGREGATE", aggregate),
+            RedisPureToken("WITHSCORES", withscores)
+        ).converting()
     }
 
     /// Stores the union of multiple sorted sets in a key.
@@ -1486,7 +1671,12 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(destination: RedisKey, key: RedisKey, weight: Int? = nil, aggregate: RESPCommand.ZUNIONSTOREAggregate? = nil) async throws -> Int {
+    public func zunionstore(
+        destination: RedisKey,
+        key: RedisKey,
+        weight: Int? = nil,
+        aggregate: RESPCommand.ZUNIONSTOREAggregate? = nil
+    ) async throws -> Int {
         try await send("ZUNIONSTORE", destination, 1, key, RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate)).converting()
     }
 
@@ -1498,8 +1688,14 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(destination: RedisKey, keys: [RedisKey], weights: [Int], aggregate: RESPCommand.ZUNIONSTOREAggregate? = nil) async throws -> Int {
-        try await send("ZUNIONSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate)).converting()
+    public func zunionstore(
+        destination: RedisKey,
+        keys: [RedisKey],
+        weights: [Int],
+        aggregate: RESPCommand.ZUNIONSTOREAggregate? = nil
+    ) async throws -> Int {
+        try await send("ZUNIONSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate))
+            .converting()
     }
 
 }

@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-redis open source project
 //
-// Copyright (c) 2023 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -59,7 +59,13 @@ extension RESPCommand {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the operation timed-out
     @inlinable
-    public static func blmove(source: RedisKey, destination: RedisKey, wherefrom: BLMOVEWherefrom, whereto: BLMOVEWhereto, timeout: Double) -> RESPCommand {
+    public static func blmove(
+        source: RedisKey,
+        destination: RedisKey,
+        wherefrom: BLMOVEWherefrom,
+        whereto: BLMOVEWhereto,
+        timeout: Double
+    ) -> RESPCommand {
         RESPCommand("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
 
@@ -518,7 +524,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the operation timed-out
     @inlinable
-    public func blmove(source: RedisKey, destination: RedisKey, wherefrom: RESPCommand.BLMOVEWherefrom, whereto: RESPCommand.BLMOVEWhereto, timeout: Double) async throws -> String? {
+    public func blmove(
+        source: RedisKey,
+        destination: RedisKey,
+        wherefrom: RESPCommand.BLMOVEWherefrom,
+        whereto: RESPCommand.BLMOVEWhereto,
+        timeout: Double
+    ) async throws -> String? {
         try await send("BLMOVE", source, destination, wherefrom, whereto, timeout).converting()
     }
 
@@ -669,7 +681,12 @@ extension RedisConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped and pushed.
     @inlinable
-    public func lmove(source: RedisKey, destination: RedisKey, wherefrom: RESPCommand.LMOVEWherefrom, whereto: RESPCommand.LMOVEWhereto) async throws -> String {
+    public func lmove(
+        source: RedisKey,
+        destination: RedisKey,
+        wherefrom: RESPCommand.LMOVEWherefrom,
+        whereto: RESPCommand.LMOVEWhereto
+    ) async throws -> String {
         try await send("LMOVE", source, destination, wherefrom, whereto).converting()
     }
 

@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-redis open source project
 //
-// Copyright (c) 2023 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -123,7 +123,8 @@ extension RESPCommand {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public static func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, data: XADDData) -> RESPCommand {
+    public static func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, data: XADDData) -> RESPCommand
+    {
         RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
     }
 
@@ -137,7 +138,13 @@ extension RESPCommand {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public static func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, datas: [XADDData]) -> RESPCommand {
+    public static func xadd(
+        key: RedisKey,
+        nomkstream: Bool = false,
+        trim: XADDTrim? = nil,
+        idSelector: XADDIdSelector,
+        datas: [XADDData]
+    ) -> RESPCommand {
         RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, datas)
     }
 
@@ -152,7 +159,15 @@ extension RESPCommand {
     ///     2. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
     ///     3. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
     @inlinable
-    public static func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) -> RESPCommand {
+    public static func xautoclaim(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        start: String,
+        count: Int? = nil,
+        justid: Bool = false
+    ) -> RESPCommand {
         RESPCommand("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
     }
 
@@ -166,8 +181,33 @@ extension RESPCommand {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public static func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String, ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
-        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+    public static func xclaim(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        id: String,
+        ms: Int? = nil,
+        unixTimeMilliseconds: Date? = nil,
+        count: Int? = nil,
+        force: Bool = false,
+        justid: Bool = false,
+        lastid: String? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "XCLAIM",
+            key,
+            group,
+            consumer,
+            minIdleTime,
+            id,
+            RESPWithToken("IDLE", ms),
+            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
+            RESPWithToken("RETRYCOUNT", count),
+            RedisPureToken("FORCE", force),
+            RedisPureToken("JUSTID", justid),
+            RESPWithToken("LASTID", lastid)
+        )
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -180,8 +220,33 @@ extension RESPCommand {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public static func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, ids: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) -> RESPCommand {
-        RESPCommand("XCLAIM", key, group, consumer, minIdleTime, ids, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+    public static func xclaim(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        ids: [String],
+        ms: Int? = nil,
+        unixTimeMilliseconds: Date? = nil,
+        count: Int? = nil,
+        force: Bool = false,
+        justid: Bool = false,
+        lastid: String? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "XCLAIM",
+            key,
+            group,
+            consumer,
+            minIdleTime,
+            ids,
+            RESPWithToken("IDLE", ms),
+            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
+            RESPWithToken("RETRYCOUNT", count),
+            RedisPureToken("FORCE", force),
+            RedisPureToken("JUSTID", justid),
+            RESPWithToken("LASTID", lastid)
+        )
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -228,7 +293,13 @@ extension RESPCommand {
     /// - Categories: @write, @stream, @slow
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public static func xgroupCreate(key: RedisKey, group: String, idSelector: XGROUPCREATEIdSelector, mkstream: Bool = false, entriesRead: Int? = nil) -> RESPCommand {
+    public static func xgroupCreate(
+        key: RedisKey,
+        group: String,
+        idSelector: XGROUPCREATEIdSelector,
+        mkstream: Bool = false,
+        entriesRead: Int? = nil
+    ) -> RESPCommand {
         RESPCommand("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
     }
 
@@ -479,8 +550,21 @@ extension RESPCommand {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public static func xreadgroup(groupBlock: XREADGROUPGroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUPStreams) -> RESPCommand {
-        RESPCommand("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RedisPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
+    public static func xreadgroup(
+        groupBlock: XREADGROUPGroupBlock,
+        count: Int? = nil,
+        milliseconds: Int? = nil,
+        noack: Bool = false,
+        streams: XREADGROUPStreams
+    ) -> RESPCommand {
+        RESPCommand(
+            "XREADGROUP",
+            RESPWithToken("GROUP", groupBlock),
+            RESPWithToken("COUNT", count),
+            RESPWithToken("BLOCK", milliseconds),
+            RedisPureToken("NOACK", noack),
+            RESPWithToken("STREAMS", streams)
+        )
     }
 
     /// Returns the messages from a stream within a range of IDs in reverse order.
@@ -596,7 +680,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(key: RedisKey, nomkstream: Bool = false, trim: RESPCommand.XADDTrim? = nil, idSelector: RESPCommand.XADDIdSelector, data: RESPCommand.XADDData) async throws -> String? {
+    public func xadd(
+        key: RedisKey,
+        nomkstream: Bool = false,
+        trim: RESPCommand.XADDTrim? = nil,
+        idSelector: RESPCommand.XADDIdSelector,
+        data: RESPCommand.XADDData
+    ) async throws -> String? {
         try await send("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data).converting()
     }
 
@@ -610,7 +700,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(key: RedisKey, nomkstream: Bool = false, trim: RESPCommand.XADDTrim? = nil, idSelector: RESPCommand.XADDIdSelector, datas: [RESPCommand.XADDData]) async throws -> String? {
+    public func xadd(
+        key: RedisKey,
+        nomkstream: Bool = false,
+        trim: RESPCommand.XADDTrim? = nil,
+        idSelector: RESPCommand.XADDIdSelector,
+        datas: [RESPCommand.XADDData]
+    ) async throws -> String? {
         try await send("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, datas).converting()
     }
 
@@ -625,8 +721,17 @@ extension RedisConnection {
     ///     2. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
     ///     3. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
     @inlinable
-    public func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) async throws -> [RESPToken] {
-        try await send("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid)).converting()
+    public func xautoclaim(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        start: String,
+        count: Int? = nil,
+        justid: Bool = false
+    ) async throws -> [RESPToken] {
+        try await send("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
+            .converting()
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -639,8 +744,33 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: String, ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESPToken] {
-        try await send("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
+    public func xclaim(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        id: String,
+        ms: Int? = nil,
+        unixTimeMilliseconds: Date? = nil,
+        count: Int? = nil,
+        force: Bool = false,
+        justid: Bool = false,
+        lastid: String? = nil
+    ) async throws -> [RESPToken] {
+        try await send(
+            "XCLAIM",
+            key,
+            group,
+            consumer,
+            minIdleTime,
+            id,
+            RESPWithToken("IDLE", ms),
+            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
+            RESPWithToken("RETRYCOUNT", count),
+            RedisPureToken("FORCE", force),
+            RedisPureToken("JUSTID", justid),
+            RESPWithToken("LASTID", lastid)
+        ).converting()
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -653,8 +783,33 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, ids: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESPToken] {
-        try await send("XCLAIM", key, group, consumer, minIdleTime, ids, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid)).converting()
+    public func xclaim(
+        key: RedisKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        ids: [String],
+        ms: Int? = nil,
+        unixTimeMilliseconds: Date? = nil,
+        count: Int? = nil,
+        force: Bool = false,
+        justid: Bool = false,
+        lastid: String? = nil
+    ) async throws -> [RESPToken] {
+        try await send(
+            "XCLAIM",
+            key,
+            group,
+            consumer,
+            minIdleTime,
+            ids,
+            RESPWithToken("IDLE", ms),
+            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
+            RESPWithToken("RETRYCOUNT", count),
+            RedisPureToken("FORCE", force),
+            RedisPureToken("JUSTID", justid),
+            RESPWithToken("LASTID", lastid)
+        ).converting()
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -689,7 +844,13 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate(key: RedisKey, group: String, idSelector: RESPCommand.XGROUPCREATEIdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws {
+    public func xgroupCreate(
+        key: RedisKey,
+        group: String,
+        idSelector: RESPCommand.XGROUPCREATEIdSelector,
+        mkstream: Bool = false,
+        entriesRead: Int? = nil
+    ) async throws {
         try await send("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
     }
 
@@ -862,8 +1023,21 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(groupBlock: RESPCommand.XREADGROUPGroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: RESPCommand.XREADGROUPStreams) async throws -> RESPToken? {
-        try await send("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RedisPureToken("NOACK", noack), RESPWithToken("STREAMS", streams)).converting()
+    public func xreadgroup(
+        groupBlock: RESPCommand.XREADGROUPGroupBlock,
+        count: Int? = nil,
+        milliseconds: Int? = nil,
+        noack: Bool = false,
+        streams: RESPCommand.XREADGROUPStreams
+    ) async throws -> RESPToken? {
+        try await send(
+            "XREADGROUP",
+            RESPWithToken("GROUP", groupBlock),
+            RESPWithToken("COUNT", count),
+            RESPWithToken("BLOCK", milliseconds),
+            RedisPureToken("NOACK", noack),
+            RESPWithToken("STREAMS", streams)
+        ).converting()
     }
 
     /// Returns the messages from a stream within a range of IDs in reverse order.

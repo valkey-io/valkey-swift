@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-redis open source project
 //
-// Copyright (c) 2023 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -396,8 +396,26 @@ extension RESPCommand {
     /// - Categories: @slow, @connection
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public static func clientTracking(status: CLIENTTRACKINGStatus, clientId: Int? = nil, prefix: String? = nil, bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) -> RESPCommand {
-        RESPCommand("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+    public static func clientTracking(
+        status: CLIENTTRACKINGStatus,
+        clientId: Int? = nil,
+        prefix: String? = nil,
+        bcast: Bool = false,
+        optin: Bool = false,
+        optout: Bool = false,
+        noloop: Bool = false
+    ) -> RESPCommand {
+        RESPCommand(
+            "CLIENT",
+            "TRACKING",
+            status,
+            RESPWithToken("REDIRECT", clientId),
+            RESPWithToken("PREFIX", prefix),
+            RedisPureToken("BCAST", bcast),
+            RedisPureToken("OPTIN", optin),
+            RedisPureToken("OPTOUT", optout),
+            RedisPureToken("NOLOOP", noloop)
+        )
     }
 
     /// Controls server-assisted client-side caching for the connection.
@@ -408,8 +426,26 @@ extension RESPCommand {
     /// - Categories: @slow, @connection
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public static func clientTracking(status: CLIENTTRACKINGStatus, clientId: Int? = nil, prefixs: [String], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) -> RESPCommand {
-        RESPCommand("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefixs), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+    public static func clientTracking(
+        status: CLIENTTRACKINGStatus,
+        clientId: Int? = nil,
+        prefixs: [String],
+        bcast: Bool = false,
+        optin: Bool = false,
+        optout: Bool = false,
+        noloop: Bool = false
+    ) -> RESPCommand {
+        RESPCommand(
+            "CLIENT",
+            "TRACKING",
+            status,
+            RESPWithToken("REDIRECT", clientId),
+            RESPWithToken("PREFIX", prefixs),
+            RedisPureToken("BCAST", bcast),
+            RedisPureToken("OPTIN", optin),
+            RedisPureToken("OPTOUT", optout),
+            RedisPureToken("NOLOOP", noloop)
+        )
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
@@ -773,8 +809,26 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(status: RESPCommand.CLIENTTRACKINGStatus, clientId: Int? = nil, prefix: String? = nil, bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
-        try await send("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+    public func clientTracking(
+        status: RESPCommand.CLIENTTRACKINGStatus,
+        clientId: Int? = nil,
+        prefix: String? = nil,
+        bcast: Bool = false,
+        optin: Bool = false,
+        optout: Bool = false,
+        noloop: Bool = false
+    ) async throws {
+        try await send(
+            "CLIENT",
+            "TRACKING",
+            status,
+            RESPWithToken("REDIRECT", clientId),
+            RESPWithToken("PREFIX", prefix),
+            RedisPureToken("BCAST", bcast),
+            RedisPureToken("OPTIN", optin),
+            RedisPureToken("OPTOUT", optout),
+            RedisPureToken("NOLOOP", noloop)
+        )
     }
 
     /// Controls server-assisted client-side caching for the connection.
@@ -785,8 +839,26 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(status: RESPCommand.CLIENTTRACKINGStatus, clientId: Int? = nil, prefixs: [String], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
-        try await send("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefixs), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+    public func clientTracking(
+        status: RESPCommand.CLIENTTRACKINGStatus,
+        clientId: Int? = nil,
+        prefixs: [String],
+        bcast: Bool = false,
+        optin: Bool = false,
+        optout: Bool = false,
+        noloop: Bool = false
+    ) async throws {
+        try await send(
+            "CLIENT",
+            "TRACKING",
+            status,
+            RESPWithToken("REDIRECT", clientId),
+            RESPWithToken("PREFIX", prefixs),
+            RedisPureToken("BCAST", bcast),
+            RedisPureToken("OPTIN", optin),
+            RedisPureToken("OPTOUT", optout),
+            RedisPureToken("NOLOOP", noloop)
+        )
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
