@@ -284,7 +284,7 @@ public struct FUNCTIONRESTORE: RedisCommand {
 
 /// Returns information about a function during execution.
 public struct FUNCTIONSTATS: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
 
     @inlinable public init() {
@@ -585,7 +585,7 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): information about the function that's currently running and information about the available execution engines.
     @inlinable
-    public func functionStats() async throws -> RESPToken {
+    public func functionStats() async throws -> [String: RESPToken] {
         try await send(command: FUNCTIONSTATS())
     }
 

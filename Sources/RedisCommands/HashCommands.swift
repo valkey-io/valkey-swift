@@ -75,7 +75,7 @@ public struct HGET: RedisCommand {
 
 /// Returns all fields and values in a hash.
 public struct HGETALL: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
     public var key: RedisKey
 
@@ -382,7 +382,7 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @slow
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map of fields and their values stored in the hash, or an empty list when key does not exist.
     @inlinable
-    public func hgetall(key: RedisKey) async throws -> RESPToken {
+    public func hgetall(key: RedisKey) async throws -> [String: RESPToken] {
         try await send(command: HGETALL(key: key))
     }
 

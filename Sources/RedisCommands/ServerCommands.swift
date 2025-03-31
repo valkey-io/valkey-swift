@@ -88,7 +88,7 @@ public struct ACLGENPASS: RedisCommand {
 
 /// Lists the ACL rules of a user.
 public struct ACLGETUSER: RedisCommand {
-    public typealias Response = RESPToken?
+    public typealias Response = [String: RESPToken]?
 
     public var username: String
 
@@ -279,7 +279,7 @@ public struct COMMANDCOUNT: RedisCommand {
 
 /// Returns documentary information about one, multiple or all commands.
 public struct COMMANDDOCS: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
     public var commandName: [String] = []
 
@@ -385,7 +385,7 @@ public struct COMMANDLIST: RedisCommand {
 
 /// Returns the effective values of configuration parameters.
 public struct CONFIGGET: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
     public var parameter: [String]
 
@@ -635,7 +635,7 @@ public struct LATENCYHELP: RedisCommand {
 
 /// Returns the cumulative distribution of latencies of a subset or all commands.
 public struct LATENCYHISTOGRAM: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
     public var command: [String] = []
 
@@ -760,7 +760,7 @@ public struct MEMORYPURGE: RedisCommand {
 
 /// Returns details about memory usage.
 public struct MEMORYSTATS: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
 
     @inlinable public init() {
@@ -1269,7 +1269,7 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a set of ACL rule definitions for the user
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if user does not exist.
     @inlinable
-    public func aclGetuser(username: String) async throws -> RESPToken? {
+    public func aclGetuser(username: String) async throws -> [String: RESPToken]? {
         try await send(command: ACLGETUSER(username: username))
     }
 
@@ -1437,7 +1437,7 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
-    public func commandDocs(commandName: [String] = []) async throws -> RESPToken {
+    public func commandDocs(commandName: [String] = []) async throws -> [String: RESPToken] {
         try await send(command: COMMANDDOCS(commandName: commandName))
     }
 
@@ -1509,7 +1509,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
-    public func configGet(parameter: [String]) async throws -> RESPToken {
+    public func configGet(parameter: [String]) async throws -> [String: RESPToken] {
         try await send(command: CONFIGGET(parameter: parameter))
     }
 
@@ -1679,7 +1679,7 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
-    public func latencyHistogram(command: [String] = []) async throws -> RESPToken {
+    public func latencyHistogram(command: [String] = []) async throws -> [String: RESPToken] {
         try await send(command: LATENCYHISTOGRAM(command: command))
     }
 
@@ -1786,7 +1786,7 @@ extension RedisConnection {
     /// - Categories: @slow
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): memory usage metrics and their values.
     @inlinable
-    public func memoryStats() async throws -> RESPToken {
+    public func memoryStats() async throws -> [String: RESPToken] {
         try await send(command: MEMORYSTATS())
     }
 

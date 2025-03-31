@@ -343,6 +343,8 @@ private func getReturnType(reply: some StringProtocol) -> String? {
                 }
             }
             return "[RESPToken]"
+        } else if reply.hasPrefix("[Map") {
+            return "[String: RESPToken]"
         } else if reply.hasPrefix("[Null") || reply.hasPrefix("[Nil") {
             return "Void"
         } else if reply.hasPrefix("[Simple error") {

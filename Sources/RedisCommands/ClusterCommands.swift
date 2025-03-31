@@ -277,7 +277,7 @@ public struct CLUSTERKEYSLOT: RedisCommand {
 
 /// Returns a list of all TCP links to and from peer nodes.
 public struct CLUSTERLINKS: RedisCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = [[String: RESPToken]]
 
 
     @inlinable public init() {
@@ -723,7 +723,7 @@ extension RedisConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Map](https:/redis.io/docs/reference/protocol-spec#maps) where each map contains various attributes and their values of a cluster link.
     @inlinable
-    public func clusterLinks() async throws -> [RESPToken] {
+    public func clusterLinks() async throws -> [[String: RESPToken]] {
         try await send(command: CLUSTERLINKS())
     }
 

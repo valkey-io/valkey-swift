@@ -436,7 +436,7 @@ public struct CLIENTTRACKING: RedisCommand {
 
 /// Returns information about server-assisted client-side caching for the connection.
 public struct CLIENTTRACKINGINFO: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
 
     @inlinable public init() {
@@ -532,7 +532,7 @@ public struct HELLO: RedisCommand {
             return count
         }
     }
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
     public var arguments: Arguments? = nil
 
@@ -810,7 +810,7 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of tracking information sections and their respective values.
     @inlinable
-    public func clientTrackinginfo() async throws -> RESPToken {
+    public func clientTrackinginfo() async throws -> [String: RESPToken] {
         try await send(command: CLIENTTRACKINGINFO())
     }
 
@@ -861,7 +861,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of server properties.
     ///     [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): if the `protover` requested does not exist.
     @inlinable
-    public func hello(arguments: HELLO.Arguments? = nil) async throws -> RESPToken {
+    public func hello(arguments: HELLO.Arguments? = nil) async throws -> [String: RESPToken] {
         try await send(command: HELLO(arguments: arguments))
     }
 

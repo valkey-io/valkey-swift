@@ -402,7 +402,7 @@ public struct XINFOSTREAM: RedisCommand {
             return count
         }
     }
-    public typealias Response = RESPToken
+    public typealias Response = [String: RESPToken]
 
     public var key: RedisKey
     public var fullBlock: FullBlock? = nil
@@ -504,7 +504,7 @@ public struct XREAD: RedisCommand {
             return count
         }
     }
-    public typealias Response = RESPToken?
+    public typealias Response = [String: RESPToken]?
 
     public var count: Int? = nil
     public var milliseconds: Int? = nil
@@ -547,7 +547,7 @@ public struct XREADGROUP: RedisCommand {
             return count
         }
     }
-    public typealias Response = RESPToken?
+    public typealias Response = [String: RESPToken]?
 
     public var groupBlock: GroupBlock
     public var count: Int? = nil
@@ -854,7 +854,7 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was not given, a list of information about a stream in summary form.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was given, a list of information about a stream in extended form.
     @inlinable
-    public func xinfoStream(key: RedisKey, fullBlock: XINFOSTREAM.FullBlock? = nil) async throws -> RESPToken {
+    public func xinfoStream(key: RedisKey, fullBlock: XINFOSTREAM.FullBlock? = nil) async throws -> [String: RESPToken] {
         try await send(command: XINFOSTREAM(key: key, fullBlock: fullBlock))
     }
 
@@ -903,7 +903,7 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xread(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD.Streams) async throws -> RESPToken? {
+    public func xread(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD.Streams) async throws -> [String: RESPToken]? {
         try await send(command: XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
@@ -917,7 +917,7 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(groupBlock: XREADGROUP.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP.Streams) async throws -> RESPToken? {
+    public func xreadgroup(groupBlock: XREADGROUP.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP.Streams) async throws -> [String: RESPToken]? {
         try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
