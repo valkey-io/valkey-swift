@@ -205,63 +205,14 @@ public struct RedisConnection: Sendable {
 
     }
 
-    /*@discardableResult public func send(command: RESPCommand) async throws -> RESPToken {
-        if logger.logLevel <= .debug {
-            var buffer = command.buffer
-            let sending = try [String](from: RESPToken(consuming: &buffer)!).joined(separator: " ")
-            self.logger.debug("send: \(sending)")
-        }
-        let response: Response = try await withCheckedThrowingContinuation { continuation in
-            switch requestContinuation.yield((.command(command.buffer), continuation)) {
-            case .enqueued:
-                break
-            case .dropped, .terminated:
-                continuation.resume(
-                    throwing: RedisClientError(
-                        .connectionClosed,
-                        message: "Unable to enqueue request due to the connection being shutdown."
-                    )
-                )
-            default:
-                break
-            }
-        }
-        guard case .token(let token) = response else { preconditionFailure("Expected a single response") }
-        return token
-    }
-
-    @discardableResult public func pipeline(_ commands: [RESPCommand]) async throws -> [RESPToken] {
-        let response: Response = try await withCheckedThrowingContinuation { continuation in
-            switch requestContinuation.yield((.pipelinedCommands(commands.map(\.buffer)), continuation)) {
-            case .enqueued:
-                break
-            case .dropped, .terminated:
-                continuation.resume(
-                    throwing: RedisClientError(
-                        .connectionClosed,
-                        message: "Unable to enqueue request due to the connection being shutdown."
-                    )
-                )
-            default:
-                break
-            }
-        }
-        guard case .pipelinedResponse(let tokens) = response else { preconditionFailure("Expected a single response") }
-        return tokens
-    }
-
-    @discardableResult public func send<each Arg: RESPRenderable>(_ command: repeat each Arg) async throws -> RESPToken {
-        let command = RESPCommand(repeat each command)
-        return try await self.send(command: command)
-    }*/
-
     /// Try to upgrade to RESP3
     private func resp3Upgrade(
         outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>,
         inboundIterator: inout NIOAsyncChannelInboundStream<RESPToken>.AsyncIterator
     ) async throws {
-        let helloCommand = RESPCommand("HELLO", "3")
-        try await outbound.write(helloCommand.buffer)
+        var encoder = RedisCommandEncoder()
+        encoder.encodeRESPArray("HELLO", 3)
+        try await outbound.write(encoder.buffer)
         let response = try await inboundIterator.next()
         guard let response else {
             throw RedisClientError(.connectionClosed, message: "The connection to the Redis database was unexpectedly closed.")
