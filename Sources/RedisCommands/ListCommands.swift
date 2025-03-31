@@ -29,10 +29,10 @@ public struct BLMOVE: RedisCommand {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
@@ -41,10 +41,10 @@ public struct BLMOVE: RedisCommand {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
@@ -65,7 +65,7 @@ public struct BLMOVE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BLMOVE", source, destination, wherefrom, whereto, timeout)
+        commandEncoder.encodeArray("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
 }
 
@@ -76,10 +76,10 @@ public struct BLMPOP: RedisCommand {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
@@ -98,7 +98,7 @@ public struct BLMPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
@@ -115,7 +115,7 @@ public struct BLPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BLPOP", key, timeout)
+        commandEncoder.encodeArray("BLPOP", key, timeout)
     }
 }
 
@@ -132,7 +132,7 @@ public struct BRPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BRPOP", key, timeout)
+        commandEncoder.encodeArray("BRPOP", key, timeout)
     }
 }
 
@@ -151,7 +151,7 @@ public struct BRPOPLPUSH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BRPOPLPUSH", source, destination, timeout)
+        commandEncoder.encodeArray("BRPOPLPUSH", source, destination, timeout)
     }
 }
 
@@ -168,7 +168,7 @@ public struct LINDEX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LINDEX", key, index)
+        commandEncoder.encodeArray("LINDEX", key, index)
     }
 }
 
@@ -179,10 +179,10 @@ public struct LINSERT: RedisCommand {
         case after
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .before: "BEFORE".writeToRESPBuffer(&buffer)
-            case .after: "AFTER".writeToRESPBuffer(&buffer)
+            case .before: "BEFORE".encode(into: &commandEncoder)
+            case .after: "AFTER".encode(into: &commandEncoder)
             }
         }
     }
@@ -201,7 +201,7 @@ public struct LINSERT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LINSERT", key, `where`, pivot, element)
+        commandEncoder.encodeArray("LINSERT", key, `where`, pivot, element)
     }
 }
 
@@ -216,7 +216,7 @@ public struct LLEN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LLEN", key)
+        commandEncoder.encodeArray("LLEN", key)
     }
 }
 
@@ -227,10 +227,10 @@ public struct LMOVE: RedisCommand {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
@@ -239,10 +239,10 @@ public struct LMOVE: RedisCommand {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
@@ -261,7 +261,7 @@ public struct LMOVE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LMOVE", source, destination, wherefrom, whereto)
+        commandEncoder.encodeArray("LMOVE", source, destination, wherefrom, whereto)
     }
 }
 
@@ -272,10 +272,10 @@ public struct LMPOP: RedisCommand {
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
@@ -292,7 +292,7 @@ public struct LMPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
@@ -309,7 +309,7 @@ public struct LPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LPOP", key, count)
+        commandEncoder.encodeArray("LPOP", key, count)
     }
 }
 
@@ -332,7 +332,7 @@ public struct LPOS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
+        commandEncoder.encodeArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 }
 
@@ -349,7 +349,7 @@ public struct LPUSH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LPUSH", key, element)
+        commandEncoder.encodeArray("LPUSH", key, element)
     }
 }
 
@@ -366,7 +366,7 @@ public struct LPUSHX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LPUSHX", key, element)
+        commandEncoder.encodeArray("LPUSHX", key, element)
     }
 }
 
@@ -385,7 +385,7 @@ public struct LRANGE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LRANGE", key, start, stop)
+        commandEncoder.encodeArray("LRANGE", key, start, stop)
     }
 }
 
@@ -404,7 +404,7 @@ public struct LREM: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LREM", key, count, element)
+        commandEncoder.encodeArray("LREM", key, count, element)
     }
 }
 
@@ -423,7 +423,7 @@ public struct LSET: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LSET", key, index, element)
+        commandEncoder.encodeArray("LSET", key, index, element)
     }
 }
 
@@ -442,7 +442,7 @@ public struct LTRIM: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("LTRIM", key, start, stop)
+        commandEncoder.encodeArray("LTRIM", key, start, stop)
     }
 }
 
@@ -459,7 +459,7 @@ public struct RPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("RPOP", key, count)
+        commandEncoder.encodeArray("RPOP", key, count)
     }
 }
 
@@ -476,7 +476,7 @@ public struct RPOPLPUSH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("RPOPLPUSH", source, destination)
+        commandEncoder.encodeArray("RPOPLPUSH", source, destination)
     }
 }
 
@@ -493,7 +493,7 @@ public struct RPUSH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("RPUSH", key, element)
+        commandEncoder.encodeArray("RPUSH", key, element)
     }
 }
 
@@ -510,7 +510,7 @@ public struct RPUSHX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("RPUSHX", key, element)
+        commandEncoder.encodeArray("RPUSHX", key, element)
     }
 }
 

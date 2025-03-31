@@ -29,10 +29,10 @@ public struct GEOADD: RedisCommand {
         case xx
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .nx: "NX".writeToRESPBuffer(&buffer)
-            case .xx: "XX".writeToRESPBuffer(&buffer)
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             }
         }
     }
@@ -42,11 +42,11 @@ public struct GEOADD: RedisCommand {
         @usableFromInline let member: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += longitude.writeToRESPBuffer(&buffer)
-            count += latitude.writeToRESPBuffer(&buffer)
-            count += member.writeToRESPBuffer(&buffer)
+            count += longitude.encode(into: &commandEncoder)
+            count += latitude.encode(into: &commandEncoder)
+            count += member.encode(into: &commandEncoder)
             return count
         }
     }
@@ -65,7 +65,7 @@ public struct GEOADD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEOADD", key, condition, RedisPureToken("CH", change), data)
+        commandEncoder.encodeArray("GEOADD", key, condition, RedisPureToken("CH", change), data)
     }
 }
 
@@ -78,12 +78,12 @@ public struct GEODIST: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -102,7 +102,7 @@ public struct GEODIST: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEODIST", key, member1, member2, unit)
+        commandEncoder.encodeArray("GEODIST", key, member1, member2, unit)
     }
 }
 
@@ -119,7 +119,7 @@ public struct GEOHASH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEOHASH", key, member)
+        commandEncoder.encodeArray("GEOHASH", key, member)
     }
 }
 
@@ -136,7 +136,7 @@ public struct GEOPOS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEOPOS", key, member)
+        commandEncoder.encodeArray("GEOPOS", key, member)
     }
 }
 
@@ -149,12 +149,12 @@ public struct GEORADIUS: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -163,10 +163,10 @@ public struct GEORADIUS: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
-            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
+            if self.any { count += "ANY".encode(into: &commandEncoder) }
             return count
         }
     }
@@ -175,10 +175,10 @@ public struct GEORADIUS: RedisCommand {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .asc: "ASC".writeToRESPBuffer(&buffer)
-            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            case .asc: "ASC".encode(into: &commandEncoder)
+            case .desc: "DESC".encode(into: &commandEncoder)
             }
         }
     }
@@ -187,10 +187,10 @@ public struct GEORADIUS: RedisCommand {
         case storedistkey(RedisKey)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
-            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
+            case .storekey(let storekey): RESPWithToken("STORE", storekey).encode(into: &commandEncoder)
+            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).encode(into: &commandEncoder)
             }
         }
     }
@@ -223,7 +223,7 @@ public struct GEORADIUS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+        commandEncoder.encodeArray("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
@@ -236,12 +236,12 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -250,10 +250,10 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
-            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
+            if self.any { count += "ANY".encode(into: &commandEncoder) }
             return count
         }
     }
@@ -262,10 +262,10 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .asc: "ASC".writeToRESPBuffer(&buffer)
-            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            case .asc: "ASC".encode(into: &commandEncoder)
+            case .desc: "DESC".encode(into: &commandEncoder)
             }
         }
     }
@@ -274,10 +274,10 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         case storedistkey(RedisKey)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .storekey(let storekey): RESPWithToken("STORE", storekey).writeToRESPBuffer(&buffer)
-            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).writeToRESPBuffer(&buffer)
+            case .storekey(let storekey): RESPWithToken("STORE", storekey).encode(into: &commandEncoder)
+            case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).encode(into: &commandEncoder)
             }
         }
     }
@@ -308,7 +308,7 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
@@ -321,12 +321,12 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -335,10 +335,10 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
-            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
+            if self.any { count += "ANY".encode(into: &commandEncoder) }
             return count
         }
     }
@@ -347,10 +347,10 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .asc: "ASC".writeToRESPBuffer(&buffer)
-            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            case .asc: "ASC".encode(into: &commandEncoder)
+            case .desc: "DESC".encode(into: &commandEncoder)
             }
         }
     }
@@ -379,7 +379,7 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 
@@ -392,12 +392,12 @@ public struct GEORADIUSRO: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -406,10 +406,10 @@ public struct GEORADIUSRO: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
-            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
+            if self.any { count += "ANY".encode(into: &commandEncoder) }
             return count
         }
     }
@@ -418,10 +418,10 @@ public struct GEORADIUSRO: RedisCommand {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .asc: "ASC".writeToRESPBuffer(&buffer)
-            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            case .asc: "ASC".encode(into: &commandEncoder)
+            case .desc: "DESC".encode(into: &commandEncoder)
             }
         }
     }
@@ -452,7 +452,7 @@ public struct GEORADIUSRO: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+        commandEncoder.encodeArray("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 
@@ -463,10 +463,10 @@ public struct GEOSEARCH: RedisCommand {
         @usableFromInline let latitude: Double
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += longitude.writeToRESPBuffer(&buffer)
-            count += latitude.writeToRESPBuffer(&buffer)
+            count += longitude.encode(into: &commandEncoder)
+            count += latitude.encode(into: &commandEncoder)
             return count
         }
     }
@@ -475,10 +475,10 @@ public struct GEOSEARCH: RedisCommand {
         case fromlonlat(FromFromlonlat)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
-            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
+            case .member(let member): RESPWithToken("FROMMEMBER", member).encode(into: &commandEncoder)
+            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).encode(into: &commandEncoder)
             }
         }
     }
@@ -489,12 +489,12 @@ public struct GEOSEARCH: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -503,10 +503,10 @@ public struct GEOSEARCH: RedisCommand {
         @usableFromInline let unit: ByCircleUnit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("BYRADIUS", radius).writeToRESPBuffer(&buffer)
-            count += unit.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("BYRADIUS", radius).encode(into: &commandEncoder)
+            count += unit.encode(into: &commandEncoder)
             return count
         }
     }
@@ -517,12 +517,12 @@ public struct GEOSEARCH: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -532,11 +532,11 @@ public struct GEOSEARCH: RedisCommand {
         @usableFromInline let unit: ByBoxUnit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("BYBOX", width).writeToRESPBuffer(&buffer)
-            count += height.writeToRESPBuffer(&buffer)
-            count += unit.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("BYBOX", width).encode(into: &commandEncoder)
+            count += height.encode(into: &commandEncoder)
+            count += unit.encode(into: &commandEncoder)
             return count
         }
     }
@@ -545,10 +545,10 @@ public struct GEOSEARCH: RedisCommand {
         case box(ByBox)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .circle(let circle): circle.writeToRESPBuffer(&buffer)
-            case .box(let box): box.writeToRESPBuffer(&buffer)
+            case .circle(let circle): circle.encode(into: &commandEncoder)
+            case .box(let box): box.encode(into: &commandEncoder)
             }
         }
     }
@@ -557,10 +557,10 @@ public struct GEOSEARCH: RedisCommand {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .asc: "ASC".writeToRESPBuffer(&buffer)
-            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            case .asc: "ASC".encode(into: &commandEncoder)
+            case .desc: "DESC".encode(into: &commandEncoder)
             }
         }
     }
@@ -569,10 +569,10 @@ public struct GEOSEARCH: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
-            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
+            if self.any { count += "ANY".encode(into: &commandEncoder) }
             return count
         }
     }
@@ -599,7 +599,7 @@ public struct GEOSEARCH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
+        commandEncoder.encodeArray("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
     }
 }
 
@@ -610,10 +610,10 @@ public struct GEOSEARCHSTORE: RedisCommand {
         @usableFromInline let latitude: Double
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += longitude.writeToRESPBuffer(&buffer)
-            count += latitude.writeToRESPBuffer(&buffer)
+            count += longitude.encode(into: &commandEncoder)
+            count += latitude.encode(into: &commandEncoder)
             return count
         }
     }
@@ -622,10 +622,10 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case fromlonlat(FromFromlonlat)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .member(let member): RESPWithToken("FROMMEMBER", member).writeToRESPBuffer(&buffer)
-            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).writeToRESPBuffer(&buffer)
+            case .member(let member): RESPWithToken("FROMMEMBER", member).encode(into: &commandEncoder)
+            case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).encode(into: &commandEncoder)
             }
         }
     }
@@ -636,12 +636,12 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -650,10 +650,10 @@ public struct GEOSEARCHSTORE: RedisCommand {
         @usableFromInline let unit: ByCircleUnit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("BYRADIUS", radius).writeToRESPBuffer(&buffer)
-            count += unit.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("BYRADIUS", radius).encode(into: &commandEncoder)
+            count += unit.encode(into: &commandEncoder)
             return count
         }
     }
@@ -664,12 +664,12 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case mi
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .m: "M".writeToRESPBuffer(&buffer)
-            case .km: "KM".writeToRESPBuffer(&buffer)
-            case .ft: "FT".writeToRESPBuffer(&buffer)
-            case .mi: "MI".writeToRESPBuffer(&buffer)
+            case .m: "M".encode(into: &commandEncoder)
+            case .km: "KM".encode(into: &commandEncoder)
+            case .ft: "FT".encode(into: &commandEncoder)
+            case .mi: "MI".encode(into: &commandEncoder)
             }
         }
     }
@@ -679,11 +679,11 @@ public struct GEOSEARCHSTORE: RedisCommand {
         @usableFromInline let unit: ByBoxUnit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("BYBOX", width).writeToRESPBuffer(&buffer)
-            count += height.writeToRESPBuffer(&buffer)
-            count += unit.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("BYBOX", width).encode(into: &commandEncoder)
+            count += height.encode(into: &commandEncoder)
+            count += unit.encode(into: &commandEncoder)
             return count
         }
     }
@@ -692,10 +692,10 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case box(ByBox)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .circle(let circle): circle.writeToRESPBuffer(&buffer)
-            case .box(let box): box.writeToRESPBuffer(&buffer)
+            case .circle(let circle): circle.encode(into: &commandEncoder)
+            case .box(let box): box.encode(into: &commandEncoder)
             }
         }
     }
@@ -704,10 +704,10 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case desc
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .asc: "ASC".writeToRESPBuffer(&buffer)
-            case .desc: "DESC".writeToRESPBuffer(&buffer)
+            case .asc: "ASC".encode(into: &commandEncoder)
+            case .desc: "DESC".encode(into: &commandEncoder)
             }
         }
     }
@@ -716,10 +716,10 @@ public struct GEOSEARCHSTORE: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
-            if self.any { count += "ANY".writeToRESPBuffer(&buffer) }
+            count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
+            if self.any { count += "ANY".encode(into: &commandEncoder) }
             return count
         }
     }
@@ -744,7 +744,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RedisPureToken("STOREDIST", storedist))
+        commandEncoder.encodeArray("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RedisPureToken("STOREDIST", storedist))
     }
 }
 

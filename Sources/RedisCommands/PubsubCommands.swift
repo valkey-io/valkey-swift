@@ -33,7 +33,7 @@ public struct PSUBSCRIBE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PSUBSCRIBE", pattern)
+        commandEncoder.encodeArray("PSUBSCRIBE", pattern)
     }
 }
 
@@ -50,7 +50,7 @@ public struct PUBLISH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PUBLISH", channel, message)
+        commandEncoder.encodeArray("PUBLISH", channel, message)
     }
 }
 
@@ -65,7 +65,7 @@ public struct PUBSUBCHANNELS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PUBSUB", "CHANNELS", pattern)
+        commandEncoder.encodeArray("PUBSUB", "CHANNELS", pattern)
     }
 }
 
@@ -78,7 +78,7 @@ public struct PUBSUBHELP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PUBSUB", "HELP")
+        commandEncoder.encodeArray("PUBSUB", "HELP")
     }
 }
 
@@ -91,7 +91,7 @@ public struct PUBSUBNUMPAT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PUBSUB", "NUMPAT")
+        commandEncoder.encodeArray("PUBSUB", "NUMPAT")
     }
 }
 
@@ -106,7 +106,7 @@ public struct PUBSUBNUMSUB: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PUBSUB", "NUMSUB", channel)
+        commandEncoder.encodeArray("PUBSUB", "NUMSUB", channel)
     }
 }
 
@@ -121,7 +121,7 @@ public struct PUBSUBSHARDCHANNELS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PUBSUB", "SHARDCHANNELS", pattern)
+        commandEncoder.encodeArray("PUBSUB", "SHARDCHANNELS", pattern)
     }
 }
 
@@ -136,7 +136,7 @@ public struct PUBSUBSHARDNUMSUB: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PUBSUB", "SHARDNUMSUB", shardchannel)
+        commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannel)
     }
 }
 
@@ -151,7 +151,7 @@ public struct PUNSUBSCRIBE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PUNSUBSCRIBE", pattern)
+        commandEncoder.encodeArray("PUNSUBSCRIBE", pattern)
     }
 }
 
@@ -168,7 +168,7 @@ public struct SPUBLISH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SPUBLISH", shardchannel, message)
+        commandEncoder.encodeArray("SPUBLISH", shardchannel, message)
     }
 }
 
@@ -183,7 +183,7 @@ public struct SSUBSCRIBE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SSUBSCRIBE", shardchannel)
+        commandEncoder.encodeArray("SSUBSCRIBE", shardchannel)
     }
 }
 
@@ -198,7 +198,7 @@ public struct SUBSCRIBE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SUBSCRIBE", channel)
+        commandEncoder.encodeArray("SUBSCRIBE", channel)
     }
 }
 
@@ -213,7 +213,7 @@ public struct SUNSUBSCRIBE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SUNSUBSCRIBE", shardchannel)
+        commandEncoder.encodeArray("SUNSUBSCRIBE", shardchannel)
     }
 }
 
@@ -228,7 +228,7 @@ public struct UNSUBSCRIBE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("UNSUBSCRIBE", channel)
+        commandEncoder.encodeArray("UNSUBSCRIBE", channel)
     }
 }
 

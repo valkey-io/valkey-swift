@@ -31,7 +31,7 @@ public struct DISCARD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("DISCARD")
+        commandEncoder.encodeArray("DISCARD")
     }
 }
 
@@ -44,7 +44,7 @@ public struct EXEC: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("EXEC")
+        commandEncoder.encodeArray("EXEC")
     }
 }
 
@@ -57,7 +57,7 @@ public struct MULTI: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("MULTI")
+        commandEncoder.encodeArray("MULTI")
     }
 }
 
@@ -70,7 +70,7 @@ public struct UNWATCH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("UNWATCH")
+        commandEncoder.encodeArray("UNWATCH")
     }
 }
 
@@ -85,7 +85,7 @@ public struct WATCH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("WATCH", key)
+        commandEncoder.encodeArray("WATCH", key)
     }
 }
 

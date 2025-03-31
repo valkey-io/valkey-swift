@@ -35,7 +35,7 @@ public struct PFADD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PFADD", key, element)
+        commandEncoder.encodeArray("PFADD", key, element)
     }
 }
 
@@ -50,7 +50,7 @@ public struct PFCOUNT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PFCOUNT", key)
+        commandEncoder.encodeArray("PFCOUNT", key)
     }
 }
 
@@ -67,7 +67,7 @@ public struct PFMERGE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PFMERGE", destkey, sourcekey)
+        commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)
     }
 }
 
@@ -80,7 +80,7 @@ public struct PFSELFTEST: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("PFSELFTEST")
+        commandEncoder.encodeArray("PFSELFTEST")
     }
 }
 

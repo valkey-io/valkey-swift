@@ -35,7 +35,7 @@ public struct HDEL: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HDEL", key, field)
+        commandEncoder.encodeArray("HDEL", key, field)
     }
 }
 
@@ -52,7 +52,7 @@ public struct HEXISTS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HEXISTS", key, field)
+        commandEncoder.encodeArray("HEXISTS", key, field)
     }
 }
 
@@ -69,7 +69,7 @@ public struct HGET: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HGET", key, field)
+        commandEncoder.encodeArray("HGET", key, field)
     }
 }
 
@@ -84,7 +84,7 @@ public struct HGETALL: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HGETALL", key)
+        commandEncoder.encodeArray("HGETALL", key)
     }
 }
 
@@ -103,7 +103,7 @@ public struct HINCRBY: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HINCRBY", key, field, increment)
+        commandEncoder.encodeArray("HINCRBY", key, field, increment)
     }
 }
 
@@ -122,7 +122,7 @@ public struct HINCRBYFLOAT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HINCRBYFLOAT", key, field, increment)
+        commandEncoder.encodeArray("HINCRBYFLOAT", key, field, increment)
     }
 }
 
@@ -137,7 +137,7 @@ public struct HKEYS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HKEYS", key)
+        commandEncoder.encodeArray("HKEYS", key)
     }
 }
 
@@ -152,7 +152,7 @@ public struct HLEN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HLEN", key)
+        commandEncoder.encodeArray("HLEN", key)
     }
 }
 
@@ -169,7 +169,7 @@ public struct HMGET: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HMGET", key, field)
+        commandEncoder.encodeArray("HMGET", key, field)
     }
 }
 
@@ -180,10 +180,10 @@ public struct HMSET: RedisCommand {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += field.writeToRESPBuffer(&buffer)
-            count += value.writeToRESPBuffer(&buffer)
+            count += field.encode(into: &commandEncoder)
+            count += value.encode(into: &commandEncoder)
             return count
         }
     }
@@ -198,7 +198,7 @@ public struct HMSET: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HMSET", key, data)
+        commandEncoder.encodeArray("HMSET", key, data)
     }
 }
 
@@ -209,10 +209,10 @@ public struct HRANDFIELD: RedisCommand {
         @usableFromInline let withvalues: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += count.writeToRESPBuffer(&buffer)
-            if self.withvalues { count += "WITHVALUES".writeToRESPBuffer(&buffer) }
+            count += count.encode(into: &commandEncoder)
+            if self.withvalues { count += "WITHVALUES".encode(into: &commandEncoder) }
             return count
         }
     }
@@ -227,7 +227,7 @@ public struct HRANDFIELD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HRANDFIELD", key, options)
+        commandEncoder.encodeArray("HRANDFIELD", key, options)
     }
 }
 
@@ -248,7 +248,7 @@ public struct HSCAN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 }
 
@@ -259,10 +259,10 @@ public struct HSET: RedisCommand {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += field.writeToRESPBuffer(&buffer)
-            count += value.writeToRESPBuffer(&buffer)
+            count += field.encode(into: &commandEncoder)
+            count += value.encode(into: &commandEncoder)
             return count
         }
     }
@@ -277,7 +277,7 @@ public struct HSET: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HSET", key, data)
+        commandEncoder.encodeArray("HSET", key, data)
     }
 }
 
@@ -296,7 +296,7 @@ public struct HSETNX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HSETNX", key, field, value)
+        commandEncoder.encodeArray("HSETNX", key, field, value)
     }
 }
 
@@ -313,7 +313,7 @@ public struct HSTRLEN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HSTRLEN", key, field)
+        commandEncoder.encodeArray("HSTRLEN", key, field)
     }
 }
 
@@ -328,7 +328,7 @@ public struct HVALS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("HVALS", key)
+        commandEncoder.encodeArray("HVALS", key)
     }
 }
 

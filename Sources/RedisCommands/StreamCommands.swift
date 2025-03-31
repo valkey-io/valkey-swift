@@ -37,7 +37,7 @@ public struct XACK: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XACK", key, group, id)
+        commandEncoder.encodeArray("XACK", key, group, id)
     }
 }
 
@@ -48,10 +48,10 @@ public struct XADD: RedisCommand {
         case minid
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .maxlen: "MAXLEN".writeToRESPBuffer(&buffer)
-            case .minid: "MINID".writeToRESPBuffer(&buffer)
+            case .maxlen: "MAXLEN".encode(into: &commandEncoder)
+            case .minid: "MINID".encode(into: &commandEncoder)
             }
         }
     }
@@ -60,10 +60,10 @@ public struct XADD: RedisCommand {
         case approximately
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .equal: "=".writeToRESPBuffer(&buffer)
-            case .approximately: "~".writeToRESPBuffer(&buffer)
+            case .equal: "=".encode(into: &commandEncoder)
+            case .approximately: "~".encode(into: &commandEncoder)
             }
         }
     }
@@ -74,12 +74,12 @@ public struct XADD: RedisCommand {
         @usableFromInline let count: Int?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += strategy.writeToRESPBuffer(&buffer)
-            count += `operator`.writeToRESPBuffer(&buffer)
-            count += threshold.writeToRESPBuffer(&buffer)
-            count += RESPWithToken("LIMIT", count).writeToRESPBuffer(&buffer)
+            count += strategy.encode(into: &commandEncoder)
+            count += `operator`.encode(into: &commandEncoder)
+            count += threshold.encode(into: &commandEncoder)
+            count += RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
             return count
         }
     }
@@ -88,10 +88,10 @@ public struct XADD: RedisCommand {
         case id(String)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .autoId: "*".writeToRESPBuffer(&buffer)
-            case .id(let id): id.writeToRESPBuffer(&buffer)
+            case .autoId: "*".encode(into: &commandEncoder)
+            case .id(let id): id.encode(into: &commandEncoder)
             }
         }
     }
@@ -100,10 +100,10 @@ public struct XADD: RedisCommand {
         @usableFromInline let value: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += field.writeToRESPBuffer(&buffer)
-            count += value.writeToRESPBuffer(&buffer)
+            count += field.encode(into: &commandEncoder)
+            count += value.encode(into: &commandEncoder)
             return count
         }
     }
@@ -124,7 +124,7 @@ public struct XADD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
+        commandEncoder.encodeArray("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
     }
 }
 
@@ -151,7 +151,7 @@ public struct XAUTOCLAIM: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
+        commandEncoder.encodeArray("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
     }
 }
 
@@ -186,7 +186,7 @@ public struct XCLAIM: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+        commandEncoder.encodeArray("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 }
 
@@ -203,7 +203,7 @@ public struct XDEL: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XDEL", key, id)
+        commandEncoder.encodeArray("XDEL", key, id)
     }
 }
 
@@ -214,10 +214,10 @@ public struct XGROUPCREATE: RedisCommand {
         case newId
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .id(let id): id.writeToRESPBuffer(&buffer)
-            case .newId: "$".writeToRESPBuffer(&buffer)
+            case .id(let id): id.encode(into: &commandEncoder)
+            case .newId: "$".encode(into: &commandEncoder)
             }
         }
     }
@@ -238,7 +238,7 @@ public struct XGROUPCREATE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+        commandEncoder.encodeArray("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
     }
 }
 
@@ -257,7 +257,7 @@ public struct XGROUPCREATECONSUMER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XGROUP", "CREATECONSUMER", key, group, consumer)
+        commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, group, consumer)
     }
 }
 
@@ -276,7 +276,7 @@ public struct XGROUPDELCONSUMER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XGROUP", "DELCONSUMER", key, group, consumer)
+        commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, group, consumer)
     }
 }
 
@@ -293,7 +293,7 @@ public struct XGROUPDESTROY: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XGROUP", "DESTROY", key, group)
+        commandEncoder.encodeArray("XGROUP", "DESTROY", key, group)
     }
 }
 
@@ -306,7 +306,7 @@ public struct XGROUPHELP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XGROUP", "HELP")
+        commandEncoder.encodeArray("XGROUP", "HELP")
     }
 }
 
@@ -317,10 +317,10 @@ public struct XGROUPSETID: RedisCommand {
         case newId
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .id(let id): id.writeToRESPBuffer(&buffer)
-            case .newId: "$".writeToRESPBuffer(&buffer)
+            case .id(let id): id.encode(into: &commandEncoder)
+            case .newId: "$".encode(into: &commandEncoder)
             }
         }
     }
@@ -339,7 +339,7 @@ public struct XGROUPSETID: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+        commandEncoder.encodeArray("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
     }
 }
 
@@ -356,7 +356,7 @@ public struct XINFOCONSUMERS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XINFO", "CONSUMERS", key, group)
+        commandEncoder.encodeArray("XINFO", "CONSUMERS", key, group)
     }
 }
 
@@ -371,7 +371,7 @@ public struct XINFOGROUPS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XINFO", "GROUPS", key)
+        commandEncoder.encodeArray("XINFO", "GROUPS", key)
     }
 }
 
@@ -384,7 +384,7 @@ public struct XINFOHELP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XINFO", "HELP")
+        commandEncoder.encodeArray("XINFO", "HELP")
     }
 }
 
@@ -395,10 +395,10 @@ public struct XINFOSTREAM: RedisCommand {
         @usableFromInline let count: Int?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            if self.full { count += "FULL".writeToRESPBuffer(&buffer) }
-            count += RESPWithToken("COUNT", count).writeToRESPBuffer(&buffer)
+            if self.full { count += "FULL".encode(into: &commandEncoder) }
+            count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             return count
         }
     }
@@ -413,7 +413,7 @@ public struct XINFOSTREAM: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XINFO", "STREAM", key, fullBlock)
+        commandEncoder.encodeArray("XINFO", "STREAM", key, fullBlock)
     }
 }
 
@@ -428,7 +428,7 @@ public struct XLEN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XLEN", key)
+        commandEncoder.encodeArray("XLEN", key)
     }
 }
 
@@ -442,13 +442,13 @@ public struct XPENDING: RedisCommand {
         @usableFromInline let consumer: String?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("IDLE", minIdleTime).writeToRESPBuffer(&buffer)
-            count += start.writeToRESPBuffer(&buffer)
-            count += end.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
-            count += consumer.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("IDLE", minIdleTime).encode(into: &commandEncoder)
+            count += start.encode(into: &commandEncoder)
+            count += end.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
+            count += consumer.encode(into: &commandEncoder)
             return count
         }
     }
@@ -465,7 +465,7 @@ public struct XPENDING: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XPENDING", key, group, filters)
+        commandEncoder.encodeArray("XPENDING", key, group, filters)
     }
 }
 
@@ -486,7 +486,7 @@ public struct XRANGE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XRANGE", key, start, end, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("XRANGE", key, start, end, RESPWithToken("COUNT", count))
     }
 }
 
@@ -497,10 +497,10 @@ public struct XREAD: RedisCommand {
         @usableFromInline let id: [String]
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += key.writeToRESPBuffer(&buffer)
-            count += id.writeToRESPBuffer(&buffer)
+            count += key.encode(into: &commandEncoder)
+            count += id.encode(into: &commandEncoder)
             return count
         }
     }
@@ -517,7 +517,7 @@ public struct XREAD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
+        commandEncoder.encodeArray("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
     }
 }
 
@@ -528,10 +528,10 @@ public struct XREADGROUP: RedisCommand {
         @usableFromInline let consumer: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += group.writeToRESPBuffer(&buffer)
-            count += consumer.writeToRESPBuffer(&buffer)
+            count += group.encode(into: &commandEncoder)
+            count += consumer.encode(into: &commandEncoder)
             return count
         }
     }
@@ -540,10 +540,10 @@ public struct XREADGROUP: RedisCommand {
         @usableFromInline let id: [String]
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += key.writeToRESPBuffer(&buffer)
-            count += id.writeToRESPBuffer(&buffer)
+            count += key.encode(into: &commandEncoder)
+            count += id.encode(into: &commandEncoder)
             return count
         }
     }
@@ -564,7 +564,7 @@ public struct XREADGROUP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RedisPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
+        commandEncoder.encodeArray("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RedisPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
     }
 }
 
@@ -585,7 +585,7 @@ public struct XREVRANGE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
     }
 }
 
@@ -606,7 +606,7 @@ public struct XSETID: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
+        commandEncoder.encodeArray("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
     }
 }
 
@@ -617,10 +617,10 @@ public struct XTRIM: RedisCommand {
         case minid
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .maxlen: "MAXLEN".writeToRESPBuffer(&buffer)
-            case .minid: "MINID".writeToRESPBuffer(&buffer)
+            case .maxlen: "MAXLEN".encode(into: &commandEncoder)
+            case .minid: "MINID".encode(into: &commandEncoder)
             }
         }
     }
@@ -629,10 +629,10 @@ public struct XTRIM: RedisCommand {
         case approximately
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .equal: "=".writeToRESPBuffer(&buffer)
-            case .approximately: "~".writeToRESPBuffer(&buffer)
+            case .equal: "=".encode(into: &commandEncoder)
+            case .approximately: "~".encode(into: &commandEncoder)
             }
         }
     }
@@ -643,12 +643,12 @@ public struct XTRIM: RedisCommand {
         @usableFromInline let count: Int?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += strategy.writeToRESPBuffer(&buffer)
-            count += `operator`.writeToRESPBuffer(&buffer)
-            count += threshold.writeToRESPBuffer(&buffer)
-            count += RESPWithToken("LIMIT", count).writeToRESPBuffer(&buffer)
+            count += strategy.encode(into: &commandEncoder)
+            count += `operator`.encode(into: &commandEncoder)
+            count += threshold.encode(into: &commandEncoder)
+            count += RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
             return count
         }
     }
@@ -663,7 +663,7 @@ public struct XTRIM: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("XTRIM", key, trim)
+        commandEncoder.encodeArray("XTRIM", key, trim)
     }
 }
 

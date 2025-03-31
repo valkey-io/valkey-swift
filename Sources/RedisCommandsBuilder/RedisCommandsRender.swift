@@ -50,16 +50,16 @@ extension String {
         }
         self.append("\n")
         self.append("        @inlinable\n")
-        self.append("        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {\n")
+        self.append("        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {\n")
         self.append("            switch self {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append(
-                    "            case .\(arg.swiftArgument): \"\(arg.token!)\".writeToRESPBuffer(&buffer)\n"
+                    "            case .\(arg.swiftArgument): \"\(arg.token!)\".encode(into: &commandEncoder)\n"
                 )
             } else {
                 self.append(
-                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable(isArray: false)).writeToRESPBuffer(&buffer)\n"
+                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable(isArray: false)).encode(into: &commandEncoder)\n"
                 )
             }
         }
@@ -89,17 +89,13 @@ extension String {
         }
         self.append("\n")
         self.append("        @inlinable\n")
-        self.append("        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {\n")
+        self.append("        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {\n")
         self.append("            var count = 0\n")
         for arg in arguments {
             if case .pureToken = arg.type {
-                self.append("            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".writeToRESPBuffer(&buffer) }\n")
+                self.append("            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".encode(into: &commandEncoder) }\n")
             } else {
-                //if let token = arg.token {
-                //    self.append("            count += RESPWithToken(\"\(token)\", \(arg.swiftArgument)).writeToRESPBuffer(&buffer)\n")
-                //} else {
-                self.append("            count += \(arg.redisRepresentable(isArray: false)).writeToRESPBuffer(&buffer)\n")
-                //}
+                self.append("            count += \(arg.redisRepresentable(isArray: false)).encode(into: &commandEncoder)\n")
             }
         }
         self.append("            return count\n")
@@ -157,7 +153,7 @@ extension String {
         }
         self.append("    }\n\n")
         self.append("    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {\n")
-        self.append("        commandEncoder.encodeRESPArray(\(commandArgumentsString))\n")
+        self.append("        commandEncoder.encodeArray(\(commandArgumentsString))\n")
         self.append("    }\n")
         self.append("}\n\n")
     }

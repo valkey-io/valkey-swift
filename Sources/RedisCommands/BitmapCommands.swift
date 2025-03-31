@@ -29,10 +29,10 @@ public struct BITCOUNT: RedisCommand {
         case bit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .byte: "BYTE".writeToRESPBuffer(&buffer)
-            case .bit: "BIT".writeToRESPBuffer(&buffer)
+            case .byte: "BYTE".encode(into: &commandEncoder)
+            case .bit: "BIT".encode(into: &commandEncoder)
             }
         }
     }
@@ -42,11 +42,11 @@ public struct BITCOUNT: RedisCommand {
         @usableFromInline let unit: RangeUnit?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += start.writeToRESPBuffer(&buffer)
-            count += end.writeToRESPBuffer(&buffer)
-            count += unit.writeToRESPBuffer(&buffer)
+            count += start.encode(into: &commandEncoder)
+            count += end.encode(into: &commandEncoder)
+            count += unit.encode(into: &commandEncoder)
             return count
         }
     }
@@ -61,7 +61,7 @@ public struct BITCOUNT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BITCOUNT", key, range)
+        commandEncoder.encodeArray("BITCOUNT", key, range)
     }
 }
 
@@ -72,10 +72,10 @@ public struct BITFIELD: RedisCommand {
         @usableFromInline let offset: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += encoding.writeToRESPBuffer(&buffer)
-            count += offset.writeToRESPBuffer(&buffer)
+            count += encoding.encode(into: &commandEncoder)
+            count += offset.encode(into: &commandEncoder)
             return count
         }
     }
@@ -85,11 +85,11 @@ public struct BITFIELD: RedisCommand {
         case fail
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .wrap: "WRAP".writeToRESPBuffer(&buffer)
-            case .sat: "SAT".writeToRESPBuffer(&buffer)
-            case .fail: "FAIL".writeToRESPBuffer(&buffer)
+            case .wrap: "WRAP".encode(into: &commandEncoder)
+            case .sat: "SAT".encode(into: &commandEncoder)
+            case .fail: "FAIL".encode(into: &commandEncoder)
             }
         }
     }
@@ -99,11 +99,11 @@ public struct BITFIELD: RedisCommand {
         @usableFromInline let value: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += encoding.writeToRESPBuffer(&buffer)
-            count += offset.writeToRESPBuffer(&buffer)
-            count += value.writeToRESPBuffer(&buffer)
+            count += encoding.encode(into: &commandEncoder)
+            count += offset.encode(into: &commandEncoder)
+            count += value.encode(into: &commandEncoder)
             return count
         }
     }
@@ -113,11 +113,11 @@ public struct BITFIELD: RedisCommand {
         @usableFromInline let increment: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += encoding.writeToRESPBuffer(&buffer)
-            count += offset.writeToRESPBuffer(&buffer)
-            count += increment.writeToRESPBuffer(&buffer)
+            count += encoding.encode(into: &commandEncoder)
+            count += offset.encode(into: &commandEncoder)
+            count += increment.encode(into: &commandEncoder)
             return count
         }
     }
@@ -126,10 +126,10 @@ public struct BITFIELD: RedisCommand {
         case incrbyBlock(OperationWriteWriteOperationIncrbyBlock)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .setBlock(let setBlock): RESPWithToken("SET", setBlock).writeToRESPBuffer(&buffer)
-            case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).writeToRESPBuffer(&buffer)
+            case .setBlock(let setBlock): RESPWithToken("SET", setBlock).encode(into: &commandEncoder)
+            case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).encode(into: &commandEncoder)
             }
         }
     }
@@ -138,10 +138,10 @@ public struct BITFIELD: RedisCommand {
         @usableFromInline let writeOperation: OperationWriteWriteOperation
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += RESPWithToken("OVERFLOW", overflowBlock).writeToRESPBuffer(&buffer)
-            count += writeOperation.writeToRESPBuffer(&buffer)
+            count += RESPWithToken("OVERFLOW", overflowBlock).encode(into: &commandEncoder)
+            count += writeOperation.encode(into: &commandEncoder)
             return count
         }
     }
@@ -150,10 +150,10 @@ public struct BITFIELD: RedisCommand {
         case write(OperationWrite)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .getBlock(let getBlock): RESPWithToken("GET", getBlock).writeToRESPBuffer(&buffer)
-            case .write(let write): write.writeToRESPBuffer(&buffer)
+            case .getBlock(let getBlock): RESPWithToken("GET", getBlock).encode(into: &commandEncoder)
+            case .write(let write): write.encode(into: &commandEncoder)
             }
         }
     }
@@ -168,7 +168,7 @@ public struct BITFIELD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BITFIELD", key, operation)
+        commandEncoder.encodeArray("BITFIELD", key, operation)
     }
 }
 
@@ -179,10 +179,10 @@ public struct BITFIELDRO: RedisCommand {
         @usableFromInline let offset: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += encoding.writeToRESPBuffer(&buffer)
-            count += offset.writeToRESPBuffer(&buffer)
+            count += encoding.encode(into: &commandEncoder)
+            count += offset.encode(into: &commandEncoder)
             return count
         }
     }
@@ -197,7 +197,7 @@ public struct BITFIELDRO: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
+        commandEncoder.encodeArray("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
     }
 }
 
@@ -210,12 +210,12 @@ public struct BITOP: RedisCommand {
         case not
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .and: "AND".writeToRESPBuffer(&buffer)
-            case .or: "OR".writeToRESPBuffer(&buffer)
-            case .xor: "XOR".writeToRESPBuffer(&buffer)
-            case .not: "NOT".writeToRESPBuffer(&buffer)
+            case .and: "AND".encode(into: &commandEncoder)
+            case .or: "OR".encode(into: &commandEncoder)
+            case .xor: "XOR".encode(into: &commandEncoder)
+            case .not: "NOT".encode(into: &commandEncoder)
             }
         }
     }
@@ -232,7 +232,7 @@ public struct BITOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BITOP", operation, destkey, key)
+        commandEncoder.encodeArray("BITOP", operation, destkey, key)
     }
 }
 
@@ -243,10 +243,10 @@ public struct BITPOS: RedisCommand {
         case bit
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .byte: "BYTE".writeToRESPBuffer(&buffer)
-            case .bit: "BIT".writeToRESPBuffer(&buffer)
+            case .byte: "BYTE".encode(into: &commandEncoder)
+            case .bit: "BIT".encode(into: &commandEncoder)
             }
         }
     }
@@ -255,10 +255,10 @@ public struct BITPOS: RedisCommand {
         @usableFromInline let unit: RangeEndUnitBlockUnit?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += end.writeToRESPBuffer(&buffer)
-            count += unit.writeToRESPBuffer(&buffer)
+            count += end.encode(into: &commandEncoder)
+            count += unit.encode(into: &commandEncoder)
             return count
         }
     }
@@ -267,10 +267,10 @@ public struct BITPOS: RedisCommand {
         @usableFromInline let endUnitBlock: RangeEndUnitBlock?
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += start.writeToRESPBuffer(&buffer)
-            count += endUnitBlock.writeToRESPBuffer(&buffer)
+            count += start.encode(into: &commandEncoder)
+            count += endUnitBlock.encode(into: &commandEncoder)
             return count
         }
     }
@@ -287,7 +287,7 @@ public struct BITPOS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BITPOS", key, bit, range)
+        commandEncoder.encodeArray("BITPOS", key, bit, range)
     }
 }
 
@@ -304,7 +304,7 @@ public struct GETBIT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("GETBIT", key, offset)
+        commandEncoder.encodeArray("GETBIT", key, offset)
     }
 }
 
@@ -323,7 +323,7 @@ public struct SETBIT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SETBIT", key, offset, value)
+        commandEncoder.encodeArray("SETBIT", key, offset, value)
     }
 }
 

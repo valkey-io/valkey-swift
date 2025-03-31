@@ -47,7 +47,7 @@ struct GeneratedCommands {
             }
 
             func encode(into commandEncoder: inout RedisCommandEncoder) {
-                commandEncoder.encodeRESPArray("GET", key)
+                commandEncoder.encodeArray("GET", key)
             }
         }
         var logger = Logger(label: "Redis")

@@ -211,7 +211,7 @@ public struct RedisConnection: Sendable {
         inboundIterator: inout NIOAsyncChannelInboundStream<RESPToken>.AsyncIterator
     ) async throws {
         var encoder = RedisCommandEncoder()
-        encoder.encodeRESPArray("HELLO", 3)
+        encoder.encodeArray("HELLO", 3)
         try await outbound.write(encoder.buffer)
         let response = try await inboundIterator.next()
         guard let response else {

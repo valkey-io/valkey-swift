@@ -29,10 +29,10 @@ public struct BZMPOP: RedisCommand {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .min: "MIN".writeToRESPBuffer(&buffer)
-            case .max: "MAX".writeToRESPBuffer(&buffer)
+            case .min: "MIN".encode(into: &commandEncoder)
+            case .max: "MAX".encode(into: &commandEncoder)
             }
         }
     }
@@ -51,7 +51,7 @@ public struct BZMPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
@@ -68,7 +68,7 @@ public struct BZPOPMAX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BZPOPMAX", key, timeout)
+        commandEncoder.encodeArray("BZPOPMAX", key, timeout)
     }
 }
 
@@ -85,7 +85,7 @@ public struct BZPOPMIN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("BZPOPMIN", key, timeout)
+        commandEncoder.encodeArray("BZPOPMIN", key, timeout)
     }
 }
 
@@ -96,10 +96,10 @@ public struct ZADD: RedisCommand {
         case xx
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .nx: "NX".writeToRESPBuffer(&buffer)
-            case .xx: "XX".writeToRESPBuffer(&buffer)
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
             }
         }
     }
@@ -108,10 +108,10 @@ public struct ZADD: RedisCommand {
         case lt
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .gt: "GT".writeToRESPBuffer(&buffer)
-            case .lt: "LT".writeToRESPBuffer(&buffer)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
             }
         }
     }
@@ -120,10 +120,10 @@ public struct ZADD: RedisCommand {
         @usableFromInline let member: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += score.writeToRESPBuffer(&buffer)
-            count += member.writeToRESPBuffer(&buffer)
+            count += score.encode(into: &commandEncoder)
+            count += member.encode(into: &commandEncoder)
             return count
         }
     }
@@ -146,7 +146,7 @@ public struct ZADD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
+        commandEncoder.encodeArray("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
     }
 }
 
@@ -161,7 +161,7 @@ public struct ZCARD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZCARD", key)
+        commandEncoder.encodeArray("ZCARD", key)
     }
 }
 
@@ -180,7 +180,7 @@ public struct ZCOUNT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZCOUNT", key, min, max)
+        commandEncoder.encodeArray("ZCOUNT", key, min, max)
     }
 }
 
@@ -197,7 +197,7 @@ public struct ZDIFF: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZDIFF", RESPArrayWithCount(key), RedisPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray("ZDIFF", RESPArrayWithCount(key), RedisPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -214,7 +214,7 @@ public struct ZDIFFSTORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZDIFFSTORE", destination, RESPArrayWithCount(key))
+        commandEncoder.encodeArray("ZDIFFSTORE", destination, RESPArrayWithCount(key))
     }
 }
 
@@ -233,7 +233,7 @@ public struct ZINCRBY: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZINCRBY", key, increment, member)
+        commandEncoder.encodeArray("ZINCRBY", key, increment, member)
     }
 }
 
@@ -245,11 +245,11 @@ public struct ZINTER: RedisCommand {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .sum: "SUM".writeToRESPBuffer(&buffer)
-            case .min: "MIN".writeToRESPBuffer(&buffer)
-            case .max: "MAX".writeToRESPBuffer(&buffer)
+            case .sum: "SUM".encode(into: &commandEncoder)
+            case .min: "MIN".encode(into: &commandEncoder)
+            case .max: "MAX".encode(into: &commandEncoder)
             }
         }
     }
@@ -268,7 +268,7 @@ public struct ZINTER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -285,7 +285,7 @@ public struct ZINTERCARD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -297,11 +297,11 @@ public struct ZINTERSTORE: RedisCommand {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .sum: "SUM".writeToRESPBuffer(&buffer)
-            case .min: "MIN".writeToRESPBuffer(&buffer)
-            case .max: "MAX".writeToRESPBuffer(&buffer)
+            case .sum: "SUM".encode(into: &commandEncoder)
+            case .min: "MIN".encode(into: &commandEncoder)
+            case .max: "MAX".encode(into: &commandEncoder)
             }
         }
     }
@@ -320,7 +320,7 @@ public struct ZINTERSTORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+        commandEncoder.encodeArray("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 }
 
@@ -339,7 +339,7 @@ public struct ZLEXCOUNT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZLEXCOUNT", key, min, max)
+        commandEncoder.encodeArray("ZLEXCOUNT", key, min, max)
     }
 }
 
@@ -350,10 +350,10 @@ public struct ZMPOP: RedisCommand {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .min: "MIN".writeToRESPBuffer(&buffer)
-            case .max: "MAX".writeToRESPBuffer(&buffer)
+            case .min: "MIN".encode(into: &commandEncoder)
+            case .max: "MAX".encode(into: &commandEncoder)
             }
         }
     }
@@ -370,7 +370,7 @@ public struct ZMPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("ZMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
@@ -387,7 +387,7 @@ public struct ZMSCORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZMSCORE", key, member)
+        commandEncoder.encodeArray("ZMSCORE", key, member)
     }
 }
 
@@ -404,7 +404,7 @@ public struct ZPOPMAX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZPOPMAX", key, count)
+        commandEncoder.encodeArray("ZPOPMAX", key, count)
     }
 }
 
@@ -421,7 +421,7 @@ public struct ZPOPMIN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZPOPMIN", key, count)
+        commandEncoder.encodeArray("ZPOPMIN", key, count)
     }
 }
 
@@ -432,10 +432,10 @@ public struct ZRANDMEMBER: RedisCommand {
         @usableFromInline let withscores: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += count.writeToRESPBuffer(&buffer)
-            if self.withscores { count += "WITHSCORES".writeToRESPBuffer(&buffer) }
+            count += count.encode(into: &commandEncoder)
+            if self.withscores { count += "WITHSCORES".encode(into: &commandEncoder) }
             return count
         }
     }
@@ -450,7 +450,7 @@ public struct ZRANDMEMBER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZRANDMEMBER", key, options)
+        commandEncoder.encodeArray("ZRANDMEMBER", key, options)
     }
 }
 
@@ -461,10 +461,10 @@ public struct ZRANGE: RedisCommand {
         case bylex
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .byscore: "BYSCORE".writeToRESPBuffer(&buffer)
-            case .bylex: "BYLEX".writeToRESPBuffer(&buffer)
+            case .byscore: "BYSCORE".encode(into: &commandEncoder)
+            case .bylex: "BYLEX".encode(into: &commandEncoder)
             }
         }
     }
@@ -473,10 +473,10 @@ public struct ZRANGE: RedisCommand {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += offset.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
+            count += offset.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
             return count
         }
     }
@@ -501,7 +501,7 @@ public struct ZRANGE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -512,10 +512,10 @@ public struct ZRANGEBYLEX: RedisCommand {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += offset.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
+            count += offset.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
             return count
         }
     }
@@ -534,7 +534,7 @@ public struct ZRANGEBYLEX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -545,10 +545,10 @@ public struct ZRANGEBYSCORE: RedisCommand {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += offset.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
+            count += offset.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
             return count
         }
     }
@@ -569,7 +569,7 @@ public struct ZRANGEBYSCORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZRANGEBYSCORE", key, min, max, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZRANGEBYSCORE", key, min, max, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -580,10 +580,10 @@ public struct ZRANGESTORE: RedisCommand {
         case bylex
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .byscore: "BYSCORE".writeToRESPBuffer(&buffer)
-            case .bylex: "BYLEX".writeToRESPBuffer(&buffer)
+            case .byscore: "BYSCORE".encode(into: &commandEncoder)
+            case .bylex: "BYLEX".encode(into: &commandEncoder)
             }
         }
     }
@@ -592,10 +592,10 @@ public struct ZRANGESTORE: RedisCommand {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += offset.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
+            count += offset.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
             return count
         }
     }
@@ -620,7 +620,7 @@ public struct ZRANGESTORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZRANGESTORE", dst, src, min, max, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZRANGESTORE", dst, src, min, max, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -639,7 +639,7 @@ public struct ZRANK: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZRANK", key, member, RedisPureToken("WITHSCORE", withscore))
+        commandEncoder.encodeArray("ZRANK", key, member, RedisPureToken("WITHSCORE", withscore))
     }
 }
 
@@ -656,7 +656,7 @@ public struct ZREM: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZREM", key, member)
+        commandEncoder.encodeArray("ZREM", key, member)
     }
 }
 
@@ -675,7 +675,7 @@ public struct ZREMRANGEBYLEX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZREMRANGEBYLEX", key, min, max)
+        commandEncoder.encodeArray("ZREMRANGEBYLEX", key, min, max)
     }
 }
 
@@ -694,7 +694,7 @@ public struct ZREMRANGEBYRANK: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZREMRANGEBYRANK", key, start, stop)
+        commandEncoder.encodeArray("ZREMRANGEBYRANK", key, start, stop)
     }
 }
 
@@ -713,7 +713,7 @@ public struct ZREMRANGEBYSCORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZREMRANGEBYSCORE", key, min, max)
+        commandEncoder.encodeArray("ZREMRANGEBYSCORE", key, min, max)
     }
 }
 
@@ -734,7 +734,7 @@ public struct ZREVRANGE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZREVRANGE", key, start, stop, RedisPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray("ZREVRANGE", key, start, stop, RedisPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -745,10 +745,10 @@ public struct ZREVRANGEBYLEX: RedisCommand {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += offset.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
+            count += offset.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
             return count
         }
     }
@@ -767,7 +767,7 @@ public struct ZREVRANGEBYLEX: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -778,10 +778,10 @@ public struct ZREVRANGEBYSCORE: RedisCommand {
         @usableFromInline let count: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += offset.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
+            count += offset.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
             return count
         }
     }
@@ -802,7 +802,7 @@ public struct ZREVRANGEBYSCORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZREVRANGEBYSCORE", key, max, min, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZREVRANGEBYSCORE", key, max, min, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -821,7 +821,7 @@ public struct ZREVRANK: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZREVRANK", key, member, RedisPureToken("WITHSCORE", withscore))
+        commandEncoder.encodeArray("ZREVRANK", key, member, RedisPureToken("WITHSCORE", withscore))
     }
 }
 
@@ -842,7 +842,7 @@ public struct ZSCAN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 }
 
@@ -859,7 +859,7 @@ public struct ZSCORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZSCORE", key, member)
+        commandEncoder.encodeArray("ZSCORE", key, member)
     }
 }
 
@@ -871,11 +871,11 @@ public struct ZUNION: RedisCommand {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .sum: "SUM".writeToRESPBuffer(&buffer)
-            case .min: "MIN".writeToRESPBuffer(&buffer)
-            case .max: "MAX".writeToRESPBuffer(&buffer)
+            case .sum: "SUM".encode(into: &commandEncoder)
+            case .min: "MIN".encode(into: &commandEncoder)
+            case .max: "MAX".encode(into: &commandEncoder)
             }
         }
     }
@@ -894,7 +894,7 @@ public struct ZUNION: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -906,11 +906,11 @@ public struct ZUNIONSTORE: RedisCommand {
         case max
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .sum: "SUM".writeToRESPBuffer(&buffer)
-            case .min: "MIN".writeToRESPBuffer(&buffer)
-            case .max: "MAX".writeToRESPBuffer(&buffer)
+            case .sum: "SUM".encode(into: &commandEncoder)
+            case .min: "MIN".encode(into: &commandEncoder)
+            case .max: "MAX".encode(into: &commandEncoder)
             }
         }
     }
@@ -929,7 +929,7 @@ public struct ZUNIONSTORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+        commandEncoder.encodeArray("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 }
 

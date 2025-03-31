@@ -31,7 +31,7 @@ public struct ASKING: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("ASKING")
+        commandEncoder.encodeArray("ASKING")
     }
 }
 
@@ -46,7 +46,7 @@ public struct CLUSTERADDSLOTS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "ADDSLOTS", slot)
+        commandEncoder.encodeArray("CLUSTER", "ADDSLOTS", slot)
     }
 }
 
@@ -57,10 +57,10 @@ public struct CLUSTERADDSLOTSRANGE: RedisCommand {
         @usableFromInline let endSlot: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += startSlot.writeToRESPBuffer(&buffer)
-            count += endSlot.writeToRESPBuffer(&buffer)
+            count += startSlot.encode(into: &commandEncoder)
+            count += endSlot.encode(into: &commandEncoder)
             return count
         }
     }
@@ -73,7 +73,7 @@ public struct CLUSTERADDSLOTSRANGE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "ADDSLOTSRANGE", range)
+        commandEncoder.encodeArray("CLUSTER", "ADDSLOTSRANGE", range)
     }
 }
 
@@ -86,7 +86,7 @@ public struct CLUSTERBUMPEPOCH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "BUMPEPOCH")
+        commandEncoder.encodeArray("CLUSTER", "BUMPEPOCH")
     }
 }
 
@@ -101,7 +101,7 @@ public struct CLUSTERCOUNTFAILUREREPORTS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "COUNT-FAILURE-REPORTS", nodeId)
+        commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", nodeId)
     }
 }
 
@@ -116,7 +116,7 @@ public struct CLUSTERCOUNTKEYSINSLOT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "COUNTKEYSINSLOT", slot)
+        commandEncoder.encodeArray("CLUSTER", "COUNTKEYSINSLOT", slot)
     }
 }
 
@@ -131,7 +131,7 @@ public struct CLUSTERDELSLOTS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "DELSLOTS", slot)
+        commandEncoder.encodeArray("CLUSTER", "DELSLOTS", slot)
     }
 }
 
@@ -142,10 +142,10 @@ public struct CLUSTERDELSLOTSRANGE: RedisCommand {
         @usableFromInline let endSlot: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += startSlot.writeToRESPBuffer(&buffer)
-            count += endSlot.writeToRESPBuffer(&buffer)
+            count += startSlot.encode(into: &commandEncoder)
+            count += endSlot.encode(into: &commandEncoder)
             return count
         }
     }
@@ -158,7 +158,7 @@ public struct CLUSTERDELSLOTSRANGE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "DELSLOTSRANGE", range)
+        commandEncoder.encodeArray("CLUSTER", "DELSLOTSRANGE", range)
     }
 }
 
@@ -169,10 +169,10 @@ public struct CLUSTERFAILOVER: RedisCommand {
         case takeover
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .force: "FORCE".writeToRESPBuffer(&buffer)
-            case .takeover: "TAKEOVER".writeToRESPBuffer(&buffer)
+            case .force: "FORCE".encode(into: &commandEncoder)
+            case .takeover: "TAKEOVER".encode(into: &commandEncoder)
             }
         }
     }
@@ -185,7 +185,7 @@ public struct CLUSTERFAILOVER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "FAILOVER", options)
+        commandEncoder.encodeArray("CLUSTER", "FAILOVER", options)
     }
 }
 
@@ -198,7 +198,7 @@ public struct CLUSTERFLUSHSLOTS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "FLUSHSLOTS")
+        commandEncoder.encodeArray("CLUSTER", "FLUSHSLOTS")
     }
 }
 
@@ -213,7 +213,7 @@ public struct CLUSTERFORGET: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "FORGET", nodeId)
+        commandEncoder.encodeArray("CLUSTER", "FORGET", nodeId)
     }
 }
 
@@ -230,7 +230,7 @@ public struct CLUSTERGETKEYSINSLOT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "GETKEYSINSLOT", slot, count)
+        commandEncoder.encodeArray("CLUSTER", "GETKEYSINSLOT", slot, count)
     }
 }
 
@@ -243,7 +243,7 @@ public struct CLUSTERHELP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "HELP")
+        commandEncoder.encodeArray("CLUSTER", "HELP")
     }
 }
 
@@ -256,7 +256,7 @@ public struct CLUSTERINFO: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "INFO")
+        commandEncoder.encodeArray("CLUSTER", "INFO")
     }
 }
 
@@ -271,7 +271,7 @@ public struct CLUSTERKEYSLOT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "KEYSLOT", key)
+        commandEncoder.encodeArray("CLUSTER", "KEYSLOT", key)
     }
 }
 
@@ -284,7 +284,7 @@ public struct CLUSTERLINKS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "LINKS")
+        commandEncoder.encodeArray("CLUSTER", "LINKS")
     }
 }
 
@@ -303,7 +303,7 @@ public struct CLUSTERMEET: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "MEET", ip, port, clusterBusPort)
+        commandEncoder.encodeArray("CLUSTER", "MEET", ip, port, clusterBusPort)
     }
 }
 
@@ -316,7 +316,7 @@ public struct CLUSTERMYID: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "MYID")
+        commandEncoder.encodeArray("CLUSTER", "MYID")
     }
 }
 
@@ -329,7 +329,7 @@ public struct CLUSTERMYSHARDID: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "MYSHARDID")
+        commandEncoder.encodeArray("CLUSTER", "MYSHARDID")
     }
 }
 
@@ -342,7 +342,7 @@ public struct CLUSTERNODES: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "NODES")
+        commandEncoder.encodeArray("CLUSTER", "NODES")
     }
 }
 
@@ -357,7 +357,7 @@ public struct CLUSTERREPLICAS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "REPLICAS", nodeId)
+        commandEncoder.encodeArray("CLUSTER", "REPLICAS", nodeId)
     }
 }
 
@@ -372,7 +372,7 @@ public struct CLUSTERREPLICATE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "REPLICATE", nodeId)
+        commandEncoder.encodeArray("CLUSTER", "REPLICATE", nodeId)
     }
 }
 
@@ -383,10 +383,10 @@ public struct CLUSTERRESET: RedisCommand {
         case soft
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .hard: "HARD".writeToRESPBuffer(&buffer)
-            case .soft: "SOFT".writeToRESPBuffer(&buffer)
+            case .hard: "HARD".encode(into: &commandEncoder)
+            case .soft: "SOFT".encode(into: &commandEncoder)
             }
         }
     }
@@ -399,7 +399,7 @@ public struct CLUSTERRESET: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "RESET", resetType)
+        commandEncoder.encodeArray("CLUSTER", "RESET", resetType)
     }
 }
 
@@ -412,7 +412,7 @@ public struct CLUSTERSAVECONFIG: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "SAVECONFIG")
+        commandEncoder.encodeArray("CLUSTER", "SAVECONFIG")
     }
 }
 
@@ -427,7 +427,7 @@ public struct CLUSTERSETCONFIGEPOCH: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "SET-CONFIG-EPOCH", configEpoch)
+        commandEncoder.encodeArray("CLUSTER", "SET-CONFIG-EPOCH", configEpoch)
     }
 }
 
@@ -440,12 +440,12 @@ public struct CLUSTERSETSLOT: RedisCommand {
         case stable
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .importing(let importing): RESPWithToken("IMPORTING", importing).writeToRESPBuffer(&buffer)
-            case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).writeToRESPBuffer(&buffer)
-            case .node(let node): RESPWithToken("NODE", node).writeToRESPBuffer(&buffer)
-            case .stable: "STABLE".writeToRESPBuffer(&buffer)
+            case .importing(let importing): RESPWithToken("IMPORTING", importing).encode(into: &commandEncoder)
+            case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).encode(into: &commandEncoder)
+            case .node(let node): RESPWithToken("NODE", node).encode(into: &commandEncoder)
+            case .stable: "STABLE".encode(into: &commandEncoder)
             }
         }
     }
@@ -460,7 +460,7 @@ public struct CLUSTERSETSLOT: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "SETSLOT", slot, subcommand)
+        commandEncoder.encodeArray("CLUSTER", "SETSLOT", slot, subcommand)
     }
 }
 
@@ -473,7 +473,7 @@ public struct CLUSTERSHARDS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "SHARDS")
+        commandEncoder.encodeArray("CLUSTER", "SHARDS")
     }
 }
 
@@ -488,7 +488,7 @@ public struct CLUSTERSLAVES: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "SLAVES", nodeId)
+        commandEncoder.encodeArray("CLUSTER", "SLAVES", nodeId)
     }
 }
 
@@ -501,7 +501,7 @@ public struct CLUSTERSLOTS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("CLUSTER", "SLOTS")
+        commandEncoder.encodeArray("CLUSTER", "SLOTS")
     }
 }
 
@@ -514,7 +514,7 @@ public struct READONLY: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("READONLY")
+        commandEncoder.encodeArray("READONLY")
     }
 }
 
@@ -527,7 +527,7 @@ public struct READWRITE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("READWRITE")
+        commandEncoder.encodeArray("READWRITE")
     }
 }
 

@@ -35,7 +35,7 @@ public struct SADD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SADD", key, member)
+        commandEncoder.encodeArray("SADD", key, member)
     }
 }
 
@@ -50,7 +50,7 @@ public struct SCARD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SCARD", key)
+        commandEncoder.encodeArray("SCARD", key)
     }
 }
 
@@ -65,7 +65,7 @@ public struct SDIFF: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SDIFF", key)
+        commandEncoder.encodeArray("SDIFF", key)
     }
 }
 
@@ -82,7 +82,7 @@ public struct SDIFFSTORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SDIFFSTORE", destination, key)
+        commandEncoder.encodeArray("SDIFFSTORE", destination, key)
     }
 }
 
@@ -97,7 +97,7 @@ public struct SINTER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SINTER", key)
+        commandEncoder.encodeArray("SINTER", key)
     }
 }
 
@@ -114,7 +114,7 @@ public struct SINTERCARD: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -131,7 +131,7 @@ public struct SINTERSTORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SINTERSTORE", destination, key)
+        commandEncoder.encodeArray("SINTERSTORE", destination, key)
     }
 }
 
@@ -148,7 +148,7 @@ public struct SISMEMBER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SISMEMBER", key, member)
+        commandEncoder.encodeArray("SISMEMBER", key, member)
     }
 }
 
@@ -163,7 +163,7 @@ public struct SMEMBERS: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SMEMBERS", key)
+        commandEncoder.encodeArray("SMEMBERS", key)
     }
 }
 
@@ -180,7 +180,7 @@ public struct SMISMEMBER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SMISMEMBER", key, member)
+        commandEncoder.encodeArray("SMISMEMBER", key, member)
     }
 }
 
@@ -199,7 +199,7 @@ public struct SMOVE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SMOVE", source, destination, member)
+        commandEncoder.encodeArray("SMOVE", source, destination, member)
     }
 }
 
@@ -216,7 +216,7 @@ public struct SPOP: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SPOP", key, count)
+        commandEncoder.encodeArray("SPOP", key, count)
     }
 }
 
@@ -233,7 +233,7 @@ public struct SRANDMEMBER: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SRANDMEMBER", key, count)
+        commandEncoder.encodeArray("SRANDMEMBER", key, count)
     }
 }
 
@@ -250,7 +250,7 @@ public struct SREM: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SREM", key, member)
+        commandEncoder.encodeArray("SREM", key, member)
     }
 }
 
@@ -271,7 +271,7 @@ public struct SSCAN: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 }
 
@@ -286,7 +286,7 @@ public struct SUNION: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SUNION", key)
+        commandEncoder.encodeArray("SUNION", key)
     }
 }
 
@@ -303,7 +303,7 @@ public struct SUNIONSTORE: RedisCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeRESPArray("SUNIONSTORE", destination, key)
+        commandEncoder.encodeArray("SUNIONSTORE", destination, key)
     }
 }
 

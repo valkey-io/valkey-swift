@@ -15,22 +15,30 @@
 import NIOCore
 
 public struct RedisCommandEncoder {
+    @usableFromInline
     var buffer: ByteBuffer
 
+    @inlinable
     init() {
         self.buffer = .init()
     }
 
-    @usableFromInline
-    package mutating func encodeRESPArray<each Arg: RESPRenderable>(_ command: repeat each Arg) {
-        buffer.writeRESP3TypeIdentifier(.array)
+    @inlinable
+    mutating func encodeIdentifier(_ identifier: RESPTypeIdentifier) {
+        self.buffer.writeInteger(identifier.rawValue)
+    }
+
+    @inlinable
+    package mutating func encodeArray<each Arg: RESPRenderable>(_ command: repeat each Arg) {
+        encodeIdentifier(.array)
+
         let arrayCountIndex = buffer.writerIndex
         // temporarily write 0 here, we will update this once everything else is written
         buffer.writeString("0")
         buffer.writeStaticString("\r\n")
         var count = 0
         for arg in repeat each command {
-            count += arg.writeToRESPBuffer(&buffer)
+            count += arg.encode(into: &self)
         }
         if count > 9 {
             // I'm being lazy here and not supporting more than 99 arguments
@@ -46,5 +54,25 @@ public struct RedisCommandEncoder {
         } else {
             buffer.setString(String(count), at: arrayCountIndex)
         }
+    }
+
+    @inlinable
+    mutating func encodeBulkString(_ string: String) {
+        encodeIdentifier(.bulkString)
+
+        buffer.writeString(String(string.utf8.count))
+        buffer.writeStaticString("\r\n")
+        buffer.writeString(string)
+        buffer.writeStaticString("\r\n")
+    }
+
+    @inlinable
+    var writerIndex: Int {
+        buffer.writerIndex
+    }
+
+    @inlinable
+    mutating func moveWriterIndex(to index: Int) {
+        buffer.moveWriterIndex(to: index)
     }
 }
