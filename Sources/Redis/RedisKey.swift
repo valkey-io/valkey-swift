@@ -13,7 +13,6 @@
 //===----------------------------------------------------------------------===//
 
 import NIOCore
-import RESP
 
 /// Type representing a RedisKey
 public struct RedisKey: RawRepresentable {

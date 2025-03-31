@@ -16,7 +16,6 @@ import Logging
 import NIOCore
 import NIOPosix
 import NIOSSL
-import RESP
 
 #if canImport(Network)
 import Network

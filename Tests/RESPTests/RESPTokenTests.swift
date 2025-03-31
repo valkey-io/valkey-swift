@@ -16,7 +16,7 @@ import NIOCore
 import NIOTestUtils
 import Testing
 
-@testable import RESP
+@testable import Redis
 
 struct RESPTokenTests {
     @Test
