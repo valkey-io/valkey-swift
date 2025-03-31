@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-redis open source project
 //
-// Copyright (c) 2023 the swift-redis project authors
+// Copyright (c) 2025 the swift-redis project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -148,7 +148,7 @@ extension RESPCommand {
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     
+    ///
     ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
     @inlinable
@@ -253,7 +253,7 @@ extension RESPCommand {
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
-    ///     
+    ///
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
     public static func bgrewriteaof() -> RESPCommand {
@@ -621,7 +621,7 @@ extension RESPCommand {
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
     /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///     
+    ///
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
     public static func info(section: String? = nil) -> RESPCommand {
@@ -635,7 +635,7 @@ extension RESPCommand {
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
     /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///     
+    ///
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
     public static func info(sections: [String]) -> RESPCommand {
@@ -1035,8 +1035,25 @@ extension RESPCommand {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public static func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) -> RESPCommand {
-        RESPCommand("RESTORE-ASKING", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+    public static func restoreAsking(
+        key: RedisKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "RESTORE-ASKING",
+            key,
+            ttl,
+            serializedValue,
+            RedisPureToken("REPLACE", replace),
+            RedisPureToken("ABSTTL", absttl),
+            RESPWithToken("IDLETIME", seconds),
+            RESPWithToken("FREQ", frequency)
+        )
     }
 
     /// Returns the replication role.
@@ -1083,7 +1100,8 @@ extension RESPCommand {
     /// - Categories: @admin, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
-    public static func shutdown(saveSelector: SHUTDOWNSaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) -> RESPCommand {
+    public static func shutdown(saveSelector: SHUTDOWNSaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) -> RESPCommand
+    {
         RESPCommand("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
     }
 
@@ -1344,7 +1362,7 @@ extension RedisConnection {
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     
+    ///
     ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
     @inlinable
@@ -1437,7 +1455,7 @@ extension RedisConnection {
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
-    ///     
+    ///
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
     public func bgrewriteaof() async throws -> String {
@@ -1741,7 +1759,7 @@ extension RedisConnection {
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///     
+    ///
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
     public func info(section: String? = nil) async throws -> String {
@@ -1755,7 +1773,7 @@ extension RedisConnection {
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///     
+    ///
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
     public func info(sections: [String]) async throws -> String {
@@ -2107,8 +2125,25 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
-        try await send("RESTORE-ASKING", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+    public func restoreAsking(
+        key: RedisKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) async throws {
+        try await send(
+            "RESTORE-ASKING",
+            key,
+            ttl,
+            serializedValue,
+            RedisPureToken("REPLACE", replace),
+            RedisPureToken("ABSTTL", absttl),
+            RESPWithToken("IDLETIME", seconds),
+            RESPWithToken("FREQ", frequency)
+        )
     }
 
     /// Returns the replication role.
@@ -2143,7 +2178,12 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
-    public func shutdown(saveSelector: RESPCommand.SHUTDOWNSaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) async throws {
+    public func shutdown(
+        saveSelector: RESPCommand.SHUTDOWNSaveSelector? = nil,
+        now: Bool = false,
+        force: Bool = false,
+        abort: Bool = false
+    ) async throws {
         try await send("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
     }
 

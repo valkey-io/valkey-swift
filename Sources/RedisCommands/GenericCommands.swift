@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-redis open source project
 //
-// Copyright (c) 2023 the swift-redis project authors
+// Copyright (c) 2025 the swift-redis project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -234,8 +234,29 @@ extension RESPCommand {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public static func migrate(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATEAuthentication? = nil, keys: RedisKey? = nil) -> RESPCommand {
-        RESPCommand("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
+    public static func migrate(
+        host: String,
+        port: Int,
+        keySelector: MIGRATEKeySelector,
+        destinationDb: Int,
+        timeout: Int,
+        copy: Bool = false,
+        replace: Bool = false,
+        authentication: MIGRATEAuthentication? = nil,
+        keys: RedisKey? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "MIGRATE",
+            host,
+            port,
+            keySelector,
+            destinationDb,
+            timeout,
+            RedisPureToken("COPY", copy),
+            RedisPureToken("REPLACE", replace),
+            authentication,
+            RESPWithToken("KEYS", keys)
+        )
     }
 
     /// Atomically transfers a key from one Redis instance to another.
@@ -248,8 +269,29 @@ extension RESPCommand {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public static func migrate(host: String, port: Int, keySelector: MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATEAuthentication? = nil, keyss: [RedisKey]) -> RESPCommand {
-        RESPCommand("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keyss))
+    public static func migrate(
+        host: String,
+        port: Int,
+        keySelector: MIGRATEKeySelector,
+        destinationDb: Int,
+        timeout: Int,
+        copy: Bool = false,
+        replace: Bool = false,
+        authentication: MIGRATEAuthentication? = nil,
+        keyss: [RedisKey]
+    ) -> RESPCommand {
+        RESPCommand(
+            "MIGRATE",
+            host,
+            port,
+            keySelector,
+            destinationDb,
+            timeout,
+            RedisPureToken("COPY", copy),
+            RedisPureToken("REPLACE", replace),
+            authentication,
+            RESPWithToken("KEYS", keyss)
+        )
     }
 
     /// Moves a key to another database.
@@ -486,8 +528,25 @@ extension RESPCommand {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public static func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) -> RESPCommand {
-        RESPCommand("RESTORE", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+    public static func restore(
+        key: RedisKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "RESTORE",
+            key,
+            ttl,
+            serializedValue,
+            RedisPureToken("REPLACE", replace),
+            RedisPureToken("ABSTTL", absttl),
+            RESPWithToken("IDLETIME", seconds),
+            RESPWithToken("FREQ", frequency)
+        )
     }
 
     /// Iterates over the key names in the database.
@@ -537,8 +596,25 @@ extension RESPCommand {
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public static func sort(key: RedisKey, byPattern: String? = nil, limit: SORTLimit? = nil, getPattern: String? = nil, order: SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) -> RESPCommand {
-        RESPCommand("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+    public static func sort(
+        key: RedisKey,
+        byPattern: String? = nil,
+        limit: SORTLimit? = nil,
+        getPattern: String? = nil,
+        order: SORTOrder? = nil,
+        sorting: Bool = false,
+        destination: RedisKey? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "SORT",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPattern),
+            order,
+            RedisPureToken("ALPHA", sorting),
+            RESPWithToken("STORE", destination)
+        )
     }
 
     /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
@@ -550,8 +626,25 @@ extension RESPCommand {
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public static func sort(key: RedisKey, byPattern: String? = nil, limit: SORTLimit? = nil, getPatterns: [String], order: SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) -> RESPCommand {
-        RESPCommand("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPatterns), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+    public static func sort(
+        key: RedisKey,
+        byPattern: String? = nil,
+        limit: SORTLimit? = nil,
+        getPatterns: [String],
+        order: SORTOrder? = nil,
+        sorting: Bool = false,
+        destination: RedisKey? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "SORT",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPatterns),
+            order,
+            RedisPureToken("ALPHA", sorting),
+            RESPWithToken("STORE", destination)
+        )
     }
 
     public struct SORTROLimit: RESPRenderable {
@@ -586,8 +679,23 @@ extension RESPCommand {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public static func sortRo(key: RedisKey, byPattern: String? = nil, limit: SORTROLimit? = nil, getPattern: String? = nil, order: SORTROOrder? = nil, sorting: Bool = false) -> RESPCommand {
-        RESPCommand("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting))
+    public static func sortRo(
+        key: RedisKey,
+        byPattern: String? = nil,
+        limit: SORTROLimit? = nil,
+        getPattern: String? = nil,
+        order: SORTROOrder? = nil,
+        sorting: Bool = false
+    ) -> RESPCommand {
+        RESPCommand(
+            "SORT_RO",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPattern),
+            order,
+            RedisPureToken("ALPHA", sorting)
+        )
     }
 
     /// Returns the sorted elements of a list, a set, or a sorted set.
@@ -598,8 +706,23 @@ extension RESPCommand {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public static func sortRo(key: RedisKey, byPattern: String? = nil, limit: SORTROLimit? = nil, getPatterns: [String], order: SORTROOrder? = nil, sorting: Bool = false) -> RESPCommand {
-        RESPCommand("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPatterns), order, RedisPureToken("ALPHA", sorting))
+    public static func sortRo(
+        key: RedisKey,
+        byPattern: String? = nil,
+        limit: SORTROLimit? = nil,
+        getPatterns: [String],
+        order: SORTROOrder? = nil,
+        sorting: Bool = false
+    ) -> RESPCommand {
+        RESPCommand(
+            "SORT_RO",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPatterns),
+            order,
+            RedisPureToken("ALPHA", sorting)
+        )
     }
 
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
@@ -847,8 +970,29 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(host: String, port: Int, keySelector: RESPCommand.MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: RESPCommand.MIGRATEAuthentication? = nil, keys: RedisKey? = nil) async throws -> String? {
-        try await send("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys)).converting()
+    public func migrate(
+        host: String,
+        port: Int,
+        keySelector: RESPCommand.MIGRATEKeySelector,
+        destinationDb: Int,
+        timeout: Int,
+        copy: Bool = false,
+        replace: Bool = false,
+        authentication: RESPCommand.MIGRATEAuthentication? = nil,
+        keys: RedisKey? = nil
+    ) async throws -> String? {
+        try await send(
+            "MIGRATE",
+            host,
+            port,
+            keySelector,
+            destinationDb,
+            timeout,
+            RedisPureToken("COPY", copy),
+            RedisPureToken("REPLACE", replace),
+            authentication,
+            RESPWithToken("KEYS", keys)
+        ).converting()
     }
 
     /// Atomically transfers a key from one Redis instance to another.
@@ -861,8 +1005,29 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(host: String, port: Int, keySelector: RESPCommand.MIGRATEKeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: RESPCommand.MIGRATEAuthentication? = nil, keyss: [RedisKey]) async throws -> String? {
-        try await send("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keyss)).converting()
+    public func migrate(
+        host: String,
+        port: Int,
+        keySelector: RESPCommand.MIGRATEKeySelector,
+        destinationDb: Int,
+        timeout: Int,
+        copy: Bool = false,
+        replace: Bool = false,
+        authentication: RESPCommand.MIGRATEAuthentication? = nil,
+        keyss: [RedisKey]
+    ) async throws -> String? {
+        try await send(
+            "MIGRATE",
+            host,
+            port,
+            keySelector,
+            destinationDb,
+            timeout,
+            RedisPureToken("COPY", copy),
+            RedisPureToken("REPLACE", replace),
+            authentication,
+            RESPWithToken("KEYS", keyss)
+        ).converting()
     }
 
     /// Moves a key to another database.
@@ -1067,8 +1232,25 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
-        try await send("RESTORE", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+    public func restore(
+        key: RedisKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) async throws {
+        try await send(
+            "RESTORE",
+            key,
+            ttl,
+            serializedValue,
+            RedisPureToken("REPLACE", replace),
+            RedisPureToken("ABSTTL", absttl),
+            RESPWithToken("IDLETIME", seconds),
+            RESPWithToken("FREQ", frequency)
+        )
     }
 
     /// Iterates over the key names in the database.
@@ -1094,8 +1276,25 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(key: RedisKey, byPattern: String? = nil, limit: RESPCommand.SORTLimit? = nil, getPattern: String? = nil, order: RESPCommand.SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) async throws -> RESPToken {
-        try await send("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+    public func sort(
+        key: RedisKey,
+        byPattern: String? = nil,
+        limit: RESPCommand.SORTLimit? = nil,
+        getPattern: String? = nil,
+        order: RESPCommand.SORTOrder? = nil,
+        sorting: Bool = false,
+        destination: RedisKey? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            "SORT",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPattern),
+            order,
+            RedisPureToken("ALPHA", sorting),
+            RESPWithToken("STORE", destination)
+        )
     }
 
     /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
@@ -1107,8 +1306,25 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(key: RedisKey, byPattern: String? = nil, limit: RESPCommand.SORTLimit? = nil, getPatterns: [String], order: RESPCommand.SORTOrder? = nil, sorting: Bool = false, destination: RedisKey? = nil) async throws -> RESPToken {
-        try await send("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPatterns), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+    public func sort(
+        key: RedisKey,
+        byPattern: String? = nil,
+        limit: RESPCommand.SORTLimit? = nil,
+        getPatterns: [String],
+        order: RESPCommand.SORTOrder? = nil,
+        sorting: Bool = false,
+        destination: RedisKey? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            "SORT",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPatterns),
+            order,
+            RedisPureToken("ALPHA", sorting),
+            RESPWithToken("STORE", destination)
+        )
     }
 
     /// Returns the sorted elements of a list, a set, or a sorted set.
@@ -1119,8 +1335,23 @@ extension RedisConnection {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(key: RedisKey, byPattern: String? = nil, limit: RESPCommand.SORTROLimit? = nil, getPattern: String? = nil, order: RESPCommand.SORTROOrder? = nil, sorting: Bool = false) async throws -> [RESPToken] {
-        try await send("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting)).converting()
+    public func sortRo(
+        key: RedisKey,
+        byPattern: String? = nil,
+        limit: RESPCommand.SORTROLimit? = nil,
+        getPattern: String? = nil,
+        order: RESPCommand.SORTROOrder? = nil,
+        sorting: Bool = false
+    ) async throws -> [RESPToken] {
+        try await send(
+            "SORT_RO",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPattern),
+            order,
+            RedisPureToken("ALPHA", sorting)
+        ).converting()
     }
 
     /// Returns the sorted elements of a list, a set, or a sorted set.
@@ -1131,8 +1362,23 @@ extension RedisConnection {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(key: RedisKey, byPattern: String? = nil, limit: RESPCommand.SORTROLimit? = nil, getPatterns: [String], order: RESPCommand.SORTROOrder? = nil, sorting: Bool = false) async throws -> [RESPToken] {
-        try await send("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPatterns), order, RedisPureToken("ALPHA", sorting)).converting()
+    public func sortRo(
+        key: RedisKey,
+        byPattern: String? = nil,
+        limit: RESPCommand.SORTROLimit? = nil,
+        getPatterns: [String],
+        order: RESPCommand.SORTROOrder? = nil,
+        sorting: Bool = false
+    ) async throws -> [RESPToken] {
+        try await send(
+            "SORT_RO",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPatterns),
+            order,
+            RedisPureToken("ALPHA", sorting)
+        ).converting()
     }
 
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.

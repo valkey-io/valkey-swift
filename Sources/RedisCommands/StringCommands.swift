@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-redis open source project
 //
-// Copyright (c) 2023 the swift-redis project authors
+// Copyright (c) 2025 the swift-redis project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -102,7 +102,8 @@ extension RESPCommand {
             case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
             case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).writeToRESPBuffer(&buffer)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).writeToRESPBuffer(&buffer)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).writeToRESPBuffer(&buffer)
             case .persist: "PERSIST".writeToRESPBuffer(&buffer)
             }
         }
@@ -193,8 +194,23 @@ extension RESPCommand {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
     @inlinable
-    public static func lcs(key1: RedisKey, key2: RedisKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) -> RESPCommand {
-        RESPCommand("LCS", key1, key2, RedisPureToken("LEN", len), RedisPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RedisPureToken("WITHMATCHLEN", withmatchlen))
+    public static func lcs(
+        key1: RedisKey,
+        key2: RedisKey,
+        len: Bool = false,
+        idx: Bool = false,
+        minMatchLen: Int? = nil,
+        withmatchlen: Bool = false
+    ) -> RESPCommand {
+        RESPCommand(
+            "LCS",
+            key1,
+            key2,
+            RedisPureToken("LEN", len),
+            RedisPureToken("IDX", idx),
+            RESPWithToken("MINMATCHLEN", minMatchLen),
+            RedisPureToken("WITHMATCHLEN", withmatchlen)
+        )
     }
 
     /// Atomically returns the string values of one or more keys.
@@ -334,7 +350,8 @@ extension RESPCommand {
             case .seconds(let seconds): RESPWithToken("EX", seconds).writeToRESPBuffer(&buffer)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).writeToRESPBuffer(&buffer)
             case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).writeToRESPBuffer(&buffer)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).writeToRESPBuffer(&buffer)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).writeToRESPBuffer(&buffer)
             case .keepttl: "KEEPTTL".writeToRESPBuffer(&buffer)
             }
         }
@@ -351,7 +368,13 @@ extension RESPCommand {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): `GET` given: The key didn't exist before the `SET`.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): `GET` given: The previous value of the key.
     @inlinable
-    public static func set(key: RedisKey, value: String, condition: SETCondition? = nil, get: Bool = false, expiration: SETExpiration? = nil) -> RESPCommand {
+    public static func set(
+        key: RedisKey,
+        value: String,
+        condition: SETCondition? = nil,
+        get: Bool = false,
+        expiration: SETExpiration? = nil
+    ) -> RESPCommand {
         RESPCommand("SET", key, value, condition, RedisPureToken("GET", get), expiration)
     }
 
@@ -570,8 +593,23 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
     @inlinable
-    public func lcs(key1: RedisKey, key2: RedisKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> RESPToken {
-        try await send("LCS", key1, key2, RedisPureToken("LEN", len), RedisPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RedisPureToken("WITHMATCHLEN", withmatchlen))
+    public func lcs(
+        key1: RedisKey,
+        key2: RedisKey,
+        len: Bool = false,
+        idx: Bool = false,
+        minMatchLen: Int? = nil,
+        withmatchlen: Bool = false
+    ) async throws -> RESPToken {
+        try await send(
+            "LCS",
+            key1,
+            key2,
+            RedisPureToken("LEN", len),
+            RedisPureToken("IDX", idx),
+            RESPWithToken("MINMATCHLEN", minMatchLen),
+            RedisPureToken("WITHMATCHLEN", withmatchlen)
+        )
     }
 
     /// Atomically returns the string values of one or more keys.
@@ -674,7 +712,13 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): `GET` given: The key didn't exist before the `SET`.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): `GET` given: The previous value of the key.
     @inlinable
-    public func set(key: RedisKey, value: String, condition: RESPCommand.SETCondition? = nil, get: Bool = false, expiration: RESPCommand.SETExpiration? = nil) async throws -> String? {
+    public func set(
+        key: RedisKey,
+        value: String,
+        condition: RESPCommand.SETCondition? = nil,
+        get: Bool = false,
+        expiration: RESPCommand.SETExpiration? = nil
+    ) async throws -> String? {
         try await send("SET", key, value, condition, RedisPureToken("GET", get), expiration).converting()
     }
 

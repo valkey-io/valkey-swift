@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-redis open source project
 //
-// Copyright (c) 2023 the swift-redis project authors
+// Copyright (c) 2025 the swift-redis project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -217,13 +217,38 @@ extension RESPCommand {
     ///         1. The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         1. The Geohash integer.
     ///         1. The coordinates as a two items x,y array (longitude,latitude).
-    ///     
+    ///
     ///     For example, the command `GEORADIUS Sicily 15 37 200 km WITHCOORD WITHDIST` will return each item in the following way:
-    ///     
+    ///
     ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
     @inlinable
-    public static func georadius(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSCountBlock? = nil, order: GEORADIUSOrder? = nil, store: GEORADIUSStore? = nil) -> RESPCommand {
-        RESPCommand("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+    public static func georadius(
+        key: RedisKey,
+        longitude: Double,
+        latitude: Double,
+        radius: Double,
+        unit: GEORADIUSUnit,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false,
+        countBlock: GEORADIUSCountBlock? = nil,
+        order: GEORADIUSOrder? = nil,
+        store: GEORADIUSStore? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "GEORADIUS",
+            key,
+            longitude,
+            latitude,
+            radius,
+            unit,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash),
+            countBlock,
+            order,
+            store
+        )
     }
 
     public enum GEORADIUSBYMEMBERUnit: RESPRenderable {
@@ -291,8 +316,31 @@ extension RESPCommand {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public static func georadiusbymember(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERCountBlock? = nil, order: GEORADIUSBYMEMBEROrder? = nil, store: GEORADIUSBYMEMBERStore? = nil) -> RESPCommand {
-        RESPCommand("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+    public static func georadiusbymember(
+        key: RedisKey,
+        member: String,
+        radius: Double,
+        unit: GEORADIUSBYMEMBERUnit,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false,
+        countBlock: GEORADIUSBYMEMBERCountBlock? = nil,
+        order: GEORADIUSBYMEMBEROrder? = nil,
+        store: GEORADIUSBYMEMBERStore? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "GEORADIUSBYMEMBER",
+            key,
+            member,
+            radius,
+            unit,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash),
+            countBlock,
+            order,
+            store
+        )
     }
 
     public enum GEORADIUSBYMEMBERROUnit: RESPRenderable {
@@ -348,8 +396,29 @@ extension RESPCommand {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public static func georadiusbymemberRo(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERROUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERROCountBlock? = nil, order: GEORADIUSBYMEMBERROOrder? = nil) -> RESPCommand {
-        RESPCommand("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+    public static func georadiusbymemberRo(
+        key: RedisKey,
+        member: String,
+        radius: Double,
+        unit: GEORADIUSBYMEMBERROUnit,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false,
+        countBlock: GEORADIUSBYMEMBERROCountBlock? = nil,
+        order: GEORADIUSBYMEMBERROOrder? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "GEORADIUSBYMEMBER_RO",
+            key,
+            member,
+            radius,
+            unit,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash),
+            countBlock,
+            order
+        )
     }
 
     public enum GEORADIUSROUnit: RESPRenderable {
@@ -405,8 +474,31 @@ extension RESPCommand {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public static func georadiusRo(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSROUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSROCountBlock? = nil, order: GEORADIUSROOrder? = nil) -> RESPCommand {
-        RESPCommand("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+    public static func georadiusRo(
+        key: RedisKey,
+        longitude: Double,
+        latitude: Double,
+        radius: Double,
+        unit: GEORADIUSROUnit,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false,
+        countBlock: GEORADIUSROCountBlock? = nil,
+        order: GEORADIUSROOrder? = nil
+    ) -> RESPCommand {
+        RESPCommand(
+            "GEORADIUS_RO",
+            key,
+            longitude,
+            latitude,
+            radius,
+            unit,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash),
+            countBlock,
+            order
+        )
     }
 
     public struct GEOSEARCHFromFromlonlat: RESPRenderable {
@@ -540,8 +632,27 @@ extension RESPCommand {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public static func geosearch(key: RedisKey, from: GEOSEARCHFrom, by: GEOSEARCHBy, order: GEOSEARCHOrder? = nil, countBlock: GEOSEARCHCountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) -> RESPCommand {
-        RESPCommand("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
+    public static func geosearch(
+        key: RedisKey,
+        from: GEOSEARCHFrom,
+        by: GEOSEARCHBy,
+        order: GEOSEARCHOrder? = nil,
+        countBlock: GEOSEARCHCountBlock? = nil,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false
+    ) -> RESPCommand {
+        RESPCommand(
+            "GEOSEARCH",
+            key,
+            from,
+            by,
+            order,
+            countBlock,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash)
+        )
     }
 
     public struct GEOSEARCHSTOREFromFromlonlat: RESPRenderable {
@@ -670,7 +781,15 @@ extension RESPCommand {
     /// - Categories: @write, @geo, @slow
     /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set
     @inlinable
-    public static func geosearchstore(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTOREFrom, by: GEOSEARCHSTOREBy, order: GEOSEARCHSTOREOrder? = nil, countBlock: GEOSEARCHSTORECountBlock? = nil, storedist: Bool = false) -> RESPCommand {
+    public static func geosearchstore(
+        destination: RedisKey,
+        source: RedisKey,
+        from: GEOSEARCHSTOREFrom,
+        by: GEOSEARCHSTOREBy,
+        order: GEOSEARCHSTOREOrder? = nil,
+        countBlock: GEOSEARCHSTORECountBlock? = nil,
+        storedist: Bool = false
+    ) -> RESPCommand {
         RESPCommand("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RedisPureToken("STOREDIST", storedist))
     }
 
@@ -685,7 +804,12 @@ extension RedisConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public func geoadd(key: RedisKey, condition: RESPCommand.GEOADDCondition? = nil, change: Bool = false, data: RESPCommand.GEOADDData) async throws -> Int {
+    public func geoadd(
+        key: RedisKey,
+        condition: RESPCommand.GEOADDCondition? = nil,
+        change: Bool = false,
+        data: RESPCommand.GEOADDData
+    ) async throws -> Int {
         try await send("GEOADD", key, condition, RedisPureToken("CH", change), data).converting()
     }
 
@@ -697,7 +821,12 @@ extension RedisConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public func geoadd(key: RedisKey, condition: RESPCommand.GEOADDCondition? = nil, change: Bool = false, datas: [RESPCommand.GEOADDData]) async throws -> Int {
+    public func geoadd(
+        key: RedisKey,
+        condition: RESPCommand.GEOADDCondition? = nil,
+        change: Bool = false,
+        datas: [RESPCommand.GEOADDData]
+    ) async throws -> Int {
         try await send("GEOADD", key, condition, RedisPureToken("CH", change), datas).converting()
     }
 
@@ -775,13 +904,38 @@ extension RedisConnection {
     ///         1. The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         1. The Geohash integer.
     ///         1. The coordinates as a two items x,y array (longitude,latitude).
-    ///     
+    ///
     ///     For example, the command `GEORADIUS Sicily 15 37 200 km WITHCOORD WITHDIST` will return each item in the following way:
-    ///     
+    ///
     ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
     @inlinable
-    public func georadius(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: RESPCommand.GEORADIUSUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: RESPCommand.GEORADIUSCountBlock? = nil, order: RESPCommand.GEORADIUSOrder? = nil, store: RESPCommand.GEORADIUSStore? = nil) async throws -> RESPToken {
-        try await send("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+    public func georadius(
+        key: RedisKey,
+        longitude: Double,
+        latitude: Double,
+        radius: Double,
+        unit: RESPCommand.GEORADIUSUnit,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false,
+        countBlock: RESPCommand.GEORADIUSCountBlock? = nil,
+        order: RESPCommand.GEORADIUSOrder? = nil,
+        store: RESPCommand.GEORADIUSStore? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            "GEORADIUS",
+            key,
+            longitude,
+            latitude,
+            radius,
+            unit,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash),
+            countBlock,
+            order,
+            store
+        )
     }
 
     /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
@@ -797,8 +951,31 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymember(key: RedisKey, member: String, radius: Double, unit: RESPCommand.GEORADIUSBYMEMBERUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: RESPCommand.GEORADIUSBYMEMBERCountBlock? = nil, order: RESPCommand.GEORADIUSBYMEMBEROrder? = nil, store: RESPCommand.GEORADIUSBYMEMBERStore? = nil) async throws -> RESPToken {
-        try await send("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+    public func georadiusbymember(
+        key: RedisKey,
+        member: String,
+        radius: Double,
+        unit: RESPCommand.GEORADIUSBYMEMBERUnit,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false,
+        countBlock: RESPCommand.GEORADIUSBYMEMBERCountBlock? = nil,
+        order: RESPCommand.GEORADIUSBYMEMBEROrder? = nil,
+        store: RESPCommand.GEORADIUSBYMEMBERStore? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            "GEORADIUSBYMEMBER",
+            key,
+            member,
+            radius,
+            unit,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash),
+            countBlock,
+            order,
+            store
+        )
     }
 
     /// Returns members from a geospatial index that are within a distance from a member.
@@ -814,8 +991,29 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymemberRo(key: RedisKey, member: String, radius: Double, unit: RESPCommand.GEORADIUSBYMEMBERROUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: RESPCommand.GEORADIUSBYMEMBERROCountBlock? = nil, order: RESPCommand.GEORADIUSBYMEMBERROOrder? = nil) async throws -> RESPToken {
-        try await send("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+    public func georadiusbymemberRo(
+        key: RedisKey,
+        member: String,
+        radius: Double,
+        unit: RESPCommand.GEORADIUSBYMEMBERROUnit,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false,
+        countBlock: RESPCommand.GEORADIUSBYMEMBERROCountBlock? = nil,
+        order: RESPCommand.GEORADIUSBYMEMBERROOrder? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            "GEORADIUSBYMEMBER_RO",
+            key,
+            member,
+            radius,
+            unit,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash),
+            countBlock,
+            order
+        )
     }
 
     /// Returns members from a geospatial index that are within a distance from a coordinate.
@@ -831,8 +1029,31 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusRo(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: RESPCommand.GEORADIUSROUnit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: RESPCommand.GEORADIUSROCountBlock? = nil, order: RESPCommand.GEORADIUSROOrder? = nil) async throws -> RESPToken {
-        try await send("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+    public func georadiusRo(
+        key: RedisKey,
+        longitude: Double,
+        latitude: Double,
+        radius: Double,
+        unit: RESPCommand.GEORADIUSROUnit,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false,
+        countBlock: RESPCommand.GEORADIUSROCountBlock? = nil,
+        order: RESPCommand.GEORADIUSROOrder? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            "GEORADIUS_RO",
+            key,
+            longitude,
+            latitude,
+            radius,
+            unit,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash),
+            countBlock,
+            order
+        )
     }
 
     /// Queries a geospatial index for members inside an area of a box or a circle.
@@ -848,8 +1069,27 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func geosearch(key: RedisKey, from: RESPCommand.GEOSEARCHFrom, by: RESPCommand.GEOSEARCHBy, order: RESPCommand.GEOSEARCHOrder? = nil, countBlock: RESPCommand.GEOSEARCHCountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> RESPToken {
-        try await send("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
+    public func geosearch(
+        key: RedisKey,
+        from: RESPCommand.GEOSEARCHFrom,
+        by: RESPCommand.GEOSEARCHBy,
+        order: RESPCommand.GEOSEARCHOrder? = nil,
+        countBlock: RESPCommand.GEOSEARCHCountBlock? = nil,
+        withcoord: Bool = false,
+        withdist: Bool = false,
+        withhash: Bool = false
+    ) async throws -> RESPToken {
+        try await send(
+            "GEOSEARCH",
+            key,
+            from,
+            by,
+            order,
+            countBlock,
+            RedisPureToken("WITHCOORD", withcoord),
+            RedisPureToken("WITHDIST", withdist),
+            RedisPureToken("WITHHASH", withhash)
+        )
     }
 
     /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
@@ -860,7 +1100,15 @@ extension RedisConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set
     @inlinable
-    public func geosearchstore(destination: RedisKey, source: RedisKey, from: RESPCommand.GEOSEARCHSTOREFrom, by: RESPCommand.GEOSEARCHSTOREBy, order: RESPCommand.GEOSEARCHSTOREOrder? = nil, countBlock: RESPCommand.GEOSEARCHSTORECountBlock? = nil, storedist: Bool = false) async throws -> Int {
+    public func geosearchstore(
+        destination: RedisKey,
+        source: RedisKey,
+        from: RESPCommand.GEOSEARCHSTOREFrom,
+        by: RESPCommand.GEOSEARCHSTOREBy,
+        order: RESPCommand.GEOSEARCHSTOREOrder? = nil,
+        countBlock: RESPCommand.GEOSEARCHSTORECountBlock? = nil,
+        storedist: Bool = false
+    ) async throws -> Int {
         try await send("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RedisPureToken("STOREDIST", storedist)).converting()
     }
 
