@@ -5,8 +5,8 @@ extension String {
             .replacing(" reply]", with: "]")
     }
 
-    mutating func appendCommandCommentHeader(command: RedisCommand, name: String, reply: [String]) {
-        self.append("/// \(command.summary)\n")
+    mutating func appendCommandCommentHeader(command: RedisCommand, name: String, reply: [String], tab: String) {
+        self.append("\(tab)/// \(command.summary)\n")
     }
 
     mutating func appendFunctionCommentHeader(command: RedisCommand, name: String, reply: [String]) {
@@ -27,7 +27,7 @@ extension String {
         }
     }
 
-    mutating func appendOneOfEnum(argument: RedisCommand.Argument, names: [String]) {
+    mutating func appendOneOfEnum(argument: RedisCommand.Argument, names: [String], tab: String) {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
@@ -35,40 +35,40 @@ extension String {
         let enumName = enumName(names: names)
         for arg in arguments {
             if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, names: names)
+                self.appendOneOfEnum(argument: arg, names: names, tab: tab)
             } else if case .block = arg.type {
-                self.appendBlock(argument: arg, names: names)
+                self.appendBlock(argument: arg, names: names, tab: tab)
             }
         }
-        self.append("    public enum \(enumName): RESPRenderable {\n")
+        self.append("\(tab)    public enum \(enumName): RESPRenderable {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
-                self.append("        case \(arg.swiftArgument)\n")
+                self.append("\(tab)        case \(arg.swiftArgument)\n")
             } else {
-                self.append("        case \(arg.swiftArgument)(\(variableType(arg, names: names, scope: nil, isArray: true)))\n")
+                self.append("\(tab)        case \(arg.swiftArgument)(\(variableType(arg, names: names, scope: nil, isArray: true)))\n")
             }
         }
         self.append("\n")
-        self.append("        @inlinable\n")
-        self.append("        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {\n")
-        self.append("            switch self {\n")
+        self.append("\(tab)        @inlinable\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {\n")
+        self.append("\(tab)            switch self {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append(
-                    "            case .\(arg.swiftArgument): \"\(arg.token!)\".encode(into: &commandEncoder)\n"
+                    "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!)\".encode(into: &commandEncoder)\n"
                 )
             } else {
                 self.append(
-                    "            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable(isArray: false)).encode(into: &commandEncoder)\n"
+                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable(isArray: false)).encode(into: &commandEncoder)\n"
                 )
             }
         }
-        self.append("            }\n")
-        self.append("        }\n")
-        self.append("    }\n")
+        self.append("\(tab)            }\n")
+        self.append("\(tab)        }\n")
+        self.append("\(tab)    }\n")
     }
 
-    mutating func appendBlock(argument: RedisCommand.Argument, names: [String]) {
+    mutating func appendBlock(argument: RedisCommand.Argument, names: [String], tab: String) {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
@@ -76,53 +76,57 @@ extension String {
         let enumName = enumName(names: names)
         for arg in arguments {
             if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, names: names)
+                self.appendOneOfEnum(argument: arg, names: names, tab: tab)
             } else if case .block = arg.type {
-                self.appendBlock(argument: arg, names: names)
+                self.appendBlock(argument: arg, names: names, tab: tab)
             }
         }
-        self.append("    public struct \(enumName): RESPRenderable {\n")
+        self.append("\(tab)    public struct \(enumName): RESPRenderable {\n")
         for arg in arguments {
             self.append(
-                "        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true))\n"
+                "\(tab)        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true))\n"
             )
         }
         self.append("\n")
-        self.append("        @inlinable\n")
-        self.append("        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {\n")
-        self.append("            var count = 0\n")
+        self.append("\(tab)        @inlinable\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {\n")
+        self.append("\(tab)            var count = 0\n")
         for arg in arguments {
             if case .pureToken = arg.type {
-                self.append("            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".encode(into: &commandEncoder) }\n")
+                self.append("\(tab)            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".encode(into: &commandEncoder) }\n")
             } else {
-                self.append("            count += \(arg.redisRepresentable(isArray: false)).encode(into: &commandEncoder)\n")
+                self.append("\(tab)            count += \(arg.redisRepresentable(isArray: false)).encode(into: &commandEncoder)\n")
             }
         }
-        self.append("            return count\n")
-        self.append("        }\n")
-        self.append("    }\n")
+        self.append("\(tab)            return count\n")
+        self.append("\(tab)        }\n")
+        self.append("\(tab)    }\n")
     }
 
-    mutating func appendCommand(command: RedisCommand, reply: [String], name: String) {
+    mutating func appendCommand(command: RedisCommand, reply: [String], name: String, tab: String) {
         var commandName = name
         var subCommand: String? = nil
+        let typeName: String
         if name.contains(" ") {
             var split = name.split(separator: " ", maxSplits: 1)
             commandName = .init(split.removeFirst())
             subCommand = .init(split.last!)
+            typeName = subCommand!.commandTypeName
+        } else {
+            typeName = name.commandTypeName
         }
 
         // Comment header
-        self.appendCommandCommentHeader(command: command, name: name, reply: reply)
-        self.append("public struct \(name.commandTypeName): RedisCommand {\n")
+        self.appendCommandCommentHeader(command: command, name: name, reply: reply, tab: tab)
+        self.append("\(tab)public struct \(typeName): RedisCommand {\n")
 
         let arguments = (command.arguments ?? [])
         // Enums
         for arg in arguments {
             if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, names: [])
+                self.appendOneOfEnum(argument: arg, names: [], tab: tab)
             } else if case .block = arg.type {
-                self.appendBlock(argument: arg, names: [])
+                self.appendBlock(argument: arg, names: [], tab: tab)
             }
         }
         // return type
@@ -132,8 +136,6 @@ extension String {
             arguments
             .map { "\($0.name.swiftVariable): \(parameterType($0, names: [], scope: nil, isArray: true))" }
             .joined(separator: ", ")
-        //        self.append("    @inlinable\n")
-        //self.append("    public static func \(name.swiftFunction)(\(commandParametersString)) -> RESPCommand {\n")
         let commandArguments =
             if let subCommand {
                 ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.redisRepresentable(isArray: true) }
@@ -141,31 +143,22 @@ extension String {
                 ["\"\(commandName)\""] + arguments.map { $0.redisRepresentable(isArray: true) }
             }
         let commandArgumentsString = commandArguments.joined(separator: ", ")
-        //self.append("        RESPCommand(\(commandArgumentsString))\n")
-        //self.append("    }\n\n")*/
-        self.append("    public typealias Response = \(returnType)\n\n")
+        self.append("\(tab)    public typealias Response = \(returnType)\n\n")
         for arg in arguments {
-            self.append("    public var \(arg.name.swiftVariable): \(parameterType(arg, names: [], scope: nil, isArray: true))\n")
+            self.append("\(tab)    public var \(arg.name.swiftVariable): \(parameterType(arg, names: [], scope: nil, isArray: true))\n")
         }
-        self.append("\n    @inlinable public init(\(commandParametersString)) {\n")
+        self.append("\n\(tab)    @inlinable public init(\(commandParametersString)) {\n")
         for arg in arguments {
-            self.append("        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
+            self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
-        self.append("    }\n\n")
-        self.append("    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {\n")
-        self.append("        commandEncoder.encodeArray(\(commandArgumentsString))\n")
-        self.append("    }\n")
-        self.append("}\n\n")
+        self.append("\(tab)    }\n\n")
+        self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {\n")
+        self.append("\(tab)        commandEncoder.encodeArray(\(commandArgumentsString))\n")
+        self.append("\(tab)    }\n")
+        self.append("\(tab)}\n\n")
     }
 
     mutating func appendFunction(command: RedisCommand, reply: [String], name: String) {
-        var commandName = name
-        var subCommand: String? = nil
-        if name.contains(" ") {
-            var split = name.split(separator: " ", maxSplits: 1)
-            commandName = .init(split.removeFirst())
-            subCommand = .init(split.last!)
-        }
         let arguments = (command.arguments ?? [])
         //var converting: Bool = false
         var returnType: String = " -> RESPToken"
@@ -228,17 +221,46 @@ func renderRedisCommands(_ commands: [String: RedisCommand], replies: RESPReplie
         import Foundation
         #endif
 
+
         """
 
-    for key in commands.keys.sorted() {
+    let keys = commands.keys.sorted()
+    let namespaces = Set<String>(
+        keys.compactMap {
+            let (container, subCommand) = subCommand($0)
+            return subCommand != nil ? String(container) : nil
+        }
+    )
+    for namespace in namespaces.sorted() {
+        if commands[namespace] != nil, let reply = replies.commands[namespace], reply.count > 0 {
+            string.append("extension \(namespace.commandTypeName) {\n")
+        } else {
+            if let summary = commands[namespace]?.summary {
+                string.append("/// \(summary)\n")
+            }
+            string.append("public enum \(namespace.commandTypeName) {\n")
+        }
+        for key in keys {
+            let (container, subCommand) = subCommand(key)
+            if container == namespace, subCommand != nil {
+                let command = commands[key]!
+                // if there is no reply info assume command is a container command
+                guard let reply = replies.commands[key], reply.count > 0 else { continue }
+                string.appendCommand(command: command, reply: reply, name: key, tab: "    ")
+            }
+        }
+        string.append("}\n\n")
+    }
+    for key in keys {
+        guard subCommand(key).1 == nil else { continue }
         let command = commands[key]!
         // if there is no reply info assume command is a container command
         guard let reply = replies.commands[key], reply.count > 0 else { continue }
-        string.appendCommand(command: command, reply: reply, name: key)
+        string.appendCommand(command: command, reply: reply, name: key, tab: "")
     }
     string.append("\n")
     string.append("extension RedisConnection {\n")
-    for key in commands.keys.sorted() {
+    for key in keys {
         let command = commands[key]!
         // if there is no reply info assume command is a container command
         guard let reply = replies.commands[key], reply.count > 0 else { continue }
@@ -246,6 +268,14 @@ func renderRedisCommands(_ commands: [String: RedisCommand], replies: RESPReplie
     }
     string.append("}\n")
     return string
+}
+
+private func subCommand(_ command: String) -> (String.SubSequence, String.SubSequence?) {
+    if command.contains(" ") {
+        let split = command.split(separator: " ", maxSplits: 1)
+        return (split[0], split[1])
+    }
+    return (command[...], nil)
 }
 
 private func enumName(names: [String]) -> String {

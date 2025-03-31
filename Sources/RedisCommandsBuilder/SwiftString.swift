@@ -34,7 +34,7 @@ extension StringProtocol {
     var commandTypeName: String {
         self
             .replacingOccurrences(of: "-", with: "_")
-            .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: " ", with: ".")
             .camelCased(capitalize: false)
             .uppercased()
     }

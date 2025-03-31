@@ -172,6 +172,7 @@ struct GeneratedCommands {
             }
         }
     }
+
     /*
     @Test
     func testSubscriptions() async throws {

@@ -22,6 +22,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
 /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
 public struct HDEL: RedisCommand {
     public typealias Response = Int

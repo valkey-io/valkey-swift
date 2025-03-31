@@ -22,6 +22,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
 /// Appends a string to the value of a key. Creates the key if it doesn't exist.
 public struct APPEND: RedisCommand {
     public typealias Response = Int

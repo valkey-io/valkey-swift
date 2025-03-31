@@ -22,6 +22,97 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
+/// A container for Pub/Sub commands.
+public enum PUBSUB {
+    /// Returns the active channels.
+    public struct CHANNELS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var pattern: String? = nil
+
+        @inlinable public init(pattern: String? = nil) {
+            self.pattern = pattern
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "CHANNELS", pattern)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "HELP")
+        }
+    }
+
+    /// Returns a count of unique pattern subscriptions.
+    public struct NUMPAT: RedisCommand {
+        public typealias Response = Int
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "NUMPAT")
+        }
+    }
+
+    /// Returns a count of subscribers to channels.
+    public struct NUMSUB: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var channel: [String] = []
+
+        @inlinable public init(channel: [String] = []) {
+            self.channel = channel
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "NUMSUB", channel)
+        }
+    }
+
+    /// Returns the active shard channels.
+    public struct SHARDCHANNELS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var pattern: String? = nil
+
+        @inlinable public init(pattern: String? = nil) {
+            self.pattern = pattern
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "SHARDCHANNELS", pattern)
+        }
+    }
+
+    /// Returns the count of subscribers of shard channels.
+    public struct SHARDNUMSUB: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var shardchannel: [String] = []
+
+        @inlinable public init(shardchannel: [String] = []) {
+            self.shardchannel = shardchannel
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannel)
+        }
+    }
+
+}
+
 /// Listens for messages published to channels that match one or more patterns.
 public struct PSUBSCRIBE: RedisCommand {
     public typealias Response = RESPToken
@@ -51,92 +142,6 @@ public struct PUBLISH: RedisCommand {
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
         commandEncoder.encodeArray("PUBLISH", channel, message)
-    }
-}
-
-/// Returns the active channels.
-public struct PUBSUBCHANNELS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var pattern: String? = nil
-
-    @inlinable public init(pattern: String? = nil) {
-        self.pattern = pattern
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("PUBSUB", "CHANNELS", pattern)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct PUBSUBHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("PUBSUB", "HELP")
-    }
-}
-
-/// Returns a count of unique pattern subscriptions.
-public struct PUBSUBNUMPAT: RedisCommand {
-    public typealias Response = Int
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("PUBSUB", "NUMPAT")
-    }
-}
-
-/// Returns a count of subscribers to channels.
-public struct PUBSUBNUMSUB: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var channel: [String] = []
-
-    @inlinable public init(channel: [String] = []) {
-        self.channel = channel
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("PUBSUB", "NUMSUB", channel)
-    }
-}
-
-/// Returns the active shard channels.
-public struct PUBSUBSHARDCHANNELS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var pattern: String? = nil
-
-    @inlinable public init(pattern: String? = nil) {
-        self.pattern = pattern
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("PUBSUB", "SHARDCHANNELS", pattern)
-    }
-}
-
-/// Returns the count of subscribers of shard channels.
-public struct PUBSUBSHARDNUMSUB: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var shardchannel: [String] = []
-
-    @inlinable public init(shardchannel: [String] = []) {
-        self.shardchannel = shardchannel
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannel)
     }
 }
 
@@ -267,7 +272,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubChannels(pattern: String? = nil) async throws -> [RESPToken] {
-        try await send(command: PUBSUBCHANNELS(pattern: pattern))
+        try await send(command: PUBSUB.CHANNELS(pattern: pattern))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -279,7 +284,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func pubsubHelp() async throws -> [RESPToken] {
-        try await send(command: PUBSUBHELP())
+        try await send(command: PUBSUB.HELP())
     }
 
     /// Returns a count of unique pattern subscriptions.
@@ -291,7 +296,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of patterns all the clients are subscribed to.
     @inlinable
     public func pubsubNumpat() async throws -> Int {
-        try await send(command: PUBSUBNUMPAT())
+        try await send(command: PUBSUB.NUMPAT())
     }
 
     /// Returns a count of subscribers to channels.
@@ -303,7 +308,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
     @inlinable
     public func pubsubNumsub(channel: [String] = []) async throws -> [RESPToken] {
-        try await send(command: PUBSUBNUMSUB(channel: channel))
+        try await send(command: PUBSUB.NUMSUB(channel: channel))
     }
 
     /// Returns the active shard channels.
@@ -315,7 +320,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubShardchannels(pattern: String? = nil) async throws -> [RESPToken] {
-        try await send(command: PUBSUBSHARDCHANNELS(pattern: pattern))
+        try await send(command: PUBSUB.SHARDCHANNELS(pattern: pattern))
     }
 
     /// Returns the count of subscribers of shard channels.
@@ -327,7 +332,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     public func pubsubShardnumsub(shardchannel: [String] = []) async throws -> [RESPToken] {
-        try await send(command: PUBSUBSHARDNUMSUB(shardchannel: shardchannel))
+        try await send(command: PUBSUB.SHARDNUMSUB(shardchannel: shardchannel))
     }
 
     /// Stops listening to messages published to channels that match one or more patterns.

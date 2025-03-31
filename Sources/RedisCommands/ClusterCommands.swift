@@ -22,6 +22,481 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
+/// A container for Redis Cluster commands.
+public enum CLUSTER {
+    /// Assigns new hash slots to a node.
+    public struct ADDSLOTS: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var slot: [Int]
+
+        @inlinable public init(slot: [Int]) {
+            self.slot = slot
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "ADDSLOTS", slot)
+        }
+    }
+
+    /// Assigns new hash slot ranges to a node.
+    public struct ADDSLOTSRANGE: RedisCommand {
+        public struct Range: RESPRenderable {
+            @usableFromInline let startSlot: Int
+            @usableFromInline let endSlot: Int
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                var count = 0
+                count += startSlot.encode(into: &commandEncoder)
+                count += endSlot.encode(into: &commandEncoder)
+                return count
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var range: [Range]
+
+        @inlinable public init(range: [Range]) {
+            self.range = range
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "ADDSLOTSRANGE", range)
+        }
+    }
+
+    /// Advances the cluster config epoch.
+    public struct BUMPEPOCH: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "BUMPEPOCH")
+        }
+    }
+
+    /// Returns the number of active failure reports active for a node.
+    public struct COUNTFAILUREREPORTS: RedisCommand {
+        public typealias Response = Int
+
+        public var nodeId: String
+
+        @inlinable public init(nodeId: String) {
+            self.nodeId = nodeId
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", nodeId)
+        }
+    }
+
+    /// Returns the number of keys in a hash slot.
+    public struct COUNTKEYSINSLOT: RedisCommand {
+        public typealias Response = Int
+
+        public var slot: Int
+
+        @inlinable public init(slot: Int) {
+            self.slot = slot
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "COUNTKEYSINSLOT", slot)
+        }
+    }
+
+    /// Sets hash slots as unbound for a node.
+    public struct DELSLOTS: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var slot: [Int]
+
+        @inlinable public init(slot: [Int]) {
+            self.slot = slot
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "DELSLOTS", slot)
+        }
+    }
+
+    /// Sets hash slot ranges as unbound for a node.
+    public struct DELSLOTSRANGE: RedisCommand {
+        public struct Range: RESPRenderable {
+            @usableFromInline let startSlot: Int
+            @usableFromInline let endSlot: Int
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                var count = 0
+                count += startSlot.encode(into: &commandEncoder)
+                count += endSlot.encode(into: &commandEncoder)
+                return count
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var range: [Range]
+
+        @inlinable public init(range: [Range]) {
+            self.range = range
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "DELSLOTSRANGE", range)
+        }
+    }
+
+    /// Forces a replica to perform a manual failover of its master.
+    public struct FAILOVER: RedisCommand {
+        public enum Options: RESPRenderable {
+            case force
+            case takeover
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .force: "FORCE".encode(into: &commandEncoder)
+                case .takeover: "TAKEOVER".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var options: Options? = nil
+
+        @inlinable public init(options: Options? = nil) {
+            self.options = options
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "FAILOVER", options)
+        }
+    }
+
+    /// Deletes all slots information from a node.
+    public struct FLUSHSLOTS: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "FLUSHSLOTS")
+        }
+    }
+
+    /// Removes a node from the nodes table.
+    public struct FORGET: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var nodeId: String
+
+        @inlinable public init(nodeId: String) {
+            self.nodeId = nodeId
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "FORGET", nodeId)
+        }
+    }
+
+    /// Returns the key names in a hash slot.
+    public struct GETKEYSINSLOT: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var slot: Int
+        public var count: Int
+
+        @inlinable public init(slot: Int, count: Int) {
+            self.slot = slot
+            self.count = count
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "GETKEYSINSLOT", slot, count)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "HELP")
+        }
+    }
+
+    /// Returns information about the state of a node.
+    public struct INFO: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "INFO")
+        }
+    }
+
+    /// Returns the hash slot for a key.
+    public struct KEYSLOT: RedisCommand {
+        public typealias Response = Int
+
+        public var key: String
+
+        @inlinable public init(key: String) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", key)
+        }
+    }
+
+    /// Returns a list of all TCP links to and from peer nodes.
+    public struct LINKS: RedisCommand {
+        public typealias Response = [[String: RESPToken]]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "LINKS")
+        }
+    }
+
+    /// Forces a node to handshake with another node.
+    public struct MEET: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var ip: String
+        public var port: Int
+        public var clusterBusPort: Int? = nil
+
+        @inlinable public init(ip: String, port: Int, clusterBusPort: Int? = nil) {
+            self.ip = ip
+            self.port = port
+            self.clusterBusPort = clusterBusPort
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "MEET", ip, port, clusterBusPort)
+        }
+    }
+
+    /// Returns the ID of a node.
+    public struct MYID: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "MYID")
+        }
+    }
+
+    /// Returns the shard ID of a node.
+    public struct MYSHARDID: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "MYSHARDID")
+        }
+    }
+
+    /// Returns the cluster configuration for a node.
+    public struct NODES: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "NODES")
+        }
+    }
+
+    /// Lists the replica nodes of a master node.
+    public struct REPLICAS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var nodeId: String
+
+        @inlinable public init(nodeId: String) {
+            self.nodeId = nodeId
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "REPLICAS", nodeId)
+        }
+    }
+
+    /// Configure a node as replica of a master node.
+    public struct REPLICATE: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var nodeId: String
+
+        @inlinable public init(nodeId: String) {
+            self.nodeId = nodeId
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "REPLICATE", nodeId)
+        }
+    }
+
+    /// Resets a node.
+    public struct RESET: RedisCommand {
+        public enum ResetType: RESPRenderable {
+            case hard
+            case soft
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .hard: "HARD".encode(into: &commandEncoder)
+                case .soft: "SOFT".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var resetType: ResetType? = nil
+
+        @inlinable public init(resetType: ResetType? = nil) {
+            self.resetType = resetType
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "RESET", resetType)
+        }
+    }
+
+    /// Forces a node to save the cluster configuration to disk.
+    public struct SAVECONFIG: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "SAVECONFIG")
+        }
+    }
+
+    /// Sets the configuration epoch for a new node.
+    public struct SETCONFIGEPOCH: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var configEpoch: Int
+
+        @inlinable public init(configEpoch: Int) {
+            self.configEpoch = configEpoch
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "SET-CONFIG-EPOCH", configEpoch)
+        }
+    }
+
+    /// Binds a hash slot to a node.
+    public struct SETSLOT: RedisCommand {
+        public enum Subcommand: RESPRenderable {
+            case importing(String)
+            case migrating(String)
+            case node(String)
+            case stable
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .importing(let importing): RESPWithToken("IMPORTING", importing).encode(into: &commandEncoder)
+                case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).encode(into: &commandEncoder)
+                case .node(let node): RESPWithToken("NODE", node).encode(into: &commandEncoder)
+                case .stable: "STABLE".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var slot: Int
+        public var subcommand: Subcommand
+
+        @inlinable public init(slot: Int, subcommand: Subcommand) {
+            self.slot = slot
+            self.subcommand = subcommand
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "SETSLOT", slot, subcommand)
+        }
+    }
+
+    /// Returns the mapping of cluster slots to shards.
+    public struct SHARDS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "SHARDS")
+        }
+    }
+
+    /// Lists the replica nodes of a master node.
+    public struct SLAVES: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var nodeId: String
+
+        @inlinable public init(nodeId: String) {
+            self.nodeId = nodeId
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "SLAVES", nodeId)
+        }
+    }
+
+    /// Returns the mapping of cluster slots to nodes.
+    public struct SLOTS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "SLOTS")
+        }
+    }
+
+}
+
 /// Signals that a cluster client is following an -ASK redirect.
 public struct ASKING: RedisCommand {
     public typealias Response = RESPToken
@@ -32,476 +507,6 @@ public struct ASKING: RedisCommand {
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
         commandEncoder.encodeArray("ASKING")
-    }
-}
-
-/// Assigns new hash slots to a node.
-public struct CLUSTERADDSLOTS: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var slot: [Int]
-
-    @inlinable public init(slot: [Int]) {
-        self.slot = slot
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "ADDSLOTS", slot)
-    }
-}
-
-/// Assigns new hash slot ranges to a node.
-public struct CLUSTERADDSLOTSRANGE: RedisCommand {
-    public struct Range: RESPRenderable {
-        @usableFromInline let startSlot: Int
-        @usableFromInline let endSlot: Int
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            var count = 0
-            count += startSlot.encode(into: &commandEncoder)
-            count += endSlot.encode(into: &commandEncoder)
-            return count
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var range: [Range]
-
-    @inlinable public init(range: [Range]) {
-        self.range = range
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "ADDSLOTSRANGE", range)
-    }
-}
-
-/// Advances the cluster config epoch.
-public struct CLUSTERBUMPEPOCH: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "BUMPEPOCH")
-    }
-}
-
-/// Returns the number of active failure reports active for a node.
-public struct CLUSTERCOUNTFAILUREREPORTS: RedisCommand {
-    public typealias Response = Int
-
-    public var nodeId: String
-
-    @inlinable public init(nodeId: String) {
-        self.nodeId = nodeId
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", nodeId)
-    }
-}
-
-/// Returns the number of keys in a hash slot.
-public struct CLUSTERCOUNTKEYSINSLOT: RedisCommand {
-    public typealias Response = Int
-
-    public var slot: Int
-
-    @inlinable public init(slot: Int) {
-        self.slot = slot
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "COUNTKEYSINSLOT", slot)
-    }
-}
-
-/// Sets hash slots as unbound for a node.
-public struct CLUSTERDELSLOTS: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var slot: [Int]
-
-    @inlinable public init(slot: [Int]) {
-        self.slot = slot
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "DELSLOTS", slot)
-    }
-}
-
-/// Sets hash slot ranges as unbound for a node.
-public struct CLUSTERDELSLOTSRANGE: RedisCommand {
-    public struct Range: RESPRenderable {
-        @usableFromInline let startSlot: Int
-        @usableFromInline let endSlot: Int
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            var count = 0
-            count += startSlot.encode(into: &commandEncoder)
-            count += endSlot.encode(into: &commandEncoder)
-            return count
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var range: [Range]
-
-    @inlinable public init(range: [Range]) {
-        self.range = range
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "DELSLOTSRANGE", range)
-    }
-}
-
-/// Forces a replica to perform a manual failover of its master.
-public struct CLUSTERFAILOVER: RedisCommand {
-    public enum Options: RESPRenderable {
-        case force
-        case takeover
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .force: "FORCE".encode(into: &commandEncoder)
-            case .takeover: "TAKEOVER".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var options: Options? = nil
-
-    @inlinable public init(options: Options? = nil) {
-        self.options = options
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "FAILOVER", options)
-    }
-}
-
-/// Deletes all slots information from a node.
-public struct CLUSTERFLUSHSLOTS: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "FLUSHSLOTS")
-    }
-}
-
-/// Removes a node from the nodes table.
-public struct CLUSTERFORGET: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var nodeId: String
-
-    @inlinable public init(nodeId: String) {
-        self.nodeId = nodeId
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "FORGET", nodeId)
-    }
-}
-
-/// Returns the key names in a hash slot.
-public struct CLUSTERGETKEYSINSLOT: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var slot: Int
-    public var count: Int
-
-    @inlinable public init(slot: Int, count: Int) {
-        self.slot = slot
-        self.count = count
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "GETKEYSINSLOT", slot, count)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct CLUSTERHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "HELP")
-    }
-}
-
-/// Returns information about the state of a node.
-public struct CLUSTERINFO: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "INFO")
-    }
-}
-
-/// Returns the hash slot for a key.
-public struct CLUSTERKEYSLOT: RedisCommand {
-    public typealias Response = Int
-
-    public var key: String
-
-    @inlinable public init(key: String) {
-        self.key = key
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "KEYSLOT", key)
-    }
-}
-
-/// Returns a list of all TCP links to and from peer nodes.
-public struct CLUSTERLINKS: RedisCommand {
-    public typealias Response = [[String: RESPToken]]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "LINKS")
-    }
-}
-
-/// Forces a node to handshake with another node.
-public struct CLUSTERMEET: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var ip: String
-    public var port: Int
-    public var clusterBusPort: Int? = nil
-
-    @inlinable public init(ip: String, port: Int, clusterBusPort: Int? = nil) {
-        self.ip = ip
-        self.port = port
-        self.clusterBusPort = clusterBusPort
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "MEET", ip, port, clusterBusPort)
-    }
-}
-
-/// Returns the ID of a node.
-public struct CLUSTERMYID: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "MYID")
-    }
-}
-
-/// Returns the shard ID of a node.
-public struct CLUSTERMYSHARDID: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "MYSHARDID")
-    }
-}
-
-/// Returns the cluster configuration for a node.
-public struct CLUSTERNODES: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "NODES")
-    }
-}
-
-/// Lists the replica nodes of a master node.
-public struct CLUSTERREPLICAS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var nodeId: String
-
-    @inlinable public init(nodeId: String) {
-        self.nodeId = nodeId
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "REPLICAS", nodeId)
-    }
-}
-
-/// Configure a node as replica of a master node.
-public struct CLUSTERREPLICATE: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var nodeId: String
-
-    @inlinable public init(nodeId: String) {
-        self.nodeId = nodeId
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "REPLICATE", nodeId)
-    }
-}
-
-/// Resets a node.
-public struct CLUSTERRESET: RedisCommand {
-    public enum ResetType: RESPRenderable {
-        case hard
-        case soft
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .hard: "HARD".encode(into: &commandEncoder)
-            case .soft: "SOFT".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var resetType: ResetType? = nil
-
-    @inlinable public init(resetType: ResetType? = nil) {
-        self.resetType = resetType
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "RESET", resetType)
-    }
-}
-
-/// Forces a node to save the cluster configuration to disk.
-public struct CLUSTERSAVECONFIG: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "SAVECONFIG")
-    }
-}
-
-/// Sets the configuration epoch for a new node.
-public struct CLUSTERSETCONFIGEPOCH: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var configEpoch: Int
-
-    @inlinable public init(configEpoch: Int) {
-        self.configEpoch = configEpoch
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "SET-CONFIG-EPOCH", configEpoch)
-    }
-}
-
-/// Binds a hash slot to a node.
-public struct CLUSTERSETSLOT: RedisCommand {
-    public enum Subcommand: RESPRenderable {
-        case importing(String)
-        case migrating(String)
-        case node(String)
-        case stable
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .importing(let importing): RESPWithToken("IMPORTING", importing).encode(into: &commandEncoder)
-            case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).encode(into: &commandEncoder)
-            case .node(let node): RESPWithToken("NODE", node).encode(into: &commandEncoder)
-            case .stable: "STABLE".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var slot: Int
-    public var subcommand: Subcommand
-
-    @inlinable public init(slot: Int, subcommand: Subcommand) {
-        self.slot = slot
-        self.subcommand = subcommand
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "SETSLOT", slot, subcommand)
-    }
-}
-
-/// Returns the mapping of cluster slots to shards.
-public struct CLUSTERSHARDS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "SHARDS")
-    }
-}
-
-/// Lists the replica nodes of a master node.
-public struct CLUSTERSLAVES: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var nodeId: String
-
-    @inlinable public init(nodeId: String) {
-        self.nodeId = nodeId
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "SLAVES", nodeId)
-    }
-}
-
-/// Returns the mapping of cluster slots to nodes.
-public struct CLUSTERSLOTS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CLUSTER", "SLOTS")
     }
 }
 
@@ -554,7 +559,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterAddslots(slot: [Int]) async throws -> RESPToken {
-        try await send(command: CLUSTERADDSLOTS(slot: slot))
+        try await send(command: CLUSTER.ADDSLOTS(slot: slot))
     }
 
     /// Assigns new hash slot ranges to a node.
@@ -565,8 +570,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterAddslotsrange(range: [CLUSTERADDSLOTSRANGE.Range]) async throws -> RESPToken {
-        try await send(command: CLUSTERADDSLOTSRANGE(range: range))
+    public func clusterAddslotsrange(range: [CLUSTER.ADDSLOTSRANGE.Range]) async throws -> RESPToken {
+        try await send(command: CLUSTER.ADDSLOTSRANGE(range: range))
     }
 
     /// Advances the cluster config epoch.
@@ -580,7 +585,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): `STILL` if the node already has the greatest configured epoch in the cluster.
     @inlinable
     public func clusterBumpepoch() async throws -> String {
-        try await send(command: CLUSTERBUMPEPOCH())
+        try await send(command: CLUSTER.BUMPEPOCH())
     }
 
     /// Returns the number of active failure reports active for a node.
@@ -592,7 +597,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of active failure reports for the node.
     @inlinable
     public func clusterCountFailureReports(nodeId: String) async throws -> Int {
-        try await send(command: CLUSTERCOUNTFAILUREREPORTS(nodeId: nodeId))
+        try await send(command: CLUSTER.COUNTFAILUREREPORTS(nodeId: nodeId))
     }
 
     /// Returns the number of keys in a hash slot.
@@ -604,7 +609,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The number of keys in the specified hash slot, or an error if the hash slot is invalid.
     @inlinable
     public func clusterCountkeysinslot(slot: Int) async throws -> Int {
-        try await send(command: CLUSTERCOUNTKEYSINSLOT(slot: slot))
+        try await send(command: CLUSTER.COUNTKEYSINSLOT(slot: slot))
     }
 
     /// Sets hash slots as unbound for a node.
@@ -616,7 +621,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterDelslots(slot: [Int]) async throws -> RESPToken {
-        try await send(command: CLUSTERDELSLOTS(slot: slot))
+        try await send(command: CLUSTER.DELSLOTS(slot: slot))
     }
 
     /// Sets hash slot ranges as unbound for a node.
@@ -627,8 +632,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterDelslotsrange(range: [CLUSTERDELSLOTSRANGE.Range]) async throws -> RESPToken {
-        try await send(command: CLUSTERDELSLOTSRANGE(range: range))
+    public func clusterDelslotsrange(range: [CLUSTER.DELSLOTSRANGE.Range]) async throws -> RESPToken {
+        try await send(command: CLUSTER.DELSLOTSRANGE(range: range))
     }
 
     /// Forces a replica to perform a manual failover of its master.
@@ -639,8 +644,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was accepted and a manual failover is going to be attempted. An error if the operation cannot be executed, for example if the client is connected to a node that is already a master.
     @inlinable
-    public func clusterFailover(options: CLUSTERFAILOVER.Options? = nil) async throws -> RESPToken {
-        try await send(command: CLUSTERFAILOVER(options: options))
+    public func clusterFailover(options: CLUSTER.FAILOVER.Options? = nil) async throws -> RESPToken {
+        try await send(command: CLUSTER.FAILOVER(options: options))
     }
 
     /// Deletes all slots information from a node.
@@ -652,7 +657,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
     public func clusterFlushslots() async throws -> RESPToken {
-        try await send(command: CLUSTERFLUSHSLOTS())
+        try await send(command: CLUSTER.FLUSHSLOTS())
     }
 
     /// Removes a node from the nodes table.
@@ -664,7 +669,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was executed successfully. Otherwise an error is returned.
     @inlinable
     public func clusterForget(nodeId: String) async throws -> RESPToken {
-        try await send(command: CLUSTERFORGET(nodeId: nodeId))
+        try await send(command: CLUSTER.FORGET(nodeId: nodeId))
     }
 
     /// Returns the key names in a hash slot.
@@ -676,7 +681,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array with up to count elements.
     @inlinable
     public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> [RESPToken] {
-        try await send(command: CLUSTERGETKEYSINSLOT(slot: slot, count: count))
+        try await send(command: CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -688,7 +693,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of subcommands and their descriptions.
     @inlinable
     public func clusterHelp() async throws -> [RESPToken] {
-        try await send(command: CLUSTERHELP())
+        try await send(command: CLUSTER.HELP())
     }
 
     /// Returns information about the state of a node.
@@ -700,7 +705,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF
     @inlinable
     public func clusterInfo() async throws -> String {
-        try await send(command: CLUSTERINFO())
+        try await send(command: CLUSTER.INFO())
     }
 
     /// Returns the hash slot for a key.
@@ -712,7 +717,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The hash slot number for the specified key
     @inlinable
     public func clusterKeyslot(key: String) async throws -> Int {
-        try await send(command: CLUSTERKEYSLOT(key: key))
+        try await send(command: CLUSTER.KEYSLOT(key: key))
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
@@ -724,7 +729,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Map](https:/redis.io/docs/reference/protocol-spec#maps) where each map contains various attributes and their values of a cluster link.
     @inlinable
     public func clusterLinks() async throws -> [[String: RESPToken]] {
-        try await send(command: CLUSTERLINKS())
+        try await send(command: CLUSTER.LINKS())
     }
 
     /// Forces a node to handshake with another node.
@@ -736,7 +741,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. If the address or port specified are invalid an error is returned.
     @inlinable
     public func clusterMeet(ip: String, port: Int, clusterBusPort: Int? = nil) async throws -> RESPToken {
-        try await send(command: CLUSTERMEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
+        try await send(command: CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
     }
 
     /// Returns the ID of a node.
@@ -748,7 +753,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the node ID.
     @inlinable
     public func clusterMyid() async throws -> String {
-        try await send(command: CLUSTERMYID())
+        try await send(command: CLUSTER.MYID())
     }
 
     /// Returns the shard ID of a node.
@@ -760,7 +765,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the node's shard ID.
     @inlinable
     public func clusterMyshardid() async throws -> String {
-        try await send(command: CLUSTERMYSHARDID())
+        try await send(command: CLUSTER.MYSHARDID())
     }
 
     /// Returns the cluster configuration for a node.
@@ -772,7 +777,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the serialized cluster configuration.
     @inlinable
     public func clusterNodes() async throws -> String {
-        try await send(command: CLUSTERNODES())
+        try await send(command: CLUSTER.NODES())
     }
 
     /// Lists the replica nodes of a master node.
@@ -784,7 +789,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of replica nodes replicating from the specified master node provided in the same format used by `CLUSTER NODES`.
     @inlinable
     public func clusterReplicas(nodeId: String) async throws -> [RESPToken] {
-        try await send(command: CLUSTERREPLICAS(nodeId: nodeId))
+        try await send(command: CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
     /// Configure a node as replica of a master node.
@@ -796,7 +801,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterReplicate(nodeId: String) async throws -> RESPToken {
-        try await send(command: CLUSTERREPLICATE(nodeId: nodeId))
+        try await send(command: CLUSTER.REPLICATE(nodeId: nodeId))
     }
 
     /// Resets a node.
@@ -807,8 +812,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterReset(resetType: CLUSTERRESET.ResetType? = nil) async throws -> RESPToken {
-        try await send(command: CLUSTERRESET(resetType: resetType))
+    public func clusterReset(resetType: CLUSTER.RESET.ResetType? = nil) async throws -> RESPToken {
+        try await send(command: CLUSTER.RESET(resetType: resetType))
     }
 
     /// Forces a node to save the cluster configuration to disk.
@@ -820,7 +825,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterSaveconfig() async throws -> RESPToken {
-        try await send(command: CLUSTERSAVECONFIG())
+        try await send(command: CLUSTER.SAVECONFIG())
     }
 
     /// Sets the configuration epoch for a new node.
@@ -832,7 +837,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterSetConfigEpoch(configEpoch: Int) async throws -> RESPToken {
-        try await send(command: CLUSTERSETCONFIGEPOCH(configEpoch: configEpoch))
+        try await send(command: CLUSTER.SETCONFIGEPOCH(configEpoch: configEpoch))
     }
 
     /// Binds a hash slot to a node.
@@ -843,8 +848,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): all the sub-commands return `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterSetslot(slot: Int, subcommand: CLUSTERSETSLOT.Subcommand) async throws -> RESPToken {
-        try await send(command: CLUSTERSETSLOT(slot: slot, subcommand: subcommand))
+    public func clusterSetslot(slot: Int, subcommand: CLUSTER.SETSLOT.Subcommand) async throws -> RESPToken {
+        try await send(command: CLUSTER.SETSLOT(slot: slot, subcommand: subcommand))
     }
 
     /// Returns the mapping of cluster slots to shards.
@@ -856,7 +861,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of [Map](https:/redis.io/docs/reference/protocol-spec#maps) of hash ranges and shard nodes describing individual shards.
     @inlinable
     public func clusterShards() async throws -> [RESPToken] {
-        try await send(command: CLUSTERSHARDS())
+        try await send(command: CLUSTER.SHARDS())
     }
 
     /// Lists the replica nodes of a master node.
@@ -868,7 +873,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of replica nodes replicating from the specified master node provided in the same format used by `CLUSTER NODES`.
     @inlinable
     public func clusterSlaves(nodeId: String) async throws -> [RESPToken] {
-        try await send(command: CLUSTERSLAVES(nodeId: nodeId))
+        try await send(command: CLUSTER.SLAVES(nodeId: nodeId))
     }
 
     /// Returns the mapping of cluster slots to nodes.
@@ -880,7 +885,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): nested list of slot ranges with networking information.
     @inlinable
     public func clusterSlots() async throws -> [RESPToken] {
-        try await send(command: CLUSTERSLOTS())
+        try await send(command: CLUSTER.SLOTS())
     }
 
     /// Enables read-only queries for a connection to a Redis Cluster replica node.

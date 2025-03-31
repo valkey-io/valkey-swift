@@ -22,6 +22,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
 /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
 public struct PFADD: RedisCommand {
     public typealias Response = Int

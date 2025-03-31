@@ -22,6 +22,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
 /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
 public struct BZMPOP: RedisCommand {
     public enum Where: RESPRenderable {

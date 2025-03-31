@@ -22,6 +22,225 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
+/// A container for consumer groups commands.
+public enum XGROUP {
+    /// Creates a consumer group.
+    public struct CREATE: RedisCommand {
+        public enum IdSelector: RESPRenderable {
+            case id(String)
+            case newId
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .id(let id): id.encode(into: &commandEncoder)
+                case .newId: "$".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var key: RedisKey
+        public var group: String
+        public var idSelector: IdSelector
+        public var mkstream: Bool = false
+        public var entriesRead: Int? = nil
+
+        @inlinable public init(key: RedisKey, group: String, idSelector: IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) {
+            self.key = key
+            self.group = group
+            self.idSelector = idSelector
+            self.mkstream = mkstream
+            self.entriesRead = entriesRead
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+        }
+    }
+
+    /// Creates a consumer in a consumer group.
+    public struct CREATECONSUMER: RedisCommand {
+        public typealias Response = Int
+
+        public var key: RedisKey
+        public var group: String
+        public var consumer: String
+
+        @inlinable public init(key: RedisKey, group: String, consumer: String) {
+            self.key = key
+            self.group = group
+            self.consumer = consumer
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, group, consumer)
+        }
+    }
+
+    /// Deletes a consumer from a consumer group.
+    public struct DELCONSUMER: RedisCommand {
+        public typealias Response = Int
+
+        public var key: RedisKey
+        public var group: String
+        public var consumer: String
+
+        @inlinable public init(key: RedisKey, group: String, consumer: String) {
+            self.key = key
+            self.group = group
+            self.consumer = consumer
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, group, consumer)
+        }
+    }
+
+    /// Destroys a consumer group.
+    public struct DESTROY: RedisCommand {
+        public typealias Response = Int
+
+        public var key: RedisKey
+        public var group: String
+
+        @inlinable public init(key: RedisKey, group: String) {
+            self.key = key
+            self.group = group
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XGROUP", "DESTROY", key, group)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XGROUP", "HELP")
+        }
+    }
+
+    /// Sets the last-delivered ID of a consumer group.
+    public struct SETID: RedisCommand {
+        public enum IdSelector: RESPRenderable {
+            case id(String)
+            case newId
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .id(let id): id.encode(into: &commandEncoder)
+                case .newId: "$".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var key: RedisKey
+        public var group: String
+        public var idSelector: IdSelector
+        public var entriesread: Int? = nil
+
+        @inlinable public init(key: RedisKey, group: String, idSelector: IdSelector, entriesread: Int? = nil) {
+            self.key = key
+            self.group = group
+            self.idSelector = idSelector
+            self.entriesread = entriesread
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+        }
+    }
+
+}
+
+/// A container for stream introspection commands.
+public enum XINFO {
+    /// Returns a list of the consumers in a consumer group.
+    public struct CONSUMERS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var key: RedisKey
+        public var group: String
+
+        @inlinable public init(key: RedisKey, group: String) {
+            self.key = key
+            self.group = group
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XINFO", "CONSUMERS", key, group)
+        }
+    }
+
+    /// Returns a list of the consumer groups of a stream.
+    public struct GROUPS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XINFO", "GROUPS", key)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XINFO", "HELP")
+        }
+    }
+
+    /// Returns information about a stream.
+    public struct STREAM: RedisCommand {
+        public struct FullBlock: RESPRenderable {
+            @usableFromInline let full: Bool
+            @usableFromInline let count: Int?
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                var count = 0
+                if self.full { count += "FULL".encode(into: &commandEncoder) }
+                count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
+                return count
+            }
+        }
+        public typealias Response = [String: RESPToken]
+
+        public var key: RedisKey
+        public var fullBlock: FullBlock? = nil
+
+        @inlinable public init(key: RedisKey, fullBlock: FullBlock? = nil) {
+            self.key = key
+            self.fullBlock = fullBlock
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("XINFO", "STREAM", key, fullBlock)
+        }
+    }
+
+}
+
 /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
 public struct XACK: RedisCommand {
     public typealias Response = Int
@@ -204,216 +423,6 @@ public struct XDEL: RedisCommand {
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
         commandEncoder.encodeArray("XDEL", key, id)
-    }
-}
-
-/// Creates a consumer group.
-public struct XGROUPCREATE: RedisCommand {
-    public enum IdSelector: RESPRenderable {
-        case id(String)
-        case newId
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .id(let id): id.encode(into: &commandEncoder)
-            case .newId: "$".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var key: RedisKey
-    public var group: String
-    public var idSelector: IdSelector
-    public var mkstream: Bool = false
-    public var entriesRead: Int? = nil
-
-    @inlinable public init(key: RedisKey, group: String, idSelector: IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) {
-        self.key = key
-        self.group = group
-        self.idSelector = idSelector
-        self.mkstream = mkstream
-        self.entriesRead = entriesRead
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
-    }
-}
-
-/// Creates a consumer in a consumer group.
-public struct XGROUPCREATECONSUMER: RedisCommand {
-    public typealias Response = Int
-
-    public var key: RedisKey
-    public var group: String
-    public var consumer: String
-
-    @inlinable public init(key: RedisKey, group: String, consumer: String) {
-        self.key = key
-        self.group = group
-        self.consumer = consumer
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, group, consumer)
-    }
-}
-
-/// Deletes a consumer from a consumer group.
-public struct XGROUPDELCONSUMER: RedisCommand {
-    public typealias Response = Int
-
-    public var key: RedisKey
-    public var group: String
-    public var consumer: String
-
-    @inlinable public init(key: RedisKey, group: String, consumer: String) {
-        self.key = key
-        self.group = group
-        self.consumer = consumer
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, group, consumer)
-    }
-}
-
-/// Destroys a consumer group.
-public struct XGROUPDESTROY: RedisCommand {
-    public typealias Response = Int
-
-    public var key: RedisKey
-    public var group: String
-
-    @inlinable public init(key: RedisKey, group: String) {
-        self.key = key
-        self.group = group
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XGROUP", "DESTROY", key, group)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct XGROUPHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XGROUP", "HELP")
-    }
-}
-
-/// Sets the last-delivered ID of a consumer group.
-public struct XGROUPSETID: RedisCommand {
-    public enum IdSelector: RESPRenderable {
-        case id(String)
-        case newId
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .id(let id): id.encode(into: &commandEncoder)
-            case .newId: "$".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var key: RedisKey
-    public var group: String
-    public var idSelector: IdSelector
-    public var entriesread: Int? = nil
-
-    @inlinable public init(key: RedisKey, group: String, idSelector: IdSelector, entriesread: Int? = nil) {
-        self.key = key
-        self.group = group
-        self.idSelector = idSelector
-        self.entriesread = entriesread
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
-    }
-}
-
-/// Returns a list of the consumers in a consumer group.
-public struct XINFOCONSUMERS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var key: RedisKey
-    public var group: String
-
-    @inlinable public init(key: RedisKey, group: String) {
-        self.key = key
-        self.group = group
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XINFO", "CONSUMERS", key, group)
-    }
-}
-
-/// Returns a list of the consumer groups of a stream.
-public struct XINFOGROUPS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var key: RedisKey
-
-    @inlinable public init(key: RedisKey) {
-        self.key = key
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XINFO", "GROUPS", key)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct XINFOHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XINFO", "HELP")
-    }
-}
-
-/// Returns information about a stream.
-public struct XINFOSTREAM: RedisCommand {
-    public struct FullBlock: RESPRenderable {
-        @usableFromInline let full: Bool
-        @usableFromInline let count: Int?
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            var count = 0
-            if self.full { count += "FULL".encode(into: &commandEncoder) }
-            count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
-            return count
-        }
-    }
-    public typealias Response = [String: RESPToken]
-
-    public var key: RedisKey
-    public var fullBlock: FullBlock? = nil
-
-    @inlinable public init(key: RedisKey, fullBlock: FullBlock? = nil) {
-        self.key = key
-        self.fullBlock = fullBlock
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("XINFO", "STREAM", key, fullBlock)
     }
 }
 
@@ -744,8 +753,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate(key: RedisKey, group: String, idSelector: XGROUPCREATE.IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws -> RESPToken {
-        try await send(command: XGROUPCREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
+    public func xgroupCreate(key: RedisKey, group: String, idSelector: XGROUP.CREATE.IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws -> RESPToken {
+        try await send(command: XGROUP.CREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
     }
 
     /// Creates a consumer in a consumer group.
@@ -757,7 +766,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of created consumers, either 0 or 1.
     @inlinable
     public func xgroupCreateconsumer(key: RedisKey, group: String, consumer: String) async throws -> Int {
-        try await send(command: XGROUPCREATECONSUMER(key: key, group: group, consumer: consumer))
+        try await send(command: XGROUP.CREATECONSUMER(key: key, group: group, consumer: consumer))
     }
 
     /// Deletes a consumer from a consumer group.
@@ -769,7 +778,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of pending messages the consumer had before it was deleted.
     @inlinable
     public func xgroupDelconsumer(key: RedisKey, group: String, consumer: String) async throws -> Int {
-        try await send(command: XGROUPDELCONSUMER(key: key, group: group, consumer: consumer))
+        try await send(command: XGROUP.DELCONSUMER(key: key, group: group, consumer: consumer))
     }
 
     /// Destroys a consumer group.
@@ -781,7 +790,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of destroyed consumer groups, either 0 or 1.
     @inlinable
     public func xgroupDestroy(key: RedisKey, group: String) async throws -> Int {
-        try await send(command: XGROUPDESTROY(key: key, group: group))
+        try await send(command: XGROUP.DESTROY(key: key, group: group))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -793,7 +802,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func xgroupHelp() async throws -> [RESPToken] {
-        try await send(command: XGROUPHELP())
+        try await send(command: XGROUP.HELP())
     }
 
     /// Sets the last-delivered ID of a consumer group.
@@ -804,8 +813,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupSetid(key: RedisKey, group: String, idSelector: XGROUPSETID.IdSelector, entriesread: Int? = nil) async throws -> RESPToken {
-        try await send(command: XGROUPSETID(key: key, group: group, idSelector: idSelector, entriesread: entriesread))
+    public func xgroupSetid(key: RedisKey, group: String, idSelector: XGROUP.SETID.IdSelector, entriesread: Int? = nil) async throws -> RESPToken {
+        try await send(command: XGROUP.SETID(key: key, group: group, idSelector: idSelector, entriesread: entriesread))
     }
 
     /// Returns a list of the consumers in a consumer group.
@@ -817,7 +826,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of consumers and their attributes.
     @inlinable
     public func xinfoConsumers(key: RedisKey, group: String) async throws -> [RESPToken] {
-        try await send(command: XINFOCONSUMERS(key: key, group: group))
+        try await send(command: XINFO.CONSUMERS(key: key, group: group))
     }
 
     /// Returns a list of the consumer groups of a stream.
@@ -829,7 +838,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of consumer groups.
     @inlinable
     public func xinfoGroups(key: RedisKey) async throws -> [RESPToken] {
-        try await send(command: XINFOGROUPS(key: key))
+        try await send(command: XINFO.GROUPS(key: key))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -841,7 +850,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func xinfoHelp() async throws -> [RESPToken] {
-        try await send(command: XINFOHELP())
+        try await send(command: XINFO.HELP())
     }
 
     /// Returns information about a stream.
@@ -854,8 +863,8 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was not given, a list of information about a stream in summary form.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was given, a list of information about a stream in extended form.
     @inlinable
-    public func xinfoStream(key: RedisKey, fullBlock: XINFOSTREAM.FullBlock? = nil) async throws -> [String: RESPToken] {
-        try await send(command: XINFOSTREAM(key: key, fullBlock: fullBlock))
+    public func xinfoStream(key: RedisKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws -> [String: RESPToken] {
+        try await send(command: XINFO.STREAM(key: key, fullBlock: fullBlock))
     }
 
     /// Return the number of messages in a stream.

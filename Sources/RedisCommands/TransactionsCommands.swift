@@ -22,6 +22,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
 /// Discards a transaction.
 public struct DISCARD: RedisCommand {
     public typealias Response = RESPToken

@@ -22,205 +22,757 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
-/// Lists the ACL categories, or the commands inside a category.
-public struct ACLCAT: RedisCommand {
-    public typealias Response = [String]
 
-    public var category: String? = nil
+/// A container for Access List Control commands.
+public enum ACL {
+    /// Lists the ACL categories, or the commands inside a category.
+    public struct CAT: RedisCommand {
+        public typealias Response = [String]
 
-    @inlinable public init(category: String? = nil) {
-        self.category = category
-    }
+        public var category: String? = nil
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "CAT", category)
-    }
-}
+        @inlinable public init(category: String? = nil) {
+            self.category = category
+        }
 
-/// Deletes ACL users, and terminates their connections.
-public struct ACLDELUSER: RedisCommand {
-    public typealias Response = Int
-
-    public var username: [String]
-
-    @inlinable public init(username: [String]) {
-        self.username = username
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "DELUSER", username)
-    }
-}
-
-/// Simulates the execution of a command by a user, without executing the command.
-public struct ACLDRYRUN: RedisCommand {
-    public typealias Response = String?
-
-    public var username: String
-    public var command: String
-    public var arg: [String] = []
-
-    @inlinable public init(username: String, command: String, arg: [String] = []) {
-        self.username = username
-        self.command = command
-        self.arg = arg
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "DRYRUN", username, command, arg)
-    }
-}
-
-/// Generates a pseudorandom, secure password that can be used to identify ACL users.
-public struct ACLGENPASS: RedisCommand {
-    public typealias Response = String
-
-    public var bits: Int? = nil
-
-    @inlinable public init(bits: Int? = nil) {
-        self.bits = bits
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "GENPASS", bits)
-    }
-}
-
-/// Lists the ACL rules of a user.
-public struct ACLGETUSER: RedisCommand {
-    public typealias Response = [String: RESPToken]?
-
-    public var username: String
-
-    @inlinable public init(username: String) {
-        self.username = username
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "GETUSER", username)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct ACLHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "HELP")
-    }
-}
-
-/// Dumps the effective rules in ACL file format.
-public struct ACLLIST: RedisCommand {
-    public typealias Response = [String]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "LIST")
-    }
-}
-
-/// Reloads the rules from the configured ACL file.
-public struct ACLLOAD: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "LOAD")
-    }
-}
-
-/// Lists recent security events generated due to ACL rules.
-public struct ACLLOG: RedisCommand {
-    public enum Operation: RESPRenderable {
-        case count(Int)
-        case reset
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .count(let count): count.encode(into: &commandEncoder)
-            case .reset: "RESET".encode(into: &commandEncoder)
-            }
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "CAT", category)
         }
     }
-    public typealias Response = [String]?
 
-    public var operation: Operation? = nil
+    /// Deletes ACL users, and terminates their connections.
+    public struct DELUSER: RedisCommand {
+        public typealias Response = Int
 
-    @inlinable public init(operation: Operation? = nil) {
-        self.operation = operation
+        public var username: [String]
+
+        @inlinable public init(username: [String]) {
+            self.username = username
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "DELUSER", username)
+        }
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "LOG", operation)
+    /// Simulates the execution of a command by a user, without executing the command.
+    public struct DRYRUN: RedisCommand {
+        public typealias Response = String?
+
+        public var username: String
+        public var command: String
+        public var arg: [String] = []
+
+        @inlinable public init(username: String, command: String, arg: [String] = []) {
+            self.username = username
+            self.command = command
+            self.arg = arg
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "DRYRUN", username, command, arg)
+        }
     }
+
+    /// Generates a pseudorandom, secure password that can be used to identify ACL users.
+    public struct GENPASS: RedisCommand {
+        public typealias Response = String
+
+        public var bits: Int? = nil
+
+        @inlinable public init(bits: Int? = nil) {
+            self.bits = bits
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "GENPASS", bits)
+        }
+    }
+
+    /// Lists the ACL rules of a user.
+    public struct GETUSER: RedisCommand {
+        public typealias Response = [String: RESPToken]?
+
+        public var username: String
+
+        @inlinable public init(username: String) {
+            self.username = username
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "GETUSER", username)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "HELP")
+        }
+    }
+
+    /// Dumps the effective rules in ACL file format.
+    public struct LIST: RedisCommand {
+        public typealias Response = [String]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "LIST")
+        }
+    }
+
+    /// Reloads the rules from the configured ACL file.
+    public struct LOAD: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "LOAD")
+        }
+    }
+
+    /// Lists recent security events generated due to ACL rules.
+    public struct LOG: RedisCommand {
+        public enum Operation: RESPRenderable {
+            case count(Int)
+            case reset
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .count(let count): count.encode(into: &commandEncoder)
+                case .reset: "RESET".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = [String]?
+
+        public var operation: Operation? = nil
+
+        @inlinable public init(operation: Operation? = nil) {
+            self.operation = operation
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "LOG", operation)
+        }
+    }
+
+    /// Saves the effective ACL rules in the configured ACL file.
+    public struct SAVE: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "SAVE")
+        }
+    }
+
+    /// Creates and modifies an ACL user and its rules.
+    public struct SETUSER: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var username: String
+        public var rule: [String] = []
+
+        @inlinable public init(username: String, rule: [String] = []) {
+            self.username = username
+            self.rule = rule
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "SETUSER", username, rule)
+        }
+    }
+
+    /// Lists all ACL users.
+    public struct USERS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "USERS")
+        }
+    }
+
+    /// Returns the authenticated username of the current connection.
+    public struct WHOAMI: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "WHOAMI")
+        }
+    }
+
 }
 
-/// Saves the effective ACL rules in the configured ACL file.
-public struct ACLSAVE: RedisCommand {
-    public typealias Response = RESPToken
+extension COMMAND {
+    /// Returns a count of commands.
+    public struct COUNT: RedisCommand {
+        public typealias Response = Int
 
 
-    @inlinable public init() {
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "COUNT")
+        }
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "SAVE")
+    /// Returns documentary information about one, multiple or all commands.
+    public struct DOCS: RedisCommand {
+        public typealias Response = [String: RESPToken]
+
+        public var commandName: [String] = []
+
+        @inlinable public init(commandName: [String] = []) {
+            self.commandName = commandName
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "DOCS", commandName)
+        }
     }
+
+    /// Extracts the key names from an arbitrary command.
+    public struct GETKEYS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var command: String
+        public var arg: [String] = []
+
+        @inlinable public init(command: String, arg: [String] = []) {
+            self.command = command
+            self.arg = arg
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "GETKEYS", command, arg)
+        }
+    }
+
+    /// Extracts the key names and access flags for an arbitrary command.
+    public struct GETKEYSANDFLAGS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var command: String
+        public var arg: [String] = []
+
+        @inlinable public init(command: String, arg: [String] = []) {
+            self.command = command
+            self.arg = arg
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", command, arg)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "HELP")
+        }
+    }
+
+    /// Returns information about one, multiple or all commands.
+    public struct INFO: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var commandName: [String] = []
+
+        @inlinable public init(commandName: [String] = []) {
+            self.commandName = commandName
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "INFO", commandName)
+        }
+    }
+
+    /// Returns a list of command names.
+    public struct LIST: RedisCommand {
+        public enum Filterby: RESPRenderable {
+            case moduleName(String)
+            case category(String)
+            case pattern(String)
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).encode(into: &commandEncoder)
+                case .category(let category): RESPWithToken("ACLCAT", category).encode(into: &commandEncoder)
+                case .pattern(let pattern): RESPWithToken("PATTERN", pattern).encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = [RESPToken]
+
+        public var filterby: Filterby? = nil
+
+        @inlinable public init(filterby: Filterby? = nil) {
+            self.filterby = filterby
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
+        }
+    }
+
 }
 
-/// Creates and modifies an ACL user and its rules.
-public struct ACLSETUSER: RedisCommand {
-    public typealias Response = RESPToken
+/// A container for server configuration commands.
+public enum CONFIG {
+    /// Returns the effective values of configuration parameters.
+    public struct GET: RedisCommand {
+        public typealias Response = [String: RESPToken]
 
-    public var username: String
-    public var rule: [String] = []
+        public var parameter: [String]
 
-    @inlinable public init(username: String, rule: [String] = []) {
-        self.username = username
-        self.rule = rule
+        @inlinable public init(parameter: [String]) {
+            self.parameter = parameter
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "GET", parameter)
+        }
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "SETUSER", username, rule)
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "HELP")
+        }
     }
+
+    /// Resets the server's statistics.
+    public struct RESETSTAT: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "RESETSTAT")
+        }
+    }
+
+    /// Persists the effective configuration to file.
+    public struct REWRITE: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "REWRITE")
+        }
+    }
+
+    /// Sets configuration parameters in-flight.
+    public struct SET: RedisCommand {
+        public struct Data: RESPRenderable {
+            @usableFromInline let parameter: String
+            @usableFromInline let value: String
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                var count = 0
+                count += parameter.encode(into: &commandEncoder)
+                count += value.encode(into: &commandEncoder)
+                return count
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var data: [Data]
+
+        @inlinable public init(data: [Data]) {
+            self.data = data
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "SET", data)
+        }
+    }
+
 }
 
-/// Lists all ACL users.
-public struct ACLUSERS: RedisCommand {
-    public typealias Response = [RESPToken]
+/// A container for latency diagnostics commands.
+public enum LATENCY {
+    /// Returns a human-readable latency analysis report.
+    public struct DOCTOR: RedisCommand {
+        public typealias Response = String
 
 
-    @inlinable public init() {
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "DOCTOR")
+        }
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "USERS")
+    /// Returns a latency graph for an event.
+    public struct GRAPH: RedisCommand {
+        public typealias Response = String
+
+        public var event: String
+
+        @inlinable public init(event: String) {
+            self.event = event
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "GRAPH", event)
+        }
     }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "HELP")
+        }
+    }
+
+    /// Returns the cumulative distribution of latencies of a subset or all commands.
+    public struct HISTOGRAM: RedisCommand {
+        public typealias Response = [String: RESPToken]
+
+        public var command: [String] = []
+
+        @inlinable public init(command: [String] = []) {
+            self.command = command
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "HISTOGRAM", command)
+        }
+    }
+
+    /// Returns timestamp-latency samples for an event.
+    public struct HISTORY: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var event: String
+
+        @inlinable public init(event: String) {
+            self.event = event
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "HISTORY", event)
+        }
+    }
+
+    /// Returns the latest latency samples for all events.
+    public struct LATEST: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "LATEST")
+        }
+    }
+
+    /// Resets the latency data for one or more events.
+    public struct RESET: RedisCommand {
+        public typealias Response = Int
+
+        public var event: [String] = []
+
+        @inlinable public init(event: [String] = []) {
+            self.event = event
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "RESET", event)
+        }
+    }
+
 }
 
-/// Returns the authenticated username of the current connection.
-public struct ACLWHOAMI: RedisCommand {
-    public typealias Response = String
+/// A container for memory diagnostics commands.
+public enum MEMORY {
+    /// Outputs a memory problems report.
+    public struct DOCTOR: RedisCommand {
+        public typealias Response = String
 
 
-    @inlinable public init() {
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "DOCTOR")
+        }
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ACL", "WHOAMI")
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "HELP")
+        }
     }
+
+    /// Returns the allocator statistics.
+    public struct MALLOCSTATS: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "MALLOC-STATS")
+        }
+    }
+
+    /// Asks the allocator to release memory.
+    public struct PURGE: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "PURGE")
+        }
+    }
+
+    /// Returns details about memory usage.
+    public struct STATS: RedisCommand {
+        public typealias Response = [String: RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "STATS")
+        }
+    }
+
+    /// Estimates the memory usage of a key.
+    public struct USAGE: RedisCommand {
+        public typealias Response = Int?
+
+        public var key: RedisKey
+        public var count: Int? = nil
+
+        @inlinable public init(key: RedisKey, count: Int? = nil) {
+            self.key = key
+            self.count = count
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
+        }
+    }
+
+}
+
+/// A container for module commands.
+public enum MODULE {
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "HELP")
+        }
+    }
+
+    /// Returns all loaded modules.
+    public struct LIST: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "LIST")
+        }
+    }
+
+    /// Loads a module.
+    public struct LOAD: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var path: String
+        public var arg: [String] = []
+
+        @inlinable public init(path: String, arg: [String] = []) {
+            self.path = path
+            self.arg = arg
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "LOAD", path, arg)
+        }
+    }
+
+    /// Loads a module using extended parameters.
+    public struct LOADEX: RedisCommand {
+        public struct Configs: RESPRenderable {
+            @usableFromInline let name: String
+            @usableFromInline let value: String
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                var count = 0
+                count += name.encode(into: &commandEncoder)
+                count += value.encode(into: &commandEncoder)
+                return count
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var path: String
+        public var configs: [Configs] = []
+        public var args: [String] = []
+
+        @inlinable public init(path: String, configs: [Configs] = [], args: [String] = []) {
+            self.path = path
+            self.configs = configs
+            self.args = args
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+        }
+    }
+
+    /// Unloads a module.
+    public struct UNLOAD: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var name: String
+
+        @inlinable public init(name: String) {
+            self.name = name
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "UNLOAD", name)
+        }
+    }
+
+}
+
+/// A container for slow log commands.
+public enum SLOWLOG {
+    /// Returns the slow log's entries.
+    public struct GET: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var count: Int? = nil
+
+        @inlinable public init(count: Int? = nil) {
+            self.count = count
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SLOWLOG", "GET", count)
+        }
+    }
+
+    /// Show helpful text about the different subcommands
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SLOWLOG", "HELP")
+        }
+    }
+
+    /// Returns the number of entries in the slow log.
+    public struct LEN: RedisCommand {
+        public typealias Response = Int
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SLOWLOG", "LEN")
+        }
+    }
+
+    /// Clears all entries from the slow log.
+    public struct RESET: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SLOWLOG", "RESET")
+        }
+    }
+
 }
 
 /// Asynchronously rewrites the append-only file to disk.
@@ -261,206 +813,6 @@ public struct COMMAND: RedisCommand {
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
         commandEncoder.encodeArray("COMMAND")
-    }
-}
-
-/// Returns a count of commands.
-public struct COMMANDCOUNT: RedisCommand {
-    public typealias Response = Int
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("COMMAND", "COUNT")
-    }
-}
-
-/// Returns documentary information about one, multiple or all commands.
-public struct COMMANDDOCS: RedisCommand {
-    public typealias Response = [String: RESPToken]
-
-    public var commandName: [String] = []
-
-    @inlinable public init(commandName: [String] = []) {
-        self.commandName = commandName
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("COMMAND", "DOCS", commandName)
-    }
-}
-
-/// Extracts the key names from an arbitrary command.
-public struct COMMANDGETKEYS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var command: String
-    public var arg: [String] = []
-
-    @inlinable public init(command: String, arg: [String] = []) {
-        self.command = command
-        self.arg = arg
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("COMMAND", "GETKEYS", command, arg)
-    }
-}
-
-/// Extracts the key names and access flags for an arbitrary command.
-public struct COMMANDGETKEYSANDFLAGS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var command: String
-    public var arg: [String] = []
-
-    @inlinable public init(command: String, arg: [String] = []) {
-        self.command = command
-        self.arg = arg
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", command, arg)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct COMMANDHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("COMMAND", "HELP")
-    }
-}
-
-/// Returns information about one, multiple or all commands.
-public struct COMMANDINFO: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var commandName: [String] = []
-
-    @inlinable public init(commandName: [String] = []) {
-        self.commandName = commandName
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("COMMAND", "INFO", commandName)
-    }
-}
-
-/// Returns a list of command names.
-public struct COMMANDLIST: RedisCommand {
-    public enum Filterby: RESPRenderable {
-        case moduleName(String)
-        case category(String)
-        case pattern(String)
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).encode(into: &commandEncoder)
-            case .category(let category): RESPWithToken("ACLCAT", category).encode(into: &commandEncoder)
-            case .pattern(let pattern): RESPWithToken("PATTERN", pattern).encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = [RESPToken]
-
-    public var filterby: Filterby? = nil
-
-    @inlinable public init(filterby: Filterby? = nil) {
-        self.filterby = filterby
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
-    }
-}
-
-/// Returns the effective values of configuration parameters.
-public struct CONFIGGET: RedisCommand {
-    public typealias Response = [String: RESPToken]
-
-    public var parameter: [String]
-
-    @inlinable public init(parameter: [String]) {
-        self.parameter = parameter
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CONFIG", "GET", parameter)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct CONFIGHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CONFIG", "HELP")
-    }
-}
-
-/// Resets the server's statistics.
-public struct CONFIGRESETSTAT: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CONFIG", "RESETSTAT")
-    }
-}
-
-/// Persists the effective configuration to file.
-public struct CONFIGREWRITE: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CONFIG", "REWRITE")
-    }
-}
-
-/// Sets configuration parameters in-flight.
-public struct CONFIGSET: RedisCommand {
-    public struct Data: RESPRenderable {
-        @usableFromInline let parameter: String
-        @usableFromInline let value: String
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            var count = 0
-            count += parameter.encode(into: &commandEncoder)
-            count += value.encode(into: &commandEncoder)
-            return count
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var data: [Data]
-
-    @inlinable public init(data: [Data]) {
-        self.data = data
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("CONFIG", "SET", data)
     }
 }
 
@@ -592,105 +944,6 @@ public struct LASTSAVE: RedisCommand {
     }
 }
 
-/// Returns a human-readable latency analysis report.
-public struct LATENCYDOCTOR: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("LATENCY", "DOCTOR")
-    }
-}
-
-/// Returns a latency graph for an event.
-public struct LATENCYGRAPH: RedisCommand {
-    public typealias Response = String
-
-    public var event: String
-
-    @inlinable public init(event: String) {
-        self.event = event
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("LATENCY", "GRAPH", event)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct LATENCYHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("LATENCY", "HELP")
-    }
-}
-
-/// Returns the cumulative distribution of latencies of a subset or all commands.
-public struct LATENCYHISTOGRAM: RedisCommand {
-    public typealias Response = [String: RESPToken]
-
-    public var command: [String] = []
-
-    @inlinable public init(command: [String] = []) {
-        self.command = command
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("LATENCY", "HISTOGRAM", command)
-    }
-}
-
-/// Returns timestamp-latency samples for an event.
-public struct LATENCYHISTORY: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var event: String
-
-    @inlinable public init(event: String) {
-        self.event = event
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("LATENCY", "HISTORY", event)
-    }
-}
-
-/// Returns the latest latency samples for all events.
-public struct LATENCYLATEST: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("LATENCY", "LATEST")
-    }
-}
-
-/// Resets the latency data for one or more events.
-public struct LATENCYRESET: RedisCommand {
-    public typealias Response = Int
-
-    public var event: [String] = []
-
-    @inlinable public init(event: [String] = []) {
-        self.event = event
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("LATENCY", "RESET", event)
-    }
-}
-
 /// Displays computer art and the Redis version
 public struct LOLWUT: RedisCommand {
     public typealias Response = String
@@ -703,177 +956,6 @@ public struct LOLWUT: RedisCommand {
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
         commandEncoder.encodeArray("LOLWUT", RESPWithToken("VERSION", version))
-    }
-}
-
-/// Outputs a memory problems report.
-public struct MEMORYDOCTOR: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MEMORY", "DOCTOR")
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct MEMORYHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MEMORY", "HELP")
-    }
-}
-
-/// Returns the allocator statistics.
-public struct MEMORYMALLOCSTATS: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MEMORY", "MALLOC-STATS")
-    }
-}
-
-/// Asks the allocator to release memory.
-public struct MEMORYPURGE: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MEMORY", "PURGE")
-    }
-}
-
-/// Returns details about memory usage.
-public struct MEMORYSTATS: RedisCommand {
-    public typealias Response = [String: RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MEMORY", "STATS")
-    }
-}
-
-/// Estimates the memory usage of a key.
-public struct MEMORYUSAGE: RedisCommand {
-    public typealias Response = Int?
-
-    public var key: RedisKey
-    public var count: Int? = nil
-
-    @inlinable public init(key: RedisKey, count: Int? = nil) {
-        self.key = key
-        self.count = count
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct MODULEHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MODULE", "HELP")
-    }
-}
-
-/// Returns all loaded modules.
-public struct MODULELIST: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MODULE", "LIST")
-    }
-}
-
-/// Loads a module.
-public struct MODULELOAD: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var path: String
-    public var arg: [String] = []
-
-    @inlinable public init(path: String, arg: [String] = []) {
-        self.path = path
-        self.arg = arg
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MODULE", "LOAD", path, arg)
-    }
-}
-
-/// Loads a module using extended parameters.
-public struct MODULELOADEX: RedisCommand {
-    public struct Configs: RESPRenderable {
-        @usableFromInline let name: String
-        @usableFromInline let value: String
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            var count = 0
-            count += name.encode(into: &commandEncoder)
-            count += value.encode(into: &commandEncoder)
-            return count
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var path: String
-    public var configs: [Configs] = []
-    public var args: [String] = []
-
-    @inlinable public init(path: String, configs: [Configs] = [], args: [String] = []) {
-        self.path = path
-        self.configs = configs
-        self.args = args
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
-    }
-}
-
-/// Unloads a module.
-public struct MODULEUNLOAD: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var name: String
-
-    @inlinable public init(name: String) {
-        self.name = name
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("MODULE", "UNLOAD", name)
     }
 }
 
@@ -1108,60 +1190,6 @@ public struct SLAVEOF: RedisCommand {
     }
 }
 
-/// Returns the slow log's entries.
-public struct SLOWLOGGET: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var count: Int? = nil
-
-    @inlinable public init(count: Int? = nil) {
-        self.count = count
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SLOWLOG", "GET", count)
-    }
-}
-
-/// Show helpful text about the different subcommands
-public struct SLOWLOGHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SLOWLOG", "HELP")
-    }
-}
-
-/// Returns the number of entries in the slow log.
-public struct SLOWLOGLEN: RedisCommand {
-    public typealias Response = Int
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SLOWLOG", "LEN")
-    }
-}
-
-/// Clears all entries from the slow log.
-public struct SLOWLOGRESET: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SLOWLOG", "RESET")
-    }
-}
-
 /// Swaps two Redis databases.
 public struct SWAPDB: RedisCommand {
     public typealias Response = RESPToken
@@ -1218,7 +1246,7 @@ extension RedisConnection {
     ///     * [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): the command returns an error if an invalid category name is given.
     @inlinable
     public func aclCat(category: String? = nil) async throws -> [String] {
-        try await send(command: ACLCAT(category: category))
+        try await send(command: ACL.CAT(category: category))
     }
 
     /// Deletes ACL users, and terminates their connections.
@@ -1230,7 +1258,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
     @inlinable
     public func aclDeluser(username: [String]) async throws -> Int {
-        try await send(command: ACLDELUSER(username: username))
+        try await send(command: ACL.DELUSER(username: username))
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -1244,7 +1272,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
     public func aclDryrun(username: String, command: String, arg: [String] = []) async throws -> String? {
-        try await send(command: ACLDRYRUN(username: username, command: command, arg: arg))
+        try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
@@ -1256,7 +1284,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
     public func aclGenpass(bits: Int? = nil) async throws -> String {
-        try await send(command: ACLGENPASS(bits: bits))
+        try await send(command: ACL.GENPASS(bits: bits))
     }
 
     /// Lists the ACL rules of a user.
@@ -1270,7 +1298,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if user does not exist.
     @inlinable
     public func aclGetuser(username: String) async throws -> [String: RESPToken]? {
-        try await send(command: ACLGETUSER(username: username))
+        try await send(command: ACL.GETUSER(username: username))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1282,7 +1310,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of subcommands and their descriptions.
     @inlinable
     public func aclHelp() async throws -> [RESPToken] {
-        try await send(command: ACLHELP())
+        try await send(command: ACL.HELP())
     }
 
     /// Dumps the effective rules in ACL file format.
@@ -1294,7 +1322,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements.
     @inlinable
     public func aclList() async throws -> [String] {
-        try await send(command: ACLLIST())
+        try await send(command: ACL.LIST())
     }
 
     /// Reloads the rules from the configured ACL file.
@@ -1309,7 +1337,7 @@ extension RedisConnection {
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
     @inlinable
     public func aclLoad() async throws -> RESPToken {
-        try await send(command: ACLLOAD())
+        try await send(command: ACL.LOAD())
     }
 
     /// Lists recent security events generated due to ACL rules.
@@ -1323,8 +1351,8 @@ extension RedisConnection {
     ///     When called with `RESET`:
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the security log was cleared.
     @inlinable
-    public func aclLog(operation: ACLLOG.Operation? = nil) async throws -> [String]? {
-        try await send(command: ACLLOG(operation: operation))
+    public func aclLog(operation: ACL.LOG.Operation? = nil) async throws -> [String]? {
+        try await send(command: ACL.LOG(operation: operation))
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
@@ -1337,7 +1365,7 @@ extension RedisConnection {
     ///     The command may fail with an error for several reasons: if the file cannot be written or if the server is not configured to use an external ACL file.
     @inlinable
     public func aclSave() async throws -> RESPToken {
-        try await send(command: ACLSAVE())
+        try await send(command: ACL.SAVE())
     }
 
     /// Creates and modifies an ACL user and its rules.
@@ -1350,7 +1378,7 @@ extension RedisConnection {
     ///     If the rules contain errors, the error is returned.
     @inlinable
     public func aclSetuser(username: String, rule: [String] = []) async throws -> RESPToken {
-        try await send(command: ACLSETUSER(username: username, rule: rule))
+        try await send(command: ACL.SETUSER(username: username, rule: rule))
     }
 
     /// Lists all ACL users.
@@ -1362,7 +1390,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): list of existing ACL users.
     @inlinable
     public func aclUsers() async throws -> [RESPToken] {
-        try await send(command: ACLUSERS())
+        try await send(command: ACL.USERS())
     }
 
     /// Returns the authenticated username of the current connection.
@@ -1374,7 +1402,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the username of the current connection.
     @inlinable
     public func aclWhoami() async throws -> String {
-        try await send(command: ACLWHOAMI())
+        try await send(command: ACL.WHOAMI())
     }
 
     /// Asynchronously rewrites the append-only file to disk.
@@ -1426,7 +1454,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of commands returned by `COMMAND`.
     @inlinable
     public func commandCount() async throws -> Int {
-        try await send(command: COMMANDCOUNT())
+        try await send(command: COMMAND.COUNT())
     }
 
     /// Returns documentary information about one, multiple or all commands.
@@ -1438,7 +1466,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
     public func commandDocs(commandName: [String] = []) async throws -> [String: RESPToken] {
-        try await send(command: COMMANDDOCS(commandName: commandName))
+        try await send(command: COMMAND.DOCS(commandName: commandName))
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -1450,7 +1478,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command.
     @inlinable
     public func commandGetkeys(command: String, arg: [String] = []) async throws -> [RESPToken] {
-        try await send(command: COMMANDGETKEYS(command: command, arg: arg))
+        try await send(command: COMMAND.GETKEYS(command: command, arg: arg))
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
@@ -1462,7 +1490,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command and their usage flags.
     @inlinable
     public func commandGetkeysandflags(command: String, arg: [String] = []) async throws -> [RESPToken] {
-        try await send(command: COMMANDGETKEYSANDFLAGS(command: command, arg: arg))
+        try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, arg: arg))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1474,7 +1502,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func commandHelp() async throws -> [RESPToken] {
-        try await send(command: COMMANDHELP())
+        try await send(command: COMMAND.HELP())
     }
 
     /// Returns information about one, multiple or all commands.
@@ -1486,7 +1514,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details.
     @inlinable
     public func commandInfo(commandName: [String] = []) async throws -> [RESPToken] {
-        try await send(command: COMMANDINFO(commandName: commandName))
+        try await send(command: COMMAND.INFO(commandName: commandName))
     }
 
     /// Returns a list of command names.
@@ -1497,8 +1525,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of command names.
     @inlinable
-    public func commandList(filterby: COMMANDLIST.Filterby? = nil) async throws -> [RESPToken] {
-        try await send(command: COMMANDLIST(filterby: filterby))
+    public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> [RESPToken] {
+        try await send(command: COMMAND.LIST(filterby: filterby))
     }
 
     /// Returns the effective values of configuration parameters.
@@ -1510,7 +1538,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
     public func configGet(parameter: [String]) async throws -> [String: RESPToken] {
-        try await send(command: CONFIGGET(parameter: parameter))
+        try await send(command: CONFIG.GET(parameter: parameter))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1522,7 +1550,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func configHelp() async throws -> [RESPToken] {
-        try await send(command: CONFIGHELP())
+        try await send(command: CONFIG.HELP())
     }
 
     /// Resets the server's statistics.
@@ -1534,7 +1562,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
     public func configResetstat() async throws -> RESPToken {
-        try await send(command: CONFIGRESETSTAT())
+        try await send(command: CONFIG.RESETSTAT())
     }
 
     /// Persists the effective configuration to file.
@@ -1546,7 +1574,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was rewritten properly. Otherwise an error is returned.
     @inlinable
     public func configRewrite() async throws -> RESPToken {
-        try await send(command: CONFIGREWRITE())
+        try await send(command: CONFIG.REWRITE())
     }
 
     /// Sets configuration parameters in-flight.
@@ -1557,8 +1585,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
-    public func configSet(data: [CONFIGSET.Data]) async throws -> RESPToken {
-        try await send(command: CONFIGSET(data: data))
+    public func configSet(data: [CONFIG.SET.Data]) async throws -> RESPToken {
+        try await send(command: CONFIG.SET(data: data))
     }
 
     /// Returns the number of keys in the database.
@@ -1644,7 +1672,7 @@ extension RedisConnection {
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a human readable latency analysis report.
     @inlinable
     public func latencyDoctor() async throws -> String {
-        try await send(command: LATENCYDOCTOR())
+        try await send(command: LATENCY.DOCTOR())
     }
 
     /// Returns a latency graph for an event.
@@ -1656,7 +1684,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): Latency graph
     @inlinable
     public func latencyGraph(event: String) async throws -> String {
-        try await send(command: LATENCYGRAPH(event: event))
+        try await send(command: LATENCY.GRAPH(event: event))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1668,7 +1696,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func latencyHelp() async throws -> [RESPToken] {
-        try await send(command: LATENCYHELP())
+        try await send(command: LATENCY.HELP())
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
@@ -1680,7 +1708,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
     public func latencyHistogram(command: [String] = []) async throws -> [String: RESPToken] {
-        try await send(command: LATENCYHISTOGRAM(command: command))
+        try await send(command: LATENCY.HISTOGRAM(command: command))
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -1692,7 +1720,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array where each element is a two elements array representing the timestamp and the latency of the event.
     @inlinable
     public func latencyHistory(event: String) async throws -> [RESPToken] {
-        try await send(command: LATENCYHISTORY(event: event))
+        try await send(command: LATENCY.HISTORY(event: event))
     }
 
     /// Returns the latest latency samples for all events.
@@ -1704,7 +1732,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.
     @inlinable
     public func latencyLatest() async throws -> [RESPToken] {
-        try await send(command: LATENCYLATEST())
+        try await send(command: LATENCY.LATEST())
     }
 
     /// Resets the latency data for one or more events.
@@ -1716,7 +1744,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of event time series that were reset.
     @inlinable
     public func latencyReset(event: [String] = []) async throws -> Int {
-        try await send(command: LATENCYRESET(event: event))
+        try await send(command: LATENCY.RESET(event: event))
     }
 
     /// Displays computer art and the Redis version
@@ -1739,7 +1767,7 @@ extension RedisConnection {
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a memory problems report.
     @inlinable
     public func memoryDoctor() async throws -> String {
-        try await send(command: MEMORYDOCTOR())
+        try await send(command: MEMORY.DOCTOR())
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1751,7 +1779,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func memoryHelp() async throws -> [RESPToken] {
-        try await send(command: MEMORYHELP())
+        try await send(command: MEMORY.HELP())
     }
 
     /// Returns the allocator statistics.
@@ -1763,7 +1791,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The memory allocator's internal statistics report.
     @inlinable
     public func memoryMallocStats() async throws -> String {
-        try await send(command: MEMORYMALLOCSTATS())
+        try await send(command: MEMORY.MALLOCSTATS())
     }
 
     /// Asks the allocator to release memory.
@@ -1775,7 +1803,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
     public func memoryPurge() async throws -> RESPToken {
-        try await send(command: MEMORYPURGE())
+        try await send(command: MEMORY.PURGE())
     }
 
     /// Returns details about memory usage.
@@ -1787,7 +1815,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): memory usage metrics and their values.
     @inlinable
     public func memoryStats() async throws -> [String: RESPToken] {
-        try await send(command: MEMORYSTATS())
+        try await send(command: MEMORY.STATS())
     }
 
     /// Estimates the memory usage of a key.
@@ -1801,7 +1829,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
     @inlinable
     public func memoryUsage(key: RedisKey, count: Int? = nil) async throws -> Int? {
-        try await send(command: MEMORYUSAGE(key: key, count: count))
+        try await send(command: MEMORY.USAGE(key: key, count: count))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1813,7 +1841,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions
     @inlinable
     public func moduleHelp() async throws -> [RESPToken] {
-        try await send(command: MODULEHELP())
+        try await send(command: MODULE.HELP())
     }
 
     /// Returns all loaded modules.
@@ -1827,7 +1855,7 @@ extension RedisConnection {
     ///     * ver: the version of the module.
     @inlinable
     public func moduleList() async throws -> [RESPToken] {
-        try await send(command: MODULELIST())
+        try await send(command: MODULE.LIST())
     }
 
     /// Loads a module.
@@ -1839,7 +1867,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
     @inlinable
     public func moduleLoad(path: String, arg: [String] = []) async throws -> RESPToken {
-        try await send(command: MODULELOAD(path: path, arg: arg))
+        try await send(command: MODULE.LOAD(path: path, arg: arg))
     }
 
     /// Loads a module using extended parameters.
@@ -1850,8 +1878,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoadex(path: String, configs: [MODULELOADEX.Configs] = [], args: [String] = []) async throws -> RESPToken {
-        try await send(command: MODULELOADEX(path: path, configs: configs, args: args))
+    public func moduleLoadex(path: String, configs: [MODULE.LOADEX.Configs] = [], args: [String] = []) async throws -> RESPToken {
+        try await send(command: MODULE.LOADEX(path: path, configs: configs, args: args))
     }
 
     /// Unloads a module.
@@ -1863,7 +1891,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was unloaded.
     @inlinable
     public func moduleUnload(name: String) async throws -> RESPToken {
-        try await send(command: MODULEUNLOAD(name: name))
+        try await send(command: MODULE.UNLOAD(name: name))
     }
 
     /// Listens for all requests received by the server in real-time.
@@ -1981,7 +2009,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of slow log entries per the above format.
     @inlinable
     public func slowlogGet(count: Int? = nil) async throws -> [RESPToken] {
-        try await send(command: SLOWLOGGET(count: count))
+        try await send(command: SLOWLOG.GET(count: count))
     }
 
     /// Show helpful text about the different subcommands
@@ -1993,7 +2021,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func slowlogHelp() async throws -> [RESPToken] {
-        try await send(command: SLOWLOGHELP())
+        try await send(command: SLOWLOG.HELP())
     }
 
     /// Returns the number of entries in the slow log.
@@ -2005,7 +2033,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries in the slow log.
     @inlinable
     public func slowlogLen() async throws -> Int {
-        try await send(command: SLOWLOGLEN())
+        try await send(command: SLOWLOG.LEN())
     }
 
     /// Clears all entries from the slow log.
@@ -2017,7 +2045,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
     public func slowlogReset() async throws -> RESPToken {
-        try await send(command: SLOWLOGRESET())
+        try await send(command: SLOWLOG.RESET())
     }
 
     /// Swaps two Redis databases.

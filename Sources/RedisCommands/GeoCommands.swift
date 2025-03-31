@@ -22,6 +22,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
 /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
 public struct GEOADD: RedisCommand {
     public enum Condition: RESPRenderable {

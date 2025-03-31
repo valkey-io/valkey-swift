@@ -22,6 +22,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
 /// Counts the number of set bits (population counting) in a string.
 public struct BITCOUNT: RedisCommand {
     public enum RangeUnit: RESPRenderable {

@@ -22,6 +22,286 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
+/// A container for function commands.
+public enum FUNCTION {
+    /// Deletes a library and its functions.
+    public struct DELETE: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var libraryName: String
+
+        @inlinable public init(libraryName: String) {
+            self.libraryName = libraryName
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "DELETE", libraryName)
+        }
+    }
+
+    /// Dumps all libraries into a serialized binary payload.
+    public struct DUMP: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "DUMP")
+        }
+    }
+
+    /// Deletes all libraries and functions.
+    public struct FLUSH: RedisCommand {
+        public enum FlushType: RESPRenderable {
+            case async
+            case sync
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .async: "ASYNC".encode(into: &commandEncoder)
+                case .sync: "SYNC".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var flushType: FlushType? = nil
+
+        @inlinable public init(flushType: FlushType? = nil) {
+            self.flushType = flushType
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "FLUSH", flushType)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "HELP")
+        }
+    }
+
+    /// Terminates a function during execution.
+    public struct KILL: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "KILL")
+        }
+    }
+
+    /// Returns information about all libraries.
+    public struct LIST: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var libraryNamePattern: String? = nil
+        public var withcode: Bool = false
+
+        @inlinable public init(libraryNamePattern: String? = nil, withcode: Bool = false) {
+            self.libraryNamePattern = libraryNamePattern
+            self.withcode = withcode
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "LIST", RESPWithToken("LIBRARYNAME", libraryNamePattern), RedisPureToken("WITHCODE", withcode))
+        }
+    }
+
+    /// Creates a library.
+    public struct LOAD: RedisCommand {
+        public typealias Response = String
+
+        public var replace: Bool = false
+        public var functionCode: String
+
+        @inlinable public init(replace: Bool = false, functionCode: String) {
+            self.replace = replace
+            self.functionCode = functionCode
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "LOAD", RedisPureToken("REPLACE", replace), functionCode)
+        }
+    }
+
+    /// Restores all libraries from a payload.
+    public struct RESTORE: RedisCommand {
+        public enum Policy: RESPRenderable {
+            case flush
+            case append
+            case replace
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .flush: "FLUSH".encode(into: &commandEncoder)
+                case .append: "APPEND".encode(into: &commandEncoder)
+                case .replace: "REPLACE".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var serializedValue: String
+        public var policy: Policy? = nil
+
+        @inlinable public init(serializedValue: String, policy: Policy? = nil) {
+            self.serializedValue = serializedValue
+            self.policy = policy
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "RESTORE", serializedValue, policy)
+        }
+    }
+
+    /// Returns information about a function during execution.
+    public struct STATS: RedisCommand {
+        public typealias Response = [String: RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("FUNCTION", "STATS")
+        }
+    }
+
+}
+
+/// A container for Lua scripts management commands.
+public enum SCRIPT {
+    /// Sets the debug mode of server-side Lua scripts.
+    public struct DEBUG: RedisCommand {
+        public enum Mode: RESPRenderable {
+            case yes
+            case sync
+            case no
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .yes: "YES".encode(into: &commandEncoder)
+                case .sync: "SYNC".encode(into: &commandEncoder)
+                case .no: "NO".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var mode: Mode
+
+        @inlinable public init(mode: Mode) {
+            self.mode = mode
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SCRIPT", "DEBUG", mode)
+        }
+    }
+
+    /// Determines whether server-side Lua scripts exist in the script cache.
+    public struct EXISTS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var sha1: [String]
+
+        @inlinable public init(sha1: [String]) {
+            self.sha1 = sha1
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SCRIPT", "EXISTS", sha1)
+        }
+    }
+
+    /// Removes all server-side Lua scripts from the script cache.
+    public struct FLUSH: RedisCommand {
+        public enum FlushType: RESPRenderable {
+            case async
+            case sync
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .async: "ASYNC".encode(into: &commandEncoder)
+                case .sync: "SYNC".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var flushType: FlushType? = nil
+
+        @inlinable public init(flushType: FlushType? = nil) {
+            self.flushType = flushType
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SCRIPT", "FLUSH", flushType)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SCRIPT", "HELP")
+        }
+    }
+
+    /// Terminates a server-side Lua script during execution.
+    public struct KILL: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SCRIPT", "KILL")
+        }
+    }
+
+    /// Loads a server-side Lua script to the script cache.
+    public struct LOAD: RedisCommand {
+        public typealias Response = String
+
+        public var script: String
+
+        @inlinable public init(script: String) {
+            self.script = script
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SCRIPT", "LOAD", script)
+        }
+    }
+
+}
+
 /// Executes a server-side Lua script.
 public struct EVAL: RedisCommand {
     public typealias Response = RESPToken
@@ -136,277 +416,6 @@ public struct FCALLRO: RedisCommand {
     }
 }
 
-/// Deletes a library and its functions.
-public struct FUNCTIONDELETE: RedisCommand {
-    public typealias Response = RESPToken
-
-    public var libraryName: String
-
-    @inlinable public init(libraryName: String) {
-        self.libraryName = libraryName
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "DELETE", libraryName)
-    }
-}
-
-/// Dumps all libraries into a serialized binary payload.
-public struct FUNCTIONDUMP: RedisCommand {
-    public typealias Response = String
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "DUMP")
-    }
-}
-
-/// Deletes all libraries and functions.
-public struct FUNCTIONFLUSH: RedisCommand {
-    public enum FlushType: RESPRenderable {
-        case async
-        case sync
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .async: "ASYNC".encode(into: &commandEncoder)
-            case .sync: "SYNC".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var flushType: FlushType? = nil
-
-    @inlinable public init(flushType: FlushType? = nil) {
-        self.flushType = flushType
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "FLUSH", flushType)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct FUNCTIONHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "HELP")
-    }
-}
-
-/// Terminates a function during execution.
-public struct FUNCTIONKILL: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "KILL")
-    }
-}
-
-/// Returns information about all libraries.
-public struct FUNCTIONLIST: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var libraryNamePattern: String? = nil
-    public var withcode: Bool = false
-
-    @inlinable public init(libraryNamePattern: String? = nil, withcode: Bool = false) {
-        self.libraryNamePattern = libraryNamePattern
-        self.withcode = withcode
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "LIST", RESPWithToken("LIBRARYNAME", libraryNamePattern), RedisPureToken("WITHCODE", withcode))
-    }
-}
-
-/// Creates a library.
-public struct FUNCTIONLOAD: RedisCommand {
-    public typealias Response = String
-
-    public var replace: Bool = false
-    public var functionCode: String
-
-    @inlinable public init(replace: Bool = false, functionCode: String) {
-        self.replace = replace
-        self.functionCode = functionCode
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "LOAD", RedisPureToken("REPLACE", replace), functionCode)
-    }
-}
-
-/// Restores all libraries from a payload.
-public struct FUNCTIONRESTORE: RedisCommand {
-    public enum Policy: RESPRenderable {
-        case flush
-        case append
-        case replace
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .flush: "FLUSH".encode(into: &commandEncoder)
-            case .append: "APPEND".encode(into: &commandEncoder)
-            case .replace: "REPLACE".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var serializedValue: String
-    public var policy: Policy? = nil
-
-    @inlinable public init(serializedValue: String, policy: Policy? = nil) {
-        self.serializedValue = serializedValue
-        self.policy = policy
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "RESTORE", serializedValue, policy)
-    }
-}
-
-/// Returns information about a function during execution.
-public struct FUNCTIONSTATS: RedisCommand {
-    public typealias Response = [String: RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FUNCTION", "STATS")
-    }
-}
-
-/// Sets the debug mode of server-side Lua scripts.
-public struct SCRIPTDEBUG: RedisCommand {
-    public enum Mode: RESPRenderable {
-        case yes
-        case sync
-        case no
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .yes: "YES".encode(into: &commandEncoder)
-            case .sync: "SYNC".encode(into: &commandEncoder)
-            case .no: "NO".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var mode: Mode
-
-    @inlinable public init(mode: Mode) {
-        self.mode = mode
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SCRIPT", "DEBUG", mode)
-    }
-}
-
-/// Determines whether server-side Lua scripts exist in the script cache.
-public struct SCRIPTEXISTS: RedisCommand {
-    public typealias Response = [RESPToken]
-
-    public var sha1: [String]
-
-    @inlinable public init(sha1: [String]) {
-        self.sha1 = sha1
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SCRIPT", "EXISTS", sha1)
-    }
-}
-
-/// Removes all server-side Lua scripts from the script cache.
-public struct SCRIPTFLUSH: RedisCommand {
-    public enum FlushType: RESPRenderable {
-        case async
-        case sync
-
-        @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
-            switch self {
-            case .async: "ASYNC".encode(into: &commandEncoder)
-            case .sync: "SYNC".encode(into: &commandEncoder)
-            }
-        }
-    }
-    public typealias Response = RESPToken
-
-    public var flushType: FlushType? = nil
-
-    @inlinable public init(flushType: FlushType? = nil) {
-        self.flushType = flushType
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SCRIPT", "FLUSH", flushType)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct SCRIPTHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SCRIPT", "HELP")
-    }
-}
-
-/// Terminates a server-side Lua script during execution.
-public struct SCRIPTKILL: RedisCommand {
-    public typealias Response = RESPToken
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SCRIPT", "KILL")
-    }
-}
-
-/// Loads a server-side Lua script to the script cache.
-public struct SCRIPTLOAD: RedisCommand {
-    public typealias Response = String
-
-    public var script: String
-
-    @inlinable public init(script: String) {
-        self.script = script
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SCRIPT", "LOAD", script)
-    }
-}
-
 
 extension RedisConnection {
     /// Executes a server-side Lua script.
@@ -490,7 +499,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
     public func functionDelete(libraryName: String) async throws -> RESPToken {
-        try await send(command: FUNCTIONDELETE(libraryName: libraryName))
+        try await send(command: FUNCTION.DELETE(libraryName: libraryName))
     }
 
     /// Dumps all libraries into a serialized binary payload.
@@ -502,7 +511,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the serialized payload
     @inlinable
     public func functionDump() async throws -> String {
-        try await send(command: FUNCTIONDUMP())
+        try await send(command: FUNCTION.DUMP())
     }
 
     /// Deletes all libraries and functions.
@@ -513,8 +522,8 @@ extension RedisConnection {
     /// - Categories: @write, @slow, @scripting
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func functionFlush(flushType: FUNCTIONFLUSH.FlushType? = nil) async throws -> RESPToken {
-        try await send(command: FUNCTIONFLUSH(flushType: flushType))
+    public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws -> RESPToken {
+        try await send(command: FUNCTION.FLUSH(flushType: flushType))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -526,7 +535,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func functionHelp() async throws -> [RESPToken] {
-        try await send(command: FUNCTIONHELP())
+        try await send(command: FUNCTION.HELP())
     }
 
     /// Terminates a function during execution.
@@ -538,7 +547,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
     public func functionKill() async throws -> RESPToken {
-        try await send(command: FUNCTIONKILL())
+        try await send(command: FUNCTION.KILL())
     }
 
     /// Returns information about all libraries.
@@ -550,7 +559,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): information about functions and libraries.
     @inlinable
     public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> [RESPToken] {
-        try await send(command: FUNCTIONLIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
+        try await send(command: FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
     }
 
     /// Creates a library.
@@ -562,7 +571,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the library name that was loaded.
     @inlinable
     public func functionLoad(replace: Bool = false, functionCode: String) async throws -> String {
-        try await send(command: FUNCTIONLOAD(replace: replace, functionCode: functionCode))
+        try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
     }
 
     /// Restores all libraries from a payload.
@@ -573,8 +582,8 @@ extension RedisConnection {
     /// - Categories: @write, @slow, @scripting
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func functionRestore(serializedValue: String, policy: FUNCTIONRESTORE.Policy? = nil) async throws -> RESPToken {
-        try await send(command: FUNCTIONRESTORE(serializedValue: serializedValue, policy: policy))
+    public func functionRestore(serializedValue: String, policy: FUNCTION.RESTORE.Policy? = nil) async throws -> RESPToken {
+        try await send(command: FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
     }
 
     /// Returns information about a function during execution.
@@ -586,7 +595,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): information about the function that's currently running and information about the available execution engines.
     @inlinable
     public func functionStats() async throws -> [String: RESPToken] {
-        try await send(command: FUNCTIONSTATS())
+        try await send(command: FUNCTION.STATS())
     }
 
     /// Sets the debug mode of server-side Lua scripts.
@@ -597,8 +606,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func scriptDebug(mode: SCRIPTDEBUG.Mode) async throws -> RESPToken {
-        try await send(command: SCRIPTDEBUG(mode: mode))
+    public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws -> RESPToken {
+        try await send(command: SCRIPT.DEBUG(mode: mode))
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
@@ -610,7 +619,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     public func scriptExists(sha1: [String]) async throws -> [RESPToken] {
-        try await send(command: SCRIPTEXISTS(sha1: sha1))
+        try await send(command: SCRIPT.EXISTS(sha1: sha1))
     }
 
     /// Removes all server-side Lua scripts from the script cache.
@@ -621,8 +630,8 @@ extension RedisConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func scriptFlush(flushType: SCRIPTFLUSH.FlushType? = nil) async throws -> RESPToken {
-        try await send(command: SCRIPTFLUSH(flushType: flushType))
+    public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws -> RESPToken {
+        try await send(command: SCRIPT.FLUSH(flushType: flushType))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -634,7 +643,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func scriptHelp() async throws -> [RESPToken] {
-        try await send(command: SCRIPTHELP())
+        try await send(command: SCRIPT.HELP())
     }
 
     /// Terminates a server-side Lua script during execution.
@@ -646,7 +655,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
     public func scriptKill() async throws -> RESPToken {
-        try await send(command: SCRIPTKILL())
+        try await send(command: SCRIPT.KILL())
     }
 
     /// Loads a server-side Lua script to the script cache.
@@ -658,7 +667,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the SHA1 digest of the script added into the script cache.
     @inlinable
     public func scriptLoad(script: String) async throws -> String {
-        try await send(command: SCRIPTLOAD(script: script))
+        try await send(command: SCRIPT.LOAD(script: script))
     }
 
 }

@@ -22,6 +22,7 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
 /// Adds one or more members to a set. Creates the key if it doesn't exist.
 public struct SADD: RedisCommand {
     public typealias Response = Int

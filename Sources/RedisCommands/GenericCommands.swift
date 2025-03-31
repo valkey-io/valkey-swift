@@ -22,6 +22,84 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+
+/// A container for object introspection commands.
+public enum OBJECT {
+    /// Returns the internal encoding of a Redis object.
+    public struct ENCODING: RedisCommand {
+        public typealias Response = String?
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "ENCODING", key)
+        }
+    }
+
+    /// Returns the logarithmic access frequency counter of a Redis object.
+    public struct FREQ: RedisCommand {
+        public typealias Response = Int?
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "FREQ", key)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "HELP")
+        }
+    }
+
+    /// Returns the time since the last access to a Redis object.
+    public struct IDLETIME: RedisCommand {
+        public typealias Response = Int?
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "IDLETIME", key)
+        }
+    }
+
+    /// Returns the reference count of a value of a key.
+    public struct REFCOUNT: RedisCommand {
+        public typealias Response = Int?
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "REFCOUNT", key)
+        }
+    }
+
+}
+
 /// Copies the value of a key to a new key.
 public struct COPY: RedisCommand {
     public typealias Response = Int
@@ -269,79 +347,6 @@ public struct MOVE: RedisCommand {
 
     @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
         commandEncoder.encodeArray("MOVE", key, db)
-    }
-}
-
-/// Returns the internal encoding of a Redis object.
-public struct OBJECTENCODING: RedisCommand {
-    public typealias Response = String?
-
-    public var key: RedisKey
-
-    @inlinable public init(key: RedisKey) {
-        self.key = key
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("OBJECT", "ENCODING", key)
-    }
-}
-
-/// Returns the logarithmic access frequency counter of a Redis object.
-public struct OBJECTFREQ: RedisCommand {
-    public typealias Response = Int?
-
-    public var key: RedisKey
-
-    @inlinable public init(key: RedisKey) {
-        self.key = key
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("OBJECT", "FREQ", key)
-    }
-}
-
-/// Returns helpful text about the different subcommands.
-public struct OBJECTHELP: RedisCommand {
-    public typealias Response = [RESPToken]
-
-
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("OBJECT", "HELP")
-    }
-}
-
-/// Returns the time since the last access to a Redis object.
-public struct OBJECTIDLETIME: RedisCommand {
-    public typealias Response = Int?
-
-    public var key: RedisKey
-
-    @inlinable public init(key: RedisKey) {
-        self.key = key
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("OBJECT", "IDLETIME", key)
-    }
-}
-
-/// Returns the reference count of a value of a key.
-public struct OBJECTREFCOUNT: RedisCommand {
-    public typealias Response = Int?
-
-    public var key: RedisKey
-
-    @inlinable public init(key: RedisKey) {
-        self.key = key
-    }
-
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("OBJECT", "REFCOUNT", key)
     }
 }
 
@@ -899,7 +904,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the encoding of the object.
     @inlinable
     public func objectEncoding(key: RedisKey) async throws -> String? {
-        try await send(command: OBJECTENCODING(key: key))
+        try await send(command: OBJECT.ENCODING(key: key))
     }
 
     /// Returns the logarithmic access frequency counter of a Redis object.
@@ -913,7 +918,7 @@ extension RedisConnection {
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
     public func objectFreq(key: RedisKey) async throws -> Int? {
-        try await send(command: OBJECTFREQ(key: key))
+        try await send(command: OBJECT.FREQ(key: key))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -925,7 +930,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func objectHelp() async throws -> [RESPToken] {
-        try await send(command: OBJECTHELP())
+        try await send(command: OBJECT.HELP())
     }
 
     /// Returns the time since the last access to a Redis object.
@@ -939,7 +944,7 @@ extension RedisConnection {
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
     public func objectIdletime(key: RedisKey) async throws -> Int? {
-        try await send(command: OBJECTIDLETIME(key: key))
+        try await send(command: OBJECT.IDLETIME(key: key))
     }
 
     /// Returns the reference count of a value of a key.
@@ -953,7 +958,7 @@ extension RedisConnection {
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
     public func objectRefcount(key: RedisKey) async throws -> Int? {
-        try await send(command: OBJECTREFCOUNT(key: key))
+        try await send(command: OBJECT.REFCOUNT(key: key))
     }
 
     /// Removes the expiration time of a key.
