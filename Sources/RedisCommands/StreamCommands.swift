@@ -22,33 +22,28 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+/// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
+public struct XACK: RedisCommand {
+    public typealias Response = Int
 
-extension RESPCommand {
-    /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
-    ///
-    /// - Documentation: [XACK](https:/redis.io/docs/latest/commands/xack)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) for each message ID processed.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
-    @inlinable
-    public static func xack(key: RedisKey, group: String, id: String) -> RESPCommand {
-        RESPCommand("XACK", key, group, id)
+    public var key: RedisKey
+    public var group: String
+    public var id: [String]
+
+    @inlinable public init(key: RedisKey, group: String, id: [String]) {
+        self.key = key
+        self.group = group
+        self.id = id
     }
 
-    /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
-    ///
-    /// - Documentation: [XACK](https:/redis.io/docs/latest/commands/xack)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) for each message ID processed.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
-    @inlinable
-    public static func xack(key: RedisKey, group: String, ids: [String]) -> RESPCommand {
-        RESPCommand("XACK", key, group, ids)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XACK", key, group, id)
     }
+}
 
-    public enum XADDTrimStrategy: RESPRenderable {
+/// Appends a new message to a stream. Creates the key if it doesn't exist.
+public struct XADD: RedisCommand {
+    public enum TrimStrategy: RESPRenderable {
         case maxlen
         case minid
 
@@ -60,7 +55,7 @@ extension RESPCommand {
             }
         }
     }
-    public enum XADDTrimOperator: RESPRenderable {
+    public enum TrimOperator: RESPRenderable {
         case equal
         case approximately
 
@@ -72,9 +67,9 @@ extension RESPCommand {
             }
         }
     }
-    public struct XADDTrim: RESPRenderable {
-        @usableFromInline let strategy: XADDTrimStrategy
-        @usableFromInline let `operator`: XADDTrimOperator?
+    public struct Trim: RESPRenderable {
+        @usableFromInline let strategy: TrimStrategy
+        @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: String
         @usableFromInline let count: Int?
 
@@ -88,7 +83,7 @@ extension RESPCommand {
             return count
         }
     }
-    public enum XADDIdSelector: RESPRenderable {
+    public enum IdSelector: RESPRenderable {
         case autoId
         case id(String)
 
@@ -100,7 +95,7 @@ extension RESPCommand {
             }
         }
     }
-    public struct XADDData: RESPRenderable {
+    public struct Data: RESPRenderable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
@@ -112,167 +107,109 @@ extension RESPCommand {
             return count
         }
     }
-    /// Appends a new message to a stream. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [XADD](https:/redis.io/docs/latest/commands/xadd)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
-    @inlinable
-    public static func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADDTrim? = nil, idSelector: XADDIdSelector, data: XADDData) -> RESPCommand
-    {
-        RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
+    public typealias Response = String?
+
+    public var key: RedisKey
+    public var nomkstream: Bool = false
+    public var trim: Trim? = nil
+    public var idSelector: IdSelector
+    public var data: [Data]
+
+    @inlinable public init(key: RedisKey, nomkstream: Bool = false, trim: Trim? = nil, idSelector: IdSelector, data: [Data]) {
+        self.key = key
+        self.nomkstream = nomkstream
+        self.trim = trim
+        self.idSelector = idSelector
+        self.data = data
     }
 
-    /// Appends a new message to a stream. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [XADD](https:/redis.io/docs/latest/commands/xadd)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
-    @inlinable
-    public static func xadd(
-        key: RedisKey,
-        nomkstream: Bool = false,
-        trim: XADDTrim? = nil,
-        idSelector: XADDIdSelector,
-        datas: [XADDData]
-    ) -> RESPCommand {
-        RESPCommand("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, datas)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
+    }
+}
+
+/// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
+public struct XAUTOCLAIM: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var group: String
+    public var consumer: String
+    public var minIdleTime: String
+    public var start: String
+    public var count: Int? = nil
+    public var justid: Bool = false
+
+    @inlinable public init(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) {
+        self.key = key
+        self.group = group
+        self.consumer = consumer
+        self.minIdleTime = minIdleTime
+        self.start = start
+        self.count = count
+        self.justid = justid
     }
 
-    /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
-    ///
-    /// - Documentation: [XAUTOCLAIM](https:/redis.io/docs/latest/commands/xautoclaim)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1) if COUNT is small.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays), specifically, an array with three elements:
-    ///     1. A stream ID to be used as the _start_ argument for the next call to XAUTOCLAIM.
-    ///     2. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
-    ///     3. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
-    @inlinable
-    public static func xautoclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        start: String,
-        count: Int? = nil,
-        justid: Bool = false
-    ) -> RESPCommand {
-        RESPCommand("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
+    }
+}
+
+/// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
+public struct XCLAIM: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var group: String
+    public var consumer: String
+    public var minIdleTime: String
+    public var id: [String]
+    public var ms: Int? = nil
+    public var unixTimeMilliseconds: Date? = nil
+    public var count: Int? = nil
+    public var force: Bool = false
+    public var justid: Bool = false
+    public var lastid: String? = nil
+
+    @inlinable public init(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) {
+        self.key = key
+        self.group = group
+        self.consumer = consumer
+        self.minIdleTime = minIdleTime
+        self.id = id
+        self.ms = ms
+        self.unixTimeMilliseconds = unixTimeMilliseconds
+        self.count = count
+        self.force = force
+        self.justid = justid
+        self.lastid = lastid
     }
 
-    /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
-    ///
-    /// - Documentation: [XCLAIM](https:/redis.io/docs/latest/commands/xclaim)
-    /// - Version: 5.0.0
-    /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: Any of the following:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
-    @inlinable
-    public static func xclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        id: String,
-        ms: Int? = nil,
-        unixTimeMilliseconds: Date? = nil,
-        count: Int? = nil,
-        force: Bool = false,
-        justid: Bool = false,
-        lastid: String? = nil
-    ) -> RESPCommand {
-        RESPCommand(
-            "XCLAIM",
-            key,
-            group,
-            consumer,
-            minIdleTime,
-            id,
-            RESPWithToken("IDLE", ms),
-            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
-            RESPWithToken("RETRYCOUNT", count),
-            RedisPureToken("FORCE", force),
-            RedisPureToken("JUSTID", justid),
-            RESPWithToken("LASTID", lastid)
-        )
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RedisPureToken("FORCE", force), RedisPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+    }
+}
+
+/// Returns the number of messages after removing them from a stream.
+public struct XDEL: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var id: [String]
+
+    @inlinable public init(key: RedisKey, id: [String]) {
+        self.key = key
+        self.id = id
     }
 
-    /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
-    ///
-    /// - Documentation: [XCLAIM](https:/redis.io/docs/latest/commands/xclaim)
-    /// - Version: 5.0.0
-    /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: Any of the following:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
-    @inlinable
-    public static func xclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        ids: [String],
-        ms: Int? = nil,
-        unixTimeMilliseconds: Date? = nil,
-        count: Int? = nil,
-        force: Bool = false,
-        justid: Bool = false,
-        lastid: String? = nil
-    ) -> RESPCommand {
-        RESPCommand(
-            "XCLAIM",
-            key,
-            group,
-            consumer,
-            minIdleTime,
-            ids,
-            RESPWithToken("IDLE", ms),
-            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
-            RESPWithToken("RETRYCOUNT", count),
-            RedisPureToken("FORCE", force),
-            RedisPureToken("JUSTID", justid),
-            RESPWithToken("LASTID", lastid)
-        )
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XDEL", key, id)
     }
+}
 
-    /// Returns the number of messages after removing them from a stream.
-    ///
-    /// - Documentation: [XDEL](https:/redis.io/docs/latest/commands/xdel)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries that were deleted.
-    @inlinable
-    public static func xdel(key: RedisKey, id: String) -> RESPCommand {
-        RESPCommand("XDEL", key, id)
-    }
-
-    /// Returns the number of messages after removing them from a stream.
-    ///
-    /// - Documentation: [XDEL](https:/redis.io/docs/latest/commands/xdel)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size.
-    /// - Categories: @write, @stream, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries that were deleted.
-    @inlinable
-    public static func xdel(key: RedisKey, ids: [String]) -> RESPCommand {
-        RESPCommand("XDEL", key, ids)
-    }
-
-    public enum XGROUPCREATEIdSelector: RESPRenderable {
+/// Creates a consumer group.
+public struct XGROUPCREATE: RedisCommand {
+    public enum IdSelector: RESPRenderable {
         case id(String)
         case newId
 
@@ -284,73 +221,98 @@ extension RESPCommand {
             }
         }
     }
-    /// Creates a consumer group.
-    ///
-    /// - Documentation: [XGROUP CREATE](https:/redis.io/docs/latest/commands/xgroup-create)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @slow
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func xgroupCreate(
-        key: RedisKey,
-        group: String,
-        idSelector: XGROUPCREATEIdSelector,
-        mkstream: Bool = false,
-        entriesRead: Int? = nil
-    ) -> RESPCommand {
-        RESPCommand("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var group: String
+    public var idSelector: IdSelector
+    public var mkstream: Bool = false
+    public var entriesRead: Int? = nil
+
+    @inlinable public init(key: RedisKey, group: String, idSelector: IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) {
+        self.key = key
+        self.group = group
+        self.idSelector = idSelector
+        self.mkstream = mkstream
+        self.entriesRead = entriesRead
     }
 
-    /// Creates a consumer in a consumer group.
-    ///
-    /// - Documentation: [XGROUP CREATECONSUMER](https:/redis.io/docs/latest/commands/xgroup-createconsumer)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of created consumers, either 0 or 1.
-    @inlinable
-    public static func xgroupCreateconsumer(key: RedisKey, group: String, consumer: String) -> RESPCommand {
-        RESPCommand("XGROUP", "CREATECONSUMER", key, group, consumer)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+    }
+}
+
+/// Creates a consumer in a consumer group.
+public struct XGROUPCREATECONSUMER: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var group: String
+    public var consumer: String
+
+    @inlinable public init(key: RedisKey, group: String, consumer: String) {
+        self.key = key
+        self.group = group
+        self.consumer = consumer
     }
 
-    /// Deletes a consumer from a consumer group.
-    ///
-    /// - Documentation: [XGROUP DELCONSUMER](https:/redis.io/docs/latest/commands/xgroup-delconsumer)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of pending messages the consumer had before it was deleted.
-    @inlinable
-    public static func xgroupDelconsumer(key: RedisKey, group: String, consumer: String) -> RESPCommand {
-        RESPCommand("XGROUP", "DELCONSUMER", key, group, consumer)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XGROUP", "CREATECONSUMER", key, group, consumer)
+    }
+}
+
+/// Deletes a consumer from a consumer group.
+public struct XGROUPDELCONSUMER: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var group: String
+    public var consumer: String
+
+    @inlinable public init(key: RedisKey, group: String, consumer: String) {
+        self.key = key
+        self.group = group
+        self.consumer = consumer
     }
 
-    /// Destroys a consumer group.
-    ///
-    /// - Documentation: [XGROUP DESTROY](https:/redis.io/docs/latest/commands/xgroup-destroy)
-    /// - Version: 5.0.0
-    /// - Complexity: O(N) where N is the number of entries in the group's pending entries list (PEL).
-    /// - Categories: @write, @stream, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of destroyed consumer groups, either 0 or 1.
-    @inlinable
-    public static func xgroupDestroy(key: RedisKey, group: String) -> RESPCommand {
-        RESPCommand("XGROUP", "DESTROY", key, group)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XGROUP", "DELCONSUMER", key, group, consumer)
+    }
+}
+
+/// Destroys a consumer group.
+public struct XGROUPDESTROY: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var group: String
+
+    @inlinable public init(key: RedisKey, group: String) {
+        self.key = key
+        self.group = group
     }
 
-    /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [XGROUP HELP](https:/redis.io/docs/latest/commands/xgroup-help)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @stream, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func xgroupHelp() -> RESPCommand {
-        RESPCommand("XGROUP", "HELP")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XGROUP", "DESTROY", key, group)
+    }
+}
+
+/// Returns helpful text about the different subcommands.
+public struct XGROUPHELP: RedisCommand {
+    public typealias Response = [RESPToken]
+
+
+    @inlinable public init() {
     }
 
-    public enum XGROUPSETIDIdSelector: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XGROUP", "HELP")
+    }
+}
+
+/// Sets the last-delivered ID of a consumer group.
+public struct XGROUPSETID: RedisCommand {
+    public enum IdSelector: RESPRenderable {
         case id(String)
         case newId
 
@@ -362,55 +324,73 @@ extension RESPCommand {
             }
         }
     }
-    /// Sets the last-delivered ID of a consumer group.
-    ///
-    /// - Documentation: [XGROUP SETID](https:/redis.io/docs/latest/commands/xgroup-setid)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @slow
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func xgroupSetid(key: RedisKey, group: String, idSelector: XGROUPSETIDIdSelector, entriesread: Int? = nil) -> RESPCommand {
-        RESPCommand("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var group: String
+    public var idSelector: IdSelector
+    public var entriesread: Int? = nil
+
+    @inlinable public init(key: RedisKey, group: String, idSelector: IdSelector, entriesread: Int? = nil) {
+        self.key = key
+        self.group = group
+        self.idSelector = idSelector
+        self.entriesread = entriesread
     }
 
-    /// Returns a list of the consumers in a consumer group.
-    ///
-    /// - Documentation: [XINFO CONSUMERS](https:/redis.io/docs/latest/commands/xinfo-consumers)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @read, @stream, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of consumers and their attributes.
-    @inlinable
-    public static func xinfoConsumers(key: RedisKey, group: String) -> RESPCommand {
-        RESPCommand("XINFO", "CONSUMERS", key, group)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+    }
+}
+
+/// Returns a list of the consumers in a consumer group.
+public struct XINFOCONSUMERS: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var group: String
+
+    @inlinable public init(key: RedisKey, group: String) {
+        self.key = key
+        self.group = group
     }
 
-    /// Returns a list of the consumer groups of a stream.
-    ///
-    /// - Documentation: [XINFO GROUPS](https:/redis.io/docs/latest/commands/xinfo-groups)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @read, @stream, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of consumer groups.
-    @inlinable
-    public static func xinfoGroups(key: RedisKey) -> RESPCommand {
-        RESPCommand("XINFO", "GROUPS", key)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XINFO", "CONSUMERS", key, group)
+    }
+}
+
+/// Returns a list of the consumer groups of a stream.
+public struct XINFOGROUPS: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
     }
 
-    /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [XINFO HELP](https:/redis.io/docs/latest/commands/xinfo-help)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @stream, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func xinfoHelp() -> RESPCommand {
-        RESPCommand("XINFO", "HELP")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XINFO", "GROUPS", key)
+    }
+}
+
+/// Returns helpful text about the different subcommands.
+public struct XINFOHELP: RedisCommand {
+    public typealias Response = [RESPToken]
+
+
+    @inlinable public init() {
     }
 
-    public struct XINFOSTREAMFullBlock: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XINFO", "HELP")
+    }
+}
+
+/// Returns information about a stream.
+public struct XINFOSTREAM: RedisCommand {
+    public struct FullBlock: RESPRenderable {
         @usableFromInline let full: Bool
         @usableFromInline let count: Int?
 
@@ -422,33 +402,39 @@ extension RESPCommand {
             return count
         }
     }
-    /// Returns information about a stream.
-    ///
-    /// - Documentation: [XINFO STREAM](https:/redis.io/docs/latest/commands/xinfo-stream)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @read, @stream, @slow
-    /// - Response: One of the following:
-    ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was not given, a list of information about a stream in summary form.
-    ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was given, a list of information about a stream in extended form.
-    @inlinable
-    public static func xinfoStream(key: RedisKey, fullBlock: XINFOSTREAMFullBlock? = nil) -> RESPCommand {
-        RESPCommand("XINFO", "STREAM", key, fullBlock)
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var fullBlock: FullBlock? = nil
+
+    @inlinable public init(key: RedisKey, fullBlock: FullBlock? = nil) {
+        self.key = key
+        self.fullBlock = fullBlock
     }
 
-    /// Return the number of messages in a stream.
-    ///
-    /// - Documentation: [XLEN](https:/redis.io/docs/latest/commands/xlen)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @read, @stream, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries of the stream at _key_.
-    @inlinable
-    public static func xlen(key: RedisKey) -> RESPCommand {
-        RESPCommand("XLEN", key)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XINFO", "STREAM", key, fullBlock)
+    }
+}
+
+/// Return the number of messages in a stream.
+public struct XLEN: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
     }
 
-    public struct XPENDINGFilters: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XLEN", key)
+    }
+}
+
+/// Returns the information and entries from a stream consumer group's pending entries list.
+public struct XPENDING: RedisCommand {
+    public struct Filters: RESPRenderable {
         @usableFromInline let minIdleTime: Int?
         @usableFromInline let start: String
         @usableFromInline let end: String
@@ -466,31 +452,47 @@ extension RESPCommand {
             return count
         }
     }
-    /// Returns the information and entries from a stream consumer group's pending entries list.
-    ///
-    /// - Documentation: [XPENDING](https:/redis.io/docs/latest/commands/xpending)
-    /// - Version: 5.0.0
-    /// - Complexity: O(N) with N being the number of elements returned, so asking for a small fixed number of entries per call is O(1). O(M), where M is the total number of entries scanned when used with the IDLE filter. When the command returns just the summary and the list of consumers is small, it runs in O(1) time; otherwise, an additional O(N) time for iterating every consumer.
-    /// - Categories: @read, @stream, @slow
-    /// - Response: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): different data depending on the way XPENDING is called, as explained on this page.
-    @inlinable
-    public static func xpending(key: RedisKey, group: String, filters: XPENDINGFilters? = nil) -> RESPCommand {
-        RESPCommand("XPENDING", key, group, filters)
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var group: String
+    public var filters: Filters? = nil
+
+    @inlinable public init(key: RedisKey, group: String, filters: Filters? = nil) {
+        self.key = key
+        self.group = group
+        self.filters = filters
     }
 
-    /// Returns the messages from a stream within a range of IDs.
-    ///
-    /// - Documentation: [XRANGE](https:/redis.io/docs/latest/commands/xrange)
-    /// - Version: 5.0.0
-    /// - Complexity: O(N) with N being the number of elements being returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
-    /// - Categories: @read, @stream, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of stream entries with IDs matching the specified range.
-    @inlinable
-    public static func xrange(key: RedisKey, start: String, end: String, count: Int? = nil) -> RESPCommand {
-        RESPCommand("XRANGE", key, start, end, RESPWithToken("COUNT", count))
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XPENDING", key, group, filters)
+    }
+}
+
+/// Returns the messages from a stream within a range of IDs.
+public struct XRANGE: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var start: String
+    public var end: String
+    public var count: Int? = nil
+
+    @inlinable public init(key: RedisKey, start: String, end: String, count: Int? = nil) {
+        self.key = key
+        self.start = start
+        self.end = end
+        self.count = count
     }
 
-    public struct XREADStreams: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XRANGE", key, start, end, RESPWithToken("COUNT", count))
+    }
+}
+
+/// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
+public struct XREAD: RedisCommand {
+    public struct Streams: RESPRenderable {
         @usableFromInline let key: [RedisKey]
         @usableFromInline let id: [String]
 
@@ -502,20 +504,26 @@ extension RESPCommand {
             return count
         }
     }
-    /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
-    ///
-    /// - Documentation: [XREAD](https:/redis.io/docs/latest/commands/xread)
-    /// - Version: 5.0.0
-    /// - Categories: @read, @stream, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
-    @inlinable
-    public static func xread(count: Int? = nil, milliseconds: Int? = nil, streams: XREADStreams) -> RESPCommand {
-        RESPCommand("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
+    public typealias Response = RESPToken?
+
+    public var count: Int? = nil
+    public var milliseconds: Int? = nil
+    public var streams: Streams
+
+    @inlinable public init(count: Int? = nil, milliseconds: Int? = nil, streams: Streams) {
+        self.count = count
+        self.milliseconds = milliseconds
+        self.streams = streams
     }
 
-    public struct XREADGROUPGroupBlock: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
+    }
+}
+
+/// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
+public struct XREADGROUP: RedisCommand {
+    public struct GroupBlock: RESPRenderable {
         @usableFromInline let group: String
         @usableFromInline let consumer: String
 
@@ -527,7 +535,7 @@ extension RESPCommand {
             return count
         }
     }
-    public struct XREADGROUPStreams: RESPRenderable {
+    public struct Streams: RESPRenderable {
         @usableFromInline let key: [RedisKey]
         @usableFromInline let id: [String]
 
@@ -539,58 +547,72 @@ extension RESPCommand {
             return count
         }
     }
-    /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
-    ///
-    /// - Documentation: [XREADGROUP](https:/redis.io/docs/latest/commands/xreadgroup)
-    /// - Version: 5.0.0
-    /// - Complexity: For each stream mentioned: O(M) with M being the number of elements returned. If M is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1). On the other side when XREADGROUP blocks, XADD will pay the O(N) time in order to serve the N clients blocked on the stream getting new data.
-    /// - Categories: @write, @stream, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
-    @inlinable
-    public static func xreadgroup(
-        groupBlock: XREADGROUPGroupBlock,
-        count: Int? = nil,
-        milliseconds: Int? = nil,
-        noack: Bool = false,
-        streams: XREADGROUPStreams
-    ) -> RESPCommand {
-        RESPCommand(
-            "XREADGROUP",
-            RESPWithToken("GROUP", groupBlock),
-            RESPWithToken("COUNT", count),
-            RESPWithToken("BLOCK", milliseconds),
-            RedisPureToken("NOACK", noack),
-            RESPWithToken("STREAMS", streams)
-        )
+    public typealias Response = RESPToken?
+
+    public var groupBlock: GroupBlock
+    public var count: Int? = nil
+    public var milliseconds: Int? = nil
+    public var noack: Bool = false
+    public var streams: Streams
+
+    @inlinable public init(groupBlock: GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: Streams) {
+        self.groupBlock = groupBlock
+        self.count = count
+        self.milliseconds = milliseconds
+        self.noack = noack
+        self.streams = streams
     }
 
-    /// Returns the messages from a stream within a range of IDs in reverse order.
-    ///
-    /// - Documentation: [XREVRANGE](https:/redis.io/docs/latest/commands/xrevrange)
-    /// - Version: 5.0.0
-    /// - Complexity: O(N) with N being the number of elements returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
-    /// - Categories: @read, @stream, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): The command returns the entries with IDs matching the specified range. The returned entries are complete, which means that the ID and all the fields they are composed of are returned. Moreover, the entries are returned with their fields and values in the same order as `XADD` added them.
-    @inlinable
-    public static func xrevrange(key: RedisKey, end: String, start: String, count: Int? = nil) -> RESPCommand {
-        RESPCommand("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RedisPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
+    }
+}
+
+/// Returns the messages from a stream within a range of IDs in reverse order.
+public struct XREVRANGE: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var end: String
+    public var start: String
+    public var count: Int? = nil
+
+    @inlinable public init(key: RedisKey, end: String, start: String, count: Int? = nil) {
+        self.key = key
+        self.end = end
+        self.start = start
+        self.count = count
     }
 
-    /// An internal command for replicating stream values.
-    ///
-    /// - Documentation: [XSETID](https:/redis.io/docs/latest/commands/xsetid)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @fast
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func xsetid(key: RedisKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) -> RESPCommand {
-        RESPCommand("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
+    }
+}
+
+/// An internal command for replicating stream values.
+public struct XSETID: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var lastId: String
+    public var entriesAdded: Int? = nil
+    public var maxDeletedId: String? = nil
+
+    @inlinable public init(key: RedisKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) {
+        self.key = key
+        self.lastId = lastId
+        self.entriesAdded = entriesAdded
+        self.maxDeletedId = maxDeletedId
     }
 
-    public enum XTRIMTrimStrategy: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
+    }
+}
+
+/// Deletes messages from the beginning of a stream.
+public struct XTRIM: RedisCommand {
+    public enum TrimStrategy: RESPRenderable {
         case maxlen
         case minid
 
@@ -602,7 +624,7 @@ extension RESPCommand {
             }
         }
     }
-    public enum XTRIMTrimOperator: RESPRenderable {
+    public enum TrimOperator: RESPRenderable {
         case equal
         case approximately
 
@@ -614,9 +636,9 @@ extension RESPCommand {
             }
         }
     }
-    public struct XTRIMTrim: RESPRenderable {
-        @usableFromInline let strategy: XTRIMTrimStrategy
-        @usableFromInline let `operator`: XTRIMTrimOperator?
+    public struct Trim: RESPRenderable {
+        @usableFromInline let strategy: TrimStrategy
+        @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: String
         @usableFromInline let count: Int?
 
@@ -630,19 +652,21 @@ extension RESPCommand {
             return count
         }
     }
-    /// Deletes messages from the beginning of a stream.
-    ///
-    /// - Documentation: [XTRIM](https:/redis.io/docs/latest/commands/xtrim)
-    /// - Version: 5.0.0
-    /// - Complexity: O(N), with N being the number of evicted entries. Constant times are very small however, since entries are organized in macro nodes containing multiple entries that can be released with a single deallocation.
-    /// - Categories: @write, @stream, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The number of entries deleted from the stream.
-    @inlinable
-    public static func xtrim(key: RedisKey, trim: XTRIMTrim) -> RESPCommand {
-        RESPCommand("XTRIM", key, trim)
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var trim: Trim
+
+    @inlinable public init(key: RedisKey, trim: Trim) {
+        self.key = key
+        self.trim = trim
     }
 
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("XTRIM", key, trim)
+    }
 }
+
 
 extension RedisConnection {
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
@@ -653,20 +677,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
-    public func xack(key: RedisKey, group: String, id: String) async throws -> Int {
-        try await send("XACK", key, group, id).converting()
-    }
-
-    /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
-    ///
-    /// - Documentation: [XACK](https:/redis.io/docs/latest/commands/xack)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) for each message ID processed.
-    /// - Categories: @write, @stream, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
-    @inlinable
-    public func xack(key: RedisKey, group: String, ids: [String]) async throws -> Int {
-        try await send("XACK", key, group, ids).converting()
+    public func xack(key: RedisKey, group: String, id: [String]) async throws -> Int {
+        try await send(command: XACK(key: key, group: group, id: id))
     }
 
     /// Appends a new message to a stream. Creates the key if it doesn't exist.
@@ -679,34 +691,8 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(
-        key: RedisKey,
-        nomkstream: Bool = false,
-        trim: RESPCommand.XADDTrim? = nil,
-        idSelector: RESPCommand.XADDIdSelector,
-        data: RESPCommand.XADDData
-    ) async throws -> String? {
-        try await send("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data).converting()
-    }
-
-    /// Appends a new message to a stream. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [XADD](https:/redis.io/docs/latest/commands/xadd)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
-    /// - Categories: @write, @stream, @fast
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
-    @inlinable
-    public func xadd(
-        key: RedisKey,
-        nomkstream: Bool = false,
-        trim: RESPCommand.XADDTrim? = nil,
-        idSelector: RESPCommand.XADDIdSelector,
-        datas: [RESPCommand.XADDData]
-    ) async throws -> String? {
-        try await send("XADD", key, RedisPureToken("NOMKSTREAM", nomkstream), trim, idSelector, datas).converting()
+    public func xadd(key: RedisKey, nomkstream: Bool = false, trim: XADD.Trim? = nil, idSelector: XADD.IdSelector, data: [XADD.Data]) async throws -> String? {
+        try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
@@ -720,17 +706,8 @@ extension RedisConnection {
     ///     2. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
     ///     3. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
     @inlinable
-    public func xautoclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        start: String,
-        count: Int? = nil,
-        justid: Bool = false
-    ) async throws -> [RESPToken] {
-        try await send("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RedisPureToken("JUSTID", justid))
-            .converting()
+    public func xautoclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) async throws -> [RESPToken] {
+        try await send(command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -743,72 +720,8 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        id: String,
-        ms: Int? = nil,
-        unixTimeMilliseconds: Date? = nil,
-        count: Int? = nil,
-        force: Bool = false,
-        justid: Bool = false,
-        lastid: String? = nil
-    ) async throws -> [RESPToken] {
-        try await send(
-            "XCLAIM",
-            key,
-            group,
-            consumer,
-            minIdleTime,
-            id,
-            RESPWithToken("IDLE", ms),
-            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
-            RESPWithToken("RETRYCOUNT", count),
-            RedisPureToken("FORCE", force),
-            RedisPureToken("JUSTID", justid),
-            RESPWithToken("LASTID", lastid)
-        ).converting()
-    }
-
-    /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
-    ///
-    /// - Documentation: [XCLAIM](https:/redis.io/docs/latest/commands/xclaim)
-    /// - Version: 5.0.0
-    /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
-    /// - Categories: @write, @stream, @fast
-    /// - Returns: Any of the following:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
-    @inlinable
-    public func xclaim(
-        key: RedisKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        ids: [String],
-        ms: Int? = nil,
-        unixTimeMilliseconds: Date? = nil,
-        count: Int? = nil,
-        force: Bool = false,
-        justid: Bool = false,
-        lastid: String? = nil
-    ) async throws -> [RESPToken] {
-        try await send(
-            "XCLAIM",
-            key,
-            group,
-            consumer,
-            minIdleTime,
-            ids,
-            RESPWithToken("IDLE", ms),
-            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
-            RESPWithToken("RETRYCOUNT", count),
-            RedisPureToken("FORCE", force),
-            RedisPureToken("JUSTID", justid),
-            RESPWithToken("LASTID", lastid)
-        ).converting()
+    public func xclaim(key: RedisKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESPToken] {
+        try await send(command: XCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -819,20 +732,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries that were deleted.
     @inlinable
-    public func xdel(key: RedisKey, id: String) async throws -> Int {
-        try await send("XDEL", key, id).converting()
-    }
-
-    /// Returns the number of messages after removing them from a stream.
-    ///
-    /// - Documentation: [XDEL](https:/redis.io/docs/latest/commands/xdel)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size.
-    /// - Categories: @write, @stream, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries that were deleted.
-    @inlinable
-    public func xdel(key: RedisKey, ids: [String]) async throws -> Int {
-        try await send("XDEL", key, ids).converting()
+    public func xdel(key: RedisKey, id: [String]) async throws -> Int {
+        try await send(command: XDEL(key: key, id: id))
     }
 
     /// Creates a consumer group.
@@ -843,14 +744,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate(
-        key: RedisKey,
-        group: String,
-        idSelector: RESPCommand.XGROUPCREATEIdSelector,
-        mkstream: Bool = false,
-        entriesRead: Int? = nil
-    ) async throws {
-        try await send("XGROUP", "CREATE", key, group, idSelector, RedisPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+    public func xgroupCreate(key: RedisKey, group: String, idSelector: XGROUPCREATE.IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws -> RESPToken {
+        try await send(command: XGROUPCREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
     }
 
     /// Creates a consumer in a consumer group.
@@ -862,7 +757,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of created consumers, either 0 or 1.
     @inlinable
     public func xgroupCreateconsumer(key: RedisKey, group: String, consumer: String) async throws -> Int {
-        try await send("XGROUP", "CREATECONSUMER", key, group, consumer).converting()
+        try await send(command: XGROUPCREATECONSUMER(key: key, group: group, consumer: consumer))
     }
 
     /// Deletes a consumer from a consumer group.
@@ -874,7 +769,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of pending messages the consumer had before it was deleted.
     @inlinable
     public func xgroupDelconsumer(key: RedisKey, group: String, consumer: String) async throws -> Int {
-        try await send("XGROUP", "DELCONSUMER", key, group, consumer).converting()
+        try await send(command: XGROUPDELCONSUMER(key: key, group: group, consumer: consumer))
     }
 
     /// Destroys a consumer group.
@@ -886,7 +781,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of destroyed consumer groups, either 0 or 1.
     @inlinable
     public func xgroupDestroy(key: RedisKey, group: String) async throws -> Int {
-        try await send("XGROUP", "DESTROY", key, group).converting()
+        try await send(command: XGROUPDESTROY(key: key, group: group))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -898,7 +793,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func xgroupHelp() async throws -> [RESPToken] {
-        try await send("XGROUP", "HELP").converting()
+        try await send(command: XGROUPHELP())
     }
 
     /// Sets the last-delivered ID of a consumer group.
@@ -909,8 +804,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupSetid(key: RedisKey, group: String, idSelector: RESPCommand.XGROUPSETIDIdSelector, entriesread: Int? = nil) async throws {
-        try await send("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+    public func xgroupSetid(key: RedisKey, group: String, idSelector: XGROUPSETID.IdSelector, entriesread: Int? = nil) async throws -> RESPToken {
+        try await send(command: XGROUPSETID(key: key, group: group, idSelector: idSelector, entriesread: entriesread))
     }
 
     /// Returns a list of the consumers in a consumer group.
@@ -922,7 +817,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of consumers and their attributes.
     @inlinable
     public func xinfoConsumers(key: RedisKey, group: String) async throws -> [RESPToken] {
-        try await send("XINFO", "CONSUMERS", key, group).converting()
+        try await send(command: XINFOCONSUMERS(key: key, group: group))
     }
 
     /// Returns a list of the consumer groups of a stream.
@@ -934,7 +829,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of consumer groups.
     @inlinable
     public func xinfoGroups(key: RedisKey) async throws -> [RESPToken] {
-        try await send("XINFO", "GROUPS", key).converting()
+        try await send(command: XINFOGROUPS(key: key))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -946,7 +841,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func xinfoHelp() async throws -> [RESPToken] {
-        try await send("XINFO", "HELP").converting()
+        try await send(command: XINFOHELP())
     }
 
     /// Returns information about a stream.
@@ -959,8 +854,8 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was not given, a list of information about a stream in summary form.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): when the _FULL_ argument was given, a list of information about a stream in extended form.
     @inlinable
-    public func xinfoStream(key: RedisKey, fullBlock: RESPCommand.XINFOSTREAMFullBlock? = nil) async throws -> RESPToken {
-        try await send("XINFO", "STREAM", key, fullBlock)
+    public func xinfoStream(key: RedisKey, fullBlock: XINFOSTREAM.FullBlock? = nil) async throws -> RESPToken {
+        try await send(command: XINFOSTREAM(key: key, fullBlock: fullBlock))
     }
 
     /// Return the number of messages in a stream.
@@ -972,7 +867,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries of the stream at _key_.
     @inlinable
     public func xlen(key: RedisKey) async throws -> Int {
-        try await send("XLEN", key).converting()
+        try await send(command: XLEN(key: key))
     }
 
     /// Returns the information and entries from a stream consumer group's pending entries list.
@@ -983,8 +878,8 @@ extension RedisConnection {
     /// - Categories: @read, @stream, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): different data depending on the way XPENDING is called, as explained on this page.
     @inlinable
-    public func xpending(key: RedisKey, group: String, filters: RESPCommand.XPENDINGFilters? = nil) async throws -> RESPToken {
-        try await send("XPENDING", key, group, filters)
+    public func xpending(key: RedisKey, group: String, filters: XPENDING.Filters? = nil) async throws -> RESPToken {
+        try await send(command: XPENDING(key: key, group: group, filters: filters))
     }
 
     /// Returns the messages from a stream within a range of IDs.
@@ -996,7 +891,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of stream entries with IDs matching the specified range.
     @inlinable
     public func xrange(key: RedisKey, start: String, end: String, count: Int? = nil) async throws -> [RESPToken] {
-        try await send("XRANGE", key, start, end, RESPWithToken("COUNT", count)).converting()
+        try await send(command: XRANGE(key: key, start: start, end: end, count: count))
     }
 
     /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
@@ -1008,8 +903,8 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xread(count: Int? = nil, milliseconds: Int? = nil, streams: RESPCommand.XREADStreams) async throws -> RESPToken? {
-        try await send("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams)).converting()
+    public func xread(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD.Streams) async throws -> RESPToken? {
+        try await send(command: XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
     /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
@@ -1022,21 +917,8 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(
-        groupBlock: RESPCommand.XREADGROUPGroupBlock,
-        count: Int? = nil,
-        milliseconds: Int? = nil,
-        noack: Bool = false,
-        streams: RESPCommand.XREADGROUPStreams
-    ) async throws -> RESPToken? {
-        try await send(
-            "XREADGROUP",
-            RESPWithToken("GROUP", groupBlock),
-            RESPWithToken("COUNT", count),
-            RESPWithToken("BLOCK", milliseconds),
-            RedisPureToken("NOACK", noack),
-            RESPWithToken("STREAMS", streams)
-        ).converting()
+    public func xreadgroup(groupBlock: XREADGROUP.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP.Streams) async throws -> RESPToken? {
+        try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
     /// Returns the messages from a stream within a range of IDs in reverse order.
@@ -1048,7 +930,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): The command returns the entries with IDs matching the specified range. The returned entries are complete, which means that the ID and all the fields they are composed of are returned. Moreover, the entries are returned with their fields and values in the same order as `XADD` added them.
     @inlinable
     public func xrevrange(key: RedisKey, end: String, start: String, count: Int? = nil) async throws -> [RESPToken] {
-        try await send("XREVRANGE", key, end, start, RESPWithToken("COUNT", count)).converting()
+        try await send(command: XREVRANGE(key: key, end: end, start: start, count: count))
     }
 
     /// An internal command for replicating stream values.
@@ -1059,8 +941,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xsetid(key: RedisKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) async throws {
-        try await send("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
+    public func xsetid(key: RedisKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) async throws -> RESPToken {
+        try await send(command: XSETID(key: key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
     }
 
     /// Deletes messages from the beginning of a stream.
@@ -1071,8 +953,8 @@ extension RedisConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The number of entries deleted from the stream.
     @inlinable
-    public func xtrim(key: RedisKey, trim: RESPCommand.XTRIMTrim) async throws -> Int {
-        try await send("XTRIM", key, trim).converting()
+    public func xtrim(key: RedisKey, trim: XTRIM.Trim) async throws -> Int {
+        try await send(command: XTRIM(key: key, trim: trim))
     }
 
 }

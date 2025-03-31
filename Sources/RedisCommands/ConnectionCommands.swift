@@ -22,21 +22,26 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+/// Authenticates the connection.
+public struct AUTH: RedisCommand {
+    public typealias Response = RESPToken
 
-extension RESPCommand {
-    /// Authenticates the connection.
-    ///
-    /// - Documentation: [AUTH](https:/redis.io/docs/latest/commands/auth)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of passwords defined for the user
-    /// - Categories: @fast, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
-    @inlinable
-    public static func auth(username: String? = nil, password: String) -> RESPCommand {
-        RESPCommand("AUTH", username, password)
+    public var username: String? = nil
+    public var password: String
+
+    @inlinable public init(username: String? = nil, password: String) {
+        self.username = username
+        self.password = password
     }
 
-    public enum CLIENTCACHINGMode: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("AUTH", username, password)
+    }
+}
+
+/// Instructs the server whether to track the keys in the next request.
+public struct CLIENTCACHING: RedisCommand {
+    public enum Mode: RESPRenderable {
         case yes
         case no
 
@@ -48,84 +53,87 @@ extension RESPCommand {
             }
         }
     }
-    /// Instructs the server whether to track the keys in the next request.
-    ///
-    /// - Documentation: [CLIENT CACHING](https:/redis.io/docs/latest/commands/client-caching)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` or an error if the argument is not "yes" or "no".
-    @inlinable
-    public static func clientCaching(mode: CLIENTCACHINGMode) -> RESPCommand {
-        RESPCommand("CLIENT", "CACHING", mode)
+    public typealias Response = RESPToken
+
+    public var mode: Mode
+
+    @inlinable public init(mode: Mode) {
+        self.mode = mode
     }
 
-    /// Returns the name of the connection.
-    ///
-    /// - Documentation: [CLIENT GETNAME](https:/redis.io/docs/latest/commands/client-getname)
-    /// - Version: 2.6.9
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the connection name of the current connection.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the connection name was not set.
-    @inlinable
-    public static func clientGetname() -> RESPCommand {
-        RESPCommand("CLIENT", "GETNAME")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "CACHING", mode)
+    }
+}
+
+/// Returns the name of the connection.
+public struct CLIENTGETNAME: RedisCommand {
+    public typealias Response = String?
+
+
+    @inlinable public init() {
     }
 
-    /// Returns the client ID to which the connection's tracking notifications are redirected.
-    ///
-    /// - Documentation: [CLIENT GETREDIR](https:/redis.io/docs/latest/commands/client-getredir)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` when not redirecting notifications to any client.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` if client tracking is not enabled.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the ID of the client to which notification are being redirected.
-    @inlinable
-    public static func clientGetredir() -> RESPCommand {
-        RESPCommand("CLIENT", "GETREDIR")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "GETNAME")
+    }
+}
+
+/// Returns the client ID to which the connection's tracking notifications are redirected.
+public struct CLIENTGETREDIR: RedisCommand {
+    public typealias Response = Int
+
+
+    @inlinable public init() {
     }
 
-    /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [CLIENT HELP](https:/redis.io/docs/latest/commands/client-help)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of subcommands and their descriptions.
-    @inlinable
-    public static func clientHelp() -> RESPCommand {
-        RESPCommand("CLIENT", "HELP")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "GETREDIR")
+    }
+}
+
+/// Returns helpful text about the different subcommands.
+public struct CLIENTHELP: RedisCommand {
+    public typealias Response = [RESPToken]
+
+
+    @inlinable public init() {
     }
 
-    /// Returns the unique client ID of the connection.
-    ///
-    /// - Documentation: [CLIENT ID](https:/redis.io/docs/latest/commands/client-id)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the ID of the client.
-    @inlinable
-    public static func clientId() -> RESPCommand {
-        RESPCommand("CLIENT", "ID")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "HELP")
+    }
+}
+
+/// Returns the unique client ID of the connection.
+public struct CLIENTID: RedisCommand {
+    public typealias Response = Int
+
+
+    @inlinable public init() {
     }
 
-    /// Returns information about the connection.
-    ///
-    /// - Documentation: [CLIENT INFO](https:/redis.io/docs/latest/commands/client-info)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a unique string for the current client, as described at the `CLIENT LIST` page.
-    @inlinable
-    public static func clientInfo() -> RESPCommand {
-        RESPCommand("CLIENT", "INFO")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "ID")
+    }
+}
+
+/// Returns information about the connection.
+public struct CLIENTINFO: RedisCommand {
+    public typealias Response = String
+
+
+    @inlinable public init() {
     }
 
-    public enum CLIENTKILLFilterNewFormatClientType: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "INFO")
+    }
+}
+
+/// Terminates open connections.
+public struct CLIENTKILL: RedisCommand {
+    public enum FilterNewFormatClientType: RESPRenderable {
         case normal
         case master
         case slave
@@ -143,7 +151,7 @@ extension RESPCommand {
             }
         }
     }
-    public enum CLIENTKILLFilterNewFormatSkipme: RESPRenderable {
+    public enum FilterNewFormatSkipme: RESPRenderable {
         case yes
         case no
 
@@ -155,13 +163,13 @@ extension RESPCommand {
             }
         }
     }
-    public enum CLIENTKILLFilterNewFormat: RESPRenderable {
+    public enum FilterNewFormat: RESPRenderable {
         case clientId(Int?)
-        case clientType(CLIENTKILLFilterNewFormatClientType?)
+        case clientType(FilterNewFormatClientType?)
         case username(String?)
         case addr(String?)
         case laddr(String?)
-        case skipme(CLIENTKILLFilterNewFormatSkipme?)
+        case skipme(FilterNewFormatSkipme?)
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
@@ -175,9 +183,9 @@ extension RESPCommand {
             }
         }
     }
-    public enum CLIENTKILLFilter: RESPRenderable {
+    public enum Filter: RESPRenderable {
         case oldFormat(String)
-        case newFormat([CLIENTKILLFilterNewFormat])
+        case newFormat([FilterNewFormat])
 
         @inlinable
         public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
@@ -187,21 +195,22 @@ extension RESPCommand {
             }
         }
     }
-    /// Terminates open connections.
-    ///
-    /// - Documentation: [CLIENT KILL](https:/redis.io/docs/latest/commands/client-kill)
-    /// - Version: 2.4.0
-    /// - Complexity: O(N) where N is the number of client connections
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Response: One of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when called in 3 argument format and the connection has been closed.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when called in filter/value format, the number of clients killed.
-    @inlinable
-    public static func clientKill(filter: CLIENTKILLFilter) -> RESPCommand {
-        RESPCommand("CLIENT", "KILL", filter)
+    public typealias Response = Int?
+
+    public var filter: Filter
+
+    @inlinable public init(filter: Filter) {
+        self.filter = filter
     }
 
-    public enum CLIENTLISTClientType: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "KILL", filter)
+    }
+}
+
+/// Lists open connections.
+public struct CLIENTLIST: RedisCommand {
+    public enum ClientType: RESPRenderable {
         case normal
         case master
         case replica
@@ -217,31 +226,24 @@ extension RESPCommand {
             }
         }
     }
-    /// Lists open connections.
-    ///
-    /// - Documentation: [CLIENT LIST](https:/redis.io/docs/latest/commands/client-list)
-    /// - Version: 2.4.0
-    /// - Complexity: O(N) where N is the number of client connections
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): information and statistics about client connections.
-    @inlinable
-    public static func clientList(clientType: CLIENTLISTClientType? = nil, clientId: Int? = nil) -> RESPCommand {
-        RESPCommand("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
+    public typealias Response = String
+
+    public var clientType: ClientType? = nil
+    public var clientId: [Int] = []
+
+    @inlinable public init(clientType: ClientType? = nil, clientId: [Int] = []) {
+        self.clientType = clientType
+        self.clientId = clientId
     }
 
-    /// Lists open connections.
-    ///
-    /// - Documentation: [CLIENT LIST](https:/redis.io/docs/latest/commands/client-list)
-    /// - Version: 2.4.0
-    /// - Complexity: O(N) where N is the number of client connections
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): information and statistics about client connections.
-    @inlinable
-    public static func clientList(clientType: CLIENTLISTClientType? = nil, clientIds: [Int]) -> RESPCommand {
-        RESPCommand("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientIds))
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
     }
+}
 
-    public enum CLIENTNOEVICTEnabled: RESPRenderable {
+/// Sets the client eviction mode of the connection.
+public struct CLIENTNOEVICT: RedisCommand {
+    public enum Enabled: RESPRenderable {
         case on
         case off
 
@@ -253,19 +255,22 @@ extension RESPCommand {
             }
         }
     }
-    /// Sets the client eviction mode of the connection.
-    ///
-    /// - Documentation: [CLIENT NO-EVICT](https:/redis.io/docs/latest/commands/client-no-evict)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func clientNoEvict(enabled: CLIENTNOEVICTEnabled) -> RESPCommand {
-        RESPCommand("CLIENT", "NO-EVICT", enabled)
+    public typealias Response = RESPToken
+
+    public var enabled: Enabled
+
+    @inlinable public init(enabled: Enabled) {
+        self.enabled = enabled
     }
 
-    public enum CLIENTNOTOUCHEnabled: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "NO-EVICT", enabled)
+    }
+}
+
+/// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
+public struct CLIENTNOTOUCH: RedisCommand {
+    public enum Enabled: RESPRenderable {
         case on
         case off
 
@@ -277,19 +282,22 @@ extension RESPCommand {
             }
         }
     }
-    /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
-    ///
-    /// - Documentation: [CLIENT NO-TOUCH](https:/redis.io/docs/latest/commands/client-no-touch)
-    /// - Version: 7.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func clientNoTouch(enabled: CLIENTNOTOUCHEnabled) -> RESPCommand {
-        RESPCommand("CLIENT", "NO-TOUCH", enabled)
+    public typealias Response = RESPToken
+
+    public var enabled: Enabled
+
+    @inlinable public init(enabled: Enabled) {
+        self.enabled = enabled
     }
 
-    public enum CLIENTPAUSEMode: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "NO-TOUCH", enabled)
+    }
+}
+
+/// Suspends commands processing.
+public struct CLIENTPAUSE: RedisCommand {
+    public enum Mode: RESPRenderable {
         case write
         case all
 
@@ -301,19 +309,24 @@ extension RESPCommand {
             }
         }
     }
-    /// Suspends commands processing.
-    ///
-    /// - Documentation: [CLIENT PAUSE](https:/redis.io/docs/latest/commands/client-pause)
-    /// - Version: 3.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` or an error if the timeout is invalid.
-    @inlinable
-    public static func clientPause(timeout: Int, mode: CLIENTPAUSEMode? = nil) -> RESPCommand {
-        RESPCommand("CLIENT", "PAUSE", timeout, mode)
+    public typealias Response = RESPToken
+
+    public var timeout: Int
+    public var mode: Mode? = nil
+
+    @inlinable public init(timeout: Int, mode: Mode? = nil) {
+        self.timeout = timeout
+        self.mode = mode
     }
 
-    public enum CLIENTREPLYAction: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "PAUSE", timeout, mode)
+    }
+}
+
+/// Instructs the server whether to reply to commands.
+public struct CLIENTREPLY: RedisCommand {
+    public enum Action: RESPRenderable {
         case on
         case off
         case skip
@@ -327,19 +340,22 @@ extension RESPCommand {
             }
         }
     }
-    /// Instructs the server whether to reply to commands.
-    ///
-    /// - Documentation: [CLIENT REPLY](https:/redis.io/docs/latest/commands/client-reply)
-    /// - Version: 3.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when called with `ON`. When called with either `OFF` or `SKIP` sub-commands, no reply is made.
-    @inlinable
-    public static func clientReply(action: CLIENTREPLYAction) -> RESPCommand {
-        RESPCommand("CLIENT", "REPLY", action)
+    public typealias Response = RESPToken
+
+    public var action: Action
+
+    @inlinable public init(action: Action) {
+        self.action = action
     }
 
-    public enum CLIENTSETINFOAttr: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "REPLY", action)
+    }
+}
+
+/// Sets information specific to the client or connection.
+public struct CLIENTSETINFO: RedisCommand {
+    public enum Attr: RESPRenderable {
         case libname(String)
         case libver(String)
 
@@ -351,31 +367,37 @@ extension RESPCommand {
             }
         }
     }
-    /// Sets information specific to the client or connection.
-    ///
-    /// - Documentation: [CLIENT SETINFO](https:/redis.io/docs/latest/commands/client-setinfo)
-    /// - Version: 7.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the attribute name was successfully set.
-    @inlinable
-    public static func clientSetinfo(attr: CLIENTSETINFOAttr) -> RESPCommand {
-        RESPCommand("CLIENT", "SETINFO", attr)
+    public typealias Response = RESPToken
+
+    public var attr: Attr
+
+    @inlinable public init(attr: Attr) {
+        self.attr = attr
     }
 
-    /// Sets the connection name.
-    ///
-    /// - Documentation: [CLIENT SETNAME](https:/redis.io/docs/latest/commands/client-setname)
-    /// - Version: 2.6.9
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection name was successfully set.
-    @inlinable
-    public static func clientSetname(connectionName: String) -> RESPCommand {
-        RESPCommand("CLIENT", "SETNAME", connectionName)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "SETINFO", attr)
+    }
+}
+
+/// Sets the connection name.
+public struct CLIENTSETNAME: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var connectionName: String
+
+    @inlinable public init(connectionName: String) {
+        self.connectionName = connectionName
     }
 
-    public enum CLIENTTRACKINGStatus: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "SETNAME", connectionName)
+    }
+}
+
+/// Controls server-assisted client-side caching for the connection.
+public struct CLIENTTRACKING: RedisCommand {
+    public enum Status: RESPRenderable {
         case on
         case off
 
@@ -387,79 +409,47 @@ extension RESPCommand {
             }
         }
     }
-    /// Controls server-assisted client-side caching for the connection.
-    ///
-    /// - Documentation: [CLIENT TRACKING](https:/redis.io/docs/latest/commands/client-tracking)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1). Some options may introduce additional complexity.
-    /// - Categories: @slow, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
-    @inlinable
-    public static func clientTracking(
-        status: CLIENTTRACKINGStatus,
-        clientId: Int? = nil,
-        prefix: String? = nil,
-        bcast: Bool = false,
-        optin: Bool = false,
-        optout: Bool = false,
-        noloop: Bool = false
-    ) -> RESPCommand {
-        RESPCommand(
-            "CLIENT",
-            "TRACKING",
-            status,
-            RESPWithToken("REDIRECT", clientId),
-            RESPWithToken("PREFIX", prefix),
-            RedisPureToken("BCAST", bcast),
-            RedisPureToken("OPTIN", optin),
-            RedisPureToken("OPTOUT", optout),
-            RedisPureToken("NOLOOP", noloop)
-        )
+    public typealias Response = RESPToken
+
+    public var status: Status
+    public var clientId: Int? = nil
+    public var prefix: [String] = []
+    public var bcast: Bool = false
+    public var optin: Bool = false
+    public var optout: Bool = false
+    public var noloop: Bool = false
+
+    @inlinable public init(status: Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) {
+        self.status = status
+        self.clientId = clientId
+        self.prefix = prefix
+        self.bcast = bcast
+        self.optin = optin
+        self.optout = optout
+        self.noloop = noloop
     }
 
-    /// Controls server-assisted client-side caching for the connection.
-    ///
-    /// - Documentation: [CLIENT TRACKING](https:/redis.io/docs/latest/commands/client-tracking)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1). Some options may introduce additional complexity.
-    /// - Categories: @slow, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
-    @inlinable
-    public static func clientTracking(
-        status: CLIENTTRACKINGStatus,
-        clientId: Int? = nil,
-        prefixs: [String],
-        bcast: Bool = false,
-        optin: Bool = false,
-        optout: Bool = false,
-        noloop: Bool = false
-    ) -> RESPCommand {
-        RESPCommand(
-            "CLIENT",
-            "TRACKING",
-            status,
-            RESPWithToken("REDIRECT", clientId),
-            RESPWithToken("PREFIX", prefixs),
-            RedisPureToken("BCAST", bcast),
-            RedisPureToken("OPTIN", optin),
-            RedisPureToken("OPTOUT", optout),
-            RedisPureToken("NOLOOP", noloop)
-        )
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+    }
+}
+
+/// Returns information about server-assisted client-side caching for the connection.
+public struct CLIENTTRACKINGINFO: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
     }
 
-    /// Returns information about server-assisted client-side caching for the connection.
-    ///
-    /// - Documentation: [CLIENT TRACKINGINFO](https:/redis.io/docs/latest/commands/client-trackinginfo)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of tracking information sections and their respective values.
-    @inlinable
-    public static func clientTrackinginfo() -> RESPCommand {
-        RESPCommand("CLIENT", "TRACKINGINFO")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "TRACKINGINFO")
     }
+}
 
-    public enum CLIENTUNBLOCKUnblockType: RESPRenderable {
+/// Unblocks a client blocked by a blocking command from a different connection.
+public struct CLIENTUNBLOCK: RedisCommand {
+    public enum UnblockType: RESPRenderable {
         case timeout
         case error
 
@@ -471,45 +461,52 @@ extension RESPCommand {
             }
         }
     }
-    /// Unblocks a client blocked by a blocking command from a different connection.
-    ///
-    /// - Documentation: [CLIENT UNBLOCK](https:/redis.io/docs/latest/commands/client-unblock)
-    /// - Version: 5.0.0
-    /// - Complexity: O(log N) where N is the number of client connections
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the client was unblocked successfully.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the client wasn't unblocked.
-    @inlinable
-    public static func clientUnblock(clientId: Int, unblockType: CLIENTUNBLOCKUnblockType? = nil) -> RESPCommand {
-        RESPCommand("CLIENT", "UNBLOCK", clientId, unblockType)
+    public typealias Response = Int
+
+    public var clientId: Int
+    public var unblockType: UnblockType? = nil
+
+    @inlinable public init(clientId: Int, unblockType: UnblockType? = nil) {
+        self.clientId = clientId
+        self.unblockType = unblockType
     }
 
-    /// Resumes processing commands from paused clients.
-    ///
-    /// - Documentation: [CLIENT UNPAUSE](https:/redis.io/docs/latest/commands/client-unpause)
-    /// - Version: 6.2.0
-    /// - Complexity: O(N) Where N is the number of paused clients
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func clientUnpause() -> RESPCommand {
-        RESPCommand("CLIENT", "UNPAUSE")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "UNBLOCK", clientId, unblockType)
+    }
+}
+
+/// Resumes processing commands from paused clients.
+public struct CLIENTUNPAUSE: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
     }
 
-    /// Returns the given string.
-    ///
-    /// - Documentation: [ECHO](https:/redis.io/docs/latest/commands/echo)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the given string.
-    @inlinable
-    public static func echo(message: String) -> RESPCommand {
-        RESPCommand("ECHO", message)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("CLIENT", "UNPAUSE")
+    }
+}
+
+/// Returns the given string.
+public struct ECHO: RedisCommand {
+    public typealias Response = String
+
+    public var message: String
+
+    @inlinable public init(message: String) {
+        self.message = message
     }
 
-    public struct HELLOArgumentsAuth: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("ECHO", message)
+    }
+}
+
+/// Handshakes with the Redis server.
+public struct HELLO: RedisCommand {
+    public struct ArgumentsAuth: RESPRenderable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -521,9 +518,9 @@ extension RESPCommand {
             return count
         }
     }
-    public struct HELLOArguments: RESPRenderable {
+    public struct Arguments: RESPRenderable {
         @usableFromInline let protover: Int
-        @usableFromInline let auth: HELLOArgumentsAuth?
+        @usableFromInline let auth: ArgumentsAuth?
         @usableFromInline let clientname: String?
 
         @inlinable
@@ -535,70 +532,75 @@ extension RESPCommand {
             return count
         }
     }
-    /// Handshakes with the Redis server.
-    ///
-    /// - Documentation: [HELLO](https:/redis.io/docs/latest/commands/hello)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of server properties.
-    ///     [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): if the `protover` requested does not exist.
-    @inlinable
-    public static func hello(arguments: HELLOArguments? = nil) -> RESPCommand {
-        RESPCommand("HELLO", arguments)
+    public typealias Response = RESPToken
+
+    public var arguments: Arguments? = nil
+
+    @inlinable public init(arguments: Arguments? = nil) {
+        self.arguments = arguments
     }
 
-    /// Returns the server's liveliness response.
-    ///
-    /// - Documentation: [PING](https:/redis.io/docs/latest/commands/ping)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Response: Any of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `PONG` when no argument is provided.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the provided argument.
-    @inlinable
-    public static func ping(message: String? = nil) -> RESPCommand {
-        RESPCommand("PING", message)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("HELLO", arguments)
     }
-
-    /// Closes the connection.
-    ///
-    /// - Documentation: [QUIT](https:/redis.io/docs/latest/commands/quit)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func quit() -> RESPCommand {
-        RESPCommand("QUIT")
-    }
-
-    /// Resets the connection.
-    ///
-    /// - Documentation: [RESET](https:/redis.io/docs/latest/commands/reset)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `RESET`.
-    @inlinable
-    public static func reset() -> RESPCommand {
-        RESPCommand("RESET")
-    }
-
-    /// Changes the selected database.
-    ///
-    /// - Documentation: [SELECT](https:/redis.io/docs/latest/commands/select)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func select(index: Int) -> RESPCommand {
-        RESPCommand("SELECT", index)
-    }
-
 }
+
+/// Returns the server's liveliness response.
+public struct PING: RedisCommand {
+    public typealias Response = String
+
+    public var message: String? = nil
+
+    @inlinable public init(message: String? = nil) {
+        self.message = message
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("PING", message)
+    }
+}
+
+/// Closes the connection.
+public struct QUIT: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("QUIT")
+    }
+}
+
+/// Resets the connection.
+public struct RESET: RedisCommand {
+    public typealias Response = String
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("RESET")
+    }
+}
+
+/// Changes the selected database.
+public struct SELECT: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var index: Int
+
+    @inlinable public init(index: Int) {
+        self.index = index
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("SELECT", index)
+    }
+}
+
 
 extension RedisConnection {
     /// Authenticates the connection.
@@ -609,8 +611,8 @@ extension RedisConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
     @inlinable
-    public func auth(username: String? = nil, password: String) async throws {
-        try await send("AUTH", username, password)
+    public func auth(username: String? = nil, password: String) async throws -> RESPToken {
+        try await send(command: AUTH(username: username, password: password))
     }
 
     /// Instructs the server whether to track the keys in the next request.
@@ -621,8 +623,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` or an error if the argument is not "yes" or "no".
     @inlinable
-    public func clientCaching(mode: RESPCommand.CLIENTCACHINGMode) async throws {
-        try await send("CLIENT", "CACHING", mode)
+    public func clientCaching(mode: CLIENTCACHING.Mode) async throws -> RESPToken {
+        try await send(command: CLIENTCACHING(mode: mode))
     }
 
     /// Returns the name of the connection.
@@ -636,7 +638,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the connection name was not set.
     @inlinable
     public func clientGetname() async throws -> String? {
-        try await send("CLIENT", "GETNAME").converting()
+        try await send(command: CLIENTGETNAME())
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
@@ -651,7 +653,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the ID of the client to which notification are being redirected.
     @inlinable
     public func clientGetredir() async throws -> Int {
-        try await send("CLIENT", "GETREDIR").converting()
+        try await send(command: CLIENTGETREDIR())
     }
 
     /// Returns helpful text about the different subcommands.
@@ -663,7 +665,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of subcommands and their descriptions.
     @inlinable
     public func clientHelp() async throws -> [RESPToken] {
-        try await send("CLIENT", "HELP").converting()
+        try await send(command: CLIENTHELP())
     }
 
     /// Returns the unique client ID of the connection.
@@ -675,7 +677,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the ID of the client.
     @inlinable
     public func clientId() async throws -> Int {
-        try await send("CLIENT", "ID").converting()
+        try await send(command: CLIENTID())
     }
 
     /// Returns information about the connection.
@@ -687,7 +689,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a unique string for the current client, as described at the `CLIENT LIST` page.
     @inlinable
     public func clientInfo() async throws -> String {
-        try await send("CLIENT", "INFO").converting()
+        try await send(command: CLIENTINFO())
     }
 
     /// Terminates open connections.
@@ -700,8 +702,8 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when called in 3 argument format and the connection has been closed.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when called in filter/value format, the number of clients killed.
     @inlinable
-    public func clientKill(filter: RESPCommand.CLIENTKILLFilter) async throws -> Int? {
-        try await send("CLIENT", "KILL", filter).converting()
+    public func clientKill(filter: CLIENTKILL.Filter) async throws -> Int? {
+        try await send(command: CLIENTKILL(filter: filter))
     }
 
     /// Lists open connections.
@@ -712,20 +714,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): information and statistics about client connections.
     @inlinable
-    public func clientList(clientType: RESPCommand.CLIENTLISTClientType? = nil, clientId: Int? = nil) async throws -> String {
-        try await send("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId)).converting()
-    }
-
-    /// Lists open connections.
-    ///
-    /// - Documentation: [CLIENT LIST](https:/redis.io/docs/latest/commands/client-list)
-    /// - Version: 2.4.0
-    /// - Complexity: O(N) where N is the number of client connections
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): information and statistics about client connections.
-    @inlinable
-    public func clientList(clientType: RESPCommand.CLIENTLISTClientType? = nil, clientIds: [Int]) async throws -> String {
-        try await send("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientIds)).converting()
+    public func clientList(clientType: CLIENTLIST.ClientType? = nil, clientId: [Int] = []) async throws -> String {
+        try await send(command: CLIENTLIST(clientType: clientType, clientId: clientId))
     }
 
     /// Sets the client eviction mode of the connection.
@@ -736,8 +726,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func clientNoEvict(enabled: RESPCommand.CLIENTNOEVICTEnabled) async throws {
-        try await send("CLIENT", "NO-EVICT", enabled)
+    public func clientNoEvict(enabled: CLIENTNOEVICT.Enabled) async throws -> RESPToken {
+        try await send(command: CLIENTNOEVICT(enabled: enabled))
     }
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
@@ -748,8 +738,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func clientNoTouch(enabled: RESPCommand.CLIENTNOTOUCHEnabled) async throws {
-        try await send("CLIENT", "NO-TOUCH", enabled)
+    public func clientNoTouch(enabled: CLIENTNOTOUCH.Enabled) async throws -> RESPToken {
+        try await send(command: CLIENTNOTOUCH(enabled: enabled))
     }
 
     /// Suspends commands processing.
@@ -760,8 +750,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` or an error if the timeout is invalid.
     @inlinable
-    public func clientPause(timeout: Int, mode: RESPCommand.CLIENTPAUSEMode? = nil) async throws {
-        try await send("CLIENT", "PAUSE", timeout, mode)
+    public func clientPause(timeout: Int, mode: CLIENTPAUSE.Mode? = nil) async throws -> RESPToken {
+        try await send(command: CLIENTPAUSE(timeout: timeout, mode: mode))
     }
 
     /// Instructs the server whether to reply to commands.
@@ -772,8 +762,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when called with `ON`. When called with either `OFF` or `SKIP` sub-commands, no reply is made.
     @inlinable
-    public func clientReply(action: RESPCommand.CLIENTREPLYAction) async throws {
-        try await send("CLIENT", "REPLY", action)
+    public func clientReply(action: CLIENTREPLY.Action) async throws -> RESPToken {
+        try await send(command: CLIENTREPLY(action: action))
     }
 
     /// Sets information specific to the client or connection.
@@ -784,8 +774,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the attribute name was successfully set.
     @inlinable
-    public func clientSetinfo(attr: RESPCommand.CLIENTSETINFOAttr) async throws {
-        try await send("CLIENT", "SETINFO", attr)
+    public func clientSetinfo(attr: CLIENTSETINFO.Attr) async throws -> RESPToken {
+        try await send(command: CLIENTSETINFO(attr: attr))
     }
 
     /// Sets the connection name.
@@ -796,8 +786,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection name was successfully set.
     @inlinable
-    public func clientSetname(connectionName: String) async throws {
-        try await send("CLIENT", "SETNAME", connectionName)
+    public func clientSetname(connectionName: String) async throws -> RESPToken {
+        try await send(command: CLIENTSETNAME(connectionName: connectionName))
     }
 
     /// Controls server-assisted client-side caching for the connection.
@@ -808,56 +798,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(
-        status: RESPCommand.CLIENTTRACKINGStatus,
-        clientId: Int? = nil,
-        prefix: String? = nil,
-        bcast: Bool = false,
-        optin: Bool = false,
-        optout: Bool = false,
-        noloop: Bool = false
-    ) async throws {
-        try await send(
-            "CLIENT",
-            "TRACKING",
-            status,
-            RESPWithToken("REDIRECT", clientId),
-            RESPWithToken("PREFIX", prefix),
-            RedisPureToken("BCAST", bcast),
-            RedisPureToken("OPTIN", optin),
-            RedisPureToken("OPTOUT", optout),
-            RedisPureToken("NOLOOP", noloop)
-        )
-    }
-
-    /// Controls server-assisted client-side caching for the connection.
-    ///
-    /// - Documentation: [CLIENT TRACKING](https:/redis.io/docs/latest/commands/client-tracking)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1). Some options may introduce additional complexity.
-    /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
-    @inlinable
-    public func clientTracking(
-        status: RESPCommand.CLIENTTRACKINGStatus,
-        clientId: Int? = nil,
-        prefixs: [String],
-        bcast: Bool = false,
-        optin: Bool = false,
-        optout: Bool = false,
-        noloop: Bool = false
-    ) async throws {
-        try await send(
-            "CLIENT",
-            "TRACKING",
-            status,
-            RESPWithToken("REDIRECT", clientId),
-            RESPWithToken("PREFIX", prefixs),
-            RedisPureToken("BCAST", bcast),
-            RedisPureToken("OPTIN", optin),
-            RedisPureToken("OPTOUT", optout),
-            RedisPureToken("NOLOOP", noloop)
-        )
+    public func clientTracking(status: CLIENTTRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws -> RESPToken {
+        try await send(command: CLIENTTRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
@@ -869,7 +811,7 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of tracking information sections and their respective values.
     @inlinable
     public func clientTrackinginfo() async throws -> RESPToken {
-        try await send("CLIENT", "TRACKINGINFO")
+        try await send(command: CLIENTTRACKINGINFO())
     }
 
     /// Unblocks a client blocked by a blocking command from a different connection.
@@ -882,8 +824,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the client was unblocked successfully.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the client wasn't unblocked.
     @inlinable
-    public func clientUnblock(clientId: Int, unblockType: RESPCommand.CLIENTUNBLOCKUnblockType? = nil) async throws -> Int {
-        try await send("CLIENT", "UNBLOCK", clientId, unblockType).converting()
+    public func clientUnblock(clientId: Int, unblockType: CLIENTUNBLOCK.UnblockType? = nil) async throws -> Int {
+        try await send(command: CLIENTUNBLOCK(clientId: clientId, unblockType: unblockType))
     }
 
     /// Resumes processing commands from paused clients.
@@ -894,8 +836,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func clientUnpause() async throws {
-        try await send("CLIENT", "UNPAUSE")
+    public func clientUnpause() async throws -> RESPToken {
+        try await send(command: CLIENTUNPAUSE())
     }
 
     /// Returns the given string.
@@ -907,7 +849,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the given string.
     @inlinable
     public func echo(message: String) async throws -> String {
-        try await send("ECHO", message).converting()
+        try await send(command: ECHO(message: message))
     }
 
     /// Handshakes with the Redis server.
@@ -919,8 +861,8 @@ extension RedisConnection {
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of server properties.
     ///     [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): if the `protover` requested does not exist.
     @inlinable
-    public func hello(arguments: RESPCommand.HELLOArguments? = nil) async throws -> RESPToken {
-        try await send("HELLO", arguments)
+    public func hello(arguments: HELLO.Arguments? = nil) async throws -> RESPToken {
+        try await send(command: HELLO(arguments: arguments))
     }
 
     /// Returns the server's liveliness response.
@@ -934,7 +876,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the provided argument.
     @inlinable
     public func ping(message: String? = nil) async throws -> String {
-        try await send("PING", message).converting()
+        try await send(command: PING(message: message))
     }
 
     /// Closes the connection.
@@ -945,8 +887,8 @@ extension RedisConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func quit() async throws {
-        try await send("QUIT")
+    public func quit() async throws -> RESPToken {
+        try await send(command: QUIT())
     }
 
     /// Resets the connection.
@@ -958,7 +900,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `RESET`.
     @inlinable
     public func reset() async throws -> String {
-        try await send("RESET").converting()
+        try await send(command: RESET())
     }
 
     /// Changes the selected database.
@@ -969,8 +911,8 @@ extension RedisConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func select(index: Int) async throws {
-        try await send("SELECT", index)
+    public func select(index: Int) async throws -> RESPToken {
+        try await send(command: SELECT(index: index))
     }
 
 }

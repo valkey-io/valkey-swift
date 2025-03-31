@@ -22,83 +22,73 @@ import FoundationEssentials
 #else
 import Foundation
 #endif
+/// Discards a transaction.
+public struct DISCARD: RedisCommand {
+    public typealias Response = RESPToken
 
-extension RESPCommand {
-    /// Discards a transaction.
-    ///
-    /// - Documentation: [DISCARD](https:/redis.io/docs/latest/commands/discard)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N), when N is the number of queued commands
-    /// - Categories: @fast, @transaction
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func discard() -> RESPCommand {
-        RESPCommand("DISCARD")
+
+    @inlinable public init() {
     }
 
-    /// Executes all commands in a transaction.
-    ///
-    /// - Documentation: [EXEC](https:/redis.io/docs/latest/commands/exec)
-    /// - Version: 1.2.0
-    /// - Complexity: Depends on commands in the transaction
-    /// - Categories: @slow, @transaction
-    /// - Response: One of the following:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each element being the reply to each of the commands in the atomic transaction.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the transaction was aborted because a `WATCH`ed key was touched.
-    @inlinable
-    public static func exec() -> RESPCommand {
-        RESPCommand("EXEC")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("DISCARD")
     }
-
-    /// Starts a transaction.
-    ///
-    /// - Documentation: [MULTI](https:/redis.io/docs/latest/commands/multi)
-    /// - Version: 1.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast, @transaction
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func multi() -> RESPCommand {
-        RESPCommand("MULTI")
-    }
-
-    /// Forgets about watched keys of a transaction.
-    ///
-    /// - Documentation: [UNWATCH](https:/redis.io/docs/latest/commands/unwatch)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast, @transaction
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func unwatch() -> RESPCommand {
-        RESPCommand("UNWATCH")
-    }
-
-    /// Monitors changes to keys to determine the execution of a transaction.
-    ///
-    /// - Documentation: [WATCH](https:/redis.io/docs/latest/commands/watch)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for every key.
-    /// - Categories: @fast, @transaction
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func watch(key: RedisKey) -> RESPCommand {
-        RESPCommand("WATCH", key)
-    }
-
-    /// Monitors changes to keys to determine the execution of a transaction.
-    ///
-    /// - Documentation: [WATCH](https:/redis.io/docs/latest/commands/watch)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for every key.
-    /// - Categories: @fast, @transaction
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func watch(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("WATCH", keys)
-    }
-
 }
+
+/// Executes all commands in a transaction.
+public struct EXEC: RedisCommand {
+    public typealias Response = [RESPToken]?
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("EXEC")
+    }
+}
+
+/// Starts a transaction.
+public struct MULTI: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("MULTI")
+    }
+}
+
+/// Forgets about watched keys of a transaction.
+public struct UNWATCH: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("UNWATCH")
+    }
+}
+
+/// Monitors changes to keys to determine the execution of a transaction.
+public struct WATCH: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeRESPArray("WATCH", key)
+    }
+}
+
 
 extension RedisConnection {
     /// Discards a transaction.
@@ -109,8 +99,8 @@ extension RedisConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func discard() async throws {
-        try await send("DISCARD")
+    public func discard() async throws -> RESPToken {
+        try await send(command: DISCARD())
     }
 
     /// Executes all commands in a transaction.
@@ -124,7 +114,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the transaction was aborted because a `WATCH`ed key was touched.
     @inlinable
     public func exec() async throws -> [RESPToken]? {
-        try await send("EXEC").converting()
+        try await send(command: EXEC())
     }
 
     /// Starts a transaction.
@@ -135,8 +125,8 @@ extension RedisConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func multi() async throws {
-        try await send("MULTI")
+    public func multi() async throws -> RESPToken {
+        try await send(command: MULTI())
     }
 
     /// Forgets about watched keys of a transaction.
@@ -147,8 +137,8 @@ extension RedisConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func unwatch() async throws {
-        try await send("UNWATCH")
+    public func unwatch() async throws -> RESPToken {
+        try await send(command: UNWATCH())
     }
 
     /// Monitors changes to keys to determine the execution of a transaction.
@@ -159,20 +149,8 @@ extension RedisConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func watch(key: RedisKey) async throws {
-        try await send("WATCH", key)
-    }
-
-    /// Monitors changes to keys to determine the execution of a transaction.
-    ///
-    /// - Documentation: [WATCH](https:/redis.io/docs/latest/commands/watch)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for every key.
-    /// - Categories: @fast, @transaction
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public func watch(keys: [RedisKey]) async throws {
-        try await send("WATCH", keys)
+    public func watch(key: [RedisKey]) async throws -> RESPToken {
+        try await send(command: WATCH(key: key))
     }
 
 }

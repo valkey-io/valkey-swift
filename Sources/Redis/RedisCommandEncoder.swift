@@ -14,13 +14,15 @@
 
 import NIOCore
 
-public struct RESPCommand: Sendable {
-    @usableFromInline
-    package let buffer: ByteBuffer
+public struct RedisCommandEncoder {
+    var buffer: ByteBuffer
 
-    @inlinable
-    public init<each Arg: RESPRenderable>(_ command: repeat each Arg) {
-        var buffer = ByteBuffer()
+    init() {
+        self.buffer = .init()
+    }
+
+    @usableFromInline
+    package mutating func encodeRESPArray<each Arg: RESPRenderable>(_ command: repeat each Arg) {
         buffer.writeRESP3TypeIdentifier(.array)
         let arrayCountIndex = buffer.writerIndex
         // temporarily write 0 here, we will update this once everything else is written
@@ -37,15 +39,12 @@ public struct RESPCommand: Sendable {
             // skip past count + \r\n
             let sliceStart = arrayCountIndex + 3
             var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            var buffer = ByteBufferAllocator().buffer(capacity: slice.readableBytes + 5)
-            buffer.writeRESP3TypeIdentifier(.array)
+            buffer.moveWriterIndex(to: arrayCountIndex)
             buffer.writeString(String(count))
             buffer.writeStaticString("\r\n")
             buffer.writeBuffer(&slice)
-            self.buffer = buffer
         } else {
             buffer.setString(String(count), at: arrayCountIndex)
-            self.buffer = buffer
         }
     }
 }

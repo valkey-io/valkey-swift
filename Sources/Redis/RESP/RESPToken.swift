@@ -93,6 +93,7 @@ public struct RESPToken: Hashable, Sendable {
         case push(Array)
     }
 
+    @usableFromInline
     package let base: ByteBuffer
 
     public var value: Value {

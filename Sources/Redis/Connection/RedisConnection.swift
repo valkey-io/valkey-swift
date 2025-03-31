@@ -44,8 +44,8 @@ public struct ServerAddress: Sendable, Equatable {
 @_documentation(visibility: internal)
 public struct RedisConnection: Sendable {
     enum Request {
-        case command(RESPCommand)
-        case pipelinedCommands([RESPCommand])
+        case command(ByteBuffer)
+        case pipelinedCommands(ByteBuffer, Int)
     }
     enum Response {
         case token(RESPToken)
@@ -96,7 +96,7 @@ public struct RedisConnection: Sendable {
                         do {
                             switch request {
                             case .command(let command):
-                                try await outbound.write(command.buffer)
+                                try await outbound.write(command)
                                 let response = try await inboundIterator.next()
                                 if let response {
                                     continuation.resume(returning: .token(response))
@@ -109,10 +109,10 @@ public struct RedisConnection: Sendable {
                                         )
                                     )
                                 }
-                            case .pipelinedCommands(let commands):
-                                try await outbound.write(contentsOf: commands.map { $0.buffer })
+                            case .pipelinedCommands(let commands, let count):
+                                try await outbound.write(commands)
                                 var responses: [RESPToken] = .init()
-                                for _ in 0..<commands.count {
+                                for _ in 0..<count {
                                     let response = try await inboundIterator.next()
                                     if let response {
                                         responses.append(response)
@@ -153,14 +153,66 @@ public struct RedisConnection: Sendable {
         }
     }
 
-    @discardableResult public func send(command: RESPCommand) async throws -> RESPToken {
+    @discardableResult public func send<Command: RedisCommand>(command: Command) async throws -> Command.Response {
+        var encoder = RedisCommandEncoder()
+        command.encode(into: &encoder)
+        let response: Response = try await withCheckedThrowingContinuation { continuation in
+            switch requestContinuation.yield((.command(encoder.buffer), continuation)) {
+            case .enqueued:
+                break
+            case .dropped, .terminated:
+                continuation.resume(
+                    throwing: RedisClientError(
+                        .connectionClosed,
+                        message: "Unable to enqueue request due to the connection being shutdown."
+                    )
+                )
+            default:
+                break
+            }
+        }
+        guard case .token(let token) = response else { preconditionFailure("Expected a single response") }
+        return try .init(from: token)
+    }
+
+    @discardableResult public func pipeline<each Command: RedisCommand>(
+        _ commands: repeat each Command
+    ) async throws -> [RESPToken] {
+        var count = 0
+        var encoder = RedisCommandEncoder()
+        for command in repeat each commands {
+            command.encode(into: &encoder)
+            count += 1
+        }
+
+        let response: Response = try await withCheckedThrowingContinuation { continuation in
+            switch requestContinuation.yield((.pipelinedCommands(encoder.buffer, count), continuation)) {
+            case .enqueued:
+                break
+            case .dropped, .terminated:
+                continuation.resume(
+                    throwing: RedisClientError(
+                        .connectionClosed,
+                        message: "Unable to enqueue request due to the connection being shutdown."
+                    )
+                )
+            default:
+                break
+            }
+        }
+        guard case .pipelinedResponse(let tokens) = response else { preconditionFailure("Expected a single response") }
+        return tokens
+
+    }
+
+    /*@discardableResult public func send(command: RESPCommand) async throws -> RESPToken {
         if logger.logLevel <= .debug {
             var buffer = command.buffer
             let sending = try [String](from: RESPToken(consuming: &buffer)!).joined(separator: " ")
             self.logger.debug("send: \(sending)")
         }
         let response: Response = try await withCheckedThrowingContinuation { continuation in
-            switch requestContinuation.yield((.command(command), continuation)) {
+            switch requestContinuation.yield((.command(command.buffer), continuation)) {
             case .enqueued:
                 break
             case .dropped, .terminated:
@@ -180,7 +232,7 @@ public struct RedisConnection: Sendable {
 
     @discardableResult public func pipeline(_ commands: [RESPCommand]) async throws -> [RESPToken] {
         let response: Response = try await withCheckedThrowingContinuation { continuation in
-            switch requestContinuation.yield((.pipelinedCommands(commands), continuation)) {
+            switch requestContinuation.yield((.pipelinedCommands(commands.map(\.buffer)), continuation)) {
             case .enqueued:
                 break
             case .dropped, .terminated:
@@ -201,7 +253,7 @@ public struct RedisConnection: Sendable {
     @discardableResult public func send<each Arg: RESPRenderable>(_ command: repeat each Arg) async throws -> RESPToken {
         let command = RESPCommand(repeat each command)
         return try await self.send(command: command)
-    }
+    }*/
 
     /// Try to upgrade to RESP3
     private func resp3Upgrade(
