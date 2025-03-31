@@ -14,7 +14,6 @@
 
 import Foundation
 import Logging
-import RESP
 import Redis
 import RedisCommands
 import Testing

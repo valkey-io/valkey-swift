@@ -13,7 +13,6 @@
 //===----------------------------------------------------------------------===//
 
 import NIOCore
-import RESP
 
 @usableFromInline
 package struct RedisPureToken: RESPRenderable {

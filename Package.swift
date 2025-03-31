@@ -20,7 +20,6 @@ let package = Package(
         .target(
             name: "Redis",
             dependencies: [
-                "RESP",
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
@@ -31,15 +30,8 @@ let package = Package(
         .target(
             name: "RedisCommands",
             dependencies: [
-                "RESP",
                 "Redis",
                 .product(name: "NIOCore", package: "swift-nio"),
-            ]
-        ),
-        .target(
-            name: "RESP",
-            dependencies: [
-                .product(name: "NIOCore", package: "swift-nio")
             ]
         ),
         .executableTarget(
@@ -53,7 +45,7 @@ let package = Package(
         .testTarget(
             name: "RESPTests",
             dependencies: [
-                "RESP",
+                "Redis",
                 .product(name: "NIOTestUtils", package: "swift-nio"),
             ]
         ),
