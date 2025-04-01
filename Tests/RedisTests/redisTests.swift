@@ -100,8 +100,7 @@ struct GeneratedCommands {
                     SET(key: key, value: "Pipelined Hello"),
                     GET(key: key)
                 )
-                let value = try responses[1].converting(to: String.self)
-                #expect(value == "Pipelined Hello")
+                #expect(responses.1 == "Pipelined Hello")
             }
         }
     }

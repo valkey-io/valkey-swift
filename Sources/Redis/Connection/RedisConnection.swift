@@ -177,7 +177,7 @@ public struct RedisConnection: Sendable {
 
     @discardableResult public func pipeline<each Command: RedisCommand>(
         _ commands: repeat each Command
-    ) async throws -> [RESPToken] {
+    ) async throws -> (repeat (each Command).Response) {
         var count = 0
         var encoder = RedisCommandEncoder()
         for command in repeat each commands {
@@ -201,8 +201,9 @@ public struct RedisConnection: Sendable {
             }
         }
         guard case .pipelinedResponse(let tokens) = response else { preconditionFailure("Expected a single response") }
-        return tokens
 
+        var index = AutoIncrementingInteger()
+        return try (repeat (each Command).Response(from: tokens[index.next()]))
     }
 
     /// Try to upgrade to RESP3
@@ -320,3 +321,11 @@ extension ClientBootstrap: ClientBootstrapProtocol {}
 #if canImport(Network)
 extension NIOTSConnectionBootstrap: ClientBootstrapProtocol {}
 #endif
+
+private struct AutoIncrementingInteger {
+    var value: Int = 0
+    mutating func next() -> Int {
+        value += 1
+        return value - 1
+    }
+}
