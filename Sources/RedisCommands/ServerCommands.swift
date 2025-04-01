@@ -23,1219 +23,1216 @@ import FoundationEssentials
 import Foundation
 #endif
 
-extension RESPCommand {
+/// A container for Access List Control commands.
+public enum ACL {
     /// Lists the ACL categories, or the commands inside a category.
-    ///
-    /// - Documentation: [ACL CAT](https:/redis.io/docs/latest/commands/acl-cat)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1) since the categories and commands are a fixed set.
-    /// - Categories: @slow
-    /// - Response: One of the following:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements representing ACL categories or commands in a given category.
-    ///     * [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): the command returns an error if an invalid category name is given.
-    @inlinable
-    public static func aclCat(category: String? = nil) -> RESPCommand {
-        RESPCommand("ACL", "CAT", category)
+    public struct CAT: RedisCommand {
+        public typealias Response = [String]
+
+        public var category: String? = nil
+
+        @inlinable public init(category: String? = nil) {
+            self.category = category
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "CAT", category)
+        }
     }
 
     /// Deletes ACL users, and terminates their connections.
-    ///
-    /// - Documentation: [ACL DELUSER](https:/redis.io/docs/latest/commands/acl-deluser)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1) amortized time considering the typical user.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
-    @inlinable
-    public static func aclDeluser(username: String) -> RESPCommand {
-        RESPCommand("ACL", "DELUSER", username)
-    }
+    public struct DELUSER: RedisCommand {
+        public typealias Response = Int
 
-    /// Deletes ACL users, and terminates their connections.
-    ///
-    /// - Documentation: [ACL DELUSER](https:/redis.io/docs/latest/commands/acl-deluser)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1) amortized time considering the typical user.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
-    @inlinable
-    public static func aclDeluser(usernames: [String]) -> RESPCommand {
-        RESPCommand("ACL", "DELUSER", usernames)
+        public var username: [String]
+
+        @inlinable public init(username: [String]) {
+            self.username = username
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "DELUSER", username)
+        }
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
-    ///
-    /// - Documentation: [ACL DRYRUN](https:/redis.io/docs/latest/commands/acl-dryrun)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1).
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: Any of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): an error describing why the user can't execute the command.
-    @inlinable
-    public static func aclDryrun(username: String, command: String, arg: String? = nil) -> RESPCommand {
-        RESPCommand("ACL", "DRYRUN", username, command, arg)
-    }
+    public struct DRYRUN: RedisCommand {
+        public typealias Response = String?
 
-    /// Simulates the execution of a command by a user, without executing the command.
-    ///
-    /// - Documentation: [ACL DRYRUN](https:/redis.io/docs/latest/commands/acl-dryrun)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1).
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: Any of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): an error describing why the user can't execute the command.
-    @inlinable
-    public static func aclDryrun(username: String, command: String, args: [String]) -> RESPCommand {
-        RESPCommand("ACL", "DRYRUN", username, command, args)
+        public var username: String
+        public var command: String
+        public var arg: [String] = []
+
+        @inlinable public init(username: String, command: String, arg: [String] = []) {
+            self.username = username
+            self.command = command
+            self.arg = arg
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "DRYRUN", username, command, arg)
+        }
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
-    ///
-    /// - Documentation: [ACL GENPASS](https:/redis.io/docs/latest/commands/acl-genpass)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
-    @inlinable
-    public static func aclGenpass(bits: Int? = nil) -> RESPCommand {
-        RESPCommand("ACL", "GENPASS", bits)
+    public struct GENPASS: RedisCommand {
+        public typealias Response = String
+
+        public var bits: Int? = nil
+
+        @inlinable public init(bits: Int? = nil) {
+            self.bits = bits
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "GENPASS", bits)
+        }
     }
 
     /// Lists the ACL rules of a user.
-    ///
-    /// - Documentation: [ACL GETUSER](https:/redis.io/docs/latest/commands/acl-getuser)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: One of the following:
-    ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a set of ACL rule definitions for the user
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if user does not exist.
-    @inlinable
-    public static func aclGetuser(username: String) -> RESPCommand {
-        RESPCommand("ACL", "GETUSER", username)
+    public struct GETUSER: RedisCommand {
+        public typealias Response = [String: RESPToken]?
+
+        public var username: String
+
+        @inlinable public init(username: String) {
+            self.username = username
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "GETUSER", username)
+        }
     }
 
     /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [ACL HELP](https:/redis.io/docs/latest/commands/acl-help)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of subcommands and their descriptions.
-    @inlinable
-    public static func aclHelp() -> RESPCommand {
-        RESPCommand("ACL", "HELP")
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "HELP")
+        }
     }
 
     /// Dumps the effective rules in ACL file format.
-    ///
-    /// - Documentation: [ACL LIST](https:/redis.io/docs/latest/commands/acl-list)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N). Where N is the number of configured users.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements.
-    @inlinable
-    public static func aclList() -> RESPCommand {
-        RESPCommand("ACL", "LIST")
+    public struct LIST: RedisCommand {
+        public typealias Response = [String]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "LIST")
+        }
     }
 
     /// Reloads the rules from the configured ACL file.
-    ///
-    /// - Documentation: [ACL LOAD](https:/redis.io/docs/latest/commands/acl-load)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N). Where N is the number of configured users.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///
-    ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
-    ///     Finally, the command will fail if the server is not configured to use an external ACL file.
-    @inlinable
-    public static func aclLoad() -> RESPCommand {
-        RESPCommand("ACL", "LOAD")
-    }
+    public struct LOAD: RedisCommand {
+        public typealias Response = RESPToken
 
-    public enum ACLLOGOperation: RESPRenderable {
-        case count(Int)
-        case reset
 
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .count(let count): count.writeToRESPBuffer(&buffer)
-            case .reset: "RESET".writeToRESPBuffer(&buffer)
-            }
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "LOAD")
         }
     }
+
     /// Lists recent security events generated due to ACL rules.
-    ///
-    /// - Documentation: [ACL LOG](https:/redis.io/docs/latest/commands/acl-log)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N) with N being the number of entries shown.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: When called to show security events:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements representing ACL security events.
-    ///     When called with `RESET`:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the security log was cleared.
-    @inlinable
-    public static func aclLog(operation: ACLLOGOperation? = nil) -> RESPCommand {
-        RESPCommand("ACL", "LOG", operation)
+    public struct LOG: RedisCommand {
+        public enum Operation: RESPRenderable {
+            case count(Int)
+            case reset
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .count(let count): count.encode(into: &commandEncoder)
+                case .reset: "RESET".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = [String]?
+
+        public var operation: Operation? = nil
+
+        @inlinable public init(operation: Operation? = nil) {
+            self.operation = operation
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "LOG", operation)
+        }
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
-    ///
-    /// - Documentation: [ACL SAVE](https:/redis.io/docs/latest/commands/acl-save)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N). Where N is the number of configured users.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    ///     The command may fail with an error for several reasons: if the file cannot be written or if the server is not configured to use an external ACL file.
-    @inlinable
-    public static func aclSave() -> RESPCommand {
-        RESPCommand("ACL", "SAVE")
+    public struct SAVE: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "SAVE")
+        }
     }
 
     /// Creates and modifies an ACL user and its rules.
-    ///
-    /// - Documentation: [ACL SETUSER](https:/redis.io/docs/latest/commands/acl-setuser)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N). Where N is the number of rules provided.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    ///     If the rules contain errors, the error is returned.
-    @inlinable
-    public static func aclSetuser(username: String, rule: String? = nil) -> RESPCommand {
-        RESPCommand("ACL", "SETUSER", username, rule)
-    }
+    public struct SETUSER: RedisCommand {
+        public typealias Response = RESPToken
 
-    /// Creates and modifies an ACL user and its rules.
-    ///
-    /// - Documentation: [ACL SETUSER](https:/redis.io/docs/latest/commands/acl-setuser)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N). Where N is the number of rules provided.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    ///     If the rules contain errors, the error is returned.
-    @inlinable
-    public static func aclSetuser(username: String, rules: [String]) -> RESPCommand {
-        RESPCommand("ACL", "SETUSER", username, rules)
+        public var username: String
+        public var rule: [String] = []
+
+        @inlinable public init(username: String, rule: [String] = []) {
+            self.username = username
+            self.rule = rule
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "SETUSER", username, rule)
+        }
     }
 
     /// Lists all ACL users.
-    ///
-    /// - Documentation: [ACL USERS](https:/redis.io/docs/latest/commands/acl-users)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N). Where N is the number of configured users.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): list of existing ACL users.
-    @inlinable
-    public static func aclUsers() -> RESPCommand {
-        RESPCommand("ACL", "USERS")
+    public struct USERS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "USERS")
+        }
     }
 
     /// Returns the authenticated username of the current connection.
-    ///
-    /// - Documentation: [ACL WHOAMI](https:/redis.io/docs/latest/commands/acl-whoami)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the username of the current connection.
-    @inlinable
-    public static func aclWhoami() -> RESPCommand {
-        RESPCommand("ACL", "WHOAMI")
-    }
+    public struct WHOAMI: RedisCommand {
+        public typealias Response = String
 
-    /// Asynchronously rewrites the append-only file to disk.
-    ///
-    /// - Documentation: [BGREWRITEAOF](https:/redis.io/docs/latest/commands/bgrewriteaof)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
-    ///
-    ///     The command may reply with an error in certain cases, as documented above.
-    @inlinable
-    public static func bgrewriteaof() -> RESPCommand {
-        RESPCommand("BGREWRITEAOF")
-    }
 
-    /// Asynchronously saves the database(s) to disk.
-    ///
-    /// - Documentation: [BGSAVE](https:/redis.io/docs/latest/commands/bgsave)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: One of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `Background saving started`.
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `Background saving scheduled`.
-    @inlinable
-    public static func bgsave(schedule: Bool = false) -> RESPCommand {
-        RESPCommand("BGSAVE", RedisPureToken("SCHEDULE", schedule))
-    }
+        @inlinable public init() {
+        }
 
-    /// Returns detailed information about all commands.
-    ///
-    /// - Documentation: [COMMAND](https:/redis.io/docs/latest/commands/command)
-    /// - Version: 2.8.13
-    /// - Complexity: O(N) where N is the total number of Redis commands
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details. The order of the commands in the array is random.
-    @inlinable
-    public static func command() -> RESPCommand {
-        RESPCommand("COMMAND")
-    }
-
-    /// Returns a count of commands.
-    ///
-    /// - Documentation: [COMMAND COUNT](https:/redis.io/docs/latest/commands/command-count)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of commands returned by `COMMAND`.
-    @inlinable
-    public static func commandCount() -> RESPCommand {
-        RESPCommand("COMMAND", "COUNT")
-    }
-
-    /// Returns documentary information about one, multiple or all commands.
-    ///
-    /// - Documentation: [COMMAND DOCS](https:/redis.io/docs/latest/commands/command-docs)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of commands to look up
-    /// - Categories: @slow, @connection
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
-    @inlinable
-    public static func commandDocs(commandName: String? = nil) -> RESPCommand {
-        RESPCommand("COMMAND", "DOCS", commandName)
-    }
-
-    /// Returns documentary information about one, multiple or all commands.
-    ///
-    /// - Documentation: [COMMAND DOCS](https:/redis.io/docs/latest/commands/command-docs)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of commands to look up
-    /// - Categories: @slow, @connection
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
-    @inlinable
-    public static func commandDocs(commandNames: [String]) -> RESPCommand {
-        RESPCommand("COMMAND", "DOCS", commandNames)
-    }
-
-    /// Extracts the key names from an arbitrary command.
-    ///
-    /// - Documentation: [COMMAND GETKEYS](https:/redis.io/docs/latest/commands/command-getkeys)
-    /// - Version: 2.8.13
-    /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command.
-    @inlinable
-    public static func commandGetkeys(command: String, arg: String? = nil) -> RESPCommand {
-        RESPCommand("COMMAND", "GETKEYS", command, arg)
-    }
-
-    /// Extracts the key names from an arbitrary command.
-    ///
-    /// - Documentation: [COMMAND GETKEYS](https:/redis.io/docs/latest/commands/command-getkeys)
-    /// - Version: 2.8.13
-    /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command.
-    @inlinable
-    public static func commandGetkeys(command: String, args: [String]) -> RESPCommand {
-        RESPCommand("COMMAND", "GETKEYS", command, args)
-    }
-
-    /// Extracts the key names and access flags for an arbitrary command.
-    ///
-    /// - Documentation: [COMMAND GETKEYSANDFLAGS](https:/redis.io/docs/latest/commands/command-getkeysandflags)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command and their usage flags.
-    @inlinable
-    public static func commandGetkeysandflags(command: String, arg: String? = nil) -> RESPCommand {
-        RESPCommand("COMMAND", "GETKEYSANDFLAGS", command, arg)
-    }
-
-    /// Extracts the key names and access flags for an arbitrary command.
-    ///
-    /// - Documentation: [COMMAND GETKEYSANDFLAGS](https:/redis.io/docs/latest/commands/command-getkeysandflags)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command and their usage flags.
-    @inlinable
-    public static func commandGetkeysandflags(command: String, args: [String]) -> RESPCommand {
-        RESPCommand("COMMAND", "GETKEYSANDFLAGS", command, args)
-    }
-
-    /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [COMMAND HELP](https:/redis.io/docs/latest/commands/command-help)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func commandHelp() -> RESPCommand {
-        RESPCommand("COMMAND", "HELP")
-    }
-
-    /// Returns information about one, multiple or all commands.
-    ///
-    /// - Documentation: [COMMAND INFO](https:/redis.io/docs/latest/commands/command-info)
-    /// - Version: 2.8.13
-    /// - Complexity: O(N) where N is the number of commands to look up
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details.
-    @inlinable
-    public static func commandInfo(commandName: String? = nil) -> RESPCommand {
-        RESPCommand("COMMAND", "INFO", commandName)
-    }
-
-    /// Returns information about one, multiple or all commands.
-    ///
-    /// - Documentation: [COMMAND INFO](https:/redis.io/docs/latest/commands/command-info)
-    /// - Version: 2.8.13
-    /// - Complexity: O(N) where N is the number of commands to look up
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details.
-    @inlinable
-    public static func commandInfo(commandNames: [String]) -> RESPCommand {
-        RESPCommand("COMMAND", "INFO", commandNames)
-    }
-
-    public enum COMMANDLISTFilterby: RESPRenderable {
-        case moduleName(String)
-        case category(String)
-        case pattern(String)
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).writeToRESPBuffer(&buffer)
-            case .category(let category): RESPWithToken("ACLCAT", category).writeToRESPBuffer(&buffer)
-            case .pattern(let pattern): RESPWithToken("PATTERN", pattern).writeToRESPBuffer(&buffer)
-            }
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("ACL", "WHOAMI")
         }
     }
-    /// Returns a list of command names.
-    ///
-    /// - Documentation: [COMMAND LIST](https:/redis.io/docs/latest/commands/command-list)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the total number of Redis commands
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of command names.
-    @inlinable
-    public static func commandList(filterby: COMMANDLISTFilterby? = nil) -> RESPCommand {
-        RESPCommand("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
+
+}
+
+extension COMMAND {
+    /// Returns a count of commands.
+    public struct COUNT: RedisCommand {
+        public typealias Response = Int
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "COUNT")
+        }
     }
 
-    /// Returns the effective values of configuration parameters.
-    ///
-    /// - Documentation: [CONFIG GET](https:/redis.io/docs/latest/commands/config-get)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) when N is the number of configuration parameters provided
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
-    @inlinable
-    public static func configGet(parameter: String) -> RESPCommand {
-        RESPCommand("CONFIG", "GET", parameter)
+    /// Returns documentary information about one, multiple or all commands.
+    public struct DOCS: RedisCommand {
+        public typealias Response = [String: RESPToken]
+
+        public var commandName: [String] = []
+
+        @inlinable public init(commandName: [String] = []) {
+            self.commandName = commandName
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "DOCS", commandName)
+        }
     }
 
-    /// Returns the effective values of configuration parameters.
-    ///
-    /// - Documentation: [CONFIG GET](https:/redis.io/docs/latest/commands/config-get)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) when N is the number of configuration parameters provided
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
-    @inlinable
-    public static func configGet(parameters: [String]) -> RESPCommand {
-        RESPCommand("CONFIG", "GET", parameters)
+    /// Extracts the key names from an arbitrary command.
+    public struct GETKEYS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var command: String
+        public var arg: [String] = []
+
+        @inlinable public init(command: String, arg: [String] = []) {
+            self.command = command
+            self.arg = arg
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "GETKEYS", command, arg)
+        }
+    }
+
+    /// Extracts the key names and access flags for an arbitrary command.
+    public struct GETKEYSANDFLAGS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var command: String
+        public var arg: [String] = []
+
+        @inlinable public init(command: String, arg: [String] = []) {
+            self.command = command
+            self.arg = arg
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", command, arg)
+        }
     }
 
     /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [CONFIG HELP](https:/redis.io/docs/latest/commands/config-help)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func configHelp() -> RESPCommand {
-        RESPCommand("CONFIG", "HELP")
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "HELP")
+        }
+    }
+
+    /// Returns information about one, multiple or all commands.
+    public struct INFO: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var commandName: [String] = []
+
+        @inlinable public init(commandName: [String] = []) {
+            self.commandName = commandName
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "INFO", commandName)
+        }
+    }
+
+    /// Returns a list of command names.
+    public struct LIST: RedisCommand {
+        public enum Filterby: RESPRenderable {
+            case moduleName(String)
+            case category(String)
+            case pattern(String)
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                switch self {
+                case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).encode(into: &commandEncoder)
+                case .category(let category): RESPWithToken("ACLCAT", category).encode(into: &commandEncoder)
+                case .pattern(let pattern): RESPWithToken("PATTERN", pattern).encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = [RESPToken]
+
+        public var filterby: Filterby? = nil
+
+        @inlinable public init(filterby: Filterby? = nil) {
+            self.filterby = filterby
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
+        }
+    }
+
+}
+
+/// A container for server configuration commands.
+public enum CONFIG {
+    /// Returns the effective values of configuration parameters.
+    public struct GET: RedisCommand {
+        public typealias Response = [String: RESPToken]
+
+        public var parameter: [String]
+
+        @inlinable public init(parameter: [String]) {
+            self.parameter = parameter
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "GET", parameter)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "HELP")
+        }
     }
 
     /// Resets the server's statistics.
-    ///
-    /// - Documentation: [CONFIG RESETSTAT](https:/redis.io/docs/latest/commands/config-resetstat)
-    /// - Version: 2.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func configResetstat() -> RESPCommand {
-        RESPCommand("CONFIG", "RESETSTAT")
+    public struct RESETSTAT: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "RESETSTAT")
+        }
     }
 
     /// Persists the effective configuration to file.
-    ///
-    /// - Documentation: [CONFIG REWRITE](https:/redis.io/docs/latest/commands/config-rewrite)
-    /// - Version: 2.8.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was rewritten properly. Otherwise an error is returned.
-    @inlinable
-    public static func configRewrite() -> RESPCommand {
-        RESPCommand("CONFIG", "REWRITE")
-    }
+    public struct REWRITE: RedisCommand {
+        public typealias Response = RESPToken
 
-    public struct CONFIGSETData: RESPRenderable {
-        @usableFromInline let parameter: String
-        @usableFromInline let value: String
 
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            var count = 0
-            count += parameter.writeToRESPBuffer(&buffer)
-            count += value.writeToRESPBuffer(&buffer)
-            return count
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "REWRITE")
         }
     }
-    /// Sets configuration parameters in-flight.
-    ///
-    /// - Documentation: [CONFIG SET](https:/redis.io/docs/latest/commands/config-set)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) when N is the number of configuration parameters provided
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
-    @inlinable
-    public static func configSet(data: CONFIGSETData) -> RESPCommand {
-        RESPCommand("CONFIG", "SET", data)
-    }
 
     /// Sets configuration parameters in-flight.
-    ///
-    /// - Documentation: [CONFIG SET](https:/redis.io/docs/latest/commands/config-set)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) when N is the number of configuration parameters provided
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
-    @inlinable
-    public static func configSet(datas: [CONFIGSETData]) -> RESPCommand {
-        RESPCommand("CONFIG", "SET", datas)
+    public struct SET: RedisCommand {
+        public struct Data: RESPRenderable {
+            @usableFromInline let parameter: String
+            @usableFromInline let value: String
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                var count = 0
+                count += parameter.encode(into: &commandEncoder)
+                count += value.encode(into: &commandEncoder)
+                return count
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var data: [Data]
+
+        @inlinable public init(data: [Data]) {
+            self.data = data
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("CONFIG", "SET", data)
+        }
     }
 
-    /// Returns the number of keys in the database.
-    ///
-    /// - Documentation: [DBSIZE](https:/redis.io/docs/latest/commands/dbsize)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys in the currently-selected database.
-    @inlinable
-    public static func dbsize() -> RESPCommand {
-        RESPCommand("DBSIZE")
+}
+
+/// A container for latency diagnostics commands.
+public enum LATENCY {
+    /// Returns a human-readable latency analysis report.
+    public struct DOCTOR: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "DOCTOR")
+        }
     }
 
-    public struct FAILOVERTarget: RESPRenderable {
+    /// Returns a latency graph for an event.
+    public struct GRAPH: RedisCommand {
+        public typealias Response = String
+
+        public var event: String
+
+        @inlinable public init(event: String) {
+            self.event = event
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "GRAPH", event)
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "HELP")
+        }
+    }
+
+    /// Returns the cumulative distribution of latencies of a subset or all commands.
+    public struct HISTOGRAM: RedisCommand {
+        public typealias Response = [String: RESPToken]
+
+        public var command: [String] = []
+
+        @inlinable public init(command: [String] = []) {
+            self.command = command
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "HISTOGRAM", command)
+        }
+    }
+
+    /// Returns timestamp-latency samples for an event.
+    public struct HISTORY: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var event: String
+
+        @inlinable public init(event: String) {
+            self.event = event
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "HISTORY", event)
+        }
+    }
+
+    /// Returns the latest latency samples for all events.
+    public struct LATEST: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "LATEST")
+        }
+    }
+
+    /// Resets the latency data for one or more events.
+    public struct RESET: RedisCommand {
+        public typealias Response = Int
+
+        public var event: [String] = []
+
+        @inlinable public init(event: [String] = []) {
+            self.event = event
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("LATENCY", "RESET", event)
+        }
+    }
+
+}
+
+/// A container for memory diagnostics commands.
+public enum MEMORY {
+    /// Outputs a memory problems report.
+    public struct DOCTOR: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "DOCTOR")
+        }
+    }
+
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "HELP")
+        }
+    }
+
+    /// Returns the allocator statistics.
+    public struct MALLOCSTATS: RedisCommand {
+        public typealias Response = String
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "MALLOC-STATS")
+        }
+    }
+
+    /// Asks the allocator to release memory.
+    public struct PURGE: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "PURGE")
+        }
+    }
+
+    /// Returns details about memory usage.
+    public struct STATS: RedisCommand {
+        public typealias Response = [String: RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "STATS")
+        }
+    }
+
+    /// Estimates the memory usage of a key.
+    public struct USAGE: RedisCommand {
+        public typealias Response = Int?
+
+        public var key: RedisKey
+        public var count: Int? = nil
+
+        @inlinable public init(key: RedisKey, count: Int? = nil) {
+            self.key = key
+            self.count = count
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
+        }
+    }
+
+}
+
+/// A container for module commands.
+public enum MODULE {
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "HELP")
+        }
+    }
+
+    /// Returns all loaded modules.
+    public struct LIST: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "LIST")
+        }
+    }
+
+    /// Loads a module.
+    public struct LOAD: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var path: String
+        public var arg: [String] = []
+
+        @inlinable public init(path: String, arg: [String] = []) {
+            self.path = path
+            self.arg = arg
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "LOAD", path, arg)
+        }
+    }
+
+    /// Loads a module using extended parameters.
+    public struct LOADEX: RedisCommand {
+        public struct Configs: RESPRenderable {
+            @usableFromInline let name: String
+            @usableFromInline let value: String
+
+            @inlinable
+            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+                var count = 0
+                count += name.encode(into: &commandEncoder)
+                count += value.encode(into: &commandEncoder)
+                return count
+            }
+        }
+        public typealias Response = RESPToken
+
+        public var path: String
+        public var configs: [Configs] = []
+        public var args: [String] = []
+
+        @inlinable public init(path: String, configs: [Configs] = [], args: [String] = []) {
+            self.path = path
+            self.configs = configs
+            self.args = args
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+        }
+    }
+
+    /// Unloads a module.
+    public struct UNLOAD: RedisCommand {
+        public typealias Response = RESPToken
+
+        public var name: String
+
+        @inlinable public init(name: String) {
+            self.name = name
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("MODULE", "UNLOAD", name)
+        }
+    }
+
+}
+
+/// A container for slow log commands.
+public enum SLOWLOG {
+    /// Returns the slow log's entries.
+    public struct GET: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var count: Int? = nil
+
+        @inlinable public init(count: Int? = nil) {
+            self.count = count
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SLOWLOG", "GET", count)
+        }
+    }
+
+    /// Show helpful text about the different subcommands
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SLOWLOG", "HELP")
+        }
+    }
+
+    /// Returns the number of entries in the slow log.
+    public struct LEN: RedisCommand {
+        public typealias Response = Int
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SLOWLOG", "LEN")
+        }
+    }
+
+    /// Clears all entries from the slow log.
+    public struct RESET: RedisCommand {
+        public typealias Response = RESPToken
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("SLOWLOG", "RESET")
+        }
+    }
+
+}
+
+/// Asynchronously rewrites the append-only file to disk.
+public struct BGREWRITEAOF: RedisCommand {
+    public typealias Response = String
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("BGREWRITEAOF")
+    }
+}
+
+/// Asynchronously saves the database(s) to disk.
+public struct BGSAVE: RedisCommand {
+    public typealias Response = String
+
+    public var schedule: Bool = false
+
+    @inlinable public init(schedule: Bool = false) {
+        self.schedule = schedule
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("BGSAVE", RedisPureToken("SCHEDULE", schedule))
+    }
+}
+
+/// Returns detailed information about all commands.
+public struct COMMAND: RedisCommand {
+    public typealias Response = [RESPToken]
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("COMMAND")
+    }
+}
+
+/// Returns the number of keys in the database.
+public struct DBSIZE: RedisCommand {
+    public typealias Response = Int
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("DBSIZE")
+    }
+}
+
+/// Starts a coordinated failover from a server to one of its replicas.
+public struct FAILOVER: RedisCommand {
+    public struct Target: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += host.writeToRESPBuffer(&buffer)
-            count += port.writeToRESPBuffer(&buffer)
-            if self.force { count += "FORCE".writeToRESPBuffer(&buffer) }
+            count += host.encode(into: &commandEncoder)
+            count += port.encode(into: &commandEncoder)
+            if self.force { count += "FORCE".encode(into: &commandEncoder) }
             return count
         }
     }
-    /// Starts a coordinated failover from a server to one of its replicas.
-    ///
-    /// - Documentation: [FAILOVER](https:/redis.io/docs/latest/commands/failover)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was accepted and a coordinated failover is in progress. An error if the operation cannot be executed.
-    @inlinable
-    public static func failover(target: FAILOVERTarget? = nil, abort: Bool = false, milliseconds: Int? = nil) -> RESPCommand {
-        RESPCommand("FAILOVER", RESPWithToken("TO", target), RedisPureToken("ABORT", abort), RESPWithToken("TIMEOUT", milliseconds))
+    public typealias Response = RESPToken
+
+    public var target: Target? = nil
+    public var abort: Bool = false
+    public var milliseconds: Int? = nil
+
+    @inlinable public init(target: Target? = nil, abort: Bool = false, milliseconds: Int? = nil) {
+        self.target = target
+        self.abort = abort
+        self.milliseconds = milliseconds
     }
 
-    public enum FLUSHALLFlushType: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("FAILOVER", RESPWithToken("TO", target), RedisPureToken("ABORT", abort), RESPWithToken("TIMEOUT", milliseconds))
+    }
+}
+
+/// Removes all keys from all databases.
+public struct FLUSHALL: RedisCommand {
+    public enum FlushType: RESPRenderable {
         case async
         case sync
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .async: "ASYNC".writeToRESPBuffer(&buffer)
-            case .sync: "SYNC".writeToRESPBuffer(&buffer)
+            case .async: "ASYNC".encode(into: &commandEncoder)
+            case .sync: "SYNC".encode(into: &commandEncoder)
             }
         }
     }
-    /// Removes all keys from all databases.
-    ///
-    /// - Documentation: [FLUSHALL](https:/redis.io/docs/latest/commands/flushall)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of keys in all databases
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func flushall(flushType: FLUSHALLFlushType? = nil) -> RESPCommand {
-        RESPCommand("FLUSHALL", flushType)
+    public typealias Response = RESPToken
+
+    public var flushType: FlushType? = nil
+
+    @inlinable public init(flushType: FlushType? = nil) {
+        self.flushType = flushType
     }
 
-    public enum FLUSHDBFlushType: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("FLUSHALL", flushType)
+    }
+}
+
+/// Remove all keys from the current database.
+public struct FLUSHDB: RedisCommand {
+    public enum FlushType: RESPRenderable {
         case async
         case sync
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .async: "ASYNC".writeToRESPBuffer(&buffer)
-            case .sync: "SYNC".writeToRESPBuffer(&buffer)
+            case .async: "ASYNC".encode(into: &commandEncoder)
+            case .sync: "SYNC".encode(into: &commandEncoder)
             }
         }
     }
-    /// Remove all keys from the current database.
-    ///
-    /// - Documentation: [FLUSHDB](https:/redis.io/docs/latest/commands/flushdb)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of keys in the selected database
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func flushdb(flushType: FLUSHDBFlushType? = nil) -> RESPCommand {
-        RESPCommand("FLUSHDB", flushType)
+    public typealias Response = RESPToken
+
+    public var flushType: FlushType? = nil
+
+    @inlinable public init(flushType: FlushType? = nil) {
+        self.flushType = flushType
     }
 
-    /// Returns information and statistics about the server.
-    ///
-    /// - Documentation: [INFO](https:/redis.io/docs/latest/commands/info)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @dangerous
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///
-    ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
-    @inlinable
-    public static func info(section: String? = nil) -> RESPCommand {
-        RESPCommand("INFO", section)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("FLUSHDB", flushType)
+    }
+}
+
+/// Returns information and statistics about the server.
+public struct INFO: RedisCommand {
+    public typealias Response = String
+
+    public var section: [String] = []
+
+    @inlinable public init(section: [String] = []) {
+        self.section = section
     }
 
-    /// Returns information and statistics about the server.
-    ///
-    /// - Documentation: [INFO](https:/redis.io/docs/latest/commands/info)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @dangerous
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///
-    ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
-    @inlinable
-    public static func info(sections: [String]) -> RESPCommand {
-        RESPCommand("INFO", sections)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("INFO", section)
+    }
+}
+
+/// Returns the Unix timestamp of the last successful save to disk.
+public struct LASTSAVE: RedisCommand {
+    public typealias Response = Int
+
+
+    @inlinable public init() {
     }
 
-    /// Returns the Unix timestamp of the last successful save to disk.
-    ///
-    /// - Documentation: [LASTSAVE](https:/redis.io/docs/latest/commands/lastsave)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @fast, @dangerous
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): UNIX TIME of the last DB save executed with success.
-    @inlinable
-    public static func lastsave() -> RESPCommand {
-        RESPCommand("LASTSAVE")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LASTSAVE")
+    }
+}
+
+/// Displays computer art and the Redis version
+public struct LOLWUT: RedisCommand {
+    public typealias Response = String
+
+    public var version: Int? = nil
+
+    @inlinable public init(version: Int? = nil) {
+        self.version = version
     }
 
-    /// Returns a human-readable latency analysis report.
-    ///
-    /// - Documentation: [LATENCY DOCTOR](https:/redis.io/docs/latest/commands/latency-doctor)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a human readable latency analysis report.
-    @inlinable
-    public static func latencyDoctor() -> RESPCommand {
-        RESPCommand("LATENCY", "DOCTOR")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LOLWUT", RESPWithToken("VERSION", version))
+    }
+}
+
+/// Listens for all requests received by the server in real-time.
+public struct MONITOR: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
     }
 
-    /// Returns a latency graph for an event.
-    ///
-    /// - Documentation: [LATENCY GRAPH](https:/redis.io/docs/latest/commands/latency-graph)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): Latency graph
-    @inlinable
-    public static func latencyGraph(event: String) -> RESPCommand {
-        RESPCommand("LATENCY", "GRAPH", event)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("MONITOR")
+    }
+}
+
+/// An internal command used in replication.
+public struct PSYNC: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var replicationid: String
+    public var offset: Int
+
+    @inlinable public init(replicationid: String, offset: Int) {
+        self.replicationid = replicationid
+        self.offset = offset
     }
 
-    /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [LATENCY HELP](https:/redis.io/docs/latest/commands/latency-help)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func latencyHelp() -> RESPCommand {
-        RESPCommand("LATENCY", "HELP")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PSYNC", replicationid, offset)
+    }
+}
+
+/// An internal command for configuring the replication stream.
+public struct REPLCONF: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
     }
 
-    /// Returns the cumulative distribution of latencies of a subset or all commands.
-    ///
-    /// - Documentation: [LATENCY HISTOGRAM](https:/redis.io/docs/latest/commands/latency-histogram)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
-    @inlinable
-    public static func latencyHistogram(command: String? = nil) -> RESPCommand {
-        RESPCommand("LATENCY", "HISTOGRAM", command)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("REPLCONF")
     }
+}
 
-    /// Returns the cumulative distribution of latencies of a subset or all commands.
-    ///
-    /// - Documentation: [LATENCY HISTOGRAM](https:/redis.io/docs/latest/commands/latency-histogram)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
-    @inlinable
-    public static func latencyHistogram(commands: [String]) -> RESPCommand {
-        RESPCommand("LATENCY", "HISTOGRAM", commands)
-    }
-
-    /// Returns timestamp-latency samples for an event.
-    ///
-    /// - Documentation: [LATENCY HISTORY](https:/redis.io/docs/latest/commands/latency-history)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array where each element is a two elements array representing the timestamp and the latency of the event.
-    @inlinable
-    public static func latencyHistory(event: String) -> RESPCommand {
-        RESPCommand("LATENCY", "HISTORY", event)
-    }
-
-    /// Returns the latest latency samples for all events.
-    ///
-    /// - Documentation: [LATENCY LATEST](https:/redis.io/docs/latest/commands/latency-latest)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.
-    @inlinable
-    public static func latencyLatest() -> RESPCommand {
-        RESPCommand("LATENCY", "LATEST")
-    }
-
-    /// Resets the latency data for one or more events.
-    ///
-    /// - Documentation: [LATENCY RESET](https:/redis.io/docs/latest/commands/latency-reset)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of event time series that were reset.
-    @inlinable
-    public static func latencyReset(event: String? = nil) -> RESPCommand {
-        RESPCommand("LATENCY", "RESET", event)
-    }
-
-    /// Resets the latency data for one or more events.
-    ///
-    /// - Documentation: [LATENCY RESET](https:/redis.io/docs/latest/commands/latency-reset)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of event time series that were reset.
-    @inlinable
-    public static func latencyReset(events: [String]) -> RESPCommand {
-        RESPCommand("LATENCY", "RESET", events)
-    }
-
-    /// Displays computer art and the Redis version
-    ///
-    /// - Documentation: [LOLWUT](https:/redis.io/docs/latest/commands/lolwut)
-    /// - Version: 5.0.0
-    /// - Categories: @read, @fast
-    /// - Response: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a string containing generative computer art and the Redis version.
-    @inlinable
-    public static func lolwut(version: Int? = nil) -> RESPCommand {
-        RESPCommand("LOLWUT", RESPWithToken("VERSION", version))
-    }
-
-    /// Outputs a memory problems report.
-    ///
-    /// - Documentation: [MEMORY DOCTOR](https:/redis.io/docs/latest/commands/memory-doctor)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a memory problems report.
-    @inlinable
-    public static func memoryDoctor() -> RESPCommand {
-        RESPCommand("MEMORY", "DOCTOR")
-    }
-
-    /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [MEMORY HELP](https:/redis.io/docs/latest/commands/memory-help)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func memoryHelp() -> RESPCommand {
-        RESPCommand("MEMORY", "HELP")
-    }
-
-    /// Returns the allocator statistics.
-    ///
-    /// - Documentation: [MEMORY MALLOC-STATS](https:/redis.io/docs/latest/commands/memory-malloc-stats)
-    /// - Version: 4.0.0
-    /// - Complexity: Depends on how much memory is allocated, could be slow
-    /// - Categories: @slow
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The memory allocator's internal statistics report.
-    @inlinable
-    public static func memoryMallocStats() -> RESPCommand {
-        RESPCommand("MEMORY", "MALLOC-STATS")
-    }
-
-    /// Asks the allocator to release memory.
-    ///
-    /// - Documentation: [MEMORY PURGE](https:/redis.io/docs/latest/commands/memory-purge)
-    /// - Version: 4.0.0
-    /// - Complexity: Depends on how much memory is allocated, could be slow
-    /// - Categories: @slow
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func memoryPurge() -> RESPCommand {
-        RESPCommand("MEMORY", "PURGE")
-    }
-
-    /// Returns details about memory usage.
-    ///
-    /// - Documentation: [MEMORY STATS](https:/redis.io/docs/latest/commands/memory-stats)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Map](https:/redis.io/docs/reference/protocol-spec#maps): memory usage metrics and their values.
-    @inlinable
-    public static func memoryStats() -> RESPCommand {
-        RESPCommand("MEMORY", "STATS")
-    }
-
-    /// Estimates the memory usage of a key.
-    ///
-    /// - Documentation: [MEMORY USAGE](https:/redis.io/docs/latest/commands/memory-usage)
-    /// - Version: 4.0.0
-    /// - Complexity: O(N) where N is the number of samples.
-    /// - Categories: @read, @slow
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the memory usage in bytes.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
-    @inlinable
-    public static func memoryUsage(key: RedisKey, count: Int? = nil) -> RESPCommand {
-        RESPCommand("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
-    }
-
-    /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [MODULE HELP](https:/redis.io/docs/latest/commands/module-help)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions
-    @inlinable
-    public static func moduleHelp() -> RESPCommand {
-        RESPCommand("MODULE", "HELP")
-    }
-
-    /// Returns all loaded modules.
-    ///
-    /// - Documentation: [MODULE LIST](https:/redis.io/docs/latest/commands/module-list)
-    /// - Version: 4.0.0
-    /// - Complexity: O(N) where N is the number of loaded modules.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): list of loaded modules. Each element in the list represents a represents a module, and is a [Map](https:/redis.io/docs/reference/protocol-spec#maps) of property names and their values. The following properties is reported for each loaded module:
-    ///     * name: the name of the module.
-    ///     * ver: the version of the module.
-    @inlinable
-    public static func moduleList() -> RESPCommand {
-        RESPCommand("MODULE", "LIST")
-    }
-
-    /// Loads a module.
-    ///
-    /// - Documentation: [MODULE LOAD](https:/redis.io/docs/latest/commands/module-load)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
-    @inlinable
-    public static func moduleLoad(path: String, arg: String? = nil) -> RESPCommand {
-        RESPCommand("MODULE", "LOAD", path, arg)
-    }
-
-    /// Loads a module.
-    ///
-    /// - Documentation: [MODULE LOAD](https:/redis.io/docs/latest/commands/module-load)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
-    @inlinable
-    public static func moduleLoad(path: String, args: [String]) -> RESPCommand {
-        RESPCommand("MODULE", "LOAD", path, args)
-    }
-
-    public struct MODULELOADEXConfigs: RESPRenderable {
-        @usableFromInline let name: String
-        @usableFromInline let value: String
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            var count = 0
-            count += name.writeToRESPBuffer(&buffer)
-            count += value.writeToRESPBuffer(&buffer)
-            return count
-        }
-    }
-    /// Loads a module using extended parameters.
-    ///
-    /// - Documentation: [MODULE LOADEX](https:/redis.io/docs/latest/commands/module-loadex)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
-    @inlinable
-    public static func moduleLoadex(path: String, configs: MODULELOADEXConfigs? = nil, args: String? = nil) -> RESPCommand {
-        RESPCommand("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
-    }
-
-    /// Loads a module using extended parameters.
-    ///
-    /// - Documentation: [MODULE LOADEX](https:/redis.io/docs/latest/commands/module-loadex)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
-    @inlinable
-    public static func moduleLoadex(path: String, configss: [MODULELOADEXConfigs], argss: [String]) -> RESPCommand {
-        RESPCommand("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configss), RESPWithToken("ARGS", argss))
-    }
-
-    /// Unloads a module.
-    ///
-    /// - Documentation: [MODULE UNLOAD](https:/redis.io/docs/latest/commands/module-unload)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was unloaded.
-    @inlinable
-    public static func moduleUnload(name: String) -> RESPCommand {
-        RESPCommand("MODULE", "UNLOAD", name)
-    }
-
-    /// Listens for all requests received by the server in real-time.
-    ///
-    /// - Documentation: [MONITOR](https:/redis.io/docs/latest/commands/monitor)
-    /// - Version: 1.0.0
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: **Non-standard return value**. Dumps the received commands in an infinite flow.
-    @inlinable
-    public static func monitor() -> RESPCommand {
-        RESPCommand("MONITOR")
-    }
-
-    /// An internal command used in replication.
-    ///
-    /// - Documentation: [PSYNC](https:/redis.io/docs/latest/commands/psync)
-    /// - Version: 2.8.0
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
-    @inlinable
-    public static func psync(replicationid: String, offset: Int) -> RESPCommand {
-        RESPCommand("PSYNC", replicationid, offset)
-    }
-
-    /// An internal command for configuring the replication stream.
-    ///
-    /// - Documentation: [REPLCONF](https:/redis.io/docs/latest/commands/replconf)
-    /// - Version: 3.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func replconf() -> RESPCommand {
-        RESPCommand("REPLCONF")
-    }
-
-    public struct REPLICAOFArgsHostPort: RESPRenderable {
+/// Configures a server as replica of another, or promotes it to a master.
+public struct REPLICAOF: RedisCommand {
+    public struct ArgsHostPort: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += host.writeToRESPBuffer(&buffer)
-            count += port.writeToRESPBuffer(&buffer)
+            count += host.encode(into: &commandEncoder)
+            count += port.encode(into: &commandEncoder)
             return count
         }
     }
-    public struct REPLICAOFArgsNoOne: RESPRenderable {
+    public struct ArgsNoOne: RESPRenderable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            if self.no { count += "NO".writeToRESPBuffer(&buffer) }
-            if self.one { count += "ONE".writeToRESPBuffer(&buffer) }
+            if self.no { count += "NO".encode(into: &commandEncoder) }
+            if self.one { count += "ONE".encode(into: &commandEncoder) }
             return count
         }
     }
-    public enum REPLICAOFArgs: RESPRenderable {
-        case hostPort(REPLICAOFArgsHostPort)
-        case noOne(REPLICAOFArgsNoOne)
+    public enum Args: RESPRenderable {
+        case hostPort(ArgsHostPort)
+        case noOne(ArgsNoOne)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .hostPort(let hostPort): hostPort.writeToRESPBuffer(&buffer)
-            case .noOne(let noOne): noOne.writeToRESPBuffer(&buffer)
+            case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
+            case .noOne(let noOne): noOne.encode(into: &commandEncoder)
             }
         }
     }
-    /// Configures a server as replica of another, or promotes it to a master.
-    ///
-    /// - Documentation: [REPLICAOF](https:/redis.io/docs/latest/commands/replicaof)
-    /// - Version: 5.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func replicaof(args: REPLICAOFArgs) -> RESPCommand {
-        RESPCommand("REPLICAOF", args)
+    public typealias Response = RESPToken
+
+    public var args: Args
+
+    @inlinable public init(args: Args) {
+        self.args = args
     }
 
-    /// An internal command for migrating keys in a cluster.
-    ///
-    /// - Documentation: [RESTORE-ASKING](https:/redis.io/docs/latest/commands/restore-asking)
-    /// - Version: 3.0.0
-    /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func restoreAsking(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool = false,
-        absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
-    ) -> RESPCommand {
-        RESPCommand(
-            "RESTORE-ASKING",
-            key,
-            ttl,
-            serializedValue,
-            RedisPureToken("REPLACE", replace),
-            RedisPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
-        )
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("REPLICAOF", args)
+    }
+}
+
+/// An internal command for migrating keys in a cluster.
+public struct RESTOREASKING: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var ttl: Int
+    public var serializedValue: String
+    public var replace: Bool = false
+    public var absttl: Bool = false
+    public var seconds: Int? = nil
+    public var frequency: Int? = nil
+
+    @inlinable public init(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+        self.key = key
+        self.ttl = ttl
+        self.serializedValue = serializedValue
+        self.replace = replace
+        self.absttl = absttl
+        self.seconds = seconds
+        self.frequency = frequency
     }
 
-    /// Returns the replication role.
-    ///
-    /// - Documentation: [ROLE](https:/redis.io/docs/latest/commands/role)
-    /// - Version: 2.8.12
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @fast, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): where the first element is one of `master`, `slave`, or `sentinel`, and the additional elements are role-specific as illustrated above.
-    @inlinable
-    public static func role() -> RESPCommand {
-        RESPCommand("ROLE")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+    }
+}
+
+/// Returns the replication role.
+public struct ROLE: RedisCommand {
+    public typealias Response = [RESPToken]
+
+
+    @inlinable public init() {
     }
 
-    /// Synchronously saves the database(s) to disk.
-    ///
-    /// - Documentation: [SAVE](https:/redis.io/docs/latest/commands/save)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of keys in all databases
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func save() -> RESPCommand {
-        RESPCommand("SAVE")
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("ROLE")
+    }
+}
+
+/// Synchronously saves the database(s) to disk.
+public struct SAVE: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
     }
 
-    public enum SHUTDOWNSaveSelector: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SAVE")
+    }
+}
+
+/// Synchronously saves the database(s) to disk and shuts down the Redis server.
+public struct SHUTDOWN: RedisCommand {
+    public enum SaveSelector: RESPRenderable {
         case nosave
         case save
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .nosave: "NOSAVE".writeToRESPBuffer(&buffer)
-            case .save: "SAVE".writeToRESPBuffer(&buffer)
+            case .nosave: "NOSAVE".encode(into: &commandEncoder)
+            case .save: "SAVE".encode(into: &commandEncoder)
             }
         }
     }
-    /// Synchronously saves the database(s) to disk and shuts down the Redis server.
-    ///
-    /// - Documentation: [SHUTDOWN](https:/redis.io/docs/latest/commands/shutdown)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
-    @inlinable
-    public static func shutdown(saveSelector: SHUTDOWNSaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) -> RESPCommand
-    {
-        RESPCommand("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
+    public typealias Response = RESPToken
+
+    public var saveSelector: SaveSelector? = nil
+    public var now: Bool = false
+    public var force: Bool = false
+    public var abort: Bool = false
+
+    @inlinable public init(saveSelector: SaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) {
+        self.saveSelector = saveSelector
+        self.now = now
+        self.force = force
+        self.abort = abort
     }
 
-    public struct SLAVEOFArgsHostPort: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
+    }
+}
+
+/// Sets a Redis server as a replica of another, or promotes it to being a master.
+public struct SLAVEOF: RedisCommand {
+    public struct ArgsHostPort: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += host.writeToRESPBuffer(&buffer)
-            count += port.writeToRESPBuffer(&buffer)
+            count += host.encode(into: &commandEncoder)
+            count += port.encode(into: &commandEncoder)
             return count
         }
     }
-    public struct SLAVEOFArgsNoOne: RESPRenderable {
+    public struct ArgsNoOne: RESPRenderable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            if self.no { count += "NO".writeToRESPBuffer(&buffer) }
-            if self.one { count += "ONE".writeToRESPBuffer(&buffer) }
+            if self.no { count += "NO".encode(into: &commandEncoder) }
+            if self.one { count += "ONE".encode(into: &commandEncoder) }
             return count
         }
     }
-    public enum SLAVEOFArgs: RESPRenderable {
-        case hostPort(SLAVEOFArgsHostPort)
-        case noOne(SLAVEOFArgsNoOne)
+    public enum Args: RESPRenderable {
+        case hostPort(ArgsHostPort)
+        case noOne(ArgsNoOne)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .hostPort(let hostPort): hostPort.writeToRESPBuffer(&buffer)
-            case .noOne(let noOne): noOne.writeToRESPBuffer(&buffer)
+            case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
+            case .noOne(let noOne): noOne.encode(into: &commandEncoder)
             }
         }
     }
-    /// Sets a Redis server as a replica of another, or promotes it to being a master.
-    ///
-    /// - Documentation: [SLAVEOF](https:/redis.io/docs/latest/commands/slaveof)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func slaveof(args: SLAVEOFArgs) -> RESPCommand {
-        RESPCommand("SLAVEOF", args)
+    public typealias Response = RESPToken
+
+    public var args: Args
+
+    @inlinable public init(args: Args) {
+        self.args = args
     }
 
-    /// Returns the slow log's entries.
-    ///
-    /// - Documentation: [SLOWLOG GET](https:/redis.io/docs/latest/commands/slowlog-get)
-    /// - Version: 2.2.12
-    /// - Complexity: O(N) where N is the number of entries returned
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of slow log entries per the above format.
-    @inlinable
-    public static func slowlogGet(count: Int? = nil) -> RESPCommand {
-        RESPCommand("SLOWLOG", "GET", count)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SLAVEOF", args)
     }
-
-    /// Show helpful text about the different subcommands
-    ///
-    /// - Documentation: [SLOWLOG HELP](https:/redis.io/docs/latest/commands/slowlog-help)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func slowlogHelp() -> RESPCommand {
-        RESPCommand("SLOWLOG", "HELP")
-    }
-
-    /// Returns the number of entries in the slow log.
-    ///
-    /// - Documentation: [SLOWLOG LEN](https:/redis.io/docs/latest/commands/slowlog-len)
-    /// - Version: 2.2.12
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries in the slow log.
-    @inlinable
-    public static func slowlogLen() -> RESPCommand {
-        RESPCommand("SLOWLOG", "LEN")
-    }
-
-    /// Clears all entries from the slow log.
-    ///
-    /// - Documentation: [SLOWLOG RESET](https:/redis.io/docs/latest/commands/slowlog-reset)
-    /// - Version: 2.2.12
-    /// - Complexity: O(N) where N is the number of entries in the slowlog
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func slowlogReset() -> RESPCommand {
-        RESPCommand("SLOWLOG", "RESET")
-    }
-
-    /// Swaps two Redis databases.
-    ///
-    /// - Documentation: [SWAPDB](https:/redis.io/docs/latest/commands/swapdb)
-    /// - Version: 4.0.0
-    /// - Complexity: O(N) where N is the count of clients watching or blocking on keys from both databases.
-    /// - Categories: @keyspace, @write, @fast, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func swapdb(index1: Int, index2: Int) -> RESPCommand {
-        RESPCommand("SWAPDB", index1, index2)
-    }
-
-    /// An internal command used in replication.
-    ///
-    /// - Documentation: [SYNC](https:/redis.io/docs/latest/commands/sync)
-    /// - Version: 1.0.0
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Response: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
-    @inlinable
-    public static func sync() -> RESPCommand {
-        RESPCommand("SYNC")
-    }
-
-    /// Returns the server time.
-    ///
-    /// - Documentation: [TIME](https:/redis.io/docs/latest/commands/time)
-    /// - Version: 2.6.0
-    /// - Complexity: O(1)
-    /// - Categories: @fast
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): specifically, a two-element array consisting of the Unix timestamp in seconds and the microseconds' count.
-    @inlinable
-    public static func time() -> RESPCommand {
-        RESPCommand("TIME")
-    }
-
 }
+
+/// Swaps two Redis databases.
+public struct SWAPDB: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var index1: Int
+    public var index2: Int
+
+    @inlinable public init(index1: Int, index2: Int) {
+        self.index1 = index1
+        self.index2 = index2
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SWAPDB", index1, index2)
+    }
+}
+
+/// An internal command used in replication.
+public struct SYNC: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SYNC")
+    }
+}
+
+/// Returns the server time.
+public struct TIME: RedisCommand {
+    public typealias Response = [RESPToken]
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("TIME")
+    }
+}
+
 
 extension RedisConnection {
     /// Lists the ACL categories, or the commands inside a category.
@@ -1249,7 +1246,7 @@ extension RedisConnection {
     ///     * [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): the command returns an error if an invalid category name is given.
     @inlinable
     public func aclCat(category: String? = nil) async throws -> [String] {
-        try await send("ACL", "CAT", category).converting()
+        try await send(command: ACL.CAT(category: category))
     }
 
     /// Deletes ACL users, and terminates their connections.
@@ -1260,20 +1257,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
     @inlinable
-    public func aclDeluser(username: String) async throws -> Int {
-        try await send("ACL", "DELUSER", username).converting()
-    }
-
-    /// Deletes ACL users, and terminates their connections.
-    ///
-    /// - Documentation: [ACL DELUSER](https:/redis.io/docs/latest/commands/acl-deluser)
-    /// - Version: 6.0.0
-    /// - Complexity: O(1) amortized time considering the typical user.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
-    @inlinable
-    public func aclDeluser(usernames: [String]) async throws -> Int {
-        try await send("ACL", "DELUSER", usernames).converting()
+    public func aclDeluser(username: [String]) async throws -> Int {
+        try await send(command: ACL.DELUSER(username: username))
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -1286,22 +1271,8 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
-    public func aclDryrun(username: String, command: String, arg: String? = nil) async throws -> String? {
-        try await send("ACL", "DRYRUN", username, command, arg).converting()
-    }
-
-    /// Simulates the execution of a command by a user, without executing the command.
-    ///
-    /// - Documentation: [ACL DRYRUN](https:/redis.io/docs/latest/commands/acl-dryrun)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1).
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: Any of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): an error describing why the user can't execute the command.
-    @inlinable
-    public func aclDryrun(username: String, command: String, args: [String]) async throws -> String? {
-        try await send("ACL", "DRYRUN", username, command, args).converting()
+    public func aclDryrun(username: String, command: String, arg: [String] = []) async throws -> String? {
+        try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
@@ -1313,7 +1284,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
     public func aclGenpass(bits: Int? = nil) async throws -> String {
-        try await send("ACL", "GENPASS", bits).converting()
+        try await send(command: ACL.GENPASS(bits: bits))
     }
 
     /// Lists the ACL rules of a user.
@@ -1326,8 +1297,8 @@ extension RedisConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a set of ACL rule definitions for the user
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if user does not exist.
     @inlinable
-    public func aclGetuser(username: String) async throws -> RESPToken? {
-        try await send("ACL", "GETUSER", username).converting()
+    public func aclGetuser(username: String) async throws -> [String: RESPToken]? {
+        try await send(command: ACL.GETUSER(username: username))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1339,7 +1310,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of subcommands and their descriptions.
     @inlinable
     public func aclHelp() async throws -> [RESPToken] {
-        try await send("ACL", "HELP").converting()
+        try await send(command: ACL.HELP())
     }
 
     /// Dumps the effective rules in ACL file format.
@@ -1351,7 +1322,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements.
     @inlinable
     public func aclList() async throws -> [String] {
-        try await send("ACL", "LIST").converting()
+        try await send(command: ACL.LIST())
     }
 
     /// Reloads the rules from the configured ACL file.
@@ -1361,12 +1332,12 @@ extension RedisConnection {
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///
+    ///     
     ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
     @inlinable
-    public func aclLoad() async throws {
-        try await send("ACL", "LOAD")
+    public func aclLoad() async throws -> RESPToken {
+        try await send(command: ACL.LOAD())
     }
 
     /// Lists recent security events generated due to ACL rules.
@@ -1380,8 +1351,8 @@ extension RedisConnection {
     ///     When called with `RESET`:
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the security log was cleared.
     @inlinable
-    public func aclLog(operation: RESPCommand.ACLLOGOperation? = nil) async throws -> [String]? {
-        try await send("ACL", "LOG", operation).converting()
+    public func aclLog(operation: ACL.LOG.Operation? = nil) async throws -> [String]? {
+        try await send(command: ACL.LOG(operation: operation))
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
@@ -1393,8 +1364,8 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     ///     The command may fail with an error for several reasons: if the file cannot be written or if the server is not configured to use an external ACL file.
     @inlinable
-    public func aclSave() async throws {
-        try await send("ACL", "SAVE")
+    public func aclSave() async throws -> RESPToken {
+        try await send(command: ACL.SAVE())
     }
 
     /// Creates and modifies an ACL user and its rules.
@@ -1406,21 +1377,8 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     ///     If the rules contain errors, the error is returned.
     @inlinable
-    public func aclSetuser(username: String, rule: String? = nil) async throws {
-        try await send("ACL", "SETUSER", username, rule)
-    }
-
-    /// Creates and modifies an ACL user and its rules.
-    ///
-    /// - Documentation: [ACL SETUSER](https:/redis.io/docs/latest/commands/acl-setuser)
-    /// - Version: 6.0.0
-    /// - Complexity: O(N). Where N is the number of rules provided.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    ///     If the rules contain errors, the error is returned.
-    @inlinable
-    public func aclSetuser(username: String, rules: [String]) async throws {
-        try await send("ACL", "SETUSER", username, rules)
+    public func aclSetuser(username: String, rule: [String] = []) async throws -> RESPToken {
+        try await send(command: ACL.SETUSER(username: username, rule: rule))
     }
 
     /// Lists all ACL users.
@@ -1432,7 +1390,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): list of existing ACL users.
     @inlinable
     public func aclUsers() async throws -> [RESPToken] {
-        try await send("ACL", "USERS").converting()
+        try await send(command: ACL.USERS())
     }
 
     /// Returns the authenticated username of the current connection.
@@ -1444,7 +1402,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the username of the current connection.
     @inlinable
     public func aclWhoami() async throws -> String {
-        try await send("ACL", "WHOAMI").converting()
+        try await send(command: ACL.WHOAMI())
     }
 
     /// Asynchronously rewrites the append-only file to disk.
@@ -1454,11 +1412,11 @@ extension RedisConnection {
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
-    ///
+    ///     
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
     public func bgrewriteaof() async throws -> String {
-        try await send("BGREWRITEAOF").converting()
+        try await send(command: BGREWRITEAOF())
     }
 
     /// Asynchronously saves the database(s) to disk.
@@ -1472,7 +1430,7 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `Background saving scheduled`.
     @inlinable
     public func bgsave(schedule: Bool = false) async throws -> String {
-        try await send("BGSAVE", RedisPureToken("SCHEDULE", schedule)).converting()
+        try await send(command: BGSAVE(schedule: schedule))
     }
 
     /// Returns detailed information about all commands.
@@ -1484,7 +1442,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details. The order of the commands in the array is random.
     @inlinable
     public func command() async throws -> [RESPToken] {
-        try await send("COMMAND").converting()
+        try await send(command: COMMAND())
     }
 
     /// Returns a count of commands.
@@ -1496,7 +1454,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of commands returned by `COMMAND`.
     @inlinable
     public func commandCount() async throws -> Int {
-        try await send("COMMAND", "COUNT").converting()
+        try await send(command: COMMAND.COUNT())
     }
 
     /// Returns documentary information about one, multiple or all commands.
@@ -1507,20 +1465,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
-    public func commandDocs(commandName: String? = nil) async throws -> RESPToken {
-        try await send("COMMAND", "DOCS", commandName)
-    }
-
-    /// Returns documentary information about one, multiple or all commands.
-    ///
-    /// - Documentation: [COMMAND DOCS](https:/redis.io/docs/latest/commands/command-docs)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of commands to look up
-    /// - Categories: @slow, @connection
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
-    @inlinable
-    public func commandDocs(commandNames: [String]) async throws -> RESPToken {
-        try await send("COMMAND", "DOCS", commandNames)
+    public func commandDocs(commandName: [String] = []) async throws -> [String: RESPToken] {
+        try await send(command: COMMAND.DOCS(commandName: commandName))
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -1531,20 +1477,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command.
     @inlinable
-    public func commandGetkeys(command: String, arg: String? = nil) async throws -> [RESPToken] {
-        try await send("COMMAND", "GETKEYS", command, arg).converting()
-    }
-
-    /// Extracts the key names from an arbitrary command.
-    ///
-    /// - Documentation: [COMMAND GETKEYS](https:/redis.io/docs/latest/commands/command-getkeys)
-    /// - Version: 2.8.13
-    /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command.
-    @inlinable
-    public func commandGetkeys(command: String, args: [String]) async throws -> [RESPToken] {
-        try await send("COMMAND", "GETKEYS", command, args).converting()
+    public func commandGetkeys(command: String, arg: [String] = []) async throws -> [RESPToken] {
+        try await send(command: COMMAND.GETKEYS(command: command, arg: arg))
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
@@ -1555,20 +1489,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command and their usage flags.
     @inlinable
-    public func commandGetkeysandflags(command: String, arg: String? = nil) async throws -> [RESPToken] {
-        try await send("COMMAND", "GETKEYSANDFLAGS", command, arg).converting()
-    }
-
-    /// Extracts the key names and access flags for an arbitrary command.
-    ///
-    /// - Documentation: [COMMAND GETKEYSANDFLAGS](https:/redis.io/docs/latest/commands/command-getkeysandflags)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command and their usage flags.
-    @inlinable
-    public func commandGetkeysandflags(command: String, args: [String]) async throws -> [RESPToken] {
-        try await send("COMMAND", "GETKEYSANDFLAGS", command, args).converting()
+    public func commandGetkeysandflags(command: String, arg: [String] = []) async throws -> [RESPToken] {
+        try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, arg: arg))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1580,7 +1502,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func commandHelp() async throws -> [RESPToken] {
-        try await send("COMMAND", "HELP").converting()
+        try await send(command: COMMAND.HELP())
     }
 
     /// Returns information about one, multiple or all commands.
@@ -1591,20 +1513,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details.
     @inlinable
-    public func commandInfo(commandName: String? = nil) async throws -> [RESPToken] {
-        try await send("COMMAND", "INFO", commandName).converting()
-    }
-
-    /// Returns information about one, multiple or all commands.
-    ///
-    /// - Documentation: [COMMAND INFO](https:/redis.io/docs/latest/commands/command-info)
-    /// - Version: 2.8.13
-    /// - Complexity: O(N) where N is the number of commands to look up
-    /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details.
-    @inlinable
-    public func commandInfo(commandNames: [String]) async throws -> [RESPToken] {
-        try await send("COMMAND", "INFO", commandNames).converting()
+    public func commandInfo(commandName: [String] = []) async throws -> [RESPToken] {
+        try await send(command: COMMAND.INFO(commandName: commandName))
     }
 
     /// Returns a list of command names.
@@ -1615,8 +1525,8 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of command names.
     @inlinable
-    public func commandList(filterby: RESPCommand.COMMANDLISTFilterby? = nil) async throws -> [RESPToken] {
-        try await send("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby)).converting()
+    public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> [RESPToken] {
+        try await send(command: COMMAND.LIST(filterby: filterby))
     }
 
     /// Returns the effective values of configuration parameters.
@@ -1627,20 +1537,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
-    public func configGet(parameter: String) async throws -> RESPToken {
-        try await send("CONFIG", "GET", parameter)
-    }
-
-    /// Returns the effective values of configuration parameters.
-    ///
-    /// - Documentation: [CONFIG GET](https:/redis.io/docs/latest/commands/config-get)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) when N is the number of configuration parameters provided
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
-    @inlinable
-    public func configGet(parameters: [String]) async throws -> RESPToken {
-        try await send("CONFIG", "GET", parameters)
+    public func configGet(parameter: [String]) async throws -> [String: RESPToken] {
+        try await send(command: CONFIG.GET(parameter: parameter))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1652,7 +1550,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func configHelp() async throws -> [RESPToken] {
-        try await send("CONFIG", "HELP").converting()
+        try await send(command: CONFIG.HELP())
     }
 
     /// Resets the server's statistics.
@@ -1663,8 +1561,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func configResetstat() async throws {
-        try await send("CONFIG", "RESETSTAT")
+    public func configResetstat() async throws -> RESPToken {
+        try await send(command: CONFIG.RESETSTAT())
     }
 
     /// Persists the effective configuration to file.
@@ -1675,8 +1573,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was rewritten properly. Otherwise an error is returned.
     @inlinable
-    public func configRewrite() async throws {
-        try await send("CONFIG", "REWRITE")
+    public func configRewrite() async throws -> RESPToken {
+        try await send(command: CONFIG.REWRITE())
     }
 
     /// Sets configuration parameters in-flight.
@@ -1687,20 +1585,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
-    public func configSet(data: RESPCommand.CONFIGSETData) async throws {
-        try await send("CONFIG", "SET", data)
-    }
-
-    /// Sets configuration parameters in-flight.
-    ///
-    /// - Documentation: [CONFIG SET](https:/redis.io/docs/latest/commands/config-set)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) when N is the number of configuration parameters provided
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
-    @inlinable
-    public func configSet(datas: [RESPCommand.CONFIGSETData]) async throws {
-        try await send("CONFIG", "SET", datas)
+    public func configSet(data: [CONFIG.SET.Data]) async throws -> RESPToken {
+        try await send(command: CONFIG.SET(data: data))
     }
 
     /// Returns the number of keys in the database.
@@ -1712,7 +1598,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys in the currently-selected database.
     @inlinable
     public func dbsize() async throws -> Int {
-        try await send("DBSIZE").converting()
+        try await send(command: DBSIZE())
     }
 
     /// Starts a coordinated failover from a server to one of its replicas.
@@ -1723,8 +1609,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was accepted and a coordinated failover is in progress. An error if the operation cannot be executed.
     @inlinable
-    public func failover(target: RESPCommand.FAILOVERTarget? = nil, abort: Bool = false, milliseconds: Int? = nil) async throws {
-        try await send("FAILOVER", RESPWithToken("TO", target), RedisPureToken("ABORT", abort), RESPWithToken("TIMEOUT", milliseconds))
+    public func failover(target: FAILOVER.Target? = nil, abort: Bool = false, milliseconds: Int? = nil) async throws -> RESPToken {
+        try await send(command: FAILOVER(target: target, abort: abort, milliseconds: milliseconds))
     }
 
     /// Removes all keys from all databases.
@@ -1735,8 +1621,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func flushall(flushType: RESPCommand.FLUSHALLFlushType? = nil) async throws {
-        try await send("FLUSHALL", flushType)
+    public func flushall(flushType: FLUSHALL.FlushType? = nil) async throws -> RESPToken {
+        try await send(command: FLUSHALL(flushType: flushType))
     }
 
     /// Remove all keys from the current database.
@@ -1747,8 +1633,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func flushdb(flushType: RESPCommand.FLUSHDBFlushType? = nil) async throws {
-        try await send("FLUSHDB", flushType)
+    public func flushdb(flushType: FLUSHDB.FlushType? = nil) async throws -> RESPToken {
+        try await send(command: FLUSHDB(flushType: flushType))
     }
 
     /// Returns information and statistics about the server.
@@ -1758,25 +1644,11 @@ extension RedisConnection {
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///
+    ///     
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
-    public func info(section: String? = nil) async throws -> String {
-        try await send("INFO", section).converting()
-    }
-
-    /// Returns information and statistics about the server.
-    ///
-    /// - Documentation: [INFO](https:/redis.io/docs/latest/commands/info)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @dangerous
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///
-    ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
-    @inlinable
-    public func info(sections: [String]) async throws -> String {
-        try await send("INFO", sections).converting()
+    public func info(section: [String] = []) async throws -> String {
+        try await send(command: INFO(section: section))
     }
 
     /// Returns the Unix timestamp of the last successful save to disk.
@@ -1788,7 +1660,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): UNIX TIME of the last DB save executed with success.
     @inlinable
     public func lastsave() async throws -> Int {
-        try await send("LASTSAVE").converting()
+        try await send(command: LASTSAVE())
     }
 
     /// Returns a human-readable latency analysis report.
@@ -1800,7 +1672,7 @@ extension RedisConnection {
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a human readable latency analysis report.
     @inlinable
     public func latencyDoctor() async throws -> String {
-        try await send("LATENCY", "DOCTOR").converting()
+        try await send(command: LATENCY.DOCTOR())
     }
 
     /// Returns a latency graph for an event.
@@ -1812,7 +1684,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): Latency graph
     @inlinable
     public func latencyGraph(event: String) async throws -> String {
-        try await send("LATENCY", "GRAPH", event).converting()
+        try await send(command: LATENCY.GRAPH(event: event))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1824,7 +1696,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func latencyHelp() async throws -> [RESPToken] {
-        try await send("LATENCY", "HELP").converting()
+        try await send(command: LATENCY.HELP())
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
@@ -1835,20 +1707,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
-    public func latencyHistogram(command: String? = nil) async throws -> RESPToken {
-        try await send("LATENCY", "HISTOGRAM", command)
-    }
-
-    /// Returns the cumulative distribution of latencies of a subset or all commands.
-    ///
-    /// - Documentation: [LATENCY HISTOGRAM](https:/redis.io/docs/latest/commands/latency-histogram)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
-    @inlinable
-    public func latencyHistogram(commands: [String]) async throws -> RESPToken {
-        try await send("LATENCY", "HISTOGRAM", commands)
+    public func latencyHistogram(command: [String] = []) async throws -> [String: RESPToken] {
+        try await send(command: LATENCY.HISTOGRAM(command: command))
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -1860,7 +1720,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array where each element is a two elements array representing the timestamp and the latency of the event.
     @inlinable
     public func latencyHistory(event: String) async throws -> [RESPToken] {
-        try await send("LATENCY", "HISTORY", event).converting()
+        try await send(command: LATENCY.HISTORY(event: event))
     }
 
     /// Returns the latest latency samples for all events.
@@ -1872,7 +1732,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.
     @inlinable
     public func latencyLatest() async throws -> [RESPToken] {
-        try await send("LATENCY", "LATEST").converting()
+        try await send(command: LATENCY.LATEST())
     }
 
     /// Resets the latency data for one or more events.
@@ -1883,20 +1743,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of event time series that were reset.
     @inlinable
-    public func latencyReset(event: String? = nil) async throws -> Int {
-        try await send("LATENCY", "RESET", event).converting()
-    }
-
-    /// Resets the latency data for one or more events.
-    ///
-    /// - Documentation: [LATENCY RESET](https:/redis.io/docs/latest/commands/latency-reset)
-    /// - Version: 2.8.13
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of event time series that were reset.
-    @inlinable
-    public func latencyReset(events: [String]) async throws -> Int {
-        try await send("LATENCY", "RESET", events).converting()
+    public func latencyReset(event: [String] = []) async throws -> Int {
+        try await send(command: LATENCY.RESET(event: event))
     }
 
     /// Displays computer art and the Redis version
@@ -1907,7 +1755,7 @@ extension RedisConnection {
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a string containing generative computer art and the Redis version.
     @inlinable
     public func lolwut(version: Int? = nil) async throws -> String {
-        try await send("LOLWUT", RESPWithToken("VERSION", version)).converting()
+        try await send(command: LOLWUT(version: version))
     }
 
     /// Outputs a memory problems report.
@@ -1919,7 +1767,7 @@ extension RedisConnection {
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a memory problems report.
     @inlinable
     public func memoryDoctor() async throws -> String {
-        try await send("MEMORY", "DOCTOR").converting()
+        try await send(command: MEMORY.DOCTOR())
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1931,7 +1779,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func memoryHelp() async throws -> [RESPToken] {
-        try await send("MEMORY", "HELP").converting()
+        try await send(command: MEMORY.HELP())
     }
 
     /// Returns the allocator statistics.
@@ -1943,7 +1791,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The memory allocator's internal statistics report.
     @inlinable
     public func memoryMallocStats() async throws -> String {
-        try await send("MEMORY", "MALLOC-STATS").converting()
+        try await send(command: MEMORY.MALLOCSTATS())
     }
 
     /// Asks the allocator to release memory.
@@ -1954,8 +1802,8 @@ extension RedisConnection {
     /// - Categories: @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func memoryPurge() async throws {
-        try await send("MEMORY", "PURGE")
+    public func memoryPurge() async throws -> RESPToken {
+        try await send(command: MEMORY.PURGE())
     }
 
     /// Returns details about memory usage.
@@ -1966,8 +1814,8 @@ extension RedisConnection {
     /// - Categories: @slow
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): memory usage metrics and their values.
     @inlinable
-    public func memoryStats() async throws -> RESPToken {
-        try await send("MEMORY", "STATS")
+    public func memoryStats() async throws -> [String: RESPToken] {
+        try await send(command: MEMORY.STATS())
     }
 
     /// Estimates the memory usage of a key.
@@ -1981,7 +1829,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
     @inlinable
     public func memoryUsage(key: RedisKey, count: Int? = nil) async throws -> Int? {
-        try await send("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count)).converting()
+        try await send(command: MEMORY.USAGE(key: key, count: count))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1993,7 +1841,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions
     @inlinable
     public func moduleHelp() async throws -> [RESPToken] {
-        try await send("MODULE", "HELP").converting()
+        try await send(command: MODULE.HELP())
     }
 
     /// Returns all loaded modules.
@@ -2007,7 +1855,7 @@ extension RedisConnection {
     ///     * ver: the version of the module.
     @inlinable
     public func moduleList() async throws -> [RESPToken] {
-        try await send("MODULE", "LIST").converting()
+        try await send(command: MODULE.LIST())
     }
 
     /// Loads a module.
@@ -2018,20 +1866,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoad(path: String, arg: String? = nil) async throws {
-        try await send("MODULE", "LOAD", path, arg)
-    }
-
-    /// Loads a module.
-    ///
-    /// - Documentation: [MODULE LOAD](https:/redis.io/docs/latest/commands/module-load)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
-    @inlinable
-    public func moduleLoad(path: String, args: [String]) async throws {
-        try await send("MODULE", "LOAD", path, args)
+    public func moduleLoad(path: String, arg: [String] = []) async throws -> RESPToken {
+        try await send(command: MODULE.LOAD(path: path, arg: arg))
     }
 
     /// Loads a module using extended parameters.
@@ -2042,20 +1878,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoadex(path: String, configs: RESPCommand.MODULELOADEXConfigs? = nil, args: String? = nil) async throws {
-        try await send("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
-    }
-
-    /// Loads a module using extended parameters.
-    ///
-    /// - Documentation: [MODULE LOADEX](https:/redis.io/docs/latest/commands/module-loadex)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
-    @inlinable
-    public func moduleLoadex(path: String, configss: [RESPCommand.MODULELOADEXConfigs], argss: [String]) async throws {
-        try await send("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configss), RESPWithToken("ARGS", argss))
+    public func moduleLoadex(path: String, configs: [MODULE.LOADEX.Configs] = [], args: [String] = []) async throws -> RESPToken {
+        try await send(command: MODULE.LOADEX(path: path, configs: configs, args: args))
     }
 
     /// Unloads a module.
@@ -2066,8 +1890,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was unloaded.
     @inlinable
-    public func moduleUnload(name: String) async throws {
-        try await send("MODULE", "UNLOAD", name)
+    public func moduleUnload(name: String) async throws -> RESPToken {
+        try await send(command: MODULE.UNLOAD(name: name))
     }
 
     /// Listens for all requests received by the server in real-time.
@@ -2078,7 +1902,7 @@ extension RedisConnection {
     /// - Returns: **Non-standard return value**. Dumps the received commands in an infinite flow.
     @inlinable
     public func monitor() async throws -> RESPToken {
-        try await send("MONITOR")
+        try await send(command: MONITOR())
     }
 
     /// An internal command used in replication.
@@ -2089,7 +1913,7 @@ extension RedisConnection {
     /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
     @inlinable
     public func psync(replicationid: String, offset: Int) async throws -> RESPToken {
-        try await send("PSYNC", replicationid, offset)
+        try await send(command: PSYNC(replicationid: replicationid, offset: offset))
     }
 
     /// An internal command for configuring the replication stream.
@@ -2100,8 +1924,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func replconf() async throws {
-        try await send("REPLCONF")
+    public func replconf() async throws -> RESPToken {
+        try await send(command: REPLCONF())
     }
 
     /// Configures a server as replica of another, or promotes it to a master.
@@ -2112,8 +1936,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func replicaof(args: RESPCommand.REPLICAOFArgs) async throws {
-        try await send("REPLICAOF", args)
+    public func replicaof(args: REPLICAOF.Args) async throws -> RESPToken {
+        try await send(command: REPLICAOF(args: args))
     }
 
     /// An internal command for migrating keys in a cluster.
@@ -2124,25 +1948,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool = false,
-        absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
-    ) async throws {
-        try await send(
-            "RESTORE-ASKING",
-            key,
-            ttl,
-            serializedValue,
-            RedisPureToken("REPLACE", replace),
-            RedisPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
-        )
+    public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
+        try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 
     /// Returns the replication role.
@@ -2154,7 +1961,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): where the first element is one of `master`, `slave`, or `sentinel`, and the additional elements are role-specific as illustrated above.
     @inlinable
     public func role() async throws -> [RESPToken] {
-        try await send("ROLE").converting()
+        try await send(command: ROLE())
     }
 
     /// Synchronously saves the database(s) to disk.
@@ -2165,8 +1972,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func save() async throws {
-        try await send("SAVE")
+    public func save() async throws -> RESPToken {
+        try await send(command: SAVE())
     }
 
     /// Synchronously saves the database(s) to disk and shuts down the Redis server.
@@ -2177,13 +1984,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
-    public func shutdown(
-        saveSelector: RESPCommand.SHUTDOWNSaveSelector? = nil,
-        now: Bool = false,
-        force: Bool = false,
-        abort: Bool = false
-    ) async throws {
-        try await send("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
+    public func shutdown(saveSelector: SHUTDOWN.SaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) async throws -> RESPToken {
+        try await send(command: SHUTDOWN(saveSelector: saveSelector, now: now, force: force, abort: abort))
     }
 
     /// Sets a Redis server as a replica of another, or promotes it to being a master.
@@ -2194,8 +1996,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func slaveof(args: RESPCommand.SLAVEOFArgs) async throws {
-        try await send("SLAVEOF", args)
+    public func slaveof(args: SLAVEOF.Args) async throws -> RESPToken {
+        try await send(command: SLAVEOF(args: args))
     }
 
     /// Returns the slow log's entries.
@@ -2207,7 +2009,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of slow log entries per the above format.
     @inlinable
     public func slowlogGet(count: Int? = nil) async throws -> [RESPToken] {
-        try await send("SLOWLOG", "GET", count).converting()
+        try await send(command: SLOWLOG.GET(count: count))
     }
 
     /// Show helpful text about the different subcommands
@@ -2219,7 +2021,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func slowlogHelp() async throws -> [RESPToken] {
-        try await send("SLOWLOG", "HELP").converting()
+        try await send(command: SLOWLOG.HELP())
     }
 
     /// Returns the number of entries in the slow log.
@@ -2231,7 +2033,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries in the slow log.
     @inlinable
     public func slowlogLen() async throws -> Int {
-        try await send("SLOWLOG", "LEN").converting()
+        try await send(command: SLOWLOG.LEN())
     }
 
     /// Clears all entries from the slow log.
@@ -2242,8 +2044,8 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func slowlogReset() async throws {
-        try await send("SLOWLOG", "RESET")
+    public func slowlogReset() async throws -> RESPToken {
+        try await send(command: SLOWLOG.RESET())
     }
 
     /// Swaps two Redis databases.
@@ -2254,8 +2056,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @fast, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func swapdb(index1: Int, index2: Int) async throws {
-        try await send("SWAPDB", index1, index2)
+    public func swapdb(index1: Int, index2: Int) async throws -> RESPToken {
+        try await send(command: SWAPDB(index1: index1, index2: index2))
     }
 
     /// An internal command used in replication.
@@ -2266,7 +2068,7 @@ extension RedisConnection {
     /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
     @inlinable
     public func sync() async throws -> RESPToken {
-        try await send("SYNC")
+        try await send(command: SYNC())
     }
 
     /// Returns the server time.
@@ -2278,7 +2080,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): specifically, a two-element array consisting of the Unix timestamp in seconds and the microseconds' count.
     @inlinable
     public func time() async throws -> [RESPToken] {
-        try await send("TIME").converting()
+        try await send(command: TIME())
     }
 
 }

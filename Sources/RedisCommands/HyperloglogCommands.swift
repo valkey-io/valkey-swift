@@ -23,96 +23,68 @@ import FoundationEssentials
 import Foundation
 #endif
 
-extension RESPCommand {
-    /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [PFADD](https:/redis.io/docs/latest/commands/pfadd)
-    /// - Version: 2.8.9
-    /// - Complexity: O(1) to add every element.
-    /// - Categories: @write, @hyperloglog, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if at least one HyperLogLog internal register was altered.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no HyperLogLog internal registers were altered.
-    @inlinable
-    public static func pfadd(key: RedisKey, element: String? = nil) -> RESPCommand {
-        RESPCommand("PFADD", key, element)
+/// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
+public struct PFADD: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var element: [String] = []
+
+    @inlinable public init(key: RedisKey, element: [String] = []) {
+        self.key = key
+        self.element = element
     }
 
-    /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [PFADD](https:/redis.io/docs/latest/commands/pfadd)
-    /// - Version: 2.8.9
-    /// - Complexity: O(1) to add every element.
-    /// - Categories: @write, @hyperloglog, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if at least one HyperLogLog internal register was altered.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no HyperLogLog internal registers were altered.
-    @inlinable
-    public static func pfadd(key: RedisKey, elements: [String]) -> RESPCommand {
-        RESPCommand("PFADD", key, elements)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PFADD", key, element)
     }
-
-    /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
-    ///
-    /// - Documentation: [PFCOUNT](https:/redis.io/docs/latest/commands/pfcount)
-    /// - Version: 2.8.9
-    /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
-    /// - Categories: @read, @hyperloglog, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
-    @inlinable
-    public static func pfcount(key: RedisKey) -> RESPCommand {
-        RESPCommand("PFCOUNT", key)
-    }
-
-    /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
-    ///
-    /// - Documentation: [PFCOUNT](https:/redis.io/docs/latest/commands/pfcount)
-    /// - Version: 2.8.9
-    /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
-    /// - Categories: @read, @hyperloglog, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
-    @inlinable
-    public static func pfcount(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("PFCOUNT", keys)
-    }
-
-    /// Merges one or more HyperLogLog values into a single key.
-    ///
-    /// - Documentation: [PFMERGE](https:/redis.io/docs/latest/commands/pfmerge)
-    /// - Version: 2.8.9
-    /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
-    /// - Categories: @write, @hyperloglog, @slow
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func pfmerge(destkey: RedisKey, sourcekey: RedisKey? = nil) -> RESPCommand {
-        RESPCommand("PFMERGE", destkey, sourcekey)
-    }
-
-    /// Merges one or more HyperLogLog values into a single key.
-    ///
-    /// - Documentation: [PFMERGE](https:/redis.io/docs/latest/commands/pfmerge)
-    /// - Version: 2.8.9
-    /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
-    /// - Categories: @write, @hyperloglog, @slow
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func pfmerge(destkey: RedisKey, sourcekeys: [RedisKey]) -> RESPCommand {
-        RESPCommand("PFMERGE", destkey, sourcekeys)
-    }
-
-    /// An internal command for testing HyperLogLog values.
-    ///
-    /// - Documentation: [PFSELFTEST](https:/redis.io/docs/latest/commands/pfselftest)
-    /// - Version: 2.8.9
-    /// - Complexity: N/A
-    /// - Categories: @hyperloglog, @admin, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func pfselftest() -> RESPCommand {
-        RESPCommand("PFSELFTEST")
-    }
-
 }
+
+/// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
+public struct PFCOUNT: RedisCommand {
+    public typealias Response = Int
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PFCOUNT", key)
+    }
+}
+
+/// Merges one or more HyperLogLog values into a single key.
+public struct PFMERGE: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var destkey: RedisKey
+    public var sourcekey: [RedisKey] = []
+
+    @inlinable public init(destkey: RedisKey, sourcekey: [RedisKey] = []) {
+        self.destkey = destkey
+        self.sourcekey = sourcekey
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)
+    }
+}
+
+/// An internal command for testing HyperLogLog values.
+public struct PFSELFTEST: RedisCommand {
+    public typealias Response = RESPToken
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PFSELFTEST")
+    }
+}
+
 
 extension RedisConnection {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
@@ -125,22 +97,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if at least one HyperLogLog internal register was altered.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no HyperLogLog internal registers were altered.
     @inlinable
-    public func pfadd(key: RedisKey, element: String? = nil) async throws -> Int {
-        try await send("PFADD", key, element).converting()
-    }
-
-    /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [PFADD](https:/redis.io/docs/latest/commands/pfadd)
-    /// - Version: 2.8.9
-    /// - Complexity: O(1) to add every element.
-    /// - Categories: @write, @hyperloglog, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if at least one HyperLogLog internal register was altered.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no HyperLogLog internal registers were altered.
-    @inlinable
-    public func pfadd(key: RedisKey, elements: [String]) async throws -> Int {
-        try await send("PFADD", key, elements).converting()
+    public func pfadd(key: RedisKey, element: [String] = []) async throws -> Int {
+        try await send(command: PFADD(key: key, element: element))
     }
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
@@ -151,20 +109,8 @@ extension RedisConnection {
     /// - Categories: @read, @hyperloglog, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
     @inlinable
-    public func pfcount(key: RedisKey) async throws -> Int {
-        try await send("PFCOUNT", key).converting()
-    }
-
-    /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
-    ///
-    /// - Documentation: [PFCOUNT](https:/redis.io/docs/latest/commands/pfcount)
-    /// - Version: 2.8.9
-    /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
-    /// - Categories: @read, @hyperloglog, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
-    @inlinable
-    public func pfcount(keys: [RedisKey]) async throws -> Int {
-        try await send("PFCOUNT", keys).converting()
+    public func pfcount(key: [RedisKey]) async throws -> Int {
+        try await send(command: PFCOUNT(key: key))
     }
 
     /// Merges one or more HyperLogLog values into a single key.
@@ -175,20 +121,8 @@ extension RedisConnection {
     /// - Categories: @write, @hyperloglog, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func pfmerge(destkey: RedisKey, sourcekey: RedisKey? = nil) async throws {
-        try await send("PFMERGE", destkey, sourcekey)
-    }
-
-    /// Merges one or more HyperLogLog values into a single key.
-    ///
-    /// - Documentation: [PFMERGE](https:/redis.io/docs/latest/commands/pfmerge)
-    /// - Version: 2.8.9
-    /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
-    /// - Categories: @write, @hyperloglog, @slow
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public func pfmerge(destkey: RedisKey, sourcekeys: [RedisKey]) async throws {
-        try await send("PFMERGE", destkey, sourcekeys)
+    public func pfmerge(destkey: RedisKey, sourcekey: [RedisKey] = []) async throws -> RESPToken {
+        try await send(command: PFMERGE(destkey: destkey, sourcekey: sourcekey))
     }
 
     /// An internal command for testing HyperLogLog values.
@@ -199,8 +133,8 @@ extension RedisConnection {
     /// - Categories: @hyperloglog, @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func pfselftest() async throws {
-        try await send("PFSELFTEST")
+    public func pfselftest() async throws -> RESPToken {
+        try await send(command: PFSELFTEST())
     }
 
 }

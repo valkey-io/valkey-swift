@@ -23,809 +23,739 @@ import FoundationEssentials
 import Foundation
 #endif
 
-extension RESPCommand {
-    /// Copies the value of a key to a new key.
-    ///
-    /// - Documentation: [COPY](https:/redis.io/docs/latest/commands/copy)
-    /// - Version: 6.2.0
-    /// - Complexity: O(N) worst case for collections, where N is the number of nested items. O(1) for string values.
-    /// - Categories: @keyspace, @write, @slow
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if _source_ was copied.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if _source_ was not copied.
-    @inlinable
-    public static func copy(source: RedisKey, destination: RedisKey, destinationDb: Int? = nil, replace: Bool = false) -> RESPCommand {
-        RESPCommand("COPY", source, destination, RESPWithToken("DB", destinationDb), RedisPureToken("REPLACE", replace))
+/// A container for object introspection commands.
+public enum OBJECT {
+    /// Returns the internal encoding of a Redis object.
+    public struct ENCODING: RedisCommand {
+        public typealias Response = String?
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "ENCODING", key)
+        }
     }
 
-    /// Deletes one or more keys.
-    ///
-    /// - Documentation: [DEL](https:/redis.io/docs/latest/commands/del)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
-    /// - Categories: @keyspace, @write, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were removed.
-    @inlinable
-    public static func del(key: RedisKey) -> RESPCommand {
-        RESPCommand("DEL", key)
+    /// Returns the logarithmic access frequency counter of a Redis object.
+    public struct FREQ: RedisCommand {
+        public typealias Response = Int?
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "FREQ", key)
+        }
     }
 
-    /// Deletes one or more keys.
-    ///
-    /// - Documentation: [DEL](https:/redis.io/docs/latest/commands/del)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
-    /// - Categories: @keyspace, @write, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were removed.
-    @inlinable
-    public static func del(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("DEL", keys)
+    /// Returns helpful text about the different subcommands.
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "HELP")
+        }
     }
 
-    /// Returns a serialized representation of the value stored at a key.
-    ///
-    /// - Documentation: [DUMP](https:/redis.io/docs/latest/commands/dump)
-    /// - Version: 2.6.0
-    /// - Complexity: O(1) to access the key and additional O(N*M) to serialize it, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).
-    /// - Categories: @keyspace, @read, @slow
-    /// - Response: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the serialized value of the key.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the key does not exist.
-    @inlinable
-    public static func dump(key: RedisKey) -> RESPCommand {
-        RESPCommand("DUMP", key)
+    /// Returns the time since the last access to a Redis object.
+    public struct IDLETIME: RedisCommand {
+        public typealias Response = Int?
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "IDLETIME", key)
+        }
     }
 
-    /// Determines whether one or more keys exist.
-    ///
-    /// - Documentation: [EXISTS](https:/redis.io/docs/latest/commands/exists)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of keys to check.
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that exist from those specified as arguments.
-    @inlinable
-    public static func exists(key: RedisKey) -> RESPCommand {
-        RESPCommand("EXISTS", key)
+    /// Returns the reference count of a value of a key.
+    public struct REFCOUNT: RedisCommand {
+        public typealias Response = Int?
+
+        public var key: RedisKey
+
+        @inlinable public init(key: RedisKey) {
+            self.key = key
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("OBJECT", "REFCOUNT", key)
+        }
     }
 
-    /// Determines whether one or more keys exist.
-    ///
-    /// - Documentation: [EXISTS](https:/redis.io/docs/latest/commands/exists)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of keys to check.
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that exist from those specified as arguments.
-    @inlinable
-    public static func exists(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("EXISTS", keys)
+}
+
+/// Copies the value of a key to a new key.
+public struct COPY: RedisCommand {
+    public typealias Response = Int
+
+    public var source: RedisKey
+    public var destination: RedisKey
+    public var destinationDb: Int? = nil
+    public var replace: Bool = false
+
+    @inlinable public init(source: RedisKey, destination: RedisKey, destinationDb: Int? = nil, replace: Bool = false) {
+        self.source = source
+        self.destination = destination
+        self.destinationDb = destinationDb
+        self.replace = replace
     }
 
-    public enum EXPIRECondition: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("COPY", source, destination, RESPWithToken("DB", destinationDb), RedisPureToken("REPLACE", replace))
+    }
+}
+
+/// Deletes one or more keys.
+public struct DEL: RedisCommand {
+    public typealias Response = Int
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("DEL", key)
+    }
+}
+
+/// Returns a serialized representation of the value stored at a key.
+public struct DUMP: RedisCommand {
+    public typealias Response = String?
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("DUMP", key)
+    }
+}
+
+/// Determines whether one or more keys exist.
+public struct EXISTS: RedisCommand {
+    public typealias Response = Int
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("EXISTS", key)
+    }
+}
+
+/// Sets the expiration time of a key in seconds.
+public struct EXPIRE: RedisCommand {
+    public enum Condition: RESPRenderable {
         case nx
         case xx
         case gt
         case lt
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .nx: "NX".writeToRESPBuffer(&buffer)
-            case .xx: "XX".writeToRESPBuffer(&buffer)
-            case .gt: "GT".writeToRESPBuffer(&buffer)
-            case .lt: "LT".writeToRESPBuffer(&buffer)
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
             }
         }
     }
-    /// Sets the expiration time of a key in seconds.
-    ///
-    /// - Documentation: [EXPIRE](https:/redis.io/docs/latest/commands/expire)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set; for example, the key doesn't exist, or the operation was skipped because of the provided arguments.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
-    @inlinable
-    public static func expire(key: RedisKey, seconds: Int, condition: EXPIRECondition? = nil) -> RESPCommand {
-        RESPCommand("EXPIRE", key, seconds, condition)
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var seconds: Int
+    public var condition: Condition? = nil
+
+    @inlinable public init(key: RedisKey, seconds: Int, condition: Condition? = nil) {
+        self.key = key
+        self.seconds = seconds
+        self.condition = condition
     }
 
-    public enum EXPIREATCondition: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("EXPIRE", key, seconds, condition)
+    }
+}
+
+/// Sets the expiration time of a key to a Unix timestamp.
+public struct EXPIREAT: RedisCommand {
+    public enum Condition: RESPRenderable {
         case nx
         case xx
         case gt
         case lt
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .nx: "NX".writeToRESPBuffer(&buffer)
-            case .xx: "XX".writeToRESPBuffer(&buffer)
-            case .gt: "GT".writeToRESPBuffer(&buffer)
-            case .lt: "LT".writeToRESPBuffer(&buffer)
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
             }
         }
     }
-    /// Sets the expiration time of a key to a Unix timestamp.
-    ///
-    /// - Documentation: [EXPIREAT](https:/redis.io/docs/latest/commands/expireat)
-    /// - Version: 1.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set; for example, the key doesn't exist, or the operation was skipped because of the provided arguments.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
-    @inlinable
-    public static func expireat(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREATCondition? = nil) -> RESPCommand {
-        RESPCommand("EXPIREAT", key, Int(unixTimeSeconds.timeIntervalSince1970), condition)
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var unixTimeSeconds: Date
+    public var condition: Condition? = nil
+
+    @inlinable public init(key: RedisKey, unixTimeSeconds: Date, condition: Condition? = nil) {
+        self.key = key
+        self.unixTimeSeconds = unixTimeSeconds
+        self.condition = condition
     }
 
-    /// Returns the expiration time of a key as a Unix timestamp.
-    ///
-    /// - Documentation: [EXPIRETIME](https:/redis.io/docs/latest/commands/expiretime)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the expiration Unix timestamp in seconds.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` if the key exists but has no associated expiration time.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-2` if the key does not exist.
-    @inlinable
-    public static func expiretime(key: RedisKey) -> RESPCommand {
-        RESPCommand("EXPIRETIME", key)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("EXPIREAT", key, Int(unixTimeSeconds.timeIntervalSince1970), condition)
+    }
+}
+
+/// Returns the expiration time of a key as a Unix timestamp.
+public struct EXPIRETIME: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
     }
 
-    /// Returns all key names that match a pattern.
-    ///
-    /// - Documentation: [KEYS](https:/redis.io/docs/latest/commands/keys)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) with N being the number of keys in the database, under the assumption that the key names in the database and the given pattern have limited length.
-    /// - Categories: @keyspace, @read, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys matching _pattern_.
-    @inlinable
-    public static func keys(pattern: String) -> RESPCommand {
-        RESPCommand("KEYS", pattern)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("EXPIRETIME", key)
+    }
+}
+
+/// Returns all key names that match a pattern.
+public struct KEYS: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var pattern: String
+
+    @inlinable public init(pattern: String) {
+        self.pattern = pattern
     }
 
-    public enum MIGRATEKeySelector: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("KEYS", pattern)
+    }
+}
+
+/// Atomically transfers a key from one Redis instance to another.
+public struct MIGRATE: RedisCommand {
+    public enum KeySelector: RESPRenderable {
         case key(RedisKey)
         case emptyString
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .key(let key): key.writeToRESPBuffer(&buffer)
-            case .emptyString: "".writeToRESPBuffer(&buffer)
+            case .key(let key): key.encode(into: &commandEncoder)
+            case .emptyString: "".encode(into: &commandEncoder)
             }
         }
     }
-    public struct MIGRATEAuthenticationAuth2: RESPRenderable {
+    public struct AuthenticationAuth2: RESPRenderable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             var count = 0
-            count += username.writeToRESPBuffer(&buffer)
-            count += password.writeToRESPBuffer(&buffer)
+            count += username.encode(into: &commandEncoder)
+            count += password.encode(into: &commandEncoder)
             return count
         }
     }
-    public enum MIGRATEAuthentication: RESPRenderable {
+    public enum Authentication: RESPRenderable {
         case auth(String)
-        case auth2(MIGRATEAuthenticationAuth2)
+        case auth2(AuthenticationAuth2)
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .auth(let auth): RESPWithToken("AUTH", auth).writeToRESPBuffer(&buffer)
-            case .auth2(let auth2): RESPWithToken("AUTH2", auth2).writeToRESPBuffer(&buffer)
+            case .auth(let auth): RESPWithToken("AUTH", auth).encode(into: &commandEncoder)
+            case .auth2(let auth2): RESPWithToken("AUTH2", auth2).encode(into: &commandEncoder)
             }
         }
     }
-    /// Atomically transfers a key from one Redis instance to another.
-    ///
-    /// - Documentation: [MIGRATE](https:/redis.io/docs/latest/commands/migrate)
-    /// - Version: 2.6.0
-    /// - Complexity: This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Response: One of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
-    @inlinable
-    public static func migrate(
-        host: String,
-        port: Int,
-        keySelector: MIGRATEKeySelector,
-        destinationDb: Int,
-        timeout: Int,
-        copy: Bool = false,
-        replace: Bool = false,
-        authentication: MIGRATEAuthentication? = nil,
-        keys: RedisKey? = nil
-    ) -> RESPCommand {
-        RESPCommand(
-            "MIGRATE",
-            host,
-            port,
-            keySelector,
-            destinationDb,
-            timeout,
-            RedisPureToken("COPY", copy),
-            RedisPureToken("REPLACE", replace),
-            authentication,
-            RESPWithToken("KEYS", keys)
-        )
+    public typealias Response = String?
+
+    public var host: String
+    public var port: Int
+    public var keySelector: KeySelector
+    public var destinationDb: Int
+    public var timeout: Int
+    public var copy: Bool = false
+    public var replace: Bool = false
+    public var authentication: Authentication? = nil
+    public var keys: [RedisKey] = []
+
+    @inlinable public init(host: String, port: Int, keySelector: KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: Authentication? = nil, keys: [RedisKey] = []) {
+        self.host = host
+        self.port = port
+        self.keySelector = keySelector
+        self.destinationDb = destinationDb
+        self.timeout = timeout
+        self.copy = copy
+        self.replace = replace
+        self.authentication = authentication
+        self.keys = keys
     }
 
-    /// Atomically transfers a key from one Redis instance to another.
-    ///
-    /// - Documentation: [MIGRATE](https:/redis.io/docs/latest/commands/migrate)
-    /// - Version: 2.6.0
-    /// - Complexity: This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Response: One of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
-    @inlinable
-    public static func migrate(
-        host: String,
-        port: Int,
-        keySelector: MIGRATEKeySelector,
-        destinationDb: Int,
-        timeout: Int,
-        copy: Bool = false,
-        replace: Bool = false,
-        authentication: MIGRATEAuthentication? = nil,
-        keyss: [RedisKey]
-    ) -> RESPCommand {
-        RESPCommand(
-            "MIGRATE",
-            host,
-            port,
-            keySelector,
-            destinationDb,
-            timeout,
-            RedisPureToken("COPY", copy),
-            RedisPureToken("REPLACE", replace),
-            authentication,
-            RESPWithToken("KEYS", keyss)
-        )
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("MIGRATE", host, port, keySelector, destinationDb, timeout, RedisPureToken("COPY", copy), RedisPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
     }
-
-    /// Moves a key to another database.
-    ///
-    /// - Documentation: [MOVE](https:/redis.io/docs/latest/commands/move)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if _key_ was moved.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if _key_ wasn't moved.
-    @inlinable
-    public static func move(key: RedisKey, db: Int) -> RESPCommand {
-        RESPCommand("MOVE", key, db)
-    }
-
-    /// Returns the internal encoding of a Redis object.
-    ///
-    /// - Documentation: [OBJECT ENCODING](https:/redis.io/docs/latest/commands/object-encoding)
-    /// - Version: 2.2.3
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key doesn't exist.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the encoding of the object.
-    @inlinable
-    public static func objectEncoding(key: RedisKey) -> RESPCommand {
-        RESPCommand("OBJECT", "ENCODING", key)
-    }
-
-    /// Returns the logarithmic access frequency counter of a Redis object.
-    ///
-    /// - Documentation: [OBJECT FREQ](https:/redis.io/docs/latest/commands/object-freq)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Response: One of the following:
-    ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the counter's value.
-    ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
-    @inlinable
-    public static func objectFreq(key: RedisKey) -> RESPCommand {
-        RESPCommand("OBJECT", "FREQ", key)
-    }
-
-    /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [OBJECT HELP](https:/redis.io/docs/latest/commands/object-help)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func objectHelp() -> RESPCommand {
-        RESPCommand("OBJECT", "HELP")
-    }
-
-    /// Returns the time since the last access to a Redis object.
-    ///
-    /// - Documentation: [OBJECT IDLETIME](https:/redis.io/docs/latest/commands/object-idletime)
-    /// - Version: 2.2.3
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Response: One of the following:
-    ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the idle time in seconds.
-    ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
-    @inlinable
-    public static func objectIdletime(key: RedisKey) -> RESPCommand {
-        RESPCommand("OBJECT", "IDLETIME", key)
-    }
-
-    /// Returns the reference count of a value of a key.
-    ///
-    /// - Documentation: [OBJECT REFCOUNT](https:/redis.io/docs/latest/commands/object-refcount)
-    /// - Version: 2.2.3
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Response: One of the following:
-    ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of references.
-    ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
-    @inlinable
-    public static func objectRefcount(key: RedisKey) -> RESPCommand {
-        RESPCommand("OBJECT", "REFCOUNT", key)
-    }
-
-    /// Removes the expiration time of a key.
-    ///
-    /// - Documentation: [PERSIST](https:/redis.io/docs/latest/commands/persist)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if _key_ does not exist or does not have an associated timeout.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout has been removed.
-    @inlinable
-    public static func persist(key: RedisKey) -> RESPCommand {
-        RESPCommand("PERSIST", key)
-    }
-
-    public enum PEXPIRECondition: RESPRenderable {
-        case nx
-        case xx
-        case gt
-        case lt
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .nx: "NX".writeToRESPBuffer(&buffer)
-            case .xx: "XX".writeToRESPBuffer(&buffer)
-            case .gt: "GT".writeToRESPBuffer(&buffer)
-            case .lt: "LT".writeToRESPBuffer(&buffer)
-            }
-        }
-    }
-    /// Sets the expiration time of a key in milliseconds.
-    ///
-    /// - Documentation: [PEXPIRE](https:/redis.io/docs/latest/commands/pexpire)
-    /// - Version: 2.6.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0`if the timeout was not set. For example, if the key doesn't exist, or the operation skipped because of the provided arguments.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
-    @inlinable
-    public static func pexpire(key: RedisKey, milliseconds: Int, condition: PEXPIRECondition? = nil) -> RESPCommand {
-        RESPCommand("PEXPIRE", key, milliseconds, condition)
-    }
-
-    public enum PEXPIREATCondition: RESPRenderable {
-        case nx
-        case xx
-        case gt
-        case lt
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .nx: "NX".writeToRESPBuffer(&buffer)
-            case .xx: "XX".writeToRESPBuffer(&buffer)
-            case .gt: "GT".writeToRESPBuffer(&buffer)
-            case .lt: "LT".writeToRESPBuffer(&buffer)
-            }
-        }
-    }
-    /// Sets the expiration time of a key to a Unix milliseconds timestamp.
-    ///
-    /// - Documentation: [PEXPIREAT](https:/redis.io/docs/latest/commands/pexpireat)
-    /// - Version: 2.6.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set. For example, if the key doesn't exist, or the operation was skipped due to the provided arguments.
-    @inlinable
-    public static func pexpireat(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREATCondition? = nil) -> RESPCommand {
-        RESPCommand("PEXPIREAT", key, Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000), condition)
-    }
-
-    /// Returns the expiration time of a key as a Unix milliseconds timestamp.
-    ///
-    /// - Documentation: [PEXPIRETIME](https:/redis.io/docs/latest/commands/pexpiretime)
-    /// - Version: 7.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Expiration Unix timestamp in milliseconds.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` if the key exists but has no associated expiration time.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-2` if the key does not exist.
-    @inlinable
-    public static func pexpiretime(key: RedisKey) -> RESPCommand {
-        RESPCommand("PEXPIRETIME", key)
-    }
-
-    /// Returns the expiration time in milliseconds of a key.
-    ///
-    /// - Documentation: [PTTL](https:/redis.io/docs/latest/commands/pttl)
-    /// - Version: 2.6.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): TTL in milliseconds.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` if the key exists but has no associated expiration.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-2` if the key does not exist.
-    @inlinable
-    public static func pttl(key: RedisKey) -> RESPCommand {
-        RESPCommand("PTTL", key)
-    }
-
-    /// Returns a random key name from the database.
-    ///
-    /// - Documentation: [RANDOMKEY](https:/redis.io/docs/latest/commands/randomkey)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when the database is empty.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a random key in the database.
-    @inlinable
-    public static func randomkey() -> RESPCommand {
-        RESPCommand("RANDOMKEY")
-    }
-
-    /// Renames a key and overwrites the destination.
-    ///
-    /// - Documentation: [RENAME](https:/redis.io/docs/latest/commands/rename)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @slow
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func rename(key: RedisKey, newkey: RedisKey) -> RESPCommand {
-        RESPCommand("RENAME", key, newkey)
-    }
-
-    /// Renames a key only when the target key name doesn't exist.
-    ///
-    /// - Documentation: [RENAMENX](https:/redis.io/docs/latest/commands/renamenx)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if _key_ was renamed to _newkey_.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if _newkey_ already exists.
-    @inlinable
-    public static func renamenx(key: RedisKey, newkey: RedisKey) -> RESPCommand {
-        RESPCommand("RENAMENX", key, newkey)
-    }
-
-    /// Creates a key from the serialized representation of a value.
-    ///
-    /// - Documentation: [RESTORE](https:/redis.io/docs/latest/commands/restore)
-    /// - Version: 2.6.0
-    /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func restore(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool = false,
-        absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
-    ) -> RESPCommand {
-        RESPCommand(
-            "RESTORE",
-            key,
-            ttl,
-            serializedValue,
-            RedisPureToken("REPLACE", replace),
-            RedisPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
-        )
-    }
-
-    /// Iterates over the key names in the database.
-    ///
-    /// - Documentation: [SCAN](https:/redis.io/docs/latest/commands/scan)
-    /// - Version: 2.8.0
-    /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Categories: @keyspace, @read, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): specifically, an array with two elements.
-    ///     * The first element is a [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) that represents an unsigned 64-bit number, the cursor.
-    ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) with the names of scanned keys.
-    @inlinable
-    public static func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) -> RESPCommand {
-        RESPCommand("SCAN", cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPWithToken("TYPE", type))
-    }
-
-    public struct SORTLimit: RESPRenderable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            var count = 0
-            count += offset.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
-            return count
-        }
-    }
-    public enum SORTOrder: RESPRenderable {
-        case asc
-        case desc
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .asc: "ASC".writeToRESPBuffer(&buffer)
-            case .desc: "DESC".writeToRESPBuffer(&buffer)
-            }
-        }
-    }
-    /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
-    ///
-    /// - Documentation: [SORT](https:/redis.io/docs/latest/commands/sort)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
-    /// - Categories: @write, @set, @sortedset, @list, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
-    ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
-    @inlinable
-    public static func sort(
-        key: RedisKey,
-        byPattern: String? = nil,
-        limit: SORTLimit? = nil,
-        getPattern: String? = nil,
-        order: SORTOrder? = nil,
-        sorting: Bool = false,
-        destination: RedisKey? = nil
-    ) -> RESPCommand {
-        RESPCommand(
-            "SORT",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
-            order,
-            RedisPureToken("ALPHA", sorting),
-            RESPWithToken("STORE", destination)
-        )
-    }
-
-    /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
-    ///
-    /// - Documentation: [SORT](https:/redis.io/docs/latest/commands/sort)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
-    /// - Categories: @write, @set, @sortedset, @list, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
-    ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
-    @inlinable
-    public static func sort(
-        key: RedisKey,
-        byPattern: String? = nil,
-        limit: SORTLimit? = nil,
-        getPatterns: [String],
-        order: SORTOrder? = nil,
-        sorting: Bool = false,
-        destination: RedisKey? = nil
-    ) -> RESPCommand {
-        RESPCommand(
-            "SORT",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPatterns),
-            order,
-            RedisPureToken("ALPHA", sorting),
-            RESPWithToken("STORE", destination)
-        )
-    }
-
-    public struct SORTROLimit: RESPRenderable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            var count = 0
-            count += offset.writeToRESPBuffer(&buffer)
-            count += count.writeToRESPBuffer(&buffer)
-            return count
-        }
-    }
-    public enum SORTROOrder: RESPRenderable {
-        case asc
-        case desc
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .asc: "ASC".writeToRESPBuffer(&buffer)
-            case .desc: "DESC".writeToRESPBuffer(&buffer)
-            }
-        }
-    }
-    /// Returns the sorted elements of a list, a set, or a sorted set.
-    ///
-    /// - Documentation: [SORT_RO](https:/redis.io/docs/latest/commands/sort_ro)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
-    /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
-    @inlinable
-    public static func sortRo(
-        key: RedisKey,
-        byPattern: String? = nil,
-        limit: SORTROLimit? = nil,
-        getPattern: String? = nil,
-        order: SORTROOrder? = nil,
-        sorting: Bool = false
-    ) -> RESPCommand {
-        RESPCommand(
-            "SORT_RO",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
-            order,
-            RedisPureToken("ALPHA", sorting)
-        )
-    }
-
-    /// Returns the sorted elements of a list, a set, or a sorted set.
-    ///
-    /// - Documentation: [SORT_RO](https:/redis.io/docs/latest/commands/sort_ro)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
-    /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
-    @inlinable
-    public static func sortRo(
-        key: RedisKey,
-        byPattern: String? = nil,
-        limit: SORTROLimit? = nil,
-        getPatterns: [String],
-        order: SORTROOrder? = nil,
-        sorting: Bool = false
-    ) -> RESPCommand {
-        RESPCommand(
-            "SORT_RO",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPatterns),
-            order,
-            RedisPureToken("ALPHA", sorting)
-        )
-    }
-
-    /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
-    ///
-    /// - Documentation: [TOUCH](https:/redis.io/docs/latest/commands/touch)
-    /// - Version: 3.2.1
-    /// - Complexity: O(N) where N is the number of keys that will be touched.
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of touched keys.
-    @inlinable
-    public static func touch(key: RedisKey) -> RESPCommand {
-        RESPCommand("TOUCH", key)
-    }
-
-    /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
-    ///
-    /// - Documentation: [TOUCH](https:/redis.io/docs/latest/commands/touch)
-    /// - Version: 3.2.1
-    /// - Complexity: O(N) where N is the number of keys that will be touched.
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of touched keys.
-    @inlinable
-    public static func touch(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("TOUCH", keys)
-    }
-
-    /// Returns the expiration time in seconds of a key.
-    ///
-    /// - Documentation: [TTL](https:/redis.io/docs/latest/commands/ttl)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): TTL in seconds.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` if the key exists but has no associated expiration.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-2` if the key does not exist.
-    @inlinable
-    public static func ttl(key: RedisKey) -> RESPCommand {
-        RESPCommand("TTL", key)
-    }
-
-    /// Determines the type of value stored at a key.
-    ///
-    /// - Documentation: [TYPE](https:/redis.io/docs/latest/commands/type)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): the type of _key_, or `none` when _key_ doesn't exist.
-    @inlinable
-    public static func type(key: RedisKey) -> RESPCommand {
-        RESPCommand("TYPE", key)
-    }
-
-    /// Asynchronously deletes one or more keys.
-    ///
-    /// - Documentation: [UNLINK](https:/redis.io/docs/latest/commands/unlink)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were unlinked.
-    @inlinable
-    public static func unlink(key: RedisKey) -> RESPCommand {
-        RESPCommand("UNLINK", key)
-    }
-
-    /// Asynchronously deletes one or more keys.
-    ///
-    /// - Documentation: [UNLINK](https:/redis.io/docs/latest/commands/unlink)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
-    /// - Categories: @keyspace, @write, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were unlinked.
-    @inlinable
-    public static func unlink(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("UNLINK", keys)
-    }
-
-    /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
-    ///
-    /// - Documentation: [WAIT](https:/redis.io/docs/latest/commands/wait)
-    /// - Version: 3.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of replicas reached by all the writes performed in the context of the current connection.
-    @inlinable
-    public static func wait(numreplicas: Int, timeout: Int) -> RESPCommand {
-        RESPCommand("WAIT", numreplicas, timeout)
-    }
-
-    /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
-    ///
-    /// - Documentation: [WAITAOF](https:/redis.io/docs/latest/commands/waitaof)
-    /// - Version: 7.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): The command returns an array of two integers:
-    ///     1. The first is the number of local Redises (0 or 1) that have fsynced to AOF  all writes performed in the context of the current connection
-    ///     2. The second is the number of replicas that have acknowledged doing the same.
-    @inlinable
-    public static func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) -> RESPCommand {
-        RESPCommand("WAITAOF", numlocal, numreplicas, timeout)
-    }
-
 }
+
+/// Moves a key to another database.
+public struct MOVE: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var db: Int
+
+    @inlinable public init(key: RedisKey, db: Int) {
+        self.key = key
+        self.db = db
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("MOVE", key, db)
+    }
+}
+
+/// Removes the expiration time of a key.
+public struct PERSIST: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PERSIST", key)
+    }
+}
+
+/// Sets the expiration time of a key in milliseconds.
+public struct PEXPIRE: RedisCommand {
+    public enum Condition: RESPRenderable {
+        case nx
+        case xx
+        case gt
+        case lt
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var milliseconds: Int
+    public var condition: Condition? = nil
+
+    @inlinable public init(key: RedisKey, milliseconds: Int, condition: Condition? = nil) {
+        self.key = key
+        self.milliseconds = milliseconds
+        self.condition = condition
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PEXPIRE", key, milliseconds, condition)
+    }
+}
+
+/// Sets the expiration time of a key to a Unix milliseconds timestamp.
+public struct PEXPIREAT: RedisCommand {
+    public enum Condition: RESPRenderable {
+        case nx
+        case xx
+        case gt
+        case lt
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var unixTimeMilliseconds: Date
+    public var condition: Condition? = nil
+
+    @inlinable public init(key: RedisKey, unixTimeMilliseconds: Date, condition: Condition? = nil) {
+        self.key = key
+        self.unixTimeMilliseconds = unixTimeMilliseconds
+        self.condition = condition
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PEXPIREAT", key, Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000), condition)
+    }
+}
+
+/// Returns the expiration time of a key as a Unix milliseconds timestamp.
+public struct PEXPIRETIME: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PEXPIRETIME", key)
+    }
+}
+
+/// Returns the expiration time in milliseconds of a key.
+public struct PTTL: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PTTL", key)
+    }
+}
+
+/// Returns a random key name from the database.
+public struct RANDOMKEY: RedisCommand {
+    public typealias Response = String?
+
+
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RANDOMKEY")
+    }
+}
+
+/// Renames a key and overwrites the destination.
+public struct RENAME: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var newkey: RedisKey
+
+    @inlinable public init(key: RedisKey, newkey: RedisKey) {
+        self.key = key
+        self.newkey = newkey
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RENAME", key, newkey)
+    }
+}
+
+/// Renames a key only when the target key name doesn't exist.
+public struct RENAMENX: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var newkey: RedisKey
+
+    @inlinable public init(key: RedisKey, newkey: RedisKey) {
+        self.key = key
+        self.newkey = newkey
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RENAMENX", key, newkey)
+    }
+}
+
+/// Creates a key from the serialized representation of a value.
+public struct RESTORE: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var ttl: Int
+    public var serializedValue: String
+    public var replace: Bool = false
+    public var absttl: Bool = false
+    public var seconds: Int? = nil
+    public var frequency: Int? = nil
+
+    @inlinable public init(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+        self.key = key
+        self.ttl = ttl
+        self.serializedValue = serializedValue
+        self.replace = replace
+        self.absttl = absttl
+        self.seconds = seconds
+        self.frequency = frequency
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RESTORE", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+    }
+}
+
+/// Iterates over the key names in the database.
+public struct SCAN: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var cursor: Int
+    public var pattern: String? = nil
+    public var count: Int? = nil
+    public var type: String? = nil
+
+    @inlinable public init(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) {
+        self.cursor = cursor
+        self.pattern = pattern
+        self.count = count
+        self.type = type
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SCAN", cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPWithToken("TYPE", type))
+    }
+}
+
+/// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
+public struct SORT: RedisCommand {
+    public struct Limit: RESPRenderable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            var count = 0
+            count += offset.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
+            return count
+        }
+    }
+    public enum Order: RESPRenderable {
+        case asc
+        case desc
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            switch self {
+            case .asc: "ASC".encode(into: &commandEncoder)
+            case .desc: "DESC".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var byPattern: String? = nil
+    public var limit: Limit? = nil
+    public var getPattern: [String] = []
+    public var order: Order? = nil
+    public var sorting: Bool = false
+    public var destination: RedisKey? = nil
+
+    @inlinable public init(key: RedisKey, byPattern: String? = nil, limit: Limit? = nil, getPattern: [String] = [], order: Order? = nil, sorting: Bool = false, destination: RedisKey? = nil) {
+        self.key = key
+        self.byPattern = byPattern
+        self.limit = limit
+        self.getPattern = getPattern
+        self.order = order
+        self.sorting = sorting
+        self.destination = destination
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+    }
+}
+
+/// Returns the sorted elements of a list, a set, or a sorted set.
+public struct SORTRO: RedisCommand {
+    public struct Limit: RESPRenderable {
+        @usableFromInline let offset: Int
+        @usableFromInline let count: Int
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            var count = 0
+            count += offset.encode(into: &commandEncoder)
+            count += count.encode(into: &commandEncoder)
+            return count
+        }
+    }
+    public enum Order: RESPRenderable {
+        case asc
+        case desc
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            switch self {
+            case .asc: "ASC".encode(into: &commandEncoder)
+            case .desc: "DESC".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var byPattern: String? = nil
+    public var limit: Limit? = nil
+    public var getPattern: [String] = []
+    public var order: Order? = nil
+    public var sorting: Bool = false
+
+    @inlinable public init(key: RedisKey, byPattern: String? = nil, limit: Limit? = nil, getPattern: [String] = [], order: Order? = nil, sorting: Bool = false) {
+        self.key = key
+        self.byPattern = byPattern
+        self.limit = limit
+        self.getPattern = getPattern
+        self.order = order
+        self.sorting = sorting
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RedisPureToken("ALPHA", sorting))
+    }
+}
+
+/// Returns the number of existing keys out of those specified after updating the time they were last accessed.
+public struct TOUCH: RedisCommand {
+    public typealias Response = Int
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("TOUCH", key)
+    }
+}
+
+/// Returns the expiration time in seconds of a key.
+public struct TTL: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("TTL", key)
+    }
+}
+
+/// Determines the type of value stored at a key.
+public struct TYPE: RedisCommand {
+    public typealias Response = String
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("TYPE", key)
+    }
+}
+
+/// Asynchronously deletes one or more keys.
+public struct UNLINK: RedisCommand {
+    public typealias Response = Int
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("UNLINK", key)
+    }
+}
+
+/// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
+public struct WAIT: RedisCommand {
+    public typealias Response = Int
+
+    public var numreplicas: Int
+    public var timeout: Int
+
+    @inlinable public init(numreplicas: Int, timeout: Int) {
+        self.numreplicas = numreplicas
+        self.timeout = timeout
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("WAIT", numreplicas, timeout)
+    }
+}
+
+/// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
+public struct WAITAOF: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var numlocal: Int
+    public var numreplicas: Int
+    public var timeout: Int
+
+    @inlinable public init(numlocal: Int, numreplicas: Int, timeout: Int) {
+        self.numlocal = numlocal
+        self.numreplicas = numreplicas
+        self.timeout = timeout
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("WAITAOF", numlocal, numreplicas, timeout)
+    }
+}
+
 
 extension RedisConnection {
     /// Copies the value of a key to a new key.
@@ -839,7 +769,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if _source_ was not copied.
     @inlinable
     public func copy(source: RedisKey, destination: RedisKey, destinationDb: Int? = nil, replace: Bool = false) async throws -> Int {
-        try await send("COPY", source, destination, RESPWithToken("DB", destinationDb), RedisPureToken("REPLACE", replace)).converting()
+        try await send(command: COPY(source: source, destination: destination, destinationDb: destinationDb, replace: replace))
     }
 
     /// Deletes one or more keys.
@@ -850,20 +780,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were removed.
     @inlinable
-    public func del(key: RedisKey) async throws -> Int {
-        try await send("DEL", key).converting()
-    }
-
-    /// Deletes one or more keys.
-    ///
-    /// - Documentation: [DEL](https:/redis.io/docs/latest/commands/del)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
-    /// - Categories: @keyspace, @write, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were removed.
-    @inlinable
-    public func del(keys: [RedisKey]) async throws -> Int {
-        try await send("DEL", keys).converting()
+    public func del(key: [RedisKey]) async throws -> Int {
+        try await send(command: DEL(key: key))
     }
 
     /// Returns a serialized representation of the value stored at a key.
@@ -877,7 +795,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the key does not exist.
     @inlinable
     public func dump(key: RedisKey) async throws -> String? {
-        try await send("DUMP", key).converting()
+        try await send(command: DUMP(key: key))
     }
 
     /// Determines whether one or more keys exist.
@@ -888,20 +806,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @read, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that exist from those specified as arguments.
     @inlinable
-    public func exists(key: RedisKey) async throws -> Int {
-        try await send("EXISTS", key).converting()
-    }
-
-    /// Determines whether one or more keys exist.
-    ///
-    /// - Documentation: [EXISTS](https:/redis.io/docs/latest/commands/exists)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of keys to check.
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that exist from those specified as arguments.
-    @inlinable
-    public func exists(keys: [RedisKey]) async throws -> Int {
-        try await send("EXISTS", keys).converting()
+    public func exists(key: [RedisKey]) async throws -> Int {
+        try await send(command: EXISTS(key: key))
     }
 
     /// Sets the expiration time of a key in seconds.
@@ -914,8 +820,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set; for example, the key doesn't exist, or the operation was skipped because of the provided arguments.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     @inlinable
-    public func expire(key: RedisKey, seconds: Int, condition: RESPCommand.EXPIRECondition? = nil) async throws -> Int {
-        try await send("EXPIRE", key, seconds, condition).converting()
+    public func expire(key: RedisKey, seconds: Int, condition: EXPIRE.Condition? = nil) async throws -> Int {
+        try await send(command: EXPIRE(key: key, seconds: seconds, condition: condition))
     }
 
     /// Sets the expiration time of a key to a Unix timestamp.
@@ -928,8 +834,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set; for example, the key doesn't exist, or the operation was skipped because of the provided arguments.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     @inlinable
-    public func expireat(key: RedisKey, unixTimeSeconds: Date, condition: RESPCommand.EXPIREATCondition? = nil) async throws -> Int {
-        try await send("EXPIREAT", key, Int(unixTimeSeconds.timeIntervalSince1970), condition).converting()
+    public func expireat(key: RedisKey, unixTimeSeconds: Date, condition: EXPIREAT.Condition? = nil) async throws -> Int {
+        try await send(command: EXPIREAT(key: key, unixTimeSeconds: unixTimeSeconds, condition: condition))
     }
 
     /// Returns the expiration time of a key as a Unix timestamp.
@@ -944,7 +850,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-2` if the key does not exist.
     @inlinable
     public func expiretime(key: RedisKey) async throws -> Int {
-        try await send("EXPIRETIME", key).converting()
+        try await send(command: EXPIRETIME(key: key))
     }
 
     /// Returns all key names that match a pattern.
@@ -956,7 +862,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys matching _pattern_.
     @inlinable
     public func keys(pattern: String) async throws -> [RESPToken] {
-        try await send("KEYS", pattern).converting()
+        try await send(command: KEYS(pattern: pattern))
     }
 
     /// Atomically transfers a key from one Redis instance to another.
@@ -969,64 +875,8 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(
-        host: String,
-        port: Int,
-        keySelector: RESPCommand.MIGRATEKeySelector,
-        destinationDb: Int,
-        timeout: Int,
-        copy: Bool = false,
-        replace: Bool = false,
-        authentication: RESPCommand.MIGRATEAuthentication? = nil,
-        keys: RedisKey? = nil
-    ) async throws -> String? {
-        try await send(
-            "MIGRATE",
-            host,
-            port,
-            keySelector,
-            destinationDb,
-            timeout,
-            RedisPureToken("COPY", copy),
-            RedisPureToken("REPLACE", replace),
-            authentication,
-            RESPWithToken("KEYS", keys)
-        ).converting()
-    }
-
-    /// Atomically transfers a key from one Redis instance to another.
-    ///
-    /// - Documentation: [MIGRATE](https:/redis.io/docs/latest/commands/migrate)
-    /// - Version: 2.6.0
-    /// - Complexity: This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Returns: One of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
-    @inlinable
-    public func migrate(
-        host: String,
-        port: Int,
-        keySelector: RESPCommand.MIGRATEKeySelector,
-        destinationDb: Int,
-        timeout: Int,
-        copy: Bool = false,
-        replace: Bool = false,
-        authentication: RESPCommand.MIGRATEAuthentication? = nil,
-        keyss: [RedisKey]
-    ) async throws -> String? {
-        try await send(
-            "MIGRATE",
-            host,
-            port,
-            keySelector,
-            destinationDb,
-            timeout,
-            RedisPureToken("COPY", copy),
-            RedisPureToken("REPLACE", replace),
-            authentication,
-            RESPWithToken("KEYS", keyss)
-        ).converting()
+    public func migrate(host: String, port: Int, keySelector: MIGRATE.KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATE.Authentication? = nil, keys: [RedisKey] = []) async throws -> String? {
+        try await send(command: MIGRATE(host: host, port: port, keySelector: keySelector, destinationDb: destinationDb, timeout: timeout, copy: copy, replace: replace, authentication: authentication, keys: keys))
     }
 
     /// Moves a key to another database.
@@ -1040,7 +890,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if _key_ wasn't moved.
     @inlinable
     public func move(key: RedisKey, db: Int) async throws -> Int {
-        try await send("MOVE", key, db).converting()
+        try await send(command: MOVE(key: key, db: db))
     }
 
     /// Returns the internal encoding of a Redis object.
@@ -1054,7 +904,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the encoding of the object.
     @inlinable
     public func objectEncoding(key: RedisKey) async throws -> String? {
-        try await send("OBJECT", "ENCODING", key).converting()
+        try await send(command: OBJECT.ENCODING(key: key))
     }
 
     /// Returns the logarithmic access frequency counter of a Redis object.
@@ -1068,7 +918,7 @@ extension RedisConnection {
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
     public func objectFreq(key: RedisKey) async throws -> Int? {
-        try await send("OBJECT", "FREQ", key).converting()
+        try await send(command: OBJECT.FREQ(key: key))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1080,7 +930,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func objectHelp() async throws -> [RESPToken] {
-        try await send("OBJECT", "HELP").converting()
+        try await send(command: OBJECT.HELP())
     }
 
     /// Returns the time since the last access to a Redis object.
@@ -1094,7 +944,7 @@ extension RedisConnection {
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
     public func objectIdletime(key: RedisKey) async throws -> Int? {
-        try await send("OBJECT", "IDLETIME", key).converting()
+        try await send(command: OBJECT.IDLETIME(key: key))
     }
 
     /// Returns the reference count of a value of a key.
@@ -1108,7 +958,7 @@ extension RedisConnection {
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if _key_ doesn't exist.
     @inlinable
     public func objectRefcount(key: RedisKey) async throws -> Int? {
-        try await send("OBJECT", "REFCOUNT", key).converting()
+        try await send(command: OBJECT.REFCOUNT(key: key))
     }
 
     /// Removes the expiration time of a key.
@@ -1122,7 +972,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout has been removed.
     @inlinable
     public func persist(key: RedisKey) async throws -> Int {
-        try await send("PERSIST", key).converting()
+        try await send(command: PERSIST(key: key))
     }
 
     /// Sets the expiration time of a key in milliseconds.
@@ -1135,8 +985,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0`if the timeout was not set. For example, if the key doesn't exist, or the operation skipped because of the provided arguments.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     @inlinable
-    public func pexpire(key: RedisKey, milliseconds: Int, condition: RESPCommand.PEXPIRECondition? = nil) async throws -> Int {
-        try await send("PEXPIRE", key, milliseconds, condition).converting()
+    public func pexpire(key: RedisKey, milliseconds: Int, condition: PEXPIRE.Condition? = nil) async throws -> Int {
+        try await send(command: PEXPIRE(key: key, milliseconds: milliseconds, condition: condition))
     }
 
     /// Sets the expiration time of a key to a Unix milliseconds timestamp.
@@ -1149,8 +999,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the timeout was set.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the timeout was not set. For example, if the key doesn't exist, or the operation was skipped due to the provided arguments.
     @inlinable
-    public func pexpireat(key: RedisKey, unixTimeMilliseconds: Date, condition: RESPCommand.PEXPIREATCondition? = nil) async throws -> Int {
-        try await send("PEXPIREAT", key, Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000), condition).converting()
+    public func pexpireat(key: RedisKey, unixTimeMilliseconds: Date, condition: PEXPIREAT.Condition? = nil) async throws -> Int {
+        try await send(command: PEXPIREAT(key: key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition))
     }
 
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
@@ -1165,7 +1015,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-2` if the key does not exist.
     @inlinable
     public func pexpiretime(key: RedisKey) async throws -> Int {
-        try await send("PEXPIRETIME", key).converting()
+        try await send(command: PEXPIRETIME(key: key))
     }
 
     /// Returns the expiration time in milliseconds of a key.
@@ -1180,7 +1030,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-2` if the key does not exist.
     @inlinable
     public func pttl(key: RedisKey) async throws -> Int {
-        try await send("PTTL", key).converting()
+        try await send(command: PTTL(key: key))
     }
 
     /// Returns a random key name from the database.
@@ -1194,7 +1044,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a random key in the database.
     @inlinable
     public func randomkey() async throws -> String? {
-        try await send("RANDOMKEY").converting()
+        try await send(command: RANDOMKEY())
     }
 
     /// Renames a key and overwrites the destination.
@@ -1205,8 +1055,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func rename(key: RedisKey, newkey: RedisKey) async throws {
-        try await send("RENAME", key, newkey)
+    public func rename(key: RedisKey, newkey: RedisKey) async throws -> RESPToken {
+        try await send(command: RENAME(key: key, newkey: newkey))
     }
 
     /// Renames a key only when the target key name doesn't exist.
@@ -1220,7 +1070,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if _newkey_ already exists.
     @inlinable
     public func renamenx(key: RedisKey, newkey: RedisKey) async throws -> Int {
-        try await send("RENAMENX", key, newkey).converting()
+        try await send(command: RENAMENX(key: key, newkey: newkey))
     }
 
     /// Creates a key from the serialized representation of a value.
@@ -1231,25 +1081,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restore(
-        key: RedisKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool = false,
-        absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
-    ) async throws {
-        try await send(
-            "RESTORE",
-            key,
-            ttl,
-            serializedValue,
-            RedisPureToken("REPLACE", replace),
-            RedisPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
-        )
+    public func restore(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
+        try await send(command: RESTORE(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 
     /// Iterates over the key names in the database.
@@ -1263,7 +1096,7 @@ extension RedisConnection {
     ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) with the names of scanned keys.
     @inlinable
     public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> [RESPToken] {
-        try await send("SCAN", cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPWithToken("TYPE", type)).converting()
+        try await send(command: SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
     }
 
     /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
@@ -1275,55 +1108,8 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(
-        key: RedisKey,
-        byPattern: String? = nil,
-        limit: RESPCommand.SORTLimit? = nil,
-        getPattern: String? = nil,
-        order: RESPCommand.SORTOrder? = nil,
-        sorting: Bool = false,
-        destination: RedisKey? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            "SORT",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
-            order,
-            RedisPureToken("ALPHA", sorting),
-            RESPWithToken("STORE", destination)
-        )
-    }
-
-    /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
-    ///
-    /// - Documentation: [SORT](https:/redis.io/docs/latest/commands/sort)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
-    /// - Categories: @write, @set, @sortedset, @list, @slow, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
-    ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
-    @inlinable
-    public func sort(
-        key: RedisKey,
-        byPattern: String? = nil,
-        limit: RESPCommand.SORTLimit? = nil,
-        getPatterns: [String],
-        order: RESPCommand.SORTOrder? = nil,
-        sorting: Bool = false,
-        destination: RedisKey? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            "SORT",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPatterns),
-            order,
-            RedisPureToken("ALPHA", sorting),
-            RESPWithToken("STORE", destination)
-        )
+    public func sort(key: RedisKey, byPattern: String? = nil, limit: SORT.Limit? = nil, getPattern: [String] = [], order: SORT.Order? = nil, sorting: Bool = false, destination: RedisKey? = nil) async throws -> RESPToken {
+        try await send(command: SORT(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting, destination: destination))
     }
 
     /// Returns the sorted elements of a list, a set, or a sorted set.
@@ -1334,50 +1120,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(
-        key: RedisKey,
-        byPattern: String? = nil,
-        limit: RESPCommand.SORTROLimit? = nil,
-        getPattern: String? = nil,
-        order: RESPCommand.SORTROOrder? = nil,
-        sorting: Bool = false
-    ) async throws -> [RESPToken] {
-        try await send(
-            "SORT_RO",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
-            order,
-            RedisPureToken("ALPHA", sorting)
-        ).converting()
-    }
-
-    /// Returns the sorted elements of a list, a set, or a sorted set.
-    ///
-    /// - Documentation: [SORT_RO](https:/redis.io/docs/latest/commands/sort_ro)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
-    /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
-    @inlinable
-    public func sortRo(
-        key: RedisKey,
-        byPattern: String? = nil,
-        limit: RESPCommand.SORTROLimit? = nil,
-        getPatterns: [String],
-        order: RESPCommand.SORTROOrder? = nil,
-        sorting: Bool = false
-    ) async throws -> [RESPToken] {
-        try await send(
-            "SORT_RO",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPatterns),
-            order,
-            RedisPureToken("ALPHA", sorting)
-        ).converting()
+    public func sortRo(key: RedisKey, byPattern: String? = nil, limit: SORTRO.Limit? = nil, getPattern: [String] = [], order: SORTRO.Order? = nil, sorting: Bool = false) async throws -> [RESPToken] {
+        try await send(command: SORTRO(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
     }
 
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
@@ -1388,20 +1132,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @read, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of touched keys.
     @inlinable
-    public func touch(key: RedisKey) async throws -> Int {
-        try await send("TOUCH", key).converting()
-    }
-
-    /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
-    ///
-    /// - Documentation: [TOUCH](https:/redis.io/docs/latest/commands/touch)
-    /// - Version: 3.2.1
-    /// - Complexity: O(N) where N is the number of keys that will be touched.
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of touched keys.
-    @inlinable
-    public func touch(keys: [RedisKey]) async throws -> Int {
-        try await send("TOUCH", keys).converting()
+    public func touch(key: [RedisKey]) async throws -> Int {
+        try await send(command: TOUCH(key: key))
     }
 
     /// Returns the expiration time in seconds of a key.
@@ -1416,7 +1148,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-2` if the key does not exist.
     @inlinable
     public func ttl(key: RedisKey) async throws -> Int {
-        try await send("TTL", key).converting()
+        try await send(command: TTL(key: key))
     }
 
     /// Determines the type of value stored at a key.
@@ -1428,7 +1160,7 @@ extension RedisConnection {
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): the type of _key_, or `none` when _key_ doesn't exist.
     @inlinable
     public func type(key: RedisKey) async throws -> String {
-        try await send("TYPE", key).converting()
+        try await send(command: TYPE(key: key))
     }
 
     /// Asynchronously deletes one or more keys.
@@ -1439,20 +1171,8 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were unlinked.
     @inlinable
-    public func unlink(key: RedisKey) async throws -> Int {
-        try await send("UNLINK", key).converting()
-    }
-
-    /// Asynchronously deletes one or more keys.
-    ///
-    /// - Documentation: [UNLINK](https:/redis.io/docs/latest/commands/unlink)
-    /// - Version: 4.0.0
-    /// - Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys that were unlinked.
-    @inlinable
-    public func unlink(keys: [RedisKey]) async throws -> Int {
-        try await send("UNLINK", keys).converting()
+    public func unlink(key: [RedisKey]) async throws -> Int {
+        try await send(command: UNLINK(key: key))
     }
 
     /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
@@ -1464,7 +1184,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of replicas reached by all the writes performed in the context of the current connection.
     @inlinable
     public func wait(numreplicas: Int, timeout: Int) async throws -> Int {
-        try await send("WAIT", numreplicas, timeout).converting()
+        try await send(command: WAIT(numreplicas: numreplicas, timeout: timeout))
     }
 
     /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
@@ -1478,7 +1198,7 @@ extension RedisConnection {
     ///     2. The second is the number of replicas that have acknowledged doing the same.
     @inlinable
     public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> [RESPToken] {
-        try await send("WAITAOF", numlocal, numreplicas, timeout).converting()
+        try await send(command: WAITAOF(numlocal: numlocal, numreplicas: numreplicas, timeout: timeout))
     }
 
 }
