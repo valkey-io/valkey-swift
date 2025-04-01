@@ -74,6 +74,7 @@ public struct RESPParsingError: Error {
     public var code: Code
     public var buffer: ByteBuffer
 
+    @usableFromInline
     package init(code: Code, buffer: ByteBuffer) {
         self.code = code
         self.buffer = buffer

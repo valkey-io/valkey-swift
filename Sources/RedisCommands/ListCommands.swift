@@ -23,494 +23,498 @@ import FoundationEssentials
 import Foundation
 #endif
 
-extension RESPCommand {
-    public enum BLMOVEWherefrom: RESPRenderable {
+/// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
+public struct BLMOVE: RedisCommand {
+    public enum Wherefrom: RESPRenderable {
         case left
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
-    public enum BLMOVEWhereto: RESPRenderable {
+    public enum Whereto: RESPRenderable {
         case left
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
-    /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
-    ///
-    /// - Documentation: [BLMOVE](https:/redis.io/docs/latest/commands/blmove)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the operation timed-out
-    @inlinable
-    public static func blmove(
-        source: RedisKey,
-        destination: RedisKey,
-        wherefrom: BLMOVEWherefrom,
-        whereto: BLMOVEWhereto,
-        timeout: Double
-    ) -> RESPCommand {
-        RESPCommand("BLMOVE", source, destination, wherefrom, whereto, timeout)
+    public typealias Response = String?
+
+    public var source: RedisKey
+    public var destination: RedisKey
+    public var wherefrom: Wherefrom
+    public var whereto: Whereto
+    public var timeout: Double
+
+    @inlinable public init(source: RedisKey, destination: RedisKey, wherefrom: Wherefrom, whereto: Whereto, timeout: Double) {
+        self.source = source
+        self.destination = destination
+        self.wherefrom = wherefrom
+        self.whereto = whereto
+        self.timeout = timeout
     }
 
-    public enum BLMPOPWhere: RESPRenderable {
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("BLMOVE", source, destination, wherefrom, whereto, timeout)
+    }
+}
+
+/// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
+public struct BLMPOP: RedisCommand {
+    public enum Where: RESPRenderable {
         case left
         case right
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
-    /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BLMPOP](https:/redis.io/docs/latest/commands/blmpop)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
-    @inlinable
-    public static func blmpop(timeout: Double, key: RedisKey, `where`: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("BLMPOP", timeout, 1, key, `where`, RESPWithToken("COUNT", count))
+    public typealias Response = [RESPToken]?
+
+    public var timeout: Double
+    public var key: [RedisKey]
+    public var `where`: Where
+    public var count: Int? = nil
+
+    @inlinable public init(timeout: Double, key: [RedisKey], `where`: Where, count: Int? = nil) {
+        self.timeout = timeout
+        self.key = key
+        self.`where` = `where`
+        self.count = count
     }
 
-    /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BLMPOP](https:/redis.io/docs/latest/commands/blmpop)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
-    @inlinable
-    public static func blmpop(timeout: Double, keys: [RedisKey], `where`: BLMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("BLMPOP", timeout, RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count))
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+    }
+}
+
+/// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
+public struct BLPOP: RedisCommand {
+    public typealias Response = [RESPToken]?
+
+    public var key: [RedisKey]
+    public var timeout: Double
+
+    @inlinable public init(key: [RedisKey], timeout: Double) {
+        self.key = key
+        self.timeout = timeout
     }
 
-    /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BLPOP](https:/redis.io/docs/latest/commands/blpop)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
-    @inlinable
-    public static func blpop(key: RedisKey, timeout: Double) -> RESPCommand {
-        RESPCommand("BLPOP", key, timeout)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("BLPOP", key, timeout)
+    }
+}
+
+/// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
+public struct BRPOP: RedisCommand {
+    public typealias Response = [RESPToken]?
+
+    public var key: [RedisKey]
+    public var timeout: Double
+
+    @inlinable public init(key: [RedisKey], timeout: Double) {
+        self.key = key
+        self.timeout = timeout
     }
 
-    /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BLPOP](https:/redis.io/docs/latest/commands/blpop)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
-    @inlinable
-    public static func blpop(keys: [RedisKey], timeout: Double) -> RESPCommand {
-        RESPCommand("BLPOP", keys, timeout)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("BRPOP", key, timeout)
+    }
+}
+
+/// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
+public struct BRPOPLPUSH: RedisCommand {
+    public typealias Response = String?
+
+    public var source: RedisKey
+    public var destination: RedisKey
+    public var timeout: Double
+
+    @inlinable public init(source: RedisKey, destination: RedisKey, timeout: Double) {
+        self.source = source
+        self.destination = destination
+        self.timeout = timeout
     }
 
-    /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BRPOP](https:/redis.io/docs/latest/commands/brpop)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
-    @inlinable
-    public static func brpop(key: RedisKey, timeout: Double) -> RESPCommand {
-        RESPCommand("BRPOP", key, timeout)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("BRPOPLPUSH", source, destination, timeout)
+    }
+}
+
+/// Returns an element from a list by its index.
+public struct LINDEX: RedisCommand {
+    public typealias Response = String?
+
+    public var key: RedisKey
+    public var index: Int
+
+    @inlinable public init(key: RedisKey, index: Int) {
+        self.key = key
+        self.index = index
     }
 
-    /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BRPOP](https:/redis.io/docs/latest/commands/brpop)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
-    @inlinable
-    public static func brpop(keys: [RedisKey], timeout: Double) -> RESPCommand {
-        RESPCommand("BRPOP", keys, timeout)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LINDEX", key, index)
     }
+}
 
-    /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BRPOPLPUSH](https:/redis.io/docs/latest/commands/brpoplpush)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Response: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from _source_ and pushed to _destination_.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the timeout is reached.
-    @inlinable
-    public static func brpoplpush(source: RedisKey, destination: RedisKey, timeout: Double) -> RESPCommand {
-        RESPCommand("BRPOPLPUSH", source, destination, timeout)
-    }
-
-    /// Returns an element from a list by its index.
-    ///
-    /// - Documentation: [LINDEX](https:/redis.io/docs/latest/commands/lindex)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of elements to traverse to get to the element at index. This makes asking for the first or the last element of the list O(1).
-    /// - Categories: @read, @list, @slow
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when _index_ is out of range.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the requested element.
-    @inlinable
-    public static func lindex(key: RedisKey, index: Int) -> RESPCommand {
-        RESPCommand("LINDEX", key, index)
-    }
-
-    public enum LINSERTWhere: RESPRenderable {
+/// Inserts an element before or after another element in a list.
+public struct LINSERT: RedisCommand {
+    public enum Where: RESPRenderable {
         case before
         case after
 
         @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
             switch self {
-            case .before: "BEFORE".writeToRESPBuffer(&buffer)
-            case .after: "AFTER".writeToRESPBuffer(&buffer)
+            case .before: "BEFORE".encode(into: &commandEncoder)
+            case .after: "AFTER".encode(into: &commandEncoder)
             }
         }
     }
-    /// Inserts an element before or after another element in a list.
-    ///
-    /// - Documentation: [LINSERT](https:/redis.io/docs/latest/commands/linsert)
-    /// - Version: 2.2.0
-    /// - Complexity: O(N) where N is the number of elements to traverse before seeing the value pivot. This means that inserting somewhere on the left end on the list (head) can be considered O(1) and inserting somewhere on the right end (tail) is O(N).
-    /// - Categories: @write, @list, @slow
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the list length after a successful insert operation.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` when the key doesn't exist.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` when the pivot wasn't found.
-    @inlinable
-    public static func linsert(key: RedisKey, `where`: LINSERTWhere, pivot: String, element: String) -> RESPCommand {
-        RESPCommand("LINSERT", key, `where`, pivot, element)
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var `where`: Where
+    public var pivot: String
+    public var element: String
+
+    @inlinable public init(key: RedisKey, `where`: Where, pivot: String, element: String) {
+        self.key = key
+        self.`where` = `where`
+        self.pivot = pivot
+        self.element = element
     }
 
-    /// Returns the length of a list.
-    ///
-    /// - Documentation: [LLEN](https:/redis.io/docs/latest/commands/llen)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @read, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list.
-    @inlinable
-    public static func llen(key: RedisKey) -> RESPCommand {
-        RESPCommand("LLEN", key)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LINSERT", key, `where`, pivot, element)
     }
-
-    public enum LMOVEWherefrom: RESPRenderable {
-        case left
-        case right
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
-            }
-        }
-    }
-    public enum LMOVEWhereto: RESPRenderable {
-        case left
-        case right
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
-            }
-        }
-    }
-    /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
-    ///
-    /// - Documentation: [LMOVE](https:/redis.io/docs/latest/commands/lmove)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @list, @slow
-    /// - Response: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped and pushed.
-    @inlinable
-    public static func lmove(source: RedisKey, destination: RedisKey, wherefrom: LMOVEWherefrom, whereto: LMOVEWhereto) -> RESPCommand {
-        RESPCommand("LMOVE", source, destination, wherefrom, whereto)
-    }
-
-    public enum LMPOPWhere: RESPRenderable {
-        case left
-        case right
-
-        @inlinable
-        public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-            switch self {
-            case .left: "LEFT".writeToRESPBuffer(&buffer)
-            case .right: "RIGHT".writeToRESPBuffer(&buffer)
-            }
-        }
-    }
-    /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [LMPOP](https:/redis.io/docs/latest/commands/lmpop)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Categories: @write, @list, @slow
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
-    @inlinable
-    public static func lmpop(key: RedisKey, `where`: LMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("LMPOP", 1, key, `where`, RESPWithToken("COUNT", count))
-    }
-
-    /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [LMPOP](https:/redis.io/docs/latest/commands/lmpop)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Categories: @write, @list, @slow
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
-    @inlinable
-    public static func lmpop(keys: [RedisKey], `where`: LMPOPWhere, count: Int? = nil) -> RESPCommand {
-        RESPCommand("LMPOP", RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count))
-    }
-
-    /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [LPOP](https:/redis.io/docs/latest/commands/lpop)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of elements returned
-    /// - Categories: @write, @list, @fast
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the value of the first element.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of popped elements.
-    @inlinable
-    public static func lpop(key: RedisKey, count: Int? = nil) -> RESPCommand {
-        RESPCommand("LPOP", key, count)
-    }
-
-    /// Returns the index of matching elements in a list.
-    ///
-    /// - Documentation: [LPOS](https:/redis.io/docs/latest/commands/lpos)
-    /// - Version: 6.0.6
-    /// - Complexity: O(N) where N is the number of elements in the list, for the average case. When searching for elements near the head or the tail of the list, or when the MAXLEN option is provided, the command may run in constant time.
-    /// - Categories: @read, @list, @slow
-    /// - Response: Any of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if there is no matching element.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): an integer representing the matching element.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): If the COUNT option is given, an array of integers representing the matching elements (or an empty array if there are no matches).
-    @inlinable
-    public static func lpos(key: RedisKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) -> RESPCommand {
-        RESPCommand("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
-    }
-
-    /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [LPUSH](https:/redis.io/docs/latest/commands/lpush)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public static func lpush(key: RedisKey, element: String) -> RESPCommand {
-        RESPCommand("LPUSH", key, element)
-    }
-
-    /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [LPUSH](https:/redis.io/docs/latest/commands/lpush)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public static func lpush(key: RedisKey, elements: [String]) -> RESPCommand {
-        RESPCommand("LPUSH", key, elements)
-    }
-
-    /// Prepends one or more elements to a list only when the list exists.
-    ///
-    /// - Documentation: [LPUSHX](https:/redis.io/docs/latest/commands/lpushx)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public static func lpushx(key: RedisKey, element: String) -> RESPCommand {
-        RESPCommand("LPUSHX", key, element)
-    }
-
-    /// Prepends one or more elements to a list only when the list exists.
-    ///
-    /// - Documentation: [LPUSHX](https:/redis.io/docs/latest/commands/lpushx)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public static func lpushx(key: RedisKey, elements: [String]) -> RESPCommand {
-        RESPCommand("LPUSHX", key, elements)
-    }
-
-    /// Returns a range of elements from a list.
-    ///
-    /// - Documentation: [LRANGE](https:/redis.io/docs/latest/commands/lrange)
-    /// - Version: 1.0.0
-    /// - Complexity: O(S+N) where S is the distance of start offset from HEAD for small lists, from nearest end (HEAD or TAIL) for large lists; and N is the number of elements in the specified range.
-    /// - Categories: @read, @list, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of elements in the specified range, or an empty array if the key doesn't exist.
-    @inlinable
-    public static func lrange(key: RedisKey, start: Int, stop: Int) -> RESPCommand {
-        RESPCommand("LRANGE", key, start, stop)
-    }
-
-    /// Removes elements from a list. Deletes the list if the last element was removed.
-    ///
-    /// - Documentation: [LREM](https:/redis.io/docs/latest/commands/lrem)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N+M) where N is the length of the list and M is the number of elements removed.
-    /// - Categories: @write, @list, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of removed elements.
-    @inlinable
-    public static func lrem(key: RedisKey, count: Int, element: String) -> RESPCommand {
-        RESPCommand("LREM", key, count, element)
-    }
-
-    /// Sets the value of an element in a list by its index.
-    ///
-    /// - Documentation: [LSET](https:/redis.io/docs/latest/commands/lset)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the length of the list. Setting either the first or the last element of the list is O(1).
-    /// - Categories: @write, @list, @slow
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func lset(key: RedisKey, index: Int, element: String) -> RESPCommand {
-        RESPCommand("LSET", key, index, element)
-    }
-
-    /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
-    ///
-    /// - Documentation: [LTRIM](https:/redis.io/docs/latest/commands/ltrim)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of elements to be removed by the operation.
-    /// - Categories: @write, @list, @slow
-    /// - Response: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
-    @inlinable
-    public static func ltrim(key: RedisKey, start: Int, stop: Int) -> RESPCommand {
-        RESPCommand("LTRIM", key, start, stop)
-    }
-
-    /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [RPOP](https:/redis.io/docs/latest/commands/rpop)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of elements returned
-    /// - Categories: @write, @list, @fast
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the value of the last element.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of popped elements.
-    @inlinable
-    public static func rpop(key: RedisKey, count: Int? = nil) -> RESPCommand {
-        RESPCommand("RPOP", key, count)
-    }
-
-    /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [RPOPLPUSH](https:/redis.io/docs/latest/commands/rpoplpush)
-    /// - Version: 1.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @list, @slow
-    /// - Response: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped and pushed.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the source list is empty.
-    @inlinable
-    public static func rpoplpush(source: RedisKey, destination: RedisKey) -> RESPCommand {
-        RESPCommand("RPOPLPUSH", source, destination)
-    }
-
-    /// Appends one or more elements to a list. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [RPUSH](https:/redis.io/docs/latest/commands/rpush)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public static func rpush(key: RedisKey, element: String) -> RESPCommand {
-        RESPCommand("RPUSH", key, element)
-    }
-
-    /// Appends one or more elements to a list. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [RPUSH](https:/redis.io/docs/latest/commands/rpush)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public static func rpush(key: RedisKey, elements: [String]) -> RESPCommand {
-        RESPCommand("RPUSH", key, elements)
-    }
-
-    /// Appends an element to a list only when the list exists.
-    ///
-    /// - Documentation: [RPUSHX](https:/redis.io/docs/latest/commands/rpushx)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public static func rpushx(key: RedisKey, element: String) -> RESPCommand {
-        RESPCommand("RPUSHX", key, element)
-    }
-
-    /// Appends an element to a list only when the list exists.
-    ///
-    /// - Documentation: [RPUSHX](https:/redis.io/docs/latest/commands/rpushx)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public static func rpushx(key: RedisKey, elements: [String]) -> RESPCommand {
-        RESPCommand("RPUSHX", key, elements)
-    }
-
 }
+
+/// Returns the length of a list.
+public struct LLEN: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LLEN", key)
+    }
+}
+
+/// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
+public struct LMOVE: RedisCommand {
+    public enum Wherefrom: RESPRenderable {
+        case left
+        case right
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            switch self {
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public enum Whereto: RESPRenderable {
+        case left
+        case right
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            switch self {
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public typealias Response = String
+
+    public var source: RedisKey
+    public var destination: RedisKey
+    public var wherefrom: Wherefrom
+    public var whereto: Whereto
+
+    @inlinable public init(source: RedisKey, destination: RedisKey, wherefrom: Wherefrom, whereto: Whereto) {
+        self.source = source
+        self.destination = destination
+        self.wherefrom = wherefrom
+        self.whereto = whereto
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LMOVE", source, destination, wherefrom, whereto)
+    }
+}
+
+/// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
+public struct LMPOP: RedisCommand {
+    public enum Where: RESPRenderable {
+        case left
+        case right
+
+        @inlinable
+        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            switch self {
+            case .left: "LEFT".encode(into: &commandEncoder)
+            case .right: "RIGHT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public typealias Response = [RESPToken]?
+
+    public var key: [RedisKey]
+    public var `where`: Where
+    public var count: Int? = nil
+
+    @inlinable public init(key: [RedisKey], `where`: Where, count: Int? = nil) {
+        self.key = key
+        self.`where` = `where`
+        self.count = count
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+    }
+}
+
+/// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
+public struct LPOP: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var count: Int? = nil
+
+    @inlinable public init(key: RedisKey, count: Int? = nil) {
+        self.key = key
+        self.count = count
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LPOP", key, count)
+    }
+}
+
+/// Returns the index of matching elements in a list.
+public struct LPOS: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var element: String
+    public var rank: Int? = nil
+    public var numMatches: Int? = nil
+    public var len: Int? = nil
+
+    @inlinable public init(key: RedisKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) {
+        self.key = key
+        self.element = element
+        self.rank = rank
+        self.numMatches = numMatches
+        self.len = len
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
+    }
+}
+
+/// Prepends one or more elements to a list. Creates the key if it doesn't exist.
+public struct LPUSH: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var element: [String]
+
+    @inlinable public init(key: RedisKey, element: [String]) {
+        self.key = key
+        self.element = element
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LPUSH", key, element)
+    }
+}
+
+/// Prepends one or more elements to a list only when the list exists.
+public struct LPUSHX: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var element: [String]
+
+    @inlinable public init(key: RedisKey, element: [String]) {
+        self.key = key
+        self.element = element
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LPUSHX", key, element)
+    }
+}
+
+/// Returns a range of elements from a list.
+public struct LRANGE: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var start: Int
+    public var stop: Int
+
+    @inlinable public init(key: RedisKey, start: Int, stop: Int) {
+        self.key = key
+        self.start = start
+        self.stop = stop
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LRANGE", key, start, stop)
+    }
+}
+
+/// Removes elements from a list. Deletes the list if the last element was removed.
+public struct LREM: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var count: Int
+    public var element: String
+
+    @inlinable public init(key: RedisKey, count: Int, element: String) {
+        self.key = key
+        self.count = count
+        self.element = element
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LREM", key, count, element)
+    }
+}
+
+/// Sets the value of an element in a list by its index.
+public struct LSET: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var index: Int
+    public var element: String
+
+    @inlinable public init(key: RedisKey, index: Int, element: String) {
+        self.key = key
+        self.index = index
+        self.element = element
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LSET", key, index, element)
+    }
+}
+
+/// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
+public struct LTRIM: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var start: Int
+    public var stop: Int
+
+    @inlinable public init(key: RedisKey, start: Int, stop: Int) {
+        self.key = key
+        self.start = start
+        self.stop = stop
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("LTRIM", key, start, stop)
+    }
+}
+
+/// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
+public struct RPOP: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var count: Int? = nil
+
+    @inlinable public init(key: RedisKey, count: Int? = nil) {
+        self.key = key
+        self.count = count
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RPOP", key, count)
+    }
+}
+
+/// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
+public struct RPOPLPUSH: RedisCommand {
+    public typealias Response = String?
+
+    public var source: RedisKey
+    public var destination: RedisKey
+
+    @inlinable public init(source: RedisKey, destination: RedisKey) {
+        self.source = source
+        self.destination = destination
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RPOPLPUSH", source, destination)
+    }
+}
+
+/// Appends one or more elements to a list. Creates the key if it doesn't exist.
+public struct RPUSH: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var element: [String]
+
+    @inlinable public init(key: RedisKey, element: [String]) {
+        self.key = key
+        self.element = element
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RPUSH", key, element)
+    }
+}
+
+/// Appends an element to a list only when the list exists.
+public struct RPUSHX: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var element: [String]
+
+    @inlinable public init(key: RedisKey, element: [String]) {
+        self.key = key
+        self.element = element
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("RPUSHX", key, element)
+    }
+}
+
 
 extension RedisConnection {
     /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
@@ -523,14 +527,8 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the operation timed-out
     @inlinable
-    public func blmove(
-        source: RedisKey,
-        destination: RedisKey,
-        wherefrom: RESPCommand.BLMOVEWherefrom,
-        whereto: RESPCommand.BLMOVEWhereto,
-        timeout: Double
-    ) async throws -> String? {
-        try await send("BLMOVE", source, destination, wherefrom, whereto, timeout).converting()
+    public func blmove(source: RedisKey, destination: RedisKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> String? {
+        try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
     /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -543,22 +541,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public func blmpop(timeout: Double, key: RedisKey, `where`: RESPCommand.BLMPOPWhere, count: Int? = nil) async throws -> [RESPToken]? {
-        try await send("BLMPOP", timeout, 1, key, `where`, RESPWithToken("COUNT", count)).converting()
-    }
-
-    /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BLMPOP](https:/redis.io/docs/latest/commands/blmpop)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
-    @inlinable
-    public func blmpop(timeout: Double, keys: [RedisKey], `where`: RESPCommand.BLMPOPWhere, count: Int? = nil) async throws -> [RESPToken]? {
-        try await send("BLMPOP", timeout, RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count)).converting()
+    public func blmpop(timeout: Double, key: [RedisKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+        try await send(command: BLMPOP(timeout: timeout, key: key, where: `where`, count: count))
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -571,22 +555,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
     @inlinable
-    public func blpop(key: RedisKey, timeout: Double) async throws -> [RESPToken]? {
-        try await send("BLPOP", key, timeout).converting()
-    }
-
-    /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BLPOP](https:/redis.io/docs/latest/commands/blpop)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
-    @inlinable
-    public func blpop(keys: [RedisKey], timeout: Double) async throws -> [RESPToken]? {
-        try await send("BLPOP", keys, timeout).converting()
+    public func blpop(key: [RedisKey], timeout: Double) async throws -> [RESPToken]? {
+        try await send(command: BLPOP(key: key, timeout: timeout))
     }
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -599,22 +569,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
     @inlinable
-    public func brpop(key: RedisKey, timeout: Double) async throws -> [RESPToken]? {
-        try await send("BRPOP", key, timeout).converting()
-    }
-
-    /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [BRPOP](https:/redis.io/docs/latest/commands/brpop)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Categories: @write, @list, @slow, @blocking
-    /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
-    @inlinable
-    public func brpop(keys: [RedisKey], timeout: Double) async throws -> [RESPToken]? {
-        try await send("BRPOP", keys, timeout).converting()
+    public func brpop(key: [RedisKey], timeout: Double) async throws -> [RESPToken]? {
+        try await send(command: BRPOP(key: key, timeout: timeout))
     }
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
@@ -628,7 +584,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the timeout is reached.
     @inlinable
     public func brpoplpush(source: RedisKey, destination: RedisKey, timeout: Double) async throws -> String? {
-        try await send("BRPOPLPUSH", source, destination, timeout).converting()
+        try await send(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
 
     /// Returns an element from a list by its index.
@@ -642,7 +598,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the requested element.
     @inlinable
     public func lindex(key: RedisKey, index: Int) async throws -> String? {
-        try await send("LINDEX", key, index).converting()
+        try await send(command: LINDEX(key: key, index: index))
     }
 
     /// Inserts an element before or after another element in a list.
@@ -656,8 +612,8 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` when the key doesn't exist.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` when the pivot wasn't found.
     @inlinable
-    public func linsert(key: RedisKey, `where`: RESPCommand.LINSERTWhere, pivot: String, element: String) async throws -> Int {
-        try await send("LINSERT", key, `where`, pivot, element).converting()
+    public func linsert(key: RedisKey, `where`: LINSERT.Where, pivot: String, element: String) async throws -> Int {
+        try await send(command: LINSERT(key: key, where: `where`, pivot: pivot, element: element))
     }
 
     /// Returns the length of a list.
@@ -669,7 +625,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list.
     @inlinable
     public func llen(key: RedisKey) async throws -> Int {
-        try await send("LLEN", key).converting()
+        try await send(command: LLEN(key: key))
     }
 
     /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
@@ -680,13 +636,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped and pushed.
     @inlinable
-    public func lmove(
-        source: RedisKey,
-        destination: RedisKey,
-        wherefrom: RESPCommand.LMOVEWherefrom,
-        whereto: RESPCommand.LMOVEWhereto
-    ) async throws -> String {
-        try await send("LMOVE", source, destination, wherefrom, whereto).converting()
+    public func lmove(source: RedisKey, destination: RedisKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> String {
+        try await send(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
     /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
@@ -699,22 +650,8 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public func lmpop(key: RedisKey, `where`: RESPCommand.LMPOPWhere, count: Int? = nil) async throws -> [RESPToken]? {
-        try await send("LMPOP", 1, key, `where`, RESPWithToken("COUNT", count)).converting()
-    }
-
-    /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
-    ///
-    /// - Documentation: [LMPOP](https:/redis.io/docs/latest/commands/lmpop)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Categories: @write, @list, @slow
-    /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
-    @inlinable
-    public func lmpop(keys: [RedisKey], `where`: RESPCommand.LMPOPWhere, count: Int? = nil) async throws -> [RESPToken]? {
-        try await send("LMPOP", RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count)).converting()
+    public func lmpop(key: [RedisKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+        try await send(command: LMPOP(key: key, where: `where`, count: count))
     }
 
     /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
@@ -729,7 +666,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of popped elements.
     @inlinable
     public func lpop(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
-        try await send("LPOP", key, count)
+        try await send(command: LPOP(key: key, count: count))
     }
 
     /// Returns the index of matching elements in a list.
@@ -744,7 +681,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): If the COUNT option is given, an array of integers representing the matching elements (or an empty array if there are no matches).
     @inlinable
     public func lpos(key: RedisKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> RESPToken {
-        try await send("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
+        try await send(command: LPOS(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 
     /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
@@ -755,20 +692,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func lpush(key: RedisKey, element: String) async throws -> Int {
-        try await send("LPUSH", key, element).converting()
-    }
-
-    /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [LPUSH](https:/redis.io/docs/latest/commands/lpush)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public func lpush(key: RedisKey, elements: [String]) async throws -> Int {
-        try await send("LPUSH", key, elements).converting()
+    public func lpush(key: RedisKey, element: [String]) async throws -> Int {
+        try await send(command: LPUSH(key: key, element: element))
     }
 
     /// Prepends one or more elements to a list only when the list exists.
@@ -779,20 +704,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func lpushx(key: RedisKey, element: String) async throws -> Int {
-        try await send("LPUSHX", key, element).converting()
-    }
-
-    /// Prepends one or more elements to a list only when the list exists.
-    ///
-    /// - Documentation: [LPUSHX](https:/redis.io/docs/latest/commands/lpushx)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public func lpushx(key: RedisKey, elements: [String]) async throws -> Int {
-        try await send("LPUSHX", key, elements).converting()
+    public func lpushx(key: RedisKey, element: [String]) async throws -> Int {
+        try await send(command: LPUSHX(key: key, element: element))
     }
 
     /// Returns a range of elements from a list.
@@ -804,7 +717,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of elements in the specified range, or an empty array if the key doesn't exist.
     @inlinable
     public func lrange(key: RedisKey, start: Int, stop: Int) async throws -> [RESPToken] {
-        try await send("LRANGE", key, start, stop).converting()
+        try await send(command: LRANGE(key: key, start: start, stop: stop))
     }
 
     /// Removes elements from a list. Deletes the list if the last element was removed.
@@ -816,7 +729,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of removed elements.
     @inlinable
     public func lrem(key: RedisKey, count: Int, element: String) async throws -> Int {
-        try await send("LREM", key, count, element).converting()
+        try await send(command: LREM(key: key, count: count, element: element))
     }
 
     /// Sets the value of an element in a list by its index.
@@ -827,8 +740,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func lset(key: RedisKey, index: Int, element: String) async throws {
-        try await send("LSET", key, index, element)
+    public func lset(key: RedisKey, index: Int, element: String) async throws -> RESPToken {
+        try await send(command: LSET(key: key, index: index, element: element))
     }
 
     /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
@@ -839,8 +752,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func ltrim(key: RedisKey, start: Int, stop: Int) async throws {
-        try await send("LTRIM", key, start, stop)
+    public func ltrim(key: RedisKey, start: Int, stop: Int) async throws -> RESPToken {
+        try await send(command: LTRIM(key: key, start: start, stop: stop))
     }
 
     /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
@@ -855,7 +768,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of popped elements.
     @inlinable
     public func rpop(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
-        try await send("RPOP", key, count)
+        try await send(command: RPOP(key: key, count: count))
     }
 
     /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
@@ -869,7 +782,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the source list is empty.
     @inlinable
     public func rpoplpush(source: RedisKey, destination: RedisKey) async throws -> String? {
-        try await send("RPOPLPUSH", source, destination).converting()
+        try await send(command: RPOPLPUSH(source: source, destination: destination))
     }
 
     /// Appends one or more elements to a list. Creates the key if it doesn't exist.
@@ -880,20 +793,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func rpush(key: RedisKey, element: String) async throws -> Int {
-        try await send("RPUSH", key, element).converting()
-    }
-
-    /// Appends one or more elements to a list. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [RPUSH](https:/redis.io/docs/latest/commands/rpush)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public func rpush(key: RedisKey, elements: [String]) async throws -> Int {
-        try await send("RPUSH", key, elements).converting()
+    public func rpush(key: RedisKey, element: [String]) async throws -> Int {
+        try await send(command: RPUSH(key: key, element: element))
     }
 
     /// Appends an element to a list only when the list exists.
@@ -904,20 +805,8 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func rpushx(key: RedisKey, element: String) async throws -> Int {
-        try await send("RPUSHX", key, element).converting()
-    }
-
-    /// Appends an element to a list only when the list exists.
-    ///
-    /// - Documentation: [RPUSHX](https:/redis.io/docs/latest/commands/rpushx)
-    /// - Version: 2.2.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @list, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
-    @inlinable
-    public func rpushx(key: RedisKey, elements: [String]) async throws -> Int {
-        try await send("RPUSHX", key, elements).converting()
+    public func rpushx(key: RedisKey, element: [String]) async throws -> Int {
+        try await send(command: RPUSHX(key: key, element: element))
     }
 
 }

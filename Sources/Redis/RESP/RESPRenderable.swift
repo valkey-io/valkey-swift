@@ -16,15 +16,15 @@ import NIOCore
 
 /// Type that can be rendered into a RESP buffer
 public protocol RESPRenderable {
-    func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int
+    func encode(into commandEncoder: inout RedisCommandEncoder) -> Int
 }
 
 extension Optional: RESPRenderable where Wrapped: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
         switch self {
         case .some(let wrapped):
-            return wrapped.writeToRESPBuffer(&buffer)
+            return wrapped.encode(into: &commandEncoder)
         case .none:
             return 0
         }
@@ -33,10 +33,10 @@ extension Optional: RESPRenderable where Wrapped: RESPRenderable {
 
 extension Array: RESPRenderable where Element: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
         var count = 0
         for element in self {
-            count += element.writeToRESPBuffer(&buffer)
+            count += element.encode(into: &commandEncoder)
         }
         return count
     }
@@ -44,38 +44,24 @@ extension Array: RESPRenderable where Element: RESPRenderable {
 
 extension String: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-        buffer.writeBulkString(self)
+    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        commandEncoder.encodeBulkString(self)
         return 1
     }
 }
 
 extension Int: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-        buffer.writeBulkString(String(self))
+    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        commandEncoder.encodeBulkString(String(self))
         return 1
     }
 }
 
 extension Double: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-        buffer.writeBulkString(String(self))
+    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        commandEncoder.encodeBulkString(String(self))
         return 1
-    }
-}
-
-extension ByteBuffer {
-    public mutating func writeRESP3TypeIdentifier(_ identifier: RESPTypeIdentifier) {
-        self.writeInteger(identifier.rawValue)
-    }
-
-    public mutating func writeBulkString(_ string: String) {
-        self.writeRESP3TypeIdentifier(.bulkString)
-        self.writeString(String(string.utf8.count))
-        self.writeStaticString("\r\n")
-        self.writeString(string)
-        self.writeStaticString("\r\n")
     }
 }

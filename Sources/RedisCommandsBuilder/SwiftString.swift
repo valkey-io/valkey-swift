@@ -31,6 +31,13 @@ extension StringProtocol {
             .camelCased(capitalize: false)
             .upperFirst()
     }
+    var commandTypeName: String {
+        self
+            .replacingOccurrences(of: "-", with: "_")
+            .replacingOccurrences(of: " ", with: ".")
+            .camelCased(capitalize: false)
+            .uppercased()
+    }
 
     func camelCased(capitalize: Bool) -> String {
         let items = self.split(separator: "_")

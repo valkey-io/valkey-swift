@@ -23,343 +23,291 @@ import FoundationEssentials
 import Foundation
 #endif
 
-extension RESPCommand {
-    /// Adds one or more members to a set. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [SADD](https:/redis.io/docs/latest/commands/sadd)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @set, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
-    @inlinable
-    public static func sadd(key: RedisKey, member: String) -> RESPCommand {
-        RESPCommand("SADD", key, member)
+/// Adds one or more members to a set. Creates the key if it doesn't exist.
+public struct SADD: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var member: [String]
+
+    @inlinable public init(key: RedisKey, member: [String]) {
+        self.key = key
+        self.member = member
     }
 
-    /// Adds one or more members to a set. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [SADD](https:/redis.io/docs/latest/commands/sadd)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @set, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
-    @inlinable
-    public static func sadd(key: RedisKey, members: [String]) -> RESPCommand {
-        RESPCommand("SADD", key, members)
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SADD", key, member)
     }
-
-    /// Returns the number of members in a set.
-    ///
-    /// - Documentation: [SCARD](https:/redis.io/docs/latest/commands/scard)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @read, @set, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The cardinality (number of elements) of the set, or 0 if the key does not exist.
-    @inlinable
-    public static func scard(key: RedisKey) -> RESPCommand {
-        RESPCommand("SCARD", key)
-    }
-
-    /// Returns the difference of multiple sets.
-    ///
-    /// - Documentation: [SDIFF](https:/redis.io/docs/latest/commands/sdiff)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public static func sdiff(key: RedisKey) -> RESPCommand {
-        RESPCommand("SDIFF", key)
-    }
-
-    /// Returns the difference of multiple sets.
-    ///
-    /// - Documentation: [SDIFF](https:/redis.io/docs/latest/commands/sdiff)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public static func sdiff(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("SDIFF", keys)
-    }
-
-    /// Stores the difference of multiple sets in a key.
-    ///
-    /// - Documentation: [SDIFFSTORE](https:/redis.io/docs/latest/commands/sdiffstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @write, @set, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
-    @inlinable
-    public static func sdiffstore(destination: RedisKey, key: RedisKey) -> RESPCommand {
-        RESPCommand("SDIFFSTORE", destination, key)
-    }
-
-    /// Stores the difference of multiple sets in a key.
-    ///
-    /// - Documentation: [SDIFFSTORE](https:/redis.io/docs/latest/commands/sdiffstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @write, @set, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
-    @inlinable
-    public static func sdiffstore(destination: RedisKey, keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("SDIFFSTORE", destination, keys)
-    }
-
-    /// Returns the intersect of multiple sets.
-    ///
-    /// - Documentation: [SINTER](https:/redis.io/docs/latest/commands/sinter)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public static func sinter(key: RedisKey) -> RESPCommand {
-        RESPCommand("SINTER", key)
-    }
-
-    /// Returns the intersect of multiple sets.
-    ///
-    /// - Documentation: [SINTER](https:/redis.io/docs/latest/commands/sinter)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public static func sinter(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("SINTER", keys)
-    }
-
-    /// Returns the number of members of the intersect of multiple sets.
-    ///
-    /// - Documentation: [SINTERCARD](https:/redis.io/docs/latest/commands/sintercard)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
-    @inlinable
-    public static func sintercard(key: RedisKey, limit: Int? = nil) -> RESPCommand {
-        RESPCommand("SINTERCARD", 1, key, RESPWithToken("LIMIT", limit))
-    }
-
-    /// Returns the number of members of the intersect of multiple sets.
-    ///
-    /// - Documentation: [SINTERCARD](https:/redis.io/docs/latest/commands/sintercard)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
-    @inlinable
-    public static func sintercard(keys: [RedisKey], limit: Int? = nil) -> RESPCommand {
-        RESPCommand("SINTERCARD", RESPArrayWithCount(keys), RESPWithToken("LIMIT", limit))
-    }
-
-    /// Stores the intersect of multiple sets in a key.
-    ///
-    /// - Documentation: [SINTERSTORE](https:/redis.io/docs/latest/commands/sinterstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @write, @set, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
-    @inlinable
-    public static func sinterstore(destination: RedisKey, key: RedisKey) -> RESPCommand {
-        RESPCommand("SINTERSTORE", destination, key)
-    }
-
-    /// Stores the intersect of multiple sets in a key.
-    ///
-    /// - Documentation: [SINTERSTORE](https:/redis.io/docs/latest/commands/sinterstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @write, @set, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
-    @inlinable
-    public static func sinterstore(destination: RedisKey, keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("SINTERSTORE", destination, keys)
-    }
-
-    /// Determines whether a member belongs to a set.
-    ///
-    /// - Documentation: [SISMEMBER](https:/redis.io/docs/latest/commands/sismember)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @read, @set, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the element is not a member of the set, or when the key does not exist.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the element is a member of the set.
-    @inlinable
-    public static func sismember(key: RedisKey, member: String) -> RESPCommand {
-        RESPCommand("SISMEMBER", key, member)
-    }
-
-    /// Returns all members of a set.
-    ///
-    /// - Documentation: [SMEMBERS](https:/redis.io/docs/latest/commands/smembers)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the set cardinality.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): all members of the set.
-    @inlinable
-    public static func smembers(key: RedisKey) -> RESPCommand {
-        RESPCommand("SMEMBERS", key)
-    }
-
-    /// Determines whether multiple members belong to a set.
-    ///
-    /// - Documentation: [SMISMEMBER](https:/redis.io/docs/latest/commands/smismember)
-    /// - Version: 6.2.0
-    /// - Complexity: O(N) where N is the number of elements being checked for membership
-    /// - Categories: @read, @set, @fast
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
-    @inlinable
-    public static func smismember(key: RedisKey, member: String) -> RESPCommand {
-        RESPCommand("SMISMEMBER", key, member)
-    }
-
-    /// Determines whether multiple members belong to a set.
-    ///
-    /// - Documentation: [SMISMEMBER](https:/redis.io/docs/latest/commands/smismember)
-    /// - Version: 6.2.0
-    /// - Complexity: O(N) where N is the number of elements being checked for membership
-    /// - Categories: @read, @set, @fast
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
-    @inlinable
-    public static func smismember(key: RedisKey, members: [String]) -> RESPCommand {
-        RESPCommand("SMISMEMBER", key, members)
-    }
-
-    /// Moves a member from one set to another.
-    ///
-    /// - Documentation: [SMOVE](https:/redis.io/docs/latest/commands/smove)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1)
-    /// - Categories: @write, @set, @fast
-    /// - Response: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the element is moved.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the element is not a member of _source_ and no operation was performed.
-    @inlinable
-    public static func smove(source: RedisKey, destination: RedisKey, member: String) -> RESPCommand {
-        RESPCommand("SMOVE", source, destination, member)
-    }
-
-    /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
-    ///
-    /// - Documentation: [SPOP](https:/redis.io/docs/latest/commands/spop)
-    /// - Version: 1.0.0
-    /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the value of the passed count.
-    /// - Categories: @write, @set, @fast
-    /// - Response: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the removed member.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of the removed members.
-    @inlinable
-    public static func spop(key: RedisKey, count: Int? = nil) -> RESPCommand {
-        RESPCommand("SPOP", key, count)
-    }
-
-    /// Get one or multiple random members from a set
-    ///
-    /// - Documentation: [SRANDMEMBER](https:/redis.io/docs/latest/commands/srandmember)
-    /// - Version: 1.0.0
-    /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the absolute value of the passed count.
-    /// - Categories: @read, @set, @slow
-    /// - Response: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or a [Null](https:/redis.io/docs/reference/protocol-spec#nulls) when _key_ doesn't exist.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the optional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist.
-    @inlinable
-    public static func srandmember(key: RedisKey, count: Int? = nil) -> RESPCommand {
-        RESPCommand("SRANDMEMBER", key, count)
-    }
-
-    /// Removes one or more members from a set. Deletes the set if the last member was removed.
-    ///
-    /// - Documentation: [SREM](https:/redis.io/docs/latest/commands/srem)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of members to be removed.
-    /// - Categories: @write, @set, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
-    @inlinable
-    public static func srem(key: RedisKey, member: String) -> RESPCommand {
-        RESPCommand("SREM", key, member)
-    }
-
-    /// Removes one or more members from a set. Deletes the set if the last member was removed.
-    ///
-    /// - Documentation: [SREM](https:/redis.io/docs/latest/commands/srem)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of members to be removed.
-    /// - Categories: @write, @set, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
-    @inlinable
-    public static func srem(key: RedisKey, members: [String]) -> RESPCommand {
-        RESPCommand("SREM", key, members)
-    }
-
-    /// Iterates over members of a set.
-    ///
-    /// - Documentation: [SSCAN](https:/redis.io/docs/latest/commands/sscan)
-    /// - Version: 2.8.0
-    /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): specifically, an array with two elements:
-    ///     * The first element is a [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) that represents an unsigned 64-bit number, the cursor.
-    ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) with the names of scanned members.
-    @inlinable
-    public static func sscan(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) -> RESPCommand {
-        RESPCommand("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
-    }
-
-    /// Returns the union of multiple sets.
-    ///
-    /// - Documentation: [SUNION](https:/redis.io/docs/latest/commands/sunion)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public static func sunion(key: RedisKey) -> RESPCommand {
-        RESPCommand("SUNION", key)
-    }
-
-    /// Returns the union of multiple sets.
-    ///
-    /// - Documentation: [SUNION](https:/redis.io/docs/latest/commands/sunion)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @read, @set, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public static func sunion(keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("SUNION", keys)
-    }
-
-    /// Stores the union of multiple sets in a key.
-    ///
-    /// - Documentation: [SUNIONSTORE](https:/redis.io/docs/latest/commands/sunionstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @write, @set, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
-    @inlinable
-    public static func sunionstore(destination: RedisKey, key: RedisKey) -> RESPCommand {
-        RESPCommand("SUNIONSTORE", destination, key)
-    }
-
-    /// Stores the union of multiple sets in a key.
-    ///
-    /// - Documentation: [SUNIONSTORE](https:/redis.io/docs/latest/commands/sunionstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @write, @set, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
-    @inlinable
-    public static func sunionstore(destination: RedisKey, keys: [RedisKey]) -> RESPCommand {
-        RESPCommand("SUNIONSTORE", destination, keys)
-    }
-
 }
+
+/// Returns the number of members in a set.
+public struct SCARD: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SCARD", key)
+    }
+}
+
+/// Returns the difference of multiple sets.
+public struct SDIFF: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SDIFF", key)
+    }
+}
+
+/// Stores the difference of multiple sets in a key.
+public struct SDIFFSTORE: RedisCommand {
+    public typealias Response = Int
+
+    public var destination: RedisKey
+    public var key: [RedisKey]
+
+    @inlinable public init(destination: RedisKey, key: [RedisKey]) {
+        self.destination = destination
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SDIFFSTORE", destination, key)
+    }
+}
+
+/// Returns the intersect of multiple sets.
+public struct SINTER: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SINTER", key)
+    }
+}
+
+/// Returns the number of members of the intersect of multiple sets.
+public struct SINTERCARD: RedisCommand {
+    public typealias Response = Int
+
+    public var key: [RedisKey]
+    public var limit: Int? = nil
+
+    @inlinable public init(key: [RedisKey], limit: Int? = nil) {
+        self.key = key
+        self.limit = limit
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
+    }
+}
+
+/// Stores the intersect of multiple sets in a key.
+public struct SINTERSTORE: RedisCommand {
+    public typealias Response = Int
+
+    public var destination: RedisKey
+    public var key: [RedisKey]
+
+    @inlinable public init(destination: RedisKey, key: [RedisKey]) {
+        self.destination = destination
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SINTERSTORE", destination, key)
+    }
+}
+
+/// Determines whether a member belongs to a set.
+public struct SISMEMBER: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var member: String
+
+    @inlinable public init(key: RedisKey, member: String) {
+        self.key = key
+        self.member = member
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SISMEMBER", key, member)
+    }
+}
+
+/// Returns all members of a set.
+public struct SMEMBERS: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+
+    @inlinable public init(key: RedisKey) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SMEMBERS", key)
+    }
+}
+
+/// Determines whether multiple members belong to a set.
+public struct SMISMEMBER: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var member: [String]
+
+    @inlinable public init(key: RedisKey, member: [String]) {
+        self.key = key
+        self.member = member
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SMISMEMBER", key, member)
+    }
+}
+
+/// Moves a member from one set to another.
+public struct SMOVE: RedisCommand {
+    public typealias Response = Int
+
+    public var source: RedisKey
+    public var destination: RedisKey
+    public var member: String
+
+    @inlinable public init(source: RedisKey, destination: RedisKey, member: String) {
+        self.source = source
+        self.destination = destination
+        self.member = member
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SMOVE", source, destination, member)
+    }
+}
+
+/// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
+public struct SPOP: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var count: Int? = nil
+
+    @inlinable public init(key: RedisKey, count: Int? = nil) {
+        self.key = key
+        self.count = count
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SPOP", key, count)
+    }
+}
+
+/// Get one or multiple random members from a set
+public struct SRANDMEMBER: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var key: RedisKey
+    public var count: Int? = nil
+
+    @inlinable public init(key: RedisKey, count: Int? = nil) {
+        self.key = key
+        self.count = count
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SRANDMEMBER", key, count)
+    }
+}
+
+/// Removes one or more members from a set. Deletes the set if the last member was removed.
+public struct SREM: RedisCommand {
+    public typealias Response = Int
+
+    public var key: RedisKey
+    public var member: [String]
+
+    @inlinable public init(key: RedisKey, member: [String]) {
+        self.key = key
+        self.member = member
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SREM", key, member)
+    }
+}
+
+/// Iterates over members of a set.
+public struct SSCAN: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: RedisKey
+    public var cursor: Int
+    public var pattern: String? = nil
+    public var count: Int? = nil
+
+    @inlinable public init(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
+        self.key = key
+        self.cursor = cursor
+        self.pattern = pattern
+        self.count = count
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+    }
+}
+
+/// Returns the union of multiple sets.
+public struct SUNION: RedisCommand {
+    public typealias Response = [RESPToken]
+
+    public var key: [RedisKey]
+
+    @inlinable public init(key: [RedisKey]) {
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SUNION", key)
+    }
+}
+
+/// Stores the union of multiple sets in a key.
+public struct SUNIONSTORE: RedisCommand {
+    public typealias Response = Int
+
+    public var destination: RedisKey
+    public var key: [RedisKey]
+
+    @inlinable public init(destination: RedisKey, key: [RedisKey]) {
+        self.destination = destination
+        self.key = key
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SUNIONSTORE", destination, key)
+    }
+}
+
 
 extension RedisConnection {
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
@@ -370,20 +318,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public func sadd(key: RedisKey, member: String) async throws -> Int {
-        try await send("SADD", key, member).converting()
-    }
-
-    /// Adds one or more members to a set. Creates the key if it doesn't exist.
-    ///
-    /// - Documentation: [SADD](https:/redis.io/docs/latest/commands/sadd)
-    /// - Version: 1.0.0
-    /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: @write, @set, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
-    @inlinable
-    public func sadd(key: RedisKey, members: [String]) async throws -> Int {
-        try await send("SADD", key, members).converting()
+    public func sadd(key: RedisKey, member: [String]) async throws -> Int {
+        try await send(command: SADD(key: key, member: member))
     }
 
     /// Returns the number of members in a set.
@@ -395,7 +331,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The cardinality (number of elements) of the set, or 0 if the key does not exist.
     @inlinable
     public func scard(key: RedisKey) async throws -> Int {
-        try await send("SCARD", key).converting()
+        try await send(command: SCARD(key: key))
     }
 
     /// Returns the difference of multiple sets.
@@ -406,20 +342,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sdiff(key: RedisKey) async throws -> [RESPToken] {
-        try await send("SDIFF", key).converting()
-    }
-
-    /// Returns the difference of multiple sets.
-    ///
-    /// - Documentation: [SDIFF](https:/redis.io/docs/latest/commands/sdiff)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @read, @set, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public func sdiff(keys: [RedisKey]) async throws -> [RESPToken] {
-        try await send("SDIFF", keys).converting()
+    public func sdiff(key: [RedisKey]) async throws -> [RESPToken] {
+        try await send(command: SDIFF(key: key))
     }
 
     /// Stores the difference of multiple sets in a key.
@@ -430,20 +354,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
     @inlinable
-    public func sdiffstore(destination: RedisKey, key: RedisKey) async throws -> Int {
-        try await send("SDIFFSTORE", destination, key).converting()
-    }
-
-    /// Stores the difference of multiple sets in a key.
-    ///
-    /// - Documentation: [SDIFFSTORE](https:/redis.io/docs/latest/commands/sdiffstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @write, @set, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
-    @inlinable
-    public func sdiffstore(destination: RedisKey, keys: [RedisKey]) async throws -> Int {
-        try await send("SDIFFSTORE", destination, keys).converting()
+    public func sdiffstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
+        try await send(command: SDIFFSTORE(destination: destination, key: key))
     }
 
     /// Returns the intersect of multiple sets.
@@ -454,20 +366,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sinter(key: RedisKey) async throws -> [RESPToken] {
-        try await send("SINTER", key).converting()
-    }
-
-    /// Returns the intersect of multiple sets.
-    ///
-    /// - Documentation: [SINTER](https:/redis.io/docs/latest/commands/sinter)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @read, @set, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public func sinter(keys: [RedisKey]) async throws -> [RESPToken] {
-        try await send("SINTER", keys).converting()
+    public func sinter(key: [RedisKey]) async throws -> [RESPToken] {
+        try await send(command: SINTER(key: key))
     }
 
     /// Returns the number of members of the intersect of multiple sets.
@@ -478,20 +378,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
     @inlinable
-    public func sintercard(key: RedisKey, limit: Int? = nil) async throws -> Int {
-        try await send("SINTERCARD", 1, key, RESPWithToken("LIMIT", limit)).converting()
-    }
-
-    /// Returns the number of members of the intersect of multiple sets.
-    ///
-    /// - Documentation: [SINTERCARD](https:/redis.io/docs/latest/commands/sintercard)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @read, @set, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
-    @inlinable
-    public func sintercard(keys: [RedisKey], limit: Int? = nil) async throws -> Int {
-        try await send("SINTERCARD", RESPArrayWithCount(keys), RESPWithToken("LIMIT", limit)).converting()
+    public func sintercard(key: [RedisKey], limit: Int? = nil) async throws -> Int {
+        try await send(command: SINTERCARD(key: key, limit: limit))
     }
 
     /// Stores the intersect of multiple sets in a key.
@@ -502,20 +390,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
     @inlinable
-    public func sinterstore(destination: RedisKey, key: RedisKey) async throws -> Int {
-        try await send("SINTERSTORE", destination, key).converting()
-    }
-
-    /// Stores the intersect of multiple sets in a key.
-    ///
-    /// - Documentation: [SINTERSTORE](https:/redis.io/docs/latest/commands/sinterstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Categories: @write, @set, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
-    @inlinable
-    public func sinterstore(destination: RedisKey, keys: [RedisKey]) async throws -> Int {
-        try await send("SINTERSTORE", destination, keys).converting()
+    public func sinterstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
+        try await send(command: SINTERSTORE(destination: destination, key: key))
     }
 
     /// Determines whether a member belongs to a set.
@@ -529,7 +405,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the element is a member of the set.
     @inlinable
     public func sismember(key: RedisKey, member: String) async throws -> Int {
-        try await send("SISMEMBER", key, member).converting()
+        try await send(command: SISMEMBER(key: key, member: member))
     }
 
     /// Returns all members of a set.
@@ -541,7 +417,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): all members of the set.
     @inlinable
     public func smembers(key: RedisKey) async throws -> [RESPToken] {
-        try await send("SMEMBERS", key).converting()
+        try await send(command: SMEMBERS(key: key))
     }
 
     /// Determines whether multiple members belong to a set.
@@ -552,20 +428,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember(key: RedisKey, member: String) async throws -> [RESPToken] {
-        try await send("SMISMEMBER", key, member).converting()
-    }
-
-    /// Determines whether multiple members belong to a set.
-    ///
-    /// - Documentation: [SMISMEMBER](https:/redis.io/docs/latest/commands/smismember)
-    /// - Version: 6.2.0
-    /// - Complexity: O(N) where N is the number of elements being checked for membership
-    /// - Categories: @read, @set, @fast
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
-    @inlinable
-    public func smismember(key: RedisKey, members: [String]) async throws -> [RESPToken] {
-        try await send("SMISMEMBER", key, members).converting()
+    public func smismember(key: RedisKey, member: [String]) async throws -> [RESPToken] {
+        try await send(command: SMISMEMBER(key: key, member: member))
     }
 
     /// Moves a member from one set to another.
@@ -579,7 +443,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the element is not a member of _source_ and no operation was performed.
     @inlinable
     public func smove(source: RedisKey, destination: RedisKey, member: String) async throws -> Int {
-        try await send("SMOVE", source, destination, member).converting()
+        try await send(command: SMOVE(source: source, destination: destination, member: member))
     }
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
@@ -594,7 +458,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of the removed members.
     @inlinable
     public func spop(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
-        try await send("SPOP", key, count)
+        try await send(command: SPOP(key: key, count: count))
     }
 
     /// Get one or multiple random members from a set
@@ -608,7 +472,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the optional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist.
     @inlinable
     public func srandmember(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
-        try await send("SRANDMEMBER", key, count)
+        try await send(command: SRANDMEMBER(key: key, count: count))
     }
 
     /// Removes one or more members from a set. Deletes the set if the last member was removed.
@@ -619,20 +483,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
     @inlinable
-    public func srem(key: RedisKey, member: String) async throws -> Int {
-        try await send("SREM", key, member).converting()
-    }
-
-    /// Removes one or more members from a set. Deletes the set if the last member was removed.
-    ///
-    /// - Documentation: [SREM](https:/redis.io/docs/latest/commands/srem)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the number of members to be removed.
-    /// - Categories: @write, @set, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
-    @inlinable
-    public func srem(key: RedisKey, members: [String]) async throws -> Int {
-        try await send("SREM", key, members).converting()
+    public func srem(key: RedisKey, member: [String]) async throws -> Int {
+        try await send(command: SREM(key: key, member: member))
     }
 
     /// Iterates over members of a set.
@@ -646,7 +498,7 @@ extension RedisConnection {
     ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) with the names of scanned members.
     @inlinable
     public func sscan(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
-        try await send("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count)).converting()
+        try await send(command: SSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 
     /// Returns the union of multiple sets.
@@ -657,20 +509,8 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sunion(key: RedisKey) async throws -> [RESPToken] {
-        try await send("SUNION", key).converting()
-    }
-
-    /// Returns the union of multiple sets.
-    ///
-    /// - Documentation: [SUNION](https:/redis.io/docs/latest/commands/sunion)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @read, @set, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
-    @inlinable
-    public func sunion(keys: [RedisKey]) async throws -> [RESPToken] {
-        try await send("SUNION", keys).converting()
+    public func sunion(key: [RedisKey]) async throws -> [RESPToken] {
+        try await send(command: SUNION(key: key))
     }
 
     /// Stores the union of multiple sets in a key.
@@ -681,20 +521,8 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
     @inlinable
-    public func sunionstore(destination: RedisKey, key: RedisKey) async throws -> Int {
-        try await send("SUNIONSTORE", destination, key).converting()
-    }
-
-    /// Stores the union of multiple sets in a key.
-    ///
-    /// - Documentation: [SUNIONSTORE](https:/redis.io/docs/latest/commands/sunionstore)
-    /// - Version: 1.0.0
-    /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Categories: @write, @set, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
-    @inlinable
-    public func sunionstore(destination: RedisKey, keys: [RedisKey]) async throws -> Int {
-        try await send("SUNIONSTORE", destination, keys).converting()
+    public func sunionstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
+        try await send(command: SUNIONSTORE(destination: destination, key: key))
     }
 
 }

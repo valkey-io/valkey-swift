@@ -28,11 +28,37 @@ struct GeneratedCommands {
         do {
             value = try await operation(key)
         } catch {
-            _ = try? await connection.send("DEL", key)
+            _ = try? await connection.del(key: [key])
             throw error
         }
-        _ = try await connection.send("DEL", key)
+        _ = try await connection.del(key: [key])
         return value
+    }
+
+    @Test
+    func testRedisCommand() async throws {
+        struct GET: RedisCommand {
+            typealias Response = String?
+
+            var key: RedisKey
+
+            init(key: RedisKey) {
+                self.key = key
+            }
+
+            func encode(into commandEncoder: inout RedisCommandEncoder) {
+                commandEncoder.encodeArray("GET", key)
+            }
+        }
+        var logger = Logger(label: "Redis")
+        logger.logLevel = .debug
+        try await RedisClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                _ = try await connection.set(key: key, value: "Hello")
+                let response = try await connection.send(command: GET(key: key))
+                #expect(response == "Hello")
+            }
+        }
     }
 
     @Test
@@ -71,13 +97,10 @@ struct GeneratedCommands {
         try await RedisClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 let responses = try await connection.pipeline(
-                    [
-                        .set(key: key, value: "Pipelined Hello"),
-                        .get(key: key),
-                    ]
+                    SET(key: key, value: "Pipelined Hello"),
+                    GET(key: key)
                 )
-                let value = try responses[1].converting(to: String.self)
-                #expect(value == "Pipelined Hello")
+                #expect(responses.1 == "Pipelined Hello")
             }
         }
     }
@@ -88,8 +111,8 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await RedisClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.rpush(key: key, element: "Hello")
-                _ = try await connection.rpush(key: key, elements: ["Good", "Bye"])
+                _ = try await connection.rpush(key: key, element: ["Hello"])
+                _ = try await connection.rpush(key: key, element: ["Good", "Bye"])
                 let values: [String] = try await connection.lrange(key: key, start: 0, stop: -1).converting()
                 #expect(values == ["Hello", "Good", "Bye"])
             }
@@ -102,7 +125,7 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await RedisClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                let count = try await connection.rpush(key: key, elements: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+                let count = try await connection.rpush(key: key, element: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
                 #expect(count == 10)
                 let values: [String] = try await connection.lrange(key: key, start: 0, stop: -1).converting()
                 #expect(values == ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
@@ -116,9 +139,9 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await RedisClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.lpush(key: key, element: "a")
-                _ = try await connection.lpush(key: key, element: "c")
-                _ = try await connection.lpush(key: key, element: "b")
+                _ = try await connection.lpush(key: key, element: ["a"])
+                _ = try await connection.lpush(key: key, element: ["c"])
+                _ = try await connection.lpush(key: key, element: ["b"])
                 let list = try await connection.sort(key: key, sorting: true).converting(to: [String].self)
                 #expect(list == ["a", "b", "c"])
             }
@@ -132,14 +155,14 @@ struct GeneratedCommands {
         try await RedisClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await withKey(connection: connection) { key2 in
-                    _ = try await connection.lpush(key: key, element: "a")
-                    _ = try await connection.lpush(key: key2, element: "b")
-                    let rt1: [RESPToken] = try await connection.lmpop(keys: [key, key2], where: .left)!
+                    _ = try await connection.lpush(key: key, element: ["a"])
+                    _ = try await connection.lpush(key: key2, element: ["b"])
+                    let rt1: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!
                     let keyReturned1 = try RedisKey(from: rt1[0])
                     let values1 = try [String](from: rt1[1])
                     #expect(keyReturned1 == key)
                     #expect(values1.first == "a")
-                    let rt2: [RESPToken] = try await connection.lmpop(keys: [key, key2], where: .left)!
+                    let rt2: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!
                     let keyReturned2 = try RedisKey(from: rt2[0])
                     let values2 = try [String](from: rt2[1])
                     #expect(keyReturned2 == key2)
@@ -148,6 +171,7 @@ struct GeneratedCommands {
             }
         }
     }
+
     /*
     @Test
     func testSubscriptions() async throws {

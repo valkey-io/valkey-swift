@@ -40,7 +40,7 @@ extension RedisKey: CustomStringConvertible {
 
 extension RedisKey: RESPRenderable {
     @inlinable
-    public func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-        self.rawValue.writeToRESPBuffer(&buffer)
+    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        self.rawValue.encode(into: &commandEncoder)
     }
 }

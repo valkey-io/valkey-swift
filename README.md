@@ -51,14 +51,8 @@ In general you don't need to use this method as it has no advantages over using 
 
 ```swift
 let key = RedisKey(rawValue: "MyKey")
-let responses = try await connection.pipeline([
-    .set(key, "TestString"),
-    .get(key)
-])
-```
-
-The `RedisConnection.pipeline` command returns an array of `RESPTokens`, one for each command. So we can get the result of the `get` in the above example by converting the second token into a `String`.
-
-```swift
-let value = responses[1].converting(to: String.self)
+let (setResponse, getResponse) = try await connection.pipeline(
+    SET(key, "TestString"),
+    GET(key)
+)
 ```

@@ -24,10 +24,12 @@ extension RESPToken: RESPTokenRepresentable {
     /// - Parameter type: Type to convert to
     /// - Throws: RedisClientError.unexpectedType
     /// - Returns: Value
+    @inlinable
     public func converting<Value: RESPTokenRepresentable>(to type: Value.Type = Value.self) throws -> Value {
         try Value(from: self)
     }
 
+    @inlinable
     public init(from token: RESPToken) throws {
         self = token
     }
@@ -38,12 +40,14 @@ extension Array where Element == RESPToken {
     /// - Parameter type: Type to convert to
     /// - Throws: RedisClientError.unexpectedType
     /// - Returns: Array of Value
+    @inlinable
     public func converting<Value: RESPTokenRepresentable>(to type: [Value].Type = [Value].self) throws -> [Value] {
         try self.map { try $0.converting() }
     }
 }
 
 extension ByteBuffer: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .bulkString(let buffer), .verbatimString(let buffer), .bigNumber(let buffer):
@@ -55,6 +59,7 @@ extension ByteBuffer: RESPTokenRepresentable {
 }
 
 extension String: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         let buffer = try ByteBuffer(from: token)
         self.init(buffer: buffer)
@@ -62,6 +67,7 @@ extension String: RESPTokenRepresentable {
 }
 
 extension Int: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
         case .number(let value):
@@ -73,6 +79,7 @@ extension Int: RESPTokenRepresentable {
 }
 
 extension Double: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
         case .double(let value):
@@ -84,6 +91,7 @@ extension Double: RESPTokenRepresentable {
 }
 
 extension Bool: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
         case .boolean(let value):
@@ -95,6 +103,7 @@ extension Bool: RESPTokenRepresentable {
 }
 
 extension Optional: RESPTokenRepresentable where Wrapped: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
         case .null:
@@ -106,6 +115,7 @@ extension Optional: RESPTokenRepresentable where Wrapped: RESPTokenRepresentable
 }
 
 extension Array: RESPTokenRepresentable where Element: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
         case .array(let respArray), .push(let respArray):
@@ -122,6 +132,7 @@ extension Array: RESPTokenRepresentable where Element: RESPTokenRepresentable {
 }
 
 extension Set: RESPTokenRepresentable where Element: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
         case .set(let respSet):
@@ -138,6 +149,7 @@ extension Set: RESPTokenRepresentable where Element: RESPTokenRepresentable {
 }
 
 extension Dictionary: RESPTokenRepresentable where Value: RESPTokenRepresentable, Key: RESPTokenRepresentable {
+    @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
         case .map(let respMap), .attribute(let respMap):

@@ -27,8 +27,8 @@ package struct RedisPureToken: RESPRenderable {
         }
     }
     @inlinable
-    package func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-        self.token.writeToRESPBuffer(&buffer)
+    package func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        self.token.encode(into: &commandEncoder)
     }
 }
 
@@ -45,13 +45,13 @@ package struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
         self.token = token
     }
     @inlinable
-    package func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
+    package func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
         if let value {
-            let writerIndex = buffer.writerIndex
-            _ = self.token.writeToRESPBuffer(&buffer)
-            let count = value.writeToRESPBuffer(&buffer)
+            let writerIndex = commandEncoder.writerIndex
+            _ = self.token.encode(into: &commandEncoder)
+            let count = value.encode(into: &commandEncoder)
             if count == 0 {
-                buffer.moveWriterIndex(to: writerIndex)
+                commandEncoder.moveWriterIndex(to: writerIndex)
                 return 0
             }
             return count + 1
@@ -71,9 +71,9 @@ package struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
         self.array = array
     }
     @inlinable
-    package func writeToRESPBuffer(_ buffer: inout ByteBuffer) -> Int {
-        _ = array.count.writeToRESPBuffer(&buffer)
-        let count = array.writeToRESPBuffer(&buffer)
+    package func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        _ = array.count.encode(into: &commandEncoder)
+        let count = array.encode(into: &commandEncoder)
         return count + 1
     }
 }

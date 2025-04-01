@@ -23,272 +23,220 @@ import FoundationEssentials
 import Foundation
 #endif
 
-extension RESPCommand {
-    /// Listens for messages published to channels that match one or more patterns.
-    ///
-    /// - Documentation: [PSUBSCRIBE](https:/redis.io/docs/latest/commands/psubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of patterns to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func psubscribe(pattern: String) -> RESPCommand {
-        RESPCommand("PSUBSCRIBE", pattern)
-    }
-
-    /// Listens for messages published to channels that match one or more patterns.
-    ///
-    /// - Documentation: [PSUBSCRIBE](https:/redis.io/docs/latest/commands/psubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of patterns to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func psubscribe(patterns: [String]) -> RESPCommand {
-        RESPCommand("PSUBSCRIBE", patterns)
-    }
-
-    /// Posts a message to a channel.
-    ///
-    /// - Documentation: [PUBLISH](https:/redis.io/docs/latest/commands/publish)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
-    /// - Categories: @pubsub, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of clients that received the message. Note that in a Redis Cluster, only clients that are connected to the same node as the publishing client are included in the count.
-    @inlinable
-    public static func publish(channel: String, message: String) -> RESPCommand {
-        RESPCommand("PUBLISH", channel, message)
-    }
-
+/// A container for Pub/Sub commands.
+public enum PUBSUB {
     /// Returns the active channels.
-    ///
-    /// - Documentation: [PUBSUB CHANNELS](https:/redis.io/docs/latest/commands/pubsub-channels)
-    /// - Version: 2.8.0
-    /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
-    /// - Categories: @pubsub, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
-    @inlinable
-    public static func pubsubChannels(pattern: String? = nil) -> RESPCommand {
-        RESPCommand("PUBSUB", "CHANNELS", pattern)
+    public struct CHANNELS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var pattern: String? = nil
+
+        @inlinable public init(pattern: String? = nil) {
+            self.pattern = pattern
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "CHANNELS", pattern)
+        }
     }
 
     /// Returns helpful text about the different subcommands.
-    ///
-    /// - Documentation: [PUBSUB HELP](https:/redis.io/docs/latest/commands/pubsub-help)
-    /// - Version: 6.2.0
-    /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
-    @inlinable
-    public static func pubsubHelp() -> RESPCommand {
-        RESPCommand("PUBSUB", "HELP")
+    public struct HELP: RedisCommand {
+        public typealias Response = [RESPToken]
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "HELP")
+        }
     }
 
     /// Returns a count of unique pattern subscriptions.
-    ///
-    /// - Documentation: [PUBSUB NUMPAT](https:/redis.io/docs/latest/commands/pubsub-numpat)
-    /// - Version: 2.8.0
-    /// - Complexity: O(1)
-    /// - Categories: @pubsub, @slow
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of patterns all the clients are subscribed to.
-    @inlinable
-    public static func pubsubNumpat() -> RESPCommand {
-        RESPCommand("PUBSUB", "NUMPAT")
+    public struct NUMPAT: RedisCommand {
+        public typealias Response = Int
+
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "NUMPAT")
+        }
     }
 
     /// Returns a count of subscribers to channels.
-    ///
-    /// - Documentation: [PUBSUB NUMSUB](https:/redis.io/docs/latest/commands/pubsub-numsub)
-    /// - Version: 2.8.0
-    /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
-    /// - Categories: @pubsub, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
-    @inlinable
-    public static func pubsubNumsub(channel: String? = nil) -> RESPCommand {
-        RESPCommand("PUBSUB", "NUMSUB", channel)
-    }
+    public struct NUMSUB: RedisCommand {
+        public typealias Response = [RESPToken]
 
-    /// Returns a count of subscribers to channels.
-    ///
-    /// - Documentation: [PUBSUB NUMSUB](https:/redis.io/docs/latest/commands/pubsub-numsub)
-    /// - Version: 2.8.0
-    /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
-    /// - Categories: @pubsub, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
-    @inlinable
-    public static func pubsubNumsub(channels: [String]) -> RESPCommand {
-        RESPCommand("PUBSUB", "NUMSUB", channels)
+        public var channel: [String] = []
+
+        @inlinable public init(channel: [String] = []) {
+            self.channel = channel
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "NUMSUB", channel)
+        }
     }
 
     /// Returns the active shard channels.
-    ///
-    /// - Documentation: [PUBSUB SHARDCHANNELS](https:/redis.io/docs/latest/commands/pubsub-shardchannels)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
-    /// - Categories: @pubsub, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
-    @inlinable
-    public static func pubsubShardchannels(pattern: String? = nil) -> RESPCommand {
-        RESPCommand("PUBSUB", "SHARDCHANNELS", pattern)
+    public struct SHARDCHANNELS: RedisCommand {
+        public typealias Response = [RESPToken]
+
+        public var pattern: String? = nil
+
+        @inlinable public init(pattern: String? = nil) {
+            self.pattern = pattern
+        }
+
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "SHARDCHANNELS", pattern)
+        }
     }
 
     /// Returns the count of subscribers of shard channels.
-    ///
-    /// - Documentation: [PUBSUB SHARDNUMSUB](https:/redis.io/docs/latest/commands/pubsub-shardnumsub)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
-    /// - Categories: @pubsub, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
-    @inlinable
-    public static func pubsubShardnumsub(shardchannel: String? = nil) -> RESPCommand {
-        RESPCommand("PUBSUB", "SHARDNUMSUB", shardchannel)
-    }
+    public struct SHARDNUMSUB: RedisCommand {
+        public typealias Response = [RESPToken]
 
-    /// Returns the count of subscribers of shard channels.
-    ///
-    /// - Documentation: [PUBSUB SHARDNUMSUB](https:/redis.io/docs/latest/commands/pubsub-shardnumsub)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
-    /// - Categories: @pubsub, @slow
-    /// - Response: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
-    @inlinable
-    public static func pubsubShardnumsub(shardchannels: [String]) -> RESPCommand {
-        RESPCommand("PUBSUB", "SHARDNUMSUB", shardchannels)
-    }
+        public var shardchannel: [String] = []
 
-    /// Stops listening to messages published to channels that match one or more patterns.
-    ///
-    /// - Documentation: [PUNSUBSCRIBE](https:/redis.io/docs/latest/commands/punsubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of patterns to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `punsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func punsubscribe(pattern: String? = nil) -> RESPCommand {
-        RESPCommand("PUNSUBSCRIBE", pattern)
-    }
+        @inlinable public init(shardchannel: [String] = []) {
+            self.shardchannel = shardchannel
+        }
 
-    /// Stops listening to messages published to channels that match one or more patterns.
-    ///
-    /// - Documentation: [PUNSUBSCRIBE](https:/redis.io/docs/latest/commands/punsubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of patterns to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `punsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func punsubscribe(patterns: [String]) -> RESPCommand {
-        RESPCommand("PUNSUBSCRIBE", patterns)
-    }
-
-    /// Post a message to a shard channel
-    ///
-    /// - Documentation: [SPUBLISH](https:/redis.io/docs/latest/commands/spublish)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
-    /// - Categories: @pubsub, @fast
-    /// - Response: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of clients that received the message. Note that in a Redis Cluster, only clients that are connected to the same node as the publishing client are included in the count
-    @inlinable
-    public static func spublish(shardchannel: String, message: String) -> RESPCommand {
-        RESPCommand("SPUBLISH", shardchannel, message)
-    }
-
-    /// Listens for messages published to shard channels.
-    ///
-    /// - Documentation: [SSUBSCRIBE](https:/redis.io/docs/latest/commands/ssubscribe)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of shard channels to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
-    @inlinable
-    public static func ssubscribe(shardchannel: String) -> RESPCommand {
-        RESPCommand("SSUBSCRIBE", shardchannel)
-    }
-
-    /// Listens for messages published to shard channels.
-    ///
-    /// - Documentation: [SSUBSCRIBE](https:/redis.io/docs/latest/commands/ssubscribe)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of shard channels to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
-    @inlinable
-    public static func ssubscribe(shardchannels: [String]) -> RESPCommand {
-        RESPCommand("SSUBSCRIBE", shardchannels)
-    }
-
-    /// Listens for messages published to channels.
-    ///
-    /// - Documentation: [SUBSCRIBE](https:/redis.io/docs/latest/commands/subscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of channels to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func subscribe(channel: String) -> RESPCommand {
-        RESPCommand("SUBSCRIBE", channel)
-    }
-
-    /// Listens for messages published to channels.
-    ///
-    /// - Documentation: [SUBSCRIBE](https:/redis.io/docs/latest/commands/subscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of channels to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func subscribe(channels: [String]) -> RESPCommand {
-        RESPCommand("SUBSCRIBE", channels)
-    }
-
-    /// Stops listening to messages posted to shard channels.
-    ///
-    /// - Documentation: [SUNSUBSCRIBE](https:/redis.io/docs/latest/commands/sunsubscribe)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of shard channels to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `sunsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func sunsubscribe(shardchannel: String? = nil) -> RESPCommand {
-        RESPCommand("SUNSUBSCRIBE", shardchannel)
-    }
-
-    /// Stops listening to messages posted to shard channels.
-    ///
-    /// - Documentation: [SUNSUBSCRIBE](https:/redis.io/docs/latest/commands/sunsubscribe)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of shard channels to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `sunsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func sunsubscribe(shardchannels: [String]) -> RESPCommand {
-        RESPCommand("SUNSUBSCRIBE", shardchannels)
-    }
-
-    /// Stops listening to messages posted to channels.
-    ///
-    /// - Documentation: [UNSUBSCRIBE](https:/redis.io/docs/latest/commands/unsubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of channels to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `unsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func unsubscribe(channel: String? = nil) -> RESPCommand {
-        RESPCommand("UNSUBSCRIBE", channel)
-    }
-
-    /// Stops listening to messages posted to channels.
-    ///
-    /// - Documentation: [UNSUBSCRIBE](https:/redis.io/docs/latest/commands/unsubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of channels to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Response: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `unsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public static func unsubscribe(channels: [String]) -> RESPCommand {
-        RESPCommand("UNSUBSCRIBE", channels)
+        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+            commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannel)
+        }
     }
 
 }
+
+/// Listens for messages published to channels that match one or more patterns.
+public struct PSUBSCRIBE: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var pattern: [String]
+
+    @inlinable public init(pattern: [String]) {
+        self.pattern = pattern
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PSUBSCRIBE", pattern)
+    }
+}
+
+/// Posts a message to a channel.
+public struct PUBLISH: RedisCommand {
+    public typealias Response = Int
+
+    public var channel: String
+    public var message: String
+
+    @inlinable public init(channel: String, message: String) {
+        self.channel = channel
+        self.message = message
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PUBLISH", channel, message)
+    }
+}
+
+/// Stops listening to messages published to channels that match one or more patterns.
+public struct PUNSUBSCRIBE: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var pattern: [String] = []
+
+    @inlinable public init(pattern: [String] = []) {
+        self.pattern = pattern
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("PUNSUBSCRIBE", pattern)
+    }
+}
+
+/// Post a message to a shard channel
+public struct SPUBLISH: RedisCommand {
+    public typealias Response = Int
+
+    public var shardchannel: String
+    public var message: String
+
+    @inlinable public init(shardchannel: String, message: String) {
+        self.shardchannel = shardchannel
+        self.message = message
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SPUBLISH", shardchannel, message)
+    }
+}
+
+/// Listens for messages published to shard channels.
+public struct SSUBSCRIBE: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var shardchannel: [String]
+
+    @inlinable public init(shardchannel: [String]) {
+        self.shardchannel = shardchannel
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SSUBSCRIBE", shardchannel)
+    }
+}
+
+/// Listens for messages published to channels.
+public struct SUBSCRIBE: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var channel: [String]
+
+    @inlinable public init(channel: [String]) {
+        self.channel = channel
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SUBSCRIBE", channel)
+    }
+}
+
+/// Stops listening to messages posted to shard channels.
+public struct SUNSUBSCRIBE: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var shardchannel: [String] = []
+
+    @inlinable public init(shardchannel: [String] = []) {
+        self.shardchannel = shardchannel
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("SUNSUBSCRIBE", shardchannel)
+    }
+}
+
+/// Stops listening to messages posted to channels.
+public struct UNSUBSCRIBE: RedisCommand {
+    public typealias Response = RESPToken
+
+    public var channel: [String] = []
+
+    @inlinable public init(channel: [String] = []) {
+        self.channel = channel
+    }
+
+    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        commandEncoder.encodeArray("UNSUBSCRIBE", channel)
+    }
+}
+
 
 extension RedisConnection {
     /// Listens for messages published to channels that match one or more patterns.
@@ -299,20 +247,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func psubscribe(pattern: String) async throws -> RESPToken {
-        try await send("PSUBSCRIBE", pattern)
-    }
-
-    /// Listens for messages published to channels that match one or more patterns.
-    ///
-    /// - Documentation: [PSUBSCRIBE](https:/redis.io/docs/latest/commands/psubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of patterns to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func psubscribe(patterns: [String]) async throws -> RESPToken {
-        try await send("PSUBSCRIBE", patterns)
+    public func psubscribe(pattern: [String]) async throws -> RESPToken {
+        try await send(command: PSUBSCRIBE(pattern: pattern))
     }
 
     /// Posts a message to a channel.
@@ -324,7 +260,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of clients that received the message. Note that in a Redis Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     public func publish(channel: String, message: String) async throws -> Int {
-        try await send("PUBLISH", channel, message).converting()
+        try await send(command: PUBLISH(channel: channel, message: message))
     }
 
     /// Returns the active channels.
@@ -336,7 +272,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubChannels(pattern: String? = nil) async throws -> [RESPToken] {
-        try await send("PUBSUB", "CHANNELS", pattern).converting()
+        try await send(command: PUBSUB.CHANNELS(pattern: pattern))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -348,7 +284,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func pubsubHelp() async throws -> [RESPToken] {
-        try await send("PUBSUB", "HELP").converting()
+        try await send(command: PUBSUB.HELP())
     }
 
     /// Returns a count of unique pattern subscriptions.
@@ -360,7 +296,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of patterns all the clients are subscribed to.
     @inlinable
     public func pubsubNumpat() async throws -> Int {
-        try await send("PUBSUB", "NUMPAT").converting()
+        try await send(command: PUBSUB.NUMPAT())
     }
 
     /// Returns a count of subscribers to channels.
@@ -371,20 +307,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
     @inlinable
-    public func pubsubNumsub(channel: String? = nil) async throws -> [RESPToken] {
-        try await send("PUBSUB", "NUMSUB", channel).converting()
-    }
-
-    /// Returns a count of subscribers to channels.
-    ///
-    /// - Documentation: [PUBSUB NUMSUB](https:/redis.io/docs/latest/commands/pubsub-numsub)
-    /// - Version: 2.8.0
-    /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
-    /// - Categories: @pubsub, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
-    @inlinable
-    public func pubsubNumsub(channels: [String]) async throws -> [RESPToken] {
-        try await send("PUBSUB", "NUMSUB", channels).converting()
+    public func pubsubNumsub(channel: [String] = []) async throws -> [RESPToken] {
+        try await send(command: PUBSUB.NUMSUB(channel: channel))
     }
 
     /// Returns the active shard channels.
@@ -396,7 +320,7 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubShardchannels(pattern: String? = nil) async throws -> [RESPToken] {
-        try await send("PUBSUB", "SHARDCHANNELS", pattern).converting()
+        try await send(command: PUBSUB.SHARDCHANNELS(pattern: pattern))
     }
 
     /// Returns the count of subscribers of shard channels.
@@ -407,20 +331,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
-    public func pubsubShardnumsub(shardchannel: String? = nil) async throws -> [RESPToken] {
-        try await send("PUBSUB", "SHARDNUMSUB", shardchannel).converting()
-    }
-
-    /// Returns the count of subscribers of shard channels.
-    ///
-    /// - Documentation: [PUBSUB SHARDNUMSUB](https:/redis.io/docs/latest/commands/pubsub-shardnumsub)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
-    /// - Categories: @pubsub, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
-    @inlinable
-    public func pubsubShardnumsub(shardchannels: [String]) async throws -> [RESPToken] {
-        try await send("PUBSUB", "SHARDNUMSUB", shardchannels).converting()
+    public func pubsubShardnumsub(shardchannel: [String] = []) async throws -> [RESPToken] {
+        try await send(command: PUBSUB.SHARDNUMSUB(shardchannel: shardchannel))
     }
 
     /// Stops listening to messages published to channels that match one or more patterns.
@@ -431,20 +343,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `punsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func punsubscribe(pattern: String? = nil) async throws -> RESPToken {
-        try await send("PUNSUBSCRIBE", pattern)
-    }
-
-    /// Stops listening to messages published to channels that match one or more patterns.
-    ///
-    /// - Documentation: [PUNSUBSCRIBE](https:/redis.io/docs/latest/commands/punsubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of patterns to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `punsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func punsubscribe(patterns: [String]) async throws -> RESPToken {
-        try await send("PUNSUBSCRIBE", patterns)
+    public func punsubscribe(pattern: [String] = []) async throws -> RESPToken {
+        try await send(command: PUNSUBSCRIBE(pattern: pattern))
     }
 
     /// Post a message to a shard channel
@@ -456,7 +356,7 @@ extension RedisConnection {
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of clients that received the message. Note that in a Redis Cluster, only clients that are connected to the same node as the publishing client are included in the count
     @inlinable
     public func spublish(shardchannel: String, message: String) async throws -> Int {
-        try await send("SPUBLISH", shardchannel, message).converting()
+        try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
     }
 
     /// Listens for messages published to shard channels.
@@ -467,20 +367,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
     @inlinable
-    public func ssubscribe(shardchannel: String) async throws -> RESPToken {
-        try await send("SSUBSCRIBE", shardchannel)
-    }
-
-    /// Listens for messages published to shard channels.
-    ///
-    /// - Documentation: [SSUBSCRIBE](https:/redis.io/docs/latest/commands/ssubscribe)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of shard channels to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
-    @inlinable
-    public func ssubscribe(shardchannels: [String]) async throws -> RESPToken {
-        try await send("SSUBSCRIBE", shardchannels)
+    public func ssubscribe(shardchannel: [String]) async throws -> RESPToken {
+        try await send(command: SSUBSCRIBE(shardchannel: shardchannel))
     }
 
     /// Listens for messages published to channels.
@@ -491,20 +379,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func subscribe(channel: String) async throws -> RESPToken {
-        try await send("SUBSCRIBE", channel)
-    }
-
-    /// Listens for messages published to channels.
-    ///
-    /// - Documentation: [SUBSCRIBE](https:/redis.io/docs/latest/commands/subscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of channels to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func subscribe(channels: [String]) async throws -> RESPToken {
-        try await send("SUBSCRIBE", channels)
+    public func subscribe(channel: [String]) async throws -> RESPToken {
+        try await send(command: SUBSCRIBE(channel: channel))
     }
 
     /// Stops listening to messages posted to shard channels.
@@ -515,20 +391,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `sunsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func sunsubscribe(shardchannel: String? = nil) async throws -> RESPToken {
-        try await send("SUNSUBSCRIBE", shardchannel)
-    }
-
-    /// Stops listening to messages posted to shard channels.
-    ///
-    /// - Documentation: [SUNSUBSCRIBE](https:/redis.io/docs/latest/commands/sunsubscribe)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of shard channels to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `sunsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func sunsubscribe(shardchannels: [String]) async throws -> RESPToken {
-        try await send("SUNSUBSCRIBE", shardchannels)
+    public func sunsubscribe(shardchannel: [String] = []) async throws -> RESPToken {
+        try await send(command: SUNSUBSCRIBE(shardchannel: shardchannel))
     }
 
     /// Stops listening to messages posted to channels.
@@ -539,20 +403,8 @@ extension RedisConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `unsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func unsubscribe(channel: String? = nil) async throws -> RESPToken {
-        try await send("UNSUBSCRIBE", channel)
-    }
-
-    /// Stops listening to messages posted to channels.
-    ///
-    /// - Documentation: [UNSUBSCRIBE](https:/redis.io/docs/latest/commands/unsubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of channels to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `unsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func unsubscribe(channels: [String]) async throws -> RESPToken {
-        try await send("UNSUBSCRIBE", channels)
+    public func unsubscribe(channel: [String] = []) async throws -> RESPToken {
+        try await send(command: UNSUBSCRIBE(channel: channel))
     }
 
 }
