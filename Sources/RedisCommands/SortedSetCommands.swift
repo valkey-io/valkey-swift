@@ -187,7 +187,7 @@ public struct ZCOUNT: RedisCommand {
 
 /// Returns the difference between multiple sorted sets.
 public struct ZDIFF: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [RESPToken]
 
     public var key: [RedisKey]
     public var withscores: Bool = false
@@ -254,7 +254,7 @@ public struct ZINTER: RedisCommand {
             }
         }
     }
-    public typealias Response = RESPToken
+    public typealias Response = [RESPToken]
 
     public var key: [RedisKey]
     public var weight: [Int] = []
@@ -394,7 +394,7 @@ public struct ZMSCORE: RedisCommand {
 
 /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
 public struct ZPOPMAX: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [RESPToken]
 
     public var key: RedisKey
     public var count: Int? = nil
@@ -411,7 +411,7 @@ public struct ZPOPMAX: RedisCommand {
 
 /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
 public struct ZPOPMIN: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [RESPToken]
 
     public var key: RedisKey
     public var count: Int? = nil
@@ -553,7 +553,7 @@ public struct ZRANGEBYSCORE: RedisCommand {
             return count
         }
     }
-    public typealias Response = RESPToken
+    public typealias Response = [RESPToken]
 
     public var key: RedisKey
     public var min: Double
@@ -720,7 +720,7 @@ public struct ZREMRANGEBYSCORE: RedisCommand {
 
 /// Returns members in a sorted set within a range of indexes in reverse order.
 public struct ZREVRANGE: RedisCommand {
-    public typealias Response = RESPToken
+    public typealias Response = [RESPToken]
 
     public var key: RedisKey
     public var start: Int
@@ -786,7 +786,7 @@ public struct ZREVRANGEBYSCORE: RedisCommand {
             return count
         }
     }
-    public typealias Response = RESPToken
+    public typealias Response = [RESPToken]
 
     public var key: RedisKey
     public var max: Double
@@ -1026,7 +1026,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zdiff(key: [RedisKey], withscores: Bool = false) async throws -> RESPToken {
+    public func zdiff(key: [RedisKey], withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZDIFF(key: key, withscores: withscores))
     }
 
@@ -1062,7 +1062,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(key: [RedisKey], weight: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> RESPToken {
+    public func zinter(key: [RedisKey], weight: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZINTER(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
     }
 
@@ -1138,7 +1138,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of popped elements and scores.
     @inlinable
-    public func zpopmax(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
+    public func zpopmax(key: RedisKey, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: ZPOPMAX(key: key, count: count))
     }
 
@@ -1150,7 +1150,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of popped elements and scores.
     @inlinable
-    public func zpopmin(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
+    public func zpopmin(key: RedisKey, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: ZPOPMIN(key: key, count: count))
     }
 
@@ -1199,7 +1199,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
-    public func zrangebyscore(key: RedisKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> RESPToken {
+    public func zrangebyscore(key: RedisKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
     }
 
@@ -1286,7 +1286,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range, optionally with their scores if _WITHSCORE_ was used.
     @inlinable
-    public func zrevrange(key: RedisKey, start: Int, stop: Int, withscores: Bool = false) async throws -> RESPToken {
+    public func zrevrange(key: RedisKey, start: Int, stop: Int, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZREVRANGE(key: key, start: start, stop: stop, withscores: withscores))
     }
 
@@ -1310,7 +1310,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
-    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> RESPToken {
+    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
     }
 

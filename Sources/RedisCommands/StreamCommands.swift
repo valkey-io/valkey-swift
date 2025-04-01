@@ -461,7 +461,7 @@ public struct XPENDING: RedisCommand {
             return count
         }
     }
-    public typealias Response = RESPToken
+    public typealias Response = [RESPToken]
 
     public var key: RedisKey
     public var group: String
@@ -887,7 +887,7 @@ extension RedisConnection {
     /// - Categories: @read, @stream, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): different data depending on the way XPENDING is called, as explained on this page.
     @inlinable
-    public func xpending(key: RedisKey, group: String, filters: XPENDING.Filters? = nil) async throws -> RESPToken {
+    public func xpending(key: RedisKey, group: String, filters: XPENDING.Filters? = nil) async throws -> [RESPToken] {
         try await send(command: XPENDING(key: key, group: group, filters: filters))
     }
 

@@ -317,7 +317,7 @@ private func variableType(_ parameter: RedisCommand.Argument, names: [String], s
 private func getReturnType(reply replies: [String]) -> String? {
     let replies = replies.filter { $0.hasPrefix("[") || $0.hasPrefix("* [") }
     if replies.count == 1 {
-        let returnType = getReturnType(reply: replies[0])
+        let returnType = getReturnType(reply: replies[0].dropPrefix("* "))
         if returnType == "Void" {
             return "RESPToken"
         }
