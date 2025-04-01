@@ -49,7 +49,7 @@ public struct RedisConnection: Sendable {
     }
     enum Response {
         case token(RESPToken)
-        case pipelinedResponse([RESPToken])
+        case pipelinedResponse([Result<RESPToken, Error>])
     }
     typealias RequestStreamElement = (Request, CheckedContinuation<Response, Error>)
     /// Logger used by Server
@@ -111,20 +111,24 @@ public struct RedisConnection: Sendable {
                                 }
                             case .pipelinedCommands(let commands, let count):
                                 try await outbound.write(commands)
-                                var responses: [RESPToken] = .init()
+                                var responses: [Result<RESPToken, Error>] = .init()
                                 for _ in 0..<count {
-                                    let response = try await inboundIterator.next()
-                                    if let response {
-                                        responses.append(response)
-                                    } else {
-                                        requestContinuation.finish()
-                                        continuation.resume(
-                                            throwing: RedisClientError(
-                                                .connectionClosed,
-                                                message: "The connection to the Redis database was unexpectedly closed."
+                                    do {
+                                        let response = try await inboundIterator.next()
+                                        if let response {
+                                            responses.append(.success(response))
+                                        } else {
+                                            requestContinuation.finish()
+                                            continuation.resume(
+                                                throwing: RedisClientError(
+                                                    .connectionClosed,
+                                                    message: "The connection to the Redis database was unexpectedly closed."
+                                                )
                                             )
-                                        )
-                                        return
+                                            return
+                                        }
+                                    } catch {
+                                        responses.append(.failure(error))
                                     }
                                 }
                                 continuation.resume(returning: .pipelinedResponse(responses))
@@ -203,7 +207,7 @@ public struct RedisConnection: Sendable {
         guard case .pipelinedResponse(let tokens) = response else { preconditionFailure("Expected a single response") }
 
         var index = AutoIncrementingInteger()
-        return try (repeat (each Command).Response(from: tokens[index.next()]))
+        return try (repeat (each Command).Response(from: tokens[index.next()].get()))
     }
 
     /// Try to upgrade to RESP3
