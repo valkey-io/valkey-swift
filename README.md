@@ -14,7 +14,7 @@ try await ValkeyClient.withConnection(.hostname("localhost", port: 6379), logger
 }
 ```
 
-All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files redis supplies in [valkey-doc](https://github.com/valkey-io/valkey-doc). In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible a `RESPToken` is returned and you'll need to convert the return type manually.
+All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files Valkey supplies in [valkey-doc](https://github.com/valkey-io/valkey-doc). In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible a `RESPToken` is returned and you'll need to convert the return type manually.
 
 ```swift
 try await connection.set("MyKey", "TestString")
