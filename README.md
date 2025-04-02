@@ -34,4 +34,4 @@ let (setResponse, getResponse) = try await connection.pipeline(
 
 ## Redis compatibilty
 
-As Valkey is a fork of Redis v7.2.4, swift-valkey is compatible with Redis databases from v7.2.4 and earlier. Swift-valkey uses the RESP3 protocol. It does not support RESP2.
+As Valkey is a fork of Redis v7.2.4, swift-valkey is compatible with Redis databases up to v7.2.4. There is a chance the v7.2.4 features will still be compatible in later versions of Redis, but these are now considered two different projects and they will diverge. Swift-valkey uses the RESP3 protocol. It does not support RESP2.
