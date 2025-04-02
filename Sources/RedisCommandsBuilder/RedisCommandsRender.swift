@@ -259,7 +259,7 @@ func renderRedisCommands(_ commands: [String: RESPCommand], replies: RESPReplies
         string.appendCommand(command: command, reply: reply, name: key, tab: "")
     }
     string.append("\n")
-    string.append("extension RedisConnection {\n")
+    string.append("extension ValkeyConnection {\n")
     for key in keys {
         let command = commands[key]!
         // if there is no reply info assume command is a container command

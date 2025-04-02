@@ -116,8 +116,10 @@ public struct GETEX: RESPCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
-            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds):
+                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
             case .persist: "PERSIST".encode(into: &commandEncoder)
             }
         }
@@ -243,7 +245,15 @@ public struct LCS: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("LCS", key1, key2, RESPPureToken("LEN", len), RESPPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RESPPureToken("WITHMATCHLEN", withmatchlen))
+        commandEncoder.encodeArray(
+            "LCS",
+            key1,
+            key2,
+            RESPPureToken("LEN", len),
+            RESPPureToken("IDX", idx),
+            RESPWithToken("MINMATCHLEN", minMatchLen),
+            RESPPureToken("WITHMATCHLEN", withmatchlen)
+        )
     }
 }
 
@@ -361,8 +371,10 @@ public struct SET: RESPCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
-            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds):
+                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
             case .keepttl: "KEEPTTL".encode(into: &commandEncoder)
             }
         }
@@ -477,8 +489,7 @@ public struct SUBSTR: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [APPEND](https:/redis.io/docs/latest/commands/append)
@@ -629,7 +640,14 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
     @inlinable
-    public func lcs(key1: RESPKey, key2: RESPKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> RESPToken {
+    public func lcs(
+        key1: RESPKey,
+        key2: RESPKey,
+        len: Bool = false,
+        idx: Bool = false,
+        minMatchLen: Int? = nil,
+        withmatchlen: Bool = false
+    ) async throws -> RESPToken {
         try await send(command: LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
@@ -695,7 +713,13 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): `GET` given: The key didn't exist before the `SET`.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): `GET` given: The previous value of the key.
     @inlinable
-    public func set(key: RESPKey, value: String, condition: SET.Condition? = nil, get: Bool = false, expiration: SET.Expiration? = nil) async throws -> String? {
+    public func set(
+        key: RESPKey,
+        value: String,
+        condition: SET.Condition? = nil,
+        get: Bool = false,
+        expiration: SET.Expiration? = nil
+    ) async throws -> String? {
         try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
     }
 

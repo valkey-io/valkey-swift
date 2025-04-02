@@ -44,7 +44,6 @@ public enum PUBSUB {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -56,7 +55,6 @@ public enum PUBSUB {
     /// Returns a count of unique pattern subscriptions.
     public struct NUMPAT: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -237,8 +235,7 @@ public struct UNSUBSCRIBE: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Listens for messages published to channels that match one or more patterns.
     ///
     /// - Documentation: [PSUBSCRIBE](https:/redis.io/docs/latest/commands/psubscribe)

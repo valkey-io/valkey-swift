@@ -27,7 +27,6 @@ import Foundation
 public struct DISCARD: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -39,7 +38,6 @@ public struct DISCARD: RESPCommand {
 /// Executes all commands in a transaction.
 public struct EXEC: RESPCommand {
     public typealias Response = [RESPToken]?
-
 
     @inlinable public init() {
     }
@@ -53,7 +51,6 @@ public struct EXEC: RESPCommand {
 public struct MULTI: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -65,7 +62,6 @@ public struct MULTI: RESPCommand {
 /// Forgets about watched keys of a transaction.
 public struct UNWATCH: RESPCommand {
     public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -90,8 +86,7 @@ public struct WATCH: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Discards a transaction.
     ///
     /// - Documentation: [DISCARD](https:/redis.io/docs/latest/commands/discard)

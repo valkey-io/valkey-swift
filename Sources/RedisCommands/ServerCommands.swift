@@ -108,7 +108,6 @@ public enum ACL {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -121,7 +120,6 @@ public enum ACL {
     public struct LIST: RESPCommand {
         public typealias Response = [String]
 
-
         @inlinable public init() {
         }
 
@@ -133,7 +131,6 @@ public enum ACL {
     /// Reloads the rules from the configured ACL file.
     public struct LOAD: RESPCommand {
         public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -174,7 +171,6 @@ public enum ACL {
     public struct SAVE: RESPCommand {
         public typealias Response = RESPToken
 
-
         @inlinable public init() {
         }
 
@@ -204,7 +200,6 @@ public enum ACL {
     public struct USERS: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -216,7 +211,6 @@ public enum ACL {
     /// Returns the authenticated username of the current connection.
     public struct WHOAMI: RESPCommand {
         public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -232,7 +226,6 @@ extension COMMAND {
     /// Returns a count of commands.
     public struct COUNT: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -294,7 +287,6 @@ extension COMMAND {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
-
 
         @inlinable public init() {
         }
@@ -371,7 +363,6 @@ public enum CONFIG {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -384,7 +375,6 @@ public enum CONFIG {
     public struct RESETSTAT: RESPCommand {
         public typealias Response = RESPToken
 
-
         @inlinable public init() {
         }
 
@@ -396,7 +386,6 @@ public enum CONFIG {
     /// Persists the effective configuration to file.
     public struct REWRITE: RESPCommand {
         public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -441,7 +430,6 @@ public enum LATENCY {
     public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -468,7 +456,6 @@ public enum LATENCY {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
-
 
         @inlinable public init() {
         }
@@ -512,7 +499,6 @@ public enum LATENCY {
     public struct LATEST: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -544,7 +530,6 @@ public enum MEMORY {
     public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -556,7 +541,6 @@ public enum MEMORY {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
-
 
         @inlinable public init() {
         }
@@ -570,7 +554,6 @@ public enum MEMORY {
     public struct MALLOCSTATS: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -583,7 +566,6 @@ public enum MEMORY {
     public struct PURGE: RESPCommand {
         public typealias Response = RESPToken
 
-
         @inlinable public init() {
         }
 
@@ -595,7 +577,6 @@ public enum MEMORY {
     /// Returns details about memory usage.
     public struct STATS: RESPCommand {
         public typealias Response = [String: RESPToken]
-
 
         @inlinable public init() {
         }
@@ -630,7 +611,6 @@ public enum MODULE {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -642,7 +622,6 @@ public enum MODULE {
     /// Returns all loaded modules.
     public struct LIST: RESPCommand {
         public typealias Response = [RESPToken]
-
 
         @inlinable public init() {
         }
@@ -738,7 +717,6 @@ public enum SLOWLOG {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -751,7 +729,6 @@ public enum SLOWLOG {
     public struct LEN: RESPCommand {
         public typealias Response = Int
 
-
         @inlinable public init() {
         }
 
@@ -763,7 +740,6 @@ public enum SLOWLOG {
     /// Clears all entries from the slow log.
     public struct RESET: RESPCommand {
         public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -778,7 +754,6 @@ public enum SLOWLOG {
 /// Asynchronously rewrites the append-only file to disk.
 public struct BGREWRITEAOF: RESPCommand {
     public typealias Response = String
-
 
     @inlinable public init() {
     }
@@ -807,7 +782,6 @@ public struct BGSAVE: RESPCommand {
 public struct COMMAND: RESPCommand {
     public typealias Response = [RESPToken]
 
-
     @inlinable public init() {
     }
 
@@ -819,7 +793,6 @@ public struct COMMAND: RESPCommand {
 /// Returns the number of keys in the database.
 public struct DBSIZE: RESPCommand {
     public typealias Response = Int
-
 
     @inlinable public init() {
     }
@@ -935,7 +908,6 @@ public struct INFO: RESPCommand {
 public struct LASTSAVE: RESPCommand {
     public typealias Response = Int
 
-
     @inlinable public init() {
     }
 
@@ -962,7 +934,6 @@ public struct LOLWUT: RESPCommand {
 /// Listens for all requests received by the server in real-time.
 public struct MONITOR: RESPCommand {
     public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -992,7 +963,6 @@ public struct PSYNC: RESPCommand {
 /// An internal command for configuring the replication stream.
 public struct REPLCONF: RESPCommand {
     public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -1065,7 +1035,15 @@ public struct RESTOREASKING: RESPCommand {
     public var seconds: Int? = nil
     public var frequency: Int? = nil
 
-    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+    @inlinable public init(
+        key: RESPKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -1076,14 +1054,22 @@ public struct RESTOREASKING: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+        commandEncoder.encodeArray(
+            "RESTORE-ASKING",
+            key,
+            ttl,
+            serializedValue,
+            RESPPureToken("REPLACE", replace),
+            RESPPureToken("ABSTTL", absttl),
+            RESPWithToken("IDLETIME", seconds),
+            RESPWithToken("FREQ", frequency)
+        )
     }
 }
 
 /// Returns the replication role.
 public struct ROLE: RESPCommand {
     public typealias Response = [RESPToken]
-
 
     @inlinable public init() {
     }
@@ -1096,7 +1082,6 @@ public struct ROLE: RESPCommand {
 /// Synchronously saves the database(s) to disk.
 public struct SAVE: RESPCommand {
     public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -1211,7 +1196,6 @@ public struct SWAPDB: RESPCommand {
 public struct SYNC: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -1224,7 +1208,6 @@ public struct SYNC: RESPCommand {
 public struct TIME: RESPCommand {
     public typealias Response = [RESPToken]
 
-
     @inlinable public init() {
     }
 
@@ -1233,8 +1216,7 @@ public struct TIME: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Lists the ACL categories, or the commands inside a category.
     ///
     /// - Documentation: [ACL CAT](https:/redis.io/docs/latest/commands/acl-cat)
@@ -1332,7 +1314,7 @@ extension RedisConnection {
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     
+    ///
     ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
     @inlinable
@@ -1412,7 +1394,7 @@ extension RedisConnection {
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
-    ///     
+    ///
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
     public func bgrewriteaof() async throws -> String {
@@ -1644,7 +1626,7 @@ extension RedisConnection {
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///     
+    ///
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
     public func info(section: [String] = []) async throws -> String {
@@ -1948,8 +1930,26 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
-        try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
+    public func restoreAsking(
+        key: RESPKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            command: RESTOREASKING(
+                key: key,
+                ttl: ttl,
+                serializedValue: serializedValue,
+                replace: replace,
+                absttl: absttl,
+                seconds: seconds,
+                frequency: frequency
+            )
+        )
     }
 
     /// Returns the replication role.
@@ -1984,7 +1984,12 @@ extension RedisConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
-    public func shutdown(saveSelector: SHUTDOWN.SaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) async throws -> RESPToken {
+    public func shutdown(
+        saveSelector: SHUTDOWN.SaveSelector? = nil,
+        now: Bool = false,
+        force: Bool = false,
+        abort: Bool = false
+    ) async throws -> RESPToken {
         try await send(command: SHUTDOWN(saveSelector: saveSelector, now: now, force: force, abort: abort))
     }
 

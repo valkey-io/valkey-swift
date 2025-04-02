@@ -59,7 +59,6 @@ public enum OBJECT {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -316,7 +315,17 @@ public struct MIGRATE: RESPCommand {
     public var authentication: Authentication? = nil
     public var keys: [RESPKey] = []
 
-    @inlinable public init(host: String, port: Int, keySelector: KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: Authentication? = nil, keys: [RESPKey] = []) {
+    @inlinable public init(
+        host: String,
+        port: Int,
+        keySelector: KeySelector,
+        destinationDb: Int,
+        timeout: Int,
+        copy: Bool = false,
+        replace: Bool = false,
+        authentication: Authentication? = nil,
+        keys: [RESPKey] = []
+    ) {
         self.host = host
         self.port = port
         self.keySelector = keySelector
@@ -329,7 +338,18 @@ public struct MIGRATE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("MIGRATE", host, port, keySelector, destinationDb, timeout, RESPPureToken("COPY", copy), RESPPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
+        commandEncoder.encodeArray(
+            "MIGRATE",
+            host,
+            port,
+            keySelector,
+            destinationDb,
+            timeout,
+            RESPPureToken("COPY", copy),
+            RESPPureToken("REPLACE", replace),
+            authentication,
+            RESPWithToken("KEYS", keys)
+        )
     }
 }
 
@@ -469,7 +489,6 @@ public struct PTTL: RESPCommand {
 public struct RANDOMKEY: RESPCommand {
     public typealias Response = String?
 
-
     @inlinable public init() {
     }
 
@@ -524,7 +543,15 @@ public struct RESTORE: RESPCommand {
     public var seconds: Int? = nil
     public var frequency: Int? = nil
 
-    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+    @inlinable public init(
+        key: RESPKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -535,7 +562,16 @@ public struct RESTORE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("RESTORE", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+        commandEncoder.encodeArray(
+            "RESTORE",
+            key,
+            ttl,
+            serializedValue,
+            RESPPureToken("REPLACE", replace),
+            RESPPureToken("ABSTTL", absttl),
+            RESPWithToken("IDLETIME", seconds),
+            RESPWithToken("FREQ", frequency)
+        )
     }
 }
 
@@ -596,7 +632,15 @@ public struct SORT: RESPCommand {
     public var sorting: Bool = false
     public var destination: RESPKey? = nil
 
-    @inlinable public init(key: RESPKey, byPattern: String? = nil, limit: Limit? = nil, getPattern: [String] = [], order: Order? = nil, sorting: Bool = false, destination: RESPKey? = nil) {
+    @inlinable public init(
+        key: RESPKey,
+        byPattern: String? = nil,
+        limit: Limit? = nil,
+        getPattern: [String] = [],
+        order: Order? = nil,
+        sorting: Bool = false,
+        destination: RESPKey? = nil
+    ) {
         self.key = key
         self.byPattern = byPattern
         self.limit = limit
@@ -607,7 +651,16 @@ public struct SORT: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
+        commandEncoder.encodeArray(
+            "SORT",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPattern),
+            order,
+            RESPPureToken("ALPHA", sorting),
+            RESPWithToken("STORE", destination)
+        )
     }
 }
 
@@ -646,7 +699,14 @@ public struct SORTRO: RESPCommand {
     public var order: Order? = nil
     public var sorting: Bool = false
 
-    @inlinable public init(key: RESPKey, byPattern: String? = nil, limit: Limit? = nil, getPattern: [String] = [], order: Order? = nil, sorting: Bool = false) {
+    @inlinable public init(
+        key: RESPKey,
+        byPattern: String? = nil,
+        limit: Limit? = nil,
+        getPattern: [String] = [],
+        order: Order? = nil,
+        sorting: Bool = false
+    ) {
         self.key = key
         self.byPattern = byPattern
         self.limit = limit
@@ -656,7 +716,15 @@ public struct SORTRO: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting))
+        commandEncoder.encodeArray(
+            "SORT_RO",
+            key,
+            RESPWithToken("BY", byPattern),
+            RESPWithToken("LIMIT", limit),
+            RESPWithToken("GET", getPattern),
+            order,
+            RESPPureToken("ALPHA", sorting)
+        )
     }
 }
 
@@ -756,8 +824,7 @@ public struct WAITAOF: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Copies the value of a key to a new key.
     ///
     /// - Documentation: [COPY](https:/redis.io/docs/latest/commands/copy)
@@ -875,8 +942,30 @@ extension RedisConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(host: String, port: Int, keySelector: MIGRATE.KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATE.Authentication? = nil, keys: [RESPKey] = []) async throws -> String? {
-        try await send(command: MIGRATE(host: host, port: port, keySelector: keySelector, destinationDb: destinationDb, timeout: timeout, copy: copy, replace: replace, authentication: authentication, keys: keys))
+    public func migrate(
+        host: String,
+        port: Int,
+        keySelector: MIGRATE.KeySelector,
+        destinationDb: Int,
+        timeout: Int,
+        copy: Bool = false,
+        replace: Bool = false,
+        authentication: MIGRATE.Authentication? = nil,
+        keys: [RESPKey] = []
+    ) async throws -> String? {
+        try await send(
+            command: MIGRATE(
+                host: host,
+                port: port,
+                keySelector: keySelector,
+                destinationDb: destinationDb,
+                timeout: timeout,
+                copy: copy,
+                replace: replace,
+                authentication: authentication,
+                keys: keys
+            )
+        )
     }
 
     /// Moves a key to another database.
@@ -1081,8 +1170,26 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restore(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
-        try await send(command: RESTORE(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
+    public func restore(
+        key: RESPKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            command: RESTORE(
+                key: key,
+                ttl: ttl,
+                serializedValue: serializedValue,
+                replace: replace,
+                absttl: absttl,
+                seconds: seconds,
+                frequency: frequency
+            )
+        )
     }
 
     /// Iterates over the key names in the database.
@@ -1108,8 +1215,26 @@ extension RedisConnection {
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(key: RESPKey, byPattern: String? = nil, limit: SORT.Limit? = nil, getPattern: [String] = [], order: SORT.Order? = nil, sorting: Bool = false, destination: RESPKey? = nil) async throws -> RESPToken {
-        try await send(command: SORT(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting, destination: destination))
+    public func sort(
+        key: RESPKey,
+        byPattern: String? = nil,
+        limit: SORT.Limit? = nil,
+        getPattern: [String] = [],
+        order: SORT.Order? = nil,
+        sorting: Bool = false,
+        destination: RESPKey? = nil
+    ) async throws -> RESPToken {
+        try await send(
+            command: SORT(
+                key: key,
+                byPattern: byPattern,
+                limit: limit,
+                getPattern: getPattern,
+                order: order,
+                sorting: sorting,
+                destination: destination
+            )
+        )
     }
 
     /// Returns the sorted elements of a list, a set, or a sorted set.
@@ -1120,7 +1245,14 @@ extension RedisConnection {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(key: RESPKey, byPattern: String? = nil, limit: SORTRO.Limit? = nil, getPattern: [String] = [], order: SORTRO.Order? = nil, sorting: Bool = false) async throws -> [RESPToken] {
+    public func sortRo(
+        key: RESPKey,
+        byPattern: String? = nil,
+        limit: SORTRO.Limit? = nil,
+        getPattern: [String] = [],
+        order: SORTRO.Order? = nil,
+        sorting: Bool = false
+    ) async throws -> [RESPToken] {
         try await send(command: SORTRO(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
     }
 

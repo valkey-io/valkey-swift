@@ -23,11 +23,11 @@ import NIOTransportServices
 /// Connect to redis server.
 ///
 /// Supports TLS via both NIOSSL and Network framework.
-public struct RedisClient {
+public struct ValkeyClient {
     /// Server address
     let serverAddress: ServerAddress
     /// configuration
-    let configuration: RedisClientConfiguration
+    let configuration: ValkeyClientConfiguration
     /// EventLoopGroup to use
     let eventLoopGroup: EventLoopGroup
     /// Logger
@@ -43,7 +43,7 @@ public struct RedisClient {
     ///   - logger: Logger
     public init(
         _ address: ServerAddress,
-        configuration: RedisClientConfiguration = .init(),
+        configuration: ValkeyClientConfiguration = .init(),
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
     ) {
@@ -54,7 +54,7 @@ public struct RedisClient {
     }
 }
 
-extension RedisClient {
+extension ValkeyClient {
     /// Create connection and run operation using connection
     ///
     /// - Parameters:
@@ -62,9 +62,9 @@ extension RedisClient {
     ///   - operation: Closure handling redis connection
     public func withConnection<Value: Sendable>(
         logger: Logger,
-        operation: @escaping @Sendable (RedisConnection) async throws -> Value
+        operation: @escaping @Sendable (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
-        let redisConnection = RedisConnection(
+        let redisConnection = ValkeyConnection(
             address: self.serverAddress,
             configuration: self.configuration,
             eventLoopGroup: self.eventLoopGroup,

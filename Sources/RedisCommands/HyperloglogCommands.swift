@@ -76,7 +76,6 @@ public struct PFMERGE: RESPCommand {
 public struct PFSELFTEST: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -85,8 +84,7 @@ public struct PFSELFTEST: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [PFADD](https:/redis.io/docs/latest/commands/pfadd)

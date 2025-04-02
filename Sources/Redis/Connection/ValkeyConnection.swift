@@ -42,7 +42,7 @@ public struct ServerAddress: Sendable, Equatable {
 
 /// Single connection to a Redis database
 @_documentation(visibility: internal)
-public struct RedisConnection: Sendable {
+public struct ValkeyConnection: Sendable {
     enum Request {
         case command(ByteBuffer)
         case pipelinedCommands(ByteBuffer, Int)
@@ -55,7 +55,7 @@ public struct RedisConnection: Sendable {
     /// Logger used by Server
     let logger: Logger
     let eventLoopGroup: EventLoopGroup
-    let configuration: RedisClientConfiguration
+    let configuration: ValkeyClientConfiguration
     let address: ServerAddress
     #if canImport(Network)
     let tlsOptions: NWProtocolTLS.Options?
@@ -67,7 +67,7 @@ public struct RedisConnection: Sendable {
     /// Initialize Client
     public init(
         address: ServerAddress,
-        configuration: RedisClientConfiguration,
+        configuration: ValkeyClientConfiguration,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
     ) {
@@ -103,7 +103,7 @@ public struct RedisConnection: Sendable {
                                 } else {
                                     requestContinuation.finish()
                                     continuation.resume(
-                                        throwing: RedisClientError(
+                                        throwing: ValkeyClientError(
                                             .connectionClosed,
                                             message: "The connection to the Redis database was unexpectedly closed."
                                         )
@@ -120,7 +120,7 @@ public struct RedisConnection: Sendable {
                                         } else {
                                             requestContinuation.finish()
                                             continuation.resume(
-                                                throwing: RedisClientError(
+                                                throwing: ValkeyClientError(
                                                     .connectionClosed,
                                                     message: "The connection to the Redis database was unexpectedly closed."
                                                 )
@@ -136,7 +136,7 @@ public struct RedisConnection: Sendable {
                         } catch {
                             requestContinuation.finish()
                             continuation.resume(
-                                throwing: RedisClientError(
+                                throwing: ValkeyClientError(
                                     .connectionClosed,
                                     message: "The connection to the Redis database has shut down while processing a request."
                                 )
@@ -166,7 +166,7 @@ public struct RedisConnection: Sendable {
                 break
             case .dropped, .terminated:
                 continuation.resume(
-                    throwing: RedisClientError(
+                    throwing: ValkeyClientError(
                         .connectionClosed,
                         message: "Unable to enqueue request due to the connection being shutdown."
                     )
@@ -195,7 +195,7 @@ public struct RedisConnection: Sendable {
                 break
             case .dropped, .terminated:
                 continuation.resume(
-                    throwing: RedisClientError(
+                    throwing: ValkeyClientError(
                         .connectionClosed,
                         message: "Unable to enqueue request due to the connection being shutdown."
                     )
@@ -220,11 +220,11 @@ public struct RedisConnection: Sendable {
         try await outbound.write(encoder.buffer)
         let response = try await inboundIterator.next()
         guard let response else {
-            throw RedisClientError(.connectionClosed, message: "The connection to the Redis database was unexpectedly closed.")
+            throw ValkeyClientError(.connectionClosed, message: "The connection to the Redis database was unexpectedly closed.")
         }
         // if returned value is an error then throw that error
         if let value = response.errorString {
-            throw RedisClientError(.commandError, message: String(buffer: value))
+            throw ValkeyClientError(.commandError, message: String(buffer: value))
         }
     }
 

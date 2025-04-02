@@ -333,7 +333,14 @@ public struct LPOS: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
+        commandEncoder.encodeArray(
+            "LPOS",
+            key,
+            element,
+            RESPWithToken("RANK", rank),
+            RESPWithToken("COUNT", numMatches),
+            RESPWithToken("MAXLEN", len)
+        )
     }
 }
 
@@ -515,8 +522,7 @@ public struct RPUSHX: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
     ///
     /// - Documentation: [BLMOVE](https:/redis.io/docs/latest/commands/blmove)
@@ -527,7 +533,13 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the operation timed-out
     @inlinable
-    public func blmove(source: RESPKey, destination: RESPKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> String? {
+    public func blmove(
+        source: RESPKey,
+        destination: RESPKey,
+        wherefrom: BLMOVE.Wherefrom,
+        whereto: BLMOVE.Whereto,
+        timeout: Double
+    ) async throws -> String? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 

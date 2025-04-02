@@ -18,7 +18,7 @@ Swift-redis has three ways to send commands.
 
 ### Raw
 
-You can send raw commands using `RedisConnection.send()`. This takes a parameter pack of types that conform to `RESPRenderable`. These includes `Int`, `String`, `Double`, `RESPKey` and then `Optional` and `Array` where the internal type is also `RedisRenderable`. For example to set a value you can call
+You can send raw commands using `ValkeyConnection.send()`. This takes a parameter pack of types that conform to `RESPRenderable`. These includes `Int`, `String`, `Double`, `RESPKey` and then `Optional` and `Array` where the internal type is also `RedisRenderable`. For example to set a value you can call
 
 ```swift
 let key = RESPKey(rawValue: "MyKey")

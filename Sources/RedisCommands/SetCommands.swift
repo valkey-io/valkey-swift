@@ -308,8 +308,7 @@ public struct SUNIONSTORE: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [SADD](https:/redis.io/docs/latest/commands/sadd)

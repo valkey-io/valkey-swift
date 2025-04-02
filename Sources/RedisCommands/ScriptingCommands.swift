@@ -44,7 +44,6 @@ public enum FUNCTION {
     public struct DUMP: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -84,7 +83,6 @@ public enum FUNCTION {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -96,7 +94,6 @@ public enum FUNCTION {
     /// Terminates a function during execution.
     public struct KILL: RESPCommand {
         public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -174,7 +171,6 @@ public enum FUNCTION {
     /// Returns information about a function during execution.
     public struct STATS: RESPCommand {
         public typealias Response = [String: RESPToken]
-
 
         @inlinable public init() {
         }
@@ -263,7 +259,6 @@ public enum SCRIPT {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -275,7 +270,6 @@ public enum SCRIPT {
     /// Terminates a server-side Lua script during execution.
     public struct KILL: RESPCommand {
         public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -416,8 +410,7 @@ public struct FCALLRO: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Executes a server-side Lua script.
     ///
     /// - Documentation: [EVAL](https:/redis.io/docs/latest/commands/eval)

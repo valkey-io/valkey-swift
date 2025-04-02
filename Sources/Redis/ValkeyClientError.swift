@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Errors returned by ``RedisClient``
-public struct RedisClientError: Error, CustomStringConvertible {
+/// Errors returned by ``ValkeyClient``
+public struct ValkeyClientError: Error, CustomStringConvertible {
     public struct ErrorCode: Equatable, Sendable {
         fileprivate enum _Internal: Equatable, Sendable {
             case connectionClosed

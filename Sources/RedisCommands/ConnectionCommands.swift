@@ -56,7 +56,6 @@ public enum CLIENT {
     public struct GETNAME: RESPCommand {
         public typealias Response = String?
 
-
         @inlinable public init() {
         }
 
@@ -68,7 +67,6 @@ public enum CLIENT {
     /// Returns the client ID to which the connection's tracking notifications are redirected.
     public struct GETREDIR: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -82,7 +80,6 @@ public enum CLIENT {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -95,7 +92,6 @@ public enum CLIENT {
     public struct ID: RESPCommand {
         public typealias Response = Int
 
-
         @inlinable public init() {
         }
 
@@ -107,7 +103,6 @@ public enum CLIENT {
     /// Returns information about the connection.
     public struct INFO: RESPCommand {
         public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -405,7 +400,15 @@ public enum CLIENT {
         public var optout: Bool = false
         public var noloop: Bool = false
 
-        @inlinable public init(status: Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) {
+        @inlinable public init(
+            status: Status,
+            clientId: Int? = nil,
+            prefix: [String] = [],
+            bcast: Bool = false,
+            optin: Bool = false,
+            optout: Bool = false,
+            noloop: Bool = false
+        ) {
             self.status = status
             self.clientId = clientId
             self.prefix = prefix
@@ -416,14 +419,23 @@ public enum CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RESPPureToken("BCAST", bcast), RESPPureToken("OPTIN", optin), RESPPureToken("OPTOUT", optout), RESPPureToken("NOLOOP", noloop))
+            commandEncoder.encodeArray(
+                "CLIENT",
+                "TRACKING",
+                status,
+                RESPWithToken("REDIRECT", clientId),
+                RESPWithToken("PREFIX", prefix),
+                RESPPureToken("BCAST", bcast),
+                RESPPureToken("OPTIN", optin),
+                RESPPureToken("OPTOUT", optout),
+                RESPPureToken("NOLOOP", noloop)
+            )
         }
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
     public struct TRACKINGINFO: RESPCommand {
         public typealias Response = [String: RESPToken]
-
 
         @inlinable public init() {
         }
@@ -465,7 +477,6 @@ public enum CLIENT {
     /// Resumes processing commands from paused clients.
     public struct UNPAUSE: RESPCommand {
         public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -569,7 +580,6 @@ public struct PING: RESPCommand {
 public struct QUIT: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -581,7 +591,6 @@ public struct QUIT: RESPCommand {
 /// Resets the connection.
 public struct RESET: RESPCommand {
     public typealias Response = String
-
 
     @inlinable public init() {
     }
@@ -606,8 +615,7 @@ public struct SELECT: RESPCommand {
     }
 }
 
-
-extension RedisConnection {
+extension ValkeyConnection {
     /// Authenticates the connection.
     ///
     /// - Documentation: [AUTH](https:/redis.io/docs/latest/commands/auth)
@@ -803,8 +811,18 @@ extension RedisConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws -> RESPToken {
-        try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
+    public func clientTracking(
+        status: CLIENT.TRACKING.Status,
+        clientId: Int? = nil,
+        prefix: [String] = [],
+        bcast: Bool = false,
+        optin: Bool = false,
+        optout: Bool = false,
+        noloop: Bool = false
+    ) async throws -> RESPToken {
+        try await send(
+            command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
+        )
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
