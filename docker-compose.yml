@@ -1,13 +1,13 @@
 
 services:
-  redis:
-    image: redis:8.0-M03-alpine
+  valkey:
+    image: valkey/valkey:8.0
     ports:
       - 6379:6379
     healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      test: [ "CMD", "valkey-cli", "--raw", "incr", "ping" ]
     volumes:
-      - redis_data:/data
+      - valkey_data:/data
 
 volumes:
-  redis_data:
+  valkey_data:
