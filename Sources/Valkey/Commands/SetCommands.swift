@@ -56,7 +56,7 @@ public struct SCARD: RESPCommand {
 
 /// Returns the difference of multiple sets.
 public struct SDIFF: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken
 
     public var key: [RESPKey]
 
@@ -88,7 +88,7 @@ public struct SDIFFSTORE: RESPCommand {
 
 /// Returns the intersect of multiple sets.
 public struct SINTER: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken
 
     public var key: [RESPKey]
 
@@ -154,7 +154,7 @@ public struct SISMEMBER: RESPCommand {
 
 /// Returns all members of a set.
 public struct SMEMBERS: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken
 
     public var key: RESPKey
 
@@ -277,7 +277,7 @@ public struct SSCAN: RESPCommand {
 
 /// Returns the union of multiple sets.
 public struct SUNION: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken
 
     public var key: [RESPKey]
 
@@ -315,7 +315,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Categories: @write, @set, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
     public func sadd(key: RESPKey, member: [String]) async throws -> Int {
         try await send(command: SADD(key: key, member: member))
@@ -327,7 +327,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @set, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The cardinality (number of elements) of the set, or 0 if the key does not exist.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the cardinality (number of elements) of the set, or `0` if the key does not exist.
     @inlinable
     public func scard(key: RESPKey) async throws -> Int {
         try await send(command: SCARD(key: key))
@@ -339,9 +339,9 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Categories: @read, @set, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
+    /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sdiff(key: [RESPKey]) async throws -> [RESPToken] {
+    public func sdiff(key: [RESPKey]) async throws -> RESPToken {
         try await send(command: SDIFF(key: key))
     }
 
@@ -351,7 +351,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Categories: @write, @set, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting set.
     @inlinable
     public func sdiffstore(destination: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: SDIFFSTORE(destination: destination, key: key))
@@ -363,9 +363,9 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Categories: @read, @set, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
+    /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sinter(key: [RESPKey]) async throws -> [RESPToken] {
+    public func sinter(key: [RESPKey]) async throws -> RESPToken {
         try await send(command: SINTER(key: key))
     }
 
@@ -375,7 +375,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Categories: @read, @set, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting intersection.
     @inlinable
     public func sintercard(key: [RESPKey], limit: Int? = nil) async throws -> Int {
         try await send(command: SINTERCARD(key: key, limit: limit))
@@ -387,7 +387,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Categories: @write, @set, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting set.
     @inlinable
     public func sinterstore(destination: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: SINTERSTORE(destination: destination, key: key))
@@ -400,8 +400,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @read, @set, @fast
     /// - Returns: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the element is not a member of the set, or when the key does not exist.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the element is a member of the set.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the element is not a member of the set, or when the key does not exist.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the element is a member of the set.
     @inlinable
     public func sismember(key: RESPKey, member: String) async throws -> Int {
         try await send(command: SISMEMBER(key: key, member: member))
@@ -413,9 +413,9 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the set cardinality.
     /// - Categories: @read, @set, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): all members of the set.
+    /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): all members of the set.
     @inlinable
-    public func smembers(key: RESPKey) async throws -> [RESPToken] {
+    public func smembers(key: RESPKey) async throws -> RESPToken {
         try await send(command: SMEMBERS(key: key))
     }
 
@@ -425,7 +425,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of elements being checked for membership
     /// - Categories: @read, @set, @fast
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
     public func smismember(key: RESPKey, member: [String]) async throws -> [RESPToken] {
         try await send(command: SMISMEMBER(key: key, member: member))
@@ -438,8 +438,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @write, @set, @fast
     /// - Returns: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the element is moved.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the element is not a member of _source_ and no operation was performed.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the element is moved.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the element is not a member of _source_ and no operation was performed.
     @inlinable
     public func smove(source: RESPKey, destination: RESPKey, member: String) async throws -> Int {
         try await send(command: SMOVE(source: source, destination: destination, member: member))
@@ -452,9 +452,9 @@ extension ValkeyConnection {
     /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the value of the passed count.
     /// - Categories: @write, @set, @fast
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the removed member.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of the removed members.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
+    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): when called without the _count_ argument, the removed member.
+    ///     * [Set](https:/valkey.io/topics/protocol/#sets): when called with the _count_ argument, the set of removed members.
     @inlinable
     public func spop(key: RESPKey, count: Int? = nil) async throws -> RESPToken {
         try await send(command: SPOP(key: key, count: count))
@@ -467,8 +467,8 @@ extension ValkeyConnection {
     /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the absolute value of the passed count.
     /// - Categories: @read, @set, @slow
     /// - Returns: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or a [Null](https:/redis.io/docs/reference/protocol-spec#nulls) when _key_ doesn't exist.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the optional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist.
+    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or a [Null](https:/valkey.io/topics/protocol/#nulls) when _key_ doesn't exist.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when the optional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist.
     @inlinable
     public func srandmember(key: RESPKey, count: Int? = nil) async throws -> RESPToken {
         try await send(command: SRANDMEMBER(key: key, count: count))
@@ -480,7 +480,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of members to be removed.
     /// - Categories: @write, @set, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members that were removed from the set, not including non existing members.
     @inlinable
     public func srem(key: RESPKey, member: [String]) async throws -> Int {
         try await send(command: SREM(key: key, member: member))
@@ -492,9 +492,9 @@ extension ValkeyConnection {
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Categories: @read, @set, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): specifically, an array with two elements:
-    ///     * The first element is a [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) that represents an unsigned 64-bit number, the cursor.
-    ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) with the names of scanned members.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): specifically, an array with two elements:
+    ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
+    ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) with the names of scanned members.
     @inlinable
     public func sscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: SSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
@@ -506,9 +506,9 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Categories: @read, @set, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
+    /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sunion(key: [RESPKey]) async throws -> [RESPToken] {
+    public func sunion(key: [RESPKey]) async throws -> RESPToken {
         try await send(command: SUNION(key: key))
     }
 
@@ -518,7 +518,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Categories: @write, @set, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting set.
     @inlinable
     public func sunionstore(destination: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: SUNIONSTORE(destination: destination, key: key))

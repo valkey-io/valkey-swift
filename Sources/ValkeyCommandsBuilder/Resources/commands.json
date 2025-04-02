@@ -356,7 +356,7 @@
         "summary": "Appends a string to the value of a key. Creates the key if it doesn't exist.",
         "since": "2.0.0",
         "group": "string",
-        "complexity": "O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by Redis will double the free space available on every reallocation.",
+        "complexity": "O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by Valkey will double the free space available on every reallocation.",
         "acl_categories": [
             "@write",
             "@string",
@@ -2375,7 +2375,7 @@
         ]
     },
     "CLUSTER": {
-        "summary": "A container for Redis Cluster commands.",
+        "summary": "A container for Valkey Cluster commands.",
         "since": "3.0.0",
         "group": "cluster",
         "complexity": "Depends on subcommand.",
@@ -3099,7 +3099,7 @@
         "summary": "Returns detailed information about all commands.",
         "since": "2.8.13",
         "group": "server",
-        "complexity": "O(N) where N is the total number of Redis commands",
+        "complexity": "O(N) where N is the total number of Valkey commands",
         "acl_categories": [
             "@slow",
             "@connection"
@@ -3265,7 +3265,7 @@
         "summary": "Returns a list of command names.",
         "since": "7.0.0",
         "group": "server",
-        "complexity": "O(N) where N is the total number of Redis commands",
+        "complexity": "O(N) where N is the total number of Valkey commands",
         "acl_categories": [
             "@slow",
             "@connection"
@@ -3744,7 +3744,7 @@
         "summary": "Returns a serialized representation of the value stored at a key.",
         "since": "2.6.0",
         "group": "generic",
-        "complexity": "O(1) to access the key and additional O(N*M) to serialize it, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).",
+        "complexity": "O(1) to access the key and additional O(N*M) to serialize it, where N is the number of Valkey objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).",
         "acl_categories": [
             "@keyspace",
             "@read",
@@ -6825,7 +6825,7 @@
         ]
     },
     "HELLO": {
-        "summary": "Handshakes with the Redis server.",
+        "summary": "Handshakes with the Valkey server.",
         "since": "6.0.0",
         "group": "connection",
         "complexity": "O(1)",
@@ -8541,7 +8541,7 @@
         ]
     },
     "LOLWUT": {
-        "summary": "Displays computer art and the Redis version",
+        "summary": "Displays computer art and the Valkey version",
         "since": "5.0.0",
         "group": "server",
         "acl_categories": [
@@ -9197,7 +9197,7 @@
         ]
     },
     "MIGRATE": {
-        "summary": "Atomically transfers a key from one Redis instance to another.",
+        "summary": "Atomically transfers a key from one Valkey instance to another.",
         "since": "2.6.0",
         "group": "generic",
         "complexity": "This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.",
@@ -9736,7 +9736,7 @@
         "arity": -2
     },
     "OBJECT ENCODING": {
-        "summary": "Returns the internal encoding of a Redis object.",
+        "summary": "Returns the internal encoding of a Valkey object.",
         "since": "2.2.3",
         "group": "generic",
         "complexity": "O(1)",
@@ -9781,7 +9781,7 @@
         ]
     },
     "OBJECT FREQ": {
-        "summary": "Returns the logarithmic access frequency counter of a Redis object.",
+        "summary": "Returns the logarithmic access frequency counter of a Valkey object.",
         "since": "4.0.0",
         "group": "generic",
         "complexity": "O(1)",
@@ -9841,7 +9841,7 @@
         ]
     },
     "OBJECT IDLETIME": {
-        "summary": "Returns the time since the last access to a Redis object.",
+        "summary": "Returns the time since the last access to a Valkey object.",
         "since": "2.2.3",
         "group": "generic",
         "complexity": "O(1)",
@@ -10864,7 +10864,7 @@
         ]
     },
     "READONLY": {
-        "summary": "Enables read-only queries for a connection to a Redis Cluster replica node.",
+        "summary": "Enables read-only queries for a connection to a Valkey Cluster replica node.",
         "since": "3.0.0",
         "group": "cluster",
         "complexity": "O(1)",
@@ -11143,7 +11143,7 @@
         "summary": "Creates a key from the serialized representation of a value.",
         "since": "2.6.0",
         "group": "generic",
-        "complexity": "O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).",
+        "complexity": "O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Valkey objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).",
         "history": [
             [
                 "3.0.0",
@@ -11244,7 +11244,7 @@
         "summary": "An internal command for migrating keys in a cluster.",
         "since": "3.0.0",
         "group": "server",
-        "complexity": "O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).",
+        "complexity": "O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Valkey objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).",
         "history": [
             [
                 "3.0.0",
@@ -12467,7 +12467,7 @@
         ]
     },
     "SHUTDOWN": {
-        "summary": "Synchronously saves the database(s) to disk and shuts down the Redis server.",
+        "summary": "Synchronously saves the database(s) to disk and shuts down the Valkey server.",
         "since": "1.0.0",
         "group": "server",
         "complexity": "O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)",
@@ -12759,7 +12759,7 @@
         ]
     },
     "SLAVEOF": {
-        "summary": "Sets a Redis server as a replica of another, or promotes it to being a master.",
+        "summary": "Sets a Valkey server as a replica of another, or promotes it to being a master.",
         "since": "1.0.0",
         "group": "server",
         "complexity": "O(1)",
@@ -13982,7 +13982,7 @@
         ]
     },
     "SWAPDB": {
-        "summary": "Swaps two Redis databases.",
+        "summary": "Swaps two Valkey databases.",
         "since": "4.0.0",
         "group": "server",
         "complexity": "O(N) where N is the count of clients watching or blocking on keys from both databases.",

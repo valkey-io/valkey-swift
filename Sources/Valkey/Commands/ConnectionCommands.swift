@@ -508,7 +508,7 @@ public struct ECHO: RESPCommand {
     }
 }
 
-/// Handshakes with the Redis server.
+/// Handshakes with the Valkey server.
 public struct HELLO: RESPCommand {
     public struct ArgumentsAuth: RESPRenderable {
         @usableFromInline let username: String
@@ -613,7 +613,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of passwords defined for the user
     /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
     @inlinable
     public func auth(username: String? = nil, password: String) async throws -> RESPToken {
         try await send(command: AUTH(username: username, password: password))
@@ -625,7 +625,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` or an error if the argument is not "yes" or "no".
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` or an error if the argument is not "yes" or "no".
     @inlinable
     public func clientCaching(mode: CLIENT.CACHING.Mode) async throws -> RESPToken {
         try await send(command: CLIENT.CACHING(mode: mode))
@@ -638,8 +638,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
     /// - Returns: One of the following:
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the connection name of the current connection.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the connection name was not set.
+    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the connection name of the current connection.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the connection name was not set.
     @inlinable
     public func clientGetname() async throws -> String? {
         try await send(command: CLIENT.GETNAME())
@@ -652,9 +652,9 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
     /// - Returns: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` when not redirecting notifications to any client.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` if client tracking is not enabled.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the ID of the client to which notification are being redirected.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` when not redirecting notifications to any client.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` if client tracking is not enabled.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the ID of the client to which notification are being redirected.
     @inlinable
     public func clientGetredir() async throws -> Int {
         try await send(command: CLIENT.GETREDIR())
@@ -666,7 +666,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of subcommands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
     @inlinable
     public func clientHelp() async throws -> [RESPToken] {
         try await send(command: CLIENT.HELP())
@@ -678,7 +678,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the ID of the client.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the ID of the client.
     @inlinable
     public func clientId() async throws -> Int {
         try await send(command: CLIENT.ID())
@@ -690,7 +690,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a unique string for the current client, as described at the `CLIENT LIST` page.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a unique string for the current client, as described at the `CLIENT LIST` page.
     @inlinable
     public func clientInfo() async throws -> String {
         try await send(command: CLIENT.INFO())
@@ -703,8 +703,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N) where N is the number of client connections
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: One of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when called in 3 argument format and the connection has been closed.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when called in filter/value format, the number of clients killed.
+    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when called in 3 argument format and the connection has been closed.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): when called in filter/value format, the number of clients killed.
     @inlinable
     public func clientKill(filter: CLIENT.KILL.Filter) async throws -> Int? {
         try await send(command: CLIENT.KILL(filter: filter))
@@ -716,7 +716,7 @@ extension ValkeyConnection {
     /// - Version: 2.4.0
     /// - Complexity: O(N) where N is the number of client connections
     /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): information and statistics about client connections.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): information and statistics about client connections.
     @inlinable
     public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = []) async throws -> String {
         try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId))
@@ -728,7 +728,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func clientNoEvict(enabled: CLIENT.NOEVICT.Enabled) async throws -> RESPToken {
         try await send(command: CLIENT.NOEVICT(enabled: enabled))
@@ -740,7 +740,7 @@ extension ValkeyConnection {
     /// - Version: 7.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func clientNoTouch(enabled: CLIENT.NOTOUCH.Enabled) async throws -> RESPToken {
         try await send(command: CLIENT.NOTOUCH(enabled: enabled))
@@ -752,7 +752,7 @@ extension ValkeyConnection {
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` or an error if the timeout is invalid.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` or an error if the timeout is invalid.
     @inlinable
     public func clientPause(timeout: Int, mode: CLIENT.PAUSE.Mode? = nil) async throws -> RESPToken {
         try await send(command: CLIENT.PAUSE(timeout: timeout, mode: mode))
@@ -764,7 +764,7 @@ extension ValkeyConnection {
     /// - Version: 3.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when called with `ON`. When called with either `OFF` or `SKIP` sub-commands, no reply is made.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when called with `ON`. When called with either `OFF` or `SKIP` sub-commands, no reply is made.
     @inlinable
     public func clientReply(action: CLIENT.REPLY.Action) async throws -> RESPToken {
         try await send(command: CLIENT.REPLY(action: action))
@@ -776,7 +776,7 @@ extension ValkeyConnection {
     /// - Version: 7.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the attribute name was successfully set.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the attribute name was successfully set.
     @inlinable
     public func clientSetinfo(attr: CLIENT.SETINFO.Attr) async throws -> RESPToken {
         try await send(command: CLIENT.SETINFO(attr: attr))
@@ -788,7 +788,7 @@ extension ValkeyConnection {
     /// - Version: 2.6.9
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection name was successfully set.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection name was successfully set.
     @inlinable
     public func clientSetname(connectionName: String) async throws -> RESPToken {
         try await send(command: CLIENT.SETNAME(connectionName: connectionName))
@@ -800,7 +800,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(1). Some options may introduce additional complexity.
     /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
     public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws -> RESPToken {
         try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
@@ -812,7 +812,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of tracking information sections and their respective values.
+    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of tracking information sections and their respective values.
     @inlinable
     public func clientTrackinginfo() async throws -> [String: RESPToken] {
         try await send(command: CLIENT.TRACKINGINFO())
@@ -825,8 +825,8 @@ extension ValkeyConnection {
     /// - Complexity: O(log N) where N is the number of client connections
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the client was unblocked successfully.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the client wasn't unblocked.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the client was unblocked successfully.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the client wasn't unblocked.
     @inlinable
     public func clientUnblock(clientId: Int, unblockType: CLIENT.UNBLOCK.UnblockType? = nil) async throws -> Int {
         try await send(command: CLIENT.UNBLOCK(clientId: clientId, unblockType: unblockType))
@@ -838,7 +838,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(N) Where N is the number of paused clients
     /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func clientUnpause() async throws -> RESPToken {
         try await send(command: CLIENT.UNPAUSE())
@@ -850,20 +850,20 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the given string.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the given string.
     @inlinable
     public func echo(message: String) async throws -> String {
         try await send(command: ECHO(message: message))
     }
 
-    /// Handshakes with the Redis server.
+    /// Handshakes with the Valkey server.
     ///
     /// - Documentation: [HELLO](https:/valkey.io/commands/hello)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of server properties.
-    ///     [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): if the `protover` requested does not exist.
+    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of server properties.
+    ///     [Simple error](https:/valkey.io/topics/protocol/#simple-errors): if the `protover` requested does not exist.
     @inlinable
     public func hello(arguments: HELLO.Arguments? = nil) async throws -> [String: RESPToken] {
         try await send(command: HELLO(arguments: arguments))
@@ -876,8 +876,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
     /// - Returns: Any of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `PONG` when no argument is provided.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the provided argument.
+    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `PONG` when no argument is provided.
+    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the provided argument.
     @inlinable
     public func ping(message: String? = nil) async throws -> String {
         try await send(command: PING(message: message))
@@ -889,7 +889,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func quit() async throws -> RESPToken {
         try await send(command: QUIT())
@@ -901,7 +901,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `RESET`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `RESET`.
     @inlinable
     public func reset() async throws -> String {
         try await send(command: RESET())
@@ -913,7 +913,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func select(index: Int) async throws -> RESPToken {
         try await send(command: SELECT(index: index))

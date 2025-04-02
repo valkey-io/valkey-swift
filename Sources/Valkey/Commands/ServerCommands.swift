@@ -943,7 +943,7 @@ public struct LASTSAVE: RESPCommand {
     }
 }
 
-/// Displays computer art and the Redis version
+/// Displays computer art and the Valkey version
 public struct LOLWUT: RESPCommand {
     public typealias Response = String
 
@@ -1105,7 +1105,7 @@ public struct SAVE: RESPCommand {
     }
 }
 
-/// Synchronously saves the database(s) to disk and shuts down the Redis server.
+/// Synchronously saves the database(s) to disk and shuts down the Valkey server.
 public struct SHUTDOWN: RESPCommand {
     public enum SaveSelector: RESPRenderable {
         case nosave
@@ -1138,7 +1138,7 @@ public struct SHUTDOWN: RESPCommand {
     }
 }
 
-/// Sets a Redis server as a replica of another, or promotes it to being a master.
+/// Sets a Valkey server as a replica of another, or promotes it to being a master.
 public struct SLAVEOF: RESPCommand {
     public struct ArgsHostPort: RESPRenderable {
         @usableFromInline let host: String
@@ -1189,7 +1189,7 @@ public struct SLAVEOF: RESPCommand {
     }
 }
 
-/// Swaps two Redis databases.
+/// Swaps two Valkey databases.
 public struct SWAPDB: RESPCommand {
     public typealias Response = RESPToken
 
@@ -1241,8 +1241,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1) since the categories and commands are a fixed set.
     /// - Categories: @slow
     /// - Returns: One of the following:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements representing ACL categories or commands in a given category.
-    ///     * [Simple error](https:/redis.io/docs/reference/protocol-spec#simple-errors): the command returns an error if an invalid category name is given.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) elements representing ACL categories or commands in a given category.
+    ///     * [Simple error](https:/valkey.io/topics/protocol/#simple-errors): the command returns an error if an invalid category name is given.
     @inlinable
     public func aclCat(category: String? = nil) async throws -> [String] {
         try await send(command: ACL.CAT(category: category))
@@ -1254,7 +1254,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(1) amortized time considering the typical user.
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
     @inlinable
     public func aclDeluser(username: [String]) async throws -> Int {
         try await send(command: ACL.DELUSER(username: username))
@@ -1267,8 +1267,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1).
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: Any of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): an error describing why the user can't execute the command.
+    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
+    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
     public func aclDryrun(username: String, command: String, arg: [String] = []) async throws -> String? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
@@ -1280,7 +1280,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
     public func aclGenpass(bits: Int? = nil) async throws -> String {
         try await send(command: ACL.GENPASS(bits: bits))
@@ -1293,8 +1293,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: One of the following:
-    ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a set of ACL rule definitions for the user
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if user does not exist.
+    ///     * [Map](https:/valkey.io/topics/protocol/#maps): a set of ACL rule definitions for the user
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if user does not exist.
     @inlinable
     public func aclGetuser(username: String) async throws -> [String: RESPToken]? {
         try await send(command: ACL.GETUSER(username: username))
@@ -1306,7 +1306,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of subcommands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
     @inlinable
     public func aclHelp() async throws -> [RESPToken] {
         try await send(command: ACL.HELP())
@@ -1318,7 +1318,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) elements.
     @inlinable
     public func aclList() async throws -> [String] {
         try await send(command: ACL.LIST())
@@ -1330,7 +1330,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
     ///     
     ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
@@ -1346,9 +1346,9 @@ extension ValkeyConnection {
     /// - Complexity: O(N) with N being the number of entries shown.
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: When called to show security events:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) elements representing ACL security events.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) elements representing ACL security events.
     ///     When called with `RESET`:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the security log was cleared.
+    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the security log was cleared.
     @inlinable
     public func aclLog(operation: ACL.LOG.Operation? = nil) async throws -> [String]? {
         try await send(command: ACL.LOG(operation: operation))
@@ -1360,7 +1360,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     ///     The command may fail with an error for several reasons: if the file cannot be written or if the server is not configured to use an external ACL file.
     @inlinable
     public func aclSave() async throws -> RESPToken {
@@ -1373,7 +1373,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of rules provided.
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     ///     If the rules contain errors, the error is returned.
     @inlinable
     public func aclSetuser(username: String, rule: [String] = []) async throws -> RESPToken {
@@ -1386,7 +1386,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): list of existing ACL users.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): list of existing ACL users.
     @inlinable
     public func aclUsers() async throws -> [RESPToken] {
         try await send(command: ACL.USERS())
@@ -1398,7 +1398,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the username of the current connection.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the username of the current connection.
     @inlinable
     public func aclWhoami() async throws -> String {
         try await send(command: ACL.WHOAMI())
@@ -1410,7 +1410,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
     ///     
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
@@ -1425,8 +1425,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: One of the following:
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `Background saving started`.
-    ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `Background saving scheduled`.
+    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `Background saving started`.
+    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `Background saving scheduled`.
     @inlinable
     public func bgsave(schedule: Bool = false) async throws -> String {
         try await send(command: BGSAVE(schedule: schedule))
@@ -1436,9 +1436,9 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [COMMAND](https:/valkey.io/commands/command)
     /// - Version: 2.8.13
-    /// - Complexity: O(N) where N is the total number of Redis commands
+    /// - Complexity: O(N) where N is the total number of Valkey commands
     /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details. The order of the commands in the array is random.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of command details. The order of the commands in the array is random.
     @inlinable
     public func command() async throws -> [RESPToken] {
         try await send(command: COMMAND())
@@ -1450,7 +1450,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of commands returned by `COMMAND`.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of commands returned by `COMMAND`.
     @inlinable
     public func commandCount() async throws -> Int {
         try await send(command: COMMAND.COUNT())
@@ -1462,7 +1462,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of commands to look up
     /// - Categories: @slow, @connection
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is the documentary information.
+    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
     public func commandDocs(commandName: [String] = []) async throws -> [String: RESPToken] {
         try await send(command: COMMAND.DOCS(commandName: commandName))
@@ -1474,7 +1474,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys from the given command.
     @inlinable
     public func commandGetkeys(command: String, arg: [String] = []) async throws -> [RESPToken] {
         try await send(command: COMMAND.GETKEYS(command: command, arg: arg))
@@ -1486,7 +1486,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of keys from the given command and their usage flags.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys from the given command and their usage flags.
     @inlinable
     public func commandGetkeysandflags(command: String, arg: [String] = []) async throws -> [RESPToken] {
         try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, arg: arg))
@@ -1498,7 +1498,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func commandHelp() async throws -> [RESPToken] {
         try await send(command: COMMAND.HELP())
@@ -1510,7 +1510,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(N) where N is the number of commands to look up
     /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a nested list of command details.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of command details.
     @inlinable
     public func commandInfo(commandName: [String] = []) async throws -> [RESPToken] {
         try await send(command: COMMAND.INFO(commandName: commandName))
@@ -1520,9 +1520,9 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [COMMAND LIST](https:/valkey.io/commands/command-list)
     /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the total number of Redis commands
+    /// - Complexity: O(N) where N is the total number of Valkey commands
     /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of command names.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of command names.
     @inlinable
     public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> [RESPToken] {
         try await send(command: COMMAND.LIST(filterby: filterby))
@@ -1534,7 +1534,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a list of configuration parameters matching the provided arguments.
+    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
     public func configGet(parameter: [String]) async throws -> [String: RESPToken] {
         try await send(command: CONFIG.GET(parameter: parameter))
@@ -1546,7 +1546,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func configHelp() async throws -> [RESPToken] {
         try await send(command: CONFIG.HELP())
@@ -1558,7 +1558,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func configResetstat() async throws -> RESPToken {
         try await send(command: CONFIG.RESETSTAT())
@@ -1570,7 +1570,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was rewritten properly. Otherwise an error is returned.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when the configuration was rewritten properly. Otherwise an error is returned.
     @inlinable
     public func configRewrite() async throws -> RESPToken {
         try await send(command: CONFIG.REWRITE())
@@ -1582,7 +1582,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
     public func configSet(data: [CONFIG.SET.Data]) async throws -> RESPToken {
         try await send(command: CONFIG.SET(data: data))
@@ -1594,7 +1594,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of keys in the currently-selected database.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of keys in the currently-selected database.
     @inlinable
     public func dbsize() async throws -> Int {
         try await send(command: DBSIZE())
@@ -1606,7 +1606,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the command was accepted and a coordinated failover is in progress. An error if the operation cannot be executed.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was accepted and a coordinated failover is in progress. An error if the operation cannot be executed.
     @inlinable
     public func failover(target: FAILOVER.Target? = nil, abort: Bool = false, milliseconds: Int? = nil) async throws -> RESPToken {
         try await send(command: FAILOVER(target: target, abort: abort, milliseconds: milliseconds))
@@ -1618,7 +1618,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of keys in all databases
     /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func flushall(flushType: FLUSHALL.FlushType? = nil) async throws -> RESPToken {
         try await send(command: FLUSHALL(flushType: flushType))
@@ -1630,7 +1630,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of keys in the selected database
     /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func flushdb(flushType: FLUSHDB.FlushType? = nil) async throws -> RESPToken {
         try await send(command: FLUSHDB(flushType: flushType))
@@ -1642,7 +1642,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
     ///     
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
@@ -1656,7 +1656,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @fast, @dangerous
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): UNIX TIME of the last DB save executed with success.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): UNIX TIME of the last DB save executed with success.
     @inlinable
     public func lastsave() async throws -> Int {
         try await send(command: LASTSAVE())
@@ -1668,7 +1668,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a human readable latency analysis report.
+    /// - Returns: [Verbatim string](https:/valkey.io/topics/protocol/#verbatim-strings): a human readable latency analysis report.
     @inlinable
     public func latencyDoctor() async throws -> String {
         try await send(command: LATENCY.DOCTOR())
@@ -1680,7 +1680,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): Latency graph
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): Latency graph
     @inlinable
     public func latencyGraph(event: String) async throws -> String {
         try await send(command: LATENCY.GRAPH(event: event))
@@ -1692,7 +1692,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func latencyHelp() async throws -> [RESPToken] {
         try await send(command: LATENCY.HELP())
@@ -1704,7 +1704,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
+    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
     public func latencyHistogram(command: [String] = []) async throws -> [String: RESPToken] {
         try await send(command: LATENCY.HISTOGRAM(command: command))
@@ -1716,7 +1716,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array where each element is a two elements array representing the timestamp and the latency of the event.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing the timestamp and the latency of the event.
     @inlinable
     public func latencyHistory(event: String) async throws -> [RESPToken] {
         try await send(command: LATENCY.HISTORY(event: event))
@@ -1728,7 +1728,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.
     @inlinable
     public func latencyLatest() async throws -> [RESPToken] {
         try await send(command: LATENCY.LATEST())
@@ -1740,18 +1740,18 @@ extension ValkeyConnection {
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of event time series that were reset.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of event time series that were reset.
     @inlinable
     public func latencyReset(event: [String] = []) async throws -> Int {
         try await send(command: LATENCY.RESET(event: event))
     }
 
-    /// Displays computer art and the Redis version
+    /// Displays computer art and the Valkey version
     ///
     /// - Documentation: [LOLWUT](https:/valkey.io/commands/lolwut)
     /// - Version: 5.0.0
     /// - Categories: @read, @fast
-    /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a string containing generative computer art and the Redis version.
+    /// - Returns: [Verbatim string](https:/valkey.io/topics/protocol/#verbatim-strings): a string containing generative computer art and the Valkey version.
     @inlinable
     public func lolwut(version: Int? = nil) async throws -> String {
         try await send(command: LOLWUT(version: version))
@@ -1763,7 +1763,7 @@ extension ValkeyConnection {
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a memory problems report.
+    /// - Returns: [Verbatim string](https:/valkey.io/topics/protocol/#verbatim-strings): a memory problems report.
     @inlinable
     public func memoryDoctor() async throws -> String {
         try await send(command: MEMORY.DOCTOR())
@@ -1775,7 +1775,7 @@ extension ValkeyConnection {
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func memoryHelp() async throws -> [RESPToken] {
         try await send(command: MEMORY.HELP())
@@ -1787,7 +1787,7 @@ extension ValkeyConnection {
     /// - Version: 4.0.0
     /// - Complexity: Depends on how much memory is allocated, could be slow
     /// - Categories: @slow
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The memory allocator's internal statistics report.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the memory allocator's internal statistics report.
     @inlinable
     public func memoryMallocStats() async throws -> String {
         try await send(command: MEMORY.MALLOCSTATS())
@@ -1799,7 +1799,7 @@ extension ValkeyConnection {
     /// - Version: 4.0.0
     /// - Complexity: Depends on how much memory is allocated, could be slow
     /// - Categories: @slow
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func memoryPurge() async throws -> RESPToken {
         try await send(command: MEMORY.PURGE())
@@ -1811,7 +1811,7 @@ extension ValkeyConnection {
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): memory usage metrics and their values.
+    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): memory usage metrics and their values.
     @inlinable
     public func memoryStats() async throws -> [String: RESPToken] {
         try await send(command: MEMORY.STATS())
@@ -1824,8 +1824,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N) where N is the number of samples.
     /// - Categories: @read, @slow
     /// - Returns: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the memory usage in bytes.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the memory usage in bytes.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
     @inlinable
     public func memoryUsage(key: RESPKey, count: Int? = nil) async throws -> Int? {
         try await send(command: MEMORY.USAGE(key: key, count: count))
@@ -1837,7 +1837,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions
     @inlinable
     public func moduleHelp() async throws -> [RESPToken] {
         try await send(command: MODULE.HELP())
@@ -1849,7 +1849,7 @@ extension ValkeyConnection {
     /// - Version: 4.0.0
     /// - Complexity: O(N) where N is the number of loaded modules.
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): list of loaded modules. Each element in the list represents a represents a module, and is a [Map](https:/redis.io/docs/reference/protocol-spec#maps) of property names and their values. The following properties is reported for each loaded module:
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): list of loaded modules. Each element in the list represents a represents a module, and is a [Map](https:/valkey.io/topics/protocol/#maps) of property names and their values. The following properties is reported for each loaded module:
     ///     * name: the name of the module.
     ///     * ver: the version of the module.
     @inlinable
@@ -1863,7 +1863,7 @@ extension ValkeyConnection {
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the module was loaded.
     @inlinable
     public func moduleLoad(path: String, arg: [String] = []) async throws -> RESPToken {
         try await send(command: MODULE.LOAD(path: path, arg: arg))
@@ -1875,7 +1875,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was loaded.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the module was loaded.
     @inlinable
     public func moduleLoadex(path: String, configs: [MODULE.LOADEX.Configs] = [], args: [String] = []) async throws -> RESPToken {
         try await send(command: MODULE.LOADEX(path: path, configs: configs, args: args))
@@ -1887,7 +1887,7 @@ extension ValkeyConnection {
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the module was unloaded.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the module was unloaded.
     @inlinable
     public func moduleUnload(name: String) async throws -> RESPToken {
         try await send(command: MODULE.UNLOAD(name: name))
@@ -1909,7 +1909,7 @@ extension ValkeyConnection {
     /// - Documentation: [PSYNC](https:/valkey.io/commands/psync)
     /// - Version: 2.8.0
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
+    /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the primary.
     @inlinable
     public func psync(replicationid: String, offset: Int) async throws -> RESPToken {
         try await send(command: PSYNC(replicationid: replicationid, offset: offset))
@@ -1921,7 +1921,7 @@ extension ValkeyConnection {
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func replconf() async throws -> RESPToken {
         try await send(command: REPLCONF())
@@ -1933,7 +1933,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func replicaof(args: REPLICAOF.Args) async throws -> RESPToken {
         try await send(command: REPLICAOF(args: args))
@@ -1943,9 +1943,9 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [RESTORE-ASKING](https:/valkey.io/commands/restore-asking)
     /// - Version: 3.0.0
-    /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
+    /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Valkey objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func restoreAsking(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
         try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
@@ -1957,7 +1957,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.12
     /// - Complexity: O(1)
     /// - Categories: @admin, @fast, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): where the first element is one of `master`, `slave`, or `sentinel`, and the additional elements are role-specific as illustrated above.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): where the first element is one of `master`, `slave`, or `sentinel`, and the additional elements are role-specific as illustrated above.
     @inlinable
     public func role() async throws -> [RESPToken] {
         try await send(command: ROLE())
@@ -1969,31 +1969,31 @@ extension ValkeyConnection {
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of keys in all databases
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func save() async throws -> RESPToken {
         try await send(command: SAVE())
     }
 
-    /// Synchronously saves the database(s) to disk and shuts down the Redis server.
+    /// Synchronously saves the database(s) to disk and shuts down the Valkey server.
     ///
     /// - Documentation: [SHUTDOWN](https:/valkey.io/commands/shutdown)
     /// - Version: 1.0.0
     /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
     public func shutdown(saveSelector: SHUTDOWN.SaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) async throws -> RESPToken {
         try await send(command: SHUTDOWN(saveSelector: saveSelector, now: now, force: force, abort: abort))
     }
 
-    /// Sets a Redis server as a replica of another, or promotes it to being a master.
+    /// Sets a Valkey server as a replica of another, or promotes it to being a master.
     ///
     /// - Documentation: [SLAVEOF](https:/valkey.io/commands/slaveof)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func slaveof(args: SLAVEOF.Args) async throws -> RESPToken {
         try await send(command: SLAVEOF(args: args))
@@ -2005,7 +2005,7 @@ extension ValkeyConnection {
     /// - Version: 2.2.12
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of slow log entries per the above format.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of slow log entries per the above format.
     @inlinable
     public func slowlogGet(count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: SLOWLOG.GET(count: count))
@@ -2017,7 +2017,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func slowlogHelp() async throws -> [RESPToken] {
         try await send(command: SLOWLOG.HELP())
@@ -2029,7 +2029,7 @@ extension ValkeyConnection {
     /// - Version: 2.2.12
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of entries in the slow log.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of entries in the slow log.
     @inlinable
     public func slowlogLen() async throws -> Int {
         try await send(command: SLOWLOG.LEN())
@@ -2041,19 +2041,19 @@ extension ValkeyConnection {
     /// - Version: 2.2.12
     /// - Complexity: O(N) where N is the number of entries in the slowlog
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func slowlogReset() async throws -> RESPToken {
         try await send(command: SLOWLOG.RESET())
     }
 
-    /// Swaps two Redis databases.
+    /// Swaps two Valkey databases.
     ///
     /// - Documentation: [SWAPDB](https:/valkey.io/commands/swapdb)
     /// - Version: 4.0.0
     /// - Complexity: O(N) where N is the count of clients watching or blocking on keys from both databases.
     /// - Categories: @keyspace, @write, @fast, @dangerous
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func swapdb(index1: Int, index2: Int) async throws -> RESPToken {
         try await send(command: SWAPDB(index1: index1, index2: index2))
@@ -2064,7 +2064,7 @@ extension ValkeyConnection {
     /// - Documentation: [SYNC](https:/valkey.io/commands/sync)
     /// - Version: 1.0.0
     /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
+    /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the primary.
     @inlinable
     public func sync() async throws -> RESPToken {
         try await send(command: SYNC())
@@ -2076,7 +2076,7 @@ extension ValkeyConnection {
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @fast
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): specifically, a two-element array consisting of the Unix timestamp in seconds and the microseconds' count.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): specifically, a two-element array consisting of the Unix timestamp in seconds and the microseconds' count.
     @inlinable
     public func time() async throws -> [RESPToken] {
         try await send(command: TIME())

@@ -335,7 +335,7 @@ extension ValkeyConnection {
     /// - Version: 2.6.0
     /// - Complexity: O(N)
     /// - Categories: @read, @bitmap, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of bits set to 1.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of bits set to 1.
     @inlinable
     public func bitcount(key: RESPKey, range: BITCOUNT.Range? = nil) async throws -> Int {
         try await send(command: BITCOUNT(key: key, range: range))
@@ -348,8 +348,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1) for each subcommand specified
     /// - Categories: @write, @bitmap, @slow
     /// - Returns: One of the following:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each entry being the corresponding result of the sub-command given at the same position.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if OVERFLOW FAIL was given and overflows or underflows are detected.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): each entry being the corresponding result of the sub-command given at the same position.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if OVERFLOW FAIL was given and overflows or underflows are detected.
     @inlinable
     public func bitfield(key: RESPKey, operation: [BITFIELD.Operation] = []) async throws -> [RESPToken]? {
         try await send(command: BITFIELD(key: key, operation: operation))
@@ -361,7 +361,7 @@ extension ValkeyConnection {
     /// - Version: 6.0.0
     /// - Complexity: O(1) for each subcommand specified
     /// - Categories: @read, @bitmap, @fast
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each entry being the corresponding result of the sub-command given at the same position.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): each entry being the corresponding result of the sub-command given at the same position.
     @inlinable
     public func bitfieldRo(key: RESPKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> [RESPToken] {
         try await send(command: BITFIELDRO(key: key, getBlock: getBlock))
@@ -373,7 +373,7 @@ extension ValkeyConnection {
     /// - Version: 2.6.0
     /// - Complexity: O(N)
     /// - Categories: @write, @bitmap, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
     @inlinable
     public func bitop(operation: BITOP.Operation, destkey: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: BITOP(operation: operation, destkey: destkey, key: key))
@@ -386,8 +386,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N)
     /// - Categories: @read, @bitmap, @slow
     /// - Returns: One of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the position of the first bit set to 1 or 0 according to the request
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1`. In case the `bit` argument is 1 and the string is empty or composed of just zero bytes
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the position of the first bit set to 1 or 0 according to the request
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1`. In case the `bit` argument is 1 and the string is empty or composed of just zero bytes
     ///     
     ///     If we look for set bits (the bit argument is 1) and the string is empty or composed of just zero bytes, -1 is returned.
     ///     
@@ -409,8 +409,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @read, @bitmap, @fast
     /// - Returns: The bit value stored at _offset_, one of the following:
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0`.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1`.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0`.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1`.
     @inlinable
     public func getbit(key: RESPKey, offset: Int) async throws -> Int {
         try await send(command: GETBIT(key: key, offset: offset))
@@ -422,7 +422,7 @@ extension ValkeyConnection {
     /// - Version: 2.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @bitmap, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the original bit value stored at _offset_.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the original bit value stored at _offset_.
     @inlinable
     public func setbit(key: RESPKey, offset: Int, value: Int) async throws -> Int {
         try await send(command: SETBIT(key: key, offset: offset, value: value))

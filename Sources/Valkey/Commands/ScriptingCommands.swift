@@ -495,7 +495,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @slow, @scripting
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func functionDelete(libraryName: String) async throws -> RESPToken {
         try await send(command: FUNCTION.DELETE(libraryName: libraryName))
@@ -507,7 +507,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
     /// - Categories: @slow, @scripting
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the serialized payload
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the serialized payload
     @inlinable
     public func functionDump() async throws -> String {
         try await send(command: FUNCTION.DUMP())
@@ -519,7 +519,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions deleted
     /// - Categories: @write, @slow, @scripting
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws -> RESPToken {
         try await send(command: FUNCTION.FLUSH(flushType: flushType))
@@ -531,7 +531,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func functionHelp() async throws -> [RESPToken] {
         try await send(command: FUNCTION.HELP())
@@ -543,7 +543,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func functionKill() async throws -> RESPToken {
         try await send(command: FUNCTION.KILL())
@@ -555,7 +555,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
     /// - Categories: @slow, @scripting
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): information about functions and libraries.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): information about functions and libraries.
     @inlinable
     public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> [RESPToken] {
         try await send(command: FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
@@ -567,7 +567,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(1) (considering compilation time is redundant)
     /// - Categories: @write, @slow, @scripting
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the library name that was loaded.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the library name that was loaded.
     @inlinable
     public func functionLoad(replace: Bool = false, functionCode: String) async throws -> String {
         try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
@@ -579,7 +579,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions on the payload
     /// - Categories: @write, @slow, @scripting
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func functionRestore(serializedValue: String, policy: FUNCTION.RESTORE.Policy? = nil) async throws -> RESPToken {
         try await send(command: FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
@@ -591,7 +591,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
-    /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): information about the function that's currently running and information about the available execution engines.
+    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): information about the function that's currently running and information about the available execution engines.
     @inlinable
     public func functionStats() async throws -> [String: RESPToken] {
         try await send(command: FUNCTION.STATS())
@@ -603,7 +603,7 @@ extension ValkeyConnection {
     /// - Version: 3.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws -> RESPToken {
         try await send(command: SCRIPT.DEBUG(mode: mode))
@@ -615,7 +615,7 @@ extension ValkeyConnection {
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
     /// - Categories: @slow, @scripting
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     public func scriptExists(sha1: [String]) async throws -> [RESPToken] {
         try await send(command: SCRIPT.EXISTS(sha1: sha1))
@@ -627,7 +627,7 @@ extension ValkeyConnection {
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts in cache
     /// - Categories: @slow, @scripting
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws -> RESPToken {
         try await send(command: SCRIPT.FLUSH(flushType: flushType))
@@ -639,7 +639,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func scriptHelp() async throws -> [RESPToken] {
         try await send(command: SCRIPT.HELP())
@@ -651,7 +651,7 @@ extension ValkeyConnection {
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func scriptKill() async throws -> RESPToken {
         try await send(command: SCRIPT.KILL())
@@ -663,7 +663,7 @@ extension ValkeyConnection {
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the length in bytes of the script body.
     /// - Categories: @slow, @scripting
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the SHA1 digest of the script added into the script cache.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the SHA1 digest of the script added into the script cache.
     @inlinable
     public func scriptLoad(script: String) async throws -> String {
         try await send(command: SCRIPT.LOAD(script: script))

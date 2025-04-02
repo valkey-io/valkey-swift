@@ -942,8 +942,8 @@ extension ValkeyConnection {
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Categories: @write, @sortedset, @slow, @blocking
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
     public func bzmpop(timeout: Double, key: [RESPKey], `where`: BZMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
         try await send(command: BZMPOP(timeout: timeout, key: key, where: `where`, count: count))
@@ -956,8 +956,8 @@ extension ValkeyConnection {
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Categories: @write, @sortedset, @fast, @blocking
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ expired.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the keyname, popped member, and its score.
     @inlinable
     public func bzpopmax(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
         try await send(command: BZPOPMAX(key: key, timeout: timeout))
@@ -970,8 +970,8 @@ extension ValkeyConnection {
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Categories: @write, @sortedset, @fast, @blocking
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ expired.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the keyname, popped member, and its score.
     @inlinable
     public func bzpopmin(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
         try await send(command: BZPOPMIN(key: key, timeout: timeout))
@@ -984,10 +984,10 @@ extension ValkeyConnection {
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: Any of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the operation was aborted because of a conflict with one of the _XX/NX/LT/GT_ options.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new members when the _CH_ option is not used.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
-    ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the operation was aborted because of a conflict with one of the _XX/NX/LT/GT_ options.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the number of new members when the _CH_ option is not used.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the number of new or updated members when the _CH_ option is used.
+    ///     * [Double](https:/valkey.io/topics/protocol/#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
     public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> RESPToken {
         try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
@@ -999,7 +999,7 @@ extension ValkeyConnection {
     /// - Version: 1.2.0
     /// - Complexity: O(1)
     /// - Categories: @read, @sortedset, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the cardinality (number of members) of the sorted set, or 0 if the key doesn't exist.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the cardinality (number of members) of the sorted set, or 0 if the key doesn't exist.
     @inlinable
     public func zcard(key: RESPKey) async throws -> Int {
         try await send(command: ZCARD(key: key))
@@ -1011,7 +1011,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Categories: @read, @sortedset, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the specified score range.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the specified score range.
     @inlinable
     public func zcount(key: RESPKey, min: Double, max: Double) async throws -> Int {
         try await send(command: ZCOUNT(key: key, min: min, max: max))
@@ -1023,7 +1023,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
+    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
     public func zdiff(key: [RESPKey], withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZDIFF(key: key, withscores: withscores))
@@ -1035,7 +1035,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
     /// - Categories: @write, @sortedset, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at _destination_.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the resulting sorted set at _destination_.
     @inlinable
     public func zdiffstore(destination: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: ZDIFFSTORE(destination: destination, key: key))
@@ -1047,7 +1047,7 @@ extension ValkeyConnection {
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)) where N is the number of elements in the sorted set.
     /// - Categories: @write, @sortedset, @fast
-    /// - Returns: [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the new score of _member_.
+    /// - Returns: [Double](https:/valkey.io/topics/protocol/#doubles): the new score of _member_.
     @inlinable
     public func zincrby(key: RESPKey, increment: Int, member: String) async throws -> Double {
         try await send(command: ZINCRBY(key: key, increment: increment, member: member))
@@ -1059,7 +1059,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
+    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
     public func zinter(key: [RESPKey], weight: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZINTER(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
@@ -1071,7 +1071,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N*K) worst case with N being the smallest input sorted set, K being the number of input sorted sets.
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting intersection.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the resulting intersection.
     @inlinable
     public func zintercard(key: [RESPKey], limit: Int? = nil) async throws -> Int {
         try await send(command: ZINTERCARD(key: key, limit: limit))
@@ -1083,7 +1083,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// - Categories: @write, @sortedset, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
     public func zinterstore(destination: RESPKey, key: [RESPKey], weight: [Int] = [], aggregate: ZINTERSTORE.Aggregate? = nil) async throws -> Int {
         try await send(command: ZINTERSTORE(destination: destination, key: key, weight: weight, aggregate: aggregate))
@@ -1095,7 +1095,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Categories: @read, @sortedset, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the specified score range.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the specified score range.
     @inlinable
     public func zlexcount(key: RESPKey, min: String, max: String) async throws -> Int {
         try await send(command: ZLEXCOUNT(key: key, min: min, max: max))
@@ -1108,8 +1108,8 @@ extension ValkeyConnection {
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
     public func zmpop(key: [RESPKey], `where`: ZMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
         try await send(command: ZMPOP(key: key, where: `where`, count: count))
@@ -1122,8 +1122,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N) where N is the number of members being requested.
     /// - Categories: @read, @sortedset, @fast
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the member does not exist in the sorted set.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of [Double](https:/redis.io/docs/reference/protocol-spec#doubles) _member_ scores as double-precision floating point numbers.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the member does not exist in the sorted set.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list of [Double](https:/valkey.io/topics/protocol/#doubles) _member_ scores as double-precision floating point numbers.
     @inlinable
     public func zmscore(key: RESPKey, member: [String]) async throws -> [RESPToken]? {
         try await send(command: ZMSCORE(key: key, member: member))
@@ -1135,7 +1135,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Categories: @write, @sortedset, @fast
-    /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of popped elements and scores.
+    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of popped elements and scores.
     @inlinable
     public func zpopmax(key: RESPKey, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: ZPOPMAX(key: key, count: count))
@@ -1147,7 +1147,7 @@ extension ValkeyConnection {
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Categories: @write, @sortedset, @fast
-    /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of popped elements and scores.
+    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of popped elements and scores.
     @inlinable
     public func zpopmin(key: RESPKey, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: ZPOPMIN(key: key, count: count))
@@ -1159,8 +1159,8 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of members returned
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or [Null](https:/redis.io/docs/reference/protocol-spec#nulls) when _key_ doesn't exist.
-    ///     [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the additional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist. If the _WITHSCORES_ modifier is used, the reply is a list of members and their scores from the sorted set.
+    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or [Null](https:/valkey.io/topics/protocol/#nulls) when _key_ doesn't exist.
+    ///     [Array](https:/valkey.io/topics/protocol/#arrays): when the additional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist. If the _WITHSCORES_ modifier is used, the reply is a list of members and their scores from the sorted set.
     @inlinable
     public func zrandmember(key: RESPKey, options: ZRANDMEMBER.Options? = nil) async throws -> RESPToken {
         try await send(command: ZRANDMEMBER(key: key, options: options))
@@ -1172,7 +1172,7 @@ extension ValkeyConnection {
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
     public func zrange(key: RESPKey, start: String, stop: String, sortby: ZRANGE.Sortby? = nil, rev: Bool = false, limit: ZRANGE.Limit? = nil, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZRANGE(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
@@ -1184,7 +1184,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of elements in the specified score range.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of elements in the specified score range.
     @inlinable
     public func zrangebylex(key: RESPKey, min: String, max: String, limit: ZRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYLEX(key: key, min: min, max: max, limit: limit))
@@ -1196,7 +1196,7 @@ extension ValkeyConnection {
     /// - Version: 1.0.5
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members with, optionally, their scores in the specified score range.
+    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
     public func zrangebyscore(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
@@ -1208,7 +1208,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements stored into the destination key.
     /// - Categories: @write, @sortedset, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting sorted set.
     @inlinable
     public func zrangestore(dst: RESPKey, src: RESPKey, min: String, max: String, sortby: ZRANGESTORE.Sortby? = nil, rev: Bool = false, limit: ZRANGESTORE.Limit? = nil) async throws -> Int {
         try await send(command: ZRANGESTORE(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
@@ -1221,9 +1221,9 @@ extension ValkeyConnection {
     /// - Complexity: O(log(N))
     /// - Categories: @read, @sortedset, @fast
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist or the member does not exist in the sorted set.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the rank of the member when _WITHSCORE_ is not used.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the rank and score of the member when _WITHSCORE_ is used.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist or the member does not exist in the sorted set.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the rank of the member when _WITHSCORE_ is not used.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the rank and score of the member when _WITHSCORE_ is used.
     @inlinable
     public func zrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> RESPToken {
         try await send(command: ZRANK(key: key, member: member, withscore: withscore))
@@ -1235,7 +1235,7 @@ extension ValkeyConnection {
     /// - Version: 1.2.0
     /// - Complexity: O(M*log(N)) with N being the number of elements in the sorted set and M the number of elements to be removed.
     /// - Categories: @write, @sortedset, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members removed from the sorted set, not including non-existing members.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members removed from the sorted set, not including non-existing members.
     @inlinable
     public func zrem(key: RESPKey, member: [String]) async throws -> Int {
         try await send(command: ZREM(key: key, member: member))
@@ -1247,7 +1247,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Categories: @write, @sortedset, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members removed.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members removed.
     @inlinable
     public func zremrangebylex(key: RESPKey, min: String, max: String) async throws -> Int {
         try await send(command: ZREMRANGEBYLEX(key: key, min: min, max: max))
@@ -1259,7 +1259,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Categories: @write, @sortedset, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members removed.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members removed.
     @inlinable
     public func zremrangebyrank(key: RESPKey, start: Int, stop: Int) async throws -> Int {
         try await send(command: ZREMRANGEBYRANK(key: key, start: start, stop: stop))
@@ -1271,7 +1271,7 @@ extension ValkeyConnection {
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Categories: @write, @sortedset, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members removed.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members removed.
     @inlinable
     public func zremrangebyscore(key: RESPKey, min: Double, max: Double) async throws -> Int {
         try await send(command: ZREMRANGEBYSCORE(key: key, min: min, max: max))
@@ -1283,7 +1283,7 @@ extension ValkeyConnection {
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range, optionally with their scores if _WITHSCORE_ was used.
+    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members in the specified range, optionally with their scores if _WITHSCORE_ was used.
     @inlinable
     public func zrevrange(key: RESPKey, start: Int, stop: Int, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZREVRANGE(key: key, start: start, stop: stop, withscores: withscores))
@@ -1295,7 +1295,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): List of the elements in the specified score range.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members in the specified score range.
     @inlinable
     public func zrevrangebylex(key: RESPKey, max: String, min: String, limit: ZREVRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYLEX(key: key, max: max, min: min, limit: limit))
@@ -1307,7 +1307,7 @@ extension ValkeyConnection {
     /// - Version: 2.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
+    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
     public func zrevrangebyscore(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
@@ -1320,9 +1320,9 @@ extension ValkeyConnection {
     /// - Complexity: O(log(N))
     /// - Categories: @read, @sortedset, @fast
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist or the member does not exist in the sorted set.
-    ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The rank of the member when _WITHSCORE_ is not used.
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): The rank and score of the member when _WITHSCORE_ is used.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist or the member does not exist in the sorted set.
+    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): The rank of the member when _WITHSCORE_ is not used.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): The rank and score of the member when _WITHSCORE_ is used.
     @inlinable
     public func zrevrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> RESPToken {
         try await send(command: ZREVRANK(key: key, member: member, withscore: withscore))
@@ -1334,7 +1334,9 @@ extension ValkeyConnection {
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): cursor and scan response in array form.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array.
+    ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
+    ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) of member/score pairs that were scanned. When `NOSCORES` option is on, a list of members from the sorted set.
     @inlinable
     public func zscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: ZSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
@@ -1347,8 +1349,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @read, @sortedset, @fast
     /// - Returns: One of the following:
-    ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the score of the member (a double-precision floating point number).
-    ///     * [Nil](https:/redis.io/docs/reference/protocol-spec#bulk-strings): if _member_ does not exist in the sorted set, or the key does not exist.
+    ///     * [Double](https:/valkey.io/topics/protocol/#doubles): the score of the member (a double-precision floating point number).
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if _member_ does not exist in the sorted set, or the key does not exist.
     @inlinable
     public func zscore(key: RESPKey, member: String) async throws -> Double? {
         try await send(command: ZSCORE(key: key, member: member))
@@ -1360,7 +1362,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(N)+O(M*log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// - Categories: @read, @sortedset, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
     public func zunion(key: [RESPKey], weight: [Int] = [], aggregate: ZUNION.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZUNION(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
@@ -1372,7 +1374,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// - Categories: @write, @sortedset, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting sorted set.
     @inlinable
     public func zunionstore(destination: RESPKey, key: [RESPKey], weight: [Int] = [], aggregate: ZUNIONSTORE.Aggregate? = nil) async throws -> Int {
         try await send(command: ZUNIONSTORE(destination: destination, key: key, weight: weight, aggregate: aggregate))

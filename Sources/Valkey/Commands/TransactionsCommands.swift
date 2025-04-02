@@ -97,7 +97,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(N), when N is the number of queued commands
     /// - Categories: @fast, @transaction
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func discard() async throws -> RESPToken {
         try await send(command: DISCARD())
@@ -110,8 +110,8 @@ extension ValkeyConnection {
     /// - Complexity: Depends on commands in the transaction
     /// - Categories: @slow, @transaction
     /// - Returns: One of the following:
-    ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each element being the reply to each of the commands in the atomic transaction.
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the transaction was aborted because a `WATCH`ed key was touched.
+    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): each element being the reply to each of the commands in the atomic transaction.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the transaction was aborted because a `WATCH`ed key was touched.
     @inlinable
     public func exec() async throws -> [RESPToken]? {
         try await send(command: EXEC())
@@ -123,7 +123,7 @@ extension ValkeyConnection {
     /// - Version: 1.2.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @transaction
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func multi() async throws -> RESPToken {
         try await send(command: MULTI())
@@ -135,7 +135,7 @@ extension ValkeyConnection {
     /// - Version: 2.2.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @transaction
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func unwatch() async throws -> RESPToken {
         try await send(command: UNWATCH())
@@ -147,7 +147,7 @@ extension ValkeyConnection {
     /// - Version: 2.2.0
     /// - Complexity: O(1) for every key.
     /// - Categories: @fast, @transaction
-    /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
+    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func watch(key: [RESPKey]) async throws -> RESPToken {
         try await send(command: WATCH(key: key))

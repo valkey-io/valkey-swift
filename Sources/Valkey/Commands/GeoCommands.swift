@@ -756,7 +756,7 @@ extension ValkeyConnection {
     /// - Version: 3.2.0
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// - Categories: @write, @geo, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
     public func geoadd(key: RESPKey, condition: GEOADD.Condition? = nil, change: Bool = false, data: [GEOADD.Data]) async throws -> Int {
         try await send(command: GEOADD(key: key, condition: condition, change: change, data: data))
@@ -769,8 +769,8 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @read, @geo, @slow
     /// - Returns: One of the following:
-    ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): one or both of the elements are missing.
-    ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): distance as a double (represented as a string) in the specified units.
+    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): one or both of the elements are missing.
+    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): distance as a double (represented as a string) in the specified units.
     @inlinable
     public func geodist(key: RESPKey, member1: String, member2: String, unit: GEODIST.Unit? = nil) async throws -> String? {
         try await send(command: GEODIST(key: key, member1: member1, member2: member2, unit: unit))
@@ -782,7 +782,7 @@ extension ValkeyConnection {
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each member requested.
     /// - Categories: @read, @geo, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): An array where each element is the Geohash corresponding to each member name passed as an argument to the command.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is the Geohash corresponding to each member name passed as an argument to the command.
     @inlinable
     public func geohash(key: RESPKey, member: [String] = []) async throws -> [RESPToken] {
         try await send(command: GEOHASH(key: key, member: member))
@@ -794,7 +794,7 @@ extension ValkeyConnection {
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each member requested.
     /// - Categories: @read, @geo, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/redis.io/docs/reference/protocol-spec#nulls) elements of the array.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/valkey.io/topics/protocol/#nulls) elements of the array.
     @inlinable
     public func geopos(key: RESPKey, member: [String] = []) async throws -> [RESPToken] {
         try await send(command: GEOPOS(key: key, member: member))
@@ -807,8 +807,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Categories: @write, @geo, @slow
     /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of arrays, where each sub-array represents a single item:
+    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
+    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
     ///         1. The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         1. The Geohash integer.
     ///         1. The coordinates as a two items x,y array (longitude,latitude).
@@ -828,8 +828,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Categories: @write, @geo, @slow
     /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of arrays, where each sub-array represents a single item:
+    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
+    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
     ///         * The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
@@ -845,8 +845,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Categories: @read, @geo, @slow
     /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of arrays, where each sub-array represents a single item:
+    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
+    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
     ///         * The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
@@ -862,8 +862,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Categories: @read, @geo, @slow
     /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of arrays, where each sub-array represents a single item:
+    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
+    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
     ///         * The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
@@ -879,8 +879,8 @@ extension ValkeyConnection {
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Categories: @read, @geo, @slow
     /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of arrays, where each sub-array represents a single item:
+    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
+    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
     ///         * The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
@@ -895,7 +895,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Categories: @write, @geo, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting set
     @inlinable
     public func geosearchstore(destination: RESPKey, source: RESPKey, from: GEOSEARCHSTORE.From, by: GEOSEARCHSTORE.By, order: GEOSEARCHSTORE.Order? = nil, countBlock: GEOSEARCHSTORE.CountBlock? = nil, storedist: Bool = false) async throws -> Int {
         try await send(command: GEOSEARCHSTORE(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist))

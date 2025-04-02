@@ -256,7 +256,7 @@ extension ValkeyConnection {
     /// - Version: 2.0.0
     /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
     /// - Categories: @pubsub, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of clients that received the message. Note that in a Redis Cluster, only clients that are connected to the same node as the publishing client are included in the count.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of clients that received the message. Note that in a Valkey Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     public func publish(channel: String, message: String) async throws -> Int {
         try await send(command: PUBLISH(channel: channel, message: message))
@@ -268,7 +268,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.0
     /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
     /// - Categories: @pubsub, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubChannels(pattern: String? = nil) async throws -> [RESPToken] {
         try await send(command: PUBSUB.CHANNELS(pattern: pattern))
@@ -280,7 +280,7 @@ extension ValkeyConnection {
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func pubsubHelp() async throws -> [RESPToken] {
         try await send(command: PUBSUB.HELP())
@@ -292,7 +292,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.0
     /// - Complexity: O(1)
     /// - Categories: @pubsub, @slow
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of patterns all the clients are subscribed to.
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of patterns all the clients are subscribed to.
     @inlinable
     public func pubsubNumpat() async throws -> Int {
         try await send(command: PUBSUB.NUMPAT())
@@ -304,7 +304,7 @@ extension ValkeyConnection {
     /// - Version: 2.8.0
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
     /// - Categories: @pubsub, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
     @inlinable
     public func pubsubNumsub(channel: [String] = []) async throws -> [RESPToken] {
         try await send(command: PUBSUB.NUMSUB(channel: channel))
@@ -316,7 +316,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
     /// - Categories: @pubsub, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of active channels, optionally matching the specified pattern.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubShardchannels(pattern: String? = nil) async throws -> [RESPToken] {
         try await send(command: PUBSUB.SHARDCHANNELS(pattern: pattern))
@@ -328,7 +328,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
     /// - Categories: @pubsub, @slow
-    /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
+    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     public func pubsubShardnumsub(shardchannel: [String] = []) async throws -> [RESPToken] {
         try await send(command: PUBSUB.SHARDNUMSUB(shardchannel: shardchannel))
@@ -352,7 +352,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
     /// - Categories: @pubsub, @fast
-    /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of clients that received the message. Note that in a Redis Cluster, only clients that are connected to the same node as the publishing client are included in the count
+    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of clients that received the message. Note that in a Valkey Cluster, only clients that are connected to the same node as the publishing client are included in the count
     @inlinable
     public func spublish(shardchannel: String, message: String) async throws -> Int {
         try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
@@ -364,7 +364,7 @@ extension ValkeyConnection {
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of shard channels to subscribe to.
     /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string 'ssubscribe' is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
+    /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `ssubscribe` is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
     @inlinable
     public func ssubscribe(shardchannel: [String]) async throws -> RESPToken {
         try await send(command: SSUBSCRIBE(shardchannel: shardchannel))

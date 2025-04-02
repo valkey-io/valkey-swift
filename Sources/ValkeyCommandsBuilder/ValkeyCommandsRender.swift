@@ -1,7 +1,7 @@
 extension String {
     var cleanupReplyComment: String {
         self
-            .replacing("/docs/reference", with: "https:/redis.io/docs/reference")
+            .replacing("../topics/protocol.md", with: "https:/valkey.io/topics/protocol/")
             .replacing(" reply]", with: "]")
     }
 
