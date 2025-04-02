@@ -33,12 +33,12 @@ public struct ValkeyClient {
     /// Logger
     let logger: Logger
 
-    /// Initialize Redis client
+    /// Initialize Valkey client
     ///
     /// - Parametes:
-    ///   - address: Redis database address
-    ///   - configuration: Redis client configuration
-    ///   - tlsConfiguration: Redis TLS connection configuration
+    ///   - address: Valkey database address
+    ///   - configuration: Valkey client configuration
+    ///   - tlsConfiguration: Valkey TLS connection configuration
     ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
     ///   - logger: Logger
     public init(

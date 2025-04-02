@@ -43,7 +43,7 @@ public struct ValkeyClientConfiguration: Sendable {
     public var respVersion: RESPVersion
     public var tls: TLS
 
-    ///  Initialize RedisClientConfiguration
+    ///  Initialize ValkeyClientConfiguration
     /// - Parameters
     ///   - respVersion: RESP version to use
     ///   - tlsConfiguration: TLS configuration

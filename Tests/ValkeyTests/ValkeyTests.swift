@@ -35,7 +35,7 @@ struct GeneratedCommands {
     }
 
     @Test
-    func testRedisCommand() async throws {
+    func testValkeyCommand() async throws {
         struct GET: RESPCommand {
             typealias Response = String?
 

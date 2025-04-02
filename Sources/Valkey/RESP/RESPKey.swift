@@ -44,3 +44,10 @@ extension RESPKey: RESPRenderable {
         self.rawValue.encode(into: &commandEncoder)
     }
 }
+
+extension RESPKey: ExpressibleByStringLiteral {
+    @inlinable
+    public init(stringLiteral string: String) {
+        self.init(rawValue: string)
+    }
+}

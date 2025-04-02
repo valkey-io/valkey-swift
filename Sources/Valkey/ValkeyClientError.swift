@@ -41,7 +41,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
     public var description: String {
         switch self.errorCode.value {
         case .connectionClosed: "Connection has been closed"
-        case .commandError: self.message ?? "Redis command returned an error"
+        case .commandError: self.message ?? "Valkey command returned an error"
         }
     }
 }
