@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-redis open source project
+// This source file is part of the swift-valkey open source project
 //
-// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-redis project authors
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -136,7 +136,14 @@ public struct ZADD: RESPCommand {
     public var increment: Bool = false
     public var data: [Data]
 
-    @inlinable public init(key: RESPKey, condition: Condition? = nil, comparison: Comparison? = nil, change: Bool = false, increment: Bool = false, data: [Data]) {
+    @inlinable public init(
+        key: RESPKey,
+        condition: Condition? = nil,
+        comparison: Comparison? = nil,
+        change: Bool = false,
+        increment: Bool = false,
+        data: [Data]
+    ) {
         self.key = key
         self.condition = condition
         self.comparison = comparison
@@ -268,7 +275,13 @@ public struct ZINTER: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray(
+            "ZINTER",
+            RESPArrayWithCount(key),
+            RESPWithToken("WEIGHTS", weight),
+            RESPWithToken("AGGREGATE", aggregate),
+            RESPPureToken("WITHSCORES", withscores)
+        )
     }
 }
 
@@ -320,7 +333,13 @@ public struct ZINTERSTORE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+        commandEncoder.encodeArray(
+            "ZINTERSTORE",
+            destination,
+            RESPArrayWithCount(key),
+            RESPWithToken("WEIGHTS", weight),
+            RESPWithToken("AGGREGATE", aggregate)
+        )
     }
 }
 
@@ -490,7 +509,15 @@ public struct ZRANGE: RESPCommand {
     public var limit: Limit? = nil
     public var withscores: Bool = false
 
-    @inlinable public init(key: RESPKey, start: String, stop: String, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil, withscores: Bool = false) {
+    @inlinable public init(
+        key: RESPKey,
+        start: String,
+        stop: String,
+        sortby: Sortby? = nil,
+        rev: Bool = false,
+        limit: Limit? = nil,
+        withscores: Bool = false
+    ) {
         self.key = key
         self.start = start
         self.stop = stop
@@ -501,7 +528,16 @@ public struct ZRANGE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGE", key, start, stop, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray(
+            "ZRANGE",
+            key,
+            start,
+            stop,
+            sortby,
+            RESPPureToken("REV", rev),
+            RESPWithToken("LIMIT", limit),
+            RESPPureToken("WITHSCORES", withscores)
+        )
     }
 }
 
@@ -894,7 +930,13 @@ public struct ZUNION: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray(
+            "ZUNION",
+            RESPArrayWithCount(key),
+            RESPWithToken("WEIGHTS", weight),
+            RESPWithToken("AGGREGATE", aggregate),
+            RESPPureToken("WITHSCORES", withscores)
+        )
     }
 }
 
@@ -929,10 +971,15 @@ public struct ZUNIONSTORE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
+        commandEncoder.encodeArray(
+            "ZUNIONSTORE",
+            destination,
+            RESPArrayWithCount(key),
+            RESPWithToken("WEIGHTS", weight),
+            RESPWithToken("AGGREGATE", aggregate)
+        )
     }
 }
-
 
 extension ValkeyConnection {
     /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
@@ -989,7 +1036,14 @@ extension ValkeyConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> RESPToken {
+    public func zadd(
+        key: RESPKey,
+        condition: ZADD.Condition? = nil,
+        comparison: ZADD.Comparison? = nil,
+        change: Bool = false,
+        increment: Bool = false,
+        data: [ZADD.Data]
+    ) async throws -> RESPToken {
         try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 
@@ -1174,7 +1228,15 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
-    public func zrange(key: RESPKey, start: String, stop: String, sortby: ZRANGE.Sortby? = nil, rev: Bool = false, limit: ZRANGE.Limit? = nil, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zrange(
+        key: RESPKey,
+        start: String,
+        stop: String,
+        sortby: ZRANGE.Sortby? = nil,
+        rev: Bool = false,
+        limit: ZRANGE.Limit? = nil,
+        withscores: Bool = false
+    ) async throws -> [RESPToken] {
         try await send(command: ZRANGE(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
     }
 
@@ -1198,7 +1260,13 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
-    public func zrangebyscore(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
+    public func zrangebyscore(
+        key: RESPKey,
+        min: Double,
+        max: Double,
+        withscores: Bool = false,
+        limit: ZRANGEBYSCORE.Limit? = nil
+    ) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
     }
 
@@ -1210,7 +1278,15 @@ extension ValkeyConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zrangestore(dst: RESPKey, src: RESPKey, min: String, max: String, sortby: ZRANGESTORE.Sortby? = nil, rev: Bool = false, limit: ZRANGESTORE.Limit? = nil) async throws -> Int {
+    public func zrangestore(
+        dst: RESPKey,
+        src: RESPKey,
+        min: String,
+        max: String,
+        sortby: ZRANGESTORE.Sortby? = nil,
+        rev: Bool = false,
+        limit: ZRANGESTORE.Limit? = nil
+    ) async throws -> Int {
         try await send(command: ZRANGESTORE(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
     }
 
@@ -1309,7 +1385,13 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
-    public func zrevrangebyscore(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
+    public func zrevrangebyscore(
+        key: RESPKey,
+        max: Double,
+        min: Double,
+        withscores: Bool = false,
+        limit: ZREVRANGEBYSCORE.Limit? = nil
+    ) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
     }
 

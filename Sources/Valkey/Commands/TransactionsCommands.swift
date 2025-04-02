@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-redis open source project
+// This source file is part of the swift-valkey open source project
 //
-// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-redis project authors
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -26,7 +26,6 @@ import Foundation
 public struct DISCARD: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -38,7 +37,6 @@ public struct DISCARD: RESPCommand {
 /// Executes all commands in a transaction.
 public struct EXEC: RESPCommand {
     public typealias Response = [RESPToken]?
-
 
     @inlinable public init() {
     }
@@ -52,7 +50,6 @@ public struct EXEC: RESPCommand {
 public struct MULTI: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -64,7 +61,6 @@ public struct MULTI: RESPCommand {
 /// Forgets about watched keys of a transaction.
 public struct UNWATCH: RESPCommand {
     public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -88,7 +84,6 @@ public struct WATCH: RESPCommand {
         commandEncoder.encodeArray("WATCH", key)
     }
 }
-
 
 extension ValkeyConnection {
     /// Discards a transaction.

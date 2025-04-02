@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-redis open source project
+// This source file is part of the swift-valkey open source project
 //
-// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-redis project authors
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -43,7 +43,6 @@ public enum PUBSUB {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -55,7 +54,6 @@ public enum PUBSUB {
     /// Returns a count of unique pattern subscriptions.
     public struct NUMPAT: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -235,7 +233,6 @@ public struct UNSUBSCRIBE: RESPCommand {
         commandEncoder.encodeArray("UNSUBSCRIBE", channel)
     }
 }
-
 
 extension ValkeyConnection {
     /// Listens for messages published to channels that match one or more patterns.

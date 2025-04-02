@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-redis open source project
+// This source file is part of the swift-valkey open source project
 //
-// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-redis project authors
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -69,7 +69,6 @@ public enum CLUSTER {
     /// Advances the cluster config epoch.
     public struct BUMPEPOCH: RESPCommand {
         public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -182,7 +181,6 @@ public enum CLUSTER {
     public struct FLUSHSLOTS: RESPCommand {
         public typealias Response = RESPToken
 
-
         @inlinable public init() {
         }
 
@@ -227,7 +225,6 @@ public enum CLUSTER {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -239,7 +236,6 @@ public enum CLUSTER {
     /// Returns information about the state of a node.
     public struct INFO: RESPCommand {
         public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -267,7 +263,6 @@ public enum CLUSTER {
     /// Returns a list of all TCP links to and from peer nodes.
     public struct LINKS: RESPCommand {
         public typealias Response = [[String: RESPToken]]
-
 
         @inlinable public init() {
         }
@@ -300,7 +295,6 @@ public enum CLUSTER {
     public struct MYID: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -313,7 +307,6 @@ public enum CLUSTER {
     public struct MYSHARDID: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -325,7 +318,6 @@ public enum CLUSTER {
     /// Returns the cluster configuration for a node.
     public struct NODES: RESPCommand {
         public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -396,7 +388,6 @@ public enum CLUSTER {
     public struct SAVECONFIG: RESPCommand {
         public typealias Response = RESPToken
 
-
         @inlinable public init() {
         }
 
@@ -457,7 +448,6 @@ public enum CLUSTER {
     public struct SHARDS: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -485,7 +475,6 @@ public enum CLUSTER {
     public struct SLOTS: RESPCommand {
         public typealias Response = [RESPToken]
 
-
         @inlinable public init() {
         }
 
@@ -500,7 +489,6 @@ public enum CLUSTER {
 public struct ASKING: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -512,7 +500,6 @@ public struct ASKING: RESPCommand {
 /// Enables read-only queries for a connection to a Redis Cluster replica node.
 public struct READONLY: RESPCommand {
     public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -526,7 +513,6 @@ public struct READONLY: RESPCommand {
 public struct READWRITE: RESPCommand {
     public typealias Response = RESPToken
 
-
     @inlinable public init() {
     }
 
@@ -534,7 +520,6 @@ public struct READWRITE: RESPCommand {
         commandEncoder.encodeArray("READWRITE")
     }
 }
-
 
 extension ValkeyConnection {
     /// Signals that a cluster client is following an -ASK redirect.

@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-redis open source project
+// This source file is part of the swift-valkey open source project
 //
-// Copyright (c) 2025 Apple Inc. and the swift-redis project authors
+// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-redis project authors
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -55,7 +55,15 @@ public enum XGROUP {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "CREATE", key, group, idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+            commandEncoder.encodeArray(
+                "XGROUP",
+                "CREATE",
+                key,
+                group,
+                idSelector,
+                RESPPureToken("MKSTREAM", mkstream),
+                RESPWithToken("ENTRIESREAD", entriesRead)
+            )
         }
     }
 
@@ -117,7 +125,6 @@ public enum XGROUP {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
-
 
         @inlinable public init() {
         }
@@ -199,7 +206,6 @@ public enum XINFO {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
-
 
         @inlinable public init() {
         }
@@ -358,7 +364,8 @@ public struct XAUTOCLAIM: RESPCommand {
     public var count: Int? = nil
     public var justid: Bool = false
 
-    @inlinable public init(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) {
+    @inlinable public init(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false)
+    {
         self.key = key
         self.group = group
         self.consumer = consumer
@@ -369,7 +376,16 @@ public struct XAUTOCLAIM: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
+        commandEncoder.encodeArray(
+            "XAUTOCLAIM",
+            key,
+            group,
+            consumer,
+            minIdleTime,
+            start,
+            RESPWithToken("COUNT", count),
+            RESPPureToken("JUSTID", justid)
+        )
     }
 }
 
@@ -389,7 +405,19 @@ public struct XCLAIM: RESPCommand {
     public var justid: Bool = false
     public var lastid: String? = nil
 
-    @inlinable public init(key: RESPKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) {
+    @inlinable public init(
+        key: RESPKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        id: [String],
+        ms: Int? = nil,
+        unixTimeMilliseconds: Date? = nil,
+        count: Int? = nil,
+        force: Bool = false,
+        justid: Bool = false,
+        lastid: String? = nil
+    ) {
         self.key = key
         self.group = group
         self.consumer = consumer
@@ -404,7 +432,20 @@ public struct XCLAIM: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+        commandEncoder.encodeArray(
+            "XCLAIM",
+            key,
+            group,
+            consumer,
+            minIdleTime,
+            id,
+            RESPWithToken("IDLE", ms),
+            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
+            RESPWithToken("RETRYCOUNT", count),
+            RESPPureToken("FORCE", force),
+            RESPPureToken("JUSTID", justid),
+            RESPWithToken("LASTID", lastid)
+        )
     }
 }
 
@@ -572,7 +613,14 @@ public struct XREADGROUP: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
+        commandEncoder.encodeArray(
+            "XREADGROUP",
+            RESPWithToken("GROUP", groupBlock),
+            RESPWithToken("COUNT", count),
+            RESPWithToken("BLOCK", milliseconds),
+            RESPPureToken("NOACK", noack),
+            RESPWithToken("STREAMS", streams)
+        )
     }
 }
 
@@ -675,7 +723,6 @@ public struct XTRIM: RESPCommand {
     }
 }
 
-
 extension ValkeyConnection {
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
     ///
@@ -699,7 +746,13 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(key: RESPKey, nomkstream: Bool = false, trim: XADD.Trim? = nil, idSelector: XADD.IdSelector, data: [XADD.Data]) async throws -> String? {
+    public func xadd(
+        key: RESPKey,
+        nomkstream: Bool = false,
+        trim: XADD.Trim? = nil,
+        idSelector: XADD.IdSelector,
+        data: [XADD.Data]
+    ) async throws -> String? {
         try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
@@ -714,8 +767,18 @@ extension ValkeyConnection {
     ///     2. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
     ///     3. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
     @inlinable
-    public func xautoclaim(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) async throws -> [RESPToken] {
-        try await send(command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
+    public func xautoclaim(
+        key: RESPKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        start: String,
+        count: Int? = nil,
+        justid: Bool = false
+    ) async throws -> [RESPToken] {
+        try await send(
+            command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid)
+        )
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -728,8 +791,34 @@ extension ValkeyConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(key: RESPKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESPToken] {
-        try await send(command: XCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
+    public func xclaim(
+        key: RESPKey,
+        group: String,
+        consumer: String,
+        minIdleTime: String,
+        id: [String],
+        ms: Int? = nil,
+        unixTimeMilliseconds: Date? = nil,
+        count: Int? = nil,
+        force: Bool = false,
+        justid: Bool = false,
+        lastid: String? = nil
+    ) async throws -> [RESPToken] {
+        try await send(
+            command: XCLAIM(
+                key: key,
+                group: group,
+                consumer: consumer,
+                minIdleTime: minIdleTime,
+                id: id,
+                ms: ms,
+                unixTimeMilliseconds: unixTimeMilliseconds,
+                count: count,
+                force: force,
+                justid: justid,
+                lastid: lastid
+            )
+        )
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -752,7 +841,13 @@ extension ValkeyConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate(key: RESPKey, group: String, idSelector: XGROUP.CREATE.IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws -> RESPToken {
+    public func xgroupCreate(
+        key: RESPKey,
+        group: String,
+        idSelector: XGROUP.CREATE.IdSelector,
+        mkstream: Bool = false,
+        entriesRead: Int? = nil
+    ) async throws -> RESPToken {
         try await send(command: XGROUP.CREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
     }
 
@@ -925,7 +1020,13 @@ extension ValkeyConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(groupBlock: XREADGROUP.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP.Streams) async throws -> [String: RESPToken]? {
+    public func xreadgroup(
+        groupBlock: XREADGROUP.GroupBlock,
+        count: Int? = nil,
+        milliseconds: Int? = nil,
+        noack: Bool = false,
+        streams: XREADGROUP.Streams
+    ) async throws -> [String: RESPToken]? {
         try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
