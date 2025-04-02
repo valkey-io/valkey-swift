@@ -55,15 +55,7 @@ public enum XGROUP {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray(
-                "XGROUP",
-                "CREATE",
-                key,
-                group,
-                idSelector,
-                RESPPureToken("MKSTREAM", mkstream),
-                RESPWithToken("ENTRIESREAD", entriesRead)
-            )
+            commandEncoder.encodeArray("XGROUP", "CREATE", key, group, idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
         }
     }
 
@@ -125,6 +117,7 @@ public enum XGROUP {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
+
 
         @inlinable public init() {
         }
@@ -206,6 +199,7 @@ public enum XINFO {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
+
 
         @inlinable public init() {
         }
@@ -364,8 +358,7 @@ public struct XAUTOCLAIM: RESPCommand {
     public var count: Int? = nil
     public var justid: Bool = false
 
-    @inlinable public init(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false)
-    {
+    @inlinable public init(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) {
         self.key = key
         self.group = group
         self.consumer = consumer
@@ -376,16 +369,7 @@ public struct XAUTOCLAIM: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "XAUTOCLAIM",
-            key,
-            group,
-            consumer,
-            minIdleTime,
-            start,
-            RESPWithToken("COUNT", count),
-            RESPPureToken("JUSTID", justid)
-        )
+        commandEncoder.encodeArray("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
     }
 }
 
@@ -405,19 +389,7 @@ public struct XCLAIM: RESPCommand {
     public var justid: Bool = false
     public var lastid: String? = nil
 
-    @inlinable public init(
-        key: RESPKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        id: [String],
-        ms: Int? = nil,
-        unixTimeMilliseconds: Date? = nil,
-        count: Int? = nil,
-        force: Bool = false,
-        justid: Bool = false,
-        lastid: String? = nil
-    ) {
+    @inlinable public init(key: RESPKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) {
         self.key = key
         self.group = group
         self.consumer = consumer
@@ -432,20 +404,7 @@ public struct XCLAIM: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "XCLAIM",
-            key,
-            group,
-            consumer,
-            minIdleTime,
-            id,
-            RESPWithToken("IDLE", ms),
-            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
-            RESPWithToken("RETRYCOUNT", count),
-            RESPPureToken("FORCE", force),
-            RESPPureToken("JUSTID", justid),
-            RESPWithToken("LASTID", lastid)
-        )
+        commandEncoder.encodeArray("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 }
 
@@ -613,14 +572,7 @@ public struct XREADGROUP: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "XREADGROUP",
-            RESPWithToken("GROUP", groupBlock),
-            RESPWithToken("COUNT", count),
-            RESPWithToken("BLOCK", milliseconds),
-            RESPPureToken("NOACK", noack),
-            RESPWithToken("STREAMS", streams)
-        )
+        commandEncoder.encodeArray("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
     }
 }
 
@@ -723,10 +675,11 @@ public struct XTRIM: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
     ///
-    /// - Documentation: [XACK](https:/redis.io/docs/latest/commands/xack)
+    /// - Documentation: [XACK](https:/valkey.io/commands/xack)
     /// - Version: 5.0.0
     /// - Complexity: O(1) for each message ID processed.
     /// - Categories: @write, @stream, @fast
@@ -738,7 +691,7 @@ extension ValkeyConnection {
 
     /// Appends a new message to a stream. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [XADD](https:/redis.io/docs/latest/commands/xadd)
+    /// - Documentation: [XADD](https:/valkey.io/commands/xadd)
     /// - Version: 5.0.0
     /// - Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
     /// - Categories: @write, @stream, @fast
@@ -746,19 +699,13 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(
-        key: RESPKey,
-        nomkstream: Bool = false,
-        trim: XADD.Trim? = nil,
-        idSelector: XADD.IdSelector,
-        data: [XADD.Data]
-    ) async throws -> String? {
+    public func xadd(key: RESPKey, nomkstream: Bool = false, trim: XADD.Trim? = nil, idSelector: XADD.IdSelector, data: [XADD.Data]) async throws -> String? {
         try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
     ///
-    /// - Documentation: [XAUTOCLAIM](https:/redis.io/docs/latest/commands/xautoclaim)
+    /// - Documentation: [XAUTOCLAIM](https:/valkey.io/commands/xautoclaim)
     /// - Version: 6.2.0
     /// - Complexity: O(1) if COUNT is small.
     /// - Categories: @write, @stream, @fast
@@ -767,23 +714,13 @@ extension ValkeyConnection {
     ///     2. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
     ///     3. An [Array](https:/redis.io/docs/reference/protocol-spec#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
     @inlinable
-    public func xautoclaim(
-        key: RESPKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        start: String,
-        count: Int? = nil,
-        justid: Bool = false
-    ) async throws -> [RESPToken] {
-        try await send(
-            command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid)
-        )
+    public func xautoclaim(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) async throws -> [RESPToken] {
+        try await send(command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
     ///
-    /// - Documentation: [XCLAIM](https:/redis.io/docs/latest/commands/xclaim)
+    /// - Documentation: [XCLAIM](https:/valkey.io/commands/xclaim)
     /// - Version: 5.0.0
     /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
     /// - Categories: @write, @stream, @fast
@@ -791,39 +728,13 @@ extension ValkeyConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(
-        key: RESPKey,
-        group: String,
-        consumer: String,
-        minIdleTime: String,
-        id: [String],
-        ms: Int? = nil,
-        unixTimeMilliseconds: Date? = nil,
-        count: Int? = nil,
-        force: Bool = false,
-        justid: Bool = false,
-        lastid: String? = nil
-    ) async throws -> [RESPToken] {
-        try await send(
-            command: XCLAIM(
-                key: key,
-                group: group,
-                consumer: consumer,
-                minIdleTime: minIdleTime,
-                id: id,
-                ms: ms,
-                unixTimeMilliseconds: unixTimeMilliseconds,
-                count: count,
-                force: force,
-                justid: justid,
-                lastid: lastid
-            )
-        )
+    public func xclaim(key: RESPKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESPToken] {
+        try await send(command: XCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
     }
 
     /// Returns the number of messages after removing them from a stream.
     ///
-    /// - Documentation: [XDEL](https:/redis.io/docs/latest/commands/xdel)
+    /// - Documentation: [XDEL](https:/valkey.io/commands/xdel)
     /// - Version: 5.0.0
     /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size.
     /// - Categories: @write, @stream, @fast
@@ -835,25 +746,19 @@ extension ValkeyConnection {
 
     /// Creates a consumer group.
     ///
-    /// - Documentation: [XGROUP CREATE](https:/redis.io/docs/latest/commands/xgroup-create)
+    /// - Documentation: [XGROUP CREATE](https:/valkey.io/commands/xgroup-create)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate(
-        key: RESPKey,
-        group: String,
-        idSelector: XGROUP.CREATE.IdSelector,
-        mkstream: Bool = false,
-        entriesRead: Int? = nil
-    ) async throws -> RESPToken {
+    public func xgroupCreate(key: RESPKey, group: String, idSelector: XGROUP.CREATE.IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws -> RESPToken {
         try await send(command: XGROUP.CREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
     }
 
     /// Creates a consumer in a consumer group.
     ///
-    /// - Documentation: [XGROUP CREATECONSUMER](https:/redis.io/docs/latest/commands/xgroup-createconsumer)
+    /// - Documentation: [XGROUP CREATECONSUMER](https:/valkey.io/commands/xgroup-createconsumer)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @stream, @slow
@@ -865,7 +770,7 @@ extension ValkeyConnection {
 
     /// Deletes a consumer from a consumer group.
     ///
-    /// - Documentation: [XGROUP DELCONSUMER](https:/redis.io/docs/latest/commands/xgroup-delconsumer)
+    /// - Documentation: [XGROUP DELCONSUMER](https:/valkey.io/commands/xgroup-delconsumer)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @stream, @slow
@@ -877,7 +782,7 @@ extension ValkeyConnection {
 
     /// Destroys a consumer group.
     ///
-    /// - Documentation: [XGROUP DESTROY](https:/redis.io/docs/latest/commands/xgroup-destroy)
+    /// - Documentation: [XGROUP DESTROY](https:/valkey.io/commands/xgroup-destroy)
     /// - Version: 5.0.0
     /// - Complexity: O(N) where N is the number of entries in the group's pending entries list (PEL).
     /// - Categories: @write, @stream, @slow
@@ -889,7 +794,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [XGROUP HELP](https:/redis.io/docs/latest/commands/xgroup-help)
+    /// - Documentation: [XGROUP HELP](https:/valkey.io/commands/xgroup-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @stream, @slow
@@ -901,7 +806,7 @@ extension ValkeyConnection {
 
     /// Sets the last-delivered ID of a consumer group.
     ///
-    /// - Documentation: [XGROUP SETID](https:/redis.io/docs/latest/commands/xgroup-setid)
+    /// - Documentation: [XGROUP SETID](https:/valkey.io/commands/xgroup-setid)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @stream, @slow
@@ -913,7 +818,7 @@ extension ValkeyConnection {
 
     /// Returns a list of the consumers in a consumer group.
     ///
-    /// - Documentation: [XINFO CONSUMERS](https:/redis.io/docs/latest/commands/xinfo-consumers)
+    /// - Documentation: [XINFO CONSUMERS](https:/valkey.io/commands/xinfo-consumers)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @stream, @slow
@@ -925,7 +830,7 @@ extension ValkeyConnection {
 
     /// Returns a list of the consumer groups of a stream.
     ///
-    /// - Documentation: [XINFO GROUPS](https:/redis.io/docs/latest/commands/xinfo-groups)
+    /// - Documentation: [XINFO GROUPS](https:/valkey.io/commands/xinfo-groups)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @stream, @slow
@@ -937,7 +842,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [XINFO HELP](https:/redis.io/docs/latest/commands/xinfo-help)
+    /// - Documentation: [XINFO HELP](https:/valkey.io/commands/xinfo-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @stream, @slow
@@ -949,7 +854,7 @@ extension ValkeyConnection {
 
     /// Returns information about a stream.
     ///
-    /// - Documentation: [XINFO STREAM](https:/redis.io/docs/latest/commands/xinfo-stream)
+    /// - Documentation: [XINFO STREAM](https:/valkey.io/commands/xinfo-stream)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @stream, @slow
@@ -963,7 +868,7 @@ extension ValkeyConnection {
 
     /// Return the number of messages in a stream.
     ///
-    /// - Documentation: [XLEN](https:/redis.io/docs/latest/commands/xlen)
+    /// - Documentation: [XLEN](https:/valkey.io/commands/xlen)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @stream, @fast
@@ -975,7 +880,7 @@ extension ValkeyConnection {
 
     /// Returns the information and entries from a stream consumer group's pending entries list.
     ///
-    /// - Documentation: [XPENDING](https:/redis.io/docs/latest/commands/xpending)
+    /// - Documentation: [XPENDING](https:/valkey.io/commands/xpending)
     /// - Version: 5.0.0
     /// - Complexity: O(N) with N being the number of elements returned, so asking for a small fixed number of entries per call is O(1). O(M), where M is the total number of entries scanned when used with the IDLE filter. When the command returns just the summary and the list of consumers is small, it runs in O(1) time; otherwise, an additional O(N) time for iterating every consumer.
     /// - Categories: @read, @stream, @slow
@@ -987,7 +892,7 @@ extension ValkeyConnection {
 
     /// Returns the messages from a stream within a range of IDs.
     ///
-    /// - Documentation: [XRANGE](https:/redis.io/docs/latest/commands/xrange)
+    /// - Documentation: [XRANGE](https:/valkey.io/commands/xrange)
     /// - Version: 5.0.0
     /// - Complexity: O(N) with N being the number of elements being returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
     /// - Categories: @read, @stream, @slow
@@ -999,7 +904,7 @@ extension ValkeyConnection {
 
     /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
     ///
-    /// - Documentation: [XREAD](https:/redis.io/docs/latest/commands/xread)
+    /// - Documentation: [XREAD](https:/valkey.io/commands/xread)
     /// - Version: 5.0.0
     /// - Categories: @read, @stream, @slow, @blocking
     /// - Returns: One of the following:
@@ -1012,7 +917,7 @@ extension ValkeyConnection {
 
     /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
     ///
-    /// - Documentation: [XREADGROUP](https:/redis.io/docs/latest/commands/xreadgroup)
+    /// - Documentation: [XREADGROUP](https:/valkey.io/commands/xreadgroup)
     /// - Version: 5.0.0
     /// - Complexity: For each stream mentioned: O(M) with M being the number of elements returned. If M is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1). On the other side when XREADGROUP blocks, XADD will pay the O(N) time in order to serve the N clients blocked on the stream getting new data.
     /// - Categories: @write, @stream, @slow, @blocking
@@ -1020,19 +925,13 @@ extension ValkeyConnection {
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(
-        groupBlock: XREADGROUP.GroupBlock,
-        count: Int? = nil,
-        milliseconds: Int? = nil,
-        noack: Bool = false,
-        streams: XREADGROUP.Streams
-    ) async throws -> [String: RESPToken]? {
+    public func xreadgroup(groupBlock: XREADGROUP.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP.Streams) async throws -> [String: RESPToken]? {
         try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
     /// Returns the messages from a stream within a range of IDs in reverse order.
     ///
-    /// - Documentation: [XREVRANGE](https:/redis.io/docs/latest/commands/xrevrange)
+    /// - Documentation: [XREVRANGE](https:/valkey.io/commands/xrevrange)
     /// - Version: 5.0.0
     /// - Complexity: O(N) with N being the number of elements returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
     /// - Categories: @read, @stream, @slow
@@ -1044,7 +943,7 @@ extension ValkeyConnection {
 
     /// An internal command for replicating stream values.
     ///
-    /// - Documentation: [XSETID](https:/redis.io/docs/latest/commands/xsetid)
+    /// - Documentation: [XSETID](https:/valkey.io/commands/xsetid)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @stream, @fast
@@ -1056,7 +955,7 @@ extension ValkeyConnection {
 
     /// Deletes messages from the beginning of a stream.
     ///
-    /// - Documentation: [XTRIM](https:/redis.io/docs/latest/commands/xtrim)
+    /// - Documentation: [XTRIM](https:/valkey.io/commands/xtrim)
     /// - Version: 5.0.0
     /// - Complexity: O(N), with N being the number of evicted entries. Constant times are very small however, since entries are organized in macro nodes containing multiple entries that can be released with a single deallocation.
     /// - Categories: @write, @stream, @slow

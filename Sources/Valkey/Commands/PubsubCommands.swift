@@ -43,6 +43,7 @@ public enum PUBSUB {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -54,6 +55,7 @@ public enum PUBSUB {
     /// Returns a count of unique pattern subscriptions.
     public struct NUMPAT: RESPCommand {
         public typealias Response = Int
+
 
         @inlinable public init() {
         }
@@ -234,10 +236,11 @@ public struct UNSUBSCRIBE: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Listens for messages published to channels that match one or more patterns.
     ///
-    /// - Documentation: [PSUBSCRIBE](https:/redis.io/docs/latest/commands/psubscribe)
+    /// - Documentation: [PSUBSCRIBE](https:/valkey.io/commands/psubscribe)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of patterns to subscribe to.
     /// - Categories: @pubsub, @slow
@@ -249,7 +252,7 @@ extension ValkeyConnection {
 
     /// Posts a message to a channel.
     ///
-    /// - Documentation: [PUBLISH](https:/redis.io/docs/latest/commands/publish)
+    /// - Documentation: [PUBLISH](https:/valkey.io/commands/publish)
     /// - Version: 2.0.0
     /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
     /// - Categories: @pubsub, @fast
@@ -261,7 +264,7 @@ extension ValkeyConnection {
 
     /// Returns the active channels.
     ///
-    /// - Documentation: [PUBSUB CHANNELS](https:/redis.io/docs/latest/commands/pubsub-channels)
+    /// - Documentation: [PUBSUB CHANNELS](https:/valkey.io/commands/pubsub-channels)
     /// - Version: 2.8.0
     /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
     /// - Categories: @pubsub, @slow
@@ -273,7 +276,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [PUBSUB HELP](https:/redis.io/docs/latest/commands/pubsub-help)
+    /// - Documentation: [PUBSUB HELP](https:/valkey.io/commands/pubsub-help)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -285,7 +288,7 @@ extension ValkeyConnection {
 
     /// Returns a count of unique pattern subscriptions.
     ///
-    /// - Documentation: [PUBSUB NUMPAT](https:/redis.io/docs/latest/commands/pubsub-numpat)
+    /// - Documentation: [PUBSUB NUMPAT](https:/valkey.io/commands/pubsub-numpat)
     /// - Version: 2.8.0
     /// - Complexity: O(1)
     /// - Categories: @pubsub, @slow
@@ -297,7 +300,7 @@ extension ValkeyConnection {
 
     /// Returns a count of subscribers to channels.
     ///
-    /// - Documentation: [PUBSUB NUMSUB](https:/redis.io/docs/latest/commands/pubsub-numsub)
+    /// - Documentation: [PUBSUB NUMSUB](https:/valkey.io/commands/pubsub-numsub)
     /// - Version: 2.8.0
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
     /// - Categories: @pubsub, @slow
@@ -309,7 +312,7 @@ extension ValkeyConnection {
 
     /// Returns the active shard channels.
     ///
-    /// - Documentation: [PUBSUB SHARDCHANNELS](https:/redis.io/docs/latest/commands/pubsub-shardchannels)
+    /// - Documentation: [PUBSUB SHARDCHANNELS](https:/valkey.io/commands/pubsub-shardchannels)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
     /// - Categories: @pubsub, @slow
@@ -321,7 +324,7 @@ extension ValkeyConnection {
 
     /// Returns the count of subscribers of shard channels.
     ///
-    /// - Documentation: [PUBSUB SHARDNUMSUB](https:/redis.io/docs/latest/commands/pubsub-shardnumsub)
+    /// - Documentation: [PUBSUB SHARDNUMSUB](https:/valkey.io/commands/pubsub-shardnumsub)
     /// - Version: 7.0.0
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
     /// - Categories: @pubsub, @slow
@@ -333,7 +336,7 @@ extension ValkeyConnection {
 
     /// Stops listening to messages published to channels that match one or more patterns.
     ///
-    /// - Documentation: [PUNSUBSCRIBE](https:/redis.io/docs/latest/commands/punsubscribe)
+    /// - Documentation: [PUNSUBSCRIBE](https:/valkey.io/commands/punsubscribe)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of patterns to unsubscribe.
     /// - Categories: @pubsub, @slow
@@ -345,7 +348,7 @@ extension ValkeyConnection {
 
     /// Post a message to a shard channel
     ///
-    /// - Documentation: [SPUBLISH](https:/redis.io/docs/latest/commands/spublish)
+    /// - Documentation: [SPUBLISH](https:/valkey.io/commands/spublish)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
     /// - Categories: @pubsub, @fast
@@ -357,7 +360,7 @@ extension ValkeyConnection {
 
     /// Listens for messages published to shard channels.
     ///
-    /// - Documentation: [SSUBSCRIBE](https:/redis.io/docs/latest/commands/ssubscribe)
+    /// - Documentation: [SSUBSCRIBE](https:/valkey.io/commands/ssubscribe)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of shard channels to subscribe to.
     /// - Categories: @pubsub, @slow
@@ -369,7 +372,7 @@ extension ValkeyConnection {
 
     /// Listens for messages published to channels.
     ///
-    /// - Documentation: [SUBSCRIBE](https:/redis.io/docs/latest/commands/subscribe)
+    /// - Documentation: [SUBSCRIBE](https:/valkey.io/commands/subscribe)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of channels to subscribe to.
     /// - Categories: @pubsub, @slow
@@ -381,7 +384,7 @@ extension ValkeyConnection {
 
     /// Stops listening to messages posted to shard channels.
     ///
-    /// - Documentation: [SUNSUBSCRIBE](https:/redis.io/docs/latest/commands/sunsubscribe)
+    /// - Documentation: [SUNSUBSCRIBE](https:/valkey.io/commands/sunsubscribe)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of shard channels to unsubscribe.
     /// - Categories: @pubsub, @slow
@@ -393,7 +396,7 @@ extension ValkeyConnection {
 
     /// Stops listening to messages posted to channels.
     ///
-    /// - Documentation: [UNSUBSCRIBE](https:/redis.io/docs/latest/commands/unsubscribe)
+    /// - Documentation: [UNSUBSCRIBE](https:/valkey.io/commands/unsubscribe)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of channels to unsubscribe.
     /// - Categories: @pubsub, @slow

@@ -332,14 +332,7 @@ public struct LPOS: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "LPOS",
-            key,
-            element,
-            RESPWithToken("RANK", rank),
-            RESPWithToken("COUNT", numMatches),
-            RESPWithToken("MAXLEN", len)
-        )
+        commandEncoder.encodeArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 }
 
@@ -521,10 +514,11 @@ public struct RPUSHX: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
     ///
-    /// - Documentation: [BLMOVE](https:/redis.io/docs/latest/commands/blmove)
+    /// - Documentation: [BLMOVE](https:/valkey.io/commands/blmove)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @list, @slow, @blocking
@@ -532,19 +526,13 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the operation timed-out
     @inlinable
-    public func blmove(
-        source: RESPKey,
-        destination: RESPKey,
-        wherefrom: BLMOVE.Wherefrom,
-        whereto: BLMOVE.Whereto,
-        timeout: Double
-    ) async throws -> String? {
+    public func blmove(source: RESPKey, destination: RESPKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> String? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
     /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
-    /// - Documentation: [BLMPOP](https:/redis.io/docs/latest/commands/blmpop)
+    /// - Documentation: [BLMPOP](https:/valkey.io/commands/blmpop)
     /// - Version: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
     /// - Categories: @write, @list, @slow, @blocking
@@ -558,7 +546,7 @@ extension ValkeyConnection {
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
-    /// - Documentation: [BLPOP](https:/redis.io/docs/latest/commands/blpop)
+    /// - Documentation: [BLPOP](https:/valkey.io/commands/blpop)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of provided keys.
     /// - Categories: @write, @list, @slow, @blocking
@@ -572,7 +560,7 @@ extension ValkeyConnection {
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
-    /// - Documentation: [BRPOP](https:/redis.io/docs/latest/commands/brpop)
+    /// - Documentation: [BRPOP](https:/valkey.io/commands/brpop)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of provided keys.
     /// - Categories: @write, @list, @slow, @blocking
@@ -586,7 +574,7 @@ extension ValkeyConnection {
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
     ///
-    /// - Documentation: [BRPOPLPUSH](https:/redis.io/docs/latest/commands/brpoplpush)
+    /// - Documentation: [BRPOPLPUSH](https:/valkey.io/commands/brpoplpush)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @list, @slow, @blocking
@@ -600,7 +588,7 @@ extension ValkeyConnection {
 
     /// Returns an element from a list by its index.
     ///
-    /// - Documentation: [LINDEX](https:/redis.io/docs/latest/commands/lindex)
+    /// - Documentation: [LINDEX](https:/valkey.io/commands/lindex)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to traverse to get to the element at index. This makes asking for the first or the last element of the list O(1).
     /// - Categories: @read, @list, @slow
@@ -614,7 +602,7 @@ extension ValkeyConnection {
 
     /// Inserts an element before or after another element in a list.
     ///
-    /// - Documentation: [LINSERT](https:/redis.io/docs/latest/commands/linsert)
+    /// - Documentation: [LINSERT](https:/valkey.io/commands/linsert)
     /// - Version: 2.2.0
     /// - Complexity: O(N) where N is the number of elements to traverse before seeing the value pivot. This means that inserting somewhere on the left end on the list (head) can be considered O(1) and inserting somewhere on the right end (tail) is O(N).
     /// - Categories: @write, @list, @slow
@@ -629,7 +617,7 @@ extension ValkeyConnection {
 
     /// Returns the length of a list.
     ///
-    /// - Documentation: [LLEN](https:/redis.io/docs/latest/commands/llen)
+    /// - Documentation: [LLEN](https:/valkey.io/commands/llen)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @list, @fast
@@ -641,7 +629,7 @@ extension ValkeyConnection {
 
     /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
     ///
-    /// - Documentation: [LMOVE](https:/redis.io/docs/latest/commands/lmove)
+    /// - Documentation: [LMOVE](https:/valkey.io/commands/lmove)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @list, @slow
@@ -653,7 +641,7 @@ extension ValkeyConnection {
 
     /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
     ///
-    /// - Documentation: [LMPOP](https:/redis.io/docs/latest/commands/lmpop)
+    /// - Documentation: [LMPOP](https:/valkey.io/commands/lmpop)
     /// - Version: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
     /// - Categories: @write, @list, @slow
@@ -667,7 +655,7 @@ extension ValkeyConnection {
 
     /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
     ///
-    /// - Documentation: [LPOP](https:/redis.io/docs/latest/commands/lpop)
+    /// - Documentation: [LPOP](https:/valkey.io/commands/lpop)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of elements returned
     /// - Categories: @write, @list, @fast
@@ -682,7 +670,7 @@ extension ValkeyConnection {
 
     /// Returns the index of matching elements in a list.
     ///
-    /// - Documentation: [LPOS](https:/redis.io/docs/latest/commands/lpos)
+    /// - Documentation: [LPOS](https:/valkey.io/commands/lpos)
     /// - Version: 6.0.6
     /// - Complexity: O(N) where N is the number of elements in the list, for the average case. When searching for elements near the head or the tail of the list, or when the MAXLEN option is provided, the command may run in constant time.
     /// - Categories: @read, @list, @slow
@@ -697,7 +685,7 @@ extension ValkeyConnection {
 
     /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [LPUSH](https:/redis.io/docs/latest/commands/lpush)
+    /// - Documentation: [LPUSH](https:/valkey.io/commands/lpush)
     /// - Version: 1.0.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Categories: @write, @list, @fast
@@ -709,7 +697,7 @@ extension ValkeyConnection {
 
     /// Prepends one or more elements to a list only when the list exists.
     ///
-    /// - Documentation: [LPUSHX](https:/redis.io/docs/latest/commands/lpushx)
+    /// - Documentation: [LPUSHX](https:/valkey.io/commands/lpushx)
     /// - Version: 2.2.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Categories: @write, @list, @fast
@@ -721,7 +709,7 @@ extension ValkeyConnection {
 
     /// Returns a range of elements from a list.
     ///
-    /// - Documentation: [LRANGE](https:/redis.io/docs/latest/commands/lrange)
+    /// - Documentation: [LRANGE](https:/valkey.io/commands/lrange)
     /// - Version: 1.0.0
     /// - Complexity: O(S+N) where S is the distance of start offset from HEAD for small lists, from nearest end (HEAD or TAIL) for large lists; and N is the number of elements in the specified range.
     /// - Categories: @read, @list, @slow
@@ -733,7 +721,7 @@ extension ValkeyConnection {
 
     /// Removes elements from a list. Deletes the list if the last element was removed.
     ///
-    /// - Documentation: [LREM](https:/redis.io/docs/latest/commands/lrem)
+    /// - Documentation: [LREM](https:/valkey.io/commands/lrem)
     /// - Version: 1.0.0
     /// - Complexity: O(N+M) where N is the length of the list and M is the number of elements removed.
     /// - Categories: @write, @list, @slow
@@ -745,7 +733,7 @@ extension ValkeyConnection {
 
     /// Sets the value of an element in a list by its index.
     ///
-    /// - Documentation: [LSET](https:/redis.io/docs/latest/commands/lset)
+    /// - Documentation: [LSET](https:/valkey.io/commands/lset)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the length of the list. Setting either the first or the last element of the list is O(1).
     /// - Categories: @write, @list, @slow
@@ -757,7 +745,7 @@ extension ValkeyConnection {
 
     /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
     ///
-    /// - Documentation: [LTRIM](https:/redis.io/docs/latest/commands/ltrim)
+    /// - Documentation: [LTRIM](https:/valkey.io/commands/ltrim)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to be removed by the operation.
     /// - Categories: @write, @list, @slow
@@ -769,7 +757,7 @@ extension ValkeyConnection {
 
     /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
     ///
-    /// - Documentation: [RPOP](https:/redis.io/docs/latest/commands/rpop)
+    /// - Documentation: [RPOP](https:/valkey.io/commands/rpop)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of elements returned
     /// - Categories: @write, @list, @fast
@@ -784,7 +772,7 @@ extension ValkeyConnection {
 
     /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
     ///
-    /// - Documentation: [RPOPLPUSH](https:/redis.io/docs/latest/commands/rpoplpush)
+    /// - Documentation: [RPOPLPUSH](https:/valkey.io/commands/rpoplpush)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @list, @slow
@@ -798,7 +786,7 @@ extension ValkeyConnection {
 
     /// Appends one or more elements to a list. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [RPUSH](https:/redis.io/docs/latest/commands/rpush)
+    /// - Documentation: [RPUSH](https:/valkey.io/commands/rpush)
     /// - Version: 1.0.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Categories: @write, @list, @fast
@@ -810,7 +798,7 @@ extension ValkeyConnection {
 
     /// Appends an element to a list only when the list exists.
     ///
-    /// - Documentation: [RPUSHX](https:/redis.io/docs/latest/commands/rpushx)
+    /// - Documentation: [RPUSHX](https:/valkey.io/commands/rpushx)
     /// - Version: 2.2.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Categories: @write, @list, @fast

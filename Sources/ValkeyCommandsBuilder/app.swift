@@ -11,10 +11,10 @@ struct App {
         let resourceFolder = Bundle.module.resourceURL!
         let commands = try load(fileURL: resourceFolder.appending(path: "commands.json"), as: ValkeyCommands.self)
         let resp3Replies = try load(fileURL: resourceFolder.appending(path: "resp3_replies.json"), as: RESPReplies.self)
-        try writeRedisCommands(toFolder: "Sources/Valkey/Commands/", commands: commands, replies: resp3Replies)
+        try writeValkeyCommands(toFolder: "Sources/Valkey/Commands/", commands: commands, replies: resp3Replies)
     }
 
-    func writeRedisCommands(toFolder: String, commands: ValkeyCommands, replies: RESPReplies) throws {
+    func writeValkeyCommands(toFolder: String, commands: ValkeyCommands, replies: RESPReplies) throws {
         // get list of groups
         var groups: Set<String> = .init()
         for command in commands.commands.values {
@@ -22,7 +22,7 @@ struct App {
         }
         for group in groups {
             let commands = commands.commands.filter { $0.value.group == group }
-            let output = renderRedisCommands(commands, replies: replies)
+            let output = renderValkeyCommands(commands, replies: replies)
             let filename = "\(toFolder)\(group.swiftTypename)Commands.swift"
             try output.write(toFile: filename, atomically: true, encoding: .utf8)
         }

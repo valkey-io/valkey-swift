@@ -22,7 +22,7 @@ public protocol RESPTokenRepresentable {
 extension RESPToken: RESPTokenRepresentable {
     /// Convert RESP3Token to a value
     /// - Parameter type: Type to convert to
-    /// - Throws: RedisClientError.unexpectedType
+    /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Value
     @inlinable
     public func converting<Value: RESPTokenRepresentable>(to type: Value.Type = Value.self) throws -> Value {
@@ -38,7 +38,7 @@ extension RESPToken: RESPTokenRepresentable {
 extension Array where Element == RESPToken {
     /// Convert RESP3Token Array to a value array
     /// - Parameter type: Type to convert to
-    /// - Throws: RedisClientError.unexpectedType
+    /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Array of Value
     @inlinable
     public func converting<Value: RESPTokenRepresentable>(to type: [Value].Type = [Value].self) throws -> [Value] {

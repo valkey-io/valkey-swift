@@ -115,10 +115,8 @@ public struct GETEX: RESPCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
-            case .unixTimeSeconds(let unixTimeSeconds):
-                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds):
-                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
             case .persist: "PERSIST".encode(into: &commandEncoder)
             }
         }
@@ -244,15 +242,7 @@ public struct LCS: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "LCS",
-            key1,
-            key2,
-            RESPPureToken("LEN", len),
-            RESPPureToken("IDX", idx),
-            RESPWithToken("MINMATCHLEN", minMatchLen),
-            RESPPureToken("WITHMATCHLEN", withmatchlen)
-        )
+        commandEncoder.encodeArray("LCS", key1, key2, RESPPureToken("LEN", len), RESPPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RESPPureToken("WITHMATCHLEN", withmatchlen))
     }
 }
 
@@ -370,10 +360,8 @@ public struct SET: RESPCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
-            case .unixTimeSeconds(let unixTimeSeconds):
-                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds):
-                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
             case .keepttl: "KEEPTTL".encode(into: &commandEncoder)
             }
         }
@@ -488,10 +476,11 @@ public struct SUBSTR: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [APPEND](https:/redis.io/docs/latest/commands/append)
+    /// - Documentation: [APPEND](https:/valkey.io/commands/append)
     /// - Version: 2.0.0
     /// - Complexity: O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by Redis will double the free space available on every reallocation.
     /// - Categories: @write, @string, @fast
@@ -503,7 +492,7 @@ extension ValkeyConnection {
 
     /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
     ///
-    /// - Documentation: [DECR](https:/redis.io/docs/latest/commands/decr)
+    /// - Documentation: [DECR](https:/valkey.io/commands/decr)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -515,7 +504,7 @@ extension ValkeyConnection {
 
     /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
     ///
-    /// - Documentation: [DECRBY](https:/redis.io/docs/latest/commands/decrby)
+    /// - Documentation: [DECRBY](https:/valkey.io/commands/decrby)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -527,7 +516,7 @@ extension ValkeyConnection {
 
     /// Returns the string value of a key.
     ///
-    /// - Documentation: [GET](https:/redis.io/docs/latest/commands/get)
+    /// - Documentation: [GET](https:/valkey.io/commands/get)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @string, @fast
@@ -541,7 +530,7 @@ extension ValkeyConnection {
 
     /// Returns the string value of a key after deleting the key.
     ///
-    /// - Documentation: [GETDEL](https:/redis.io/docs/latest/commands/getdel)
+    /// - Documentation: [GETDEL](https:/valkey.io/commands/getdel)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -555,7 +544,7 @@ extension ValkeyConnection {
 
     /// Returns the string value of a key after setting its expiration time.
     ///
-    /// - Documentation: [GETEX](https:/redis.io/docs/latest/commands/getex)
+    /// - Documentation: [GETEX](https:/valkey.io/commands/getex)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -568,7 +557,7 @@ extension ValkeyConnection {
 
     /// Returns a substring of the string stored at a key.
     ///
-    /// - Documentation: [GETRANGE](https:/redis.io/docs/latest/commands/getrange)
+    /// - Documentation: [GETRANGE](https:/valkey.io/commands/getrange)
     /// - Version: 2.4.0
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Categories: @read, @string, @slow
@@ -580,7 +569,7 @@ extension ValkeyConnection {
 
     /// Returns the previous string value of a key after setting it to a new value.
     ///
-    /// - Documentation: [GETSET](https:/redis.io/docs/latest/commands/getset)
+    /// - Documentation: [GETSET](https:/valkey.io/commands/getset)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -594,7 +583,7 @@ extension ValkeyConnection {
 
     /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
     ///
-    /// - Documentation: [INCR](https:/redis.io/docs/latest/commands/incr)
+    /// - Documentation: [INCR](https:/valkey.io/commands/incr)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -606,7 +595,7 @@ extension ValkeyConnection {
 
     /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
     ///
-    /// - Documentation: [INCRBY](https:/redis.io/docs/latest/commands/incrby)
+    /// - Documentation: [INCRBY](https:/valkey.io/commands/incrby)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -618,7 +607,7 @@ extension ValkeyConnection {
 
     /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
     ///
-    /// - Documentation: [INCRBYFLOAT](https:/redis.io/docs/latest/commands/incrbyfloat)
+    /// - Documentation: [INCRBYFLOAT](https:/valkey.io/commands/incrbyfloat)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -630,7 +619,7 @@ extension ValkeyConnection {
 
     /// Finds the longest common substring.
     ///
-    /// - Documentation: [LCS](https:/redis.io/docs/latest/commands/lcs)
+    /// - Documentation: [LCS](https:/valkey.io/commands/lcs)
     /// - Version: 7.0.0
     /// - Complexity: O(N*M) where N and M are the lengths of s1 and s2, respectively
     /// - Categories: @read, @string, @slow
@@ -639,20 +628,13 @@ extension ValkeyConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
     @inlinable
-    public func lcs(
-        key1: RESPKey,
-        key2: RESPKey,
-        len: Bool = false,
-        idx: Bool = false,
-        minMatchLen: Int? = nil,
-        withmatchlen: Bool = false
-    ) async throws -> RESPToken {
+    public func lcs(key1: RESPKey, key2: RESPKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> RESPToken {
         try await send(command: LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
     /// Atomically returns the string values of one or more keys.
     ///
-    /// - Documentation: [MGET](https:/redis.io/docs/latest/commands/mget)
+    /// - Documentation: [MGET](https:/valkey.io/commands/mget)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of keys to retrieve.
     /// - Categories: @read, @string, @fast
@@ -664,7 +646,7 @@ extension ValkeyConnection {
 
     /// Atomically creates or modifies the string values of one or more keys.
     ///
-    /// - Documentation: [MSET](https:/redis.io/docs/latest/commands/mset)
+    /// - Documentation: [MSET](https:/valkey.io/commands/mset)
     /// - Version: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
     /// - Categories: @write, @string, @slow
@@ -676,7 +658,7 @@ extension ValkeyConnection {
 
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
     ///
-    /// - Documentation: [MSETNX](https:/redis.io/docs/latest/commands/msetnx)
+    /// - Documentation: [MSETNX](https:/valkey.io/commands/msetnx)
     /// - Version: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
     /// - Categories: @write, @string, @slow
@@ -690,7 +672,7 @@ extension ValkeyConnection {
 
     /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
     ///
-    /// - Documentation: [PSETEX](https:/redis.io/docs/latest/commands/psetex)
+    /// - Documentation: [PSETEX](https:/valkey.io/commands/psetex)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @slow
@@ -702,7 +684,7 @@ extension ValkeyConnection {
 
     /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
     ///
-    /// - Documentation: [SET](https:/redis.io/docs/latest/commands/set)
+    /// - Documentation: [SET](https:/valkey.io/commands/set)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @slow
@@ -712,19 +694,13 @@ extension ValkeyConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): `GET` given: The key didn't exist before the `SET`.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): `GET` given: The previous value of the key.
     @inlinable
-    public func set(
-        key: RESPKey,
-        value: String,
-        condition: SET.Condition? = nil,
-        get: Bool = false,
-        expiration: SET.Expiration? = nil
-    ) async throws -> String? {
+    public func set(key: RESPKey, value: String, condition: SET.Condition? = nil, get: Bool = false, expiration: SET.Expiration? = nil) async throws -> String? {
         try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
     /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [SETEX](https:/redis.io/docs/latest/commands/setex)
+    /// - Documentation: [SETEX](https:/valkey.io/commands/setex)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @slow
@@ -736,7 +712,7 @@ extension ValkeyConnection {
 
     /// Set the string value of a key only when the key doesn't exist.
     ///
-    /// - Documentation: [SETNX](https:/redis.io/docs/latest/commands/setnx)
+    /// - Documentation: [SETNX](https:/valkey.io/commands/setnx)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @string, @fast
@@ -750,7 +726,7 @@ extension ValkeyConnection {
 
     /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [SETRANGE](https:/redis.io/docs/latest/commands/setrange)
+    /// - Documentation: [SETRANGE](https:/valkey.io/commands/setrange)
     /// - Version: 2.2.0
     /// - Complexity: O(1), not counting the time taken to copy the new string in place. Usually, this string is very small so the amortized complexity is O(1). Otherwise, complexity is O(M) with M being the length of the value argument.
     /// - Categories: @write, @string, @slow
@@ -762,7 +738,7 @@ extension ValkeyConnection {
 
     /// Returns the length of a string value.
     ///
-    /// - Documentation: [STRLEN](https:/redis.io/docs/latest/commands/strlen)
+    /// - Documentation: [STRLEN](https:/valkey.io/commands/strlen)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
     /// - Categories: @read, @string, @fast
@@ -774,7 +750,7 @@ extension ValkeyConnection {
 
     /// Returns a substring from a string value.
     ///
-    /// - Documentation: [SUBSTR](https:/redis.io/docs/latest/commands/substr)
+    /// - Documentation: [SUBSTR](https:/valkey.io/commands/substr)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Categories: @read, @string, @slow

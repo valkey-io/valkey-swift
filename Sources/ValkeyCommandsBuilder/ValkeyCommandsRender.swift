@@ -13,7 +13,7 @@ extension String {
         let linkName = name.replacing(" ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
-        self.append("    /// - Documentation: [\(name)](https:/redis.io/docs/latest/commands/\(linkName))\n")
+        self.append("    /// - Documentation: [\(name)](https:/valkey.io/commands/\(linkName))\n")
         self.append("    /// - Version: \(command.since)\n")
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
@@ -59,7 +59,7 @@ extension String {
                 )
             } else {
                 self.append(
-                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.redisRepresentable(isArray: false)).encode(into: &commandEncoder)\n"
+                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false)).encode(into: &commandEncoder)\n"
                 )
             }
         }
@@ -95,7 +95,7 @@ extension String {
             if case .pureToken = arg.type {
                 self.append("\(tab)            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".encode(into: &commandEncoder) }\n")
             } else {
-                self.append("\(tab)            count += \(arg.redisRepresentable(isArray: false)).encode(into: &commandEncoder)\n")
+                self.append("\(tab)            count += \(arg.respRepresentable(isArray: false)).encode(into: &commandEncoder)\n")
             }
         }
         self.append("\(tab)            return count\n")
@@ -138,9 +138,9 @@ extension String {
             .joined(separator: ", ")
         let commandArguments =
             if let subCommand {
-                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.redisRepresentable(isArray: true) }
+                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.respRepresentable(isArray: true) }
             } else {
-                ["\"\(commandName)\""] + arguments.map { $0.redisRepresentable(isArray: true) }
+                ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true) }
             }
         let commandArgumentsString = commandArguments.joined(separator: ", ")
         self.append("\(tab)    public typealias Response = \(returnType)\n\n")
@@ -194,7 +194,7 @@ extension String {
     }
 }
 
-func renderRedisCommands(_ commands: [String: RESPCommand], replies: RESPReplies) -> String {
+func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplies) -> String {
     var string = """
         //===----------------------------------------------------------------------===//
         //
@@ -401,7 +401,7 @@ extension RESPCommand.ArgumentType {
 }
 
 extension RESPCommand.Argument {
-    func redisRepresentable(isArray: Bool) -> String {
+    func respRepresentable(isArray: Bool) -> String {
         var variable = self.functionLabel(isArray: multiple && isArray)
         switch self.type
         {

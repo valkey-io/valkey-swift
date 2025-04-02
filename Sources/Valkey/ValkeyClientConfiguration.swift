@@ -14,7 +14,7 @@
 
 import NIOSSL
 
-/// Configuration for the redis client
+/// Configuration for the Valkey client
 public struct ValkeyClientConfiguration: Sendable {
     public struct RESPVersion: Sendable, Equatable {
         enum Base {

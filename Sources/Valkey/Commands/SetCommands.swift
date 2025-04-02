@@ -307,10 +307,11 @@ public struct SUNIONSTORE: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [SADD](https:/redis.io/docs/latest/commands/sadd)
+    /// - Documentation: [SADD](https:/valkey.io/commands/sadd)
     /// - Version: 1.0.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Categories: @write, @set, @fast
@@ -322,7 +323,7 @@ extension ValkeyConnection {
 
     /// Returns the number of members in a set.
     ///
-    /// - Documentation: [SCARD](https:/redis.io/docs/latest/commands/scard)
+    /// - Documentation: [SCARD](https:/valkey.io/commands/scard)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @set, @fast
@@ -334,7 +335,7 @@ extension ValkeyConnection {
 
     /// Returns the difference of multiple sets.
     ///
-    /// - Documentation: [SDIFF](https:/redis.io/docs/latest/commands/sdiff)
+    /// - Documentation: [SDIFF](https:/valkey.io/commands/sdiff)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Categories: @read, @set, @slow
@@ -346,7 +347,7 @@ extension ValkeyConnection {
 
     /// Stores the difference of multiple sets in a key.
     ///
-    /// - Documentation: [SDIFFSTORE](https:/redis.io/docs/latest/commands/sdiffstore)
+    /// - Documentation: [SDIFFSTORE](https:/valkey.io/commands/sdiffstore)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Categories: @write, @set, @slow
@@ -358,7 +359,7 @@ extension ValkeyConnection {
 
     /// Returns the intersect of multiple sets.
     ///
-    /// - Documentation: [SINTER](https:/redis.io/docs/latest/commands/sinter)
+    /// - Documentation: [SINTER](https:/valkey.io/commands/sinter)
     /// - Version: 1.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Categories: @read, @set, @slow
@@ -370,7 +371,7 @@ extension ValkeyConnection {
 
     /// Returns the number of members of the intersect of multiple sets.
     ///
-    /// - Documentation: [SINTERCARD](https:/redis.io/docs/latest/commands/sintercard)
+    /// - Documentation: [SINTERCARD](https:/valkey.io/commands/sintercard)
     /// - Version: 7.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Categories: @read, @set, @slow
@@ -382,7 +383,7 @@ extension ValkeyConnection {
 
     /// Stores the intersect of multiple sets in a key.
     ///
-    /// - Documentation: [SINTERSTORE](https:/redis.io/docs/latest/commands/sinterstore)
+    /// - Documentation: [SINTERSTORE](https:/valkey.io/commands/sinterstore)
     /// - Version: 1.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Categories: @write, @set, @slow
@@ -394,7 +395,7 @@ extension ValkeyConnection {
 
     /// Determines whether a member belongs to a set.
     ///
-    /// - Documentation: [SISMEMBER](https:/redis.io/docs/latest/commands/sismember)
+    /// - Documentation: [SISMEMBER](https:/valkey.io/commands/sismember)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @set, @fast
@@ -408,7 +409,7 @@ extension ValkeyConnection {
 
     /// Returns all members of a set.
     ///
-    /// - Documentation: [SMEMBERS](https:/redis.io/docs/latest/commands/smembers)
+    /// - Documentation: [SMEMBERS](https:/valkey.io/commands/smembers)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the set cardinality.
     /// - Categories: @read, @set, @slow
@@ -420,7 +421,7 @@ extension ValkeyConnection {
 
     /// Determines whether multiple members belong to a set.
     ///
-    /// - Documentation: [SMISMEMBER](https:/redis.io/docs/latest/commands/smismember)
+    /// - Documentation: [SMISMEMBER](https:/valkey.io/commands/smismember)
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of elements being checked for membership
     /// - Categories: @read, @set, @fast
@@ -432,7 +433,7 @@ extension ValkeyConnection {
 
     /// Moves a member from one set to another.
     ///
-    /// - Documentation: [SMOVE](https:/redis.io/docs/latest/commands/smove)
+    /// - Documentation: [SMOVE](https:/valkey.io/commands/smove)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @set, @fast
@@ -446,7 +447,7 @@ extension ValkeyConnection {
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
     ///
-    /// - Documentation: [SPOP](https:/redis.io/docs/latest/commands/spop)
+    /// - Documentation: [SPOP](https:/valkey.io/commands/spop)
     /// - Version: 1.0.0
     /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the value of the passed count.
     /// - Categories: @write, @set, @fast
@@ -461,7 +462,7 @@ extension ValkeyConnection {
 
     /// Get one or multiple random members from a set
     ///
-    /// - Documentation: [SRANDMEMBER](https:/redis.io/docs/latest/commands/srandmember)
+    /// - Documentation: [SRANDMEMBER](https:/valkey.io/commands/srandmember)
     /// - Version: 1.0.0
     /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the absolute value of the passed count.
     /// - Categories: @read, @set, @slow
@@ -475,7 +476,7 @@ extension ValkeyConnection {
 
     /// Removes one or more members from a set. Deletes the set if the last member was removed.
     ///
-    /// - Documentation: [SREM](https:/redis.io/docs/latest/commands/srem)
+    /// - Documentation: [SREM](https:/valkey.io/commands/srem)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of members to be removed.
     /// - Categories: @write, @set, @fast
@@ -487,7 +488,7 @@ extension ValkeyConnection {
 
     /// Iterates over members of a set.
     ///
-    /// - Documentation: [SSCAN](https:/redis.io/docs/latest/commands/sscan)
+    /// - Documentation: [SSCAN](https:/valkey.io/commands/sscan)
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Categories: @read, @set, @slow
@@ -501,7 +502,7 @@ extension ValkeyConnection {
 
     /// Returns the union of multiple sets.
     ///
-    /// - Documentation: [SUNION](https:/redis.io/docs/latest/commands/sunion)
+    /// - Documentation: [SUNION](https:/valkey.io/commands/sunion)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Categories: @read, @set, @slow
@@ -513,7 +514,7 @@ extension ValkeyConnection {
 
     /// Stores the union of multiple sets in a key.
     ///
-    /// - Documentation: [SUNIONSTORE](https:/redis.io/docs/latest/commands/sunionstore)
+    /// - Documentation: [SUNIONSTORE](https:/valkey.io/commands/sunionstore)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Categories: @write, @set, @slow

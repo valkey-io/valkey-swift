@@ -20,7 +20,7 @@ import Valkey
 @testable import Valkey
 
 struct GeneratedCommands {
-    let redisHostname = ProcessInfo.processInfo.environment["REDIS_HOSTNAME"] ?? "localhost"
+    let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
     func withKey<Value>(connection: ValkeyConnection, _ operation: (RESPKey) async throws -> Value) async throws -> Value {
         let key = RESPKey(rawValue: UUID().uuidString)
         let value: Value
@@ -49,9 +49,9 @@ struct GeneratedCommands {
                 commandEncoder.encodeArray("GET", key)
             }
         }
-        var logger = Logger(label: "Redis")
+        var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await ValkeyClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.set(key: key, value: "Hello")
                 let response = try await connection.send(command: GET(key: key))
@@ -62,9 +62,9 @@ struct GeneratedCommands {
 
     @Test
     func testSetGet() async throws {
-        var logger = Logger(label: "Redis")
+        var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await ValkeyClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.set(key: key, value: "Hello")
                 let response = try await connection.get(key: key)
@@ -75,9 +75,9 @@ struct GeneratedCommands {
 
     @Test
     func testUnixTime() async throws {
-        var logger = Logger(label: "Redis")
+        var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await ValkeyClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.set(key: key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 1))
                 let response = try await connection.get(key: key)
@@ -91,9 +91,9 @@ struct GeneratedCommands {
 
     @Test
     func testPipelinedSetGet() async throws {
-        var logger = Logger(label: "Redis")
+        var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await ValkeyClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 let responses = try await connection.pipeline(
                     SET(key: key, value: "Pipelined Hello"),
@@ -106,9 +106,9 @@ struct GeneratedCommands {
 
     @Test
     func testSingleElementArray() async throws {
-        var logger = Logger(label: "Redis")
+        var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await ValkeyClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.rpush(key: key, element: ["Hello"])
                 _ = try await connection.rpush(key: key, element: ["Good", "Bye"])
@@ -120,9 +120,9 @@ struct GeneratedCommands {
 
     @Test
     func testCommandWithMoreThan9Strings() async throws {
-        var logger = Logger(label: "Redis")
+        var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await ValkeyClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 let count = try await connection.rpush(key: key, element: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
                 #expect(count == 10)
@@ -134,9 +134,9 @@ struct GeneratedCommands {
 
     @Test
     func testSort() async throws {
-        var logger = Logger(label: "Redis")
+        var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await ValkeyClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.lpush(key: key, element: ["a"])
                 _ = try await connection.lpush(key: key, element: ["c"])
@@ -149,9 +149,9 @@ struct GeneratedCommands {
 
     @Test("Array with count using LMPOP")
     func testArrayWithCount() async throws {
-        var logger = Logger(label: "Redis")
+        var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await ValkeyClient(.hostname(redisHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await withKey(connection: connection) { key2 in
                     _ = try await connection.lpush(key: key, element: ["a"])
@@ -175,10 +175,10 @@ struct GeneratedCommands {
     @Test
     func testSubscriptions() async throws {
         try await withThrowingTaskGroup(of: Void.self) { group in
-            var logger = Logger(label: "Redis")
+            var logger = Logger(label: "Valkey")
             logger.logLevel = .debug
             group.addTask {
-                try await RedisClient(.hostname("localhost", port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                try await ValkeyClient(.hostname("localhost", port: 6379), logger: logger).withConnection(logger: logger) { connection in
                     _ = try await connection.subscribe(channel: "subscribe")
                     for try await message in connection.subscriptions {
                         try print(message.converting(to: [String].self))
@@ -187,7 +187,7 @@ struct GeneratedCommands {
                 }
             }
             group.addTask {
-                try await RedisClient(.hostname("localhost", port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                try await ValkeyClient(.hostname("localhost", port: 6379), logger: logger).withConnection(logger: logger) { connection in
                     while true {
                         let subscribers = try await connection.pubsubNumsub(channel: "subscribe")
                         if try subscribers[1].converting(to: Int.self) > 0 { break }

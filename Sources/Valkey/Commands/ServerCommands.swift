@@ -107,6 +107,7 @@ public enum ACL {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -119,6 +120,7 @@ public enum ACL {
     public struct LIST: RESPCommand {
         public typealias Response = [String]
 
+
         @inlinable public init() {
         }
 
@@ -130,6 +132,7 @@ public enum ACL {
     /// Reloads the rules from the configured ACL file.
     public struct LOAD: RESPCommand {
         public typealias Response = RESPToken
+
 
         @inlinable public init() {
         }
@@ -170,6 +173,7 @@ public enum ACL {
     public struct SAVE: RESPCommand {
         public typealias Response = RESPToken
 
+
         @inlinable public init() {
         }
 
@@ -199,6 +203,7 @@ public enum ACL {
     public struct USERS: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -210,6 +215,7 @@ public enum ACL {
     /// Returns the authenticated username of the current connection.
     public struct WHOAMI: RESPCommand {
         public typealias Response = String
+
 
         @inlinable public init() {
         }
@@ -225,6 +231,7 @@ extension COMMAND {
     /// Returns a count of commands.
     public struct COUNT: RESPCommand {
         public typealias Response = Int
+
 
         @inlinable public init() {
         }
@@ -286,6 +293,7 @@ extension COMMAND {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
+
 
         @inlinable public init() {
         }
@@ -362,6 +370,7 @@ public enum CONFIG {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -374,6 +383,7 @@ public enum CONFIG {
     public struct RESETSTAT: RESPCommand {
         public typealias Response = RESPToken
 
+
         @inlinable public init() {
         }
 
@@ -385,6 +395,7 @@ public enum CONFIG {
     /// Persists the effective configuration to file.
     public struct REWRITE: RESPCommand {
         public typealias Response = RESPToken
+
 
         @inlinable public init() {
         }
@@ -429,6 +440,7 @@ public enum LATENCY {
     public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
+
         @inlinable public init() {
         }
 
@@ -455,6 +467,7 @@ public enum LATENCY {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
+
 
         @inlinable public init() {
         }
@@ -498,6 +511,7 @@ public enum LATENCY {
     public struct LATEST: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -529,6 +543,7 @@ public enum MEMORY {
     public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
+
         @inlinable public init() {
         }
 
@@ -540,6 +555,7 @@ public enum MEMORY {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
+
 
         @inlinable public init() {
         }
@@ -553,6 +569,7 @@ public enum MEMORY {
     public struct MALLOCSTATS: RESPCommand {
         public typealias Response = String
 
+
         @inlinable public init() {
         }
 
@@ -565,6 +582,7 @@ public enum MEMORY {
     public struct PURGE: RESPCommand {
         public typealias Response = RESPToken
 
+
         @inlinable public init() {
         }
 
@@ -576,6 +594,7 @@ public enum MEMORY {
     /// Returns details about memory usage.
     public struct STATS: RESPCommand {
         public typealias Response = [String: RESPToken]
+
 
         @inlinable public init() {
         }
@@ -610,6 +629,7 @@ public enum MODULE {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -621,6 +641,7 @@ public enum MODULE {
     /// Returns all loaded modules.
     public struct LIST: RESPCommand {
         public typealias Response = [RESPToken]
+
 
         @inlinable public init() {
         }
@@ -716,6 +737,7 @@ public enum SLOWLOG {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -728,6 +750,7 @@ public enum SLOWLOG {
     public struct LEN: RESPCommand {
         public typealias Response = Int
 
+
         @inlinable public init() {
         }
 
@@ -739,6 +762,7 @@ public enum SLOWLOG {
     /// Clears all entries from the slow log.
     public struct RESET: RESPCommand {
         public typealias Response = RESPToken
+
 
         @inlinable public init() {
         }
@@ -753,6 +777,7 @@ public enum SLOWLOG {
 /// Asynchronously rewrites the append-only file to disk.
 public struct BGREWRITEAOF: RESPCommand {
     public typealias Response = String
+
 
     @inlinable public init() {
     }
@@ -781,6 +806,7 @@ public struct BGSAVE: RESPCommand {
 public struct COMMAND: RESPCommand {
     public typealias Response = [RESPToken]
 
+
     @inlinable public init() {
     }
 
@@ -792,6 +818,7 @@ public struct COMMAND: RESPCommand {
 /// Returns the number of keys in the database.
 public struct DBSIZE: RESPCommand {
     public typealias Response = Int
+
 
     @inlinable public init() {
     }
@@ -907,6 +934,7 @@ public struct INFO: RESPCommand {
 public struct LASTSAVE: RESPCommand {
     public typealias Response = Int
 
+
     @inlinable public init() {
     }
 
@@ -933,6 +961,7 @@ public struct LOLWUT: RESPCommand {
 /// Listens for all requests received by the server in real-time.
 public struct MONITOR: RESPCommand {
     public typealias Response = RESPToken
+
 
     @inlinable public init() {
     }
@@ -962,6 +991,7 @@ public struct PSYNC: RESPCommand {
 /// An internal command for configuring the replication stream.
 public struct REPLCONF: RESPCommand {
     public typealias Response = RESPToken
+
 
     @inlinable public init() {
     }
@@ -1034,15 +1064,7 @@ public struct RESTOREASKING: RESPCommand {
     public var seconds: Int? = nil
     public var frequency: Int? = nil
 
-    @inlinable public init(
-        key: RESPKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool = false,
-        absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
-    ) {
+    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -1053,22 +1075,14 @@ public struct RESTOREASKING: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "RESTORE-ASKING",
-            key,
-            ttl,
-            serializedValue,
-            RESPPureToken("REPLACE", replace),
-            RESPPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
-        )
+        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 }
 
 /// Returns the replication role.
 public struct ROLE: RESPCommand {
     public typealias Response = [RESPToken]
+
 
     @inlinable public init() {
     }
@@ -1081,6 +1095,7 @@ public struct ROLE: RESPCommand {
 /// Synchronously saves the database(s) to disk.
 public struct SAVE: RESPCommand {
     public typealias Response = RESPToken
+
 
     @inlinable public init() {
     }
@@ -1195,6 +1210,7 @@ public struct SWAPDB: RESPCommand {
 public struct SYNC: RESPCommand {
     public typealias Response = RESPToken
 
+
     @inlinable public init() {
     }
 
@@ -1207,6 +1223,7 @@ public struct SYNC: RESPCommand {
 public struct TIME: RESPCommand {
     public typealias Response = [RESPToken]
 
+
     @inlinable public init() {
     }
 
@@ -1215,10 +1232,11 @@ public struct TIME: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Lists the ACL categories, or the commands inside a category.
     ///
-    /// - Documentation: [ACL CAT](https:/redis.io/docs/latest/commands/acl-cat)
+    /// - Documentation: [ACL CAT](https:/valkey.io/commands/acl-cat)
     /// - Version: 6.0.0
     /// - Complexity: O(1) since the categories and commands are a fixed set.
     /// - Categories: @slow
@@ -1232,7 +1250,7 @@ extension ValkeyConnection {
 
     /// Deletes ACL users, and terminates their connections.
     ///
-    /// - Documentation: [ACL DELUSER](https:/redis.io/docs/latest/commands/acl-deluser)
+    /// - Documentation: [ACL DELUSER](https:/valkey.io/commands/acl-deluser)
     /// - Version: 6.0.0
     /// - Complexity: O(1) amortized time considering the typical user.
     /// - Categories: @admin, @slow, @dangerous
@@ -1244,7 +1262,7 @@ extension ValkeyConnection {
 
     /// Simulates the execution of a command by a user, without executing the command.
     ///
-    /// - Documentation: [ACL DRYRUN](https:/redis.io/docs/latest/commands/acl-dryrun)
+    /// - Documentation: [ACL DRYRUN](https:/valkey.io/commands/acl-dryrun)
     /// - Version: 7.0.0
     /// - Complexity: O(1).
     /// - Categories: @admin, @slow, @dangerous
@@ -1258,7 +1276,7 @@ extension ValkeyConnection {
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     ///
-    /// - Documentation: [ACL GENPASS](https:/redis.io/docs/latest/commands/acl-genpass)
+    /// - Documentation: [ACL GENPASS](https:/valkey.io/commands/acl-genpass)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1270,7 +1288,7 @@ extension ValkeyConnection {
 
     /// Lists the ACL rules of a user.
     ///
-    /// - Documentation: [ACL GETUSER](https:/redis.io/docs/latest/commands/acl-getuser)
+    /// - Documentation: [ACL GETUSER](https:/valkey.io/commands/acl-getuser)
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
     /// - Categories: @admin, @slow, @dangerous
@@ -1284,7 +1302,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [ACL HELP](https:/redis.io/docs/latest/commands/acl-help)
+    /// - Documentation: [ACL HELP](https:/valkey.io/commands/acl-help)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1296,7 +1314,7 @@ extension ValkeyConnection {
 
     /// Dumps the effective rules in ACL file format.
     ///
-    /// - Documentation: [ACL LIST](https:/redis.io/docs/latest/commands/acl-list)
+    /// - Documentation: [ACL LIST](https:/valkey.io/commands/acl-list)
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
@@ -1308,12 +1326,12 @@ extension ValkeyConnection {
 
     /// Reloads the rules from the configured ACL file.
     ///
-    /// - Documentation: [ACL LOAD](https:/redis.io/docs/latest/commands/acl-load)
+    /// - Documentation: [ACL LOAD](https:/valkey.io/commands/acl-load)
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
-    ///
+    ///     
     ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
     @inlinable
@@ -1323,7 +1341,7 @@ extension ValkeyConnection {
 
     /// Lists recent security events generated due to ACL rules.
     ///
-    /// - Documentation: [ACL LOG](https:/redis.io/docs/latest/commands/acl-log)
+    /// - Documentation: [ACL LOG](https:/valkey.io/commands/acl-log)
     /// - Version: 6.0.0
     /// - Complexity: O(N) with N being the number of entries shown.
     /// - Categories: @admin, @slow, @dangerous
@@ -1338,7 +1356,7 @@ extension ValkeyConnection {
 
     /// Saves the effective ACL rules in the configured ACL file.
     ///
-    /// - Documentation: [ACL SAVE](https:/redis.io/docs/latest/commands/acl-save)
+    /// - Documentation: [ACL SAVE](https:/valkey.io/commands/acl-save)
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
@@ -1351,7 +1369,7 @@ extension ValkeyConnection {
 
     /// Creates and modifies an ACL user and its rules.
     ///
-    /// - Documentation: [ACL SETUSER](https:/redis.io/docs/latest/commands/acl-setuser)
+    /// - Documentation: [ACL SETUSER](https:/valkey.io/commands/acl-setuser)
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of rules provided.
     /// - Categories: @admin, @slow, @dangerous
@@ -1364,7 +1382,7 @@ extension ValkeyConnection {
 
     /// Lists all ACL users.
     ///
-    /// - Documentation: [ACL USERS](https:/redis.io/docs/latest/commands/acl-users)
+    /// - Documentation: [ACL USERS](https:/valkey.io/commands/acl-users)
     /// - Version: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
@@ -1376,7 +1394,7 @@ extension ValkeyConnection {
 
     /// Returns the authenticated username of the current connection.
     ///
-    /// - Documentation: [ACL WHOAMI](https:/redis.io/docs/latest/commands/acl-whoami)
+    /// - Documentation: [ACL WHOAMI](https:/valkey.io/commands/acl-whoami)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1388,12 +1406,12 @@ extension ValkeyConnection {
 
     /// Asynchronously rewrites the append-only file to disk.
     ///
-    /// - Documentation: [BGREWRITEAOF](https:/redis.io/docs/latest/commands/bgrewriteaof)
+    /// - Documentation: [BGREWRITEAOF](https:/valkey.io/commands/bgrewriteaof)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
-    ///
+    ///     
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
     public func bgrewriteaof() async throws -> String {
@@ -1402,7 +1420,7 @@ extension ValkeyConnection {
 
     /// Asynchronously saves the database(s) to disk.
     ///
-    /// - Documentation: [BGSAVE](https:/redis.io/docs/latest/commands/bgsave)
+    /// - Documentation: [BGSAVE](https:/valkey.io/commands/bgsave)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1416,7 +1434,7 @@ extension ValkeyConnection {
 
     /// Returns detailed information about all commands.
     ///
-    /// - Documentation: [COMMAND](https:/redis.io/docs/latest/commands/command)
+    /// - Documentation: [COMMAND](https:/valkey.io/commands/command)
     /// - Version: 2.8.13
     /// - Complexity: O(N) where N is the total number of Redis commands
     /// - Categories: @slow, @connection
@@ -1428,7 +1446,7 @@ extension ValkeyConnection {
 
     /// Returns a count of commands.
     ///
-    /// - Documentation: [COMMAND COUNT](https:/redis.io/docs/latest/commands/command-count)
+    /// - Documentation: [COMMAND COUNT](https:/valkey.io/commands/command-count)
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -1440,7 +1458,7 @@ extension ValkeyConnection {
 
     /// Returns documentary information about one, multiple or all commands.
     ///
-    /// - Documentation: [COMMAND DOCS](https:/redis.io/docs/latest/commands/command-docs)
+    /// - Documentation: [COMMAND DOCS](https:/valkey.io/commands/command-docs)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of commands to look up
     /// - Categories: @slow, @connection
@@ -1452,7 +1470,7 @@ extension ValkeyConnection {
 
     /// Extracts the key names from an arbitrary command.
     ///
-    /// - Documentation: [COMMAND GETKEYS](https:/redis.io/docs/latest/commands/command-getkeys)
+    /// - Documentation: [COMMAND GETKEYS](https:/valkey.io/commands/command-getkeys)
     /// - Version: 2.8.13
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Categories: @slow, @connection
@@ -1464,7 +1482,7 @@ extension ValkeyConnection {
 
     /// Extracts the key names and access flags for an arbitrary command.
     ///
-    /// - Documentation: [COMMAND GETKEYSANDFLAGS](https:/redis.io/docs/latest/commands/command-getkeysandflags)
+    /// - Documentation: [COMMAND GETKEYSANDFLAGS](https:/valkey.io/commands/command-getkeysandflags)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Categories: @slow, @connection
@@ -1476,7 +1494,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [COMMAND HELP](https:/redis.io/docs/latest/commands/command-help)
+    /// - Documentation: [COMMAND HELP](https:/valkey.io/commands/command-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -1488,7 +1506,7 @@ extension ValkeyConnection {
 
     /// Returns information about one, multiple or all commands.
     ///
-    /// - Documentation: [COMMAND INFO](https:/redis.io/docs/latest/commands/command-info)
+    /// - Documentation: [COMMAND INFO](https:/valkey.io/commands/command-info)
     /// - Version: 2.8.13
     /// - Complexity: O(N) where N is the number of commands to look up
     /// - Categories: @slow, @connection
@@ -1500,7 +1518,7 @@ extension ValkeyConnection {
 
     /// Returns a list of command names.
     ///
-    /// - Documentation: [COMMAND LIST](https:/redis.io/docs/latest/commands/command-list)
+    /// - Documentation: [COMMAND LIST](https:/valkey.io/commands/command-list)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of Redis commands
     /// - Categories: @slow, @connection
@@ -1512,7 +1530,7 @@ extension ValkeyConnection {
 
     /// Returns the effective values of configuration parameters.
     ///
-    /// - Documentation: [CONFIG GET](https:/redis.io/docs/latest/commands/config-get)
+    /// - Documentation: [CONFIG GET](https:/valkey.io/commands/config-get)
     /// - Version: 2.0.0
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     /// - Categories: @admin, @slow, @dangerous
@@ -1524,7 +1542,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [CONFIG HELP](https:/redis.io/docs/latest/commands/config-help)
+    /// - Documentation: [CONFIG HELP](https:/valkey.io/commands/config-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1536,7 +1554,7 @@ extension ValkeyConnection {
 
     /// Resets the server's statistics.
     ///
-    /// - Documentation: [CONFIG RESETSTAT](https:/redis.io/docs/latest/commands/config-resetstat)
+    /// - Documentation: [CONFIG RESETSTAT](https:/valkey.io/commands/config-resetstat)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1548,7 +1566,7 @@ extension ValkeyConnection {
 
     /// Persists the effective configuration to file.
     ///
-    /// - Documentation: [CONFIG REWRITE](https:/redis.io/docs/latest/commands/config-rewrite)
+    /// - Documentation: [CONFIG REWRITE](https:/valkey.io/commands/config-rewrite)
     /// - Version: 2.8.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1560,7 +1578,7 @@ extension ValkeyConnection {
 
     /// Sets configuration parameters in-flight.
     ///
-    /// - Documentation: [CONFIG SET](https:/redis.io/docs/latest/commands/config-set)
+    /// - Documentation: [CONFIG SET](https:/valkey.io/commands/config-set)
     /// - Version: 2.0.0
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     /// - Categories: @admin, @slow, @dangerous
@@ -1572,7 +1590,7 @@ extension ValkeyConnection {
 
     /// Returns the number of keys in the database.
     ///
-    /// - Documentation: [DBSIZE](https:/redis.io/docs/latest/commands/dbsize)
+    /// - Documentation: [DBSIZE](https:/valkey.io/commands/dbsize)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @fast
@@ -1584,7 +1602,7 @@ extension ValkeyConnection {
 
     /// Starts a coordinated failover from a server to one of its replicas.
     ///
-    /// - Documentation: [FAILOVER](https:/redis.io/docs/latest/commands/failover)
+    /// - Documentation: [FAILOVER](https:/valkey.io/commands/failover)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1596,7 +1614,7 @@ extension ValkeyConnection {
 
     /// Removes all keys from all databases.
     ///
-    /// - Documentation: [FLUSHALL](https:/redis.io/docs/latest/commands/flushall)
+    /// - Documentation: [FLUSHALL](https:/valkey.io/commands/flushall)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of keys in all databases
     /// - Categories: @keyspace, @write, @slow, @dangerous
@@ -1608,7 +1626,7 @@ extension ValkeyConnection {
 
     /// Remove all keys from the current database.
     ///
-    /// - Documentation: [FLUSHDB](https:/redis.io/docs/latest/commands/flushdb)
+    /// - Documentation: [FLUSHDB](https:/valkey.io/commands/flushdb)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of keys in the selected database
     /// - Categories: @keyspace, @write, @slow, @dangerous
@@ -1620,12 +1638,12 @@ extension ValkeyConnection {
 
     /// Returns information and statistics about the server.
     ///
-    /// - Documentation: [INFO](https:/redis.io/docs/latest/commands/info)
+    /// - Documentation: [INFO](https:/valkey.io/commands/info)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///
+    ///     
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
     public func info(section: [String] = []) async throws -> String {
@@ -1634,7 +1652,7 @@ extension ValkeyConnection {
 
     /// Returns the Unix timestamp of the last successful save to disk.
     ///
-    /// - Documentation: [LASTSAVE](https:/redis.io/docs/latest/commands/lastsave)
+    /// - Documentation: [LASTSAVE](https:/valkey.io/commands/lastsave)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @fast, @dangerous
@@ -1646,7 +1664,7 @@ extension ValkeyConnection {
 
     /// Returns a human-readable latency analysis report.
     ///
-    /// - Documentation: [LATENCY DOCTOR](https:/redis.io/docs/latest/commands/latency-doctor)
+    /// - Documentation: [LATENCY DOCTOR](https:/valkey.io/commands/latency-doctor)
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1658,7 +1676,7 @@ extension ValkeyConnection {
 
     /// Returns a latency graph for an event.
     ///
-    /// - Documentation: [LATENCY GRAPH](https:/redis.io/docs/latest/commands/latency-graph)
+    /// - Documentation: [LATENCY GRAPH](https:/valkey.io/commands/latency-graph)
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1670,7 +1688,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [LATENCY HELP](https:/redis.io/docs/latest/commands/latency-help)
+    /// - Documentation: [LATENCY HELP](https:/valkey.io/commands/latency-help)
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1682,7 +1700,7 @@ extension ValkeyConnection {
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
     ///
-    /// - Documentation: [LATENCY HISTOGRAM](https:/redis.io/docs/latest/commands/latency-histogram)
+    /// - Documentation: [LATENCY HISTOGRAM](https:/valkey.io/commands/latency-histogram)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
     /// - Categories: @admin, @slow, @dangerous
@@ -1694,7 +1712,7 @@ extension ValkeyConnection {
 
     /// Returns timestamp-latency samples for an event.
     ///
-    /// - Documentation: [LATENCY HISTORY](https:/redis.io/docs/latest/commands/latency-history)
+    /// - Documentation: [LATENCY HISTORY](https:/valkey.io/commands/latency-history)
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1706,7 +1724,7 @@ extension ValkeyConnection {
 
     /// Returns the latest latency samples for all events.
     ///
-    /// - Documentation: [LATENCY LATEST](https:/redis.io/docs/latest/commands/latency-latest)
+    /// - Documentation: [LATENCY LATEST](https:/valkey.io/commands/latency-latest)
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1718,7 +1736,7 @@ extension ValkeyConnection {
 
     /// Resets the latency data for one or more events.
     ///
-    /// - Documentation: [LATENCY RESET](https:/redis.io/docs/latest/commands/latency-reset)
+    /// - Documentation: [LATENCY RESET](https:/valkey.io/commands/latency-reset)
     /// - Version: 2.8.13
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1730,7 +1748,7 @@ extension ValkeyConnection {
 
     /// Displays computer art and the Redis version
     ///
-    /// - Documentation: [LOLWUT](https:/redis.io/docs/latest/commands/lolwut)
+    /// - Documentation: [LOLWUT](https:/valkey.io/commands/lolwut)
     /// - Version: 5.0.0
     /// - Categories: @read, @fast
     /// - Returns: [Verbatim string](https:/redis.io/docs/reference/protocol-spec#verbatim-strings): a string containing generative computer art and the Redis version.
@@ -1741,7 +1759,7 @@ extension ValkeyConnection {
 
     /// Outputs a memory problems report.
     ///
-    /// - Documentation: [MEMORY DOCTOR](https:/redis.io/docs/latest/commands/memory-doctor)
+    /// - Documentation: [MEMORY DOCTOR](https:/valkey.io/commands/memory-doctor)
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1753,7 +1771,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [MEMORY HELP](https:/redis.io/docs/latest/commands/memory-help)
+    /// - Documentation: [MEMORY HELP](https:/valkey.io/commands/memory-help)
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1765,7 +1783,7 @@ extension ValkeyConnection {
 
     /// Returns the allocator statistics.
     ///
-    /// - Documentation: [MEMORY MALLOC-STATS](https:/redis.io/docs/latest/commands/memory-malloc-stats)
+    /// - Documentation: [MEMORY MALLOC-STATS](https:/valkey.io/commands/memory-malloc-stats)
     /// - Version: 4.0.0
     /// - Complexity: Depends on how much memory is allocated, could be slow
     /// - Categories: @slow
@@ -1777,7 +1795,7 @@ extension ValkeyConnection {
 
     /// Asks the allocator to release memory.
     ///
-    /// - Documentation: [MEMORY PURGE](https:/redis.io/docs/latest/commands/memory-purge)
+    /// - Documentation: [MEMORY PURGE](https:/valkey.io/commands/memory-purge)
     /// - Version: 4.0.0
     /// - Complexity: Depends on how much memory is allocated, could be slow
     /// - Categories: @slow
@@ -1789,7 +1807,7 @@ extension ValkeyConnection {
 
     /// Returns details about memory usage.
     ///
-    /// - Documentation: [MEMORY STATS](https:/redis.io/docs/latest/commands/memory-stats)
+    /// - Documentation: [MEMORY STATS](https:/valkey.io/commands/memory-stats)
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1801,7 +1819,7 @@ extension ValkeyConnection {
 
     /// Estimates the memory usage of a key.
     ///
-    /// - Documentation: [MEMORY USAGE](https:/redis.io/docs/latest/commands/memory-usage)
+    /// - Documentation: [MEMORY USAGE](https:/valkey.io/commands/memory-usage)
     /// - Version: 4.0.0
     /// - Complexity: O(N) where N is the number of samples.
     /// - Categories: @read, @slow
@@ -1815,7 +1833,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [MODULE HELP](https:/redis.io/docs/latest/commands/module-help)
+    /// - Documentation: [MODULE HELP](https:/valkey.io/commands/module-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -1827,7 +1845,7 @@ extension ValkeyConnection {
 
     /// Returns all loaded modules.
     ///
-    /// - Documentation: [MODULE LIST](https:/redis.io/docs/latest/commands/module-list)
+    /// - Documentation: [MODULE LIST](https:/valkey.io/commands/module-list)
     /// - Version: 4.0.0
     /// - Complexity: O(N) where N is the number of loaded modules.
     /// - Categories: @admin, @slow, @dangerous
@@ -1841,7 +1859,7 @@ extension ValkeyConnection {
 
     /// Loads a module.
     ///
-    /// - Documentation: [MODULE LOAD](https:/redis.io/docs/latest/commands/module-load)
+    /// - Documentation: [MODULE LOAD](https:/valkey.io/commands/module-load)
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1853,7 +1871,7 @@ extension ValkeyConnection {
 
     /// Loads a module using extended parameters.
     ///
-    /// - Documentation: [MODULE LOADEX](https:/redis.io/docs/latest/commands/module-loadex)
+    /// - Documentation: [MODULE LOADEX](https:/valkey.io/commands/module-loadex)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1865,7 +1883,7 @@ extension ValkeyConnection {
 
     /// Unloads a module.
     ///
-    /// - Documentation: [MODULE UNLOAD](https:/redis.io/docs/latest/commands/module-unload)
+    /// - Documentation: [MODULE UNLOAD](https:/valkey.io/commands/module-unload)
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1877,7 +1895,7 @@ extension ValkeyConnection {
 
     /// Listens for all requests received by the server in real-time.
     ///
-    /// - Documentation: [MONITOR](https:/redis.io/docs/latest/commands/monitor)
+    /// - Documentation: [MONITOR](https:/valkey.io/commands/monitor)
     /// - Version: 1.0.0
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: **Non-standard return value**. Dumps the received commands in an infinite flow.
@@ -1888,7 +1906,7 @@ extension ValkeyConnection {
 
     /// An internal command used in replication.
     ///
-    /// - Documentation: [PSYNC](https:/redis.io/docs/latest/commands/psync)
+    /// - Documentation: [PSYNC](https:/valkey.io/commands/psync)
     /// - Version: 2.8.0
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
@@ -1899,7 +1917,7 @@ extension ValkeyConnection {
 
     /// An internal command for configuring the replication stream.
     ///
-    /// - Documentation: [REPLCONF](https:/redis.io/docs/latest/commands/replconf)
+    /// - Documentation: [REPLCONF](https:/valkey.io/commands/replconf)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1911,7 +1929,7 @@ extension ValkeyConnection {
 
     /// Configures a server as replica of another, or promotes it to a master.
     ///
-    /// - Documentation: [REPLICAOF](https:/redis.io/docs/latest/commands/replicaof)
+    /// - Documentation: [REPLICAOF](https:/valkey.io/commands/replicaof)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -1923,37 +1941,19 @@ extension ValkeyConnection {
 
     /// An internal command for migrating keys in a cluster.
     ///
-    /// - Documentation: [RESTORE-ASKING](https:/redis.io/docs/latest/commands/restore-asking)
+    /// - Documentation: [RESTORE-ASKING](https:/valkey.io/commands/restore-asking)
     /// - Version: 3.0.0
     /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(
-        key: RESPKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool = false,
-        absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            command: RESTOREASKING(
-                key: key,
-                ttl: ttl,
-                serializedValue: serializedValue,
-                replace: replace,
-                absttl: absttl,
-                seconds: seconds,
-                frequency: frequency
-            )
-        )
+    public func restoreAsking(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
+        try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 
     /// Returns the replication role.
     ///
-    /// - Documentation: [ROLE](https:/redis.io/docs/latest/commands/role)
+    /// - Documentation: [ROLE](https:/valkey.io/commands/role)
     /// - Version: 2.8.12
     /// - Complexity: O(1)
     /// - Categories: @admin, @fast, @dangerous
@@ -1965,7 +1965,7 @@ extension ValkeyConnection {
 
     /// Synchronously saves the database(s) to disk.
     ///
-    /// - Documentation: [SAVE](https:/redis.io/docs/latest/commands/save)
+    /// - Documentation: [SAVE](https:/valkey.io/commands/save)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the total number of keys in all databases
     /// - Categories: @admin, @slow, @dangerous
@@ -1977,24 +1977,19 @@ extension ValkeyConnection {
 
     /// Synchronously saves the database(s) to disk and shuts down the Redis server.
     ///
-    /// - Documentation: [SHUTDOWN](https:/redis.io/docs/latest/commands/shutdown)
+    /// - Documentation: [SHUTDOWN](https:/valkey.io/commands/shutdown)
     /// - Version: 1.0.0
     /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if _ABORT_ was specified and shutdown was aborted. On successful shutdown, nothing is returned because the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
-    public func shutdown(
-        saveSelector: SHUTDOWN.SaveSelector? = nil,
-        now: Bool = false,
-        force: Bool = false,
-        abort: Bool = false
-    ) async throws -> RESPToken {
+    public func shutdown(saveSelector: SHUTDOWN.SaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) async throws -> RESPToken {
         try await send(command: SHUTDOWN(saveSelector: saveSelector, now: now, force: force, abort: abort))
     }
 
     /// Sets a Redis server as a replica of another, or promotes it to being a master.
     ///
-    /// - Documentation: [SLAVEOF](https:/redis.io/docs/latest/commands/slaveof)
+    /// - Documentation: [SLAVEOF](https:/valkey.io/commands/slaveof)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -2006,7 +2001,7 @@ extension ValkeyConnection {
 
     /// Returns the slow log's entries.
     ///
-    /// - Documentation: [SLOWLOG GET](https:/redis.io/docs/latest/commands/slowlog-get)
+    /// - Documentation: [SLOWLOG GET](https:/valkey.io/commands/slowlog-get)
     /// - Version: 2.2.12
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Categories: @admin, @slow, @dangerous
@@ -2018,7 +2013,7 @@ extension ValkeyConnection {
 
     /// Show helpful text about the different subcommands
     ///
-    /// - Documentation: [SLOWLOG HELP](https:/redis.io/docs/latest/commands/slowlog-help)
+    /// - Documentation: [SLOWLOG HELP](https:/valkey.io/commands/slowlog-help)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -2030,7 +2025,7 @@ extension ValkeyConnection {
 
     /// Returns the number of entries in the slow log.
     ///
-    /// - Documentation: [SLOWLOG LEN](https:/redis.io/docs/latest/commands/slowlog-len)
+    /// - Documentation: [SLOWLOG LEN](https:/valkey.io/commands/slowlog-len)
     /// - Version: 2.2.12
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -2042,7 +2037,7 @@ extension ValkeyConnection {
 
     /// Clears all entries from the slow log.
     ///
-    /// - Documentation: [SLOWLOG RESET](https:/redis.io/docs/latest/commands/slowlog-reset)
+    /// - Documentation: [SLOWLOG RESET](https:/valkey.io/commands/slowlog-reset)
     /// - Version: 2.2.12
     /// - Complexity: O(N) where N is the number of entries in the slowlog
     /// - Categories: @admin, @slow, @dangerous
@@ -2054,7 +2049,7 @@ extension ValkeyConnection {
 
     /// Swaps two Redis databases.
     ///
-    /// - Documentation: [SWAPDB](https:/redis.io/docs/latest/commands/swapdb)
+    /// - Documentation: [SWAPDB](https:/valkey.io/commands/swapdb)
     /// - Version: 4.0.0
     /// - Complexity: O(N) where N is the count of clients watching or blocking on keys from both databases.
     /// - Categories: @keyspace, @write, @fast, @dangerous
@@ -2066,7 +2061,7 @@ extension ValkeyConnection {
 
     /// An internal command used in replication.
     ///
-    /// - Documentation: [SYNC](https:/redis.io/docs/latest/commands/sync)
+    /// - Documentation: [SYNC](https:/valkey.io/commands/sync)
     /// - Version: 1.0.0
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the master.
@@ -2077,7 +2072,7 @@ extension ValkeyConnection {
 
     /// Returns the server time.
     ///
-    /// - Documentation: [TIME](https:/redis.io/docs/latest/commands/time)
+    /// - Documentation: [TIME](https:/valkey.io/commands/time)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @fast

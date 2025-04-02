@@ -55,6 +55,7 @@ public enum CLIENT {
     public struct GETNAME: RESPCommand {
         public typealias Response = String?
 
+
         @inlinable public init() {
         }
 
@@ -66,6 +67,7 @@ public enum CLIENT {
     /// Returns the client ID to which the connection's tracking notifications are redirected.
     public struct GETREDIR: RESPCommand {
         public typealias Response = Int
+
 
         @inlinable public init() {
         }
@@ -79,6 +81,7 @@ public enum CLIENT {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -91,6 +94,7 @@ public enum CLIENT {
     public struct ID: RESPCommand {
         public typealias Response = Int
 
+
         @inlinable public init() {
         }
 
@@ -102,6 +106,7 @@ public enum CLIENT {
     /// Returns information about the connection.
     public struct INFO: RESPCommand {
         public typealias Response = String
+
 
         @inlinable public init() {
         }
@@ -399,15 +404,7 @@ public enum CLIENT {
         public var optout: Bool = false
         public var noloop: Bool = false
 
-        @inlinable public init(
-            status: Status,
-            clientId: Int? = nil,
-            prefix: [String] = [],
-            bcast: Bool = false,
-            optin: Bool = false,
-            optout: Bool = false,
-            noloop: Bool = false
-        ) {
+        @inlinable public init(status: Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) {
             self.status = status
             self.clientId = clientId
             self.prefix = prefix
@@ -418,23 +415,14 @@ public enum CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray(
-                "CLIENT",
-                "TRACKING",
-                status,
-                RESPWithToken("REDIRECT", clientId),
-                RESPWithToken("PREFIX", prefix),
-                RESPPureToken("BCAST", bcast),
-                RESPPureToken("OPTIN", optin),
-                RESPPureToken("OPTOUT", optout),
-                RESPPureToken("NOLOOP", noloop)
-            )
+            commandEncoder.encodeArray("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RESPPureToken("BCAST", bcast), RESPPureToken("OPTIN", optin), RESPPureToken("OPTOUT", optout), RESPPureToken("NOLOOP", noloop))
         }
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
     public struct TRACKINGINFO: RESPCommand {
         public typealias Response = [String: RESPToken]
+
 
         @inlinable public init() {
         }
@@ -476,6 +464,7 @@ public enum CLIENT {
     /// Resumes processing commands from paused clients.
     public struct UNPAUSE: RESPCommand {
         public typealias Response = RESPToken
+
 
         @inlinable public init() {
         }
@@ -579,6 +568,7 @@ public struct PING: RESPCommand {
 public struct QUIT: RESPCommand {
     public typealias Response = RESPToken
 
+
     @inlinable public init() {
     }
 
@@ -590,6 +580,7 @@ public struct QUIT: RESPCommand {
 /// Resets the connection.
 public struct RESET: RESPCommand {
     public typealias Response = String
+
 
     @inlinable public init() {
     }
@@ -614,10 +605,11 @@ public struct SELECT: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Authenticates the connection.
     ///
-    /// - Documentation: [AUTH](https:/redis.io/docs/latest/commands/auth)
+    /// - Documentation: [AUTH](https:/valkey.io/commands/auth)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of passwords defined for the user
     /// - Categories: @fast, @connection
@@ -629,7 +621,7 @@ extension ValkeyConnection {
 
     /// Instructs the server whether to track the keys in the next request.
     ///
-    /// - Documentation: [CLIENT CACHING](https:/redis.io/docs/latest/commands/client-caching)
+    /// - Documentation: [CLIENT CACHING](https:/valkey.io/commands/client-caching)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -641,7 +633,7 @@ extension ValkeyConnection {
 
     /// Returns the name of the connection.
     ///
-    /// - Documentation: [CLIENT GETNAME](https:/redis.io/docs/latest/commands/client-getname)
+    /// - Documentation: [CLIENT GETNAME](https:/valkey.io/commands/client-getname)
     /// - Version: 2.6.9
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -655,7 +647,7 @@ extension ValkeyConnection {
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
     ///
-    /// - Documentation: [CLIENT GETREDIR](https:/redis.io/docs/latest/commands/client-getredir)
+    /// - Documentation: [CLIENT GETREDIR](https:/valkey.io/commands/client-getredir)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -670,7 +662,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [CLIENT HELP](https:/redis.io/docs/latest/commands/client-help)
+    /// - Documentation: [CLIENT HELP](https:/valkey.io/commands/client-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -682,7 +674,7 @@ extension ValkeyConnection {
 
     /// Returns the unique client ID of the connection.
     ///
-    /// - Documentation: [CLIENT ID](https:/redis.io/docs/latest/commands/client-id)
+    /// - Documentation: [CLIENT ID](https:/valkey.io/commands/client-id)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -694,7 +686,7 @@ extension ValkeyConnection {
 
     /// Returns information about the connection.
     ///
-    /// - Documentation: [CLIENT INFO](https:/redis.io/docs/latest/commands/client-info)
+    /// - Documentation: [CLIENT INFO](https:/valkey.io/commands/client-info)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -706,7 +698,7 @@ extension ValkeyConnection {
 
     /// Terminates open connections.
     ///
-    /// - Documentation: [CLIENT KILL](https:/redis.io/docs/latest/commands/client-kill)
+    /// - Documentation: [CLIENT KILL](https:/valkey.io/commands/client-kill)
     /// - Version: 2.4.0
     /// - Complexity: O(N) where N is the number of client connections
     /// - Categories: @admin, @slow, @dangerous, @connection
@@ -720,7 +712,7 @@ extension ValkeyConnection {
 
     /// Lists open connections.
     ///
-    /// - Documentation: [CLIENT LIST](https:/redis.io/docs/latest/commands/client-list)
+    /// - Documentation: [CLIENT LIST](https:/valkey.io/commands/client-list)
     /// - Version: 2.4.0
     /// - Complexity: O(N) where N is the number of client connections
     /// - Categories: @admin, @slow, @dangerous, @connection
@@ -732,7 +724,7 @@ extension ValkeyConnection {
 
     /// Sets the client eviction mode of the connection.
     ///
-    /// - Documentation: [CLIENT NO-EVICT](https:/redis.io/docs/latest/commands/client-no-evict)
+    /// - Documentation: [CLIENT NO-EVICT](https:/valkey.io/commands/client-no-evict)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous, @connection
@@ -744,7 +736,7 @@ extension ValkeyConnection {
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
     ///
-    /// - Documentation: [CLIENT NO-TOUCH](https:/redis.io/docs/latest/commands/client-no-touch)
+    /// - Documentation: [CLIENT NO-TOUCH](https:/valkey.io/commands/client-no-touch)
     /// - Version: 7.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -756,7 +748,7 @@ extension ValkeyConnection {
 
     /// Suspends commands processing.
     ///
-    /// - Documentation: [CLIENT PAUSE](https:/redis.io/docs/latest/commands/client-pause)
+    /// - Documentation: [CLIENT PAUSE](https:/valkey.io/commands/client-pause)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous, @connection
@@ -768,7 +760,7 @@ extension ValkeyConnection {
 
     /// Instructs the server whether to reply to commands.
     ///
-    /// - Documentation: [CLIENT REPLY](https:/redis.io/docs/latest/commands/client-reply)
+    /// - Documentation: [CLIENT REPLY](https:/valkey.io/commands/client-reply)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -780,7 +772,7 @@ extension ValkeyConnection {
 
     /// Sets information specific to the client or connection.
     ///
-    /// - Documentation: [CLIENT SETINFO](https:/redis.io/docs/latest/commands/client-setinfo)
+    /// - Documentation: [CLIENT SETINFO](https:/valkey.io/commands/client-setinfo)
     /// - Version: 7.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -792,7 +784,7 @@ extension ValkeyConnection {
 
     /// Sets the connection name.
     ///
-    /// - Documentation: [CLIENT SETNAME](https:/redis.io/docs/latest/commands/client-setname)
+    /// - Documentation: [CLIENT SETNAME](https:/valkey.io/commands/client-setname)
     /// - Version: 2.6.9
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -804,29 +796,19 @@ extension ValkeyConnection {
 
     /// Controls server-assisted client-side caching for the connection.
     ///
-    /// - Documentation: [CLIENT TRACKING](https:/redis.io/docs/latest/commands/client-tracking)
+    /// - Documentation: [CLIENT TRACKING](https:/valkey.io/commands/client-tracking)
     /// - Version: 6.0.0
     /// - Complexity: O(1). Some options may introduce additional complexity.
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(
-        status: CLIENT.TRACKING.Status,
-        clientId: Int? = nil,
-        prefix: [String] = [],
-        bcast: Bool = false,
-        optin: Bool = false,
-        optout: Bool = false,
-        noloop: Bool = false
-    ) async throws -> RESPToken {
-        try await send(
-            command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
-        )
+    public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws -> RESPToken {
+        try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
     ///
-    /// - Documentation: [CLIENT TRACKINGINFO](https:/redis.io/docs/latest/commands/client-trackinginfo)
+    /// - Documentation: [CLIENT TRACKINGINFO](https:/valkey.io/commands/client-trackinginfo)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -838,7 +820,7 @@ extension ValkeyConnection {
 
     /// Unblocks a client blocked by a blocking command from a different connection.
     ///
-    /// - Documentation: [CLIENT UNBLOCK](https:/redis.io/docs/latest/commands/client-unblock)
+    /// - Documentation: [CLIENT UNBLOCK](https:/valkey.io/commands/client-unblock)
     /// - Version: 5.0.0
     /// - Complexity: O(log N) where N is the number of client connections
     /// - Categories: @admin, @slow, @dangerous, @connection
@@ -852,7 +834,7 @@ extension ValkeyConnection {
 
     /// Resumes processing commands from paused clients.
     ///
-    /// - Documentation: [CLIENT UNPAUSE](https:/redis.io/docs/latest/commands/client-unpause)
+    /// - Documentation: [CLIENT UNPAUSE](https:/valkey.io/commands/client-unpause)
     /// - Version: 6.2.0
     /// - Complexity: O(N) Where N is the number of paused clients
     /// - Categories: @admin, @slow, @dangerous, @connection
@@ -864,7 +846,7 @@ extension ValkeyConnection {
 
     /// Returns the given string.
     ///
-    /// - Documentation: [ECHO](https:/redis.io/docs/latest/commands/echo)
+    /// - Documentation: [ECHO](https:/valkey.io/commands/echo)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
@@ -876,7 +858,7 @@ extension ValkeyConnection {
 
     /// Handshakes with the Redis server.
     ///
-    /// - Documentation: [HELLO](https:/redis.io/docs/latest/commands/hello)
+    /// - Documentation: [HELLO](https:/valkey.io/commands/hello)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
@@ -889,7 +871,7 @@ extension ValkeyConnection {
 
     /// Returns the server's liveliness response.
     ///
-    /// - Documentation: [PING](https:/redis.io/docs/latest/commands/ping)
+    /// - Documentation: [PING](https:/valkey.io/commands/ping)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
@@ -903,7 +885,7 @@ extension ValkeyConnection {
 
     /// Closes the connection.
     ///
-    /// - Documentation: [QUIT](https:/redis.io/docs/latest/commands/quit)
+    /// - Documentation: [QUIT](https:/valkey.io/commands/quit)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
@@ -915,7 +897,7 @@ extension ValkeyConnection {
 
     /// Resets the connection.
     ///
-    /// - Documentation: [RESET](https:/redis.io/docs/latest/commands/reset)
+    /// - Documentation: [RESET](https:/valkey.io/commands/reset)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
@@ -927,7 +909,7 @@ extension ValkeyConnection {
 
     /// Changes the selected database.
     ///
-    /// - Documentation: [SELECT](https:/redis.io/docs/latest/commands/select)
+    /// - Documentation: [SELECT](https:/valkey.io/commands/select)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection

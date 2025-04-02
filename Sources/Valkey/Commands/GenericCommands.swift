@@ -58,6 +58,7 @@ public enum OBJECT {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -314,17 +315,7 @@ public struct MIGRATE: RESPCommand {
     public var authentication: Authentication? = nil
     public var keys: [RESPKey] = []
 
-    @inlinable public init(
-        host: String,
-        port: Int,
-        keySelector: KeySelector,
-        destinationDb: Int,
-        timeout: Int,
-        copy: Bool = false,
-        replace: Bool = false,
-        authentication: Authentication? = nil,
-        keys: [RESPKey] = []
-    ) {
+    @inlinable public init(host: String, port: Int, keySelector: KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: Authentication? = nil, keys: [RESPKey] = []) {
         self.host = host
         self.port = port
         self.keySelector = keySelector
@@ -337,18 +328,7 @@ public struct MIGRATE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "MIGRATE",
-            host,
-            port,
-            keySelector,
-            destinationDb,
-            timeout,
-            RESPPureToken("COPY", copy),
-            RESPPureToken("REPLACE", replace),
-            authentication,
-            RESPWithToken("KEYS", keys)
-        )
+        commandEncoder.encodeArray("MIGRATE", host, port, keySelector, destinationDb, timeout, RESPPureToken("COPY", copy), RESPPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
     }
 }
 
@@ -488,6 +468,7 @@ public struct PTTL: RESPCommand {
 public struct RANDOMKEY: RESPCommand {
     public typealias Response = String?
 
+
     @inlinable public init() {
     }
 
@@ -542,15 +523,7 @@ public struct RESTORE: RESPCommand {
     public var seconds: Int? = nil
     public var frequency: Int? = nil
 
-    @inlinable public init(
-        key: RESPKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool = false,
-        absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
-    ) {
+    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -561,16 +534,7 @@ public struct RESTORE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "RESTORE",
-            key,
-            ttl,
-            serializedValue,
-            RESPPureToken("REPLACE", replace),
-            RESPPureToken("ABSTTL", absttl),
-            RESPWithToken("IDLETIME", seconds),
-            RESPWithToken("FREQ", frequency)
-        )
+        commandEncoder.encodeArray("RESTORE", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 }
 
@@ -631,15 +595,7 @@ public struct SORT: RESPCommand {
     public var sorting: Bool = false
     public var destination: RESPKey? = nil
 
-    @inlinable public init(
-        key: RESPKey,
-        byPattern: String? = nil,
-        limit: Limit? = nil,
-        getPattern: [String] = [],
-        order: Order? = nil,
-        sorting: Bool = false,
-        destination: RESPKey? = nil
-    ) {
+    @inlinable public init(key: RESPKey, byPattern: String? = nil, limit: Limit? = nil, getPattern: [String] = [], order: Order? = nil, sorting: Bool = false, destination: RESPKey? = nil) {
         self.key = key
         self.byPattern = byPattern
         self.limit = limit
@@ -650,16 +606,7 @@ public struct SORT: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "SORT",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
-            order,
-            RESPPureToken("ALPHA", sorting),
-            RESPWithToken("STORE", destination)
-        )
+        commandEncoder.encodeArray("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
     }
 }
 
@@ -698,14 +645,7 @@ public struct SORTRO: RESPCommand {
     public var order: Order? = nil
     public var sorting: Bool = false
 
-    @inlinable public init(
-        key: RESPKey,
-        byPattern: String? = nil,
-        limit: Limit? = nil,
-        getPattern: [String] = [],
-        order: Order? = nil,
-        sorting: Bool = false
-    ) {
+    @inlinable public init(key: RESPKey, byPattern: String? = nil, limit: Limit? = nil, getPattern: [String] = [], order: Order? = nil, sorting: Bool = false) {
         self.key = key
         self.byPattern = byPattern
         self.limit = limit
@@ -715,15 +655,7 @@ public struct SORTRO: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "SORT_RO",
-            key,
-            RESPWithToken("BY", byPattern),
-            RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
-            order,
-            RESPPureToken("ALPHA", sorting)
-        )
+        commandEncoder.encodeArray("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting))
     }
 }
 
@@ -823,10 +755,11 @@ public struct WAITAOF: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Copies the value of a key to a new key.
     ///
-    /// - Documentation: [COPY](https:/redis.io/docs/latest/commands/copy)
+    /// - Documentation: [COPY](https:/valkey.io/commands/copy)
     /// - Version: 6.2.0
     /// - Complexity: O(N) worst case for collections, where N is the number of nested items. O(1) for string values.
     /// - Categories: @keyspace, @write, @slow
@@ -840,7 +773,7 @@ extension ValkeyConnection {
 
     /// Deletes one or more keys.
     ///
-    /// - Documentation: [DEL](https:/redis.io/docs/latest/commands/del)
+    /// - Documentation: [DEL](https:/valkey.io/commands/del)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
     /// - Categories: @keyspace, @write, @slow
@@ -852,7 +785,7 @@ extension ValkeyConnection {
 
     /// Returns a serialized representation of the value stored at a key.
     ///
-    /// - Documentation: [DUMP](https:/redis.io/docs/latest/commands/dump)
+    /// - Documentation: [DUMP](https:/valkey.io/commands/dump)
     /// - Version: 2.6.0
     /// - Complexity: O(1) to access the key and additional O(N*M) to serialize it, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).
     /// - Categories: @keyspace, @read, @slow
@@ -866,7 +799,7 @@ extension ValkeyConnection {
 
     /// Determines whether one or more keys exist.
     ///
-    /// - Documentation: [EXISTS](https:/redis.io/docs/latest/commands/exists)
+    /// - Documentation: [EXISTS](https:/valkey.io/commands/exists)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of keys to check.
     /// - Categories: @keyspace, @read, @fast
@@ -878,7 +811,7 @@ extension ValkeyConnection {
 
     /// Sets the expiration time of a key in seconds.
     ///
-    /// - Documentation: [EXPIRE](https:/redis.io/docs/latest/commands/expire)
+    /// - Documentation: [EXPIRE](https:/valkey.io/commands/expire)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @write, @fast
@@ -892,7 +825,7 @@ extension ValkeyConnection {
 
     /// Sets the expiration time of a key to a Unix timestamp.
     ///
-    /// - Documentation: [EXPIREAT](https:/redis.io/docs/latest/commands/expireat)
+    /// - Documentation: [EXPIREAT](https:/valkey.io/commands/expireat)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @write, @fast
@@ -906,7 +839,7 @@ extension ValkeyConnection {
 
     /// Returns the expiration time of a key as a Unix timestamp.
     ///
-    /// - Documentation: [EXPIRETIME](https:/redis.io/docs/latest/commands/expiretime)
+    /// - Documentation: [EXPIRETIME](https:/valkey.io/commands/expiretime)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @fast
@@ -921,7 +854,7 @@ extension ValkeyConnection {
 
     /// Returns all key names that match a pattern.
     ///
-    /// - Documentation: [KEYS](https:/redis.io/docs/latest/commands/keys)
+    /// - Documentation: [KEYS](https:/valkey.io/commands/keys)
     /// - Version: 1.0.0
     /// - Complexity: O(N) with N being the number of keys in the database, under the assumption that the key names in the database and the given pattern have limited length.
     /// - Categories: @keyspace, @read, @slow, @dangerous
@@ -933,7 +866,7 @@ extension ValkeyConnection {
 
     /// Atomically transfers a key from one Redis instance to another.
     ///
-    /// - Documentation: [MIGRATE](https:/redis.io/docs/latest/commands/migrate)
+    /// - Documentation: [MIGRATE](https:/valkey.io/commands/migrate)
     /// - Version: 2.6.0
     /// - Complexity: This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.
     /// - Categories: @keyspace, @write, @slow, @dangerous
@@ -941,35 +874,13 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK` on success.
     ///     * [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(
-        host: String,
-        port: Int,
-        keySelector: MIGRATE.KeySelector,
-        destinationDb: Int,
-        timeout: Int,
-        copy: Bool = false,
-        replace: Bool = false,
-        authentication: MIGRATE.Authentication? = nil,
-        keys: [RESPKey] = []
-    ) async throws -> String? {
-        try await send(
-            command: MIGRATE(
-                host: host,
-                port: port,
-                keySelector: keySelector,
-                destinationDb: destinationDb,
-                timeout: timeout,
-                copy: copy,
-                replace: replace,
-                authentication: authentication,
-                keys: keys
-            )
-        )
+    public func migrate(host: String, port: Int, keySelector: MIGRATE.KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATE.Authentication? = nil, keys: [RESPKey] = []) async throws -> String? {
+        try await send(command: MIGRATE(host: host, port: port, keySelector: keySelector, destinationDb: destinationDb, timeout: timeout, copy: copy, replace: replace, authentication: authentication, keys: keys))
     }
 
     /// Moves a key to another database.
     ///
-    /// - Documentation: [MOVE](https:/redis.io/docs/latest/commands/move)
+    /// - Documentation: [MOVE](https:/valkey.io/commands/move)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @write, @fast
@@ -983,7 +894,7 @@ extension ValkeyConnection {
 
     /// Returns the internal encoding of a Redis object.
     ///
-    /// - Documentation: [OBJECT ENCODING](https:/redis.io/docs/latest/commands/object-encoding)
+    /// - Documentation: [OBJECT ENCODING](https:/valkey.io/commands/object-encoding)
     /// - Version: 2.2.3
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @slow
@@ -997,7 +908,7 @@ extension ValkeyConnection {
 
     /// Returns the logarithmic access frequency counter of a Redis object.
     ///
-    /// - Documentation: [OBJECT FREQ](https:/redis.io/docs/latest/commands/object-freq)
+    /// - Documentation: [OBJECT FREQ](https:/valkey.io/commands/object-freq)
     /// - Version: 4.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @slow
@@ -1011,7 +922,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [OBJECT HELP](https:/redis.io/docs/latest/commands/object-help)
+    /// - Documentation: [OBJECT HELP](https:/valkey.io/commands/object-help)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @slow
@@ -1023,7 +934,7 @@ extension ValkeyConnection {
 
     /// Returns the time since the last access to a Redis object.
     ///
-    /// - Documentation: [OBJECT IDLETIME](https:/redis.io/docs/latest/commands/object-idletime)
+    /// - Documentation: [OBJECT IDLETIME](https:/valkey.io/commands/object-idletime)
     /// - Version: 2.2.3
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @slow
@@ -1037,7 +948,7 @@ extension ValkeyConnection {
 
     /// Returns the reference count of a value of a key.
     ///
-    /// - Documentation: [OBJECT REFCOUNT](https:/redis.io/docs/latest/commands/object-refcount)
+    /// - Documentation: [OBJECT REFCOUNT](https:/valkey.io/commands/object-refcount)
     /// - Version: 2.2.3
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @slow
@@ -1051,7 +962,7 @@ extension ValkeyConnection {
 
     /// Removes the expiration time of a key.
     ///
-    /// - Documentation: [PERSIST](https:/redis.io/docs/latest/commands/persist)
+    /// - Documentation: [PERSIST](https:/valkey.io/commands/persist)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @write, @fast
@@ -1065,7 +976,7 @@ extension ValkeyConnection {
 
     /// Sets the expiration time of a key in milliseconds.
     ///
-    /// - Documentation: [PEXPIRE](https:/redis.io/docs/latest/commands/pexpire)
+    /// - Documentation: [PEXPIRE](https:/valkey.io/commands/pexpire)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @write, @fast
@@ -1079,7 +990,7 @@ extension ValkeyConnection {
 
     /// Sets the expiration time of a key to a Unix milliseconds timestamp.
     ///
-    /// - Documentation: [PEXPIREAT](https:/redis.io/docs/latest/commands/pexpireat)
+    /// - Documentation: [PEXPIREAT](https:/valkey.io/commands/pexpireat)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @write, @fast
@@ -1093,7 +1004,7 @@ extension ValkeyConnection {
 
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
     ///
-    /// - Documentation: [PEXPIRETIME](https:/redis.io/docs/latest/commands/pexpiretime)
+    /// - Documentation: [PEXPIRETIME](https:/valkey.io/commands/pexpiretime)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @fast
@@ -1108,7 +1019,7 @@ extension ValkeyConnection {
 
     /// Returns the expiration time in milliseconds of a key.
     ///
-    /// - Documentation: [PTTL](https:/redis.io/docs/latest/commands/pttl)
+    /// - Documentation: [PTTL](https:/valkey.io/commands/pttl)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @fast
@@ -1123,7 +1034,7 @@ extension ValkeyConnection {
 
     /// Returns a random key name from the database.
     ///
-    /// - Documentation: [RANDOMKEY](https:/redis.io/docs/latest/commands/randomkey)
+    /// - Documentation: [RANDOMKEY](https:/valkey.io/commands/randomkey)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @slow
@@ -1137,7 +1048,7 @@ extension ValkeyConnection {
 
     /// Renames a key and overwrites the destination.
     ///
-    /// - Documentation: [RENAME](https:/redis.io/docs/latest/commands/rename)
+    /// - Documentation: [RENAME](https:/valkey.io/commands/rename)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @write, @slow
@@ -1149,7 +1060,7 @@ extension ValkeyConnection {
 
     /// Renames a key only when the target key name doesn't exist.
     ///
-    /// - Documentation: [RENAMENX](https:/redis.io/docs/latest/commands/renamenx)
+    /// - Documentation: [RENAMENX](https:/valkey.io/commands/renamenx)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @write, @fast
@@ -1163,37 +1074,19 @@ extension ValkeyConnection {
 
     /// Creates a key from the serialized representation of a value.
     ///
-    /// - Documentation: [RESTORE](https:/redis.io/docs/latest/commands/restore)
+    /// - Documentation: [RESTORE](https:/valkey.io/commands/restore)
     /// - Version: 2.6.0
     /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Redis objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restore(
-        key: RESPKey,
-        ttl: Int,
-        serializedValue: String,
-        replace: Bool = false,
-        absttl: Bool = false,
-        seconds: Int? = nil,
-        frequency: Int? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            command: RESTORE(
-                key: key,
-                ttl: ttl,
-                serializedValue: serializedValue,
-                replace: replace,
-                absttl: absttl,
-                seconds: seconds,
-                frequency: frequency
-            )
-        )
+    public func restore(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
+        try await send(command: RESTORE(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 
     /// Iterates over the key names in the database.
     ///
-    /// - Documentation: [SCAN](https:/redis.io/docs/latest/commands/scan)
+    /// - Documentation: [SCAN](https:/valkey.io/commands/scan)
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Categories: @keyspace, @read, @slow
@@ -1207,57 +1100,32 @@ extension ValkeyConnection {
 
     /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
     ///
-    /// - Documentation: [SORT](https:/redis.io/docs/latest/commands/sort)
+    /// - Documentation: [SORT](https:/valkey.io/commands/sort)
     /// - Version: 1.0.0
     /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
     /// - Categories: @write, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/redis.io/docs/reference/protocol-spec#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(
-        key: RESPKey,
-        byPattern: String? = nil,
-        limit: SORT.Limit? = nil,
-        getPattern: [String] = [],
-        order: SORT.Order? = nil,
-        sorting: Bool = false,
-        destination: RESPKey? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            command: SORT(
-                key: key,
-                byPattern: byPattern,
-                limit: limit,
-                getPattern: getPattern,
-                order: order,
-                sorting: sorting,
-                destination: destination
-            )
-        )
+    public func sort(key: RESPKey, byPattern: String? = nil, limit: SORT.Limit? = nil, getPattern: [String] = [], order: SORT.Order? = nil, sorting: Bool = false, destination: RESPKey? = nil) async throws -> RESPToken {
+        try await send(command: SORT(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting, destination: destination))
     }
 
     /// Returns the sorted elements of a list, a set, or a sorted set.
     ///
-    /// - Documentation: [SORT_RO](https:/redis.io/docs/latest/commands/sort_ro)
+    /// - Documentation: [SORT_RO](https:/valkey.io/commands/sort_ro)
     /// - Version: 7.0.0
     /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(
-        key: RESPKey,
-        byPattern: String? = nil,
-        limit: SORTRO.Limit? = nil,
-        getPattern: [String] = [],
-        order: SORTRO.Order? = nil,
-        sorting: Bool = false
-    ) async throws -> [RESPToken] {
+    public func sortRo(key: RESPKey, byPattern: String? = nil, limit: SORTRO.Limit? = nil, getPattern: [String] = [], order: SORTRO.Order? = nil, sorting: Bool = false) async throws -> [RESPToken] {
         try await send(command: SORTRO(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
     }
 
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
     ///
-    /// - Documentation: [TOUCH](https:/redis.io/docs/latest/commands/touch)
+    /// - Documentation: [TOUCH](https:/valkey.io/commands/touch)
     /// - Version: 3.2.1
     /// - Complexity: O(N) where N is the number of keys that will be touched.
     /// - Categories: @keyspace, @read, @fast
@@ -1269,7 +1137,7 @@ extension ValkeyConnection {
 
     /// Returns the expiration time in seconds of a key.
     ///
-    /// - Documentation: [TTL](https:/redis.io/docs/latest/commands/ttl)
+    /// - Documentation: [TTL](https:/valkey.io/commands/ttl)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @fast
@@ -1284,7 +1152,7 @@ extension ValkeyConnection {
 
     /// Determines the type of value stored at a key.
     ///
-    /// - Documentation: [TYPE](https:/redis.io/docs/latest/commands/type)
+    /// - Documentation: [TYPE](https:/valkey.io/commands/type)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
     /// - Categories: @keyspace, @read, @fast
@@ -1296,7 +1164,7 @@ extension ValkeyConnection {
 
     /// Asynchronously deletes one or more keys.
     ///
-    /// - Documentation: [UNLINK](https:/redis.io/docs/latest/commands/unlink)
+    /// - Documentation: [UNLINK](https:/valkey.io/commands/unlink)
     /// - Version: 4.0.0
     /// - Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
     /// - Categories: @keyspace, @write, @fast
@@ -1308,7 +1176,7 @@ extension ValkeyConnection {
 
     /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
     ///
-    /// - Documentation: [WAIT](https:/redis.io/docs/latest/commands/wait)
+    /// - Documentation: [WAIT](https:/valkey.io/commands/wait)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection
@@ -1320,7 +1188,7 @@ extension ValkeyConnection {
 
     /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
     ///
-    /// - Documentation: [WAITAOF](https:/redis.io/docs/latest/commands/waitaof)
+    /// - Documentation: [WAITAOF](https:/valkey.io/commands/waitaof)
     /// - Version: 7.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @connection

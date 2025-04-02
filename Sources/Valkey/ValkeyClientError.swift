@@ -27,7 +27,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
 
         /// Provided URL is invalid
         public static var connectionClosed: Self { .init(.connectionClosed) }
-        /// Error returned by redis command
+        /// Error returned by Valkey command
         public static var commandError: Self { .init(.commandError) }
     }
 

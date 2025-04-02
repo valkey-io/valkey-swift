@@ -75,6 +75,7 @@ public struct PFMERGE: RESPCommand {
 public struct PFSELFTEST: RESPCommand {
     public typealias Response = RESPToken
 
+
     @inlinable public init() {
     }
 
@@ -83,10 +84,11 @@ public struct PFSELFTEST: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [PFADD](https:/redis.io/docs/latest/commands/pfadd)
+    /// - Documentation: [PFADD](https:/valkey.io/commands/pfadd)
     /// - Version: 2.8.9
     /// - Complexity: O(1) to add every element.
     /// - Categories: @write, @hyperloglog, @fast
@@ -100,7 +102,7 @@ extension ValkeyConnection {
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
     ///
-    /// - Documentation: [PFCOUNT](https:/redis.io/docs/latest/commands/pfcount)
+    /// - Documentation: [PFCOUNT](https:/valkey.io/commands/pfcount)
     /// - Version: 2.8.9
     /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
     /// - Categories: @read, @hyperloglog, @slow
@@ -112,7 +114,7 @@ extension ValkeyConnection {
 
     /// Merges one or more HyperLogLog values into a single key.
     ///
-    /// - Documentation: [PFMERGE](https:/redis.io/docs/latest/commands/pfmerge)
+    /// - Documentation: [PFMERGE](https:/valkey.io/commands/pfmerge)
     /// - Version: 2.8.9
     /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
     /// - Categories: @write, @hyperloglog, @slow
@@ -124,7 +126,7 @@ extension ValkeyConnection {
 
     /// An internal command for testing HyperLogLog values.
     ///
-    /// - Documentation: [PFSELFTEST](https:/redis.io/docs/latest/commands/pfselftest)
+    /// - Documentation: [PFSELFTEST](https:/valkey.io/commands/pfselftest)
     /// - Version: 2.8.9
     /// - Complexity: N/A
     /// - Categories: @hyperloglog, @admin, @slow, @dangerous

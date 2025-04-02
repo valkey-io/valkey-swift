@@ -70,6 +70,7 @@ public enum CLUSTER {
     public struct BUMPEPOCH: RESPCommand {
         public typealias Response = String
 
+
         @inlinable public init() {
         }
 
@@ -181,6 +182,7 @@ public enum CLUSTER {
     public struct FLUSHSLOTS: RESPCommand {
         public typealias Response = RESPToken
 
+
         @inlinable public init() {
         }
 
@@ -225,6 +227,7 @@ public enum CLUSTER {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -236,6 +239,7 @@ public enum CLUSTER {
     /// Returns information about the state of a node.
     public struct INFO: RESPCommand {
         public typealias Response = String
+
 
         @inlinable public init() {
         }
@@ -263,6 +267,7 @@ public enum CLUSTER {
     /// Returns a list of all TCP links to and from peer nodes.
     public struct LINKS: RESPCommand {
         public typealias Response = [[String: RESPToken]]
+
 
         @inlinable public init() {
         }
@@ -295,6 +300,7 @@ public enum CLUSTER {
     public struct MYID: RESPCommand {
         public typealias Response = String
 
+
         @inlinable public init() {
         }
 
@@ -307,6 +313,7 @@ public enum CLUSTER {
     public struct MYSHARDID: RESPCommand {
         public typealias Response = String
 
+
         @inlinable public init() {
         }
 
@@ -318,6 +325,7 @@ public enum CLUSTER {
     /// Returns the cluster configuration for a node.
     public struct NODES: RESPCommand {
         public typealias Response = String
+
 
         @inlinable public init() {
         }
@@ -388,6 +396,7 @@ public enum CLUSTER {
     public struct SAVECONFIG: RESPCommand {
         public typealias Response = RESPToken
 
+
         @inlinable public init() {
         }
 
@@ -448,6 +457,7 @@ public enum CLUSTER {
     public struct SHARDS: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -475,6 +485,7 @@ public enum CLUSTER {
     public struct SLOTS: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -489,6 +500,7 @@ public enum CLUSTER {
 public struct ASKING: RESPCommand {
     public typealias Response = RESPToken
 
+
     @inlinable public init() {
     }
 
@@ -500,6 +512,7 @@ public struct ASKING: RESPCommand {
 /// Enables read-only queries for a connection to a Redis Cluster replica node.
 public struct READONLY: RESPCommand {
     public typealias Response = RESPToken
+
 
     @inlinable public init() {
     }
@@ -513,6 +526,7 @@ public struct READONLY: RESPCommand {
 public struct READWRITE: RESPCommand {
     public typealias Response = RESPToken
 
+
     @inlinable public init() {
     }
 
@@ -521,10 +535,11 @@ public struct READWRITE: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Signals that a cluster client is following an -ASK redirect.
     ///
-    /// - Documentation: [ASKING](https:/redis.io/docs/latest/commands/asking)
+    /// - Documentation: [ASKING](https:/valkey.io/commands/asking)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
@@ -536,7 +551,7 @@ extension ValkeyConnection {
 
     /// Assigns new hash slots to a node.
     ///
-    /// - Documentation: [CLUSTER ADDSLOTS](https:/redis.io/docs/latest/commands/cluster-addslots)
+    /// - Documentation: [CLUSTER ADDSLOTS](https:/valkey.io/commands/cluster-addslots)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the total number of hash slot arguments
     /// - Categories: @admin, @slow, @dangerous
@@ -548,7 +563,7 @@ extension ValkeyConnection {
 
     /// Assigns new hash slot ranges to a node.
     ///
-    /// - Documentation: [CLUSTER ADDSLOTSRANGE](https:/redis.io/docs/latest/commands/cluster-addslotsrange)
+    /// - Documentation: [CLUSTER ADDSLOTSRANGE](https:/valkey.io/commands/cluster-addslotsrange)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
     /// - Categories: @admin, @slow, @dangerous
@@ -560,7 +575,7 @@ extension ValkeyConnection {
 
     /// Advances the cluster config epoch.
     ///
-    /// - Documentation: [CLUSTER BUMPEPOCH](https:/redis.io/docs/latest/commands/cluster-bumpepoch)
+    /// - Documentation: [CLUSTER BUMPEPOCH](https:/valkey.io/commands/cluster-bumpepoch)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -574,7 +589,7 @@ extension ValkeyConnection {
 
     /// Returns the number of active failure reports active for a node.
     ///
-    /// - Documentation: [CLUSTER COUNT-FAILURE-REPORTS](https:/redis.io/docs/latest/commands/cluster-count-failure-reports)
+    /// - Documentation: [CLUSTER COUNT-FAILURE-REPORTS](https:/valkey.io/commands/cluster-count-failure-reports)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of failure reports
     /// - Categories: @admin, @slow, @dangerous
@@ -586,7 +601,7 @@ extension ValkeyConnection {
 
     /// Returns the number of keys in a hash slot.
     ///
-    /// - Documentation: [CLUSTER COUNTKEYSINSLOT](https:/redis.io/docs/latest/commands/cluster-countkeysinslot)
+    /// - Documentation: [CLUSTER COUNTKEYSINSLOT](https:/valkey.io/commands/cluster-countkeysinslot)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -598,7 +613,7 @@ extension ValkeyConnection {
 
     /// Sets hash slots as unbound for a node.
     ///
-    /// - Documentation: [CLUSTER DELSLOTS](https:/redis.io/docs/latest/commands/cluster-delslots)
+    /// - Documentation: [CLUSTER DELSLOTS](https:/valkey.io/commands/cluster-delslots)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the total number of hash slot arguments
     /// - Categories: @admin, @slow, @dangerous
@@ -610,7 +625,7 @@ extension ValkeyConnection {
 
     /// Sets hash slot ranges as unbound for a node.
     ///
-    /// - Documentation: [CLUSTER DELSLOTSRANGE](https:/redis.io/docs/latest/commands/cluster-delslotsrange)
+    /// - Documentation: [CLUSTER DELSLOTSRANGE](https:/valkey.io/commands/cluster-delslotsrange)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
     /// - Categories: @admin, @slow, @dangerous
@@ -622,7 +637,7 @@ extension ValkeyConnection {
 
     /// Forces a replica to perform a manual failover of its master.
     ///
-    /// - Documentation: [CLUSTER FAILOVER](https:/redis.io/docs/latest/commands/cluster-failover)
+    /// - Documentation: [CLUSTER FAILOVER](https:/valkey.io/commands/cluster-failover)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -634,7 +649,7 @@ extension ValkeyConnection {
 
     /// Deletes all slots information from a node.
     ///
-    /// - Documentation: [CLUSTER FLUSHSLOTS](https:/redis.io/docs/latest/commands/cluster-flushslots)
+    /// - Documentation: [CLUSTER FLUSHSLOTS](https:/valkey.io/commands/cluster-flushslots)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -646,7 +661,7 @@ extension ValkeyConnection {
 
     /// Removes a node from the nodes table.
     ///
-    /// - Documentation: [CLUSTER FORGET](https:/redis.io/docs/latest/commands/cluster-forget)
+    /// - Documentation: [CLUSTER FORGET](https:/valkey.io/commands/cluster-forget)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -658,7 +673,7 @@ extension ValkeyConnection {
 
     /// Returns the key names in a hash slot.
     ///
-    /// - Documentation: [CLUSTER GETKEYSINSLOT](https:/redis.io/docs/latest/commands/cluster-getkeysinslot)
+    /// - Documentation: [CLUSTER GETKEYSINSLOT](https:/valkey.io/commands/cluster-getkeysinslot)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of requested keys
     /// - Categories: @slow
@@ -670,7 +685,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [CLUSTER HELP](https:/redis.io/docs/latest/commands/cluster-help)
+    /// - Documentation: [CLUSTER HELP](https:/valkey.io/commands/cluster-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -682,7 +697,7 @@ extension ValkeyConnection {
 
     /// Returns information about the state of a node.
     ///
-    /// - Documentation: [CLUSTER INFO](https:/redis.io/docs/latest/commands/cluster-info)
+    /// - Documentation: [CLUSTER INFO](https:/valkey.io/commands/cluster-info)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -694,7 +709,7 @@ extension ValkeyConnection {
 
     /// Returns the hash slot for a key.
     ///
-    /// - Documentation: [CLUSTER KEYSLOT](https:/redis.io/docs/latest/commands/cluster-keyslot)
+    /// - Documentation: [CLUSTER KEYSLOT](https:/valkey.io/commands/cluster-keyslot)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of bytes in the key
     /// - Categories: @slow
@@ -706,7 +721,7 @@ extension ValkeyConnection {
 
     /// Returns a list of all TCP links to and from peer nodes.
     ///
-    /// - Documentation: [CLUSTER LINKS](https:/redis.io/docs/latest/commands/cluster-links)
+    /// - Documentation: [CLUSTER LINKS](https:/valkey.io/commands/cluster-links)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Categories: @slow
@@ -718,7 +733,7 @@ extension ValkeyConnection {
 
     /// Forces a node to handshake with another node.
     ///
-    /// - Documentation: [CLUSTER MEET](https:/redis.io/docs/latest/commands/cluster-meet)
+    /// - Documentation: [CLUSTER MEET](https:/valkey.io/commands/cluster-meet)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -730,7 +745,7 @@ extension ValkeyConnection {
 
     /// Returns the ID of a node.
     ///
-    /// - Documentation: [CLUSTER MYID](https:/redis.io/docs/latest/commands/cluster-myid)
+    /// - Documentation: [CLUSTER MYID](https:/valkey.io/commands/cluster-myid)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -742,7 +757,7 @@ extension ValkeyConnection {
 
     /// Returns the shard ID of a node.
     ///
-    /// - Documentation: [CLUSTER MYSHARDID](https:/redis.io/docs/latest/commands/cluster-myshardid)
+    /// - Documentation: [CLUSTER MYSHARDID](https:/valkey.io/commands/cluster-myshardid)
     /// - Version: 7.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow
@@ -754,7 +769,7 @@ extension ValkeyConnection {
 
     /// Returns the cluster configuration for a node.
     ///
-    /// - Documentation: [CLUSTER NODES](https:/redis.io/docs/latest/commands/cluster-nodes)
+    /// - Documentation: [CLUSTER NODES](https:/valkey.io/commands/cluster-nodes)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Categories: @slow
@@ -766,7 +781,7 @@ extension ValkeyConnection {
 
     /// Lists the replica nodes of a master node.
     ///
-    /// - Documentation: [CLUSTER REPLICAS](https:/redis.io/docs/latest/commands/cluster-replicas)
+    /// - Documentation: [CLUSTER REPLICAS](https:/valkey.io/commands/cluster-replicas)
     /// - Version: 5.0.0
     /// - Complexity: O(N) where N is the number of replicas.
     /// - Categories: @admin, @slow, @dangerous
@@ -778,7 +793,7 @@ extension ValkeyConnection {
 
     /// Configure a node as replica of a master node.
     ///
-    /// - Documentation: [CLUSTER REPLICATE](https:/redis.io/docs/latest/commands/cluster-replicate)
+    /// - Documentation: [CLUSTER REPLICATE](https:/valkey.io/commands/cluster-replicate)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -790,7 +805,7 @@ extension ValkeyConnection {
 
     /// Resets a node.
     ///
-    /// - Documentation: [CLUSTER RESET](https:/redis.io/docs/latest/commands/cluster-reset)
+    /// - Documentation: [CLUSTER RESET](https:/valkey.io/commands/cluster-reset)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of known nodes. The command may execute a FLUSHALL as a side effect.
     /// - Categories: @admin, @slow, @dangerous
@@ -802,7 +817,7 @@ extension ValkeyConnection {
 
     /// Forces a node to save the cluster configuration to disk.
     ///
-    /// - Documentation: [CLUSTER SAVECONFIG](https:/redis.io/docs/latest/commands/cluster-saveconfig)
+    /// - Documentation: [CLUSTER SAVECONFIG](https:/valkey.io/commands/cluster-saveconfig)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -814,7 +829,7 @@ extension ValkeyConnection {
 
     /// Sets the configuration epoch for a new node.
     ///
-    /// - Documentation: [CLUSTER SET-CONFIG-EPOCH](https:/redis.io/docs/latest/commands/cluster-set-config-epoch)
+    /// - Documentation: [CLUSTER SET-CONFIG-EPOCH](https:/valkey.io/commands/cluster-set-config-epoch)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -826,7 +841,7 @@ extension ValkeyConnection {
 
     /// Binds a hash slot to a node.
     ///
-    /// - Documentation: [CLUSTER SETSLOT](https:/redis.io/docs/latest/commands/cluster-setslot)
+    /// - Documentation: [CLUSTER SETSLOT](https:/valkey.io/commands/cluster-setslot)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
@@ -838,7 +853,7 @@ extension ValkeyConnection {
 
     /// Returns the mapping of cluster slots to shards.
     ///
-    /// - Documentation: [CLUSTER SHARDS](https:/redis.io/docs/latest/commands/cluster-shards)
+    /// - Documentation: [CLUSTER SHARDS](https:/valkey.io/commands/cluster-shards)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of cluster nodes
     /// - Categories: @slow
@@ -850,7 +865,7 @@ extension ValkeyConnection {
 
     /// Lists the replica nodes of a master node.
     ///
-    /// - Documentation: [CLUSTER SLAVES](https:/redis.io/docs/latest/commands/cluster-slaves)
+    /// - Documentation: [CLUSTER SLAVES](https:/valkey.io/commands/cluster-slaves)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of replicas.
     /// - Categories: @admin, @slow, @dangerous
@@ -862,7 +877,7 @@ extension ValkeyConnection {
 
     /// Returns the mapping of cluster slots to nodes.
     ///
-    /// - Documentation: [CLUSTER SLOTS](https:/redis.io/docs/latest/commands/cluster-slots)
+    /// - Documentation: [CLUSTER SLOTS](https:/valkey.io/commands/cluster-slots)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Categories: @slow
@@ -874,7 +889,7 @@ extension ValkeyConnection {
 
     /// Enables read-only queries for a connection to a Redis Cluster replica node.
     ///
-    /// - Documentation: [READONLY](https:/redis.io/docs/latest/commands/readonly)
+    /// - Documentation: [READONLY](https:/valkey.io/commands/readonly)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection
@@ -886,7 +901,7 @@ extension ValkeyConnection {
 
     /// Enables read-write queries for a connection to a Reids Cluster replica node.
     ///
-    /// - Documentation: [READWRITE](https:/redis.io/docs/latest/commands/readwrite)
+    /// - Documentation: [READWRITE](https:/valkey.io/commands/readwrite)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @connection

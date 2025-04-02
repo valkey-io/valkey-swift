@@ -332,10 +332,11 @@ public struct HVALS: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
     ///
-    /// - Documentation: [HDEL](https:/redis.io/docs/latest/commands/hdel)
+    /// - Documentation: [HDEL](https:/valkey.io/commands/hdel)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of fields to be removed.
     /// - Categories: @write, @hash, @fast
@@ -347,7 +348,7 @@ extension ValkeyConnection {
 
     /// Determines whether a field exists in a hash.
     ///
-    /// - Documentation: [HEXISTS](https:/redis.io/docs/latest/commands/hexists)
+    /// - Documentation: [HEXISTS](https:/valkey.io/commands/hexists)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @hash, @fast
@@ -361,7 +362,7 @@ extension ValkeyConnection {
 
     /// Returns the value of a field in a hash.
     ///
-    /// - Documentation: [HGET](https:/redis.io/docs/latest/commands/hget)
+    /// - Documentation: [HGET](https:/valkey.io/commands/hget)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @hash, @fast
@@ -375,7 +376,7 @@ extension ValkeyConnection {
 
     /// Returns all fields and values in a hash.
     ///
-    /// - Documentation: [HGETALL](https:/redis.io/docs/latest/commands/hgetall)
+    /// - Documentation: [HGETALL](https:/valkey.io/commands/hgetall)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Categories: @read, @hash, @slow
@@ -387,7 +388,7 @@ extension ValkeyConnection {
 
     /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
     ///
-    /// - Documentation: [HINCRBY](https:/redis.io/docs/latest/commands/hincrby)
+    /// - Documentation: [HINCRBY](https:/valkey.io/commands/hincrby)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @hash, @fast
@@ -399,7 +400,7 @@ extension ValkeyConnection {
 
     /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
     ///
-    /// - Documentation: [HINCRBYFLOAT](https:/redis.io/docs/latest/commands/hincrbyfloat)
+    /// - Documentation: [HINCRBYFLOAT](https:/valkey.io/commands/hincrbyfloat)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @write, @hash, @fast
@@ -411,7 +412,7 @@ extension ValkeyConnection {
 
     /// Returns all fields in a hash.
     ///
-    /// - Documentation: [HKEYS](https:/redis.io/docs/latest/commands/hkeys)
+    /// - Documentation: [HKEYS](https:/valkey.io/commands/hkeys)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Categories: @read, @hash, @slow
@@ -423,7 +424,7 @@ extension ValkeyConnection {
 
     /// Returns the number of fields in a hash.
     ///
-    /// - Documentation: [HLEN](https:/redis.io/docs/latest/commands/hlen)
+    /// - Documentation: [HLEN](https:/valkey.io/commands/hlen)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
     /// - Categories: @read, @hash, @fast
@@ -435,7 +436,7 @@ extension ValkeyConnection {
 
     /// Returns the values of all fields in a hash.
     ///
-    /// - Documentation: [HMGET](https:/redis.io/docs/latest/commands/hmget)
+    /// - Documentation: [HMGET](https:/valkey.io/commands/hmget)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of fields being requested.
     /// - Categories: @read, @hash, @fast
@@ -447,7 +448,7 @@ extension ValkeyConnection {
 
     /// Sets the values of multiple fields.
     ///
-    /// - Documentation: [HMSET](https:/redis.io/docs/latest/commands/hmset)
+    /// - Documentation: [HMSET](https:/valkey.io/commands/hmset)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of fields being set.
     /// - Categories: @write, @hash, @fast
@@ -459,7 +460,7 @@ extension ValkeyConnection {
 
     /// Returns one or more random fields from a hash.
     ///
-    /// - Documentation: [HRANDFIELD](https:/redis.io/docs/latest/commands/hrandfield)
+    /// - Documentation: [HRANDFIELD](https:/valkey.io/commands/hrandfield)
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of fields returned
     /// - Categories: @read, @hash, @slow
@@ -475,7 +476,7 @@ extension ValkeyConnection {
 
     /// Iterates over fields and values of a hash.
     ///
-    /// - Documentation: [HSCAN](https:/redis.io/docs/latest/commands/hscan)
+    /// - Documentation: [HSCAN](https:/valkey.io/commands/hscan)
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Categories: @read, @hash, @slow
@@ -489,7 +490,7 @@ extension ValkeyConnection {
 
     /// Creates or modifies the value of a field in a hash.
     ///
-    /// - Documentation: [HSET](https:/redis.io/docs/latest/commands/hset)
+    /// - Documentation: [HSET](https:/valkey.io/commands/hset)
     /// - Version: 2.0.0
     /// - Complexity: O(1) for each field/value pair added, so O(N) to add N field/value pairs when the command is called with multiple field/value pairs.
     /// - Categories: @write, @hash, @fast
@@ -501,7 +502,7 @@ extension ValkeyConnection {
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
     ///
-    /// - Documentation: [HSETNX](https:/redis.io/docs/latest/commands/hsetnx)
+    /// - Documentation: [HSETNX](https:/valkey.io/commands/hsetnx)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @hash, @fast
@@ -515,7 +516,7 @@ extension ValkeyConnection {
 
     /// Returns the length of the value of a field.
     ///
-    /// - Documentation: [HSTRLEN](https:/redis.io/docs/latest/commands/hstrlen)
+    /// - Documentation: [HSTRLEN](https:/valkey.io/commands/hstrlen)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
     /// - Categories: @read, @hash, @fast
@@ -527,7 +528,7 @@ extension ValkeyConnection {
 
     /// Returns all values in a hash.
     ///
-    /// - Documentation: [HVALS](https:/redis.io/docs/latest/commands/hvals)
+    /// - Documentation: [HVALS](https:/valkey.io/commands/hvals)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Categories: @read, @hash, @slow

@@ -26,6 +26,7 @@ import Foundation
 public struct DISCARD: RESPCommand {
     public typealias Response = RESPToken
 
+
     @inlinable public init() {
     }
 
@@ -37,6 +38,7 @@ public struct DISCARD: RESPCommand {
 /// Executes all commands in a transaction.
 public struct EXEC: RESPCommand {
     public typealias Response = [RESPToken]?
+
 
     @inlinable public init() {
     }
@@ -50,6 +52,7 @@ public struct EXEC: RESPCommand {
 public struct MULTI: RESPCommand {
     public typealias Response = RESPToken
 
+
     @inlinable public init() {
     }
 
@@ -61,6 +64,7 @@ public struct MULTI: RESPCommand {
 /// Forgets about watched keys of a transaction.
 public struct UNWATCH: RESPCommand {
     public typealias Response = RESPToken
+
 
     @inlinable public init() {
     }
@@ -85,10 +89,11 @@ public struct WATCH: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Discards a transaction.
     ///
-    /// - Documentation: [DISCARD](https:/redis.io/docs/latest/commands/discard)
+    /// - Documentation: [DISCARD](https:/valkey.io/commands/discard)
     /// - Version: 2.0.0
     /// - Complexity: O(N), when N is the number of queued commands
     /// - Categories: @fast, @transaction
@@ -100,7 +105,7 @@ extension ValkeyConnection {
 
     /// Executes all commands in a transaction.
     ///
-    /// - Documentation: [EXEC](https:/redis.io/docs/latest/commands/exec)
+    /// - Documentation: [EXEC](https:/valkey.io/commands/exec)
     /// - Version: 1.2.0
     /// - Complexity: Depends on commands in the transaction
     /// - Categories: @slow, @transaction
@@ -114,7 +119,7 @@ extension ValkeyConnection {
 
     /// Starts a transaction.
     ///
-    /// - Documentation: [MULTI](https:/redis.io/docs/latest/commands/multi)
+    /// - Documentation: [MULTI](https:/valkey.io/commands/multi)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @transaction
@@ -126,7 +131,7 @@ extension ValkeyConnection {
 
     /// Forgets about watched keys of a transaction.
     ///
-    /// - Documentation: [UNWATCH](https:/redis.io/docs/latest/commands/unwatch)
+    /// - Documentation: [UNWATCH](https:/valkey.io/commands/unwatch)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
     /// - Categories: @fast, @transaction
@@ -138,7 +143,7 @@ extension ValkeyConnection {
 
     /// Monitors changes to keys to determine the execution of a transaction.
     ///
-    /// - Documentation: [WATCH](https:/redis.io/docs/latest/commands/watch)
+    /// - Documentation: [WATCH](https:/valkey.io/commands/watch)
     /// - Version: 2.2.0
     /// - Complexity: O(1) for every key.
     /// - Categories: @fast, @transaction

@@ -327,10 +327,11 @@ public struct SETBIT: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Counts the number of set bits (population counting) in a string.
     ///
-    /// - Documentation: [BITCOUNT](https:/redis.io/docs/latest/commands/bitcount)
+    /// - Documentation: [BITCOUNT](https:/valkey.io/commands/bitcount)
     /// - Version: 2.6.0
     /// - Complexity: O(N)
     /// - Categories: @read, @bitmap, @slow
@@ -342,7 +343,7 @@ extension ValkeyConnection {
 
     /// Performs arbitrary bitfield integer operations on strings.
     ///
-    /// - Documentation: [BITFIELD](https:/redis.io/docs/latest/commands/bitfield)
+    /// - Documentation: [BITFIELD](https:/valkey.io/commands/bitfield)
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each subcommand specified
     /// - Categories: @write, @bitmap, @slow
@@ -356,7 +357,7 @@ extension ValkeyConnection {
 
     /// Performs arbitrary read-only bitfield integer operations on strings.
     ///
-    /// - Documentation: [BITFIELD_RO](https:/redis.io/docs/latest/commands/bitfield_ro)
+    /// - Documentation: [BITFIELD_RO](https:/valkey.io/commands/bitfield_ro)
     /// - Version: 6.0.0
     /// - Complexity: O(1) for each subcommand specified
     /// - Categories: @read, @bitmap, @fast
@@ -368,7 +369,7 @@ extension ValkeyConnection {
 
     /// Performs bitwise operations on multiple strings, and stores the result.
     ///
-    /// - Documentation: [BITOP](https:/redis.io/docs/latest/commands/bitop)
+    /// - Documentation: [BITOP](https:/valkey.io/commands/bitop)
     /// - Version: 2.6.0
     /// - Complexity: O(N)
     /// - Categories: @write, @bitmap, @slow
@@ -380,20 +381,20 @@ extension ValkeyConnection {
 
     /// Finds the first set (1) or clear (0) bit in a string.
     ///
-    /// - Documentation: [BITPOS](https:/redis.io/docs/latest/commands/bitpos)
+    /// - Documentation: [BITPOS](https:/valkey.io/commands/bitpos)
     /// - Version: 2.8.7
     /// - Complexity: O(N)
     /// - Categories: @read, @bitmap, @slow
     /// - Returns: One of the following:
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the position of the first bit set to 1 or 0 according to the request
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1`. In case the `bit` argument is 1 and the string is empty or composed of just zero bytes
-    ///
+    ///     
     ///     If we look for set bits (the bit argument is 1) and the string is empty or composed of just zero bytes, -1 is returned.
-    ///
+    ///     
     ///     If we look for clear bits (the bit argument is 0) and the string only contains bits set to 1, the function returns the first bit not part of the string on the right. So if the string is three bytes set to the value `0xff` the command `BITPOS key 0` will return 24, since up to bit 23 all the bits are 1.
-    ///
+    ///     
     ///     The function considers the right of the string as padded with zeros if you look for clear bits and specify no range or the _start_ argument **only**.
-    ///
+    ///     
     ///     However, this behavior changes if you are looking for clear bits and specify a range with both _start_ and _end_.
     ///     If a clear bit isn't found in the specified range, the function returns -1 as the user specified a clear range and there are no 0 bits in that range.
     @inlinable
@@ -403,7 +404,7 @@ extension ValkeyConnection {
 
     /// Returns a bit value by offset.
     ///
-    /// - Documentation: [GETBIT](https:/redis.io/docs/latest/commands/getbit)
+    /// - Documentation: [GETBIT](https:/valkey.io/commands/getbit)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
     /// - Categories: @read, @bitmap, @fast
@@ -417,7 +418,7 @@ extension ValkeyConnection {
 
     /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [SETBIT](https:/redis.io/docs/latest/commands/setbit)
+    /// - Documentation: [SETBIT](https:/valkey.io/commands/setbit)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
     /// - Categories: @write, @bitmap, @slow

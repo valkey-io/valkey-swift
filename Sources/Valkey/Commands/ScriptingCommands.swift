@@ -43,6 +43,7 @@ public enum FUNCTION {
     public struct DUMP: RESPCommand {
         public typealias Response = String
 
+
         @inlinable public init() {
         }
 
@@ -82,6 +83,7 @@ public enum FUNCTION {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -93,6 +95,7 @@ public enum FUNCTION {
     /// Terminates a function during execution.
     public struct KILL: RESPCommand {
         public typealias Response = RESPToken
+
 
         @inlinable public init() {
         }
@@ -170,6 +173,7 @@ public enum FUNCTION {
     /// Returns information about a function during execution.
     public struct STATS: RESPCommand {
         public typealias Response = [String: RESPToken]
+
 
         @inlinable public init() {
         }
@@ -258,6 +262,7 @@ public enum SCRIPT {
     public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
+
         @inlinable public init() {
         }
 
@@ -269,6 +274,7 @@ public enum SCRIPT {
     /// Terminates a server-side Lua script during execution.
     public struct KILL: RESPCommand {
         public typealias Response = RESPToken
+
 
         @inlinable public init() {
         }
@@ -409,10 +415,11 @@ public struct FCALLRO: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Executes a server-side Lua script.
     ///
-    /// - Documentation: [EVAL](https:/redis.io/docs/latest/commands/eval)
+    /// - Documentation: [EVAL](https:/valkey.io/commands/eval)
     /// - Version: 2.6.0
     /// - Complexity: Depends on the script that is executed.
     /// - Categories: @slow, @scripting
@@ -424,7 +431,7 @@ extension ValkeyConnection {
 
     /// Executes a server-side Lua script by SHA1 digest.
     ///
-    /// - Documentation: [EVALSHA](https:/redis.io/docs/latest/commands/evalsha)
+    /// - Documentation: [EVALSHA](https:/valkey.io/commands/evalsha)
     /// - Version: 2.6.0
     /// - Complexity: Depends on the script that is executed.
     /// - Categories: @slow, @scripting
@@ -436,7 +443,7 @@ extension ValkeyConnection {
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
     ///
-    /// - Documentation: [EVALSHA_RO](https:/redis.io/docs/latest/commands/evalsha_ro)
+    /// - Documentation: [EVALSHA_RO](https:/valkey.io/commands/evalsha_ro)
     /// - Version: 7.0.0
     /// - Complexity: Depends on the script that is executed.
     /// - Categories: @slow, @scripting
@@ -448,7 +455,7 @@ extension ValkeyConnection {
 
     /// Executes a read-only server-side Lua script.
     ///
-    /// - Documentation: [EVAL_RO](https:/redis.io/docs/latest/commands/eval_ro)
+    /// - Documentation: [EVAL_RO](https:/valkey.io/commands/eval_ro)
     /// - Version: 7.0.0
     /// - Complexity: Depends on the script that is executed.
     /// - Categories: @slow, @scripting
@@ -460,7 +467,7 @@ extension ValkeyConnection {
 
     /// Invokes a function.
     ///
-    /// - Documentation: [FCALL](https:/redis.io/docs/latest/commands/fcall)
+    /// - Documentation: [FCALL](https:/valkey.io/commands/fcall)
     /// - Version: 7.0.0
     /// - Complexity: Depends on the function that is executed.
     /// - Categories: @slow, @scripting
@@ -472,7 +479,7 @@ extension ValkeyConnection {
 
     /// Invokes a read-only function.
     ///
-    /// - Documentation: [FCALL_RO](https:/redis.io/docs/latest/commands/fcall_ro)
+    /// - Documentation: [FCALL_RO](https:/valkey.io/commands/fcall_ro)
     /// - Version: 7.0.0
     /// - Complexity: Depends on the function that is executed.
     /// - Categories: @slow, @scripting
@@ -484,7 +491,7 @@ extension ValkeyConnection {
 
     /// Deletes a library and its functions.
     ///
-    /// - Documentation: [FUNCTION DELETE](https:/redis.io/docs/latest/commands/function-delete)
+    /// - Documentation: [FUNCTION DELETE](https:/valkey.io/commands/function-delete)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @write, @slow, @scripting
@@ -496,7 +503,7 @@ extension ValkeyConnection {
 
     /// Dumps all libraries into a serialized binary payload.
     ///
-    /// - Documentation: [FUNCTION DUMP](https:/redis.io/docs/latest/commands/function-dump)
+    /// - Documentation: [FUNCTION DUMP](https:/valkey.io/commands/function-dump)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
     /// - Categories: @slow, @scripting
@@ -508,7 +515,7 @@ extension ValkeyConnection {
 
     /// Deletes all libraries and functions.
     ///
-    /// - Documentation: [FUNCTION FLUSH](https:/redis.io/docs/latest/commands/function-flush)
+    /// - Documentation: [FUNCTION FLUSH](https:/valkey.io/commands/function-flush)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions deleted
     /// - Categories: @write, @slow, @scripting
@@ -520,7 +527,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [FUNCTION HELP](https:/redis.io/docs/latest/commands/function-help)
+    /// - Documentation: [FUNCTION HELP](https:/valkey.io/commands/function-help)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
@@ -532,7 +539,7 @@ extension ValkeyConnection {
 
     /// Terminates a function during execution.
     ///
-    /// - Documentation: [FUNCTION KILL](https:/redis.io/docs/latest/commands/function-kill)
+    /// - Documentation: [FUNCTION KILL](https:/valkey.io/commands/function-kill)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
@@ -544,7 +551,7 @@ extension ValkeyConnection {
 
     /// Returns information about all libraries.
     ///
-    /// - Documentation: [FUNCTION LIST](https:/redis.io/docs/latest/commands/function-list)
+    /// - Documentation: [FUNCTION LIST](https:/valkey.io/commands/function-list)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
     /// - Categories: @slow, @scripting
@@ -556,7 +563,7 @@ extension ValkeyConnection {
 
     /// Creates a library.
     ///
-    /// - Documentation: [FUNCTION LOAD](https:/redis.io/docs/latest/commands/function-load)
+    /// - Documentation: [FUNCTION LOAD](https:/valkey.io/commands/function-load)
     /// - Version: 7.0.0
     /// - Complexity: O(1) (considering compilation time is redundant)
     /// - Categories: @write, @slow, @scripting
@@ -568,7 +575,7 @@ extension ValkeyConnection {
 
     /// Restores all libraries from a payload.
     ///
-    /// - Documentation: [FUNCTION RESTORE](https:/redis.io/docs/latest/commands/function-restore)
+    /// - Documentation: [FUNCTION RESTORE](https:/valkey.io/commands/function-restore)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions on the payload
     /// - Categories: @write, @slow, @scripting
@@ -580,7 +587,7 @@ extension ValkeyConnection {
 
     /// Returns information about a function during execution.
     ///
-    /// - Documentation: [FUNCTION STATS](https:/redis.io/docs/latest/commands/function-stats)
+    /// - Documentation: [FUNCTION STATS](https:/valkey.io/commands/function-stats)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
@@ -592,7 +599,7 @@ extension ValkeyConnection {
 
     /// Sets the debug mode of server-side Lua scripts.
     ///
-    /// - Documentation: [SCRIPT DEBUG](https:/redis.io/docs/latest/commands/script-debug)
+    /// - Documentation: [SCRIPT DEBUG](https:/valkey.io/commands/script-debug)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
@@ -604,7 +611,7 @@ extension ValkeyConnection {
 
     /// Determines whether server-side Lua scripts exist in the script cache.
     ///
-    /// - Documentation: [SCRIPT EXISTS](https:/redis.io/docs/latest/commands/script-exists)
+    /// - Documentation: [SCRIPT EXISTS](https:/valkey.io/commands/script-exists)
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
     /// - Categories: @slow, @scripting
@@ -616,7 +623,7 @@ extension ValkeyConnection {
 
     /// Removes all server-side Lua scripts from the script cache.
     ///
-    /// - Documentation: [SCRIPT FLUSH](https:/redis.io/docs/latest/commands/script-flush)
+    /// - Documentation: [SCRIPT FLUSH](https:/valkey.io/commands/script-flush)
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts in cache
     /// - Categories: @slow, @scripting
@@ -628,7 +635,7 @@ extension ValkeyConnection {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [SCRIPT HELP](https:/redis.io/docs/latest/commands/script-help)
+    /// - Documentation: [SCRIPT HELP](https:/valkey.io/commands/script-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
@@ -640,7 +647,7 @@ extension ValkeyConnection {
 
     /// Terminates a server-side Lua script during execution.
     ///
-    /// - Documentation: [SCRIPT KILL](https:/redis.io/docs/latest/commands/script-kill)
+    /// - Documentation: [SCRIPT KILL](https:/valkey.io/commands/script-kill)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
     /// - Categories: @slow, @scripting
@@ -652,7 +659,7 @@ extension ValkeyConnection {
 
     /// Loads a server-side Lua script to the script cache.
     ///
-    /// - Documentation: [SCRIPT LOAD](https:/redis.io/docs/latest/commands/script-load)
+    /// - Documentation: [SCRIPT LOAD](https:/valkey.io/commands/script-load)
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the length in bytes of the script body.
     /// - Categories: @slow, @scripting

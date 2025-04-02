@@ -208,19 +208,7 @@ public struct GEORADIUS: RESPCommand {
     public var order: Order? = nil
     public var store: Store? = nil
 
-    @inlinable public init(
-        key: RESPKey,
-        longitude: Double,
-        latitude: Double,
-        radius: Double,
-        unit: Unit,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false,
-        countBlock: CountBlock? = nil,
-        order: Order? = nil,
-        store: Store? = nil
-    ) {
+    @inlinable public init(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
         self.key = key
         self.longitude = longitude
         self.latitude = latitude
@@ -235,20 +223,7 @@ public struct GEORADIUS: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "GEORADIUS",
-            key,
-            longitude,
-            latitude,
-            radius,
-            unit,
-            RESPPureToken("WITHCOORD", withcoord),
-            RESPPureToken("WITHDIST", withdist),
-            RESPPureToken("WITHHASH", withhash),
-            countBlock,
-            order,
-            store
-        )
+        commandEncoder.encodeArray("GEORADIUS", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
@@ -319,18 +294,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
     public var order: Order? = nil
     public var store: Store? = nil
 
-    @inlinable public init(
-        key: RESPKey,
-        member: String,
-        radius: Double,
-        unit: Unit,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false,
-        countBlock: CountBlock? = nil,
-        order: Order? = nil,
-        store: Store? = nil
-    ) {
+    @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
         self.key = key
         self.member = member
         self.radius = radius
@@ -344,19 +308,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "GEORADIUSBYMEMBER",
-            key,
-            member,
-            radius,
-            unit,
-            RESPPureToken("WITHCOORD", withcoord),
-            RESPPureToken("WITHDIST", withdist),
-            RESPPureToken("WITHHASH", withhash),
-            countBlock,
-            order,
-            store
-        )
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
@@ -414,17 +366,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
     public var countBlock: CountBlock? = nil
     public var order: Order? = nil
 
-    @inlinable public init(
-        key: RESPKey,
-        member: String,
-        radius: Double,
-        unit: Unit,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false,
-        countBlock: CountBlock? = nil,
-        order: Order? = nil
-    ) {
+    @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
         self.key = key
         self.member = member
         self.radius = radius
@@ -437,18 +379,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "GEORADIUSBYMEMBER_RO",
-            key,
-            member,
-            radius,
-            unit,
-            RESPPureToken("WITHCOORD", withcoord),
-            RESPPureToken("WITHDIST", withdist),
-            RESPPureToken("WITHHASH", withhash),
-            countBlock,
-            order
-        )
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 
@@ -507,18 +438,7 @@ public struct GEORADIUSRO: RESPCommand {
     public var countBlock: CountBlock? = nil
     public var order: Order? = nil
 
-    @inlinable public init(
-        key: RESPKey,
-        longitude: Double,
-        latitude: Double,
-        radius: Double,
-        unit: Unit,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false,
-        countBlock: CountBlock? = nil,
-        order: Order? = nil
-    ) {
+    @inlinable public init(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
         self.key = key
         self.longitude = longitude
         self.latitude = latitude
@@ -532,19 +452,7 @@ public struct GEORADIUSRO: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "GEORADIUS_RO",
-            key,
-            longitude,
-            latitude,
-            radius,
-            unit,
-            RESPPureToken("WITHCOORD", withcoord),
-            RESPPureToken("WITHDIST", withdist),
-            RESPPureToken("WITHHASH", withhash),
-            countBlock,
-            order
-        )
+        commandEncoder.encodeArray("GEORADIUS_RO", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 
@@ -679,16 +587,7 @@ public struct GEOSEARCH: RESPCommand {
     public var withdist: Bool = false
     public var withhash: Bool = false
 
-    @inlinable public init(
-        key: RESPKey,
-        from: From,
-        by: By,
-        order: Order? = nil,
-        countBlock: CountBlock? = nil,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false
-    ) {
+    @inlinable public init(key: RESPKey, from: From, by: By, order: Order? = nil, countBlock: CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) {
         self.key = key
         self.from = from
         self.by = by
@@ -700,17 +599,7 @@ public struct GEOSEARCH: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "GEOSEARCH",
-            key,
-            from,
-            by,
-            order,
-            countBlock,
-            RESPPureToken("WITHCOORD", withcoord),
-            RESPPureToken("WITHDIST", withdist),
-            RESPPureToken("WITHHASH", withhash)
-        )
+        commandEncoder.encodeArray("GEOSEARCH", key, from, by, order, countBlock, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash))
     }
 }
 
@@ -844,15 +733,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
     public var countBlock: CountBlock? = nil
     public var storedist: Bool = false
 
-    @inlinable public init(
-        destination: RESPKey,
-        source: RESPKey,
-        from: From,
-        by: By,
-        order: Order? = nil,
-        countBlock: CountBlock? = nil,
-        storedist: Bool = false
-    ) {
+    @inlinable public init(destination: RESPKey, source: RESPKey, from: From, by: By, order: Order? = nil, countBlock: CountBlock? = nil, storedist: Bool = false) {
         self.destination = destination
         self.source = source
         self.from = from
@@ -867,10 +748,11 @@ public struct GEOSEARCHSTORE: RESPCommand {
     }
 }
 
+
 extension ValkeyConnection {
     /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
     ///
-    /// - Documentation: [GEOADD](https:/redis.io/docs/latest/commands/geoadd)
+    /// - Documentation: [GEOADD](https:/valkey.io/commands/geoadd)
     /// - Version: 3.2.0
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// - Categories: @write, @geo, @slow
@@ -882,7 +764,7 @@ extension ValkeyConnection {
 
     /// Returns the distance between two members of a geospatial index.
     ///
-    /// - Documentation: [GEODIST](https:/redis.io/docs/latest/commands/geodist)
+    /// - Documentation: [GEODIST](https:/valkey.io/commands/geodist)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
     /// - Categories: @read, @geo, @slow
@@ -896,7 +778,7 @@ extension ValkeyConnection {
 
     /// Returns members from a geospatial index as geohash strings.
     ///
-    /// - Documentation: [GEOHASH](https:/redis.io/docs/latest/commands/geohash)
+    /// - Documentation: [GEOHASH](https:/valkey.io/commands/geohash)
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each member requested.
     /// - Categories: @read, @geo, @slow
@@ -908,7 +790,7 @@ extension ValkeyConnection {
 
     /// Returns the longitude and latitude of members from a geospatial index.
     ///
-    /// - Documentation: [GEOPOS](https:/redis.io/docs/latest/commands/geopos)
+    /// - Documentation: [GEOPOS](https:/valkey.io/commands/geopos)
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each member requested.
     /// - Categories: @read, @geo, @slow
@@ -920,7 +802,7 @@ extension ValkeyConnection {
 
     /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
     ///
-    /// - Documentation: [GEORADIUS](https:/redis.io/docs/latest/commands/georadius)
+    /// - Documentation: [GEORADIUS](https:/valkey.io/commands/georadius)
     /// - Version: 3.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Categories: @write, @geo, @slow
@@ -930,44 +812,18 @@ extension ValkeyConnection {
     ///         1. The distance from the center as a floating point number, in the same unit specified in the radius.
     ///         1. The Geohash integer.
     ///         1. The coordinates as a two items x,y array (longitude,latitude).
-    ///
+    ///     
     ///     For example, the command `GEORADIUS Sicily 15 37 200 km WITHCOORD WITHDIST` will return each item in the following way:
-    ///
+    ///     
     ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
     @inlinable
-    public func georadius(
-        key: RESPKey,
-        longitude: Double,
-        latitude: Double,
-        radius: Double,
-        unit: GEORADIUS.Unit,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false,
-        countBlock: GEORADIUS.CountBlock? = nil,
-        order: GEORADIUS.Order? = nil,
-        store: GEORADIUS.Store? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            command: GEORADIUS(
-                key: key,
-                longitude: longitude,
-                latitude: latitude,
-                radius: radius,
-                unit: unit,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash,
-                countBlock: countBlock,
-                order: order,
-                store: store
-            )
-        )
+    public func georadius(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUS.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUS.CountBlock? = nil, order: GEORADIUS.Order? = nil, store: GEORADIUS.Store? = nil) async throws -> RESPToken {
+        try await send(command: GEORADIUS(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
 
     /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
     ///
-    /// - Documentation: [GEORADIUSBYMEMBER](https:/redis.io/docs/latest/commands/georadiusbymember)
+    /// - Documentation: [GEORADIUSBYMEMBER](https:/valkey.io/commands/georadiusbymember)
     /// - Version: 3.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Categories: @write, @geo, @slow
@@ -978,37 +834,13 @@ extension ValkeyConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymember(
-        key: RESPKey,
-        member: String,
-        radius: Double,
-        unit: GEORADIUSBYMEMBER.Unit,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false,
-        countBlock: GEORADIUSBYMEMBER.CountBlock? = nil,
-        order: GEORADIUSBYMEMBER.Order? = nil,
-        store: GEORADIUSBYMEMBER.Store? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            command: GEORADIUSBYMEMBER(
-                key: key,
-                member: member,
-                radius: radius,
-                unit: unit,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash,
-                countBlock: countBlock,
-                order: order,
-                store: store
-            )
-        )
+    public func georadiusbymember(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBER.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER.CountBlock? = nil, order: GEORADIUSBYMEMBER.Order? = nil, store: GEORADIUSBYMEMBER.Store? = nil) async throws -> RESPToken {
+        try await send(command: GEORADIUSBYMEMBER(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
 
     /// Returns members from a geospatial index that are within a distance from a member.
     ///
-    /// - Documentation: [GEORADIUSBYMEMBER_RO](https:/redis.io/docs/latest/commands/georadiusbymember_ro)
+    /// - Documentation: [GEORADIUSBYMEMBER_RO](https:/valkey.io/commands/georadiusbymember_ro)
     /// - Version: 3.2.10
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Categories: @read, @geo, @slow
@@ -1019,35 +851,13 @@ extension ValkeyConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymemberRo(
-        key: RESPKey,
-        member: String,
-        radius: Double,
-        unit: GEORADIUSBYMEMBERRO.Unit,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false,
-        countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil,
-        order: GEORADIUSBYMEMBERRO.Order? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            command: GEORADIUSBYMEMBERRO(
-                key: key,
-                member: member,
-                radius: radius,
-                unit: unit,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash,
-                countBlock: countBlock,
-                order: order
-            )
-        )
+    public func georadiusbymemberRo(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil, order: GEORADIUSBYMEMBERRO.Order? = nil) async throws -> RESPToken {
+        try await send(command: GEORADIUSBYMEMBERRO(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
     /// Returns members from a geospatial index that are within a distance from a coordinate.
     ///
-    /// - Documentation: [GEORADIUS_RO](https:/redis.io/docs/latest/commands/georadius_ro)
+    /// - Documentation: [GEORADIUS_RO](https:/valkey.io/commands/georadius_ro)
     /// - Version: 3.2.10
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Categories: @read, @geo, @slow
@@ -1058,37 +868,13 @@ extension ValkeyConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusRo(
-        key: RESPKey,
-        longitude: Double,
-        latitude: Double,
-        radius: Double,
-        unit: GEORADIUSRO.Unit,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false,
-        countBlock: GEORADIUSRO.CountBlock? = nil,
-        order: GEORADIUSRO.Order? = nil
-    ) async throws -> RESPToken {
-        try await send(
-            command: GEORADIUSRO(
-                key: key,
-                longitude: longitude,
-                latitude: latitude,
-                radius: radius,
-                unit: unit,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash,
-                countBlock: countBlock,
-                order: order
-            )
-        )
+    public func georadiusRo(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> RESPToken {
+        try await send(command: GEORADIUSRO(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
     /// Queries a geospatial index for members inside an area of a box or a circle.
     ///
-    /// - Documentation: [GEOSEARCH](https:/redis.io/docs/latest/commands/geosearch)
+    /// - Documentation: [GEOSEARCH](https:/valkey.io/commands/geosearch)
     /// - Version: 6.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Categories: @read, @geo, @slow
@@ -1099,58 +885,20 @@ extension ValkeyConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func geosearch(
-        key: RESPKey,
-        from: GEOSEARCH.From,
-        by: GEOSEARCH.By,
-        order: GEOSEARCH.Order? = nil,
-        countBlock: GEOSEARCH.CountBlock? = nil,
-        withcoord: Bool = false,
-        withdist: Bool = false,
-        withhash: Bool = false
-    ) async throws -> RESPToken {
-        try await send(
-            command: GEOSEARCH(
-                key: key,
-                from: from,
-                by: by,
-                order: order,
-                countBlock: countBlock,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash
-            )
-        )
+    public func geosearch(key: RESPKey, from: GEOSEARCH.From, by: GEOSEARCH.By, order: GEOSEARCH.Order? = nil, countBlock: GEOSEARCH.CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> RESPToken {
+        try await send(command: GEOSEARCH(key: key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash))
     }
 
     /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
     ///
-    /// - Documentation: [GEOSEARCHSTORE](https:/redis.io/docs/latest/commands/geosearchstore)
+    /// - Documentation: [GEOSEARCHSTORE](https:/valkey.io/commands/geosearchstore)
     /// - Version: 6.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set
     @inlinable
-    public func geosearchstore(
-        destination: RESPKey,
-        source: RESPKey,
-        from: GEOSEARCHSTORE.From,
-        by: GEOSEARCHSTORE.By,
-        order: GEOSEARCHSTORE.Order? = nil,
-        countBlock: GEOSEARCHSTORE.CountBlock? = nil,
-        storedist: Bool = false
-    ) async throws -> Int {
-        try await send(
-            command: GEOSEARCHSTORE(
-                destination: destination,
-                source: source,
-                from: from,
-                by: by,
-                order: order,
-                countBlock: countBlock,
-                storedist: storedist
-            )
-        )
+    public func geosearchstore(destination: RESPKey, source: RESPKey, from: GEOSEARCHSTORE.From, by: GEOSEARCHSTORE.By, order: GEOSEARCHSTORE.Order? = nil, countBlock: GEOSEARCHSTORE.CountBlock? = nil, storedist: Bool = false) async throws -> Int {
+        try await send(command: GEOSEARCHSTORE(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist))
     }
 
 }

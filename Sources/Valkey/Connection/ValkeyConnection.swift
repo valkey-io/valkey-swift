@@ -40,8 +40,7 @@ public struct ServerAddress: Sendable, Equatable {
     public static func unixDomainSocket(path: String) -> Self { .init(.unixDomainSocket(path: path)) }
 }
 
-/// Single connection to a Redis database
-@_documentation(visibility: internal)
+/// Single connection to a Valkey database
 public struct ValkeyConnection: Sendable {
     enum Request {
         case command(ByteBuffer)
@@ -105,7 +104,7 @@ public struct ValkeyConnection: Sendable {
                                     continuation.resume(
                                         throwing: ValkeyClientError(
                                             .connectionClosed,
-                                            message: "The connection to the Redis database was unexpectedly closed."
+                                            message: "The connection to the database was unexpectedly closed."
                                         )
                                     )
                                 }
@@ -122,7 +121,7 @@ public struct ValkeyConnection: Sendable {
                                             continuation.resume(
                                                 throwing: ValkeyClientError(
                                                     .connectionClosed,
-                                                    message: "The connection to the Redis database was unexpectedly closed."
+                                                    message: "The connection to the database was unexpectedly closed."
                                                 )
                                             )
                                             return
@@ -138,7 +137,7 @@ public struct ValkeyConnection: Sendable {
                             continuation.resume(
                                 throwing: ValkeyClientError(
                                     .connectionClosed,
-                                    message: "The connection to the Redis database has shut down while processing a request."
+                                    message: "The connection to the database has shut down while processing a request."
                                 )
                             )
                         }
@@ -220,7 +219,7 @@ public struct ValkeyConnection: Sendable {
         try await outbound.write(encoder.buffer)
         let response = try await inboundIterator.next()
         guard let response else {
-            throw ValkeyClientError(.connectionClosed, message: "The connection to the Redis database was unexpectedly closed.")
+            throw ValkeyClientError(.connectionClosed, message: "The connection to the database was unexpectedly closed.")
         }
         // if returned value is an error then throw that error
         if let value = response.errorString {

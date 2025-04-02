@@ -18,9 +18,9 @@ import NIOPosix
 import NIOSSL
 import NIOTransportServices
 
-/// Redis client
+/// Valkey client
 ///
-/// Connect to redis server.
+/// Connect to Valkey server.
 ///
 /// Supports TLS via both NIOSSL and Network framework.
 public struct ValkeyClient {
@@ -59,12 +59,12 @@ extension ValkeyClient {
     ///
     /// - Parameters:
     ///   - logger: Logger
-    ///   - operation: Closure handling redis connection
+    ///   - operation: Closure handling Valkey connection
     public func withConnection<Value: Sendable>(
         logger: Logger,
         operation: @escaping @Sendable (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
-        let redisConnection = ValkeyConnection(
+        let valkeyConnection = ValkeyConnection(
             address: self.serverAddress,
             configuration: self.configuration,
             eventLoopGroup: self.eventLoopGroup,
@@ -72,9 +72,9 @@ extension ValkeyClient {
         )
         return try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                try await redisConnection.run()
+                try await valkeyConnection.run()
             }
-            let value: Value = try await operation(redisConnection)
+            let value: Value = try await operation(valkeyConnection)
             group.cancelAll()
             return value
         }

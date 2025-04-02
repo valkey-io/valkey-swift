@@ -136,14 +136,7 @@ public struct ZADD: RESPCommand {
     public var increment: Bool = false
     public var data: [Data]
 
-    @inlinable public init(
-        key: RESPKey,
-        condition: Condition? = nil,
-        comparison: Comparison? = nil,
-        change: Bool = false,
-        increment: Bool = false,
-        data: [Data]
-    ) {
+    @inlinable public init(key: RESPKey, condition: Condition? = nil, comparison: Comparison? = nil, change: Bool = false, increment: Bool = false, data: [Data]) {
         self.key = key
         self.condition = condition
         self.comparison = comparison
@@ -275,13 +268,7 @@ public struct ZINTER: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "ZINTER",
-            RESPArrayWithCount(key),
-            RESPWithToken("WEIGHTS", weight),
-            RESPWithToken("AGGREGATE", aggregate),
-            RESPPureToken("WITHSCORES", withscores)
-        )
+        commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -333,13 +320,7 @@ public struct ZINTERSTORE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "ZINTERSTORE",
-            destination,
-            RESPArrayWithCount(key),
-            RESPWithToken("WEIGHTS", weight),
-            RESPWithToken("AGGREGATE", aggregate)
-        )
+        commandEncoder.encodeArray("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 }
 
@@ -509,15 +490,7 @@ public struct ZRANGE: RESPCommand {
     public var limit: Limit? = nil
     public var withscores: Bool = false
 
-    @inlinable public init(
-        key: RESPKey,
-        start: String,
-        stop: String,
-        sortby: Sortby? = nil,
-        rev: Bool = false,
-        limit: Limit? = nil,
-        withscores: Bool = false
-    ) {
+    @inlinable public init(key: RESPKey, start: String, stop: String, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil, withscores: Bool = false) {
         self.key = key
         self.start = start
         self.stop = stop
@@ -528,16 +501,7 @@ public struct ZRANGE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "ZRANGE",
-            key,
-            start,
-            stop,
-            sortby,
-            RESPPureToken("REV", rev),
-            RESPWithToken("LIMIT", limit),
-            RESPPureToken("WITHSCORES", withscores)
-        )
+        commandEncoder.encodeArray("ZRANGE", key, start, stop, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -930,13 +894,7 @@ public struct ZUNION: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "ZUNION",
-            RESPArrayWithCount(key),
-            RESPWithToken("WEIGHTS", weight),
-            RESPWithToken("AGGREGATE", aggregate),
-            RESPPureToken("WITHSCORES", withscores)
-        )
+        commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -971,20 +929,15 @@ public struct ZUNIONSTORE: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray(
-            "ZUNIONSTORE",
-            destination,
-            RESPArrayWithCount(key),
-            RESPWithToken("WEIGHTS", weight),
-            RESPWithToken("AGGREGATE", aggregate)
-        )
+        commandEncoder.encodeArray("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 }
+
 
 extension ValkeyConnection {
     /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
     ///
-    /// - Documentation: [BZMPOP](https:/redis.io/docs/latest/commands/bzmpop)
+    /// - Documentation: [BZMPOP](https:/valkey.io/commands/bzmpop)
     /// - Version: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Categories: @write, @sortedset, @slow, @blocking
@@ -998,7 +951,7 @@ extension ValkeyConnection {
 
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
     ///
-    /// - Documentation: [BZPOPMAX](https:/redis.io/docs/latest/commands/bzpopmax)
+    /// - Documentation: [BZPOPMAX](https:/valkey.io/commands/bzpopmax)
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Categories: @write, @sortedset, @fast, @blocking
@@ -1012,7 +965,7 @@ extension ValkeyConnection {
 
     /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
     ///
-    /// - Documentation: [BZPOPMIN](https:/redis.io/docs/latest/commands/bzpopmin)
+    /// - Documentation: [BZPOPMIN](https:/valkey.io/commands/bzpopmin)
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Categories: @write, @sortedset, @fast, @blocking
@@ -1026,7 +979,7 @@ extension ValkeyConnection {
 
     /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [ZADD](https:/redis.io/docs/latest/commands/zadd)
+    /// - Documentation: [ZADD](https:/valkey.io/commands/zadd)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// - Categories: @write, @sortedset, @fast
@@ -1036,20 +989,13 @@ extension ValkeyConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(
-        key: RESPKey,
-        condition: ZADD.Condition? = nil,
-        comparison: ZADD.Comparison? = nil,
-        change: Bool = false,
-        increment: Bool = false,
-        data: [ZADD.Data]
-    ) async throws -> RESPToken {
+    public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> RESPToken {
         try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 
     /// Returns the number of members in a sorted set.
     ///
-    /// - Documentation: [ZCARD](https:/redis.io/docs/latest/commands/zcard)
+    /// - Documentation: [ZCARD](https:/valkey.io/commands/zcard)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
     /// - Categories: @read, @sortedset, @fast
@@ -1061,7 +1007,7 @@ extension ValkeyConnection {
 
     /// Returns the count of members in a sorted set that have scores within a range.
     ///
-    /// - Documentation: [ZCOUNT](https:/redis.io/docs/latest/commands/zcount)
+    /// - Documentation: [ZCOUNT](https:/valkey.io/commands/zcount)
     /// - Version: 2.0.0
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Categories: @read, @sortedset, @fast
@@ -1073,7 +1019,7 @@ extension ValkeyConnection {
 
     /// Returns the difference between multiple sorted sets.
     ///
-    /// - Documentation: [ZDIFF](https:/redis.io/docs/latest/commands/zdiff)
+    /// - Documentation: [ZDIFF](https:/valkey.io/commands/zdiff)
     /// - Version: 6.2.0
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
     /// - Categories: @read, @sortedset, @slow
@@ -1085,7 +1031,7 @@ extension ValkeyConnection {
 
     /// Stores the difference of multiple sorted sets in a key.
     ///
-    /// - Documentation: [ZDIFFSTORE](https:/redis.io/docs/latest/commands/zdiffstore)
+    /// - Documentation: [ZDIFFSTORE](https:/valkey.io/commands/zdiffstore)
     /// - Version: 6.2.0
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
     /// - Categories: @write, @sortedset, @slow
@@ -1097,7 +1043,7 @@ extension ValkeyConnection {
 
     /// Increments the score of a member in a sorted set.
     ///
-    /// - Documentation: [ZINCRBY](https:/redis.io/docs/latest/commands/zincrby)
+    /// - Documentation: [ZINCRBY](https:/valkey.io/commands/zincrby)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)) where N is the number of elements in the sorted set.
     /// - Categories: @write, @sortedset, @fast
@@ -1109,7 +1055,7 @@ extension ValkeyConnection {
 
     /// Returns the intersect of multiple sorted sets.
     ///
-    /// - Documentation: [ZINTER](https:/redis.io/docs/latest/commands/zinter)
+    /// - Documentation: [ZINTER](https:/valkey.io/commands/zinter)
     /// - Version: 6.2.0
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// - Categories: @read, @sortedset, @slow
@@ -1121,7 +1067,7 @@ extension ValkeyConnection {
 
     /// Returns the number of members of the intersect of multiple sorted sets.
     ///
-    /// - Documentation: [ZINTERCARD](https:/redis.io/docs/latest/commands/zintercard)
+    /// - Documentation: [ZINTERCARD](https:/valkey.io/commands/zintercard)
     /// - Version: 7.0.0
     /// - Complexity: O(N*K) worst case with N being the smallest input sorted set, K being the number of input sorted sets.
     /// - Categories: @read, @sortedset, @slow
@@ -1133,7 +1079,7 @@ extension ValkeyConnection {
 
     /// Stores the intersect of multiple sorted sets in a key.
     ///
-    /// - Documentation: [ZINTERSTORE](https:/redis.io/docs/latest/commands/zinterstore)
+    /// - Documentation: [ZINTERSTORE](https:/valkey.io/commands/zinterstore)
     /// - Version: 2.0.0
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// - Categories: @write, @sortedset, @slow
@@ -1145,7 +1091,7 @@ extension ValkeyConnection {
 
     /// Returns the number of members in a sorted set within a lexicographical range.
     ///
-    /// - Documentation: [ZLEXCOUNT](https:/redis.io/docs/latest/commands/zlexcount)
+    /// - Documentation: [ZLEXCOUNT](https:/valkey.io/commands/zlexcount)
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Categories: @read, @sortedset, @fast
@@ -1157,7 +1103,7 @@ extension ValkeyConnection {
 
     /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
     ///
-    /// - Documentation: [ZMPOP](https:/redis.io/docs/latest/commands/zmpop)
+    /// - Documentation: [ZMPOP](https:/valkey.io/commands/zmpop)
     /// - Version: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Categories: @write, @sortedset, @slow
@@ -1171,7 +1117,7 @@ extension ValkeyConnection {
 
     /// Returns the score of one or more members in a sorted set.
     ///
-    /// - Documentation: [ZMSCORE](https:/redis.io/docs/latest/commands/zmscore)
+    /// - Documentation: [ZMSCORE](https:/valkey.io/commands/zmscore)
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of members being requested.
     /// - Categories: @read, @sortedset, @fast
@@ -1185,7 +1131,7 @@ extension ValkeyConnection {
 
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
     ///
-    /// - Documentation: [ZPOPMAX](https:/redis.io/docs/latest/commands/zpopmax)
+    /// - Documentation: [ZPOPMAX](https:/valkey.io/commands/zpopmax)
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Categories: @write, @sortedset, @fast
@@ -1197,7 +1143,7 @@ extension ValkeyConnection {
 
     /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
     ///
-    /// - Documentation: [ZPOPMIN](https:/redis.io/docs/latest/commands/zpopmin)
+    /// - Documentation: [ZPOPMIN](https:/valkey.io/commands/zpopmin)
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Categories: @write, @sortedset, @fast
@@ -1209,7 +1155,7 @@ extension ValkeyConnection {
 
     /// Returns one or more random members from a sorted set.
     ///
-    /// - Documentation: [ZRANDMEMBER](https:/redis.io/docs/latest/commands/zrandmember)
+    /// - Documentation: [ZRANDMEMBER](https:/valkey.io/commands/zrandmember)
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of members returned
     /// - Categories: @read, @sortedset, @slow
@@ -1222,27 +1168,19 @@ extension ValkeyConnection {
 
     /// Returns members in a sorted set within a range of indexes.
     ///
-    /// - Documentation: [ZRANGE](https:/redis.io/docs/latest/commands/zrange)
+    /// - Documentation: [ZRANGE](https:/valkey.io/commands/zrange)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
-    public func zrange(
-        key: RESPKey,
-        start: String,
-        stop: String,
-        sortby: ZRANGE.Sortby? = nil,
-        rev: Bool = false,
-        limit: ZRANGE.Limit? = nil,
-        withscores: Bool = false
-    ) async throws -> [RESPToken] {
+    public func zrange(key: RESPKey, start: String, stop: String, sortby: ZRANGE.Sortby? = nil, rev: Bool = false, limit: ZRANGE.Limit? = nil, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZRANGE(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
     }
 
     /// Returns members in a sorted set within a lexicographical range.
     ///
-    /// - Documentation: [ZRANGEBYLEX](https:/redis.io/docs/latest/commands/zrangebylex)
+    /// - Documentation: [ZRANGEBYLEX](https:/valkey.io/commands/zrangebylex)
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Categories: @read, @sortedset, @slow
@@ -1254,45 +1192,31 @@ extension ValkeyConnection {
 
     /// Returns members in a sorted set within a range of scores.
     ///
-    /// - Documentation: [ZRANGEBYSCORE](https:/redis.io/docs/latest/commands/zrangebyscore)
+    /// - Documentation: [ZRANGEBYSCORE](https:/valkey.io/commands/zrangebyscore)
     /// - Version: 1.0.5
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
-    public func zrangebyscore(
-        key: RESPKey,
-        min: Double,
-        max: Double,
-        withscores: Bool = false,
-        limit: ZRANGEBYSCORE.Limit? = nil
-    ) async throws -> [RESPToken] {
+    public func zrangebyscore(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
     }
 
     /// Stores a range of members from sorted set in a key.
     ///
-    /// - Documentation: [ZRANGESTORE](https:/redis.io/docs/latest/commands/zrangestore)
+    /// - Documentation: [ZRANGESTORE](https:/valkey.io/commands/zrangestore)
     /// - Version: 6.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements stored into the destination key.
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zrangestore(
-        dst: RESPKey,
-        src: RESPKey,
-        min: String,
-        max: String,
-        sortby: ZRANGESTORE.Sortby? = nil,
-        rev: Bool = false,
-        limit: ZRANGESTORE.Limit? = nil
-    ) async throws -> Int {
+    public func zrangestore(dst: RESPKey, src: RESPKey, min: String, max: String, sortby: ZRANGESTORE.Sortby? = nil, rev: Bool = false, limit: ZRANGESTORE.Limit? = nil) async throws -> Int {
         try await send(command: ZRANGESTORE(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
     }
 
     /// Returns the index of a member in a sorted set ordered by ascending scores.
     ///
-    /// - Documentation: [ZRANK](https:/redis.io/docs/latest/commands/zrank)
+    /// - Documentation: [ZRANK](https:/valkey.io/commands/zrank)
     /// - Version: 2.0.0
     /// - Complexity: O(log(N))
     /// - Categories: @read, @sortedset, @fast
@@ -1307,7 +1231,7 @@ extension ValkeyConnection {
 
     /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
     ///
-    /// - Documentation: [ZREM](https:/redis.io/docs/latest/commands/zrem)
+    /// - Documentation: [ZREM](https:/valkey.io/commands/zrem)
     /// - Version: 1.2.0
     /// - Complexity: O(M*log(N)) with N being the number of elements in the sorted set and M the number of elements to be removed.
     /// - Categories: @write, @sortedset, @fast
@@ -1319,7 +1243,7 @@ extension ValkeyConnection {
 
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
     ///
-    /// - Documentation: [ZREMRANGEBYLEX](https:/redis.io/docs/latest/commands/zremrangebylex)
+    /// - Documentation: [ZREMRANGEBYLEX](https:/valkey.io/commands/zremrangebylex)
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Categories: @write, @sortedset, @slow
@@ -1331,7 +1255,7 @@ extension ValkeyConnection {
 
     /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
     ///
-    /// - Documentation: [ZREMRANGEBYRANK](https:/redis.io/docs/latest/commands/zremrangebyrank)
+    /// - Documentation: [ZREMRANGEBYRANK](https:/valkey.io/commands/zremrangebyrank)
     /// - Version: 2.0.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Categories: @write, @sortedset, @slow
@@ -1343,7 +1267,7 @@ extension ValkeyConnection {
 
     /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
     ///
-    /// - Documentation: [ZREMRANGEBYSCORE](https:/redis.io/docs/latest/commands/zremrangebyscore)
+    /// - Documentation: [ZREMRANGEBYSCORE](https:/valkey.io/commands/zremrangebyscore)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Categories: @write, @sortedset, @slow
@@ -1355,7 +1279,7 @@ extension ValkeyConnection {
 
     /// Returns members in a sorted set within a range of indexes in reverse order.
     ///
-    /// - Documentation: [ZREVRANGE](https:/redis.io/docs/latest/commands/zrevrange)
+    /// - Documentation: [ZREVRANGE](https:/valkey.io/commands/zrevrange)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// - Categories: @read, @sortedset, @slow
@@ -1367,7 +1291,7 @@ extension ValkeyConnection {
 
     /// Returns members in a sorted set within a lexicographical range in reverse order.
     ///
-    /// - Documentation: [ZREVRANGEBYLEX](https:/redis.io/docs/latest/commands/zrevrangebylex)
+    /// - Documentation: [ZREVRANGEBYLEX](https:/valkey.io/commands/zrevrangebylex)
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Categories: @read, @sortedset, @slow
@@ -1379,25 +1303,19 @@ extension ValkeyConnection {
 
     /// Returns members in a sorted set within a range of scores in reverse order.
     ///
-    /// - Documentation: [ZREVRANGEBYSCORE](https:/redis.io/docs/latest/commands/zrevrangebyscore)
+    /// - Documentation: [ZREVRANGEBYSCORE](https:/valkey.io/commands/zrevrangebyscore)
     /// - Version: 2.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
-    public func zrevrangebyscore(
-        key: RESPKey,
-        max: Double,
-        min: Double,
-        withscores: Bool = false,
-        limit: ZREVRANGEBYSCORE.Limit? = nil
-    ) async throws -> [RESPToken] {
+    public func zrevrangebyscore(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
     }
 
     /// Returns the index of a member in a sorted set ordered by descending scores.
     ///
-    /// - Documentation: [ZREVRANK](https:/redis.io/docs/latest/commands/zrevrank)
+    /// - Documentation: [ZREVRANK](https:/valkey.io/commands/zrevrank)
     /// - Version: 2.0.0
     /// - Complexity: O(log(N))
     /// - Categories: @read, @sortedset, @fast
@@ -1412,7 +1330,7 @@ extension ValkeyConnection {
 
     /// Iterates over members and scores of a sorted set.
     ///
-    /// - Documentation: [ZSCAN](https:/redis.io/docs/latest/commands/zscan)
+    /// - Documentation: [ZSCAN](https:/valkey.io/commands/zscan)
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Categories: @read, @sortedset, @slow
@@ -1424,7 +1342,7 @@ extension ValkeyConnection {
 
     /// Returns the score of a member in a sorted set.
     ///
-    /// - Documentation: [ZSCORE](https:/redis.io/docs/latest/commands/zscore)
+    /// - Documentation: [ZSCORE](https:/valkey.io/commands/zscore)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
     /// - Categories: @read, @sortedset, @fast
@@ -1438,7 +1356,7 @@ extension ValkeyConnection {
 
     /// Returns the union of multiple sorted sets.
     ///
-    /// - Documentation: [ZUNION](https:/redis.io/docs/latest/commands/zunion)
+    /// - Documentation: [ZUNION](https:/valkey.io/commands/zunion)
     /// - Version: 6.2.0
     /// - Complexity: O(N)+O(M*log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// - Categories: @read, @sortedset, @slow
@@ -1450,7 +1368,7 @@ extension ValkeyConnection {
 
     /// Stores the union of multiple sorted sets in a key.
     ///
-    /// - Documentation: [ZUNIONSTORE](https:/redis.io/docs/latest/commands/zunionstore)
+    /// - Documentation: [ZUNIONSTORE](https:/valkey.io/commands/zunionstore)
     /// - Version: 2.0.0
     /// - Complexity: O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// - Categories: @write, @sortedset, @slow
