@@ -7,8 +7,7 @@ let package = Package(
     name: "swift-valkey",
     platforms: [.macOS(.v13)],
     products: [
-        .library(name: "Valkey", targets: ["Valkey"]),
-        .library(name: "ValkeyCommands", targets: ["ValkeyCommands"]),
+        .library(name: "Valkey", targets: ["Valkey"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
@@ -27,20 +26,13 @@ let package = Package(
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
             ]
         ),
-        .target(
-            name: "ValkeyCommands",
-            dependencies: [
-                "Valkey",
-                .product(name: "NIOCore", package: "swift-nio"),
-            ]
-        ),
         .executableTarget(
             name: "ValkeyCommandsBuilder",
             resources: [.process("Resources")]
         ),
         .testTarget(
             name: "ValkeyTests",
-            dependencies: ["Valkey", "ValkeyCommands"]
+            dependencies: ["Valkey"]
         ),
         .testTarget(
             name: "RESPTests",

@@ -9,12 +9,12 @@ struct App {
 
     func run() async throws {
         let resourceFolder = Bundle.module.resourceURL!
-        let commands = try load(fileURL: resourceFolder.appending(path: "commands.json"), as: RedisCommands.self)
+        let commands = try load(fileURL: resourceFolder.appending(path: "commands.json"), as: ValkeyCommands.self)
         let resp3Replies = try load(fileURL: resourceFolder.appending(path: "resp3_replies.json"), as: RESPReplies.self)
-        try writeRedisCommands(toFolder: "Sources/RedisCommands/", commands: commands, replies: resp3Replies)
+        try writeRedisCommands(toFolder: "Sources/Valkey/Commands/", commands: commands, replies: resp3Replies)
     }
 
-    func writeRedisCommands(toFolder: String, commands: RedisCommands, replies: RESPReplies) throws {
+    func writeRedisCommands(toFolder: String, commands: ValkeyCommands, replies: RESPReplies) throws {
         // get list of groups
         var groups: Set<String> = .init()
         for command in commands.commands.values {

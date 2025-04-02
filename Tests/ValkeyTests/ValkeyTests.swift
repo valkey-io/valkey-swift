@@ -16,7 +16,6 @@ import Foundation
 import Logging
 import Testing
 import Valkey
-import ValkeyCommands
 
 @testable import Valkey
 

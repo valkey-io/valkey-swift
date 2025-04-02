@@ -1,6 +1,6 @@
 import Foundation
 
-struct RedisCommands: Decodable {
+struct ValkeyCommands: Decodable {
     let commands: [String: RESPCommand]
 
     init(from decoder: any Decoder) throws {
