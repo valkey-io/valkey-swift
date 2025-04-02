@@ -1,58 +1,37 @@
-# Redis
+# Valkey
 
-Redis client. 
+Valkey client. 
 
 This is currently in an unfinished state. It has no connection manager so there is no support for connection reuse.
 
 ## Usage
 
-To create a connection to Redis database you use `RedisClient.withConnection()`.
+To create a connection to Valkey database you use `ValkeyClient.withConnection()`.
 
 ```swift
-try await RedisClient.withConnection(.hostname("localhost", port: 6379), logger: logger) { connection, logger in
-    try await doRedisStuff()
+try await ValkeyClient.withConnection(.hostname("localhost", port: 6379), logger: logger) { connection, logger in
+    try await doValkeyStuff()
 }
 ```
 
-Swift-redis has three ways to send commands.
-
-### Raw
-
-You can send raw commands using `RedisConnection.send()`. This takes a parameter pack of types that conform to `RESPRenderable`. These includes `Int`, `String`, `Double`, `RedisKey` and then `Optional` and `Array` where the internal type is also `RedisRenderable`. For example to set a value you can call
+All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files Valkey supplies in [valkey-doc](https://github.com/valkey-io/valkey-doc). In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible a `RESPToken` is returned and you'll need to convert the return type manually.
 
 ```swift
-let key = RedisKey(rawValue: "MyKey")
-try await connection.send("SET", key, "TestString")
-```
-
-A raw send will return a `RESPToken`. This can be converted to any value that conforms to `RESPTokenRepresentable`. As with `RESPRenderable` these covers many standard types. You can convert from a `RESPToken` to `RESPTokenRepresentable` type by either using the constructor `init(from: RESPToken)` or the function `converting(to:)`.
-
-```swift
-let response = try await connection.send("GET", key)
-let value = try response.converting(to: String.self)
-// you could also use `let value = String(from: response)`
-```
-
-### Using generated functions
-
-Swift-redis includes a separate module `RedisCommands` that includes functions for all the redis commands. These are generated from the model files redis supplies in [redis-doc](https://github.com/redis/redis-doc). Instead of searching up in the documentation how a command is structured. You can just call a Swift function. In many cases where it is possible the return type from these functions is the set to the be the expected type. In situations where the type cannot be ascertained a `RESPToken` is returned and you'll need to convert the return type manually.
-
-With the generated functions the code above becomes
-
-```swift
-let key = RedisKey(rawValue: "MyKey")
-try await connection.set(key, "TestString")
+try await connection.set("MyKey", "TestString")
 let value = try await connection.get(key)
 ```
 
-### Using generated RESPCommands and pipelining
+### Pipelining commands
 
-In general you don't need to use this method as it has no advantages over using the generated functions. But `RESPCommands` has a function for each Redis command. Where the generated `RESPCommands` are useful is if you want to pipeline commands ie send multiple commands batched together and only wait for all of their responses in one place. You could pipeline the two commands above using
+In some cases it desirable to send multiple commands at one time, without waiting for each response after each command. This is called pipelining. You can do this using the function `pipeline(_:)`. This takes a parameter pack of commands and returns a parameter pack with the responses once all the commands have executed.
 
 ```swift
-let key = RedisKey(rawValue: "MyKey")
 let (setResponse, getResponse) = try await connection.pipeline(
-    SET(key, "TestString"),
-    GET(key)
+    SET("MyKey", "TestString"),
+    GET("MyKey")
 )
 ```
+
+## Redis compatibilty
+
+As Valkey is a fork of Redis v7.2.4, swift-valkey is compatible with Redis databases up to v7.2.4. There is a chance the v7.2.4 features will still be compatible in later versions of Redis, but these are now considered two different projects and they will diverge. Swift-valkey uses the RESP3 protocol. It does not support RESP2.

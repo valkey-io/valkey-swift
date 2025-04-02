@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  REDIS_HOSTNAME: redis
+  VALKEY_HOSTNAME: valkey
 jobs:
   linux:
     runs-on: ubuntu-latest
@@ -25,11 +25,11 @@ jobs:
     container:
       image: ${{ matrix.image }}
     services:
-      redis:
-        image: redis
+      valkey:
+        image: valkey/valkey:8.0
         ports:
           - 6379:6379
-        options: --entrypoint redis-server
+        options: --entrypoint valkey-server
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
       - name: Convert coverage files
         run: |
           llvm-cov export -format="lcov" \
-            .build/debug/swift-redisPackageTests.xctest \
+            .build/debug/swift-valkeyPackageTests.xctest \
             -ignore-filename-regex="\/Tests\/" \
             -instr-profile .build/debug/codecov/default.profdata > info.lcov
       - name: Upload to codecov.io
