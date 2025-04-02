@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  REDIS_HOSTNAME: redis
+  VALKEY_HOSTNAME: valkey
 jobs:
   linux:
     runs-on: ubuntu-latest
@@ -25,11 +25,11 @@ jobs:
     container:
       image: ${{ matrix.image }}
     services:
-      redis:
-        image: redis
+      valkey:
+        image: valkey
         ports:
           - 6379:6379
-        options: --entrypoint redis-server
+        options: --entrypoint valkey-server
     steps:
       - name: Checkout
         uses: actions/checkout@v4
