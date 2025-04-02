@@ -24,68 +24,68 @@ import Foundation
 #endif
 
 /// Discards a transaction.
-public struct DISCARD: RedisCommand {
+public struct DISCARD: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DISCARD")
     }
 }
 
 /// Executes all commands in a transaction.
-public struct EXEC: RedisCommand {
+public struct EXEC: RESPCommand {
     public typealias Response = [RESPToken]?
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXEC")
     }
 }
 
 /// Starts a transaction.
-public struct MULTI: RedisCommand {
+public struct MULTI: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MULTI")
     }
 }
 
 /// Forgets about watched keys of a transaction.
-public struct UNWATCH: RedisCommand {
+public struct UNWATCH: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("UNWATCH")
     }
 }
 
 /// Monitors changes to keys to determine the execution of a transaction.
-public struct WATCH: RedisCommand {
+public struct WATCH: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
 
-    @inlinable public init(key: [RedisKey]) {
+    @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("WATCH", key)
     }
 }
@@ -150,7 +150,7 @@ extension RedisConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func watch(key: [RedisKey]) async throws -> RESPToken {
+    public func watch(key: [RESPKey]) async throws -> RESPToken {
         try await send(command: WATCH(key: key))
     }
 

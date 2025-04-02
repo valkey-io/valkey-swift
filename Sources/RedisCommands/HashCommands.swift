@@ -24,164 +24,164 @@ import Foundation
 #endif
 
 /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
-public struct HDEL: RedisCommand {
+public struct HDEL: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var field: [String]
 
-    @inlinable public init(key: RedisKey, field: [String]) {
+    @inlinable public init(key: RESPKey, field: [String]) {
         self.key = key
         self.field = field
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HDEL", key, field)
     }
 }
 
 /// Determines whether a field exists in a hash.
-public struct HEXISTS: RedisCommand {
+public struct HEXISTS: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var field: String
 
-    @inlinable public init(key: RedisKey, field: String) {
+    @inlinable public init(key: RESPKey, field: String) {
         self.key = key
         self.field = field
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HEXISTS", key, field)
     }
 }
 
 /// Returns the value of a field in a hash.
-public struct HGET: RedisCommand {
+public struct HGET: RESPCommand {
     public typealias Response = String?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var field: String
 
-    @inlinable public init(key: RedisKey, field: String) {
+    @inlinable public init(key: RESPKey, field: String) {
         self.key = key
         self.field = field
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HGET", key, field)
     }
 }
 
 /// Returns all fields and values in a hash.
-public struct HGETALL: RedisCommand {
+public struct HGETALL: RESPCommand {
     public typealias Response = [String: RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HGETALL", key)
     }
 }
 
 /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
-public struct HINCRBY: RedisCommand {
+public struct HINCRBY: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var field: String
     public var increment: Int
 
-    @inlinable public init(key: RedisKey, field: String, increment: Int) {
+    @inlinable public init(key: RESPKey, field: String, increment: Int) {
         self.key = key
         self.field = field
         self.increment = increment
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HINCRBY", key, field, increment)
     }
 }
 
 /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
-public struct HINCRBYFLOAT: RedisCommand {
+public struct HINCRBYFLOAT: RESPCommand {
     public typealias Response = String
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var field: String
     public var increment: Double
 
-    @inlinable public init(key: RedisKey, field: String, increment: Double) {
+    @inlinable public init(key: RESPKey, field: String, increment: Double) {
         self.key = key
         self.field = field
         self.increment = increment
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HINCRBYFLOAT", key, field, increment)
     }
 }
 
 /// Returns all fields in a hash.
-public struct HKEYS: RedisCommand {
+public struct HKEYS: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HKEYS", key)
     }
 }
 
 /// Returns the number of fields in a hash.
-public struct HLEN: RedisCommand {
+public struct HLEN: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HLEN", key)
     }
 }
 
 /// Returns the values of all fields in a hash.
-public struct HMGET: RedisCommand {
+public struct HMGET: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var field: [String]
 
-    @inlinable public init(key: RedisKey, field: [String]) {
+    @inlinable public init(key: RESPKey, field: [String]) {
         self.key = key
         self.field = field
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HMGET", key, field)
     }
 }
 
 /// Sets the values of multiple fields.
-public struct HMSET: RedisCommand {
+public struct HMSET: RESPCommand {
     public struct Data: RESPRenderable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += field.encode(into: &commandEncoder)
             count += value.encode(into: &commandEncoder)
@@ -190,27 +190,27 @@ public struct HMSET: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var data: [Data]
 
-    @inlinable public init(key: RedisKey, data: [Data]) {
+    @inlinable public init(key: RESPKey, data: [Data]) {
         self.key = key
         self.data = data
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HMSET", key, data)
     }
 }
 
 /// Returns one or more random fields from a hash.
-public struct HRANDFIELD: RedisCommand {
+public struct HRANDFIELD: RESPCommand {
     public struct Options: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += count.encode(into: &commandEncoder)
             if self.withvalues { count += "WITHVALUES".encode(into: &commandEncoder) }
@@ -219,48 +219,48 @@ public struct HRANDFIELD: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var options: Options? = nil
 
-    @inlinable public init(key: RedisKey, options: Options? = nil) {
+    @inlinable public init(key: RESPKey, options: Options? = nil) {
         self.key = key
         self.options = options
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HRANDFIELD", key, options)
     }
 }
 
 /// Iterates over fields and values of a hash.
-public struct HSCAN: RedisCommand {
+public struct HSCAN: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var cursor: Int
     public var pattern: String? = nil
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
         self.key = key
         self.cursor = cursor
         self.pattern = pattern
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 }
 
 /// Creates or modifies the value of a field in a hash.
-public struct HSET: RedisCommand {
+public struct HSET: RESPCommand {
     public struct Data: RESPRenderable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += field.encode(into: &commandEncoder)
             count += value.encode(into: &commandEncoder)
@@ -269,66 +269,66 @@ public struct HSET: RedisCommand {
     }
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var data: [Data]
 
-    @inlinable public init(key: RedisKey, data: [Data]) {
+    @inlinable public init(key: RESPKey, data: [Data]) {
         self.key = key
         self.data = data
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSET", key, data)
     }
 }
 
 /// Sets the value of a field in a hash only when the field doesn't exist.
-public struct HSETNX: RedisCommand {
+public struct HSETNX: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var field: String
     public var value: String
 
-    @inlinable public init(key: RedisKey, field: String, value: String) {
+    @inlinable public init(key: RESPKey, field: String, value: String) {
         self.key = key
         self.field = field
         self.value = value
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSETNX", key, field, value)
     }
 }
 
 /// Returns the length of the value of a field.
-public struct HSTRLEN: RedisCommand {
+public struct HSTRLEN: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var field: String
 
-    @inlinable public init(key: RedisKey, field: String) {
+    @inlinable public init(key: RESPKey, field: String) {
         self.key = key
         self.field = field
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSTRLEN", key, field)
     }
 }
 
 /// Returns all values in a hash.
-public struct HVALS: RedisCommand {
+public struct HVALS: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HVALS", key)
     }
 }
@@ -343,7 +343,7 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The number of fields that were removed from the hash, excluding any specified but non-existing fields.
     @inlinable
-    public func hdel(key: RedisKey, field: [String]) async throws -> Int {
+    public func hdel(key: RESPKey, field: [String]) async throws -> Int {
         try await send(command: HDEL(key: key, field: field))
     }
 
@@ -357,7 +357,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the hash does not contain the field, or the key does not exist.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the hash contains the field.
     @inlinable
-    public func hexists(key: RedisKey, field: String) async throws -> Int {
+    public func hexists(key: RESPKey, field: String) async throws -> Int {
         try await send(command: HEXISTS(key: key, field: field))
     }
 
@@ -371,7 +371,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The value associated with the field.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): If the field is not present in the hash or key does not exist.
     @inlinable
-    public func hget(key: RedisKey, field: String) async throws -> String? {
+    public func hget(key: RESPKey, field: String) async throws -> String? {
         try await send(command: HGET(key: key, field: field))
     }
 
@@ -383,7 +383,7 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @slow
     /// - Returns: [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map of fields and their values stored in the hash, or an empty list when key does not exist.
     @inlinable
-    public func hgetall(key: RedisKey) async throws -> [String: RESPToken] {
+    public func hgetall(key: RESPKey) async throws -> [String: RESPToken] {
         try await send(command: HGETALL(key: key))
     }
 
@@ -395,7 +395,7 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the value of the field after the increment operation.
     @inlinable
-    public func hincrby(key: RedisKey, field: String, increment: Int) async throws -> Int {
+    public func hincrby(key: RESPKey, field: String, increment: Int) async throws -> Int {
         try await send(command: HINCRBY(key: key, field: field, increment: increment))
     }
 
@@ -407,7 +407,7 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The value of the field after the increment operation.
     @inlinable
-    public func hincrbyfloat(key: RedisKey, field: String, increment: Double) async throws -> String {
+    public func hincrbyfloat(key: RESPKey, field: String, increment: Double) async throws -> String {
         try await send(command: HINCRBYFLOAT(key: key, field: field, increment: increment))
     }
 
@@ -419,7 +419,7 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of fields in the hash, or an empty list when the key does not exist.
     @inlinable
-    public func hkeys(key: RedisKey) async throws -> [RESPToken] {
+    public func hkeys(key: RESPKey) async throws -> [RESPToken] {
         try await send(command: HKEYS(key: key))
     }
 
@@ -431,7 +431,7 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the fields in the hash, or 0 when the key does not exist.
     @inlinable
-    public func hlen(key: RedisKey) async throws -> Int {
+    public func hlen(key: RESPKey) async throws -> Int {
         try await send(command: HLEN(key: key))
     }
 
@@ -443,7 +443,7 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values associated with the given fields, in the same order as they are requested.
     @inlinable
-    public func hmget(key: RedisKey, field: [String]) async throws -> [RESPToken] {
+    public func hmget(key: RESPKey, field: [String]) async throws -> [RESPToken] {
         try await send(command: HMGET(key: key, field: field))
     }
 
@@ -455,7 +455,7 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func hmset(key: RedisKey, data: [HMSET.Data]) async throws -> RESPToken {
+    public func hmset(key: RESPKey, data: [HMSET.Data]) async throws -> RESPToken {
         try await send(command: HMSET(key: key, data: data))
     }
 
@@ -471,7 +471,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list containing `count` fields when the `count` option is used, or an empty array if the key does not exists.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of fields and their values when `count` and `WITHVALUES` were both used.
     @inlinable
-    public func hrandfield(key: RedisKey, options: HRANDFIELD.Options? = nil) async throws -> RESPToken {
+    public func hrandfield(key: RESPKey, options: HRANDFIELD.Options? = nil) async throws -> RESPToken {
         try await send(command: HRANDFIELD(key: key, options: options))
     }
 
@@ -485,7 +485,7 @@ extension RedisConnection {
     ///     * The first element is a [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) of field/value pairs that were scanned.
     @inlinable
-    public func hscan(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
+    public func hscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: HSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 
@@ -497,7 +497,7 @@ extension RedisConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of fields that were added.
     @inlinable
-    public func hset(key: RedisKey, data: [HSET.Data]) async throws -> Int {
+    public func hset(key: RESPKey, data: [HSET.Data]) async throws -> Int {
         try await send(command: HSET(key: key, data: data))
     }
 
@@ -511,7 +511,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the field already exists in the hash and no operation was performed.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the field is a new field in the hash and the value was set.
     @inlinable
-    public func hsetnx(key: RedisKey, field: String, value: String) async throws -> Int {
+    public func hsetnx(key: RESPKey, field: String, value: String) async throws -> Int {
         try await send(command: HSETNX(key: key, field: field, value: value))
     }
 
@@ -523,7 +523,7 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the string length of the value associated with the _field_, or zero when the _field_ isn't present in the hash or the _key_ doesn't exist at all.
     @inlinable
-    public func hstrlen(key: RedisKey, field: String) async throws -> Int {
+    public func hstrlen(key: RESPKey, field: String) async throws -> Int {
         try await send(command: HSTRLEN(key: key, field: field))
     }
 
@@ -535,7 +535,7 @@ extension RedisConnection {
     /// - Categories: @read, @hash, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values in the hash, or an empty list when the key does not exist.
     @inlinable
-    public func hvals(key: RedisKey) async throws -> [RESPToken] {
+    public func hvals(key: RESPKey) async throws -> [RESPToken] {
         try await send(command: HVALS(key: key))
     }
 

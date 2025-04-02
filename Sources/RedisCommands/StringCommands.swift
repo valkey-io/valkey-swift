@@ -24,86 +24,86 @@ import Foundation
 #endif
 
 /// Appends a string to the value of a key. Creates the key if it doesn't exist.
-public struct APPEND: RedisCommand {
+public struct APPEND: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var value: String
 
-    @inlinable public init(key: RedisKey, value: String) {
+    @inlinable public init(key: RESPKey, value: String) {
         self.key = key
         self.value = value
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("APPEND", key, value)
     }
 }
 
 /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
-public struct DECR: RedisCommand {
+public struct DECR: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DECR", key)
     }
 }
 
 /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
-public struct DECRBY: RedisCommand {
+public struct DECRBY: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var decrement: Int
 
-    @inlinable public init(key: RedisKey, decrement: Int) {
+    @inlinable public init(key: RESPKey, decrement: Int) {
         self.key = key
         self.decrement = decrement
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DECRBY", key, decrement)
     }
 }
 
 /// Returns the string value of a key.
-public struct GET: RedisCommand {
+public struct GET: RESPCommand {
     public typealias Response = String?
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GET", key)
     }
 }
 
 /// Returns the string value of a key after deleting the key.
-public struct GETDEL: RedisCommand {
+public struct GETDEL: RESPCommand {
     public typealias Response = String?
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETDEL", key)
     }
 }
 
 /// Returns the string value of a key after setting its expiration time.
-public struct GETEX: RedisCommand {
+public struct GETEX: RESPCommand {
     public enum Expiration: RESPRenderable {
         case seconds(Int)
         case milliseconds(Int)
@@ -112,7 +112,7 @@ public struct GETEX: RedisCommand {
         case persist
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
@@ -124,116 +124,116 @@ public struct GETEX: RedisCommand {
     }
     public typealias Response = String?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var expiration: Expiration? = nil
 
-    @inlinable public init(key: RedisKey, expiration: Expiration? = nil) {
+    @inlinable public init(key: RESPKey, expiration: Expiration? = nil) {
         self.key = key
         self.expiration = expiration
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETEX", key, expiration)
     }
 }
 
 /// Returns a substring of the string stored at a key.
-public struct GETRANGE: RedisCommand {
+public struct GETRANGE: RESPCommand {
     public typealias Response = String
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var start: Int
     public var end: Int
 
-    @inlinable public init(key: RedisKey, start: Int, end: Int) {
+    @inlinable public init(key: RESPKey, start: Int, end: Int) {
         self.key = key
         self.start = start
         self.end = end
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETRANGE", key, start, end)
     }
 }
 
 /// Returns the previous string value of a key after setting it to a new value.
-public struct GETSET: RedisCommand {
+public struct GETSET: RESPCommand {
     public typealias Response = String?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var value: String
 
-    @inlinable public init(key: RedisKey, value: String) {
+    @inlinable public init(key: RESPKey, value: String) {
         self.key = key
         self.value = value
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETSET", key, value)
     }
 }
 
 /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
-public struct INCR: RedisCommand {
+public struct INCR: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("INCR", key)
     }
 }
 
 /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
-public struct INCRBY: RedisCommand {
+public struct INCRBY: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var increment: Int
 
-    @inlinable public init(key: RedisKey, increment: Int) {
+    @inlinable public init(key: RESPKey, increment: Int) {
         self.key = key
         self.increment = increment
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("INCRBY", key, increment)
     }
 }
 
 /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
-public struct INCRBYFLOAT: RedisCommand {
+public struct INCRBYFLOAT: RESPCommand {
     public typealias Response = String
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var increment: Double
 
-    @inlinable public init(key: RedisKey, increment: Double) {
+    @inlinable public init(key: RESPKey, increment: Double) {
         self.key = key
         self.increment = increment
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("INCRBYFLOAT", key, increment)
     }
 }
 
 /// Finds the longest common substring.
-public struct LCS: RedisCommand {
+public struct LCS: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key1: RedisKey
-    public var key2: RedisKey
+    public var key1: RESPKey
+    public var key2: RESPKey
     public var len: Bool = false
     public var idx: Bool = false
     public var minMatchLen: Int? = nil
     public var withmatchlen: Bool = false
 
-    @inlinable public init(key1: RedisKey, key2: RedisKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) {
+    @inlinable public init(key1: RESPKey, key2: RESPKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) {
         self.key1 = key1
         self.key2 = key2
         self.len = len
@@ -242,34 +242,34 @@ public struct LCS: RedisCommand {
         self.withmatchlen = withmatchlen
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("LCS", key1, key2, RedisPureToken("LEN", len), RedisPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RedisPureToken("WITHMATCHLEN", withmatchlen))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("LCS", key1, key2, RESPPureToken("LEN", len), RESPPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RESPPureToken("WITHMATCHLEN", withmatchlen))
     }
 }
 
 /// Atomically returns the string values of one or more keys.
-public struct MGET: RedisCommand {
+public struct MGET: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
 
-    @inlinable public init(key: [RedisKey]) {
+    @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MGET", key)
     }
 }
 
 /// Atomically creates or modifies the string values of one or more keys.
-public struct MSET: RedisCommand {
+public struct MSET: RESPCommand {
     public struct Data: RESPRenderable {
-        @usableFromInline let key: RedisKey
+        @usableFromInline let key: RESPKey
         @usableFromInline let value: String
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += key.encode(into: &commandEncoder)
             count += value.encode(into: &commandEncoder)
@@ -284,19 +284,19 @@ public struct MSET: RedisCommand {
         self.data = data
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MSET", data)
     }
 }
 
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
-public struct MSETNX: RedisCommand {
+public struct MSETNX: RESPCommand {
     public struct Data: RESPRenderable {
-        @usableFromInline let key: RedisKey
+        @usableFromInline let key: RESPKey
         @usableFromInline let value: String
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += key.encode(into: &commandEncoder)
             count += value.encode(into: &commandEncoder)
@@ -311,38 +311,38 @@ public struct MSETNX: RedisCommand {
         self.data = data
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MSETNX", data)
     }
 }
 
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
-public struct PSETEX: RedisCommand {
+public struct PSETEX: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var milliseconds: Int
     public var value: String
 
-    @inlinable public init(key: RedisKey, milliseconds: Int, value: String) {
+    @inlinable public init(key: RESPKey, milliseconds: Int, value: String) {
         self.key = key
         self.milliseconds = milliseconds
         self.value = value
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PSETEX", key, milliseconds, value)
     }
 }
 
 /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
-public struct SET: RedisCommand {
+public struct SET: RESPCommand {
     public enum Condition: RESPRenderable {
         case nx
         case xx
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -357,7 +357,7 @@ public struct SET: RedisCommand {
         case keepttl
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
@@ -369,13 +369,13 @@ public struct SET: RedisCommand {
     }
     public typealias Response = String?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var value: String
     public var condition: Condition? = nil
     public var get: Bool = false
     public var expiration: Expiration? = nil
 
-    @inlinable public init(key: RedisKey, value: String, condition: Condition? = nil, get: Bool = false, expiration: Expiration? = nil) {
+    @inlinable public init(key: RESPKey, value: String, condition: Condition? = nil, get: Bool = false, expiration: Expiration? = nil) {
         self.key = key
         self.value = value
         self.condition = condition
@@ -383,96 +383,96 @@ public struct SET: RedisCommand {
         self.expiration = expiration
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SET", key, value, condition, RedisPureToken("GET", get), expiration)
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("SET", key, value, condition, RESPPureToken("GET", get), expiration)
     }
 }
 
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
-public struct SETEX: RedisCommand {
+public struct SETEX: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var seconds: Int
     public var value: String
 
-    @inlinable public init(key: RedisKey, seconds: Int, value: String) {
+    @inlinable public init(key: RESPKey, seconds: Int, value: String) {
         self.key = key
         self.seconds = seconds
         self.value = value
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SETEX", key, seconds, value)
     }
 }
 
 /// Set the string value of a key only when the key doesn't exist.
-public struct SETNX: RedisCommand {
+public struct SETNX: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var value: String
 
-    @inlinable public init(key: RedisKey, value: String) {
+    @inlinable public init(key: RESPKey, value: String) {
         self.key = key
         self.value = value
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SETNX", key, value)
     }
 }
 
 /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
-public struct SETRANGE: RedisCommand {
+public struct SETRANGE: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var offset: Int
     public var value: String
 
-    @inlinable public init(key: RedisKey, offset: Int, value: String) {
+    @inlinable public init(key: RESPKey, offset: Int, value: String) {
         self.key = key
         self.offset = offset
         self.value = value
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SETRANGE", key, offset, value)
     }
 }
 
 /// Returns the length of a string value.
-public struct STRLEN: RedisCommand {
+public struct STRLEN: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("STRLEN", key)
     }
 }
 
 /// Returns a substring from a string value.
-public struct SUBSTR: RedisCommand {
+public struct SUBSTR: RESPCommand {
     public typealias Response = String
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var start: Int
     public var end: Int
 
-    @inlinable public init(key: RedisKey, start: Int, end: Int) {
+    @inlinable public init(key: RESPKey, start: Int, end: Int) {
         self.key = key
         self.start = start
         self.end = end
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUBSTR", key, start, end)
     }
 }
@@ -487,7 +487,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the string after the append operation.
     @inlinable
-    public func append(key: RedisKey, value: String) async throws -> Int {
+    public func append(key: RESPKey, value: String) async throws -> Int {
         try await send(command: APPEND(key: key, value: value))
     }
 
@@ -499,7 +499,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the value of the key after decrementing it.
     @inlinable
-    public func decr(key: RedisKey) async throws -> Int {
+    public func decr(key: RESPKey) async throws -> Int {
         try await send(command: DECR(key: key))
     }
 
@@ -511,7 +511,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the value of the key after decrementing it.
     @inlinable
-    public func decrby(key: RedisKey, decrement: Int) async throws -> Int {
+    public func decrby(key: RESPKey, decrement: Int) async throws -> Int {
         try await send(command: DECRBY(key: key, decrement: decrement))
     }
 
@@ -525,7 +525,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the value of the key.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): key does not exist.
     @inlinable
-    public func get(key: RedisKey) async throws -> String? {
+    public func get(key: RESPKey) async throws -> String? {
         try await send(command: GET(key: key))
     }
 
@@ -539,7 +539,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the value of the key.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist or if the key's value type is not a string.
     @inlinable
-    public func getdel(key: RedisKey) async throws -> String? {
+    public func getdel(key: RESPKey) async throws -> String? {
         try await send(command: GETDEL(key: key))
     }
 
@@ -552,7 +552,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the value of `key`
     ///     [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if `key` does not exist.
     @inlinable
-    public func getex(key: RedisKey, expiration: GETEX.Expiration? = nil) async throws -> String? {
+    public func getex(key: RESPKey, expiration: GETEX.Expiration? = nil) async throws -> String? {
         try await send(command: GETEX(key: key, expiration: expiration))
     }
 
@@ -564,7 +564,7 @@ extension RedisConnection {
     /// - Categories: @read, @string, @slow
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func getrange(key: RedisKey, start: Int, end: Int) async throws -> String {
+    public func getrange(key: RESPKey, start: Int, end: Int) async throws -> String {
         try await send(command: GETRANGE(key: key, start: start, end: end))
     }
 
@@ -578,7 +578,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the old value stored at the key.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
     @inlinable
-    public func getset(key: RedisKey, value: String) async throws -> String? {
+    public func getset(key: RESPKey, value: String) async throws -> String? {
         try await send(command: GETSET(key: key, value: value))
     }
 
@@ -590,7 +590,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the value of the key after the increment.
     @inlinable
-    public func incr(key: RedisKey) async throws -> Int {
+    public func incr(key: RESPKey) async throws -> Int {
         try await send(command: INCR(key: key))
     }
 
@@ -602,7 +602,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the value of the key after the increment.
     @inlinable
-    public func incrby(key: RedisKey, increment: Int) async throws -> Int {
+    public func incrby(key: RESPKey, increment: Int) async throws -> Int {
         try await send(command: INCRBY(key: key, increment: increment))
     }
 
@@ -614,7 +614,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the value of the key after the increment.
     @inlinable
-    public func incrbyfloat(key: RedisKey, increment: Double) async throws -> String {
+    public func incrbyfloat(key: RESPKey, increment: Double) async throws -> String {
         try await send(command: INCRBYFLOAT(key: key, increment: increment))
     }
 
@@ -629,7 +629,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/redis.io/docs/reference/protocol-spec#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
     @inlinable
-    public func lcs(key1: RedisKey, key2: RedisKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> RESPToken {
+    public func lcs(key1: RESPKey, key2: RESPKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> RESPToken {
         try await send(command: LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
@@ -641,7 +641,7 @@ extension RedisConnection {
     /// - Categories: @read, @string, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of values at the specified keys.
     @inlinable
-    public func mget(key: [RedisKey]) async throws -> [RESPToken] {
+    public func mget(key: [RESPKey]) async throws -> [RESPToken] {
         try await send(command: MGET(key: key))
     }
 
@@ -679,7 +679,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func psetex(key: RedisKey, milliseconds: Int, value: String) async throws -> RESPToken {
+    public func psetex(key: RESPKey, milliseconds: Int, value: String) async throws -> RESPToken {
         try await send(command: PSETEX(key: key, milliseconds: milliseconds, value: value))
     }
 
@@ -695,7 +695,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): `GET` given: The key didn't exist before the `SET`.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): `GET` given: The previous value of the key.
     @inlinable
-    public func set(key: RedisKey, value: String, condition: SET.Condition? = nil, get: Bool = false, expiration: SET.Expiration? = nil) async throws -> String? {
+    public func set(key: RESPKey, value: String, condition: SET.Condition? = nil, get: Bool = false, expiration: SET.Expiration? = nil) async throws -> String? {
         try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
@@ -707,7 +707,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func setex(key: RedisKey, seconds: Int, value: String) async throws -> RESPToken {
+    public func setex(key: RESPKey, seconds: Int, value: String) async throws -> RESPToken {
         try await send(command: SETEX(key: key, seconds: seconds, value: value))
     }
 
@@ -721,7 +721,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the key was not set.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the key was set.
     @inlinable
-    public func setnx(key: RedisKey, value: String) async throws -> Int {
+    public func setnx(key: RESPKey, value: String) async throws -> Int {
         try await send(command: SETNX(key: key, value: value))
     }
 
@@ -733,7 +733,7 @@ extension RedisConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the string after it was modified by the command.
     @inlinable
-    public func setrange(key: RedisKey, offset: Int, value: String) async throws -> Int {
+    public func setrange(key: RESPKey, offset: Int, value: String) async throws -> Int {
         try await send(command: SETRANGE(key: key, offset: offset, value: value))
     }
 
@@ -745,7 +745,7 @@ extension RedisConnection {
     /// - Categories: @read, @string, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the string stored at key, or 0 when the key does not exist.
     @inlinable
-    public func strlen(key: RedisKey) async throws -> Int {
+    public func strlen(key: RESPKey) async throws -> Int {
         try await send(command: STRLEN(key: key))
     }
 
@@ -757,7 +757,7 @@ extension RedisConnection {
     /// - Categories: @read, @string, @slow
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func substr(key: RedisKey, start: Int, end: Int) async throws -> String {
+    public func substr(key: RESPKey, start: Int, end: Int) async throws -> String {
         try await send(command: SUBSTR(key: key, start: start, end: end))
     }
 

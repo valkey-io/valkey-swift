@@ -26,7 +26,7 @@ import Foundation
 /// A container for Access List Control commands.
 public enum ACL {
     /// Lists the ACL categories, or the commands inside a category.
-    public struct CAT: RedisCommand {
+    public struct CAT: RESPCommand {
         public typealias Response = [String]
 
         public var category: String? = nil
@@ -35,13 +35,13 @@ public enum ACL {
             self.category = category
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "CAT", category)
         }
     }
 
     /// Deletes ACL users, and terminates their connections.
-    public struct DELUSER: RedisCommand {
+    public struct DELUSER: RESPCommand {
         public typealias Response = Int
 
         public var username: [String]
@@ -50,13 +50,13 @@ public enum ACL {
             self.username = username
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "DELUSER", username)
         }
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
-    public struct DRYRUN: RedisCommand {
+    public struct DRYRUN: RESPCommand {
         public typealias Response = String?
 
         public var username: String
@@ -69,13 +69,13 @@ public enum ACL {
             self.arg = arg
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "DRYRUN", username, command, arg)
         }
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
-    public struct GENPASS: RedisCommand {
+    public struct GENPASS: RESPCommand {
         public typealias Response = String
 
         public var bits: Int? = nil
@@ -84,13 +84,13 @@ public enum ACL {
             self.bits = bits
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "GENPASS", bits)
         }
     }
 
     /// Lists the ACL rules of a user.
-    public struct GETUSER: RedisCommand {
+    public struct GETUSER: RESPCommand {
         public typealias Response = [String: RESPToken]?
 
         public var username: String
@@ -99,58 +99,58 @@ public enum ACL {
             self.username = username
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "GETUSER", username)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "HELP")
         }
     }
 
     /// Dumps the effective rules in ACL file format.
-    public struct LIST: RedisCommand {
+    public struct LIST: RESPCommand {
         public typealias Response = [String]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "LIST")
         }
     }
 
     /// Reloads the rules from the configured ACL file.
-    public struct LOAD: RedisCommand {
+    public struct LOAD: RESPCommand {
         public typealias Response = RESPToken
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "LOAD")
         }
     }
 
     /// Lists recent security events generated due to ACL rules.
-    public struct LOG: RedisCommand {
+    public struct LOG: RESPCommand {
         public enum Operation: RESPRenderable {
             case count(Int)
             case reset
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .count(let count): count.encode(into: &commandEncoder)
                 case .reset: "RESET".encode(into: &commandEncoder)
@@ -165,26 +165,26 @@ public enum ACL {
             self.operation = operation
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "LOG", operation)
         }
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
-    public struct SAVE: RedisCommand {
+    public struct SAVE: RESPCommand {
         public typealias Response = RESPToken
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "SAVE")
         }
     }
 
     /// Creates and modifies an ACL user and its rules.
-    public struct SETUSER: RedisCommand {
+    public struct SETUSER: RESPCommand {
         public typealias Response = RESPToken
 
         public var username: String
@@ -195,33 +195,33 @@ public enum ACL {
             self.rule = rule
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "SETUSER", username, rule)
         }
     }
 
     /// Lists all ACL users.
-    public struct USERS: RedisCommand {
+    public struct USERS: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "USERS")
         }
     }
 
     /// Returns the authenticated username of the current connection.
-    public struct WHOAMI: RedisCommand {
+    public struct WHOAMI: RESPCommand {
         public typealias Response = String
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("ACL", "WHOAMI")
         }
     }
@@ -230,20 +230,20 @@ public enum ACL {
 
 extension COMMAND {
     /// Returns a count of commands.
-    public struct COUNT: RedisCommand {
+    public struct COUNT: RESPCommand {
         public typealias Response = Int
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "COUNT")
         }
     }
 
     /// Returns documentary information about one, multiple or all commands.
-    public struct DOCS: RedisCommand {
+    public struct DOCS: RESPCommand {
         public typealias Response = [String: RESPToken]
 
         public var commandName: [String] = []
@@ -252,13 +252,13 @@ extension COMMAND {
             self.commandName = commandName
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "DOCS", commandName)
         }
     }
 
     /// Extracts the key names from an arbitrary command.
-    public struct GETKEYS: RedisCommand {
+    public struct GETKEYS: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var command: String
@@ -269,13 +269,13 @@ extension COMMAND {
             self.arg = arg
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "GETKEYS", command, arg)
         }
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
-    public struct GETKEYSANDFLAGS: RedisCommand {
+    public struct GETKEYSANDFLAGS: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var command: String
@@ -286,26 +286,26 @@ extension COMMAND {
             self.arg = arg
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", command, arg)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "HELP")
         }
     }
 
     /// Returns information about one, multiple or all commands.
-    public struct INFO: RedisCommand {
+    public struct INFO: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var commandName: [String] = []
@@ -314,20 +314,20 @@ extension COMMAND {
             self.commandName = commandName
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "INFO", commandName)
         }
     }
 
     /// Returns a list of command names.
-    public struct LIST: RedisCommand {
+    public struct LIST: RESPCommand {
         public enum Filterby: RESPRenderable {
             case moduleName(String)
             case category(String)
             case pattern(String)
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).encode(into: &commandEncoder)
                 case .category(let category): RESPWithToken("ACLCAT", category).encode(into: &commandEncoder)
@@ -343,7 +343,7 @@ extension COMMAND {
             self.filterby = filterby
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
         }
     }
@@ -353,7 +353,7 @@ extension COMMAND {
 /// A container for server configuration commands.
 public enum CONFIG {
     /// Returns the effective values of configuration parameters.
-    public struct GET: RedisCommand {
+    public struct GET: RESPCommand {
         public typealias Response = [String: RESPToken]
 
         public var parameter: [String]
@@ -362,58 +362,58 @@ public enum CONFIG {
             self.parameter = parameter
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "GET", parameter)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "HELP")
         }
     }
 
     /// Resets the server's statistics.
-    public struct RESETSTAT: RedisCommand {
+    public struct RESETSTAT: RESPCommand {
         public typealias Response = RESPToken
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "RESETSTAT")
         }
     }
 
     /// Persists the effective configuration to file.
-    public struct REWRITE: RedisCommand {
+    public struct REWRITE: RESPCommand {
         public typealias Response = RESPToken
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "REWRITE")
         }
     }
 
     /// Sets configuration parameters in-flight.
-    public struct SET: RedisCommand {
+    public struct SET: RESPCommand {
         public struct Data: RESPRenderable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 var count = 0
                 count += parameter.encode(into: &commandEncoder)
                 count += value.encode(into: &commandEncoder)
@@ -428,7 +428,7 @@ public enum CONFIG {
             self.data = data
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "SET", data)
         }
     }
@@ -438,20 +438,20 @@ public enum CONFIG {
 /// A container for latency diagnostics commands.
 public enum LATENCY {
     /// Returns a human-readable latency analysis report.
-    public struct DOCTOR: RedisCommand {
+    public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "DOCTOR")
         }
     }
 
     /// Returns a latency graph for an event.
-    public struct GRAPH: RedisCommand {
+    public struct GRAPH: RESPCommand {
         public typealias Response = String
 
         public var event: String
@@ -460,26 +460,26 @@ public enum LATENCY {
             self.event = event
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "GRAPH", event)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "HELP")
         }
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
-    public struct HISTOGRAM: RedisCommand {
+    public struct HISTOGRAM: RESPCommand {
         public typealias Response = [String: RESPToken]
 
         public var command: [String] = []
@@ -488,13 +488,13 @@ public enum LATENCY {
             self.command = command
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "HISTOGRAM", command)
         }
     }
 
     /// Returns timestamp-latency samples for an event.
-    public struct HISTORY: RedisCommand {
+    public struct HISTORY: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var event: String
@@ -503,26 +503,26 @@ public enum LATENCY {
             self.event = event
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "HISTORY", event)
         }
     }
 
     /// Returns the latest latency samples for all events.
-    public struct LATEST: RedisCommand {
+    public struct LATEST: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "LATEST")
         }
     }
 
     /// Resets the latency data for one or more events.
-    public struct RESET: RedisCommand {
+    public struct RESET: RESPCommand {
         public typealias Response = Int
 
         public var event: [String] = []
@@ -531,7 +531,7 @@ public enum LATENCY {
             self.event = event
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "RESET", event)
         }
     }
@@ -541,83 +541,83 @@ public enum LATENCY {
 /// A container for memory diagnostics commands.
 public enum MEMORY {
     /// Outputs a memory problems report.
-    public struct DOCTOR: RedisCommand {
+    public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "DOCTOR")
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "HELP")
         }
     }
 
     /// Returns the allocator statistics.
-    public struct MALLOCSTATS: RedisCommand {
+    public struct MALLOCSTATS: RESPCommand {
         public typealias Response = String
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "MALLOC-STATS")
         }
     }
 
     /// Asks the allocator to release memory.
-    public struct PURGE: RedisCommand {
+    public struct PURGE: RESPCommand {
         public typealias Response = RESPToken
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "PURGE")
         }
     }
 
     /// Returns details about memory usage.
-    public struct STATS: RedisCommand {
+    public struct STATS: RESPCommand {
         public typealias Response = [String: RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "STATS")
         }
     }
 
     /// Estimates the memory usage of a key.
-    public struct USAGE: RedisCommand {
+    public struct USAGE: RESPCommand {
         public typealias Response = Int?
 
-        public var key: RedisKey
+        public var key: RESPKey
         public var count: Int? = nil
 
-        @inlinable public init(key: RedisKey, count: Int? = nil) {
+        @inlinable public init(key: RESPKey, count: Int? = nil) {
             self.key = key
             self.count = count
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
         }
     }
@@ -627,33 +627,33 @@ public enum MEMORY {
 /// A container for module commands.
 public enum MODULE {
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "HELP")
         }
     }
 
     /// Returns all loaded modules.
-    public struct LIST: RedisCommand {
+    public struct LIST: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "LIST")
         }
     }
 
     /// Loads a module.
-    public struct LOAD: RedisCommand {
+    public struct LOAD: RESPCommand {
         public typealias Response = RESPToken
 
         public var path: String
@@ -664,19 +664,19 @@ public enum MODULE {
             self.arg = arg
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "LOAD", path, arg)
         }
     }
 
     /// Loads a module using extended parameters.
-    public struct LOADEX: RedisCommand {
+    public struct LOADEX: RESPCommand {
         public struct Configs: RESPRenderable {
             @usableFromInline let name: String
             @usableFromInline let value: String
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 var count = 0
                 count += name.encode(into: &commandEncoder)
                 count += value.encode(into: &commandEncoder)
@@ -695,13 +695,13 @@ public enum MODULE {
             self.args = args
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
         }
     }
 
     /// Unloads a module.
-    public struct UNLOAD: RedisCommand {
+    public struct UNLOAD: RESPCommand {
         public typealias Response = RESPToken
 
         public var name: String
@@ -710,7 +710,7 @@ public enum MODULE {
             self.name = name
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "UNLOAD", name)
         }
     }
@@ -720,7 +720,7 @@ public enum MODULE {
 /// A container for slow log commands.
 public enum SLOWLOG {
     /// Returns the slow log's entries.
-    public struct GET: RedisCommand {
+    public struct GET: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var count: Int? = nil
@@ -729,46 +729,46 @@ public enum SLOWLOG {
             self.count = count
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("SLOWLOG", "GET", count)
         }
     }
 
     /// Show helpful text about the different subcommands
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("SLOWLOG", "HELP")
         }
     }
 
     /// Returns the number of entries in the slow log.
-    public struct LEN: RedisCommand {
+    public struct LEN: RESPCommand {
         public typealias Response = Int
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("SLOWLOG", "LEN")
         }
     }
 
     /// Clears all entries from the slow log.
-    public struct RESET: RedisCommand {
+    public struct RESET: RESPCommand {
         public typealias Response = RESPToken
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("SLOWLOG", "RESET")
         }
     }
@@ -776,20 +776,20 @@ public enum SLOWLOG {
 }
 
 /// Asynchronously rewrites the append-only file to disk.
-public struct BGREWRITEAOF: RedisCommand {
+public struct BGREWRITEAOF: RESPCommand {
     public typealias Response = String
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BGREWRITEAOF")
     }
 }
 
 /// Asynchronously saves the database(s) to disk.
-public struct BGSAVE: RedisCommand {
+public struct BGSAVE: RESPCommand {
     public typealias Response = String
 
     public var schedule: Bool = false
@@ -798,46 +798,46 @@ public struct BGSAVE: RedisCommand {
         self.schedule = schedule
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("BGSAVE", RedisPureToken("SCHEDULE", schedule))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("BGSAVE", RESPPureToken("SCHEDULE", schedule))
     }
 }
 
 /// Returns detailed information about all commands.
-public struct COMMAND: RedisCommand {
+public struct COMMAND: RESPCommand {
     public typealias Response = [RESPToken]
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("COMMAND")
     }
 }
 
 /// Returns the number of keys in the database.
-public struct DBSIZE: RedisCommand {
+public struct DBSIZE: RESPCommand {
     public typealias Response = Int
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DBSIZE")
     }
 }
 
 /// Starts a coordinated failover from a server to one of its replicas.
-public struct FAILOVER: RedisCommand {
+public struct FAILOVER: RESPCommand {
     public struct Target: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += host.encode(into: &commandEncoder)
             count += port.encode(into: &commandEncoder)
@@ -857,19 +857,19 @@ public struct FAILOVER: RedisCommand {
         self.milliseconds = milliseconds
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("FAILOVER", RESPWithToken("TO", target), RedisPureToken("ABORT", abort), RESPWithToken("TIMEOUT", milliseconds))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("FAILOVER", RESPWithToken("TO", target), RESPPureToken("ABORT", abort), RESPWithToken("TIMEOUT", milliseconds))
     }
 }
 
 /// Removes all keys from all databases.
-public struct FLUSHALL: RedisCommand {
+public struct FLUSHALL: RESPCommand {
     public enum FlushType: RESPRenderable {
         case async
         case sync
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .async: "ASYNC".encode(into: &commandEncoder)
             case .sync: "SYNC".encode(into: &commandEncoder)
@@ -884,19 +884,19 @@ public struct FLUSHALL: RedisCommand {
         self.flushType = flushType
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("FLUSHALL", flushType)
     }
 }
 
 /// Remove all keys from the current database.
-public struct FLUSHDB: RedisCommand {
+public struct FLUSHDB: RESPCommand {
     public enum FlushType: RESPRenderable {
         case async
         case sync
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .async: "ASYNC".encode(into: &commandEncoder)
             case .sync: "SYNC".encode(into: &commandEncoder)
@@ -911,13 +911,13 @@ public struct FLUSHDB: RedisCommand {
         self.flushType = flushType
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("FLUSHDB", flushType)
     }
 }
 
 /// Returns information and statistics about the server.
-public struct INFO: RedisCommand {
+public struct INFO: RESPCommand {
     public typealias Response = String
 
     public var section: [String] = []
@@ -926,26 +926,26 @@ public struct INFO: RedisCommand {
         self.section = section
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("INFO", section)
     }
 }
 
 /// Returns the Unix timestamp of the last successful save to disk.
-public struct LASTSAVE: RedisCommand {
+public struct LASTSAVE: RESPCommand {
     public typealias Response = Int
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LASTSAVE")
     }
 }
 
 /// Displays computer art and the Redis version
-public struct LOLWUT: RedisCommand {
+public struct LOLWUT: RESPCommand {
     public typealias Response = String
 
     public var version: Int? = nil
@@ -954,26 +954,26 @@ public struct LOLWUT: RedisCommand {
         self.version = version
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LOLWUT", RESPWithToken("VERSION", version))
     }
 }
 
 /// Listens for all requests received by the server in real-time.
-public struct MONITOR: RedisCommand {
+public struct MONITOR: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MONITOR")
     }
 }
 
 /// An internal command used in replication.
-public struct PSYNC: RedisCommand {
+public struct PSYNC: RESPCommand {
     public typealias Response = RESPToken
 
     public var replicationid: String
@@ -984,32 +984,32 @@ public struct PSYNC: RedisCommand {
         self.offset = offset
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PSYNC", replicationid, offset)
     }
 }
 
 /// An internal command for configuring the replication stream.
-public struct REPLCONF: RedisCommand {
+public struct REPLCONF: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("REPLCONF")
     }
 }
 
 /// Configures a server as replica of another, or promotes it to a master.
-public struct REPLICAOF: RedisCommand {
+public struct REPLICAOF: RESPCommand {
     public struct ArgsHostPort: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += host.encode(into: &commandEncoder)
             count += port.encode(into: &commandEncoder)
@@ -1021,7 +1021,7 @@ public struct REPLICAOF: RedisCommand {
         @usableFromInline let one: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             if self.no { count += "NO".encode(into: &commandEncoder) }
             if self.one { count += "ONE".encode(into: &commandEncoder) }
@@ -1033,7 +1033,7 @@ public struct REPLICAOF: RedisCommand {
         case noOne(ArgsNoOne)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
             case .noOne(let noOne): noOne.encode(into: &commandEncoder)
@@ -1048,16 +1048,16 @@ public struct REPLICAOF: RedisCommand {
         self.args = args
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("REPLICAOF", args)
     }
 }
 
 /// An internal command for migrating keys in a cluster.
-public struct RESTOREASKING: RedisCommand {
+public struct RESTOREASKING: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var ttl: Int
     public var serializedValue: String
     public var replace: Bool = false
@@ -1065,7 +1065,7 @@ public struct RESTOREASKING: RedisCommand {
     public var seconds: Int? = nil
     public var frequency: Int? = nil
 
-    @inlinable public init(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -1075,45 +1075,45 @@ public struct RESTOREASKING: RedisCommand {
         self.frequency = frequency
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RedisPureToken("REPLACE", replace), RedisPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 }
 
 /// Returns the replication role.
-public struct ROLE: RedisCommand {
+public struct ROLE: RESPCommand {
     public typealias Response = [RESPToken]
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ROLE")
     }
 }
 
 /// Synchronously saves the database(s) to disk.
-public struct SAVE: RedisCommand {
+public struct SAVE: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SAVE")
     }
 }
 
 /// Synchronously saves the database(s) to disk and shuts down the Redis server.
-public struct SHUTDOWN: RedisCommand {
+public struct SHUTDOWN: RESPCommand {
     public enum SaveSelector: RESPRenderable {
         case nosave
         case save
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .nosave: "NOSAVE".encode(into: &commandEncoder)
             case .save: "SAVE".encode(into: &commandEncoder)
@@ -1134,19 +1134,19 @@ public struct SHUTDOWN: RedisCommand {
         self.abort = abort
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("SHUTDOWN", saveSelector, RedisPureToken("NOW", now), RedisPureToken("FORCE", force), RedisPureToken("ABORT", abort))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("SHUTDOWN", saveSelector, RESPPureToken("NOW", now), RESPPureToken("FORCE", force), RESPPureToken("ABORT", abort))
     }
 }
 
 /// Sets a Redis server as a replica of another, or promotes it to being a master.
-public struct SLAVEOF: RedisCommand {
+public struct SLAVEOF: RESPCommand {
     public struct ArgsHostPort: RESPRenderable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += host.encode(into: &commandEncoder)
             count += port.encode(into: &commandEncoder)
@@ -1158,7 +1158,7 @@ public struct SLAVEOF: RedisCommand {
         @usableFromInline let one: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             if self.no { count += "NO".encode(into: &commandEncoder) }
             if self.one { count += "ONE".encode(into: &commandEncoder) }
@@ -1170,7 +1170,7 @@ public struct SLAVEOF: RedisCommand {
         case noOne(ArgsNoOne)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
             case .noOne(let noOne): noOne.encode(into: &commandEncoder)
@@ -1185,13 +1185,13 @@ public struct SLAVEOF: RedisCommand {
         self.args = args
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SLAVEOF", args)
     }
 }
 
 /// Swaps two Redis databases.
-public struct SWAPDB: RedisCommand {
+public struct SWAPDB: RESPCommand {
     public typealias Response = RESPToken
 
     public var index1: Int
@@ -1202,33 +1202,33 @@ public struct SWAPDB: RedisCommand {
         self.index2 = index2
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SWAPDB", index1, index2)
     }
 }
 
 /// An internal command used in replication.
-public struct SYNC: RedisCommand {
+public struct SYNC: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SYNC")
     }
 }
 
 /// Returns the server time.
-public struct TIME: RedisCommand {
+public struct TIME: RESPCommand {
     public typealias Response = [RESPToken]
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("TIME")
     }
 }
@@ -1828,7 +1828,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the memory usage in bytes.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the key does not exist.
     @inlinable
-    public func memoryUsage(key: RedisKey, count: Int? = nil) async throws -> Int? {
+    public func memoryUsage(key: RESPKey, count: Int? = nil) async throws -> Int? {
         try await send(command: MEMORY.USAGE(key: key, count: count))
     }
 
@@ -1948,7 +1948,7 @@ extension RedisConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(key: RedisKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
+    public func restoreAsking(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
         try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 

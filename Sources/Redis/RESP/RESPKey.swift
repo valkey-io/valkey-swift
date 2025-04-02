@@ -14,8 +14,8 @@
 
 import NIOCore
 
-/// Type representing a RedisKey
-public struct RedisKey: RawRepresentable {
+/// Type representing a RESPKey
+public struct RESPKey: RawRepresentable {
     public var rawValue: String
 
     public init(rawValue: String) {
@@ -23,7 +23,7 @@ public struct RedisKey: RawRepresentable {
     }
 }
 
-extension RedisKey: RESPTokenRepresentable {
+extension RESPKey: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .bulkString(let buffer):
@@ -34,13 +34,13 @@ extension RedisKey: RESPTokenRepresentable {
     }
 }
 
-extension RedisKey: CustomStringConvertible {
+extension RESPKey: CustomStringConvertible {
     public var description: String { rawValue.description }
 }
 
-extension RedisKey: RESPRenderable {
+extension RESPKey: RESPRenderable {
     @inlinable
-    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         self.rawValue.encode(into: &commandEncoder)
     }
 }

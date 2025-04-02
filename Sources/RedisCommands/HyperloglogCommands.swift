@@ -24,63 +24,63 @@ import Foundation
 #endif
 
 /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-public struct PFADD: RedisCommand {
+public struct PFADD: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var element: [String] = []
 
-    @inlinable public init(key: RedisKey, element: [String] = []) {
+    @inlinable public init(key: RESPKey, element: [String] = []) {
         self.key = key
         self.element = element
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFADD", key, element)
     }
 }
 
 /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
-public struct PFCOUNT: RedisCommand {
+public struct PFCOUNT: RESPCommand {
     public typealias Response = Int
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
 
-    @inlinable public init(key: [RedisKey]) {
+    @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFCOUNT", key)
     }
 }
 
 /// Merges one or more HyperLogLog values into a single key.
-public struct PFMERGE: RedisCommand {
+public struct PFMERGE: RESPCommand {
     public typealias Response = RESPToken
 
-    public var destkey: RedisKey
-    public var sourcekey: [RedisKey] = []
+    public var destkey: RESPKey
+    public var sourcekey: [RESPKey] = []
 
-    @inlinable public init(destkey: RedisKey, sourcekey: [RedisKey] = []) {
+    @inlinable public init(destkey: RESPKey, sourcekey: [RESPKey] = []) {
         self.destkey = destkey
         self.sourcekey = sourcekey
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)
     }
 }
 
 /// An internal command for testing HyperLogLog values.
-public struct PFSELFTEST: RedisCommand {
+public struct PFSELFTEST: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFSELFTEST")
     }
 }
@@ -97,7 +97,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if at least one HyperLogLog internal register was altered.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if no HyperLogLog internal registers were altered.
     @inlinable
-    public func pfadd(key: RedisKey, element: [String] = []) async throws -> Int {
+    public func pfadd(key: RESPKey, element: [String] = []) async throws -> Int {
         try await send(command: PFADD(key: key, element: element))
     }
 
@@ -109,7 +109,7 @@ extension RedisConnection {
     /// - Categories: @read, @hyperloglog, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the approximated number of unique elements observed via `PFADD`
     @inlinable
-    public func pfcount(key: [RedisKey]) async throws -> Int {
+    public func pfcount(key: [RESPKey]) async throws -> Int {
         try await send(command: PFCOUNT(key: key))
     }
 
@@ -121,7 +121,7 @@ extension RedisConnection {
     /// - Categories: @write, @hyperloglog, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func pfmerge(destkey: RedisKey, sourcekey: [RedisKey] = []) async throws -> RESPToken {
+    public func pfmerge(destkey: RESPKey, sourcekey: [RESPKey] = []) async throws -> RESPToken {
         try await send(command: PFMERGE(destkey: destkey, sourcekey: sourcekey))
     }
 

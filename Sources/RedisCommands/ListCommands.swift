@@ -24,13 +24,13 @@ import Foundation
 #endif
 
 /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
-public struct BLMOVE: RedisCommand {
+public struct BLMOVE: RESPCommand {
     public enum Wherefrom: RESPRenderable {
         case left
         case right
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -42,7 +42,7 @@ public struct BLMOVE: RedisCommand {
         case right
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -51,13 +51,13 @@ public struct BLMOVE: RedisCommand {
     }
     public typealias Response = String?
 
-    public var source: RedisKey
-    public var destination: RedisKey
+    public var source: RESPKey
+    public var destination: RESPKey
     public var wherefrom: Wherefrom
     public var whereto: Whereto
     public var timeout: Double
 
-    @inlinable public init(source: RedisKey, destination: RedisKey, wherefrom: Wherefrom, whereto: Whereto, timeout: Double) {
+    @inlinable public init(source: RESPKey, destination: RESPKey, wherefrom: Wherefrom, whereto: Whereto, timeout: Double) {
         self.source = source
         self.destination = destination
         self.wherefrom = wherefrom
@@ -65,19 +65,19 @@ public struct BLMOVE: RedisCommand {
         self.timeout = timeout
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
 }
 
 /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BLMPOP: RedisCommand {
+public struct BLMPOP: RESPCommand {
     public enum Where: RESPRenderable {
         case left
         case right
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -87,100 +87,100 @@ public struct BLMPOP: RedisCommand {
     public typealias Response = [RESPToken]?
 
     public var timeout: Double
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var `where`: Where
     public var count: Int? = nil
 
-    @inlinable public init(timeout: Double, key: [RedisKey], `where`: Where, count: Int? = nil) {
+    @inlinable public init(timeout: Double, key: [RESPKey], `where`: Where, count: Int? = nil) {
         self.timeout = timeout
         self.key = key
         self.`where` = `where`
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
 /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BLPOP: RedisCommand {
+public struct BLPOP: RESPCommand {
     public typealias Response = [RESPToken]?
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var timeout: Double
 
-    @inlinable public init(key: [RedisKey], timeout: Double) {
+    @inlinable public init(key: [RESPKey], timeout: Double) {
         self.key = key
         self.timeout = timeout
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLPOP", key, timeout)
     }
 }
 
 /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BRPOP: RedisCommand {
+public struct BRPOP: RESPCommand {
     public typealias Response = [RESPToken]?
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var timeout: Double
 
-    @inlinable public init(key: [RedisKey], timeout: Double) {
+    @inlinable public init(key: [RESPKey], timeout: Double) {
         self.key = key
         self.timeout = timeout
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BRPOP", key, timeout)
     }
 }
 
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BRPOPLPUSH: RedisCommand {
+public struct BRPOPLPUSH: RESPCommand {
     public typealias Response = String?
 
-    public var source: RedisKey
-    public var destination: RedisKey
+    public var source: RESPKey
+    public var destination: RESPKey
     public var timeout: Double
 
-    @inlinable public init(source: RedisKey, destination: RedisKey, timeout: Double) {
+    @inlinable public init(source: RESPKey, destination: RESPKey, timeout: Double) {
         self.source = source
         self.destination = destination
         self.timeout = timeout
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BRPOPLPUSH", source, destination, timeout)
     }
 }
 
 /// Returns an element from a list by its index.
-public struct LINDEX: RedisCommand {
+public struct LINDEX: RESPCommand {
     public typealias Response = String?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var index: Int
 
-    @inlinable public init(key: RedisKey, index: Int) {
+    @inlinable public init(key: RESPKey, index: Int) {
         self.key = key
         self.index = index
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LINDEX", key, index)
     }
 }
 
 /// Inserts an element before or after another element in a list.
-public struct LINSERT: RedisCommand {
+public struct LINSERT: RESPCommand {
     public enum Where: RESPRenderable {
         case before
         case after
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .before: "BEFORE".encode(into: &commandEncoder)
             case .after: "AFTER".encode(into: &commandEncoder)
@@ -189,46 +189,46 @@ public struct LINSERT: RedisCommand {
     }
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var `where`: Where
     public var pivot: String
     public var element: String
 
-    @inlinable public init(key: RedisKey, `where`: Where, pivot: String, element: String) {
+    @inlinable public init(key: RESPKey, `where`: Where, pivot: String, element: String) {
         self.key = key
         self.`where` = `where`
         self.pivot = pivot
         self.element = element
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LINSERT", key, `where`, pivot, element)
     }
 }
 
 /// Returns the length of a list.
-public struct LLEN: RedisCommand {
+public struct LLEN: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LLEN", key)
     }
 }
 
 /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
-public struct LMOVE: RedisCommand {
+public struct LMOVE: RESPCommand {
     public enum Wherefrom: RESPRenderable {
         case left
         case right
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -240,7 +240,7 @@ public struct LMOVE: RedisCommand {
         case right
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -249,31 +249,31 @@ public struct LMOVE: RedisCommand {
     }
     public typealias Response = String
 
-    public var source: RedisKey
-    public var destination: RedisKey
+    public var source: RESPKey
+    public var destination: RESPKey
     public var wherefrom: Wherefrom
     public var whereto: Whereto
 
-    @inlinable public init(source: RedisKey, destination: RedisKey, wherefrom: Wherefrom, whereto: Whereto) {
+    @inlinable public init(source: RESPKey, destination: RESPKey, wherefrom: Wherefrom, whereto: Whereto) {
         self.source = source
         self.destination = destination
         self.wherefrom = wherefrom
         self.whereto = whereto
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LMOVE", source, destination, wherefrom, whereto)
     }
 }
 
 /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
-public struct LMPOP: RedisCommand {
+public struct LMPOP: RESPCommand {
     public enum Where: RESPRenderable {
         case left
         case right
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -282,49 +282,49 @@ public struct LMPOP: RedisCommand {
     }
     public typealias Response = [RESPToken]?
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var `where`: Where
     public var count: Int? = nil
 
-    @inlinable public init(key: [RedisKey], `where`: Where, count: Int? = nil) {
+    @inlinable public init(key: [RESPKey], `where`: Where, count: Int? = nil) {
         self.key = key
         self.`where` = `where`
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
 /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
-public struct LPOP: RedisCommand {
+public struct LPOP: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPOP", key, count)
     }
 }
 
 /// Returns the index of matching elements in a list.
-public struct LPOS: RedisCommand {
+public struct LPOS: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var element: String
     public var rank: Int? = nil
     public var numMatches: Int? = nil
     public var len: Int? = nil
 
-    @inlinable public init(key: RedisKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) {
+    @inlinable public init(key: RESPKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) {
         self.key = key
         self.element = element
         self.rank = rank
@@ -332,185 +332,185 @@ public struct LPOS: RedisCommand {
         self.len = len
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 }
 
 /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
-public struct LPUSH: RedisCommand {
+public struct LPUSH: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var element: [String]
 
-    @inlinable public init(key: RedisKey, element: [String]) {
+    @inlinable public init(key: RESPKey, element: [String]) {
         self.key = key
         self.element = element
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPUSH", key, element)
     }
 }
 
 /// Prepends one or more elements to a list only when the list exists.
-public struct LPUSHX: RedisCommand {
+public struct LPUSHX: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var element: [String]
 
-    @inlinable public init(key: RedisKey, element: [String]) {
+    @inlinable public init(key: RESPKey, element: [String]) {
         self.key = key
         self.element = element
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPUSHX", key, element)
     }
 }
 
 /// Returns a range of elements from a list.
-public struct LRANGE: RedisCommand {
+public struct LRANGE: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var start: Int
     public var stop: Int
 
-    @inlinable public init(key: RedisKey, start: Int, stop: Int) {
+    @inlinable public init(key: RESPKey, start: Int, stop: Int) {
         self.key = key
         self.start = start
         self.stop = stop
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LRANGE", key, start, stop)
     }
 }
 
 /// Removes elements from a list. Deletes the list if the last element was removed.
-public struct LREM: RedisCommand {
+public struct LREM: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var count: Int
     public var element: String
 
-    @inlinable public init(key: RedisKey, count: Int, element: String) {
+    @inlinable public init(key: RESPKey, count: Int, element: String) {
         self.key = key
         self.count = count
         self.element = element
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LREM", key, count, element)
     }
 }
 
 /// Sets the value of an element in a list by its index.
-public struct LSET: RedisCommand {
+public struct LSET: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var index: Int
     public var element: String
 
-    @inlinable public init(key: RedisKey, index: Int, element: String) {
+    @inlinable public init(key: RESPKey, index: Int, element: String) {
         self.key = key
         self.index = index
         self.element = element
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LSET", key, index, element)
     }
 }
 
 /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
-public struct LTRIM: RedisCommand {
+public struct LTRIM: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var start: Int
     public var stop: Int
 
-    @inlinable public init(key: RedisKey, start: Int, stop: Int) {
+    @inlinable public init(key: RESPKey, start: Int, stop: Int) {
         self.key = key
         self.start = start
         self.stop = stop
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LTRIM", key, start, stop)
     }
 }
 
 /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
-public struct RPOP: RedisCommand {
+public struct RPOP: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPOP", key, count)
     }
 }
 
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
-public struct RPOPLPUSH: RedisCommand {
+public struct RPOPLPUSH: RESPCommand {
     public typealias Response = String?
 
-    public var source: RedisKey
-    public var destination: RedisKey
+    public var source: RESPKey
+    public var destination: RESPKey
 
-    @inlinable public init(source: RedisKey, destination: RedisKey) {
+    @inlinable public init(source: RESPKey, destination: RESPKey) {
         self.source = source
         self.destination = destination
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPOPLPUSH", source, destination)
     }
 }
 
 /// Appends one or more elements to a list. Creates the key if it doesn't exist.
-public struct RPUSH: RedisCommand {
+public struct RPUSH: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var element: [String]
 
-    @inlinable public init(key: RedisKey, element: [String]) {
+    @inlinable public init(key: RESPKey, element: [String]) {
         self.key = key
         self.element = element
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPUSH", key, element)
     }
 }
 
 /// Appends an element to a list only when the list exists.
-public struct RPUSHX: RedisCommand {
+public struct RPUSHX: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var element: [String]
 
-    @inlinable public init(key: RedisKey, element: [String]) {
+    @inlinable public init(key: RESPKey, element: [String]) {
         self.key = key
         self.element = element
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPUSHX", key, element)
     }
 }
@@ -527,7 +527,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the operation timed-out
     @inlinable
-    public func blmove(source: RedisKey, destination: RedisKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> String? {
+    public func blmove(source: RESPKey, destination: RESPKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> String? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
@@ -541,7 +541,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public func blmpop(timeout: Double, key: [RedisKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+    public func blmpop(timeout: Double, key: [RESPKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
         try await send(command: BLMPOP(timeout: timeout, key: key, where: `where`, count: count))
     }
 
@@ -555,7 +555,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element.
     @inlinable
-    public func blpop(key: [RedisKey], timeout: Double) async throws -> [RESPToken]? {
+    public func blpop(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
         try await send(command: BLPOP(key: key, timeout: timeout))
     }
 
@@ -569,7 +569,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): no element could be popped and the timeout expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the key from which the element was popped and the value of the popped element
     @inlinable
-    public func brpop(key: [RedisKey], timeout: Double) async throws -> [RESPToken]? {
+    public func brpop(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
         try await send(command: BRPOP(key: key, timeout: timeout))
     }
 
@@ -583,7 +583,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped from _source_ and pushed to _destination_.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): the timeout is reached.
     @inlinable
-    public func brpoplpush(source: RedisKey, destination: RedisKey, timeout: Double) async throws -> String? {
+    public func brpoplpush(source: RESPKey, destination: RESPKey, timeout: Double) async throws -> String? {
         try await send(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
 
@@ -597,7 +597,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when _index_ is out of range.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the requested element.
     @inlinable
-    public func lindex(key: RedisKey, index: Int) async throws -> String? {
+    public func lindex(key: RESPKey, index: Int) async throws -> String? {
         try await send(command: LINDEX(key: key, index: index))
     }
 
@@ -612,7 +612,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` when the key doesn't exist.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `-1` when the pivot wasn't found.
     @inlinable
-    public func linsert(key: RedisKey, `where`: LINSERT.Where, pivot: String, element: String) async throws -> Int {
+    public func linsert(key: RESPKey, `where`: LINSERT.Where, pivot: String, element: String) async throws -> Int {
         try await send(command: LINSERT(key: key, where: `where`, pivot: pivot, element: element))
     }
 
@@ -624,7 +624,7 @@ extension RedisConnection {
     /// - Categories: @read, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list.
     @inlinable
-    public func llen(key: RedisKey) async throws -> Int {
+    public func llen(key: RESPKey) async throws -> Int {
         try await send(command: LLEN(key: key))
     }
 
@@ -636,7 +636,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped and pushed.
     @inlinable
-    public func lmove(source: RedisKey, destination: RedisKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> String {
+    public func lmove(source: RESPKey, destination: RESPKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> String {
         try await send(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
@@ -650,7 +650,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public func lmpop(key: [RedisKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+    public func lmpop(key: [RESPKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
         try await send(command: LMPOP(key: key, where: `where`, count: count))
     }
 
@@ -665,7 +665,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the value of the first element.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of popped elements.
     @inlinable
-    public func lpop(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
+    public func lpop(key: RESPKey, count: Int? = nil) async throws -> RESPToken {
         try await send(command: LPOP(key: key, count: count))
     }
 
@@ -680,7 +680,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): an integer representing the matching element.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): If the COUNT option is given, an array of integers representing the matching elements (or an empty array if there are no matches).
     @inlinable
-    public func lpos(key: RedisKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> RESPToken {
+    public func lpos(key: RESPKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> RESPToken {
         try await send(command: LPOS(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 
@@ -692,7 +692,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func lpush(key: RedisKey, element: [String]) async throws -> Int {
+    public func lpush(key: RESPKey, element: [String]) async throws -> Int {
         try await send(command: LPUSH(key: key, element: element))
     }
 
@@ -704,7 +704,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func lpushx(key: RedisKey, element: [String]) async throws -> Int {
+    public func lpushx(key: RESPKey, element: [String]) async throws -> Int {
         try await send(command: LPUSHX(key: key, element: element))
     }
 
@@ -716,7 +716,7 @@ extension RedisConnection {
     /// - Categories: @read, @list, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of elements in the specified range, or an empty array if the key doesn't exist.
     @inlinable
-    public func lrange(key: RedisKey, start: Int, stop: Int) async throws -> [RESPToken] {
+    public func lrange(key: RESPKey, start: Int, stop: Int) async throws -> [RESPToken] {
         try await send(command: LRANGE(key: key, start: start, stop: stop))
     }
 
@@ -728,7 +728,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of removed elements.
     @inlinable
-    public func lrem(key: RedisKey, count: Int, element: String) async throws -> Int {
+    public func lrem(key: RESPKey, count: Int, element: String) async throws -> Int {
         try await send(command: LREM(key: key, count: count, element: element))
     }
 
@@ -740,7 +740,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func lset(key: RedisKey, index: Int, element: String) async throws -> RESPToken {
+    public func lset(key: RESPKey, index: Int, element: String) async throws -> RESPToken {
         try await send(command: LSET(key: key, index: index, element: element))
     }
 
@@ -752,7 +752,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Simple string](https:/redis.io/docs/reference/protocol-spec#simple-strings): `OK`.
     @inlinable
-    public func ltrim(key: RedisKey, start: Int, stop: Int) async throws -> RESPToken {
+    public func ltrim(key: RESPKey, start: Int, stop: Int) async throws -> RESPToken {
         try await send(command: LTRIM(key: key, start: start, stop: stop))
     }
 
@@ -767,7 +767,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the value of the last element.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of popped elements.
     @inlinable
-    public func rpop(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
+    public func rpop(key: RESPKey, count: Int? = nil) async throws -> RESPToken {
         try await send(command: RPOP(key: key, count: count))
     }
 
@@ -781,7 +781,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): the element being popped and pushed.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the source list is empty.
     @inlinable
-    public func rpoplpush(source: RedisKey, destination: RedisKey) async throws -> String? {
+    public func rpoplpush(source: RESPKey, destination: RESPKey) async throws -> String? {
         try await send(command: RPOPLPUSH(source: source, destination: destination))
     }
 
@@ -793,7 +793,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func rpush(key: RedisKey, element: [String]) async throws -> Int {
+    public func rpush(key: RESPKey, element: [String]) async throws -> Int {
         try await send(command: RPUSH(key: key, element: element))
     }
 
@@ -805,7 +805,7 @@ extension RedisConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the length of the list after the push operation.
     @inlinable
-    public func rpushx(key: RedisKey, element: [String]) async throws -> Int {
+    public func rpushx(key: RESPKey, element: [String]) async throws -> Int {
         try await send(command: RPUSHX(key: key, element: element))
     }
 

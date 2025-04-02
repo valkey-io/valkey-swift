@@ -24,13 +24,13 @@ import Foundation
 #endif
 
 /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
-public struct GEOADD: RedisCommand {
+public struct GEOADD: RESPCommand {
     public enum Condition: RESPRenderable {
         case nx
         case xx
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -43,7 +43,7 @@ public struct GEOADD: RedisCommand {
         @usableFromInline let member: String
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += longitude.encode(into: &commandEncoder)
             count += latitude.encode(into: &commandEncoder)
@@ -53,25 +53,25 @@ public struct GEOADD: RedisCommand {
     }
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var condition: Condition? = nil
     public var change: Bool = false
     public var data: [Data]
 
-    @inlinable public init(key: RedisKey, condition: Condition? = nil, change: Bool = false, data: [Data]) {
+    @inlinable public init(key: RESPKey, condition: Condition? = nil, change: Bool = false, data: [Data]) {
         self.key = key
         self.condition = condition
         self.change = change
         self.data = data
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("GEOADD", key, condition, RedisPureToken("CH", change), data)
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("GEOADD", key, condition, RESPPureToken("CH", change), data)
     }
 }
 
 /// Returns the distance between two members of a geospatial index.
-public struct GEODIST: RedisCommand {
+public struct GEODIST: RESPCommand {
     public enum Unit: RESPRenderable {
         case m
         case km
@@ -79,7 +79,7 @@ public struct GEODIST: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -90,59 +90,59 @@ public struct GEODIST: RedisCommand {
     }
     public typealias Response = String?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member1: String
     public var member2: String
     public var unit: Unit? = nil
 
-    @inlinable public init(key: RedisKey, member1: String, member2: String, unit: Unit? = nil) {
+    @inlinable public init(key: RESPKey, member1: String, member2: String, unit: Unit? = nil) {
         self.key = key
         self.member1 = member1
         self.member2 = member2
         self.unit = unit
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEODIST", key, member1, member2, unit)
     }
 }
 
 /// Returns members from a geospatial index as geohash strings.
-public struct GEOHASH: RedisCommand {
+public struct GEOHASH: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: [String] = []
 
-    @inlinable public init(key: RedisKey, member: [String] = []) {
+    @inlinable public init(key: RESPKey, member: [String] = []) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOHASH", key, member)
     }
 }
 
 /// Returns the longitude and latitude of members from a geospatial index.
-public struct GEOPOS: RedisCommand {
+public struct GEOPOS: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: [String] = []
 
-    @inlinable public init(key: RedisKey, member: [String] = []) {
+    @inlinable public init(key: RESPKey, member: [String] = []) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOPOS", key, member)
     }
 }
 
 /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
-public struct GEORADIUS: RedisCommand {
+public struct GEORADIUS: RESPCommand {
     public enum Unit: RESPRenderable {
         case m
         case km
@@ -150,7 +150,7 @@ public struct GEORADIUS: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -164,7 +164,7 @@ public struct GEORADIUS: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             if self.any { count += "ANY".encode(into: &commandEncoder) }
@@ -176,7 +176,7 @@ public struct GEORADIUS: RedisCommand {
         case desc
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .asc: "ASC".encode(into: &commandEncoder)
             case .desc: "DESC".encode(into: &commandEncoder)
@@ -184,11 +184,11 @@ public struct GEORADIUS: RedisCommand {
         }
     }
     public enum Store: RESPRenderable {
-        case storekey(RedisKey)
-        case storedistkey(RedisKey)
+        case storekey(RESPKey)
+        case storedistkey(RESPKey)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .storekey(let storekey): RESPWithToken("STORE", storekey).encode(into: &commandEncoder)
             case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).encode(into: &commandEncoder)
@@ -197,7 +197,7 @@ public struct GEORADIUS: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var longitude: Double
     public var latitude: Double
     public var radius: Double
@@ -209,7 +209,7 @@ public struct GEORADIUS: RedisCommand {
     public var order: Order? = nil
     public var store: Store? = nil
 
-    @inlinable public init(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
+    @inlinable public init(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
         self.key = key
         self.longitude = longitude
         self.latitude = latitude
@@ -223,13 +223,13 @@ public struct GEORADIUS: RedisCommand {
         self.store = store
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUS", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("GEORADIUS", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
-public struct GEORADIUSBYMEMBER: RedisCommand {
+public struct GEORADIUSBYMEMBER: RESPCommand {
     public enum Unit: RESPRenderable {
         case m
         case km
@@ -237,7 +237,7 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -251,7 +251,7 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             if self.any { count += "ANY".encode(into: &commandEncoder) }
@@ -263,7 +263,7 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         case desc
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .asc: "ASC".encode(into: &commandEncoder)
             case .desc: "DESC".encode(into: &commandEncoder)
@@ -271,11 +271,11 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         }
     }
     public enum Store: RESPRenderable {
-        case storekey(RedisKey)
-        case storedistkey(RedisKey)
+        case storekey(RESPKey)
+        case storedistkey(RESPKey)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .storekey(let storekey): RESPWithToken("STORE", storekey).encode(into: &commandEncoder)
             case .storedistkey(let storedistkey): RESPWithToken("STOREDIST", storedistkey).encode(into: &commandEncoder)
@@ -284,7 +284,7 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: String
     public var radius: Double
     public var unit: Unit
@@ -295,7 +295,7 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
     public var order: Order? = nil
     public var store: Store? = nil
 
-    @inlinable public init(key: RedisKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
+    @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
         self.key = key
         self.member = member
         self.radius = radius
@@ -308,13 +308,13 @@ public struct GEORADIUSBYMEMBER: RedisCommand {
         self.store = store
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order, store)
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
 /// Returns members from a geospatial index that are within a distance from a member.
-public struct GEORADIUSBYMEMBERRO: RedisCommand {
+public struct GEORADIUSBYMEMBERRO: RESPCommand {
     public enum Unit: RESPRenderable {
         case m
         case km
@@ -322,7 +322,7 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -336,7 +336,7 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             if self.any { count += "ANY".encode(into: &commandEncoder) }
@@ -348,7 +348,7 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
         case desc
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .asc: "ASC".encode(into: &commandEncoder)
             case .desc: "DESC".encode(into: &commandEncoder)
@@ -357,7 +357,7 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: String
     public var radius: Double
     public var unit: Unit
@@ -367,7 +367,7 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
     public var countBlock: CountBlock? = nil
     public var order: Order? = nil
 
-    @inlinable public init(key: RedisKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
+    @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
         self.key = key
         self.member = member
         self.radius = radius
@@ -379,13 +379,13 @@ public struct GEORADIUSBYMEMBERRO: RedisCommand {
         self.order = order
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 
 /// Returns members from a geospatial index that are within a distance from a coordinate.
-public struct GEORADIUSRO: RedisCommand {
+public struct GEORADIUSRO: RESPCommand {
     public enum Unit: RESPRenderable {
         case m
         case km
@@ -393,7 +393,7 @@ public struct GEORADIUSRO: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -407,7 +407,7 @@ public struct GEORADIUSRO: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             if self.any { count += "ANY".encode(into: &commandEncoder) }
@@ -419,7 +419,7 @@ public struct GEORADIUSRO: RedisCommand {
         case desc
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .asc: "ASC".encode(into: &commandEncoder)
             case .desc: "DESC".encode(into: &commandEncoder)
@@ -428,7 +428,7 @@ public struct GEORADIUSRO: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var longitude: Double
     public var latitude: Double
     public var radius: Double
@@ -439,7 +439,7 @@ public struct GEORADIUSRO: RedisCommand {
     public var countBlock: CountBlock? = nil
     public var order: Order? = nil
 
-    @inlinable public init(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
+    @inlinable public init(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
         self.key = key
         self.longitude = longitude
         self.latitude = latitude
@@ -452,19 +452,19 @@ public struct GEORADIUSRO: RedisCommand {
         self.order = order
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUS_RO", key, longitude, latitude, radius, unit, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash), countBlock, order)
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("GEORADIUS_RO", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 
 /// Queries a geospatial index for members inside an area of a box or a circle.
-public struct GEOSEARCH: RedisCommand {
+public struct GEOSEARCH: RESPCommand {
     public struct FromFromlonlat: RESPRenderable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += longitude.encode(into: &commandEncoder)
             count += latitude.encode(into: &commandEncoder)
@@ -476,7 +476,7 @@ public struct GEOSEARCH: RedisCommand {
         case fromlonlat(FromFromlonlat)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .member(let member): RESPWithToken("FROMMEMBER", member).encode(into: &commandEncoder)
             case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).encode(into: &commandEncoder)
@@ -490,7 +490,7 @@ public struct GEOSEARCH: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -504,7 +504,7 @@ public struct GEOSEARCH: RedisCommand {
         @usableFromInline let unit: ByCircleUnit
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("BYRADIUS", radius).encode(into: &commandEncoder)
             count += unit.encode(into: &commandEncoder)
@@ -518,7 +518,7 @@ public struct GEOSEARCH: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -533,7 +533,7 @@ public struct GEOSEARCH: RedisCommand {
         @usableFromInline let unit: ByBoxUnit
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("BYBOX", width).encode(into: &commandEncoder)
             count += height.encode(into: &commandEncoder)
@@ -546,7 +546,7 @@ public struct GEOSEARCH: RedisCommand {
         case box(ByBox)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .circle(let circle): circle.encode(into: &commandEncoder)
             case .box(let box): box.encode(into: &commandEncoder)
@@ -558,7 +558,7 @@ public struct GEOSEARCH: RedisCommand {
         case desc
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .asc: "ASC".encode(into: &commandEncoder)
             case .desc: "DESC".encode(into: &commandEncoder)
@@ -570,7 +570,7 @@ public struct GEOSEARCH: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             if self.any { count += "ANY".encode(into: &commandEncoder) }
@@ -579,7 +579,7 @@ public struct GEOSEARCH: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var from: From
     public var by: By
     public var order: Order? = nil
@@ -588,7 +588,7 @@ public struct GEOSEARCH: RedisCommand {
     public var withdist: Bool = false
     public var withhash: Bool = false
 
-    @inlinable public init(key: RedisKey, from: From, by: By, order: Order? = nil, countBlock: CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) {
+    @inlinable public init(key: RESPKey, from: From, by: By, order: Order? = nil, countBlock: CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) {
         self.key = key
         self.from = from
         self.by = by
@@ -599,19 +599,19 @@ public struct GEOSEARCH: RedisCommand {
         self.withhash = withhash
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("GEOSEARCH", key, from, by, order, countBlock, RedisPureToken("WITHCOORD", withcoord), RedisPureToken("WITHDIST", withdist), RedisPureToken("WITHHASH", withhash))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("GEOSEARCH", key, from, by, order, countBlock, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash))
     }
 }
 
 /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
-public struct GEOSEARCHSTORE: RedisCommand {
+public struct GEOSEARCHSTORE: RESPCommand {
     public struct FromFromlonlat: RESPRenderable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += longitude.encode(into: &commandEncoder)
             count += latitude.encode(into: &commandEncoder)
@@ -623,7 +623,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case fromlonlat(FromFromlonlat)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .member(let member): RESPWithToken("FROMMEMBER", member).encode(into: &commandEncoder)
             case .fromlonlat(let fromlonlat): RESPWithToken("FROMLONLAT", fromlonlat).encode(into: &commandEncoder)
@@ -637,7 +637,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -651,7 +651,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
         @usableFromInline let unit: ByCircleUnit
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("BYRADIUS", radius).encode(into: &commandEncoder)
             count += unit.encode(into: &commandEncoder)
@@ -665,7 +665,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case mi
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .m: "M".encode(into: &commandEncoder)
             case .km: "KM".encode(into: &commandEncoder)
@@ -680,7 +680,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
         @usableFromInline let unit: ByBoxUnit
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("BYBOX", width).encode(into: &commandEncoder)
             count += height.encode(into: &commandEncoder)
@@ -693,7 +693,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case box(ByBox)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .circle(let circle): circle.encode(into: &commandEncoder)
             case .box(let box): box.encode(into: &commandEncoder)
@@ -705,7 +705,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
         case desc
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .asc: "ASC".encode(into: &commandEncoder)
             case .desc: "DESC".encode(into: &commandEncoder)
@@ -717,7 +717,7 @@ public struct GEOSEARCHSTORE: RedisCommand {
         @usableFromInline let any: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             if self.any { count += "ANY".encode(into: &commandEncoder) }
@@ -726,15 +726,15 @@ public struct GEOSEARCHSTORE: RedisCommand {
     }
     public typealias Response = Int
 
-    public var destination: RedisKey
-    public var source: RedisKey
+    public var destination: RESPKey
+    public var source: RESPKey
     public var from: From
     public var by: By
     public var order: Order? = nil
     public var countBlock: CountBlock? = nil
     public var storedist: Bool = false
 
-    @inlinable public init(destination: RedisKey, source: RedisKey, from: From, by: By, order: Order? = nil, countBlock: CountBlock? = nil, storedist: Bool = false) {
+    @inlinable public init(destination: RESPKey, source: RESPKey, from: From, by: By, order: Order? = nil, countBlock: CountBlock? = nil, storedist: Bool = false) {
         self.destination = destination
         self.source = source
         self.from = from
@@ -744,8 +744,8 @@ public struct GEOSEARCHSTORE: RedisCommand {
         self.storedist = storedist
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RedisPureToken("STOREDIST", storedist))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RESPPureToken("STOREDIST", storedist))
     }
 }
 
@@ -759,7 +759,7 @@ extension RedisConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public func geoadd(key: RedisKey, condition: GEOADD.Condition? = nil, change: Bool = false, data: [GEOADD.Data]) async throws -> Int {
+    public func geoadd(key: RESPKey, condition: GEOADD.Condition? = nil, change: Bool = false, data: [GEOADD.Data]) async throws -> Int {
         try await send(command: GEOADD(key: key, condition: condition, change: change, data: data))
     }
 
@@ -773,7 +773,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): one or both of the elements are missing.
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): distance as a double (represented as a string) in the specified units.
     @inlinable
-    public func geodist(key: RedisKey, member1: String, member2: String, unit: GEODIST.Unit? = nil) async throws -> String? {
+    public func geodist(key: RESPKey, member1: String, member2: String, unit: GEODIST.Unit? = nil) async throws -> String? {
         try await send(command: GEODIST(key: key, member1: member1, member2: member2, unit: unit))
     }
 
@@ -785,7 +785,7 @@ extension RedisConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): An array where each element is the Geohash corresponding to each member name passed as an argument to the command.
     @inlinable
-    public func geohash(key: RedisKey, member: [String] = []) async throws -> [RESPToken] {
+    public func geohash(key: RESPKey, member: [String] = []) async throws -> [RESPToken] {
         try await send(command: GEOHASH(key: key, member: member))
     }
 
@@ -797,7 +797,7 @@ extension RedisConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/redis.io/docs/reference/protocol-spec#nulls) elements of the array.
     @inlinable
-    public func geopos(key: RedisKey, member: [String] = []) async throws -> [RESPToken] {
+    public func geopos(key: RESPKey, member: [String] = []) async throws -> [RESPToken] {
         try await send(command: GEOPOS(key: key, member: member))
     }
 
@@ -818,7 +818,7 @@ extension RedisConnection {
     ///     
     ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
     @inlinable
-    public func georadius(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUS.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUS.CountBlock? = nil, order: GEORADIUS.Order? = nil, store: GEORADIUS.Store? = nil) async throws -> RESPToken {
+    public func georadius(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUS.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUS.CountBlock? = nil, order: GEORADIUS.Order? = nil, store: GEORADIUS.Store? = nil) async throws -> RESPToken {
         try await send(command: GEORADIUS(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
 
@@ -835,7 +835,7 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymember(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBER.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER.CountBlock? = nil, order: GEORADIUSBYMEMBER.Order? = nil, store: GEORADIUSBYMEMBER.Store? = nil) async throws -> RESPToken {
+    public func georadiusbymember(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBER.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER.CountBlock? = nil, order: GEORADIUSBYMEMBER.Order? = nil, store: GEORADIUSBYMEMBER.Store? = nil) async throws -> RESPToken {
         try await send(command: GEORADIUSBYMEMBER(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
 
@@ -852,7 +852,7 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusbymemberRo(key: RedisKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil, order: GEORADIUSBYMEMBERRO.Order? = nil) async throws -> RESPToken {
+    public func georadiusbymemberRo(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil, order: GEORADIUSBYMEMBERRO.Order? = nil) async throws -> RESPToken {
         try await send(command: GEORADIUSBYMEMBERRO(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
@@ -869,7 +869,7 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func georadiusRo(key: RedisKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> RESPToken {
+    public func georadiusRo(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> RESPToken {
         try await send(command: GEORADIUSRO(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
@@ -886,7 +886,7 @@ extension RedisConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func geosearch(key: RedisKey, from: GEOSEARCH.From, by: GEOSEARCH.By, order: GEOSEARCH.Order? = nil, countBlock: GEOSEARCH.CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> RESPToken {
+    public func geosearch(key: RESPKey, from: GEOSEARCH.From, by: GEOSEARCH.By, order: GEOSEARCH.Order? = nil, countBlock: GEOSEARCH.CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> RESPToken {
         try await send(command: GEOSEARCH(key: key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash))
     }
 
@@ -898,7 +898,7 @@ extension RedisConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set
     @inlinable
-    public func geosearchstore(destination: RedisKey, source: RedisKey, from: GEOSEARCHSTORE.From, by: GEOSEARCHSTORE.By, order: GEOSEARCHSTORE.Order? = nil, countBlock: GEOSEARCHSTORE.CountBlock? = nil, storedist: Bool = false) async throws -> Int {
+    public func geosearchstore(destination: RESPKey, source: RESPKey, from: GEOSEARCHSTORE.From, by: GEOSEARCHSTORE.By, order: GEOSEARCHSTORE.Order? = nil, countBlock: GEOSEARCHSTORE.CountBlock? = nil, storedist: Bool = false) async throws -> Int {
         try await send(command: GEOSEARCHSTORE(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist))
     }
 

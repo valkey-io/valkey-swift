@@ -14,7 +14,7 @@
 
 import NIOCore
 
-public struct RedisCommandEncoder {
+public struct RESPCommandEncoder {
     @usableFromInline
     var buffer: ByteBuffer
 

@@ -157,8 +157,8 @@ public struct RedisConnection: Sendable {
         }
     }
 
-    @discardableResult public func send<Command: RedisCommand>(command: Command) async throws -> Command.Response {
-        var encoder = RedisCommandEncoder()
+    @discardableResult public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
+        var encoder = RESPCommandEncoder()
         command.encode(into: &encoder)
         let response: Response = try await withCheckedThrowingContinuation { continuation in
             switch requestContinuation.yield((.command(encoder.buffer), continuation)) {
@@ -179,11 +179,11 @@ public struct RedisConnection: Sendable {
         return try .init(from: token)
     }
 
-    @discardableResult public func pipeline<each Command: RedisCommand>(
+    @discardableResult public func pipeline<each Command: RESPCommand>(
         _ commands: repeat each Command
     ) async throws -> (repeat (each Command).Response) {
         var count = 0
-        var encoder = RedisCommandEncoder()
+        var encoder = RESPCommandEncoder()
         for command in repeat each commands {
             command.encode(into: &encoder)
             count += 1
@@ -215,7 +215,7 @@ public struct RedisConnection: Sendable {
         outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>,
         inboundIterator: inout NIOAsyncChannelInboundStream<RESPToken>.AsyncIterator
     ) async throws {
-        var encoder = RedisCommandEncoder()
+        var encoder = RESPCommandEncoder()
         encoder.encodeArray("HELLO", 3)
         try await outbound.write(encoder.buffer)
         let response = try await inboundIterator.next()

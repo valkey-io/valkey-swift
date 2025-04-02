@@ -26,13 +26,13 @@ import Foundation
 /// A container for client connection commands.
 public enum CLIENT {
     /// Instructs the server whether to track the keys in the next request.
-    public struct CACHING: RedisCommand {
+    public struct CACHING: RESPCommand {
         public enum Mode: RESPRenderable {
             case yes
             case no
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .yes: "YES".encode(into: &commandEncoder)
                 case .no: "NO".encode(into: &commandEncoder)
@@ -47,78 +47,78 @@ public enum CLIENT {
             self.mode = mode
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "CACHING", mode)
         }
     }
 
     /// Returns the name of the connection.
-    public struct GETNAME: RedisCommand {
+    public struct GETNAME: RESPCommand {
         public typealias Response = String?
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "GETNAME")
         }
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
-    public struct GETREDIR: RedisCommand {
+    public struct GETREDIR: RESPCommand {
         public typealias Response = Int
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "GETREDIR")
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "HELP")
         }
     }
 
     /// Returns the unique client ID of the connection.
-    public struct ID: RedisCommand {
+    public struct ID: RESPCommand {
         public typealias Response = Int
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "ID")
         }
     }
 
     /// Returns information about the connection.
-    public struct INFO: RedisCommand {
+    public struct INFO: RESPCommand {
         public typealias Response = String
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "INFO")
         }
     }
 
     /// Terminates open connections.
-    public struct KILL: RedisCommand {
+    public struct KILL: RESPCommand {
         public enum FilterNewFormatClientType: RESPRenderable {
             case normal
             case master
@@ -127,7 +127,7 @@ public enum CLIENT {
             case pubsub
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .normal: "NORMAL".encode(into: &commandEncoder)
                 case .master: "MASTER".encode(into: &commandEncoder)
@@ -142,7 +142,7 @@ public enum CLIENT {
             case no
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .yes: "YES".encode(into: &commandEncoder)
                 case .no: "NO".encode(into: &commandEncoder)
@@ -158,7 +158,7 @@ public enum CLIENT {
             case skipme(FilterNewFormatSkipme?)
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .clientId(let clientId): RESPWithToken("ID", clientId).encode(into: &commandEncoder)
                 case .clientType(let clientType): RESPWithToken("TYPE", clientType).encode(into: &commandEncoder)
@@ -174,7 +174,7 @@ public enum CLIENT {
             case newFormat([FilterNewFormat])
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .oldFormat(let oldFormat): oldFormat.encode(into: &commandEncoder)
                 case .newFormat(let newFormat): newFormat.encode(into: &commandEncoder)
@@ -189,13 +189,13 @@ public enum CLIENT {
             self.filter = filter
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "KILL", filter)
         }
     }
 
     /// Lists open connections.
-    public struct LIST: RedisCommand {
+    public struct LIST: RESPCommand {
         public enum ClientType: RESPRenderable {
             case normal
             case master
@@ -203,7 +203,7 @@ public enum CLIENT {
             case pubsub
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .normal: "NORMAL".encode(into: &commandEncoder)
                 case .master: "MASTER".encode(into: &commandEncoder)
@@ -222,19 +222,19 @@ public enum CLIENT {
             self.clientId = clientId
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
         }
     }
 
     /// Sets the client eviction mode of the connection.
-    public struct NOEVICT: RedisCommand {
+    public struct NOEVICT: RESPCommand {
         public enum Enabled: RESPRenderable {
             case on
             case off
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -249,19 +249,19 @@ public enum CLIENT {
             self.enabled = enabled
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "NO-EVICT", enabled)
         }
     }
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
-    public struct NOTOUCH: RedisCommand {
+    public struct NOTOUCH: RESPCommand {
         public enum Enabled: RESPRenderable {
             case on
             case off
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -276,19 +276,19 @@ public enum CLIENT {
             self.enabled = enabled
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "NO-TOUCH", enabled)
         }
     }
 
     /// Suspends commands processing.
-    public struct PAUSE: RedisCommand {
+    public struct PAUSE: RESPCommand {
         public enum Mode: RESPRenderable {
             case write
             case all
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .write: "WRITE".encode(into: &commandEncoder)
                 case .all: "ALL".encode(into: &commandEncoder)
@@ -305,20 +305,20 @@ public enum CLIENT {
             self.mode = mode
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "PAUSE", timeout, mode)
         }
     }
 
     /// Instructs the server whether to reply to commands.
-    public struct REPLY: RedisCommand {
+    public struct REPLY: RESPCommand {
         public enum Action: RESPRenderable {
             case on
             case off
             case skip
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -334,19 +334,19 @@ public enum CLIENT {
             self.action = action
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "REPLY", action)
         }
     }
 
     /// Sets information specific to the client or connection.
-    public struct SETINFO: RedisCommand {
+    public struct SETINFO: RESPCommand {
         public enum Attr: RESPRenderable {
             case libname(String)
             case libver(String)
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .libname(let libname): RESPWithToken("LIB-NAME", libname).encode(into: &commandEncoder)
                 case .libver(let libver): RESPWithToken("LIB-VER", libver).encode(into: &commandEncoder)
@@ -361,13 +361,13 @@ public enum CLIENT {
             self.attr = attr
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "SETINFO", attr)
         }
     }
 
     /// Sets the connection name.
-    public struct SETNAME: RedisCommand {
+    public struct SETNAME: RESPCommand {
         public typealias Response = RESPToken
 
         public var connectionName: String
@@ -376,19 +376,19 @@ public enum CLIENT {
             self.connectionName = connectionName
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "SETNAME", connectionName)
         }
     }
 
     /// Controls server-assisted client-side caching for the connection.
-    public struct TRACKING: RedisCommand {
+    public struct TRACKING: RESPCommand {
         public enum Status: RESPRenderable {
             case on
             case off
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -415,32 +415,32 @@ public enum CLIENT {
             self.noloop = noloop
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RedisPureToken("BCAST", bcast), RedisPureToken("OPTIN", optin), RedisPureToken("OPTOUT", optout), RedisPureToken("NOLOOP", noloop))
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            commandEncoder.encodeArray("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RESPPureToken("BCAST", bcast), RESPPureToken("OPTIN", optin), RESPPureToken("OPTOUT", optout), RESPPureToken("NOLOOP", noloop))
         }
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
-    public struct TRACKINGINFO: RedisCommand {
+    public struct TRACKINGINFO: RESPCommand {
         public typealias Response = [String: RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "TRACKINGINFO")
         }
     }
 
     /// Unblocks a client blocked by a blocking command from a different connection.
-    public struct UNBLOCK: RedisCommand {
+    public struct UNBLOCK: RESPCommand {
         public enum UnblockType: RESPRenderable {
             case timeout
             case error
 
             @inlinable
-            public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 switch self {
                 case .timeout: "TIMEOUT".encode(into: &commandEncoder)
                 case .error: "ERROR".encode(into: &commandEncoder)
@@ -457,20 +457,20 @@ public enum CLIENT {
             self.unblockType = unblockType
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "UNBLOCK", clientId, unblockType)
         }
     }
 
     /// Resumes processing commands from paused clients.
-    public struct UNPAUSE: RedisCommand {
+    public struct UNPAUSE: RESPCommand {
         public typealias Response = RESPToken
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "UNPAUSE")
         }
     }
@@ -478,7 +478,7 @@ public enum CLIENT {
 }
 
 /// Authenticates the connection.
-public struct AUTH: RedisCommand {
+public struct AUTH: RESPCommand {
     public typealias Response = RESPToken
 
     public var username: String? = nil
@@ -489,13 +489,13 @@ public struct AUTH: RedisCommand {
         self.password = password
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("AUTH", username, password)
     }
 }
 
 /// Returns the given string.
-public struct ECHO: RedisCommand {
+public struct ECHO: RESPCommand {
     public typealias Response = String
 
     public var message: String
@@ -504,19 +504,19 @@ public struct ECHO: RedisCommand {
         self.message = message
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ECHO", message)
     }
 }
 
 /// Handshakes with the Redis server.
-public struct HELLO: RedisCommand {
+public struct HELLO: RESPCommand {
     public struct ArgumentsAuth: RESPRenderable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += username.encode(into: &commandEncoder)
             count += password.encode(into: &commandEncoder)
@@ -529,7 +529,7 @@ public struct HELLO: RedisCommand {
         @usableFromInline let clientname: String?
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += protover.encode(into: &commandEncoder)
             count += RESPWithToken("AUTH", auth).encode(into: &commandEncoder)
@@ -545,13 +545,13 @@ public struct HELLO: RedisCommand {
         self.arguments = arguments
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HELLO", arguments)
     }
 }
 
 /// Returns the server's liveliness response.
-public struct PING: RedisCommand {
+public struct PING: RESPCommand {
     public typealias Response = String
 
     public var message: String? = nil
@@ -560,39 +560,39 @@ public struct PING: RedisCommand {
         self.message = message
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PING", message)
     }
 }
 
 /// Closes the connection.
-public struct QUIT: RedisCommand {
+public struct QUIT: RESPCommand {
     public typealias Response = RESPToken
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("QUIT")
     }
 }
 
 /// Resets the connection.
-public struct RESET: RedisCommand {
+public struct RESET: RESPCommand {
     public typealias Response = String
 
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RESET")
     }
 }
 
 /// Changes the selected database.
-public struct SELECT: RedisCommand {
+public struct SELECT: RESPCommand {
     public typealias Response = RESPToken
 
     public var index: Int
@@ -601,7 +601,7 @@ public struct SELECT: RedisCommand {
         self.index = index
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SELECT", index)
     }
 }

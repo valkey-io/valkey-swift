@@ -24,286 +24,286 @@ import Foundation
 #endif
 
 /// Adds one or more members to a set. Creates the key if it doesn't exist.
-public struct SADD: RedisCommand {
+public struct SADD: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: [String]
 
-    @inlinable public init(key: RedisKey, member: [String]) {
+    @inlinable public init(key: RESPKey, member: [String]) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SADD", key, member)
     }
 }
 
 /// Returns the number of members in a set.
-public struct SCARD: RedisCommand {
+public struct SCARD: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SCARD", key)
     }
 }
 
 /// Returns the difference of multiple sets.
-public struct SDIFF: RedisCommand {
+public struct SDIFF: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
 
-    @inlinable public init(key: [RedisKey]) {
+    @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SDIFF", key)
     }
 }
 
 /// Stores the difference of multiple sets in a key.
-public struct SDIFFSTORE: RedisCommand {
+public struct SDIFFSTORE: RESPCommand {
     public typealias Response = Int
 
-    public var destination: RedisKey
-    public var key: [RedisKey]
+    public var destination: RESPKey
+    public var key: [RESPKey]
 
-    @inlinable public init(destination: RedisKey, key: [RedisKey]) {
+    @inlinable public init(destination: RESPKey, key: [RESPKey]) {
         self.destination = destination
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SDIFFSTORE", destination, key)
     }
 }
 
 /// Returns the intersect of multiple sets.
-public struct SINTER: RedisCommand {
+public struct SINTER: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
 
-    @inlinable public init(key: [RedisKey]) {
+    @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTER", key)
     }
 }
 
 /// Returns the number of members of the intersect of multiple sets.
-public struct SINTERCARD: RedisCommand {
+public struct SINTERCARD: RESPCommand {
     public typealias Response = Int
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var limit: Int? = nil
 
-    @inlinable public init(key: [RedisKey], limit: Int? = nil) {
+    @inlinable public init(key: [RESPKey], limit: Int? = nil) {
         self.key = key
         self.limit = limit
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
     }
 }
 
 /// Stores the intersect of multiple sets in a key.
-public struct SINTERSTORE: RedisCommand {
+public struct SINTERSTORE: RESPCommand {
     public typealias Response = Int
 
-    public var destination: RedisKey
-    public var key: [RedisKey]
+    public var destination: RESPKey
+    public var key: [RESPKey]
 
-    @inlinable public init(destination: RedisKey, key: [RedisKey]) {
+    @inlinable public init(destination: RESPKey, key: [RESPKey]) {
         self.destination = destination
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTERSTORE", destination, key)
     }
 }
 
 /// Determines whether a member belongs to a set.
-public struct SISMEMBER: RedisCommand {
+public struct SISMEMBER: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: String
 
-    @inlinable public init(key: RedisKey, member: String) {
+    @inlinable public init(key: RESPKey, member: String) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SISMEMBER", key, member)
     }
 }
 
 /// Returns all members of a set.
-public struct SMEMBERS: RedisCommand {
+public struct SMEMBERS: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMEMBERS", key)
     }
 }
 
 /// Determines whether multiple members belong to a set.
-public struct SMISMEMBER: RedisCommand {
+public struct SMISMEMBER: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: [String]
 
-    @inlinable public init(key: RedisKey, member: [String]) {
+    @inlinable public init(key: RESPKey, member: [String]) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMISMEMBER", key, member)
     }
 }
 
 /// Moves a member from one set to another.
-public struct SMOVE: RedisCommand {
+public struct SMOVE: RESPCommand {
     public typealias Response = Int
 
-    public var source: RedisKey
-    public var destination: RedisKey
+    public var source: RESPKey
+    public var destination: RESPKey
     public var member: String
 
-    @inlinable public init(source: RedisKey, destination: RedisKey, member: String) {
+    @inlinable public init(source: RESPKey, destination: RESPKey, member: String) {
         self.source = source
         self.destination = destination
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMOVE", source, destination, member)
     }
 }
 
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
-public struct SPOP: RedisCommand {
+public struct SPOP: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SPOP", key, count)
     }
 }
 
 /// Get one or multiple random members from a set
-public struct SRANDMEMBER: RedisCommand {
+public struct SRANDMEMBER: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SRANDMEMBER", key, count)
     }
 }
 
 /// Removes one or more members from a set. Deletes the set if the last member was removed.
-public struct SREM: RedisCommand {
+public struct SREM: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: [String]
 
-    @inlinable public init(key: RedisKey, member: [String]) {
+    @inlinable public init(key: RESPKey, member: [String]) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SREM", key, member)
     }
 }
 
 /// Iterates over members of a set.
-public struct SSCAN: RedisCommand {
+public struct SSCAN: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var cursor: Int
     public var pattern: String? = nil
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
         self.key = key
         self.cursor = cursor
         self.pattern = pattern
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 }
 
 /// Returns the union of multiple sets.
-public struct SUNION: RedisCommand {
+public struct SUNION: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
 
-    @inlinable public init(key: [RedisKey]) {
+    @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUNION", key)
     }
 }
 
 /// Stores the union of multiple sets in a key.
-public struct SUNIONSTORE: RedisCommand {
+public struct SUNIONSTORE: RESPCommand {
     public typealias Response = Int
 
-    public var destination: RedisKey
-    public var key: [RedisKey]
+    public var destination: RESPKey
+    public var key: [RESPKey]
 
-    @inlinable public init(destination: RedisKey, key: [RedisKey]) {
+    @inlinable public init(destination: RESPKey, key: [RESPKey]) {
         self.destination = destination
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUNIONSTORE", destination, key)
     }
 }
@@ -318,7 +318,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public func sadd(key: RedisKey, member: [String]) async throws -> Int {
+    public func sadd(key: RESPKey, member: [String]) async throws -> Int {
         try await send(command: SADD(key: key, member: member))
     }
 
@@ -330,7 +330,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The cardinality (number of elements) of the set, or 0 if the key does not exist.
     @inlinable
-    public func scard(key: RedisKey) async throws -> Int {
+    public func scard(key: RESPKey) async throws -> Int {
         try await send(command: SCARD(key: key))
     }
 
@@ -342,7 +342,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sdiff(key: [RedisKey]) async throws -> [RESPToken] {
+    public func sdiff(key: [RESPKey]) async throws -> [RESPToken] {
         try await send(command: SDIFF(key: key))
     }
 
@@ -354,7 +354,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting set.
     @inlinable
-    public func sdiffstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
+    public func sdiffstore(destination: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: SDIFFSTORE(destination: destination, key: key))
     }
 
@@ -366,7 +366,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sinter(key: [RedisKey]) async throws -> [RESPToken] {
+    public func sinter(key: [RESPKey]) async throws -> [RESPToken] {
         try await send(command: SINTER(key: key))
     }
 
@@ -378,7 +378,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the resulting intersection.
     @inlinable
-    public func sintercard(key: [RedisKey], limit: Int? = nil) async throws -> Int {
+    public func sintercard(key: [RESPKey], limit: Int? = nil) async throws -> Int {
         try await send(command: SINTERCARD(key: key, limit: limit))
     }
 
@@ -390,7 +390,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of the elements in the result set.
     @inlinable
-    public func sinterstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
+    public func sinterstore(destination: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: SINTERSTORE(destination: destination, key: key))
     }
 
@@ -404,7 +404,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the element is not a member of the set, or when the key does not exist.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the element is a member of the set.
     @inlinable
-    public func sismember(key: RedisKey, member: String) async throws -> Int {
+    public func sismember(key: RESPKey, member: String) async throws -> Int {
         try await send(command: SISMEMBER(key: key, member: member))
     }
 
@@ -416,7 +416,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): all members of the set.
     @inlinable
-    public func smembers(key: RedisKey) async throws -> [RESPToken] {
+    public func smembers(key: RESPKey) async throws -> [RESPToken] {
         try await send(command: SMEMBERS(key: key))
     }
 
@@ -428,7 +428,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember(key: RedisKey, member: [String]) async throws -> [RESPToken] {
+    public func smismember(key: RESPKey, member: [String]) async throws -> [RESPToken] {
         try await send(command: SMISMEMBER(key: key, member: member))
     }
 
@@ -442,7 +442,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1` if the element is moved.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0` if the element is not a member of _source_ and no operation was performed.
     @inlinable
-    public func smove(source: RedisKey, destination: RedisKey, member: String) async throws -> Int {
+    public func smove(source: RESPKey, destination: RESPKey, member: String) async throws -> Int {
         try await send(command: SMOVE(source: source, destination: destination, member: member))
     }
 
@@ -457,7 +457,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): when called without the _count_ argument, the removed member.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when called with the _count_ argument, a list of the removed members.
     @inlinable
-    public func spop(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
+    public func spop(key: RESPKey, count: Int? = nil) async throws -> RESPToken {
         try await send(command: SPOP(key: key, count: count))
     }
 
@@ -471,7 +471,7 @@ extension RedisConnection {
     ///     * [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or a [Null](https:/redis.io/docs/reference/protocol-spec#nulls) when _key_ doesn't exist.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the optional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist.
     @inlinable
-    public func srandmember(key: RedisKey, count: Int? = nil) async throws -> RESPToken {
+    public func srandmember(key: RESPKey, count: Int? = nil) async throws -> RESPToken {
         try await send(command: SRANDMEMBER(key: key, count: count))
     }
 
@@ -483,7 +483,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members that were removed from the set, not including non existing members.
     @inlinable
-    public func srem(key: RedisKey, member: [String]) async throws -> Int {
+    public func srem(key: RESPKey, member: [String]) async throws -> Int {
         try await send(command: SREM(key: key, member: member))
     }
 
@@ -497,7 +497,7 @@ extension RedisConnection {
     ///     * The first element is a [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/redis.io/docs/reference/protocol-spec#arrays) with the names of scanned members.
     @inlinable
-    public func sscan(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
+    public func sscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: SSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 
@@ -509,7 +509,7 @@ extension RedisConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list with the members of the resulting set.
     @inlinable
-    public func sunion(key: [RedisKey]) async throws -> [RESPToken] {
+    public func sunion(key: [RESPKey]) async throws -> [RESPToken] {
         try await send(command: SUNION(key: key))
     }
 
@@ -521,7 +521,7 @@ extension RedisConnection {
     /// - Categories: @write, @set, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of the elements in the resulting set.
     @inlinable
-    public func sunionstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
+    public func sunionstore(destination: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: SUNIONSTORE(destination: destination, key: key))
     }
 

@@ -16,12 +16,12 @@ import NIOCore
 
 /// Type that can be rendered into a RESP buffer
 public protocol RESPRenderable {
-    func encode(into commandEncoder: inout RedisCommandEncoder) -> Int
+    func encode(into commandEncoder: inout RESPCommandEncoder) -> Int
 }
 
 extension Optional: RESPRenderable where Wrapped: RESPRenderable {
     @inlinable
-    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         switch self {
         case .some(let wrapped):
             return wrapped.encode(into: &commandEncoder)
@@ -33,7 +33,7 @@ extension Optional: RESPRenderable where Wrapped: RESPRenderable {
 
 extension Array: RESPRenderable where Element: RESPRenderable {
     @inlinable
-    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         var count = 0
         for element in self {
             count += element.encode(into: &commandEncoder)
@@ -44,7 +44,7 @@ extension Array: RESPRenderable where Element: RESPRenderable {
 
 extension String: RESPRenderable {
     @inlinable
-    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         commandEncoder.encodeBulkString(self)
         return 1
     }
@@ -52,7 +52,7 @@ extension String: RESPRenderable {
 
 extension Int: RESPRenderable {
     @inlinable
-    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         commandEncoder.encodeBulkString(String(self))
         return 1
     }
@@ -60,7 +60,7 @@ extension Int: RESPRenderable {
 
 extension Double: RESPRenderable {
     @inlinable
-    public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         commandEncoder.encodeBulkString(String(self))
         return 1
     }

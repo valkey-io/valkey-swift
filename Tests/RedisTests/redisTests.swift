@@ -22,8 +22,8 @@ import Testing
 
 struct GeneratedCommands {
     let redisHostname = ProcessInfo.processInfo.environment["REDIS_HOSTNAME"] ?? "localhost"
-    func withKey<Value>(connection: RedisConnection, _ operation: (RedisKey) async throws -> Value) async throws -> Value {
-        let key = RedisKey(rawValue: UUID().uuidString)
+    func withKey<Value>(connection: RedisConnection, _ operation: (RESPKey) async throws -> Value) async throws -> Value {
+        let key = RESPKey(rawValue: UUID().uuidString)
         let value: Value
         do {
             value = try await operation(key)
@@ -37,16 +37,16 @@ struct GeneratedCommands {
 
     @Test
     func testRedisCommand() async throws {
-        struct GET: RedisCommand {
+        struct GET: RESPCommand {
             typealias Response = String?
 
-            var key: RedisKey
+            var key: RESPKey
 
-            init(key: RedisKey) {
+            init(key: RESPKey) {
                 self.key = key
             }
 
-            func encode(into commandEncoder: inout RedisCommandEncoder) {
+            func encode(into commandEncoder: inout RESPCommandEncoder) {
                 commandEncoder.encodeArray("GET", key)
             }
         }
@@ -158,12 +158,12 @@ struct GeneratedCommands {
                     _ = try await connection.lpush(key: key, element: ["a"])
                     _ = try await connection.lpush(key: key2, element: ["b"])
                     let rt1: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!
-                    let keyReturned1 = try RedisKey(from: rt1[0])
+                    let keyReturned1 = try RESPKey(from: rt1[0])
                     let values1 = try [String](from: rt1[1])
                     #expect(keyReturned1 == key)
                     #expect(values1.first == "a")
                     let rt2: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!
-                    let keyReturned2 = try RedisKey(from: rt2[0])
+                    let keyReturned2 = try RESPKey(from: rt2[0])
                     let values2 = try [String](from: rt2[1])
                     #expect(keyReturned2 == key2)
                     #expect(values2.first == "b")

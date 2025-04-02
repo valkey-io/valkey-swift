@@ -26,7 +26,7 @@ import Foundation
 /// A container for Pub/Sub commands.
 public enum PUBSUB {
     /// Returns the active channels.
-    public struct CHANNELS: RedisCommand {
+    public struct CHANNELS: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var pattern: String? = nil
@@ -35,39 +35,39 @@ public enum PUBSUB {
             self.pattern = pattern
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "CHANNELS", pattern)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RedisCommand {
+    public struct HELP: RESPCommand {
         public typealias Response = [RESPToken]
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "HELP")
         }
     }
 
     /// Returns a count of unique pattern subscriptions.
-    public struct NUMPAT: RedisCommand {
+    public struct NUMPAT: RESPCommand {
         public typealias Response = Int
 
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "NUMPAT")
         }
     }
 
     /// Returns a count of subscribers to channels.
-    public struct NUMSUB: RedisCommand {
+    public struct NUMSUB: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var channel: [String] = []
@@ -76,13 +76,13 @@ public enum PUBSUB {
             self.channel = channel
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "NUMSUB", channel)
         }
     }
 
     /// Returns the active shard channels.
-    public struct SHARDCHANNELS: RedisCommand {
+    public struct SHARDCHANNELS: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var pattern: String? = nil
@@ -91,13 +91,13 @@ public enum PUBSUB {
             self.pattern = pattern
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "SHARDCHANNELS", pattern)
         }
     }
 
     /// Returns the count of subscribers of shard channels.
-    public struct SHARDNUMSUB: RedisCommand {
+    public struct SHARDNUMSUB: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var shardchannel: [String] = []
@@ -106,7 +106,7 @@ public enum PUBSUB {
             self.shardchannel = shardchannel
         }
 
-        @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannel)
         }
     }
@@ -114,7 +114,7 @@ public enum PUBSUB {
 }
 
 /// Listens for messages published to channels that match one or more patterns.
-public struct PSUBSCRIBE: RedisCommand {
+public struct PSUBSCRIBE: RESPCommand {
     public typealias Response = RESPToken
 
     public var pattern: [String]
@@ -123,13 +123,13 @@ public struct PSUBSCRIBE: RedisCommand {
         self.pattern = pattern
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PSUBSCRIBE", pattern)
     }
 }
 
 /// Posts a message to a channel.
-public struct PUBLISH: RedisCommand {
+public struct PUBLISH: RESPCommand {
     public typealias Response = Int
 
     public var channel: String
@@ -140,13 +140,13 @@ public struct PUBLISH: RedisCommand {
         self.message = message
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PUBLISH", channel, message)
     }
 }
 
 /// Stops listening to messages published to channels that match one or more patterns.
-public struct PUNSUBSCRIBE: RedisCommand {
+public struct PUNSUBSCRIBE: RESPCommand {
     public typealias Response = RESPToken
 
     public var pattern: [String] = []
@@ -155,13 +155,13 @@ public struct PUNSUBSCRIBE: RedisCommand {
         self.pattern = pattern
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PUNSUBSCRIBE", pattern)
     }
 }
 
 /// Post a message to a shard channel
-public struct SPUBLISH: RedisCommand {
+public struct SPUBLISH: RESPCommand {
     public typealias Response = Int
 
     public var shardchannel: String
@@ -172,13 +172,13 @@ public struct SPUBLISH: RedisCommand {
         self.message = message
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SPUBLISH", shardchannel, message)
     }
 }
 
 /// Listens for messages published to shard channels.
-public struct SSUBSCRIBE: RedisCommand {
+public struct SSUBSCRIBE: RESPCommand {
     public typealias Response = RESPToken
 
     public var shardchannel: [String]
@@ -187,13 +187,13 @@ public struct SSUBSCRIBE: RedisCommand {
         self.shardchannel = shardchannel
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SSUBSCRIBE", shardchannel)
     }
 }
 
 /// Listens for messages published to channels.
-public struct SUBSCRIBE: RedisCommand {
+public struct SUBSCRIBE: RESPCommand {
     public typealias Response = RESPToken
 
     public var channel: [String]
@@ -202,13 +202,13 @@ public struct SUBSCRIBE: RedisCommand {
         self.channel = channel
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUBSCRIBE", channel)
     }
 }
 
 /// Stops listening to messages posted to shard channels.
-public struct SUNSUBSCRIBE: RedisCommand {
+public struct SUNSUBSCRIBE: RESPCommand {
     public typealias Response = RESPToken
 
     public var shardchannel: [String] = []
@@ -217,13 +217,13 @@ public struct SUNSUBSCRIBE: RedisCommand {
         self.shardchannel = shardchannel
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUNSUBSCRIBE", shardchannel)
     }
 }
 
 /// Stops listening to messages posted to channels.
-public struct UNSUBSCRIBE: RedisCommand {
+public struct UNSUBSCRIBE: RESPCommand {
     public typealias Response = RESPToken
 
     public var channel: [String] = []
@@ -232,7 +232,7 @@ public struct UNSUBSCRIBE: RedisCommand {
         self.channel = channel
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("UNSUBSCRIBE", channel)
     }
 }

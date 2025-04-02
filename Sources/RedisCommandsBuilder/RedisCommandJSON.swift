@@ -1,15 +1,15 @@
 import Foundation
 
 struct RedisCommands: Decodable {
-    let commands: [String: RedisCommand]
+    let commands: [String: RESPCommand]
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        self.commands = try container.decode([String: RedisCommand].self)
+        self.commands = try container.decode([String: RESPCommand].self)
     }
 }
 
-struct RedisCommand: Decodable {
+struct RESPCommand: Decodable {
     enum ArgumentType: String, Decodable {
         case integer
         case double

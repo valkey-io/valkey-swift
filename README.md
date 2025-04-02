@@ -18,10 +18,10 @@ Swift-redis has three ways to send commands.
 
 ### Raw
 
-You can send raw commands using `RedisConnection.send()`. This takes a parameter pack of types that conform to `RESPRenderable`. These includes `Int`, `String`, `Double`, `RedisKey` and then `Optional` and `Array` where the internal type is also `RedisRenderable`. For example to set a value you can call
+You can send raw commands using `RedisConnection.send()`. This takes a parameter pack of types that conform to `RESPRenderable`. These includes `Int`, `String`, `Double`, `RESPKey` and then `Optional` and `Array` where the internal type is also `RedisRenderable`. For example to set a value you can call
 
 ```swift
-let key = RedisKey(rawValue: "MyKey")
+let key = RESPKey(rawValue: "MyKey")
 try await connection.send("SET", key, "TestString")
 ```
 
@@ -40,7 +40,7 @@ Swift-redis includes a separate module `RedisCommands` that includes functions f
 With the generated functions the code above becomes
 
 ```swift
-let key = RedisKey(rawValue: "MyKey")
+let key = RESPKey(rawValue: "MyKey")
 try await connection.set(key, "TestString")
 let value = try await connection.get(key)
 ```
@@ -50,7 +50,7 @@ let value = try await connection.get(key)
 In general you don't need to use this method as it has no advantages over using the generated functions. But `RESPCommands` has a function for each Redis command. Where the generated `RESPCommands` are useful is if you want to pipeline commands ie send multiple commands batched together and only wait for all of their responses in one place. You could pipeline the two commands above using
 
 ```swift
-let key = RedisKey(rawValue: "MyKey")
+let key = RESPKey(rawValue: "MyKey")
 let (setResponse, getResponse) = try await connection.pipeline(
     SET(key, "TestString"),
     GET(key)

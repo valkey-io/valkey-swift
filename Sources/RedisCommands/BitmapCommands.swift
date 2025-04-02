@@ -24,13 +24,13 @@ import Foundation
 #endif
 
 /// Counts the number of set bits (population counting) in a string.
-public struct BITCOUNT: RedisCommand {
+public struct BITCOUNT: RESPCommand {
     public enum RangeUnit: RESPRenderable {
         case byte
         case bit
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .byte: "BYTE".encode(into: &commandEncoder)
             case .bit: "BIT".encode(into: &commandEncoder)
@@ -43,7 +43,7 @@ public struct BITCOUNT: RedisCommand {
         @usableFromInline let unit: RangeUnit?
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += start.encode(into: &commandEncoder)
             count += end.encode(into: &commandEncoder)
@@ -53,27 +53,27 @@ public struct BITCOUNT: RedisCommand {
     }
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var range: Range? = nil
 
-    @inlinable public init(key: RedisKey, range: Range? = nil) {
+    @inlinable public init(key: RESPKey, range: Range? = nil) {
         self.key = key
         self.range = range
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITCOUNT", key, range)
     }
 }
 
 /// Performs arbitrary bitfield integer operations on strings.
-public struct BITFIELD: RedisCommand {
+public struct BITFIELD: RESPCommand {
     public struct OperationGetBlock: RESPRenderable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += encoding.encode(into: &commandEncoder)
             count += offset.encode(into: &commandEncoder)
@@ -86,7 +86,7 @@ public struct BITFIELD: RedisCommand {
         case fail
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .wrap: "WRAP".encode(into: &commandEncoder)
             case .sat: "SAT".encode(into: &commandEncoder)
@@ -100,7 +100,7 @@ public struct BITFIELD: RedisCommand {
         @usableFromInline let value: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += encoding.encode(into: &commandEncoder)
             count += offset.encode(into: &commandEncoder)
@@ -114,7 +114,7 @@ public struct BITFIELD: RedisCommand {
         @usableFromInline let increment: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += encoding.encode(into: &commandEncoder)
             count += offset.encode(into: &commandEncoder)
@@ -127,7 +127,7 @@ public struct BITFIELD: RedisCommand {
         case incrbyBlock(OperationWriteWriteOperationIncrbyBlock)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .setBlock(let setBlock): RESPWithToken("SET", setBlock).encode(into: &commandEncoder)
             case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).encode(into: &commandEncoder)
@@ -139,7 +139,7 @@ public struct BITFIELD: RedisCommand {
         @usableFromInline let writeOperation: OperationWriteWriteOperation
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += RESPWithToken("OVERFLOW", overflowBlock).encode(into: &commandEncoder)
             count += writeOperation.encode(into: &commandEncoder)
@@ -151,7 +151,7 @@ public struct BITFIELD: RedisCommand {
         case write(OperationWrite)
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .getBlock(let getBlock): RESPWithToken("GET", getBlock).encode(into: &commandEncoder)
             case .write(let write): write.encode(into: &commandEncoder)
@@ -160,27 +160,27 @@ public struct BITFIELD: RedisCommand {
     }
     public typealias Response = [RESPToken]?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var operation: [Operation] = []
 
-    @inlinable public init(key: RedisKey, operation: [Operation] = []) {
+    @inlinable public init(key: RESPKey, operation: [Operation] = []) {
         self.key = key
         self.operation = operation
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITFIELD", key, operation)
     }
 }
 
 /// Performs arbitrary read-only bitfield integer operations on strings.
-public struct BITFIELDRO: RedisCommand {
+public struct BITFIELDRO: RESPCommand {
     public struct GetBlock: RESPRenderable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += encoding.encode(into: &commandEncoder)
             count += offset.encode(into: &commandEncoder)
@@ -189,21 +189,21 @@ public struct BITFIELDRO: RedisCommand {
     }
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var getBlock: [GetBlock] = []
 
-    @inlinable public init(key: RedisKey, getBlock: [GetBlock] = []) {
+    @inlinable public init(key: RESPKey, getBlock: [GetBlock] = []) {
         self.key = key
         self.getBlock = getBlock
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
     }
 }
 
 /// Performs bitwise operations on multiple strings, and stores the result.
-public struct BITOP: RedisCommand {
+public struct BITOP: RESPCommand {
     public enum Operation: RESPRenderable {
         case and
         case or
@@ -211,7 +211,7 @@ public struct BITOP: RedisCommand {
         case not
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .and: "AND".encode(into: &commandEncoder)
             case .or: "OR".encode(into: &commandEncoder)
@@ -223,28 +223,28 @@ public struct BITOP: RedisCommand {
     public typealias Response = Int
 
     public var operation: Operation
-    public var destkey: RedisKey
-    public var key: [RedisKey]
+    public var destkey: RESPKey
+    public var key: [RESPKey]
 
-    @inlinable public init(operation: Operation, destkey: RedisKey, key: [RedisKey]) {
+    @inlinable public init(operation: Operation, destkey: RESPKey, key: [RESPKey]) {
         self.operation = operation
         self.destkey = destkey
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITOP", operation, destkey, key)
     }
 }
 
 /// Finds the first set (1) or clear (0) bit in a string.
-public struct BITPOS: RedisCommand {
+public struct BITPOS: RESPCommand {
     public enum RangeEndUnitBlockUnit: RESPRenderable {
         case byte
         case bit
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .byte: "BYTE".encode(into: &commandEncoder)
             case .bit: "BIT".encode(into: &commandEncoder)
@@ -256,7 +256,7 @@ public struct BITPOS: RedisCommand {
         @usableFromInline let unit: RangeEndUnitBlockUnit?
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += end.encode(into: &commandEncoder)
             count += unit.encode(into: &commandEncoder)
@@ -268,7 +268,7 @@ public struct BITPOS: RedisCommand {
         @usableFromInline let endUnitBlock: RangeEndUnitBlock?
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += start.encode(into: &commandEncoder)
             count += endUnitBlock.encode(into: &commandEncoder)
@@ -277,53 +277,53 @@ public struct BITPOS: RedisCommand {
     }
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var bit: Int
     public var range: Range? = nil
 
-    @inlinable public init(key: RedisKey, bit: Int, range: Range? = nil) {
+    @inlinable public init(key: RESPKey, bit: Int, range: Range? = nil) {
         self.key = key
         self.bit = bit
         self.range = range
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITPOS", key, bit, range)
     }
 }
 
 /// Returns a bit value by offset.
-public struct GETBIT: RedisCommand {
+public struct GETBIT: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var offset: Int
 
-    @inlinable public init(key: RedisKey, offset: Int) {
+    @inlinable public init(key: RESPKey, offset: Int) {
         self.key = key
         self.offset = offset
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETBIT", key, offset)
     }
 }
 
 /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
-public struct SETBIT: RedisCommand {
+public struct SETBIT: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var offset: Int
     public var value: Int
 
-    @inlinable public init(key: RedisKey, offset: Int, value: Int) {
+    @inlinable public init(key: RESPKey, offset: Int, value: Int) {
         self.key = key
         self.offset = offset
         self.value = value
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SETBIT", key, offset, value)
     }
 }
@@ -338,7 +338,7 @@ extension RedisConnection {
     /// - Categories: @read, @bitmap, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of bits set to 1.
     @inlinable
-    public func bitcount(key: RedisKey, range: BITCOUNT.Range? = nil) async throws -> Int {
+    public func bitcount(key: RESPKey, range: BITCOUNT.Range? = nil) async throws -> Int {
         try await send(command: BITCOUNT(key: key, range: range))
     }
 
@@ -352,7 +352,7 @@ extension RedisConnection {
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each entry being the corresponding result of the sub-command given at the same position.
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if OVERFLOW FAIL was given and overflows or underflows are detected.
     @inlinable
-    public func bitfield(key: RedisKey, operation: [BITFIELD.Operation] = []) async throws -> [RESPToken]? {
+    public func bitfield(key: RESPKey, operation: [BITFIELD.Operation] = []) async throws -> [RESPToken]? {
         try await send(command: BITFIELD(key: key, operation: operation))
     }
 
@@ -364,7 +364,7 @@ extension RedisConnection {
     /// - Categories: @read, @bitmap, @fast
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): each entry being the corresponding result of the sub-command given at the same position.
     @inlinable
-    public func bitfieldRo(key: RedisKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> [RESPToken] {
+    public func bitfieldRo(key: RESPKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> [RESPToken] {
         try await send(command: BITFIELDRO(key: key, getBlock: getBlock))
     }
 
@@ -376,7 +376,7 @@ extension RedisConnection {
     /// - Categories: @write, @bitmap, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
     @inlinable
-    public func bitop(operation: BITOP.Operation, destkey: RedisKey, key: [RedisKey]) async throws -> Int {
+    public func bitop(operation: BITOP.Operation, destkey: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: BITOP(operation: operation, destkey: destkey, key: key))
     }
 
@@ -399,7 +399,7 @@ extension RedisConnection {
     ///     However, this behavior changes if you are looking for clear bits and specify a range with both _start_ and _end_.
     ///     If a clear bit isn't found in the specified range, the function returns -1 as the user specified a clear range and there are no 0 bits in that range.
     @inlinable
-    public func bitpos(key: RedisKey, bit: Int, range: BITPOS.Range? = nil) async throws -> Int {
+    public func bitpos(key: RESPKey, bit: Int, range: BITPOS.Range? = nil) async throws -> Int {
         try await send(command: BITPOS(key: key, bit: bit, range: range))
     }
 
@@ -413,7 +413,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `0`.
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): `1`.
     @inlinable
-    public func getbit(key: RedisKey, offset: Int) async throws -> Int {
+    public func getbit(key: RESPKey, offset: Int) async throws -> Int {
         try await send(command: GETBIT(key: key, offset: offset))
     }
 
@@ -425,7 +425,7 @@ extension RedisConnection {
     /// - Categories: @write, @bitmap, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the original bit value stored at _offset_.
     @inlinable
-    public func setbit(key: RedisKey, offset: Int, value: Int) async throws -> Int {
+    public func setbit(key: RESPKey, offset: Int, value: Int) async throws -> Int {
         try await send(command: SETBIT(key: key, offset: offset, value: value))
     }
 

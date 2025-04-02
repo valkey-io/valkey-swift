@@ -14,9 +14,9 @@
 
 import NIOCore
 
-/// A redis command that can be executed on a connection.
-public protocol RedisCommand {
+/// A RESP command that can be executed on a connection.
+public protocol RESPCommand {
     associatedtype Response: RESPTokenRepresentable = RESPToken
 
-    func encode(into commandEncoder: inout RedisCommandEncoder)
+    func encode(into commandEncoder: inout RESPCommandEncoder)
 }

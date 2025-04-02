@@ -5,11 +5,11 @@ extension String {
             .replacing(" reply]", with: "]")
     }
 
-    mutating func appendCommandCommentHeader(command: RedisCommand, name: String, reply: [String], tab: String) {
+    mutating func appendCommandCommentHeader(command: RESPCommand, name: String, reply: [String], tab: String) {
         self.append("\(tab)/// \(command.summary)\n")
     }
 
-    mutating func appendFunctionCommentHeader(command: RedisCommand, name: String, reply: [String]) {
+    mutating func appendFunctionCommentHeader(command: RESPCommand, name: String, reply: [String]) {
         let linkName = name.replacing(" ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
@@ -27,7 +27,7 @@ extension String {
         }
     }
 
-    mutating func appendOneOfEnum(argument: RedisCommand.Argument, names: [String], tab: String) {
+    mutating func appendOneOfEnum(argument: RESPCommand.Argument, names: [String], tab: String) {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
@@ -50,7 +50,7 @@ extension String {
         }
         self.append("\n")
         self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {\n")
         self.append("\(tab)            switch self {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
@@ -68,7 +68,7 @@ extension String {
         self.append("\(tab)    }\n")
     }
 
-    mutating func appendBlock(argument: RedisCommand.Argument, names: [String], tab: String) {
+    mutating func appendBlock(argument: RESPCommand.Argument, names: [String], tab: String) {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
@@ -89,7 +89,7 @@ extension String {
         }
         self.append("\n")
         self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {\n")
         self.append("\(tab)            var count = 0\n")
         for arg in arguments {
             if case .pureToken = arg.type {
@@ -103,7 +103,7 @@ extension String {
         self.append("\(tab)    }\n")
     }
 
-    mutating func appendCommand(command: RedisCommand, reply: [String], name: String, tab: String) {
+    mutating func appendCommand(command: RESPCommand, reply: [String], name: String, tab: String) {
         var commandName = name
         var subCommand: String? = nil
         let typeName: String
@@ -118,7 +118,7 @@ extension String {
 
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, reply: reply, tab: tab)
-        self.append("\(tab)public struct \(typeName): RedisCommand {\n")
+        self.append("\(tab)public struct \(typeName): RESPCommand {\n")
 
         let arguments = (command.arguments ?? [])
         // Enums
@@ -152,13 +152,13 @@ extension String {
             self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
         self.append("\(tab)    }\n\n")
-        self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {\n")
+        self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
         self.append("\(tab)        commandEncoder.encodeArray(\(commandArgumentsString))\n")
         self.append("\(tab)    }\n")
         self.append("\(tab)}\n\n")
     }
 
-    mutating func appendFunction(command: RedisCommand, reply: [String], name: String) {
+    mutating func appendFunction(command: RESPCommand, reply: [String], name: String) {
         let arguments = (command.arguments ?? [])
         //var converting: Bool = false
         var returnType: String = " -> RESPToken"
@@ -194,7 +194,7 @@ extension String {
     }
 }
 
-func renderRedisCommands(_ commands: [String: RedisCommand], replies: RESPReplies) -> String {
+func renderRedisCommands(_ commands: [String: RESPCommand], replies: RESPReplies) -> String {
     var string = """
         //===----------------------------------------------------------------------===//
         //
@@ -282,7 +282,7 @@ private func enumName(names: [String]) -> String {
     names.map { $0.upperFirst() }.joined()
 }
 
-private func parameterType(_ parameter: RedisCommand.Argument, names: [String], scope: String?, isArray: Bool) -> String {
+private func parameterType(_ parameter: RESPCommand.Argument, names: [String], scope: String?, isArray: Bool) -> String {
     let variableType = variableType(parameter, names: names, scope: scope, isArray: isArray)
     if parameter.type == .pureToken {
         return variableType + " = false"
@@ -298,7 +298,7 @@ private func parameterType(_ parameter: RedisCommand.Argument, names: [String], 
     return variableType
 }
 
-private func variableType(_ parameter: RedisCommand.Argument, names: [String], scope: String?, isArray: Bool) -> String {
+private func variableType(_ parameter: RESPCommand.Argument, names: [String], scope: String?, isArray: Bool) -> String {
     var parameterString = parameter.type.swiftName
     if case .oneOf = parameter.type {
         parameterString = "\(scope.map {"\($0)."} ?? "")\(enumName(names: names + [parameter.name.swiftTypename]))"
@@ -385,13 +385,13 @@ private func getReturnType(reply: some StringProtocol) -> String? {
     return nil
 }
 
-extension RedisCommand.ArgumentType {
+extension RESPCommand.ArgumentType {
     var swiftName: String {
         switch self {
         case .block: "#"
         case .double: "Double"
         case .integer: "Int"
-        case .key: "RedisKey"
+        case .key: "RESPKey"
         case .oneOf: "#"
         case .pattern: "String"
         case .pureToken: "Bool"
@@ -401,12 +401,12 @@ extension RedisCommand.ArgumentType {
     }
 }
 
-extension RedisCommand.Argument {
+extension RESPCommand.Argument {
     func redisRepresentable(isArray: Bool) -> String {
         var variable = self.functionLabel(isArray: multiple && isArray)
         switch self.type
         {
-        case .pureToken: return "RedisPureToken(\"\(self.token!)\", \(variable))"
+        case .pureToken: return "RESPPureToken(\"\(self.token!)\", \(variable))"
         default:
             if self.type == .unixTime {
                 if self.optional {

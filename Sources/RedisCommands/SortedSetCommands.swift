@@ -24,13 +24,13 @@ import Foundation
 #endif
 
 /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
-public struct BZMPOP: RedisCommand {
+public struct BZMPOP: RESPCommand {
     public enum Where: RESPRenderable {
         case min
         case max
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .min: "MIN".encode(into: &commandEncoder)
             case .max: "MAX".encode(into: &commandEncoder)
@@ -40,64 +40,64 @@ public struct BZMPOP: RedisCommand {
     public typealias Response = [RESPToken]?
 
     public var timeout: Double
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var `where`: Where
     public var count: Int? = nil
 
-    @inlinable public init(timeout: Double, key: [RedisKey], `where`: Where, count: Int? = nil) {
+    @inlinable public init(timeout: Double, key: [RESPKey], `where`: Where, count: Int? = nil) {
         self.timeout = timeout
         self.key = key
         self.`where` = `where`
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
 /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
-public struct BZPOPMAX: RedisCommand {
+public struct BZPOPMAX: RESPCommand {
     public typealias Response = [RESPToken]?
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var timeout: Double
 
-    @inlinable public init(key: [RedisKey], timeout: Double) {
+    @inlinable public init(key: [RESPKey], timeout: Double) {
         self.key = key
         self.timeout = timeout
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZPOPMAX", key, timeout)
     }
 }
 
 /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
-public struct BZPOPMIN: RedisCommand {
+public struct BZPOPMIN: RESPCommand {
     public typealias Response = [RESPToken]?
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var timeout: Double
 
-    @inlinable public init(key: [RedisKey], timeout: Double) {
+    @inlinable public init(key: [RESPKey], timeout: Double) {
         self.key = key
         self.timeout = timeout
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZPOPMIN", key, timeout)
     }
 }
 
 /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
-public struct ZADD: RedisCommand {
+public struct ZADD: RESPCommand {
     public enum Condition: RESPRenderable {
         case nx
         case xx
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -109,7 +109,7 @@ public struct ZADD: RedisCommand {
         case lt
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
@@ -121,7 +121,7 @@ public struct ZADD: RedisCommand {
         @usableFromInline let member: String
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += score.encode(into: &commandEncoder)
             count += member.encode(into: &commandEncoder)
@@ -130,14 +130,14 @@ public struct ZADD: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var condition: Condition? = nil
     public var comparison: Comparison? = nil
     public var change: Bool = false
     public var increment: Bool = false
     public var data: [Data]
 
-    @inlinable public init(key: RedisKey, condition: Condition? = nil, comparison: Comparison? = nil, change: Bool = false, increment: Bool = false, data: [Data]) {
+    @inlinable public init(key: RESPKey, condition: Condition? = nil, comparison: Comparison? = nil, change: Bool = false, increment: Bool = false, data: [Data]) {
         self.key = key
         self.condition = condition
         self.comparison = comparison
@@ -146,107 +146,107 @@ public struct ZADD: RedisCommand {
         self.data = data
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZADD", key, condition, comparison, RedisPureToken("CH", change), RedisPureToken("INCR", increment), data)
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZADD", key, condition, comparison, RESPPureToken("CH", change), RESPPureToken("INCR", increment), data)
     }
 }
 
 /// Returns the number of members in a sorted set.
-public struct ZCARD: RedisCommand {
+public struct ZCARD: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
 
-    @inlinable public init(key: RedisKey) {
+    @inlinable public init(key: RESPKey) {
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZCARD", key)
     }
 }
 
 /// Returns the count of members in a sorted set that have scores within a range.
-public struct ZCOUNT: RedisCommand {
+public struct ZCOUNT: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var min: Double
     public var max: Double
 
-    @inlinable public init(key: RedisKey, min: Double, max: Double) {
+    @inlinable public init(key: RESPKey, min: Double, max: Double) {
         self.key = key
         self.min = min
         self.max = max
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZCOUNT", key, min, max)
     }
 }
 
 /// Returns the difference between multiple sorted sets.
-public struct ZDIFF: RedisCommand {
+public struct ZDIFF: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var withscores: Bool = false
 
-    @inlinable public init(key: [RedisKey], withscores: Bool = false) {
+    @inlinable public init(key: [RESPKey], withscores: Bool = false) {
         self.key = key
         self.withscores = withscores
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZDIFF", RESPArrayWithCount(key), RedisPureToken("WITHSCORES", withscores))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZDIFF", RESPArrayWithCount(key), RESPPureToken("WITHSCORES", withscores))
     }
 }
 
 /// Stores the difference of multiple sorted sets in a key.
-public struct ZDIFFSTORE: RedisCommand {
+public struct ZDIFFSTORE: RESPCommand {
     public typealias Response = Int
 
-    public var destination: RedisKey
-    public var key: [RedisKey]
+    public var destination: RESPKey
+    public var key: [RESPKey]
 
-    @inlinable public init(destination: RedisKey, key: [RedisKey]) {
+    @inlinable public init(destination: RESPKey, key: [RESPKey]) {
         self.destination = destination
         self.key = key
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZDIFFSTORE", destination, RESPArrayWithCount(key))
     }
 }
 
 /// Increments the score of a member in a sorted set.
-public struct ZINCRBY: RedisCommand {
+public struct ZINCRBY: RESPCommand {
     public typealias Response = Double
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var increment: Int
     public var member: String
 
-    @inlinable public init(key: RedisKey, increment: Int, member: String) {
+    @inlinable public init(key: RESPKey, increment: Int, member: String) {
         self.key = key
         self.increment = increment
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINCRBY", key, increment, member)
     }
 }
 
 /// Returns the intersect of multiple sorted sets.
-public struct ZINTER: RedisCommand {
+public struct ZINTER: RESPCommand {
     public enum Aggregate: RESPRenderable {
         case sum
         case min
         case max
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .sum: "SUM".encode(into: &commandEncoder)
             case .min: "MIN".encode(into: &commandEncoder)
@@ -256,49 +256,49 @@ public struct ZINTER: RedisCommand {
     }
     public typealias Response = [RESPToken]
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var weight: [Int] = []
     public var aggregate: Aggregate? = nil
     public var withscores: Bool = false
 
-    @inlinable public init(key: [RedisKey], weight: [Int] = [], aggregate: Aggregate? = nil, withscores: Bool = false) {
+    @inlinable public init(key: [RESPKey], weight: [Int] = [], aggregate: Aggregate? = nil, withscores: Bool = false) {
         self.key = key
         self.weight = weight
         self.aggregate = aggregate
         self.withscores = withscores
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
     }
 }
 
 /// Returns the number of members of the intersect of multiple sorted sets.
-public struct ZINTERCARD: RedisCommand {
+public struct ZINTERCARD: RESPCommand {
     public typealias Response = Int
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var limit: Int? = nil
 
-    @inlinable public init(key: [RedisKey], limit: Int? = nil) {
+    @inlinable public init(key: [RESPKey], limit: Int? = nil) {
         self.key = key
         self.limit = limit
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
     }
 }
 
 /// Stores the intersect of multiple sorted sets in a key.
-public struct ZINTERSTORE: RedisCommand {
+public struct ZINTERSTORE: RESPCommand {
     public enum Aggregate: RESPRenderable {
         case sum
         case min
         case max
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .sum: "SUM".encode(into: &commandEncoder)
             case .min: "MIN".encode(into: &commandEncoder)
@@ -308,50 +308,50 @@ public struct ZINTERSTORE: RedisCommand {
     }
     public typealias Response = Int
 
-    public var destination: RedisKey
-    public var key: [RedisKey]
+    public var destination: RESPKey
+    public var key: [RESPKey]
     public var weight: [Int] = []
     public var aggregate: Aggregate? = nil
 
-    @inlinable public init(destination: RedisKey, key: [RedisKey], weight: [Int] = [], aggregate: Aggregate? = nil) {
+    @inlinable public init(destination: RESPKey, key: [RESPKey], weight: [Int] = [], aggregate: Aggregate? = nil) {
         self.destination = destination
         self.key = key
         self.weight = weight
         self.aggregate = aggregate
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 }
 
 /// Returns the number of members in a sorted set within a lexicographical range.
-public struct ZLEXCOUNT: RedisCommand {
+public struct ZLEXCOUNT: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var min: String
     public var max: String
 
-    @inlinable public init(key: RedisKey, min: String, max: String) {
+    @inlinable public init(key: RESPKey, min: String, max: String) {
         self.key = key
         self.min = min
         self.max = max
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZLEXCOUNT", key, min, max)
     }
 }
 
 /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
-public struct ZMPOP: RedisCommand {
+public struct ZMPOP: RESPCommand {
     public enum Where: RESPRenderable {
         case min
         case max
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .min: "MIN".encode(into: &commandEncoder)
             case .max: "MAX".encode(into: &commandEncoder)
@@ -360,80 +360,80 @@ public struct ZMPOP: RedisCommand {
     }
     public typealias Response = [RESPToken]?
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var `where`: Where
     public var count: Int? = nil
 
-    @inlinable public init(key: [RedisKey], `where`: Where, count: Int? = nil) {
+    @inlinable public init(key: [RESPKey], `where`: Where, count: Int? = nil) {
         self.key = key
         self.`where` = `where`
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
 /// Returns the score of one or more members in a sorted set.
-public struct ZMSCORE: RedisCommand {
+public struct ZMSCORE: RESPCommand {
     public typealias Response = [RESPToken]?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: [String]
 
-    @inlinable public init(key: RedisKey, member: [String]) {
+    @inlinable public init(key: RESPKey, member: [String]) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZMSCORE", key, member)
     }
 }
 
 /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
-public struct ZPOPMAX: RedisCommand {
+public struct ZPOPMAX: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZPOPMAX", key, count)
     }
 }
 
 /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
-public struct ZPOPMIN: RedisCommand {
+public struct ZPOPMIN: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZPOPMIN", key, count)
     }
 }
 
 /// Returns one or more random members from a sorted set.
-public struct ZRANDMEMBER: RedisCommand {
+public struct ZRANDMEMBER: RESPCommand {
     public struct Options: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let withscores: Bool
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += count.encode(into: &commandEncoder)
             if self.withscores { count += "WITHSCORES".encode(into: &commandEncoder) }
@@ -442,27 +442,27 @@ public struct ZRANDMEMBER: RedisCommand {
     }
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var options: Options? = nil
 
-    @inlinable public init(key: RedisKey, options: Options? = nil) {
+    @inlinable public init(key: RESPKey, options: Options? = nil) {
         self.key = key
         self.options = options
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANDMEMBER", key, options)
     }
 }
 
 /// Returns members in a sorted set within a range of indexes.
-public struct ZRANGE: RedisCommand {
+public struct ZRANGE: RESPCommand {
     public enum Sortby: RESPRenderable {
         case byscore
         case bylex
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .byscore: "BYSCORE".encode(into: &commandEncoder)
             case .bylex: "BYLEX".encode(into: &commandEncoder)
@@ -474,7 +474,7 @@ public struct ZRANGE: RedisCommand {
         @usableFromInline let count: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += offset.encode(into: &commandEncoder)
             count += count.encode(into: &commandEncoder)
@@ -483,7 +483,7 @@ public struct ZRANGE: RedisCommand {
     }
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var start: String
     public var stop: String
     public var sortby: Sortby? = nil
@@ -491,7 +491,7 @@ public struct ZRANGE: RedisCommand {
     public var limit: Limit? = nil
     public var withscores: Bool = false
 
-    @inlinable public init(key: RedisKey, start: String, stop: String, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil, withscores: Bool = false) {
+    @inlinable public init(key: RESPKey, start: String, stop: String, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil, withscores: Bool = false) {
         self.key = key
         self.start = start
         self.stop = stop
@@ -501,19 +501,19 @@ public struct ZRANGE: RedisCommand {
         self.withscores = withscores
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGE", key, start, stop, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit), RedisPureToken("WITHSCORES", withscores))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZRANGE", key, start, stop, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
     }
 }
 
 /// Returns members in a sorted set within a lexicographical range.
-public struct ZRANGEBYLEX: RedisCommand {
+public struct ZRANGEBYLEX: RESPCommand {
     public struct Limit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += offset.encode(into: &commandEncoder)
             count += count.encode(into: &commandEncoder)
@@ -522,31 +522,31 @@ public struct ZRANGEBYLEX: RedisCommand {
     }
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var min: String
     public var max: String
     public var limit: Limit? = nil
 
-    @inlinable public init(key: RedisKey, min: String, max: String, limit: Limit? = nil) {
+    @inlinable public init(key: RESPKey, min: String, max: String, limit: Limit? = nil) {
         self.key = key
         self.min = min
         self.max = max
         self.limit = limit
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
     }
 }
 
 /// Returns members in a sorted set within a range of scores.
-public struct ZRANGEBYSCORE: RedisCommand {
+public struct ZRANGEBYSCORE: RESPCommand {
     public struct Limit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += offset.encode(into: &commandEncoder)
             count += count.encode(into: &commandEncoder)
@@ -555,13 +555,13 @@ public struct ZRANGEBYSCORE: RedisCommand {
     }
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var min: Double
     public var max: Double
     public var withscores: Bool = false
     public var limit: Limit? = nil
 
-    @inlinable public init(key: RedisKey, min: Double, max: Double, withscores: Bool = false, limit: Limit? = nil) {
+    @inlinable public init(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: Limit? = nil) {
         self.key = key
         self.min = min
         self.max = max
@@ -569,19 +569,19 @@ public struct ZRANGEBYSCORE: RedisCommand {
         self.limit = limit
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGEBYSCORE", key, min, max, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZRANGEBYSCORE", key, min, max, RESPPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 }
 
 /// Stores a range of members from sorted set in a key.
-public struct ZRANGESTORE: RedisCommand {
+public struct ZRANGESTORE: RESPCommand {
     public enum Sortby: RESPRenderable {
         case byscore
         case bylex
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .byscore: "BYSCORE".encode(into: &commandEncoder)
             case .bylex: "BYLEX".encode(into: &commandEncoder)
@@ -593,7 +593,7 @@ public struct ZRANGESTORE: RedisCommand {
         @usableFromInline let count: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += offset.encode(into: &commandEncoder)
             count += count.encode(into: &commandEncoder)
@@ -602,15 +602,15 @@ public struct ZRANGESTORE: RedisCommand {
     }
     public typealias Response = Int
 
-    public var dst: RedisKey
-    public var src: RedisKey
+    public var dst: RESPKey
+    public var src: RESPKey
     public var min: String
     public var max: String
     public var sortby: Sortby? = nil
     public var rev: Bool = false
     public var limit: Limit? = nil
 
-    @inlinable public init(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil) {
+    @inlinable public init(dst: RESPKey, src: RESPKey, min: String, max: String, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil) {
         self.dst = dst
         self.src = src
         self.min = min
@@ -620,133 +620,133 @@ public struct ZRANGESTORE: RedisCommand {
         self.limit = limit
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGESTORE", dst, src, min, max, sortby, RedisPureToken("REV", rev), RESPWithToken("LIMIT", limit))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZRANGESTORE", dst, src, min, max, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit))
     }
 }
 
 /// Returns the index of a member in a sorted set ordered by ascending scores.
-public struct ZRANK: RedisCommand {
+public struct ZRANK: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: String
     public var withscore: Bool = false
 
-    @inlinable public init(key: RedisKey, member: String, withscore: Bool = false) {
+    @inlinable public init(key: RESPKey, member: String, withscore: Bool = false) {
         self.key = key
         self.member = member
         self.withscore = withscore
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZRANK", key, member, RedisPureToken("WITHSCORE", withscore))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZRANK", key, member, RESPPureToken("WITHSCORE", withscore))
     }
 }
 
 /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
-public struct ZREM: RedisCommand {
+public struct ZREM: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: [String]
 
-    @inlinable public init(key: RedisKey, member: [String]) {
+    @inlinable public init(key: RESPKey, member: [String]) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREM", key, member)
     }
 }
 
 /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYLEX: RedisCommand {
+public struct ZREMRANGEBYLEX: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var min: String
     public var max: String
 
-    @inlinable public init(key: RedisKey, min: String, max: String) {
+    @inlinable public init(key: RESPKey, min: String, max: String) {
         self.key = key
         self.min = min
         self.max = max
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYLEX", key, min, max)
     }
 }
 
 /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYRANK: RedisCommand {
+public struct ZREMRANGEBYRANK: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var start: Int
     public var stop: Int
 
-    @inlinable public init(key: RedisKey, start: Int, stop: Int) {
+    @inlinable public init(key: RESPKey, start: Int, stop: Int) {
         self.key = key
         self.start = start
         self.stop = stop
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYRANK", key, start, stop)
     }
 }
 
 /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYSCORE: RedisCommand {
+public struct ZREMRANGEBYSCORE: RESPCommand {
     public typealias Response = Int
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var min: Double
     public var max: Double
 
-    @inlinable public init(key: RedisKey, min: Double, max: Double) {
+    @inlinable public init(key: RESPKey, min: Double, max: Double) {
         self.key = key
         self.min = min
         self.max = max
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYSCORE", key, min, max)
     }
 }
 
 /// Returns members in a sorted set within a range of indexes in reverse order.
-public struct ZREVRANGE: RedisCommand {
+public struct ZREVRANGE: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var start: Int
     public var stop: Int
     public var withscores: Bool = false
 
-    @inlinable public init(key: RedisKey, start: Int, stop: Int, withscores: Bool = false) {
+    @inlinable public init(key: RESPKey, start: Int, stop: Int, withscores: Bool = false) {
         self.key = key
         self.start = start
         self.stop = stop
         self.withscores = withscores
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZREVRANGE", key, start, stop, RedisPureToken("WITHSCORES", withscores))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZREVRANGE", key, start, stop, RESPPureToken("WITHSCORES", withscores))
     }
 }
 
 /// Returns members in a sorted set within a lexicographical range in reverse order.
-public struct ZREVRANGEBYLEX: RedisCommand {
+public struct ZREVRANGEBYLEX: RESPCommand {
     public struct Limit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += offset.encode(into: &commandEncoder)
             count += count.encode(into: &commandEncoder)
@@ -755,31 +755,31 @@ public struct ZREVRANGEBYLEX: RedisCommand {
     }
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var max: String
     public var min: String
     public var limit: Limit? = nil
 
-    @inlinable public init(key: RedisKey, max: String, min: String, limit: Limit? = nil) {
+    @inlinable public init(key: RESPKey, max: String, min: String, limit: Limit? = nil) {
         self.key = key
         self.max = max
         self.min = min
         self.limit = limit
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
     }
 }
 
 /// Returns members in a sorted set within a range of scores in reverse order.
-public struct ZREVRANGEBYSCORE: RedisCommand {
+public struct ZREVRANGEBYSCORE: RESPCommand {
     public struct Limit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
             count += offset.encode(into: &commandEncoder)
             count += count.encode(into: &commandEncoder)
@@ -788,13 +788,13 @@ public struct ZREVRANGEBYSCORE: RedisCommand {
     }
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var max: Double
     public var min: Double
     public var withscores: Bool = false
     public var limit: Limit? = nil
 
-    @inlinable public init(key: RedisKey, max: Double, min: Double, withscores: Bool = false, limit: Limit? = nil) {
+    @inlinable public init(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: Limit? = nil) {
         self.key = key
         self.max = max
         self.min = min
@@ -802,77 +802,77 @@ public struct ZREVRANGEBYSCORE: RedisCommand {
         self.limit = limit
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZREVRANGEBYSCORE", key, max, min, RedisPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZREVRANGEBYSCORE", key, max, min, RESPPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
 }
 
 /// Returns the index of a member in a sorted set ordered by descending scores.
-public struct ZREVRANK: RedisCommand {
+public struct ZREVRANK: RESPCommand {
     public typealias Response = RESPToken
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: String
     public var withscore: Bool = false
 
-    @inlinable public init(key: RedisKey, member: String, withscore: Bool = false) {
+    @inlinable public init(key: RESPKey, member: String, withscore: Bool = false) {
         self.key = key
         self.member = member
         self.withscore = withscore
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZREVRANK", key, member, RedisPureToken("WITHSCORE", withscore))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZREVRANK", key, member, RESPPureToken("WITHSCORE", withscore))
     }
 }
 
 /// Iterates over members and scores of a sorted set.
-public struct ZSCAN: RedisCommand {
+public struct ZSCAN: RESPCommand {
     public typealias Response = [RESPToken]
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var cursor: Int
     public var pattern: String? = nil
     public var count: Int? = nil
 
-    @inlinable public init(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
+    @inlinable public init(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
         self.key = key
         self.cursor = cursor
         self.pattern = pattern
         self.count = count
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 }
 
 /// Returns the score of a member in a sorted set.
-public struct ZSCORE: RedisCommand {
+public struct ZSCORE: RESPCommand {
     public typealias Response = Double?
 
-    public var key: RedisKey
+    public var key: RESPKey
     public var member: String
 
-    @inlinable public init(key: RedisKey, member: String) {
+    @inlinable public init(key: RESPKey, member: String) {
         self.key = key
         self.member = member
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZSCORE", key, member)
     }
 }
 
 /// Returns the union of multiple sorted sets.
-public struct ZUNION: RedisCommand {
+public struct ZUNION: RESPCommand {
     public enum Aggregate: RESPRenderable {
         case sum
         case min
         case max
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .sum: "SUM".encode(into: &commandEncoder)
             case .min: "MIN".encode(into: &commandEncoder)
@@ -882,32 +882,32 @@ public struct ZUNION: RedisCommand {
     }
     public typealias Response = [RESPToken]
 
-    public var key: [RedisKey]
+    public var key: [RESPKey]
     public var weight: [Int] = []
     public var aggregate: Aggregate? = nil
     public var withscores: Bool = false
 
-    @inlinable public init(key: [RedisKey], weight: [Int] = [], aggregate: Aggregate? = nil, withscores: Bool = false) {
+    @inlinable public init(key: [RESPKey], weight: [Int] = [], aggregate: Aggregate? = nil, withscores: Bool = false) {
         self.key = key
         self.weight = weight
         self.aggregate = aggregate
         self.withscores = withscores
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
-        commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RedisPureToken("WITHSCORES", withscores))
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
     }
 }
 
 /// Stores the union of multiple sorted sets in a key.
-public struct ZUNIONSTORE: RedisCommand {
+public struct ZUNIONSTORE: RESPCommand {
     public enum Aggregate: RESPRenderable {
         case sum
         case min
         case max
 
         @inlinable
-        public func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             switch self {
             case .sum: "SUM".encode(into: &commandEncoder)
             case .min: "MIN".encode(into: &commandEncoder)
@@ -917,19 +917,19 @@ public struct ZUNIONSTORE: RedisCommand {
     }
     public typealias Response = Int
 
-    public var destination: RedisKey
-    public var key: [RedisKey]
+    public var destination: RESPKey
+    public var key: [RESPKey]
     public var weight: [Int] = []
     public var aggregate: Aggregate? = nil
 
-    @inlinable public init(destination: RedisKey, key: [RedisKey], weight: [Int] = [], aggregate: Aggregate? = nil) {
+    @inlinable public init(destination: RESPKey, key: [RESPKey], weight: [Int] = [], aggregate: Aggregate? = nil) {
         self.destination = destination
         self.key = key
         self.weight = weight
         self.aggregate = aggregate
     }
 
-    @inlinable public func encode(into commandEncoder: inout RedisCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
 }
@@ -946,7 +946,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func bzmpop(timeout: Double, key: [RedisKey], `where`: BZMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+    public func bzmpop(timeout: Double, key: [RESPKey], `where`: BZMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
         try await send(command: BZMPOP(timeout: timeout, key: key, where: `where`, count: count))
     }
 
@@ -960,7 +960,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public func bzpopmax(key: [RedisKey], timeout: Double) async throws -> [RESPToken]? {
+    public func bzpopmax(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
         try await send(command: BZPOPMAX(key: key, timeout: timeout))
     }
 
@@ -974,7 +974,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the keyname, popped member, and its score.
     @inlinable
-    public func bzpopmin(key: [RedisKey], timeout: Double) async throws -> [RESPToken]? {
+    public func bzpopmin(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
         try await send(command: BZPOPMIN(key: key, timeout: timeout))
     }
 
@@ -990,7 +990,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RedisKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> RESPToken {
+    public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> RESPToken {
         try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 
@@ -1002,7 +1002,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the cardinality (number of members) of the sorted set, or 0 if the key doesn't exist.
     @inlinable
-    public func zcard(key: RedisKey) async throws -> Int {
+    public func zcard(key: RESPKey) async throws -> Int {
         try await send(command: ZCARD(key: key))
     }
 
@@ -1014,7 +1014,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the specified score range.
     @inlinable
-    public func zcount(key: RedisKey, min: Double, max: Double) async throws -> Int {
+    public func zcount(key: RESPKey, min: Double, max: Double) async throws -> Int {
         try await send(command: ZCOUNT(key: key, min: min, max: max))
     }
 
@@ -1026,7 +1026,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zdiff(key: [RedisKey], withscores: Bool = false) async throws -> [RESPToken] {
+    public func zdiff(key: [RESPKey], withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZDIFF(key: key, withscores: withscores))
     }
 
@@ -1038,7 +1038,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at _destination_.
     @inlinable
-    public func zdiffstore(destination: RedisKey, key: [RedisKey]) async throws -> Int {
+    public func zdiffstore(destination: RESPKey, key: [RESPKey]) async throws -> Int {
         try await send(command: ZDIFFSTORE(destination: destination, key: key))
     }
 
@@ -1050,7 +1050,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the new score of _member_.
     @inlinable
-    public func zincrby(key: RedisKey, increment: Int, member: String) async throws -> Double {
+    public func zincrby(key: RESPKey, increment: Int, member: String) async throws -> Double {
         try await send(command: ZINCRBY(key: key, increment: increment, member: member))
     }
 
@@ -1062,7 +1062,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(key: [RedisKey], weight: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zinter(key: [RESPKey], weight: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZINTER(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
     }
 
@@ -1074,7 +1074,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting intersection.
     @inlinable
-    public func zintercard(key: [RedisKey], limit: Int? = nil) async throws -> Int {
+    public func zintercard(key: [RESPKey], limit: Int? = nil) async throws -> Int {
         try await send(command: ZINTERCARD(key: key, limit: limit))
     }
 
@@ -1086,7 +1086,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
-    public func zinterstore(destination: RedisKey, key: [RedisKey], weight: [Int] = [], aggregate: ZINTERSTORE.Aggregate? = nil) async throws -> Int {
+    public func zinterstore(destination: RESPKey, key: [RESPKey], weight: [Int] = [], aggregate: ZINTERSTORE.Aggregate? = nil) async throws -> Int {
         try await send(command: ZINTERSTORE(destination: destination, key: key, weight: weight, aggregate: aggregate))
     }
 
@@ -1098,7 +1098,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members in the specified score range.
     @inlinable
-    public func zlexcount(key: RedisKey, min: String, max: String) async throws -> Int {
+    public func zlexcount(key: RESPKey, min: String, max: String) async throws -> Int {
         try await send(command: ZLEXCOUNT(key: key, min: min, max: max))
     }
 
@@ -1112,7 +1112,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): when no element could be popped.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func zmpop(key: [RedisKey], `where`: ZMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+    public func zmpop(key: [RESPKey], `where`: ZMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
         try await send(command: ZMPOP(key: key, where: `where`, count: count))
     }
 
@@ -1126,7 +1126,7 @@ extension RedisConnection {
     ///     * [Null](https:/redis.io/docs/reference/protocol-spec#nulls): if the member does not exist in the sorted set.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of [Double](https:/redis.io/docs/reference/protocol-spec#doubles) _member_ scores as double-precision floating point numbers.
     @inlinable
-    public func zmscore(key: RedisKey, member: [String]) async throws -> [RESPToken]? {
+    public func zmscore(key: RESPKey, member: [String]) async throws -> [RESPToken]? {
         try await send(command: ZMSCORE(key: key, member: member))
     }
 
@@ -1138,7 +1138,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of popped elements and scores.
     @inlinable
-    public func zpopmax(key: RedisKey, count: Int? = nil) async throws -> [RESPToken] {
+    public func zpopmax(key: RESPKey, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: ZPOPMAX(key: key, count: count))
     }
 
@@ -1150,7 +1150,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of popped elements and scores.
     @inlinable
-    public func zpopmin(key: RedisKey, count: Int? = nil) async throws -> [RESPToken] {
+    public func zpopmin(key: RESPKey, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: ZPOPMIN(key: key, count: count))
     }
 
@@ -1163,7 +1163,7 @@ extension RedisConnection {
     /// - Returns: [Bulk string](https:/redis.io/docs/reference/protocol-spec#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or [Null](https:/redis.io/docs/reference/protocol-spec#nulls) when _key_ doesn't exist.
     ///     [Array](https:/redis.io/docs/reference/protocol-spec#arrays): when the additional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist. If the _WITHSCORES_ modifier is used, the reply is a list of members and their scores from the sorted set.
     @inlinable
-    public func zrandmember(key: RedisKey, options: ZRANDMEMBER.Options? = nil) async throws -> RESPToken {
+    public func zrandmember(key: RESPKey, options: ZRANDMEMBER.Options? = nil) async throws -> RESPToken {
         try await send(command: ZRANDMEMBER(key: key, options: options))
     }
 
@@ -1175,7 +1175,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
-    public func zrange(key: RedisKey, start: String, stop: String, sortby: ZRANGE.Sortby? = nil, rev: Bool = false, limit: ZRANGE.Limit? = nil, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zrange(key: RESPKey, start: String, stop: String, sortby: ZRANGE.Sortby? = nil, rev: Bool = false, limit: ZRANGE.Limit? = nil, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZRANGE(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
     }
 
@@ -1187,7 +1187,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of elements in the specified score range.
     @inlinable
-    public func zrangebylex(key: RedisKey, min: String, max: String, limit: ZRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
+    public func zrangebylex(key: RESPKey, min: String, max: String, limit: ZRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYLEX(key: key, min: min, max: max, limit: limit))
     }
 
@@ -1199,7 +1199,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
-    public func zrangebyscore(key: RedisKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
+    public func zrangebyscore(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
     }
 
@@ -1211,7 +1211,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zrangestore(dst: RedisKey, src: RedisKey, min: String, max: String, sortby: ZRANGESTORE.Sortby? = nil, rev: Bool = false, limit: ZRANGESTORE.Limit? = nil) async throws -> Int {
+    public func zrangestore(dst: RESPKey, src: RESPKey, min: String, max: String, sortby: ZRANGESTORE.Sortby? = nil, rev: Bool = false, limit: ZRANGESTORE.Limit? = nil) async throws -> Int {
         try await send(command: ZRANGESTORE(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
     }
 
@@ -1226,7 +1226,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrank(key: RedisKey, member: String, withscore: Bool = false) async throws -> RESPToken {
+    public func zrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> RESPToken {
         try await send(command: ZRANK(key: key, member: member, withscore: withscore))
     }
 
@@ -1238,7 +1238,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of members removed from the sorted set, not including non-existing members.
     @inlinable
-    public func zrem(key: RedisKey, member: [String]) async throws -> Int {
+    public func zrem(key: RESPKey, member: [String]) async throws -> Int {
         try await send(command: ZREM(key: key, member: member))
     }
 
@@ -1250,7 +1250,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members removed.
     @inlinable
-    public func zremrangebylex(key: RedisKey, min: String, max: String) async throws -> Int {
+    public func zremrangebylex(key: RESPKey, min: String, max: String) async throws -> Int {
         try await send(command: ZREMRANGEBYLEX(key: key, min: min, max: max))
     }
 
@@ -1262,7 +1262,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members removed.
     @inlinable
-    public func zremrangebyrank(key: RedisKey, start: Int, stop: Int) async throws -> Int {
+    public func zremrangebyrank(key: RESPKey, start: Int, stop: Int) async throws -> Int {
         try await send(command: ZREMRANGEBYRANK(key: key, start: start, stop: stop))
     }
 
@@ -1274,7 +1274,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): Number of members removed.
     @inlinable
-    public func zremrangebyscore(key: RedisKey, min: Double, max: Double) async throws -> Int {
+    public func zremrangebyscore(key: RESPKey, min: Double, max: Double) async throws -> Int {
         try await send(command: ZREMRANGEBYSCORE(key: key, min: min, max: max))
     }
 
@@ -1286,7 +1286,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of members in the specified range, optionally with their scores if _WITHSCORE_ was used.
     @inlinable
-    public func zrevrange(key: RedisKey, start: Int, stop: Int, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zrevrange(key: RESPKey, start: Int, stop: Int, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZREVRANGE(key: key, start: start, stop: stop, withscores: withscores))
     }
 
@@ -1298,7 +1298,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): List of the elements in the specified score range.
     @inlinable
-    public func zrevrangebylex(key: RedisKey, max: String, min: String, limit: ZREVRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
+    public func zrevrangebylex(key: RESPKey, max: String, min: String, limit: ZREVRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYLEX(key: key, max: max, min: min, limit: limit))
     }
 
@@ -1310,7 +1310,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
-    public func zrevrangebyscore(key: RedisKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
+    public func zrevrangebyscore(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
     }
 
@@ -1325,7 +1325,7 @@ extension RedisConnection {
     ///     * [Integer](https:/redis.io/docs/reference/protocol-spec#integers): The rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/redis.io/docs/reference/protocol-spec#arrays): The rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrevrank(key: RedisKey, member: String, withscore: Bool = false) async throws -> RESPToken {
+    public func zrevrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> RESPToken {
         try await send(command: ZREVRANK(key: key, member: member, withscore: withscore))
     }
 
@@ -1337,7 +1337,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): cursor and scan response in array form.
     @inlinable
-    public func zscan(key: RedisKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
+    public func zscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
         try await send(command: ZSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 
@@ -1351,7 +1351,7 @@ extension RedisConnection {
     ///     * [Double](https:/redis.io/docs/reference/protocol-spec#doubles): the score of the member (a double-precision floating point number).
     ///     * [Nil](https:/redis.io/docs/reference/protocol-spec#bulk-strings): if _member_ does not exist in the sorted set, or the key does not exist.
     @inlinable
-    public func zscore(key: RedisKey, member: String) async throws -> Double? {
+    public func zscore(key: RESPKey, member: String) async throws -> Double? {
         try await send(command: ZSCORE(key: key, member: member))
     }
 
@@ -1363,7 +1363,7 @@ extension RedisConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/redis.io/docs/reference/protocol-spec#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public func zunion(key: [RedisKey], weight: [Int] = [], aggregate: ZUNION.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zunion(key: [RESPKey], weight: [Int] = [], aggregate: ZUNION.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZUNION(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
     }
 
@@ -1375,7 +1375,7 @@ extension RedisConnection {
     /// - Categories: @write, @sortedset, @slow
     /// - Returns: [Integer](https:/redis.io/docs/reference/protocol-spec#integers): the number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(destination: RedisKey, key: [RedisKey], weight: [Int] = [], aggregate: ZUNIONSTORE.Aggregate? = nil) async throws -> Int {
+    public func zunionstore(destination: RESPKey, key: [RESPKey], weight: [Int] = [], aggregate: ZUNIONSTORE.Aggregate? = nil) async throws -> Int {
         try await send(command: ZUNIONSTORE(destination: destination, key: key, weight: weight, aggregate: aggregate))
     }
 

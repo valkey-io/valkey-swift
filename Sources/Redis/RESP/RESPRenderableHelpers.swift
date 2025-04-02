@@ -15,7 +15,7 @@
 import NIOCore
 
 @usableFromInline
-package struct RedisPureToken: RESPRenderable {
+package struct RESPPureToken: RESPRenderable {
     @usableFromInline
     let token: String?
     @inlinable
@@ -27,7 +27,7 @@ package struct RedisPureToken: RESPRenderable {
         }
     }
     @inlinable
-    package func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    package func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         self.token.encode(into: &commandEncoder)
     }
 }
@@ -45,7 +45,7 @@ package struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
         self.token = token
     }
     @inlinable
-    package func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    package func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         if let value {
             let writerIndex = commandEncoder.writerIndex
             _ = self.token.encode(into: &commandEncoder)
@@ -71,7 +71,7 @@ package struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
         self.array = array
     }
     @inlinable
-    package func encode(into commandEncoder: inout RedisCommandEncoder) -> Int {
+    package func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
         _ = array.count.encode(into: &commandEncoder)
         let count = array.encode(into: &commandEncoder)
         return count + 1
