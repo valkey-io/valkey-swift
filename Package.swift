@@ -4,11 +4,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "swift-redis",
+    name: "swift-valkey",
     platforms: [.macOS(.v13)],
     products: [
-        .library(name: "Redis", targets: ["Redis"]),
-        .library(name: "RedisCommands", targets: ["RedisCommands"]),
+        .library(name: "Valkey", targets: ["Valkey"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
@@ -18,7 +17,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Redis",
+            name: "Valkey",
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
@@ -27,25 +26,18 @@ let package = Package(
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
             ]
         ),
-        .target(
-            name: "RedisCommands",
-            dependencies: [
-                "Redis",
-                .product(name: "NIOCore", package: "swift-nio"),
-            ]
-        ),
         .executableTarget(
-            name: "RedisCommandsBuilder",
+            name: "ValkeyCommandsBuilder",
             resources: [.process("Resources")]
         ),
         .testTarget(
-            name: "RedisTests",
-            dependencies: ["Redis", "RedisCommands"]
+            name: "ValkeyTests",
+            dependencies: ["Valkey"]
         ),
         .testTarget(
             name: "RESPTests",
             dependencies: [
-                "Redis",
+                "Valkey",
                 .product(name: "NIOTestUtils", package: "swift-nio"),
             ]
         ),
