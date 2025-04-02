@@ -14,11 +14,11 @@
 
 import Foundation
 import Logging
-import Redis
-import RedisCommands
 import Testing
+import Valkey
+import ValkeyCommands
 
-@testable import Redis
+@testable import Valkey
 
 struct GeneratedCommands {
     let redisHostname = ProcessInfo.processInfo.environment["REDIS_HOSTNAME"] ?? "localhost"
