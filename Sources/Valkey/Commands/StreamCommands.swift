@@ -215,6 +215,12 @@ public enum XINFO {
             @usableFromInline let full: Bool
             @usableFromInline let count: Int?
 
+
+            @inlinable public init(full: Bool = false, count: Int? = nil) {
+                self.full = full
+                self.count = count
+            }
+
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 var count = 0
@@ -291,6 +297,14 @@ public struct XADD: RESPCommand {
         @usableFromInline let threshold: String
         @usableFromInline let count: Int?
 
+
+        @inlinable public init(strategy: TrimStrategy, `operator`: TrimOperator? = nil, threshold: String, count: Int? = nil) {
+            self.strategy = strategy
+            self.`operator` = `operator`
+            self.threshold = threshold
+            self.count = count
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -316,6 +330,12 @@ public struct XADD: RESPCommand {
     public struct Data: RESPRenderable {
         @usableFromInline let field: String
         @usableFromInline let value: String
+
+
+        @inlinable public init(field: String, value: String) {
+            self.field = field
+            self.value = value
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -449,6 +469,15 @@ public struct XPENDING: RESPCommand {
         @usableFromInline let count: Int
         @usableFromInline let consumer: String?
 
+
+        @inlinable public init(minIdleTime: Int? = nil, start: String, end: String, count: Int, consumer: String? = nil) {
+            self.minIdleTime = minIdleTime
+            self.start = start
+            self.end = end
+            self.count = count
+            self.consumer = consumer
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -504,6 +533,12 @@ public struct XREAD: RESPCommand {
         @usableFromInline let key: [RESPKey]
         @usableFromInline let id: [String]
 
+
+        @inlinable public init(key: [RESPKey], id: [String]) {
+            self.key = key
+            self.id = id
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -535,6 +570,12 @@ public struct XREADGROUP: RESPCommand {
         @usableFromInline let group: String
         @usableFromInline let consumer: String
 
+
+        @inlinable public init(group: String, consumer: String) {
+            self.group = group
+            self.consumer = consumer
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -546,6 +587,12 @@ public struct XREADGROUP: RESPCommand {
     public struct Streams: RESPRenderable {
         @usableFromInline let key: [RESPKey]
         @usableFromInline let id: [String]
+
+
+        @inlinable public init(key: [RESPKey], id: [String]) {
+            self.key = key
+            self.id = id
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -649,6 +696,14 @@ public struct XTRIM: RESPCommand {
         @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: String
         @usableFromInline let count: Int?
+
+
+        @inlinable public init(strategy: TrimStrategy, `operator`: TrimOperator? = nil, threshold: String, count: Int? = nil) {
+            self.strategy = strategy
+            self.`operator` = `operator`
+            self.threshold = threshold
+            self.count = count
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {

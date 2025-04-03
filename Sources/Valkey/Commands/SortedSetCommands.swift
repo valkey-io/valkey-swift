@@ -119,6 +119,12 @@ public struct ZADD: RESPCommand {
         @usableFromInline let score: Double
         @usableFromInline let member: String
 
+
+        @inlinable public init(score: Double, member: String) {
+            self.score = score
+            self.member = member
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -431,6 +437,12 @@ public struct ZRANDMEMBER: RESPCommand {
         @usableFromInline let count: Int
         @usableFromInline let withscores: Bool
 
+
+        @inlinable public init(count: Int, withscores: Bool = false) {
+            self.count = count
+            self.withscores = withscores
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -472,6 +484,12 @@ public struct ZRANGE: RESPCommand {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
+
+        @inlinable public init(offset: Int, count: Int) {
+            self.offset = offset
+            self.count = count
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -511,6 +529,12 @@ public struct ZRANGEBYLEX: RESPCommand {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
+
+        @inlinable public init(offset: Int, count: Int) {
+            self.offset = offset
+            self.count = count
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -543,6 +567,12 @@ public struct ZRANGEBYSCORE: RESPCommand {
     public struct Limit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
+
+
+        @inlinable public init(offset: Int, count: Int) {
+            self.offset = offset
+            self.count = count
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -590,6 +620,12 @@ public struct ZRANGESTORE: RESPCommand {
     public struct Limit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
+
+
+        @inlinable public init(offset: Int, count: Int) {
+            self.offset = offset
+            self.count = count
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -744,6 +780,12 @@ public struct ZREVRANGEBYLEX: RESPCommand {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
+
+        @inlinable public init(offset: Int, count: Int) {
+            self.offset = offset
+            self.count = count
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -776,6 +818,12 @@ public struct ZREVRANGEBYSCORE: RESPCommand {
     public struct Limit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
+
+
+        @inlinable public init(offset: Int, count: Int) {
+            self.offset = offset
+            self.count = count
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {

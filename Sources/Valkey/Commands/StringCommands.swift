@@ -267,6 +267,12 @@ public struct MSET: RESPCommand {
         @usableFromInline let key: RESPKey
         @usableFromInline let value: String
 
+
+        @inlinable public init(key: RESPKey, value: String) {
+            self.key = key
+            self.value = value
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -293,6 +299,12 @@ public struct MSETNX: RESPCommand {
     public struct Data: RESPRenderable {
         @usableFromInline let key: RESPKey
         @usableFromInline let value: String
+
+
+        @inlinable public init(key: RESPKey, value: String) {
+            self.key = key
+            self.value = value
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
