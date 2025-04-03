@@ -13,10 +13,10 @@
 //===----------------------------------------------------------------------===//
 
 import Logging
-import NIOConcurrencyHelpers
 import NIOCore
 import NIOPosix
 import NIOSSL
+import Synchronization
 
 #if canImport(Network)
 import Network
@@ -42,12 +42,12 @@ public struct ServerAddress: Sendable, Equatable {
 }
 
 /// Single connection to a Valkey database
-public struct ValkeyConnection: Sendable {
+public final class ValkeyConnection: Sendable {
     /// Logger used by Server
     let logger: Logger
     let channel: Channel
     let configuration: ValkeyClientConfiguration
-    let isClosed: NIOLockedValueBox<Bool>
+    let isClosed: Atomic<Bool>
 
     /// Initialize Client
     private init(
@@ -66,7 +66,7 @@ public struct ValkeyConnection: Sendable {
         configuration: ValkeyClientConfiguration,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
-    ) async throws -> Self {
+    ) async throws -> ValkeyConnection {
         let channel = try await makeClient(address: address, eventLoopGroup: eventLoopGroup, configuration: configuration, logger: logger)
         let connection = ValkeyConnection(channel: channel, configuration: configuration, logger: logger)
         try await connection.resp3Upgrade()
@@ -74,7 +74,7 @@ public struct ValkeyConnection: Sendable {
     }
 
     public func close() -> EventLoopFuture<Void> {
-        if self.isClosed.withLockedValue({ $0 }) {
+        guard self.isClosed.compareExchange(expected: false, desired: true, successOrdering: .relaxed, failureOrdering: .relaxed).exchanged else {
             return channel.eventLoop.makeSucceededFuture(())
         }
         self.channel.close(mode: .all, promise: nil)
