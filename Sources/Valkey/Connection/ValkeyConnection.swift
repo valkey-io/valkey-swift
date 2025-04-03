@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import Logging
+import NIOConcurrencyHelpers
 import NIOCore
 import NIOPosix
 import NIOSSL
@@ -46,6 +47,7 @@ public struct ValkeyConnection: Sendable {
     let logger: Logger
     let channel: Channel
     let configuration: ValkeyClientConfiguration
+    let isClosed: NIOLockedValueBox<Bool>
 
     /// Initialize Client
     private init(
@@ -56,6 +58,7 @@ public struct ValkeyConnection: Sendable {
         self.channel = channel
         self.configuration = configuration
         self.logger = logger
+        self.isClosed = .init(false)
     }
 
     public static func connect(
@@ -68,6 +71,14 @@ public struct ValkeyConnection: Sendable {
         let connection = ValkeyConnection(channel: channel, configuration: configuration, logger: logger)
         try await connection.resp3Upgrade()
         return connection
+    }
+
+    public func close() -> EventLoopFuture<Void> {
+        if self.isClosed.withLockedValue({ $0 }) {
+            return channel.eventLoop.makeSucceededFuture(())
+        }
+        self.channel.close(mode: .all, promise: nil)
+        return self.channel.closeFuture
     }
 
     @discardableResult public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {

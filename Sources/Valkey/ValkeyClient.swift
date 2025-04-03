@@ -70,6 +70,14 @@ extension ValkeyClient {
             eventLoopGroup: self.eventLoopGroup,
             logger: logger
         )
-        return try await operation(valkeyConnection)
+        let value: Value
+        do {
+            value = try await operation(valkeyConnection)
+        } catch {
+            try? await valkeyConnection.close().get()
+            throw error
+        }
+        try await valkeyConnection.close().get()
+        return value
     }
 }
