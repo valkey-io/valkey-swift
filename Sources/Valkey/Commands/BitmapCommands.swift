@@ -41,6 +41,13 @@ public struct BITCOUNT: RESPCommand {
         @usableFromInline let end: Int
         @usableFromInline let unit: RangeUnit?
 
+
+        @inlinable public init(start: Int, end: Int, unit: RangeUnit? = nil) {
+            self.start = start
+            self.end = end
+            self.unit = unit
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -71,6 +78,12 @@ public struct BITFIELD: RESPCommand {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
+
+        @inlinable public init(encoding: String, offset: Int) {
+            self.encoding = encoding
+            self.offset = offset
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -98,6 +111,13 @@ public struct BITFIELD: RESPCommand {
         @usableFromInline let offset: Int
         @usableFromInline let value: Int
 
+
+        @inlinable public init(encoding: String, offset: Int, value: Int) {
+            self.encoding = encoding
+            self.offset = offset
+            self.value = value
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -111,6 +131,13 @@ public struct BITFIELD: RESPCommand {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let increment: Int
+
+
+        @inlinable public init(encoding: String, offset: Int, increment: Int) {
+            self.encoding = encoding
+            self.offset = offset
+            self.increment = increment
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -136,6 +163,12 @@ public struct BITFIELD: RESPCommand {
     public struct OperationWrite: RESPRenderable {
         @usableFromInline let overflowBlock: OperationWriteOverflowBlock?
         @usableFromInline let writeOperation: OperationWriteWriteOperation
+
+
+        @inlinable public init(overflowBlock: OperationWriteOverflowBlock? = nil, writeOperation: OperationWriteWriteOperation) {
+            self.overflowBlock = overflowBlock
+            self.writeOperation = writeOperation
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -177,6 +210,12 @@ public struct BITFIELDRO: RESPCommand {
     public struct GetBlock: RESPRenderable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
+
+
+        @inlinable public init(encoding: String, offset: Int) {
+            self.encoding = encoding
+            self.offset = offset
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -254,6 +293,12 @@ public struct BITPOS: RESPCommand {
         @usableFromInline let end: Int
         @usableFromInline let unit: RangeEndUnitBlockUnit?
 
+
+        @inlinable public init(end: Int, unit: RangeEndUnitBlockUnit? = nil) {
+            self.end = end
+            self.unit = unit
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -265,6 +310,12 @@ public struct BITPOS: RESPCommand {
     public struct Range: RESPRenderable {
         @usableFromInline let start: Int
         @usableFromInline let endUnitBlock: RangeEndUnitBlock?
+
+
+        @inlinable public init(start: Int, endUnitBlock: RangeEndUnitBlock? = nil) {
+            self.start = start
+            self.endUnitBlock = endUnitBlock
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {

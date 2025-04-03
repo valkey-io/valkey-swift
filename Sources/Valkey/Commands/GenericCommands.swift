@@ -283,6 +283,12 @@ public struct MIGRATE: RESPCommand {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
+
+        @inlinable public init(username: String, password: String) {
+            self.username = username
+            self.password = password
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -565,6 +571,12 @@ public struct SORT: RESPCommand {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
+
+        @inlinable public init(offset: Int, count: Int) {
+            self.offset = offset
+            self.count = count
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -615,6 +627,12 @@ public struct SORTRO: RESPCommand {
     public struct Limit: RESPRenderable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
+
+
+        @inlinable public init(offset: Int, count: Int) {
+            self.offset = offset
+            self.count = count
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {

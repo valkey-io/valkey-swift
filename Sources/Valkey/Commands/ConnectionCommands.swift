@@ -514,6 +514,12 @@ public struct HELLO: RESPCommand {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
+
+        @inlinable public init(username: String, password: String) {
+            self.username = username
+            self.password = password
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -526,6 +532,13 @@ public struct HELLO: RESPCommand {
         @usableFromInline let protover: Int
         @usableFromInline let auth: ArgumentsAuth?
         @usableFromInline let clientname: String?
+
+
+        @inlinable public init(protover: Int, auth: ArgumentsAuth? = nil, clientname: String? = nil) {
+            self.protover = protover
+            self.auth = auth
+            self.clientname = clientname
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {

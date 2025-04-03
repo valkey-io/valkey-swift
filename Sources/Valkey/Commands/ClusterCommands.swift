@@ -45,6 +45,12 @@ public enum CLUSTER {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
+
+            @inlinable public init(startSlot: Int, endSlot: Int) {
+                self.startSlot = startSlot
+                self.endSlot = endSlot
+            }
+
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 var count = 0
@@ -129,6 +135,12 @@ public enum CLUSTER {
         public struct Range: RESPRenderable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
+
+
+            @inlinable public init(startSlot: Int, endSlot: Int) {
+                self.startSlot = startSlot
+                self.endSlot = endSlot
+            }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {

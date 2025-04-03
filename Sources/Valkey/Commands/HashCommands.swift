@@ -179,6 +179,12 @@ public struct HMSET: RESPCommand {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
+
+        @inlinable public init(field: String, value: String) {
+            self.field = field
+            self.value = value
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -207,6 +213,12 @@ public struct HRANDFIELD: RESPCommand {
     public struct Options: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
+
+
+        @inlinable public init(count: Int, withvalues: Bool = false) {
+            self.count = count
+            self.withvalues = withvalues
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -257,6 +269,12 @@ public struct HSET: RESPCommand {
     public struct Data: RESPRenderable {
         @usableFromInline let field: String
         @usableFromInline let value: String
+
+
+        @inlinable public init(field: String, value: String) {
+            self.field = field
+            self.value = value
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {

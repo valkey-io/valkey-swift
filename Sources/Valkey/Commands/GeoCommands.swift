@@ -41,6 +41,13 @@ public struct GEOADD: RESPCommand {
         @usableFromInline let latitude: Double
         @usableFromInline let member: String
 
+
+        @inlinable public init(longitude: Double, latitude: Double, member: String) {
+            self.longitude = longitude
+            self.latitude = latitude
+            self.member = member
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -162,6 +169,12 @@ public struct GEORADIUS: RESPCommand {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
+
+        @inlinable public init(count: Int, any: Bool = false) {
+            self.count = count
+            self.any = any
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -249,6 +262,12 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
+
+        @inlinable public init(count: Int, any: Bool = false) {
+            self.count = count
+            self.any = any
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -334,6 +353,12 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
+
+        @inlinable public init(count: Int, any: Bool = false) {
+            self.count = count
+            self.any = any
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -405,6 +430,12 @@ public struct GEORADIUSRO: RESPCommand {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
+
+        @inlinable public init(count: Int, any: Bool = false) {
+            self.count = count
+            self.any = any
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -462,6 +493,12 @@ public struct GEOSEARCH: RESPCommand {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
+
+        @inlinable public init(longitude: Double, latitude: Double) {
+            self.longitude = longitude
+            self.latitude = latitude
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -502,6 +539,12 @@ public struct GEOSEARCH: RESPCommand {
         @usableFromInline let radius: Double
         @usableFromInline let unit: ByCircleUnit
 
+
+        @inlinable public init(radius: Double, unit: ByCircleUnit) {
+            self.radius = radius
+            self.unit = unit
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -530,6 +573,13 @@ public struct GEOSEARCH: RESPCommand {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
         @usableFromInline let unit: ByBoxUnit
+
+
+        @inlinable public init(width: Double, height: Double, unit: ByBoxUnit) {
+            self.width = width
+            self.height = height
+            self.unit = unit
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -567,6 +617,12 @@ public struct GEOSEARCH: RESPCommand {
     public struct CountBlock: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
+
+
+        @inlinable public init(count: Int, any: Bool = false) {
+            self.count = count
+            self.any = any
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -609,6 +665,12 @@ public struct GEOSEARCHSTORE: RESPCommand {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
+
+        @inlinable public init(longitude: Double, latitude: Double) {
+            self.longitude = longitude
+            self.latitude = latitude
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -649,6 +711,12 @@ public struct GEOSEARCHSTORE: RESPCommand {
         @usableFromInline let radius: Double
         @usableFromInline let unit: ByCircleUnit
 
+
+        @inlinable public init(radius: Double, unit: ByCircleUnit) {
+            self.radius = radius
+            self.unit = unit
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -677,6 +745,13 @@ public struct GEOSEARCHSTORE: RESPCommand {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
         @usableFromInline let unit: ByBoxUnit
+
+
+        @inlinable public init(width: Double, height: Double, unit: ByBoxUnit) {
+            self.width = width
+            self.height = height
+            self.unit = unit
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -714,6 +789,12 @@ public struct GEOSEARCHSTORE: RESPCommand {
     public struct CountBlock: RESPRenderable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
+
+
+        @inlinable public init(count: Int, any: Bool = false) {
+            self.count = count
+            self.any = any
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {

@@ -88,6 +88,15 @@ extension String {
             )
         }
         self.append("\n")
+        let commandParametersString =
+            arguments
+            .map { "\($0.name.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true))" }
+            .joined(separator: ", ")
+        self.append("\n\(tab)        @inlinable public init(\(commandParametersString)) {\n")
+        for arg in arguments {
+            self.append("\(tab)            self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
+        }
+        self.append("\(tab)        }\n\n")
         self.append("\(tab)        @inlinable\n")
         self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {\n")
         self.append("\(tab)            var count = 0\n")

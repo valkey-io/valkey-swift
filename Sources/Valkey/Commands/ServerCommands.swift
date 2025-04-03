@@ -411,6 +411,12 @@ public enum CONFIG {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
+
+            @inlinable public init(parameter: String, value: String) {
+                self.parameter = parameter
+                self.value = value
+            }
+
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 var count = 0
@@ -674,6 +680,12 @@ public enum MODULE {
             @usableFromInline let name: String
             @usableFromInline let value: String
 
+
+            @inlinable public init(name: String, value: String) {
+                self.name = name
+                self.value = value
+            }
+
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
                 var count = 0
@@ -834,6 +846,13 @@ public struct FAILOVER: RESPCommand {
         @usableFromInline let host: String
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
+
+
+        @inlinable public init(host: String, port: Int, force: Bool = false) {
+            self.host = host
+            self.port = port
+            self.force = force
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -1007,6 +1026,12 @@ public struct REPLICAOF: RESPCommand {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
+
+        @inlinable public init(host: String, port: Int) {
+            self.host = host
+            self.port = port
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -1018,6 +1043,12 @@ public struct REPLICAOF: RESPCommand {
     public struct ArgsNoOne: RESPRenderable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
+
+
+        @inlinable public init(no: Bool = false, one: Bool = false) {
+            self.no = no
+            self.one = one
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
@@ -1144,6 +1175,12 @@ public struct SLAVEOF: RESPCommand {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
+
+        @inlinable public init(host: String, port: Int) {
+            self.host = host
+            self.port = port
+        }
+
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
             var count = 0
@@ -1155,6 +1192,12 @@ public struct SLAVEOF: RESPCommand {
     public struct ArgsNoOne: RESPRenderable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
+
+
+        @inlinable public init(no: Bool = false, one: Bool = false) {
+            self.no = no
+            self.one = one
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
