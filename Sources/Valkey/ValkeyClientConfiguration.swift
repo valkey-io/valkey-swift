@@ -40,12 +40,14 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
+    /// Version of RESP protocol
     public var respVersion: RESPVersion
+    /// TLS setup
     public var tls: TLS
 
     ///  Initialize ValkeyClientConfiguration
     /// - Parameters
-    ///   - respVersion: RESP version to use
+    ///   - respVersion: RESP protocol version to use
     ///   - tlsConfiguration: TLS configuration
     public init(
         respVersion: RESPVersion = .v3,

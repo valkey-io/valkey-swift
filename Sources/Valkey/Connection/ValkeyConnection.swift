@@ -87,7 +87,9 @@ public final class ValkeyConnection: Sendable {
             logger: logger
         )
         let connection = ValkeyConnection(channel: channel, channelHandler: channelHandler, configuration: configuration, logger: logger)
-        try await connection.resp3Upgrade()
+        if configuration.respVersion == .v3 {
+            try await connection.resp3Upgrade()
+        }
         return connection
     }
 
@@ -103,8 +105,8 @@ public final class ValkeyConnection: Sendable {
 
     /// Send RESP command to Valkey connection
     /// - Parameter command: RESPCommand structure
-    /// - Returns: The command response as defined in the RESPCommand 
-    
+    /// - Returns: The command response as defined in the RESPCommand
+
     @inlinable
     public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
         var encoder = RESPCommandEncoder()
@@ -116,7 +118,7 @@ public final class ValkeyConnection: Sendable {
     }
 
     /// Pipeline a series of commands to Valkey connection
-    /// 
+    ///
     /// This function will only return once it has the results of all the commands sent
     /// - Parameter commands: Parameter pack of RESPCommands
     /// - Returns: Parameter pack holding the responses of all the commands
@@ -202,7 +204,10 @@ public final class ValkeyConnection: Sendable {
             if case .enable(let sslContext, let tlsServerName) = configuration.tls.base {
                 try channel.pipeline.syncOperations.addHandler(NIOSSLClientHandler(context: sslContext, serverHostname: tlsServerName))
             }
-            let valkeyChannelHandler = ValkeyChannelHandler(channel: channel, logger: logger)
+            let valkeyChannelHandler = ValkeyChannelHandler(
+                channel: channel,
+                logger: logger
+            )
             try channel.pipeline.syncOperations.addHandler(valkeyChannelHandler)
             return (channel, valkeyChannelHandler)
         }
