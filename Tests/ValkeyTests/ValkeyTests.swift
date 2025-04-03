@@ -171,6 +171,26 @@ struct GeneratedCommands {
         }
     }
 
+    @Test
+    func testMultiplexing() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                for _ in 0..<100 {
+                    group.addTask {
+                        try await withKey(connection: connection) { key in
+                            _ = try await connection.set(key: key, value: key.rawValue)
+                            let response = try await connection.get(key: key)
+                            #expect(response == key.rawValue)
+                        }
+                    }
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
     /*
     @Test
     func testSubscriptions() async throws {
