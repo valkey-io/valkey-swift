@@ -26,14 +26,14 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
     typealias OutboundOut = ByteBuffer
     typealias InboundIn = ByteBuffer
 
-    private let channel: Channel
+    private let eventLoop: EventLoop
     private var commands: Deque<EventLoopPromise<RESPToken>>
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private var context: ChannelHandlerContext?
     private let logger: Logger
 
     init(channel: Channel, logger: Logger) {
-        self.channel = channel
+        self.eventLoop = channel.eventLoop
         self.commands = .init()
         self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
         self.context = nil
@@ -45,7 +45,7 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
     ///   - request: Valkey command request
     ///   - promise: Promise to fulfill when command is complete
     func write(request: ValkeyRequest, promise: EventLoopPromise<Void>?) {
-        channel.eventLoop.execute {
+        eventLoop.execute {
             guard let context = self.context else {
                 preconditionFailure("Trying to use valkey connection before it is setup")
             }
