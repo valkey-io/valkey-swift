@@ -20,7 +20,7 @@ let package = Package(
         .target(
             name: "Valkey",
             dependencies: [
-                .product(name: "Collections", package: "swift-collections"),
+                .product(name: "DequeModule", package: "swift-collections"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),

@@ -12,12 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Collections
+import DequeModule
 import NIOCore
 
-struct ValkeyRequest: Sendable {
-    let buffer: ByteBuffer
-    let promise: EventLoopPromise<RESPToken>
+enum ValkeyRequest: Sendable {
+    case single(buffer: ByteBuffer, promise: EventLoopPromise<RESPToken>)
+    case multiple(buffer: ByteBuffer, promises: [EventLoopPromise<RESPToken>])
 }
 
 final class ValkeyCommandHandler: ChannelDuplexHandler {
@@ -33,8 +33,17 @@ final class ValkeyCommandHandler: ChannelDuplexHandler {
 
     func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
         let message = unwrapOutboundIn(data)
-        commands.append(message.promise)
-        context.writeAndFlush(wrapOutboundOut(message.buffer), promise: promise)
+        switch message {
+        case .single(let buffer, let tokenPromise):
+            commands.append(tokenPromise)
+            context.writeAndFlush(wrapOutboundOut(buffer), promise: promise)
+
+        case .multiple(let buffer, let tokenPromises):
+            for tokenPromise in tokenPromises {
+                commands.append(tokenPromise)
+            }
+            context.writeAndFlush(wrapOutboundOut(buffer), promise: promise)
+        }
     }
 
     func handlerRemoved(context: ChannelHandlerContext) {

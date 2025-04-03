@@ -75,40 +75,24 @@ public struct ValkeyConnection: Sendable {
         command.encode(into: &encoder)
 
         let promise = channel.eventLoop.makePromise(of: RESPToken.self)
-        channel.writeAndFlush(ValkeyRequest(buffer: encoder.buffer, promise: promise), promise: nil)
+        channel.writeAndFlush(ValkeyRequest.single(buffer: encoder.buffer, promise: promise), promise: nil)
         return try await .init(from: promise.futureResult.get())
     }
-    /*
+
     @discardableResult public func pipeline<each Command: RESPCommand>(
         _ commands: repeat each Command
     ) async throws -> (repeat (each Command).Response) {
-        var count = 0
+        // this currently allocates a promise for every command. We could collpase this down to one promise
+        var promises: [EventLoopPromise<RESPToken>] = []
         var encoder = RESPCommandEncoder()
         for command in repeat each commands {
             command.encode(into: &encoder)
-            count += 1
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
-
-        let response: Response = try await withCheckedThrowingContinuation { continuation in
-            switch requestContinuation.yield((.pipelinedCommands(encoder.buffer, count), continuation)) {
-            case .enqueued:
-                break
-            case .dropped, .terminated:
-                continuation.resume(
-                    throwing: ValkeyClientError(
-                        .connectionClosed,
-                        message: "Unable to enqueue request due to the connection being shutdown."
-                    )
-                )
-            default:
-                break
-            }
-        }
-        guard case .pipelinedResponse(let tokens) = response else { preconditionFailure("Expected a single response") }
-
+        channel.writeAndFlush(ValkeyRequest.multiple(buffer: encoder.buffer, promises: promises), promise: nil)
         var index = AutoIncrementingInteger()
-        return try (repeat (each Command).Response(from: tokens[index.next()].get()))
-    }*/
+        return try await (repeat (each Command).Response(from: promises[index.next()].futureResult.get()))
+    }
 
     /// Try to upgrade to RESP3
     private func resp3Upgrade() async throws {
@@ -220,6 +204,7 @@ extension ClientBootstrap: ClientBootstrapProtocol {}
 extension NIOTSConnectionBootstrap: ClientBootstrapProtocol {}
 #endif
 
+// Used in ValkeyConnection.pipeline
 private struct AutoIncrementingInteger {
     var value: Int = 0
     mutating func next() -> Int {
