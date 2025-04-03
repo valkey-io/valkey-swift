@@ -15,7 +15,7 @@
 import NIOCore
 
 /// Type representing a RESPKey
-public struct RESPKey: RawRepresentable {
+public struct RESPKey: RawRepresentable, Sendable {
     public var rawValue: String
 
     public init(rawValue: String) {
