@@ -2,7 +2,7 @@
 //
 // This source file is part of the swift-valkey project
 //
-// Copyright (c) 2024 the swift-valkey authors
+// Copyright (c) 2025 the swift-valkey authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
