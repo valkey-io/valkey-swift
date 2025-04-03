@@ -37,6 +37,12 @@ final class ValkeyCommandHandler: ChannelDuplexHandler {
         context.writeAndFlush(wrapOutboundOut(message.buffer), promise: promise)
     }
 
+    func handlerRemoved(context: ChannelHandlerContext) {
+        while let continuation = commands.popFirst() {
+            continuation.resume(throwing: ValkeyClientError.init(.connectionClosed))
+        }
+    }
+
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let token = self.unwrapInboundIn(data)
         guard let continuation = commands.popFirst() else {
