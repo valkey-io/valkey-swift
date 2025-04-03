@@ -88,7 +88,7 @@ struct GeneratedCommands {
             }
         }
     }
-
+    /*
     @Test
     func testPipelinedSetGet() async throws {
         var logger = Logger(label: "Valkey")
@@ -102,7 +102,7 @@ struct GeneratedCommands {
                 #expect(responses.1 == "Pipelined Hello")
             }
         }
-    }
+    }*/
 
     @Test
     func testSingleElementArray() async throws {

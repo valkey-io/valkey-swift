@@ -42,142 +42,41 @@ public struct ServerAddress: Sendable, Equatable {
 
 /// Single connection to a Valkey database
 public struct ValkeyConnection: Sendable {
-    enum Request {
-        case command(ByteBuffer)
-        case pipelinedCommands(ByteBuffer, Int)
-    }
-    enum Response {
-        case token(RESPToken)
-        case pipelinedResponse([Result<RESPToken, Error>])
-    }
-    typealias RequestStreamElement = (Request, CheckedContinuation<Response, Error>)
     /// Logger used by Server
     let logger: Logger
-    let eventLoopGroup: EventLoopGroup
+    let channel: Channel
     let configuration: ValkeyClientConfiguration
-    let address: ServerAddress
-    #if canImport(Network)
-    let tlsOptions: NWProtocolTLS.Options?
-    #endif
-
-    let requestStream: AsyncStream<RequestStreamElement>
-    let requestContinuation: AsyncStream<RequestStreamElement>.Continuation
 
     /// Initialize Client
-    public init(
+    private init(
+        channel: Channel,
+        configuration: ValkeyClientConfiguration,
+        logger: Logger
+    ) {
+        self.channel = channel
+        self.configuration = configuration
+        self.logger = logger
+    }
+
+    public static func connect(
         address: ServerAddress,
         configuration: ValkeyClientConfiguration,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
-    ) {
-        self.address = address
-        self.configuration = configuration
-        self.eventLoopGroup = eventLoopGroup
-        self.logger = logger
-        #if canImport(Network)
-        self.tlsOptions = nil
-        #endif
-        (self.requestStream, self.requestContinuation) = AsyncStream.makeStream(of: RequestStreamElement.self)
-    }
-
-    public func run() async throws {
-        let asyncChannel = try await self.makeClient(
-            address: self.address
-        )
-        do {
-            try await withTaskCancellationHandler {
-                try await asyncChannel.executeThenClose { inbound, outbound in
-                    var inboundIterator = inbound.makeAsyncIterator()
-                    if self.configuration.respVersion == .v3 {
-                        try await resp3Upgrade(outbound: outbound, inboundIterator: &inboundIterator)
-                    }
-                    for await (request, continuation) in requestStream {
-                        do {
-                            switch request {
-                            case .command(let command):
-                                try await outbound.write(command)
-                                let response = try await inboundIterator.next()
-                                if let response {
-                                    continuation.resume(returning: .token(response))
-                                } else {
-                                    requestContinuation.finish()
-                                    continuation.resume(
-                                        throwing: ValkeyClientError(
-                                            .connectionClosed,
-                                            message: "The connection to the database was unexpectedly closed."
-                                        )
-                                    )
-                                }
-                            case .pipelinedCommands(let commands, let count):
-                                try await outbound.write(commands)
-                                var responses: [Result<RESPToken, Error>] = .init()
-                                for _ in 0..<count {
-                                    do {
-                                        let response = try await inboundIterator.next()
-                                        if let response {
-                                            responses.append(.success(response))
-                                        } else {
-                                            requestContinuation.finish()
-                                            continuation.resume(
-                                                throwing: ValkeyClientError(
-                                                    .connectionClosed,
-                                                    message: "The connection to the database was unexpectedly closed."
-                                                )
-                                            )
-                                            return
-                                        }
-                                    } catch {
-                                        responses.append(.failure(error))
-                                    }
-                                }
-                                continuation.resume(returning: .pipelinedResponse(responses))
-                            }
-                        } catch {
-                            requestContinuation.finish()
-                            continuation.resume(
-                                throwing: ValkeyClientError(
-                                    .connectionClosed,
-                                    message: "The connection to the database has shut down while processing a request."
-                                )
-                            )
-                        }
-                    }
-                }
-            } onCancel: {
-                asyncChannel.channel.close(mode: .input, promise: nil)
-            }
-        } catch {
-            requestContinuation.finish()
-            for await (_, continuation) in requestStream {
-                continuation.resume(
-                    throwing: error
-                )
-            }
-        }
+    ) async throws -> Self {
+        let channel = try await makeClient(address: address, eventLoopGroup: eventLoopGroup, configuration: configuration, logger: logger)
+        return .init(channel: channel, configuration: configuration, logger: logger)
     }
 
     @discardableResult public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
         var encoder = RESPCommandEncoder()
         command.encode(into: &encoder)
-        let response: Response = try await withCheckedThrowingContinuation { continuation in
-            switch requestContinuation.yield((.command(encoder.buffer), continuation)) {
-            case .enqueued:
-                break
-            case .dropped, .terminated:
-                continuation.resume(
-                    throwing: ValkeyClientError(
-                        .connectionClosed,
-                        message: "Unable to enqueue request due to the connection being shutdown."
-                    )
-                )
-            default:
-                break
-            }
+        let response: RESPToken = try await withCheckedThrowingContinuation { continuation in
+            channel.writeAndFlush(ValkeyRequest(buffer: encoder.buffer, continuation: continuation), promise: nil)
         }
-        guard case .token(let token) = response else { preconditionFailure("Expected a single response") }
-        return try .init(from: token)
+        return try .init(from: response)
     }
-
+    /*
     @discardableResult public func pipeline<each Command: RESPCommand>(
         _ commands: repeat each Command
     ) async throws -> (repeat (each Command).Response) {
@@ -207,7 +106,7 @@ public struct ValkeyConnection: Sendable {
 
         var index = AutoIncrementingInteger()
         return try (repeat (each Command).Response(from: tokens[index.next()].get()))
-    }
+    }*/
 
     /// Try to upgrade to RESP3
     private func resp3Upgrade(
@@ -228,11 +127,16 @@ public struct ValkeyConnection: Sendable {
     }
 
     /// Connect to server
-    private func makeClient(address: ServerAddress) async throws -> NIOAsyncChannel<RESPToken, ByteBuffer> {
+    private static func makeClient(
+        address: ServerAddress,
+        eventLoopGroup: EventLoopGroup,
+        configuration: ValkeyClientConfiguration,
+        logger: Logger
+    ) async throws -> Channel {
         // get bootstrap
         let bootstrap: ClientBootstrapProtocol
         #if canImport(Network)
-        if let tsBootstrap = self.createTSBootstrap() {
+        if let tsBootstrap = createTSBootstrap(eventLoopGroup: eventLoopGroup, tlsOptions: nil) {
             bootstrap = tsBootstrap
         } else {
             #if os(iOS) || os(tvOS)
@@ -240,61 +144,63 @@ public struct ValkeyConnection: Sendable {
                 "Running BSD sockets on iOS or tvOS is not recommended. Please use NIOTSEventLoopGroup, to run with the Network framework"
             )
             #endif
-            bootstrap = self.createSocketsBootstrap()
+            bootstrap = self.createSocketsBootstrap(eventLoopGroup: eventLoopGroup)
         }
         #else
-        bootstrap = self.createSocketsBootstrap()
+        bootstrap = self.createSocketsBootstrap(eventLoopGroup: eventLoopGroup)
         #endif
 
         // connect
-        let result: NIOAsyncChannel<RESPToken, ByteBuffer>
+        let channel: Channel
         do {
             switch address.value {
             case .hostname(let host, let port):
-                result =
+                channel =
                     try await bootstrap
                     .connect(host: host, port: port) { channel in
-                        setupChannel(channel)
+                        setupChannel(channel, configuration: configuration)
                     }
-                self.logger.debug("Client connnected to \(host):\(port)")
+                logger.debug("Client connnected to \(host):\(port)")
             case .unixDomainSocket(let path):
-                result =
+                channel =
                     try await bootstrap
                     .connect(unixDomainSocketPath: path) { channel in
-                        setupChannel(channel)
+                        setupChannel(channel, configuration: configuration)
                     }
-                self.logger.debug("Client connnected to socket path \(path)")
+                logger.debug("Client connnected to socket path \(path)")
             }
-            return result
+            return channel
         } catch {
             throw error
         }
     }
 
-    private func setupChannel(_ channel: Channel) -> EventLoopFuture<NIOAsyncChannel<RESPToken, ByteBuffer>> {
+    private static func setupChannel(_ channel: Channel, configuration: ValkeyClientConfiguration) -> EventLoopFuture<Channel> {
         channel.eventLoop.makeCompletedFuture {
-            if case .enable(let sslContext, let tlsServerName) = self.configuration.tls.base {
+            if case .enable(let sslContext, let tlsServerName) = configuration.tls.base {
                 try channel.pipeline.syncOperations.addHandler(NIOSSLClientHandler(context: sslContext, serverHostname: tlsServerName))
             }
-            try channel.pipeline.syncOperations.addHandler(ByteToMessageHandler(RESPTokenDecoder()))
-            return try NIOAsyncChannel<RESPToken, ByteBuffer>(
-                wrappingChannelSynchronously: channel,
-                configuration: .init()
+            try channel.pipeline.syncOperations.addHandlers(
+                [
+                    ByteToMessageHandler(RESPTokenDecoder()),
+                    ValkeyCommandHandler(),
+                ]
             )
+            return channel
         }
     }
 
     /// create a BSD sockets based bootstrap
-    private func createSocketsBootstrap() -> ClientBootstrap {
-        ClientBootstrap(group: self.eventLoopGroup)
+    private static func createSocketsBootstrap(eventLoopGroup: EventLoopGroup) -> ClientBootstrap {
+        ClientBootstrap(group: eventLoopGroup)
             .channelOption(ChannelOptions.allowRemoteHalfClosure, value: true)
     }
 
     #if canImport(Network)
     /// create a NIOTransportServices bootstrap using Network.framework
-    private func createTSBootstrap() -> NIOTSConnectionBootstrap? {
+    private static func createTSBootstrap(eventLoopGroup: EventLoopGroup, tlsOptions: NWProtocolTLS.Options?) -> NIOTSConnectionBootstrap? {
         guard
-            let bootstrap = NIOTSConnectionBootstrap(validatingGroup: self.eventLoopGroup)?
+            let bootstrap = NIOTSConnectionBootstrap(validatingGroup: eventLoopGroup)?
                 .channelOption(ChannelOptions.allowRemoteHalfClosure, value: true)
         else {
             return nil
