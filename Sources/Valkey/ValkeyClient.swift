@@ -64,19 +64,20 @@ extension ValkeyClient {
         logger: Logger,
         operation: @escaping @Sendable (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
-        let valkeyConnection = ValkeyConnection(
+        let valkeyConnection = try await ValkeyConnection.connect(
             address: self.serverAddress,
             configuration: self.configuration,
             eventLoopGroup: self.eventLoopGroup,
             logger: logger
         )
-        return try await withThrowingTaskGroup(of: Void.self) { group in
-            group.addTask {
-                try await valkeyConnection.run()
-            }
-            let value: Value = try await operation(valkeyConnection)
-            group.cancelAll()
-            return value
+        let value: Value
+        do {
+            value = try await operation(valkeyConnection)
+        } catch {
+            try? await valkeyConnection.close().get()
+            throw error
         }
+        try await valkeyConnection.close().get()
+        return value
     }
 }
