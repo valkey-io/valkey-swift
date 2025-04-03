@@ -65,7 +65,9 @@ public struct ValkeyConnection: Sendable {
         logger: Logger
     ) async throws -> Self {
         let channel = try await makeClient(address: address, eventLoopGroup: eventLoopGroup, configuration: configuration, logger: logger)
-        return .init(channel: channel, configuration: configuration, logger: logger)
+        let connection = ValkeyConnection(channel: channel, configuration: configuration, logger: logger)
+        try await connection.resp3Upgrade()
+        return connection
     }
 
     @discardableResult public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
@@ -109,21 +111,8 @@ public struct ValkeyConnection: Sendable {
     }*/
 
     /// Try to upgrade to RESP3
-    private func resp3Upgrade(
-        outbound: NIOAsyncChannelOutboundWriter<ByteBuffer>,
-        inboundIterator: inout NIOAsyncChannelInboundStream<RESPToken>.AsyncIterator
-    ) async throws {
-        var encoder = RESPCommandEncoder()
-        encoder.encodeArray("HELLO", 3)
-        try await outbound.write(encoder.buffer)
-        let response = try await inboundIterator.next()
-        guard let response else {
-            throw ValkeyClientError(.connectionClosed, message: "The connection to the database was unexpectedly closed.")
-        }
-        // if returned value is an error then throw that error
-        if let value = response.errorString {
-            throw ValkeyClientError(.commandError, message: String(buffer: value))
-        }
+    private func resp3Upgrade() async throws {
+        try await send(command: HELLO(arguments: .init(protover: 3, auth: nil, clientname: nil)))
     }
 
     /// Connect to server
