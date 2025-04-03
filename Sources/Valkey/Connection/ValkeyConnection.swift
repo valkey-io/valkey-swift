@@ -45,7 +45,9 @@ public struct ServerAddress: Sendable, Equatable {
 public final class ValkeyConnection: Sendable {
     /// Logger used by Server
     let logger: Logger
+    @usableFromInline
     let channel: Channel
+    @usableFromInline
     let channelHandler: ValkeyChannelHandler
     let configuration: ValkeyClientConfiguration
     let isClosed: Atomic<Bool>
@@ -93,7 +95,7 @@ public final class ValkeyConnection: Sendable {
     /// - Returns: EventLoopFuture that is completed on connection closure
     public func close() -> EventLoopFuture<Void> {
         guard self.isClosed.compareExchange(expected: false, desired: true, successOrdering: .relaxed, failureOrdering: .relaxed).exchanged else {
-            return channel.eventLoop.makeSucceededFuture(())
+            return channel.eventLoop.makeSucceededVoidFuture()
         }
         self.channel.close(mode: .all, promise: nil)
         return self.channel.closeFuture
@@ -102,12 +104,14 @@ public final class ValkeyConnection: Sendable {
     /// Send RESP command to Valkey connection
     /// - Parameter command: RESPCommand structure
     /// - Returns: The command response as defined in the RESPCommand 
-    @discardableResult public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
+    
+    @inlinable
+    public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
         var encoder = RESPCommandEncoder()
         command.encode(into: &encoder)
 
         let promise = channel.eventLoop.makePromise(of: RESPToken.self)
-        channelHandler.write(request: ValkeyRequest.single(buffer: encoder.buffer, promise: promise), promise: nil)
+        channelHandler.write(request: ValkeyRequest.single(buffer: encoder.buffer, promise: promise))
         return try await .init(from: promise.futureResult.get())
     }
 
@@ -116,7 +120,8 @@ public final class ValkeyConnection: Sendable {
     /// This function will only return once it has the results of all the commands sent
     /// - Parameter commands: Parameter pack of RESPCommands
     /// - Returns: Parameter pack holding the responses of all the commands
-    @discardableResult public func pipeline<each Command: RESPCommand>(
+    @inlinable
+    public func pipeline<each Command: RESPCommand>(
         _ commands: repeat each Command
     ) async throws -> (repeat (each Command).Response) {
         // this currently allocates a promise for every command. We could collpase this down to one promise
@@ -127,7 +132,7 @@ public final class ValkeyConnection: Sendable {
             promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
         // write directly to channel handler
-        channelHandler.write(request: ValkeyRequest.multiple(buffer: encoder.buffer, promises: promises), promise: nil)
+        channelHandler.write(request: ValkeyRequest.multiple(buffer: encoder.buffer, promises: promises))
         // get response from channel handler
         var index = AutoIncrementingInteger()
         return try await (repeat (each Command).Response(from: promises[index.next()].futureResult.get()))
@@ -135,7 +140,7 @@ public final class ValkeyConnection: Sendable {
 
     /// Try to upgrade to RESP3
     private func resp3Upgrade() async throws {
-        try await send(command: HELLO(arguments: .init(protover: 3, auth: nil, clientname: nil)))
+        _ = try await send(command: HELLO(arguments: .init(protover: 3, auth: nil, clientname: nil)))
     }
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
@@ -245,8 +250,17 @@ extension NIOTSConnectionBootstrap: ClientBootstrapProtocol {}
 #endif
 
 // Used in ValkeyConnection.pipeline
-private struct AutoIncrementingInteger {
+@usableFromInline
+struct AutoIncrementingInteger {
+    @usableFromInline
     var value: Int = 0
+
+    @inlinable
+    init() {
+        self.value = 0
+    }
+
+    @inlinable
     mutating func next() -> Int {
         value += 1
         return value - 1

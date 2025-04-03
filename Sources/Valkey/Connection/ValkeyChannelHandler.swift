@@ -16,17 +16,23 @@ import DequeModule
 import Logging
 import NIOCore
 
+@usableFromInline
 enum ValkeyRequest: Sendable {
     case single(buffer: ByteBuffer, promise: EventLoopPromise<RESPToken>)
     case multiple(buffer: ByteBuffer, promises: [EventLoopPromise<RESPToken>])
 }
 
+@usableFromInline
 final class ValkeyChannelHandler: ChannelDuplexHandler {
+    @usableFromInline
     typealias OutboundIn = ValkeyRequest
+    @usableFromInline
     typealias OutboundOut = ByteBuffer
+    @usableFromInline
     typealias InboundIn = ByteBuffer
 
-    private let eventLoop: EventLoop
+    @usableFromInline
+    let eventLoop: EventLoop
     private var commands: Deque<EventLoopPromise<RESPToken>>
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private var context: ChannelHandlerContext?
@@ -44,29 +50,41 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
     /// - Parameters:
     ///   - request: Valkey command request
     ///   - promise: Promise to fulfill when command is complete
-    func write(request: ValkeyRequest, promise: EventLoopPromise<Void>?) {
-        eventLoop.execute {
-            guard let context = self.context else {
-                preconditionFailure("Trying to use valkey connection before it is setup")
-            }
-            switch request {
-            case .single(let buffer, let tokenPromise):
-                self.commands.append(tokenPromise)
-                context.writeAndFlush(self.wrapOutboundOut(buffer), promise: promise)
-
-            case .multiple(let buffer, let tokenPromises):
-                for tokenPromise in tokenPromises {
-                    self.commands.append(tokenPromise)
-                }
-                context.writeAndFlush(self.wrapOutboundOut(buffer), promise: promise)
+    @inlinable
+    func write(request: ValkeyRequest) {
+        if self.eventLoop.inEventLoop {
+            self._write(request: request)
+        } else {
+            eventLoop.execute {
+                self._write(request: request)
             }
         }
     }
 
+    @usableFromInline
+    func _write(request: ValkeyRequest) {
+        guard let context = self.context else {
+            preconditionFailure("Trying to use valkey connection before it is setup")
+        }
+        switch request {
+        case .single(let buffer, let tokenPromise):
+            self.commands.append(tokenPromise)
+            context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+
+        case .multiple(let buffer, let tokenPromises):
+            for tokenPromise in tokenPromises {
+                self.commands.append(tokenPromise)
+            }
+            context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+        }
+    }
+
+    @usableFromInline
     func handlerAdded(context: ChannelHandlerContext) {
         self.context = context
     }
 
+    @usableFromInline
     func handlerRemoved(context: ChannelHandlerContext) {
         self.context = nil
         while let promise = commands.popFirst() {
@@ -74,6 +92,7 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
         }
     }
 
+    @usableFromInline
     func channelInactive(context: ChannelHandlerContext) {
         do {
             try self.decoder.finishProcessing(seenEOF: true) { token in
@@ -88,6 +107,7 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
         self.logger.trace("Channel inactive.")
     }
 
+    @usableFromInline
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let buffer = self.unwrapInboundIn(data)
 
