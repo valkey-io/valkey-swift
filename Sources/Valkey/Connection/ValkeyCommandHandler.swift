@@ -17,7 +17,7 @@ import NIOCore
 
 struct ValkeyRequest: Sendable {
     let buffer: ByteBuffer
-    let continuation: CheckedContinuation<RESPToken, Error>
+    let promise: EventLoopPromise<RESPToken>
 }
 
 final class ValkeyCommandHandler: ChannelDuplexHandler {
@@ -25,7 +25,7 @@ final class ValkeyCommandHandler: ChannelDuplexHandler {
     typealias OutboundOut = ByteBuffer
     typealias InboundIn = RESPToken
 
-    var commands: Deque<CheckedContinuation<RESPToken, Error>>
+    var commands: Deque<EventLoopPromise<RESPToken>>
 
     init() {
         self.commands = .init()
@@ -33,21 +33,21 @@ final class ValkeyCommandHandler: ChannelDuplexHandler {
 
     func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
         let message = unwrapOutboundIn(data)
-        commands.append(message.continuation)
+        commands.append(message.promise)
         context.writeAndFlush(wrapOutboundOut(message.buffer), promise: promise)
     }
 
     func handlerRemoved(context: ChannelHandlerContext) {
-        while let continuation = commands.popFirst() {
-            continuation.resume(throwing: ValkeyClientError.init(.connectionClosed))
+        while let promise = commands.popFirst() {
+            promise.fail(ValkeyClientError.init(.connectionClosed))
         }
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let token = self.unwrapInboundIn(data)
-        guard let continuation = commands.popFirst() else {
+        guard let promise = commands.popFirst() else {
             preconditionFailure("Unexpected response")
         }
-        continuation.resume(returning: token)
+        promise.succeed(token)
     }
 }

@@ -71,10 +71,10 @@ public struct ValkeyConnection: Sendable {
     @discardableResult public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
         var encoder = RESPCommandEncoder()
         command.encode(into: &encoder)
-        let response: RESPToken = try await withCheckedThrowingContinuation { continuation in
-            channel.writeAndFlush(ValkeyRequest(buffer: encoder.buffer, continuation: continuation), promise: nil)
-        }
-        return try .init(from: response)
+
+        let promise = channel.eventLoop.makePromise(of: RESPToken.self)
+        channel.writeAndFlush(ValkeyRequest(buffer: encoder.buffer, promise: promise), promise: nil)
+        return try await .init(from: promise.futureResult.get())
     }
     /*
     @discardableResult public func pipeline<each Command: RESPCommand>(
