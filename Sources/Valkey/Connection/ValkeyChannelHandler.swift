@@ -26,32 +26,49 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
     typealias OutboundOut = ByteBuffer
     typealias InboundIn = ByteBuffer
 
+    private let channel: Channel
     private var commands: Deque<EventLoopPromise<RESPToken>>
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
+    private var context: ChannelHandlerContext?
     private let logger: Logger
 
-    init(logger: Logger) {
+    init(channel: Channel, logger: Logger) {
+        self.channel = channel
         self.commands = .init()
         self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
+        self.context = nil
         self.logger = logger
     }
 
-    func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
-        let message = unwrapOutboundIn(data)
-        switch message {
-        case .single(let buffer, let tokenPromise):
-            commands.append(tokenPromise)
-            context.writeAndFlush(wrapOutboundOut(buffer), promise: promise)
-
-        case .multiple(let buffer, let tokenPromises):
-            for tokenPromise in tokenPromises {
-                commands.append(tokenPromise)
+    /// Write valkey command/commands to channel
+    /// - Parameters:
+    ///   - request: Valkey command request
+    ///   - promise: Promise to fulfill when command is complete
+    func write(request: ValkeyRequest, promise: EventLoopPromise<Void>?) {
+        channel.eventLoop.execute {
+            guard let context = self.context else {
+                preconditionFailure("Trying to use valkey connection before it is setup")
             }
-            context.writeAndFlush(wrapOutboundOut(buffer), promise: promise)
+            switch request {
+            case .single(let buffer, let tokenPromise):
+                self.commands.append(tokenPromise)
+                context.writeAndFlush(self.wrapOutboundOut(buffer), promise: promise)
+
+            case .multiple(let buffer, let tokenPromises):
+                for tokenPromise in tokenPromises {
+                    self.commands.append(tokenPromise)
+                }
+                context.writeAndFlush(self.wrapOutboundOut(buffer), promise: promise)
+            }
         }
     }
 
+    func handlerAdded(context: ChannelHandlerContext) {
+        self.context = context
+    }
+
     func handlerRemoved(context: ChannelHandlerContext) {
+        self.context = nil
         while let promise = commands.popFirst() {
             promise.fail(ValkeyClientError.init(.connectionClosed))
         }
@@ -100,3 +117,7 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
         promise.fail(error)
     }
 }
+
+// The ValkeyChannelHandler needs to be Sendable so the ValkeyConnection can pass it
+// around at initialisation
+extension ValkeyChannelHandler: @unchecked Sendable {}

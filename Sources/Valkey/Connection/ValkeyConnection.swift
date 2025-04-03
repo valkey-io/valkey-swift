@@ -46,33 +46,51 @@ public final class ValkeyConnection: Sendable {
     /// Logger used by Server
     let logger: Logger
     let channel: Channel
+    let channelHandler: ValkeyChannelHandler
     let configuration: ValkeyClientConfiguration
     let isClosed: Atomic<Bool>
 
-    /// Initialize Client
+    /// Initialize connection
     private init(
         channel: Channel,
+        channelHandler: ValkeyChannelHandler,
         configuration: ValkeyClientConfiguration,
         logger: Logger
     ) {
         self.channel = channel
+        self.channelHandler = channelHandler
         self.configuration = configuration
         self.logger = logger
         self.isClosed = .init(false)
     }
 
+    /// Connect to Valkey database and return connection
+    ///
+    /// - Parameters:
+    ///   - address: Internet address of database
+    ///   - configuration: Configuration of Valkey connection
+    ///   - eventLoopGroup: EventLoopGroup to use
+    ///   - logger: Logger for connection
+    /// - Returns: ValkeyConnection
     public static func connect(
         address: ServerAddress,
         configuration: ValkeyClientConfiguration,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
     ) async throws -> ValkeyConnection {
-        let channel = try await makeClient(address: address, eventLoopGroup: eventLoopGroup, configuration: configuration, logger: logger)
-        let connection = ValkeyConnection(channel: channel, configuration: configuration, logger: logger)
+        let (channel, channelHandler) = try await makeClient(
+            address: address,
+            eventLoopGroup: eventLoopGroup,
+            configuration: configuration,
+            logger: logger
+        )
+        let connection = ValkeyConnection(channel: channel, channelHandler: channelHandler, configuration: configuration, logger: logger)
         try await connection.resp3Upgrade()
         return connection
     }
 
+    /// Close connection
+    /// - Returns: EventLoopFuture that is completed on connection closure
     public func close() -> EventLoopFuture<Void> {
         guard self.isClosed.compareExchange(expected: false, desired: true, successOrdering: .relaxed, failureOrdering: .relaxed).exchanged else {
             return channel.eventLoop.makeSucceededFuture(())
@@ -81,15 +99,23 @@ public final class ValkeyConnection: Sendable {
         return self.channel.closeFuture
     }
 
+    /// Send RESP command to Valkey connection
+    /// - Parameter command: RESPCommand structure
+    /// - Returns: The command response as defined in the RESPCommand 
     @discardableResult public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
         var encoder = RESPCommandEncoder()
         command.encode(into: &encoder)
 
         let promise = channel.eventLoop.makePromise(of: RESPToken.self)
-        channel.writeAndFlush(ValkeyRequest.single(buffer: encoder.buffer, promise: promise), promise: nil)
+        channelHandler.write(request: ValkeyRequest.single(buffer: encoder.buffer, promise: promise), promise: nil)
         return try await .init(from: promise.futureResult.get())
     }
 
+    /// Pipeline a series of commands to Valkey connection
+    /// 
+    /// This function will only return once it has the results of all the commands sent
+    /// - Parameter commands: Parameter pack of RESPCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
     @discardableResult public func pipeline<each Command: RESPCommand>(
         _ commands: repeat each Command
     ) async throws -> (repeat (each Command).Response) {
@@ -100,7 +126,9 @@ public final class ValkeyConnection: Sendable {
             command.encode(into: &encoder)
             promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
-        channel.writeAndFlush(ValkeyRequest.multiple(buffer: encoder.buffer, promises: promises), promise: nil)
+        // write directly to channel handler
+        channelHandler.write(request: ValkeyRequest.multiple(buffer: encoder.buffer, promises: promises), promise: nil)
+        // get response from channel handler
         var index = AutoIncrementingInteger()
         return try await (repeat (each Command).Response(from: promises[index.next()].futureResult.get()))
     }
@@ -110,13 +138,13 @@ public final class ValkeyConnection: Sendable {
         try await send(command: HELLO(arguments: .init(protover: 3, auth: nil, clientname: nil)))
     }
 
-    /// Connect to server
+    /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
     private static func makeClient(
         address: ServerAddress,
         eventLoopGroup: EventLoopGroup,
         configuration: ValkeyClientConfiguration,
         logger: Logger
-    ) async throws -> Channel {
+    ) async throws -> (Channel, ValkeyChannelHandler) {
         // get bootstrap
         let bootstrap: ClientBootstrapProtocol
         #if canImport(Network)
@@ -136,26 +164,25 @@ public final class ValkeyConnection: Sendable {
 
         // connect
         let channel: Channel
+        let channelHandler: ValkeyChannelHandler
         do {
             switch address.value {
             case .hostname(let host, let port):
-                channel =
+                (channel, channelHandler) =
                     try await bootstrap
                     .connect(host: host, port: port) { channel in
-                        let valkeyChannelHandler = ValkeyChannelHandler(logger: logger)
-                        return setupChannel(channel, configuration: configuration, valkeyChannelHandler: valkeyChannelHandler)
+                        setupChannel(channel, configuration: configuration, logger: logger)
                     }
                 logger.debug("Client connnected to \(host):\(port)")
             case .unixDomainSocket(let path):
-                channel =
+                (channel, channelHandler) =
                     try await bootstrap
                     .connect(unixDomainSocketPath: path) { channel in
-                        let valkeyChannelHandler = ValkeyChannelHandler(logger: logger)
-                        return setupChannel(channel, configuration: configuration, valkeyChannelHandler: valkeyChannelHandler)
+                        setupChannel(channel, configuration: configuration, logger: logger)
                     }
                 logger.debug("Client connnected to socket path \(path)")
             }
-            return channel
+            return (channel, channelHandler)
         } catch {
             throw error
         }
@@ -164,14 +191,15 @@ public final class ValkeyConnection: Sendable {
     private static func setupChannel(
         _ channel: Channel,
         configuration: ValkeyClientConfiguration,
-        valkeyChannelHandler: ValkeyChannelHandler
-    ) -> EventLoopFuture<Channel> {
+        logger: Logger
+    ) -> EventLoopFuture<(Channel, ValkeyChannelHandler)> {
         channel.eventLoop.makeCompletedFuture {
             if case .enable(let sslContext, let tlsServerName) = configuration.tls.base {
                 try channel.pipeline.syncOperations.addHandler(NIOSSLClientHandler(context: sslContext, serverHostname: tlsServerName))
             }
+            let valkeyChannelHandler = ValkeyChannelHandler(channel: channel, logger: logger)
             try channel.pipeline.syncOperations.addHandler(valkeyChannelHandler)
-            return channel
+            return (channel, valkeyChannelHandler)
         }
     }
 
