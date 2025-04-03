@@ -131,14 +131,16 @@ public struct ValkeyConnection: Sendable {
                 channel =
                     try await bootstrap
                     .connect(host: host, port: port) { channel in
-                        setupChannel(channel, configuration: configuration)
+                        let valkeyChannelHandler = ValkeyChannelHandler(logger: logger)
+                        return setupChannel(channel, configuration: configuration, valkeyChannelHandler: valkeyChannelHandler)
                     }
                 logger.debug("Client connnected to \(host):\(port)")
             case .unixDomainSocket(let path):
                 channel =
                     try await bootstrap
                     .connect(unixDomainSocketPath: path) { channel in
-                        setupChannel(channel, configuration: configuration)
+                        let valkeyChannelHandler = ValkeyChannelHandler(logger: logger)
+                        return setupChannel(channel, configuration: configuration, valkeyChannelHandler: valkeyChannelHandler)
                     }
                 logger.debug("Client connnected to socket path \(path)")
             }
@@ -148,17 +150,16 @@ public struct ValkeyConnection: Sendable {
         }
     }
 
-    private static func setupChannel(_ channel: Channel, configuration: ValkeyClientConfiguration) -> EventLoopFuture<Channel> {
+    private static func setupChannel(
+        _ channel: Channel,
+        configuration: ValkeyClientConfiguration,
+        valkeyChannelHandler: ValkeyChannelHandler
+    ) -> EventLoopFuture<Channel> {
         channel.eventLoop.makeCompletedFuture {
             if case .enable(let sslContext, let tlsServerName) = configuration.tls.base {
                 try channel.pipeline.syncOperations.addHandler(NIOSSLClientHandler(context: sslContext, serverHostname: tlsServerName))
             }
-            try channel.pipeline.syncOperations.addHandlers(
-                [
-                    ByteToMessageHandler(RESPTokenDecoder()),
-                    ValkeyCommandHandler(),
-                ]
-            )
+            try channel.pipeline.syncOperations.addHandler(valkeyChannelHandler)
             return channel
         }
     }

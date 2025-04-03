@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import DequeModule
+import Logging
 import NIOCore
 
 enum ValkeyRequest: Sendable {
@@ -20,15 +21,19 @@ enum ValkeyRequest: Sendable {
     case multiple(buffer: ByteBuffer, promises: [EventLoopPromise<RESPToken>])
 }
 
-final class ValkeyCommandHandler: ChannelDuplexHandler {
+final class ValkeyChannelHandler: ChannelDuplexHandler {
     typealias OutboundIn = ValkeyRequest
     typealias OutboundOut = ByteBuffer
-    typealias InboundIn = RESPToken
+    typealias InboundIn = ByteBuffer
 
-    var commands: Deque<EventLoopPromise<RESPToken>>
+    private var commands: Deque<EventLoopPromise<RESPToken>>
+    private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
+    private let logger: Logger
 
-    init() {
+    init(logger: Logger) {
         self.commands = .init()
+        self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
+        self.logger = logger
     }
 
     func write(context: ChannelHandlerContext, data: NIOAny, promise: EventLoopPromise<Void>?) {
@@ -52,11 +57,46 @@ final class ValkeyCommandHandler: ChannelDuplexHandler {
         }
     }
 
+    func channelInactive(context: ChannelHandlerContext) {
+        do {
+            try self.decoder.finishProcessing(seenEOF: true) { token in
+                self.handleToken(context: context, token: token)
+            }
+        } catch let error as RESPParsingError {
+            self.handleError(context: context, error: error)
+        } catch {
+            preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
+        }
+
+        self.logger.trace("Channel inactive.")
+    }
+
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        let token = self.unwrapInboundIn(data)
+        let buffer = self.unwrapInboundIn(data)
+
+        do {
+            try self.decoder.process(buffer: buffer) { token in
+                self.handleToken(context: context, token: token)
+            }
+        } catch let error as RESPParsingError {
+            self.handleError(context: context, error: error)
+        } catch {
+            preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
+        }
+    }
+
+    func handleToken(context: ChannelHandlerContext, token: RESPToken) {
         guard let promise = commands.popFirst() else {
             preconditionFailure("Unexpected response")
         }
         promise.succeed(token)
+    }
+
+    func handleError(context: ChannelHandlerContext, error: Error) {
+        self.logger.debug("ValkeyCommandHandler: ERROR \(error)")
+        guard let promise = commands.popFirst() else {
+            preconditionFailure("Unexpected response")
+        }
+        promise.fail(error)
     }
 }
