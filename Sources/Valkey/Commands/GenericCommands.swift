@@ -167,7 +167,7 @@ public struct EXISTS: RESPCommand {
 
 /// Sets the expiration time of a key in seconds.
 public struct EXPIRE: RESPCommand {
-    public enum Condition: RESPRenderable {
+    public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
         case gt
@@ -202,7 +202,7 @@ public struct EXPIRE: RESPCommand {
 
 /// Sets the expiration time of a key to a Unix timestamp.
 public struct EXPIREAT: RESPCommand {
-    public enum Condition: RESPRenderable {
+    public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
         case gt
@@ -267,7 +267,7 @@ public struct KEYS: RESPCommand {
 
 /// Atomically transfers a key from one Valkey instance to another.
 public struct MIGRATE: RESPCommand {
-    public enum KeySelector: RESPRenderable {
+    public enum KeySelector: RESPRenderable, Sendable {
         case key(RESPKey)
         case emptyString
 
@@ -279,7 +279,7 @@ public struct MIGRATE: RESPCommand {
             }
         }
     }
-    public struct AuthenticationAuth2: RESPRenderable {
+    public struct AuthenticationAuth2: RESPRenderable, Sendable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -297,7 +297,7 @@ public struct MIGRATE: RESPCommand {
             return count
         }
     }
-    public enum Authentication: RESPRenderable {
+    public enum Authentication: RESPRenderable, Sendable {
         case auth(String)
         case auth2(AuthenticationAuth2)
 
@@ -372,7 +372,7 @@ public struct PERSIST: RESPCommand {
 
 /// Sets the expiration time of a key in milliseconds.
 public struct PEXPIRE: RESPCommand {
-    public enum Condition: RESPRenderable {
+    public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
         case gt
@@ -407,7 +407,7 @@ public struct PEXPIRE: RESPCommand {
 
 /// Sets the expiration time of a key to a Unix milliseconds timestamp.
 public struct PEXPIREAT: RESPCommand {
-    public enum Condition: RESPRenderable {
+    public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
         case gt
@@ -567,7 +567,7 @@ public struct SCAN: RESPCommand {
 
 /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
 public struct SORT: RESPCommand {
-    public struct Limit: RESPRenderable {
+    public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -585,7 +585,7 @@ public struct SORT: RESPCommand {
             return count
         }
     }
-    public enum Order: RESPRenderable {
+    public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
@@ -624,7 +624,7 @@ public struct SORT: RESPCommand {
 
 /// Returns the sorted elements of a list, a set, or a sorted set.
 public struct SORTRO: RESPCommand {
-    public struct Limit: RESPRenderable {
+    public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -642,7 +642,7 @@ public struct SORTRO: RESPCommand {
             return count
         }
     }
-    public enum Order: RESPRenderable {
+    public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 

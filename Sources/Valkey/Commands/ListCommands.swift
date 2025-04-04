@@ -24,7 +24,7 @@ import Foundation
 
 /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
 public struct BLMOVE: RESPCommand {
-    public enum Wherefrom: RESPRenderable {
+    public enum Wherefrom: RESPRenderable, Sendable {
         case left
         case right
 
@@ -36,7 +36,7 @@ public struct BLMOVE: RESPCommand {
             }
         }
     }
-    public enum Whereto: RESPRenderable {
+    public enum Whereto: RESPRenderable, Sendable {
         case left
         case right
 
@@ -71,7 +71,7 @@ public struct BLMOVE: RESPCommand {
 
 /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
 public struct BLMPOP: RESPCommand {
-    public enum Where: RESPRenderable {
+    public enum Where: RESPRenderable, Sendable {
         case left
         case right
 
@@ -174,7 +174,7 @@ public struct LINDEX: RESPCommand {
 
 /// Inserts an element before or after another element in a list.
 public struct LINSERT: RESPCommand {
-    public enum Where: RESPRenderable {
+    public enum Where: RESPRenderable, Sendable {
         case before
         case after
 
@@ -222,7 +222,7 @@ public struct LLEN: RESPCommand {
 
 /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
 public struct LMOVE: RESPCommand {
-    public enum Wherefrom: RESPRenderable {
+    public enum Wherefrom: RESPRenderable, Sendable {
         case left
         case right
 
@@ -234,7 +234,7 @@ public struct LMOVE: RESPCommand {
             }
         }
     }
-    public enum Whereto: RESPRenderable {
+    public enum Whereto: RESPRenderable, Sendable {
         case left
         case right
 
@@ -267,7 +267,7 @@ public struct LMOVE: RESPCommand {
 
 /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
 public struct LMPOP: RESPCommand {
-    public enum Where: RESPRenderable {
+    public enum Where: RESPRenderable, Sendable {
         case left
         case right
 

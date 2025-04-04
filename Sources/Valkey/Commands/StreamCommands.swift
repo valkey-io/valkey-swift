@@ -26,7 +26,7 @@ import Foundation
 public enum XGROUP {
     /// Creates a consumer group.
     public struct CREATE: RESPCommand {
-        public enum IdSelector: RESPRenderable {
+        public enum IdSelector: RESPRenderable, Sendable {
             case id(String)
             case newId
 
@@ -129,7 +129,7 @@ public enum XGROUP {
 
     /// Sets the last-delivered ID of a consumer group.
     public struct SETID: RESPCommand {
-        public enum IdSelector: RESPRenderable {
+        public enum IdSelector: RESPRenderable, Sendable {
             case id(String)
             case newId
 
@@ -211,7 +211,7 @@ public enum XINFO {
 
     /// Returns information about a stream.
     public struct STREAM: RESPCommand {
-        public struct FullBlock: RESPRenderable {
+        public struct FullBlock: RESPRenderable, Sendable {
             @usableFromInline let full: Bool
             @usableFromInline let count: Int?
 
@@ -267,7 +267,7 @@ public struct XACK: RESPCommand {
 
 /// Appends a new message to a stream. Creates the key if it doesn't exist.
 public struct XADD: RESPCommand {
-    public enum TrimStrategy: RESPRenderable {
+    public enum TrimStrategy: RESPRenderable, Sendable {
         case maxlen
         case minid
 
@@ -279,7 +279,7 @@ public struct XADD: RESPCommand {
             }
         }
     }
-    public enum TrimOperator: RESPRenderable {
+    public enum TrimOperator: RESPRenderable, Sendable {
         case equal
         case approximately
 
@@ -291,7 +291,7 @@ public struct XADD: RESPCommand {
             }
         }
     }
-    public struct Trim: RESPRenderable {
+    public struct Trim: RESPRenderable, Sendable {
         @usableFromInline let strategy: TrimStrategy
         @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: String
@@ -315,7 +315,7 @@ public struct XADD: RESPCommand {
             return count
         }
     }
-    public enum IdSelector: RESPRenderable {
+    public enum IdSelector: RESPRenderable, Sendable {
         case autoId
         case id(String)
 
@@ -327,7 +327,7 @@ public struct XADD: RESPCommand {
             }
         }
     }
-    public struct Data: RESPRenderable {
+    public struct Data: RESPRenderable, Sendable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
@@ -462,7 +462,7 @@ public struct XLEN: RESPCommand {
 
 /// Returns the information and entries from a stream consumer group's pending entries list.
 public struct XPENDING: RESPCommand {
-    public struct Filters: RESPRenderable {
+    public struct Filters: RESPRenderable, Sendable {
         @usableFromInline let minIdleTime: Int?
         @usableFromInline let start: String
         @usableFromInline let end: String
@@ -529,7 +529,7 @@ public struct XRANGE: RESPCommand {
 
 /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
 public struct XREAD: RESPCommand {
-    public struct Streams: RESPRenderable {
+    public struct Streams: RESPRenderable, Sendable {
         @usableFromInline let key: [RESPKey]
         @usableFromInline let id: [String]
 
@@ -566,7 +566,7 @@ public struct XREAD: RESPCommand {
 
 /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
 public struct XREADGROUP: RESPCommand {
-    public struct GroupBlock: RESPRenderable {
+    public struct GroupBlock: RESPRenderable, Sendable {
         @usableFromInline let group: String
         @usableFromInline let consumer: String
 
@@ -584,7 +584,7 @@ public struct XREADGROUP: RESPCommand {
             return count
         }
     }
-    public struct Streams: RESPRenderable {
+    public struct Streams: RESPRenderable, Sendable {
         @usableFromInline let key: [RESPKey]
         @usableFromInline let id: [String]
 
@@ -667,7 +667,7 @@ public struct XSETID: RESPCommand {
 
 /// Deletes messages from the beginning of a stream.
 public struct XTRIM: RESPCommand {
-    public enum TrimStrategy: RESPRenderable {
+    public enum TrimStrategy: RESPRenderable, Sendable {
         case maxlen
         case minid
 
@@ -679,7 +679,7 @@ public struct XTRIM: RESPCommand {
             }
         }
     }
-    public enum TrimOperator: RESPRenderable {
+    public enum TrimOperator: RESPRenderable, Sendable {
         case equal
         case approximately
 
@@ -691,7 +691,7 @@ public struct XTRIM: RESPCommand {
             }
         }
     }
-    public struct Trim: RESPRenderable {
+    public struct Trim: RESPRenderable, Sendable {
         @usableFromInline let strategy: TrimStrategy
         @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: String

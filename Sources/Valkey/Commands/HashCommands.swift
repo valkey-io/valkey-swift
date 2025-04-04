@@ -175,7 +175,7 @@ public struct HMGET: RESPCommand {
 
 /// Sets the values of multiple fields.
 public struct HMSET: RESPCommand {
-    public struct Data: RESPRenderable {
+    public struct Data: RESPRenderable, Sendable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 
@@ -210,7 +210,7 @@ public struct HMSET: RESPCommand {
 
 /// Returns one or more random fields from a hash.
 public struct HRANDFIELD: RESPCommand {
-    public struct Options: RESPRenderable {
+    public struct Options: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
 
@@ -266,7 +266,7 @@ public struct HSCAN: RESPCommand {
 
 /// Creates or modifies the value of a field in a hash.
 public struct HSET: RESPCommand {
-    public struct Data: RESPRenderable {
+    public struct Data: RESPRenderable, Sendable {
         @usableFromInline let field: String
         @usableFromInline let value: String
 

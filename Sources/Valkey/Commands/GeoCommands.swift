@@ -24,7 +24,7 @@ import Foundation
 
 /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
 public struct GEOADD: RESPCommand {
-    public enum Condition: RESPRenderable {
+    public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
 
@@ -36,7 +36,7 @@ public struct GEOADD: RESPCommand {
             }
         }
     }
-    public struct Data: RESPRenderable {
+    public struct Data: RESPRenderable, Sendable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
         @usableFromInline let member: String
@@ -78,7 +78,7 @@ public struct GEOADD: RESPCommand {
 
 /// Returns the distance between two members of a geospatial index.
 public struct GEODIST: RESPCommand {
-    public enum Unit: RESPRenderable {
+    public enum Unit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -149,7 +149,7 @@ public struct GEOPOS: RESPCommand {
 
 /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
 public struct GEORADIUS: RESPCommand {
-    public enum Unit: RESPRenderable {
+    public enum Unit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -165,7 +165,7 @@ public struct GEORADIUS: RESPCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable {
+    public struct CountBlock: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -183,7 +183,7 @@ public struct GEORADIUS: RESPCommand {
             return count
         }
     }
-    public enum Order: RESPRenderable {
+    public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
@@ -195,7 +195,7 @@ public struct GEORADIUS: RESPCommand {
             }
         }
     }
-    public enum Store: RESPRenderable {
+    public enum Store: RESPRenderable, Sendable {
         case storekey(RESPKey)
         case storedistkey(RESPKey)
 
@@ -242,7 +242,7 @@ public struct GEORADIUS: RESPCommand {
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
 public struct GEORADIUSBYMEMBER: RESPCommand {
-    public enum Unit: RESPRenderable {
+    public enum Unit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -258,7 +258,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable {
+    public struct CountBlock: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -276,7 +276,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
             return count
         }
     }
-    public enum Order: RESPRenderable {
+    public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
@@ -288,7 +288,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
             }
         }
     }
-    public enum Store: RESPRenderable {
+    public enum Store: RESPRenderable, Sendable {
         case storekey(RESPKey)
         case storedistkey(RESPKey)
 
@@ -333,7 +333,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
 
 /// Returns members from a geospatial index that are within a distance from a member.
 public struct GEORADIUSBYMEMBERRO: RESPCommand {
-    public enum Unit: RESPRenderable {
+    public enum Unit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -349,7 +349,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable {
+    public struct CountBlock: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -367,7 +367,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
             return count
         }
     }
-    public enum Order: RESPRenderable {
+    public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
@@ -410,7 +410,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
 
 /// Returns members from a geospatial index that are within a distance from a coordinate.
 public struct GEORADIUSRO: RESPCommand {
-    public enum Unit: RESPRenderable {
+    public enum Unit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -426,7 +426,7 @@ public struct GEORADIUSRO: RESPCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable {
+    public struct CountBlock: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -444,7 +444,7 @@ public struct GEORADIUSRO: RESPCommand {
             return count
         }
     }
-    public enum Order: RESPRenderable {
+    public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
@@ -489,7 +489,7 @@ public struct GEORADIUSRO: RESPCommand {
 
 /// Queries a geospatial index for members inside an area of a box or a circle.
 public struct GEOSEARCH: RESPCommand {
-    public struct FromFromlonlat: RESPRenderable {
+    public struct FromFromlonlat: RESPRenderable, Sendable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
@@ -507,7 +507,7 @@ public struct GEOSEARCH: RESPCommand {
             return count
         }
     }
-    public enum From: RESPRenderable {
+    public enum From: RESPRenderable, Sendable {
         case member(String)
         case fromlonlat(FromFromlonlat)
 
@@ -519,7 +519,7 @@ public struct GEOSEARCH: RESPCommand {
             }
         }
     }
-    public enum ByCircleUnit: RESPRenderable {
+    public enum ByCircleUnit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -535,7 +535,7 @@ public struct GEOSEARCH: RESPCommand {
             }
         }
     }
-    public struct ByCircle: RESPRenderable {
+    public struct ByCircle: RESPRenderable, Sendable {
         @usableFromInline let radius: Double
         @usableFromInline let unit: ByCircleUnit
 
@@ -553,7 +553,7 @@ public struct GEOSEARCH: RESPCommand {
             return count
         }
     }
-    public enum ByBoxUnit: RESPRenderable {
+    public enum ByBoxUnit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -569,7 +569,7 @@ public struct GEOSEARCH: RESPCommand {
             }
         }
     }
-    public struct ByBox: RESPRenderable {
+    public struct ByBox: RESPRenderable, Sendable {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
         @usableFromInline let unit: ByBoxUnit
@@ -590,7 +590,7 @@ public struct GEOSEARCH: RESPCommand {
             return count
         }
     }
-    public enum By: RESPRenderable {
+    public enum By: RESPRenderable, Sendable {
         case circle(ByCircle)
         case box(ByBox)
 
@@ -602,7 +602,7 @@ public struct GEOSEARCH: RESPCommand {
             }
         }
     }
-    public enum Order: RESPRenderable {
+    public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
@@ -614,7 +614,7 @@ public struct GEOSEARCH: RESPCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable {
+    public struct CountBlock: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -661,7 +661,7 @@ public struct GEOSEARCH: RESPCommand {
 
 /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
 public struct GEOSEARCHSTORE: RESPCommand {
-    public struct FromFromlonlat: RESPRenderable {
+    public struct FromFromlonlat: RESPRenderable, Sendable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
@@ -679,7 +679,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
             return count
         }
     }
-    public enum From: RESPRenderable {
+    public enum From: RESPRenderable, Sendable {
         case member(String)
         case fromlonlat(FromFromlonlat)
 
@@ -691,7 +691,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
             }
         }
     }
-    public enum ByCircleUnit: RESPRenderable {
+    public enum ByCircleUnit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -707,7 +707,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
             }
         }
     }
-    public struct ByCircle: RESPRenderable {
+    public struct ByCircle: RESPRenderable, Sendable {
         @usableFromInline let radius: Double
         @usableFromInline let unit: ByCircleUnit
 
@@ -725,7 +725,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
             return count
         }
     }
-    public enum ByBoxUnit: RESPRenderable {
+    public enum ByBoxUnit: RESPRenderable, Sendable {
         case m
         case km
         case ft
@@ -741,7 +741,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
             }
         }
     }
-    public struct ByBox: RESPRenderable {
+    public struct ByBox: RESPRenderable, Sendable {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
         @usableFromInline let unit: ByBoxUnit
@@ -762,7 +762,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
             return count
         }
     }
-    public enum By: RESPRenderable {
+    public enum By: RESPRenderable, Sendable {
         case circle(ByCircle)
         case box(ByBox)
 
@@ -774,7 +774,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
             }
         }
     }
-    public enum Order: RESPRenderable {
+    public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
@@ -786,7 +786,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable {
+    public struct CountBlock: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 

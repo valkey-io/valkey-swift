@@ -41,7 +41,7 @@ public enum CLUSTER {
 
     /// Assigns new hash slot ranges to a node.
     public struct ADDSLOTSRANGE: RESPCommand {
-        public struct Range: RESPRenderable {
+        public struct Range: RESPRenderable, Sendable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
@@ -132,7 +132,7 @@ public enum CLUSTER {
 
     /// Sets hash slot ranges as unbound for a node.
     public struct DELSLOTSRANGE: RESPCommand {
-        public struct Range: RESPRenderable {
+        public struct Range: RESPRenderable, Sendable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
@@ -165,7 +165,7 @@ public enum CLUSTER {
 
     /// Forces a replica to perform a manual failover of its master.
     public struct FAILOVER: RESPCommand {
-        public enum Options: RESPRenderable {
+        public enum Options: RESPRenderable, Sendable {
             case force
             case takeover
 
@@ -379,7 +379,7 @@ public enum CLUSTER {
 
     /// Resets a node.
     public struct RESET: RESPCommand {
-        public enum ResetType: RESPRenderable {
+        public enum ResetType: RESPRenderable, Sendable {
             case hard
             case soft
 
@@ -434,7 +434,7 @@ public enum CLUSTER {
 
     /// Binds a hash slot to a node.
     public struct SETSLOT: RESPCommand {
-        public enum Subcommand: RESPRenderable {
+        public enum Subcommand: RESPRenderable, Sendable {
             case importing(String)
             case migrating(String)
             case node(String)
