@@ -24,7 +24,7 @@ import Foundation
 
 /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
 public struct BZMPOP: RESPCommand {
-    public enum Where: RESPRenderable {
+    public enum Where: RESPRenderable, Sendable {
         case min
         case max
 
@@ -91,7 +91,7 @@ public struct BZPOPMIN: RESPCommand {
 
 /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
 public struct ZADD: RESPCommand {
-    public enum Condition: RESPRenderable {
+    public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
 
@@ -103,7 +103,7 @@ public struct ZADD: RESPCommand {
             }
         }
     }
-    public enum Comparison: RESPRenderable {
+    public enum Comparison: RESPRenderable, Sendable {
         case gt
         case lt
 
@@ -115,7 +115,7 @@ public struct ZADD: RESPCommand {
             }
         }
     }
-    public struct Data: RESPRenderable {
+    public struct Data: RESPRenderable, Sendable {
         @usableFromInline let score: Double
         @usableFromInline let member: String
 
@@ -245,7 +245,7 @@ public struct ZINCRBY: RESPCommand {
 
 /// Returns the intersect of multiple sorted sets.
 public struct ZINTER: RESPCommand {
-    public enum Aggregate: RESPRenderable {
+    public enum Aggregate: RESPRenderable, Sendable {
         case sum
         case min
         case max
@@ -297,7 +297,7 @@ public struct ZINTERCARD: RESPCommand {
 
 /// Stores the intersect of multiple sorted sets in a key.
 public struct ZINTERSTORE: RESPCommand {
-    public enum Aggregate: RESPRenderable {
+    public enum Aggregate: RESPRenderable, Sendable {
         case sum
         case min
         case max
@@ -351,7 +351,7 @@ public struct ZLEXCOUNT: RESPCommand {
 
 /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
 public struct ZMPOP: RESPCommand {
-    public enum Where: RESPRenderable {
+    public enum Where: RESPRenderable, Sendable {
         case min
         case max
 
@@ -433,7 +433,7 @@ public struct ZPOPMIN: RESPCommand {
 
 /// Returns one or more random members from a sorted set.
 public struct ZRANDMEMBER: RESPCommand {
-    public struct Options: RESPRenderable {
+    public struct Options: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let withscores: Bool
 
@@ -468,7 +468,7 @@ public struct ZRANDMEMBER: RESPCommand {
 
 /// Returns members in a sorted set within a range of indexes.
 public struct ZRANGE: RESPCommand {
-    public enum Sortby: RESPRenderable {
+    public enum Sortby: RESPRenderable, Sendable {
         case byscore
         case bylex
 
@@ -480,7 +480,7 @@ public struct ZRANGE: RESPCommand {
             }
         }
     }
-    public struct Limit: RESPRenderable {
+    public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -525,7 +525,7 @@ public struct ZRANGE: RESPCommand {
 
 /// Returns members in a sorted set within a lexicographical range.
 public struct ZRANGEBYLEX: RESPCommand {
-    public struct Limit: RESPRenderable {
+    public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -564,7 +564,7 @@ public struct ZRANGEBYLEX: RESPCommand {
 
 /// Returns members in a sorted set within a range of scores.
 public struct ZRANGEBYSCORE: RESPCommand {
-    public struct Limit: RESPRenderable {
+    public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -605,7 +605,7 @@ public struct ZRANGEBYSCORE: RESPCommand {
 
 /// Stores a range of members from sorted set in a key.
 public struct ZRANGESTORE: RESPCommand {
-    public enum Sortby: RESPRenderable {
+    public enum Sortby: RESPRenderable, Sendable {
         case byscore
         case bylex
 
@@ -617,7 +617,7 @@ public struct ZRANGESTORE: RESPCommand {
             }
         }
     }
-    public struct Limit: RESPRenderable {
+    public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -776,7 +776,7 @@ public struct ZREVRANGE: RESPCommand {
 
 /// Returns members in a sorted set within a lexicographical range in reverse order.
 public struct ZREVRANGEBYLEX: RESPCommand {
-    public struct Limit: RESPRenderable {
+    public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -815,7 +815,7 @@ public struct ZREVRANGEBYLEX: RESPCommand {
 
 /// Returns members in a sorted set within a range of scores in reverse order.
 public struct ZREVRANGEBYSCORE: RESPCommand {
-    public struct Limit: RESPRenderable {
+    public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -913,7 +913,7 @@ public struct ZSCORE: RESPCommand {
 
 /// Returns the union of multiple sorted sets.
 public struct ZUNION: RESPCommand {
-    public enum Aggregate: RESPRenderable {
+    public enum Aggregate: RESPRenderable, Sendable {
         case sum
         case min
         case max
@@ -948,7 +948,7 @@ public struct ZUNION: RESPCommand {
 
 /// Stores the union of multiple sorted sets in a key.
 public struct ZUNIONSTORE: RESPCommand {
-    public enum Aggregate: RESPRenderable {
+    public enum Aggregate: RESPRenderable, Sendable {
         case sum
         case min
         case max

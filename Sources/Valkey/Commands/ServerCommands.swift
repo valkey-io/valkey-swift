@@ -144,7 +144,7 @@ public enum ACL {
 
     /// Lists recent security events generated due to ACL rules.
     public struct LOG: RESPCommand {
-        public enum Operation: RESPRenderable {
+        public enum Operation: RESPRenderable, Sendable {
             case count(Int)
             case reset
 
@@ -320,7 +320,7 @@ extension COMMAND {
 
     /// Returns a list of command names.
     public struct LIST: RESPCommand {
-        public enum Filterby: RESPRenderable {
+        public enum Filterby: RESPRenderable, Sendable {
             case moduleName(String)
             case category(String)
             case pattern(String)
@@ -407,7 +407,7 @@ public enum CONFIG {
 
     /// Sets configuration parameters in-flight.
     public struct SET: RESPCommand {
-        public struct Data: RESPRenderable {
+        public struct Data: RESPRenderable, Sendable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
@@ -676,7 +676,7 @@ public enum MODULE {
 
     /// Loads a module using extended parameters.
     public struct LOADEX: RESPCommand {
-        public struct Configs: RESPRenderable {
+        public struct Configs: RESPRenderable, Sendable {
             @usableFromInline let name: String
             @usableFromInline let value: String
 
@@ -842,7 +842,7 @@ public struct DBSIZE: RESPCommand {
 
 /// Starts a coordinated failover from a server to one of its replicas.
 public struct FAILOVER: RESPCommand {
-    public struct Target: RESPRenderable {
+    public struct Target: RESPRenderable, Sendable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
@@ -882,7 +882,7 @@ public struct FAILOVER: RESPCommand {
 
 /// Removes all keys from all databases.
 public struct FLUSHALL: RESPCommand {
-    public enum FlushType: RESPRenderable {
+    public enum FlushType: RESPRenderable, Sendable {
         case async
         case sync
 
@@ -909,7 +909,7 @@ public struct FLUSHALL: RESPCommand {
 
 /// Remove all keys from the current database.
 public struct FLUSHDB: RESPCommand {
-    public enum FlushType: RESPRenderable {
+    public enum FlushType: RESPRenderable, Sendable {
         case async
         case sync
 
@@ -1022,7 +1022,7 @@ public struct REPLCONF: RESPCommand {
 
 /// Configures a server as replica of another, or promotes it to a master.
 public struct REPLICAOF: RESPCommand {
-    public struct ArgsHostPort: RESPRenderable {
+    public struct ArgsHostPort: RESPRenderable, Sendable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -1040,7 +1040,7 @@ public struct REPLICAOF: RESPCommand {
             return count
         }
     }
-    public struct ArgsNoOne: RESPRenderable {
+    public struct ArgsNoOne: RESPRenderable, Sendable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -1058,7 +1058,7 @@ public struct REPLICAOF: RESPCommand {
             return count
         }
     }
-    public enum Args: RESPRenderable {
+    public enum Args: RESPRenderable, Sendable {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
@@ -1138,7 +1138,7 @@ public struct SAVE: RESPCommand {
 
 /// Synchronously saves the database(s) to disk and shuts down the Valkey server.
 public struct SHUTDOWN: RESPCommand {
-    public enum SaveSelector: RESPRenderable {
+    public enum SaveSelector: RESPRenderable, Sendable {
         case nosave
         case save
 
@@ -1171,7 +1171,7 @@ public struct SHUTDOWN: RESPCommand {
 
 /// Sets a Valkey server as a replica of another, or promotes it to being a master.
 public struct SLAVEOF: RESPCommand {
-    public struct ArgsHostPort: RESPRenderable {
+    public struct ArgsHostPort: RESPRenderable, Sendable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -1189,7 +1189,7 @@ public struct SLAVEOF: RESPCommand {
             return count
         }
     }
-    public struct ArgsNoOne: RESPRenderable {
+    public struct ArgsNoOne: RESPRenderable, Sendable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -1207,7 +1207,7 @@ public struct SLAVEOF: RESPCommand {
             return count
         }
     }
-    public enum Args: RESPRenderable {
+    public enum Args: RESPRenderable, Sendable {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 

@@ -15,7 +15,7 @@
 import NIOCore
 
 /// A RESP command that can be executed on a connection.
-public protocol RESPCommand {
+public protocol RESPCommand: Sendable {
     associatedtype Response: RESPTokenRepresentable = RESPToken
 
     func encode(into commandEncoder: inout RESPCommandEncoder)

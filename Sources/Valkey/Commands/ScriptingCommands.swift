@@ -54,7 +54,7 @@ public enum FUNCTION {
 
     /// Deletes all libraries and functions.
     public struct FLUSH: RESPCommand {
-        public enum FlushType: RESPRenderable {
+        public enum FlushType: RESPRenderable, Sendable {
             case async
             case sync
 
@@ -141,7 +141,7 @@ public enum FUNCTION {
 
     /// Restores all libraries from a payload.
     public struct RESTORE: RESPCommand {
-        public enum Policy: RESPRenderable {
+        public enum Policy: RESPRenderable, Sendable {
             case flush
             case append
             case replace
@@ -189,7 +189,7 @@ public enum FUNCTION {
 public enum SCRIPT {
     /// Sets the debug mode of server-side Lua scripts.
     public struct DEBUG: RESPCommand {
-        public enum Mode: RESPRenderable {
+        public enum Mode: RESPRenderable, Sendable {
             case yes
             case sync
             case no
@@ -233,7 +233,7 @@ public enum SCRIPT {
 
     /// Removes all server-side Lua scripts from the script cache.
     public struct FLUSH: RESPCommand {
-        public enum FlushType: RESPRenderable {
+        public enum FlushType: RESPRenderable, Sendable {
             case async
             case sync
 

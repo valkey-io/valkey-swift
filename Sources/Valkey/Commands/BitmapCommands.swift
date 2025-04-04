@@ -24,7 +24,7 @@ import Foundation
 
 /// Counts the number of set bits (population counting) in a string.
 public struct BITCOUNT: RESPCommand {
-    public enum RangeUnit: RESPRenderable {
+    public enum RangeUnit: RESPRenderable, Sendable {
         case byte
         case bit
 
@@ -36,7 +36,7 @@ public struct BITCOUNT: RESPCommand {
             }
         }
     }
-    public struct Range: RESPRenderable {
+    public struct Range: RESPRenderable, Sendable {
         @usableFromInline let start: Int
         @usableFromInline let end: Int
         @usableFromInline let unit: RangeUnit?
@@ -74,7 +74,7 @@ public struct BITCOUNT: RESPCommand {
 
 /// Performs arbitrary bitfield integer operations on strings.
 public struct BITFIELD: RESPCommand {
-    public struct OperationGetBlock: RESPRenderable {
+    public struct OperationGetBlock: RESPRenderable, Sendable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
@@ -92,7 +92,7 @@ public struct BITFIELD: RESPCommand {
             return count
         }
     }
-    public enum OperationWriteOverflowBlock: RESPRenderable {
+    public enum OperationWriteOverflowBlock: RESPRenderable, Sendable {
         case wrap
         case sat
         case fail
@@ -106,7 +106,7 @@ public struct BITFIELD: RESPCommand {
             }
         }
     }
-    public struct OperationWriteWriteOperationSetBlock: RESPRenderable {
+    public struct OperationWriteWriteOperationSetBlock: RESPRenderable, Sendable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let value: Int
@@ -127,7 +127,7 @@ public struct BITFIELD: RESPCommand {
             return count
         }
     }
-    public struct OperationWriteWriteOperationIncrbyBlock: RESPRenderable {
+    public struct OperationWriteWriteOperationIncrbyBlock: RESPRenderable, Sendable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let increment: Int
@@ -148,7 +148,7 @@ public struct BITFIELD: RESPCommand {
             return count
         }
     }
-    public enum OperationWriteWriteOperation: RESPRenderable {
+    public enum OperationWriteWriteOperation: RESPRenderable, Sendable {
         case setBlock(OperationWriteWriteOperationSetBlock)
         case incrbyBlock(OperationWriteWriteOperationIncrbyBlock)
 
@@ -160,7 +160,7 @@ public struct BITFIELD: RESPCommand {
             }
         }
     }
-    public struct OperationWrite: RESPRenderable {
+    public struct OperationWrite: RESPRenderable, Sendable {
         @usableFromInline let overflowBlock: OperationWriteOverflowBlock?
         @usableFromInline let writeOperation: OperationWriteWriteOperation
 
@@ -178,7 +178,7 @@ public struct BITFIELD: RESPCommand {
             return count
         }
     }
-    public enum Operation: RESPRenderable {
+    public enum Operation: RESPRenderable, Sendable {
         case getBlock(OperationGetBlock)
         case write(OperationWrite)
 
@@ -207,7 +207,7 @@ public struct BITFIELD: RESPCommand {
 
 /// Performs arbitrary read-only bitfield integer operations on strings.
 public struct BITFIELDRO: RESPCommand {
-    public struct GetBlock: RESPRenderable {
+    public struct GetBlock: RESPRenderable, Sendable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
@@ -242,7 +242,7 @@ public struct BITFIELDRO: RESPCommand {
 
 /// Performs bitwise operations on multiple strings, and stores the result.
 public struct BITOP: RESPCommand {
-    public enum Operation: RESPRenderable {
+    public enum Operation: RESPRenderable, Sendable {
         case and
         case or
         case xor
@@ -277,7 +277,7 @@ public struct BITOP: RESPCommand {
 
 /// Finds the first set (1) or clear (0) bit in a string.
 public struct BITPOS: RESPCommand {
-    public enum RangeEndUnitBlockUnit: RESPRenderable {
+    public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable {
         case byte
         case bit
 
@@ -289,7 +289,7 @@ public struct BITPOS: RESPCommand {
             }
         }
     }
-    public struct RangeEndUnitBlock: RESPRenderable {
+    public struct RangeEndUnitBlock: RESPRenderable, Sendable {
         @usableFromInline let end: Int
         @usableFromInline let unit: RangeEndUnitBlockUnit?
 
@@ -307,7 +307,7 @@ public struct BITPOS: RESPCommand {
             return count
         }
     }
-    public struct Range: RESPRenderable {
+    public struct Range: RESPRenderable, Sendable {
         @usableFromInline let start: Int
         @usableFromInline let endUnitBlock: RangeEndUnitBlock?
 

@@ -26,7 +26,7 @@ import Foundation
 public enum CLIENT {
     /// Instructs the server whether to track the keys in the next request.
     public struct CACHING: RESPCommand {
-        public enum Mode: RESPRenderable {
+        public enum Mode: RESPRenderable, Sendable {
             case yes
             case no
 
@@ -118,7 +118,7 @@ public enum CLIENT {
 
     /// Terminates open connections.
     public struct KILL: RESPCommand {
-        public enum FilterNewFormatClientType: RESPRenderable {
+        public enum FilterNewFormatClientType: RESPRenderable, Sendable {
             case normal
             case master
             case slave
@@ -136,7 +136,7 @@ public enum CLIENT {
                 }
             }
         }
-        public enum FilterNewFormatSkipme: RESPRenderable {
+        public enum FilterNewFormatSkipme: RESPRenderable, Sendable {
             case yes
             case no
 
@@ -148,7 +148,7 @@ public enum CLIENT {
                 }
             }
         }
-        public enum FilterNewFormat: RESPRenderable {
+        public enum FilterNewFormat: RESPRenderable, Sendable {
             case clientId(Int?)
             case clientType(FilterNewFormatClientType?)
             case username(String?)
@@ -168,7 +168,7 @@ public enum CLIENT {
                 }
             }
         }
-        public enum Filter: RESPRenderable {
+        public enum Filter: RESPRenderable, Sendable {
             case oldFormat(String)
             case newFormat([FilterNewFormat])
 
@@ -195,7 +195,7 @@ public enum CLIENT {
 
     /// Lists open connections.
     public struct LIST: RESPCommand {
-        public enum ClientType: RESPRenderable {
+        public enum ClientType: RESPRenderable, Sendable {
             case normal
             case master
             case replica
@@ -228,7 +228,7 @@ public enum CLIENT {
 
     /// Sets the client eviction mode of the connection.
     public struct NOEVICT: RESPCommand {
-        public enum Enabled: RESPRenderable {
+        public enum Enabled: RESPRenderable, Sendable {
             case on
             case off
 
@@ -255,7 +255,7 @@ public enum CLIENT {
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
     public struct NOTOUCH: RESPCommand {
-        public enum Enabled: RESPRenderable {
+        public enum Enabled: RESPRenderable, Sendable {
             case on
             case off
 
@@ -282,7 +282,7 @@ public enum CLIENT {
 
     /// Suspends commands processing.
     public struct PAUSE: RESPCommand {
-        public enum Mode: RESPRenderable {
+        public enum Mode: RESPRenderable, Sendable {
             case write
             case all
 
@@ -311,7 +311,7 @@ public enum CLIENT {
 
     /// Instructs the server whether to reply to commands.
     public struct REPLY: RESPCommand {
-        public enum Action: RESPRenderable {
+        public enum Action: RESPRenderable, Sendable {
             case on
             case off
             case skip
@@ -340,7 +340,7 @@ public enum CLIENT {
 
     /// Sets information specific to the client or connection.
     public struct SETINFO: RESPCommand {
-        public enum Attr: RESPRenderable {
+        public enum Attr: RESPRenderable, Sendable {
             case libname(String)
             case libver(String)
 
@@ -382,7 +382,7 @@ public enum CLIENT {
 
     /// Controls server-assisted client-side caching for the connection.
     public struct TRACKING: RESPCommand {
-        public enum Status: RESPRenderable {
+        public enum Status: RESPRenderable, Sendable {
             case on
             case off
 
@@ -434,7 +434,7 @@ public enum CLIENT {
 
     /// Unblocks a client blocked by a blocking command from a different connection.
     public struct UNBLOCK: RESPCommand {
-        public enum UnblockType: RESPRenderable {
+        public enum UnblockType: RESPRenderable, Sendable {
             case timeout
             case error
 
@@ -510,7 +510,7 @@ public struct ECHO: RESPCommand {
 
 /// Handshakes with the Valkey server.
 public struct HELLO: RESPCommand {
-    public struct ArgumentsAuth: RESPRenderable {
+    public struct ArgumentsAuth: RESPRenderable, Sendable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -528,7 +528,7 @@ public struct HELLO: RESPCommand {
             return count
         }
     }
-    public struct Arguments: RESPRenderable {
+    public struct Arguments: RESPRenderable, Sendable {
         @usableFromInline let protover: Int
         @usableFromInline let auth: ArgumentsAuth?
         @usableFromInline let clientname: String?

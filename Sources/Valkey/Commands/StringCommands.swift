@@ -103,7 +103,7 @@ public struct GETDEL: RESPCommand {
 
 /// Returns the string value of a key after setting its expiration time.
 public struct GETEX: RESPCommand {
-    public enum Expiration: RESPRenderable {
+    public enum Expiration: RESPRenderable, Sendable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
@@ -263,7 +263,7 @@ public struct MGET: RESPCommand {
 
 /// Atomically creates or modifies the string values of one or more keys.
 public struct MSET: RESPCommand {
-    public struct Data: RESPRenderable {
+    public struct Data: RESPRenderable, Sendable {
         @usableFromInline let key: RESPKey
         @usableFromInline let value: String
 
@@ -296,7 +296,7 @@ public struct MSET: RESPCommand {
 
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
 public struct MSETNX: RESPCommand {
-    public struct Data: RESPRenderable {
+    public struct Data: RESPRenderable, Sendable {
         @usableFromInline let key: RESPKey
         @usableFromInline let value: String
 
@@ -348,7 +348,7 @@ public struct PSETEX: RESPCommand {
 
 /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
 public struct SET: RESPCommand {
-    public enum Condition: RESPRenderable {
+    public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
 
@@ -360,7 +360,7 @@ public struct SET: RESPCommand {
             }
         }
     }
-    public enum Expiration: RESPRenderable {
+    public enum Expiration: RESPRenderable, Sendable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
