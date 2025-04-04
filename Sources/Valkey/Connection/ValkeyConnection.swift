@@ -97,10 +97,23 @@ public final class ValkeyConnection: Sendable {
     /// - Returns: EventLoopFuture that is completed on connection closure
     public func close() -> EventLoopFuture<Void> {
         guard self.isClosed.compareExchange(expected: false, desired: true, successOrdering: .relaxed, failureOrdering: .relaxed).exchanged else {
-            return channel.eventLoop.makeSucceededVoidFuture()
+            return self.channel.closeFuture
         }
         self.channel.close(mode: .all, promise: nil)
         return self.channel.closeFuture
+    }
+
+    /// Initiate graceful shutdown
+    ///
+    /// Any pending command will be processed before the connection is closed
+    ///
+    /// - Returns: EventLoopFuture that is completed on connection closure
+    public func gracefulShutdown() async throws {
+        guard self.isClosed.compareExchange(expected: false, desired: true, successOrdering: .relaxed, failureOrdering: .relaxed).exchanged else {
+            return try await self.channel.closeFuture.get()
+        }
+        self.channelHandler.triggerGracefulShutdown()
+        return try await self.channel.closeFuture.get()
     }
 
     /// Send RESP command to Valkey connection
@@ -113,7 +126,7 @@ public final class ValkeyConnection: Sendable {
         command.encode(into: &encoder)
 
         let promise = channel.eventLoop.makePromise(of: RESPToken.self)
-        channelHandler.write(request: ValkeyRequest.single(buffer: encoder.buffer, promise: promise))
+        try await channelHandler.write(request: ValkeyRequest.single(buffer: encoder.buffer, promise: promise)).get()
         return try await .init(from: promise.futureResult.get())
     }
 
@@ -134,7 +147,7 @@ public final class ValkeyConnection: Sendable {
             promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
         // write directly to channel handler
-        channelHandler.write(request: ValkeyRequest.multiple(buffer: encoder.buffer, promises: promises))
+        try await channelHandler.write(request: ValkeyRequest.multiple(buffer: encoder.buffer, promises: promises)).get()
         // get response from channel handler
         var index = AutoIncrementingInteger()
         return try await (repeat (each Command).Response(from: promises[index.next()].futureResult.get()))

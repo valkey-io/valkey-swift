@@ -16,6 +16,7 @@
 public struct ValkeyClientError: Error, CustomStringConvertible {
     public struct ErrorCode: Equatable, Sendable {
         fileprivate enum _Internal: Equatable, Sendable {
+            case connectionClosing
             case connectionClosed
             case commandError
         }
@@ -25,7 +26,9 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
             self.value = value
         }
 
-        /// Provided URL is invalid
+        /// Connection is closing
+        public static var connectionClosing: Self { .init(.connectionClosing) }
+        /// Connection is closed
         public static var connectionClosed: Self { .init(.connectionClosed) }
         /// Error returned by Valkey command
         public static var commandError: Self { .init(.commandError) }
@@ -40,6 +43,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible {
 
     public var description: String {
         switch self.errorCode.value {
+        case .connectionClosing: "Connection is closing"
         case .connectionClosed: "Connection has been closed"
         case .commandError: self.message ?? "Valkey command returned an error"
         }

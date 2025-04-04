@@ -77,7 +77,7 @@ extension ValkeyClient {
             try? await valkeyConnection.close().get()
             throw error
         }
-        try await valkeyConnection.close().get()
+        try await valkeyConnection.gracefulShutdown()
         return value
     }
 }
