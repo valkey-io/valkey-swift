@@ -578,6 +578,7 @@ public struct PING: RESPCommand {
 }
 
 /// Closes the connection.
+@available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
 public struct QUIT: RESPCommand {
     public typealias Response = RESPToken
 
@@ -904,6 +905,7 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
+    @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
     public func quit() async throws -> RESPToken {
         try await send(command: QUIT())
     }

@@ -479,6 +479,7 @@ public enum CLUSTER {
     }
 
     /// Lists the replica nodes of a master node.
+    @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
     public struct SLAVES: RESPCommand {
         public typealias Response = [RESPToken]
 
@@ -494,6 +495,7 @@ public enum CLUSTER {
     }
 
     /// Returns the mapping of cluster slots to nodes.
+    @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
     public struct SLOTS: RESPCommand {
         public typealias Response = [RESPToken]
 
@@ -883,6 +885,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
     @inlinable
+    @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
     public func clusterSlaves(nodeId: String) async throws -> [RESPToken] {
         try await send(command: CLUSTER.SLAVES(nodeId: nodeId))
     }
@@ -895,6 +898,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): nested list of slot ranges with networking information.
     @inlinable
+    @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
     public func clusterSlots() async throws -> [RESPToken] {
         try await send(command: CLUSTER.SLOTS())
     }

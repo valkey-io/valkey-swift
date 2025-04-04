@@ -1170,6 +1170,7 @@ public struct SHUTDOWN: RESPCommand {
 }
 
 /// Sets a Valkey server as a replica of another, or promotes it to being a master.
+@available(*, deprecated, message: "Since 5.0.0. Replaced by `REPLICAOF`.")
 public struct SLAVEOF: RESPCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable {
         @usableFromInline let host: String
@@ -2038,6 +2039,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
+    @available(*, deprecated, message: "Since 5.0.0. Replaced by `REPLICAOF`.")
     public func slaveof(args: SLAVEOF.Args) async throws -> RESPToken {
         try await send(command: SLAVEOF(args: args))
     }

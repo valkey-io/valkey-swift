@@ -120,6 +120,8 @@ struct RESPCommand: Decodable {
     let since: String
     let group: String
     let complexity: String?
+    let deprecatedSince: String?
+    let replacedBy: String?
     let aclCategories: [String]
     let arguments: [Argument]?
 
@@ -129,6 +131,8 @@ struct RESPCommand: Decodable {
         self.since = try container.decode(String.self, forKey: .since)
         self.group = try container.decode(String.self, forKey: .group)
         self.complexity = try container.decodeIfPresent(String.self, forKey: .complexity)
+        self.deprecatedSince = try container.decodeIfPresent(String.self, forKey: .deprecatedSince)
+        self.replacedBy = try container.decodeIfPresent(String.self, forKey: .replacedBy)
         self.aclCategories = try container.decode([String].self, forKey: .aclCategories)
         if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
             if let keySpecs = try container.decodeIfPresent([KeySpec].self, forKey: .keySpecs) {
@@ -155,6 +159,8 @@ struct RESPCommand: Decodable {
         case since
         case group
         case complexity
+        case deprecatedSince = "deprecated_since"
+        case replacedBy = "replaced_by"
         case aclCategories = "acl_categories"
         case arguments
         case keySpecs = "key_specs"

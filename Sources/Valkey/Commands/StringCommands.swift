@@ -156,6 +156,7 @@ public struct GETRANGE: RESPCommand {
 }
 
 /// Returns the previous string value of a key after setting it to a new value.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
 public struct GETSET: RESPCommand {
     public typealias Response = String?
 
@@ -328,6 +329,7 @@ public struct MSETNX: RESPCommand {
 }
 
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
+@available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
 public struct PSETEX: RESPCommand {
     public typealias Response = RESPToken
 
@@ -400,6 +402,7 @@ public struct SET: RESPCommand {
 }
 
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
+@available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
 public struct SETEX: RESPCommand {
     public typealias Response = RESPToken
 
@@ -419,6 +422,7 @@ public struct SETEX: RESPCommand {
 }
 
 /// Set the string value of a key only when the key doesn't exist.
+@available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
 public struct SETNX: RESPCommand {
     public typealias Response = Int
 
@@ -470,6 +474,7 @@ public struct STRLEN: RESPCommand {
 }
 
 /// Returns a substring from a string value.
+@available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
 public struct SUBSTR: RESPCommand {
     public typealias Response = String
 
@@ -589,6 +594,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the old value stored at the key.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
     public func getset(key: RESPKey, value: String) async throws -> String? {
         try await send(command: GETSET(key: key, value: value))
     }
@@ -690,6 +696,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
+    @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
     public func psetex(key: RESPKey, milliseconds: Int, value: String) async throws -> RESPToken {
         try await send(command: PSETEX(key: key, milliseconds: milliseconds, value: value))
     }
@@ -723,6 +730,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
+    @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
     public func setex(key: RESPKey, seconds: Int, value: String) async throws -> RESPToken {
         try await send(command: SETEX(key: key, seconds: seconds, value: value))
     }
@@ -737,6 +745,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the key was not set.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the key was set.
     @inlinable
+    @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
     public func setnx(key: RESPKey, value: String) async throws -> Int {
         try await send(command: SETNX(key: key, value: value))
     }
@@ -773,6 +782,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @string, @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
+    @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
     public func substr(key: RESPKey, start: Int, end: Int) async throws -> String {
         try await send(command: SUBSTR(key: key, start: start, end: end))
     }

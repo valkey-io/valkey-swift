@@ -148,6 +148,7 @@ public struct GEOPOS: RESPCommand {
 }
 
 /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.")
 public struct GEORADIUS: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
@@ -241,6 +242,7 @@ public struct GEORADIUS: RESPCommand {
 }
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
 public struct GEORADIUSBYMEMBER: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
@@ -332,6 +334,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
 }
 
 /// Returns members from a geospatial index that are within a distance from a member.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
 public struct GEORADIUSBYMEMBERRO: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
@@ -409,6 +412,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
 }
 
 /// Returns members from a geospatial index that are within a distance from a coordinate.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.")
 public struct GEORADIUSRO: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
@@ -898,6 +902,7 @@ extension ValkeyConnection {
     ///     
     ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.")
     public func georadius(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUS.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUS.CountBlock? = nil, order: GEORADIUS.Order? = nil, store: GEORADIUS.Store? = nil) async throws -> RESPToken {
         try await send(command: GEORADIUS(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
@@ -915,6 +920,7 @@ extension ValkeyConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
     public func georadiusbymember(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBER.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER.CountBlock? = nil, order: GEORADIUSBYMEMBER.Order? = nil, store: GEORADIUSBYMEMBER.Store? = nil) async throws -> RESPToken {
         try await send(command: GEORADIUSBYMEMBER(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
@@ -932,6 +938,7 @@ extension ValkeyConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
     public func georadiusbymemberRo(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil, order: GEORADIUSBYMEMBERRO.Order? = nil) async throws -> RESPToken {
         try await send(command: GEORADIUSBYMEMBERRO(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
@@ -949,6 +956,7 @@ extension ValkeyConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.")
     public func georadiusRo(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> RESPToken {
         try await send(command: GEORADIUSRO(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
