@@ -15,7 +15,7 @@
 import NIOCore
 
 extension ValkeyChannelHandler {
-    struct StateMachine {
+    struct StateMachine<Context> {
         enum State {
             case initializing
             case active(ActiveState)
@@ -25,11 +25,11 @@ extension ValkeyChannelHandler {
         var state: State
 
         struct ActiveState {
-            let context: ChannelHandlerContext
+            let context: Context
         }
 
         struct ClosingState {
-            let context: ChannelHandlerContext
+            let context: Context
         }
 
         init() {
@@ -37,7 +37,7 @@ extension ValkeyChannelHandler {
         }
 
         /// handler has become active
-        mutating func setActive(context: ChannelHandlerContext) {
+        mutating func setActive(context: Context) {
             switch self.state {
             case .initializing:
                 self.state = .active(.init(context: context))
@@ -47,7 +47,7 @@ extension ValkeyChannelHandler {
         }
 
         enum SendCommandAction {
-            case sendCommand(ChannelHandlerContext)
+            case sendCommand(Context)
             case throwError(Error)
         }
 
@@ -66,7 +66,7 @@ extension ValkeyChannelHandler {
         }
 
         enum GracefulShutdownAction {
-            case waitForPendingCommands(ChannelHandlerContext)
+            case waitForPendingCommands(Context)
             case doNothing
         }
         /// Want to gracefully shutdown the handler
@@ -84,7 +84,7 @@ extension ValkeyChannelHandler {
         }
 
         enum CloseAction {
-            case close(ChannelHandlerContext)
+            case close(Context)
             case doNothing
         }
         /// Want to close the connection

@@ -36,7 +36,7 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
     private var pendingCommands: Deque<EventLoopPromise<RESPToken>>
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private let logger: Logger
-    private var stateMachine: StateMachine
+    private var stateMachine: StateMachine<ChannelHandlerContext>
 
     init(channel: Channel, logger: Logger) {
         self.eventLoop = channel.eventLoop
