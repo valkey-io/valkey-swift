@@ -174,6 +174,7 @@ public struct HMGET: RESPCommand {
 }
 
 /// Sets the values of multiple fields.
+@available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
 public struct HMSET: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let field: String
@@ -472,6 +473,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
+    @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
     public func hmset(key: RESPKey, data: [HMSET.Data]) async throws -> RESPToken {
         try await send(command: HMSET(key: key, data: data))
     }

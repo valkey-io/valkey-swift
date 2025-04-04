@@ -524,6 +524,7 @@ public struct ZRANGE: RESPCommand {
 }
 
 /// Returns members in a sorted set within a lexicographical range.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.")
 public struct ZRANGEBYLEX: RESPCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
@@ -563,6 +564,7 @@ public struct ZRANGEBYLEX: RESPCommand {
 }
 
 /// Returns members in a sorted set within a range of scores.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.")
 public struct ZRANGEBYSCORE: RESPCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
@@ -754,6 +756,7 @@ public struct ZREMRANGEBYSCORE: RESPCommand {
 }
 
 /// Returns members in a sorted set within a range of indexes in reverse order.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
 public struct ZREVRANGE: RESPCommand {
     public typealias Response = [RESPToken]
 
@@ -775,6 +778,7 @@ public struct ZREVRANGE: RESPCommand {
 }
 
 /// Returns members in a sorted set within a lexicographical range in reverse order.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.")
 public struct ZREVRANGEBYLEX: RESPCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
@@ -814,6 +818,7 @@ public struct ZREVRANGEBYLEX: RESPCommand {
 }
 
 /// Returns members in a sorted set within a range of scores in reverse order.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.")
 public struct ZREVRANGEBYSCORE: RESPCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
@@ -1234,6 +1239,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of elements in the specified score range.
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.")
     public func zrangebylex(key: RESPKey, min: String, max: String, limit: ZRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYLEX(key: key, min: min, max: max, limit: limit))
     }
@@ -1246,6 +1252,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.")
     public func zrangebyscore(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
     }
@@ -1333,6 +1340,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members in the specified range, optionally with their scores if _WITHSCORE_ was used.
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
     public func zrevrange(key: RESPKey, start: Int, stop: Int, withscores: Bool = false) async throws -> [RESPToken] {
         try await send(command: ZREVRANGE(key: key, start: start, stop: stop, withscores: withscores))
     }
@@ -1345,6 +1353,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members in the specified score range.
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.")
     public func zrevrangebylex(key: RESPKey, max: String, min: String, limit: ZREVRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYLEX(key: key, max: max, min: min, limit: limit))
     }
@@ -1357,6 +1366,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.")
     public func zrevrangebyscore(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
         try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
     }

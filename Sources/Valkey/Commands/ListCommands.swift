@@ -137,6 +137,7 @@ public struct BRPOP: RESPCommand {
 }
 
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
 public struct BRPOPLPUSH: RESPCommand {
     public typealias Response = String?
 
@@ -464,6 +465,7 @@ public struct RPOP: RESPCommand {
 }
 
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
+@available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
 public struct RPOPLPUSH: RESPCommand {
     public typealias Response = String?
 
@@ -582,6 +584,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped from _source_ and pushed to _destination_.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the timeout is reached.
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
     public func brpoplpush(source: RESPKey, destination: RESPKey, timeout: Double) async throws -> String? {
         try await send(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
@@ -780,6 +783,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped and pushed.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the source list is empty.
     @inlinable
+    @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
     public func rpoplpush(source: RESPKey, destination: RESPKey) async throws -> String? {
         try await send(command: RPOPLPUSH(source: source, destination: destination))
     }

@@ -5,6 +5,14 @@ extension String {
             .replacing(" reply]", with: "]")
     }
 
+    mutating func appendDeprecatedMessage(command: RESPCommand, name: String, tab: String) {
+        guard let deprecatedSince = command.deprecatedSince else { return }
+        self.append("\(tab)@available(*, deprecated, message: \"Since \(deprecatedSince)")
+        if let replacedBy = command.replacedBy {
+            self.append(". Replaced by \(replacedBy)")
+        }
+        self.append(".\")\n")
+    }
     mutating func appendCommandCommentHeader(command: RESPCommand, name: String, reply: [String], tab: String) {
         self.append("\(tab)/// \(command.summary)\n")
     }
@@ -127,6 +135,7 @@ extension String {
 
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, reply: reply, tab: tab)
+        self.appendDeprecatedMessage(command: command, name: name, tab: tab)
         self.append("\(tab)public struct \(typeName): RESPCommand {\n")
 
         let arguments = (command.arguments ?? [])
@@ -188,6 +197,7 @@ extension String {
                 .map { "\($0.functionLabel(isArray: isArray)): \(parameterType($0, names: [], scope: name.commandTypeName, isArray: isArray))" }
                 .joined(separator: ", ")
             self.append("    @inlinable\n")
+            self.appendDeprecatedMessage(command: command, name: name, tab: "    ")
             self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws\(returnType) {\n")
             let commandArguments = arguments.map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
             let argumentsString = commandArguments.joined(separator: ", ")
