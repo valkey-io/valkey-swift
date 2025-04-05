@@ -38,8 +38,8 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
     private var context: ChannelHandlerContext?
     private let logger: Logger
 
-    init(channel: Channel, logger: Logger) {
-        self.eventLoop = channel.eventLoop
+    init(eventLoop: EventLoop, logger: Logger) {
+        self.eventLoop = eventLoop
         self.commands = .init()
         self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
         self.context = nil
@@ -137,7 +137,3 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
         promise.fail(error)
     }
 }
-
-// The ValkeyChannelHandler needs to be Sendable so the ValkeyConnection can pass it
-// around at initialisation
-extension ValkeyChannelHandler: @unchecked Sendable {}
