@@ -36,8 +36,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     private var context: ChannelHandlerContext?
     private let logger: Logger
 
-    init(channel: Channel, logger: Logger) {
-        self.eventLoop = channel.eventLoop
+    init(eventLoop: EventLoop, logger: Logger) {
+        self.eventLoop = eventLoop
         self.commands = .init()
         self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
         self.context = nil
@@ -50,17 +50,12 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     ///   - promise: Promise to fulfill when command is complete
     @inlinable
     func write(request: ValkeyRequest) {
-        if self.eventLoop.inEventLoop {
-            self._write(request: request)
-        } else {
-            eventLoop.execute {
-                self._write(request: request)
-            }
-        }
+        self._write(request: request)
     }
 
     @usableFromInline
     func _write(request: ValkeyRequest) {
+        self.eventLoop.assertInEventLoop()
         guard let context = self.context else {
             preconditionFailure("Trying to use valkey connection before it is setup")
         }
@@ -135,7 +130,3 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         promise.fail(error)
     }
 }
-
-// The ValkeyChannelHandler needs to be Sendable so the ValkeyConnection can pass it
-// around at initialisation
-extension ValkeyChannelHandler: @unchecked Sendable {}
