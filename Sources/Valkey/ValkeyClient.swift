@@ -67,7 +67,7 @@ extension ValkeyClient {
         let valkeyConnection = try await ValkeyConnection.connect(
             address: self.serverAddress,
             configuration: self.configuration,
-            eventLoopGroup: self.eventLoopGroup,
+            eventLoop: self.eventLoopGroup.any(),
             logger: logger
         )
         let value: Value
