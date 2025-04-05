@@ -33,11 +33,11 @@ let package = Package(
             resources: [.process("Resources")]
         ),
         .testTarget(
-            name: "ValkeyTests",
+            name: "IntegrationTests",
             dependencies: ["Valkey"]
         ),
         .testTarget(
-            name: "RESPTests",
+            name: "ValkeyTests",
             dependencies: [
                 "Valkey",
                 .product(name: "NIOTestUtils", package: "swift-nio"),
