@@ -52,17 +52,12 @@ final class ValkeyChannelHandler: ChannelDuplexHandler {
     ///   - promise: Promise to fulfill when command is complete
     @inlinable
     func write(request: ValkeyRequest) {
-        if self.eventLoop.inEventLoop {
-            self._write(request: request)
-        } else {
-            eventLoop.execute {
-                self._write(request: request)
-            }
-        }
+        self._write(request: request)
     }
 
     @usableFromInline
     func _write(request: ValkeyRequest) {
+        self.eventLoop.assertInEventLoop()
         guard let context = self.context else {
             preconditionFailure("Trying to use valkey connection before it is setup")
         }
