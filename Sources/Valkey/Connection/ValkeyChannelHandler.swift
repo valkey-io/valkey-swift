@@ -23,9 +23,7 @@ enum ValkeyRequest: Sendable {
 }
 
 @usableFromInline
-final class ValkeyChannelHandler: ChannelDuplexHandler {
-    @usableFromInline
-    typealias OutboundIn = ValkeyRequest
+final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     typealias OutboundOut = ByteBuffer
     @usableFromInline
