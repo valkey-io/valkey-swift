@@ -80,13 +80,14 @@ public final class ValkeyConnection: Sendable {
         eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger
     ) async throws -> ValkeyConnection {
-        let future = if eventLoop.inEventLoop {
-            self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, logger: logger)
-        } else {
-            eventLoop.flatSubmit {
+        let future =
+            if eventLoop.inEventLoop {
                 self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, logger: logger)
+            } else {
+                eventLoop.flatSubmit {
+                    self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, logger: logger)
+                }
             }
-        }
         let connection = try await future.get()
         if configuration.respVersion == .v3 {
             try await connection.resp3Upgrade()
@@ -112,17 +113,18 @@ public final class ValkeyConnection: Sendable {
     public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
         var encoder = RESPCommandEncoder()
         command.encode(into: &encoder)
-        let result = encoder.buffer
+        let buffer = encoder.buffer
 
-        let promise = channel.eventLoop.makePromise(of: RESPToken.self)
-        if self.channel.eventLoop.inEventLoop {
-            self.channelHandler.value.write(request: ValkeyRequest.single(buffer: result, promise: promise))
-        } else {
-            self.channel.eventLoop.execute {
-                self.channelHandler.value.write(request: ValkeyRequest.single(buffer: result, promise: promise))
+        let result = try await withCheckedThrowingContinuation { continuation in
+            if self.channel.eventLoop.inEventLoop {
+                self.channelHandler.value.write(request: ValkeyRequest.single(buffer: buffer, promise: .swift(continuation)))
+            } else {
+                self.channel.eventLoop.execute {
+                    self.channelHandler.value.write(request: ValkeyRequest.single(buffer: buffer, promise: .swift(continuation)))
+                }
             }
         }
-        return try await .init(from: promise.futureResult.get())
+        return try .init(from: result)
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -145,10 +147,10 @@ public final class ValkeyConnection: Sendable {
         let promises = mpromises
         // write directly to channel handler
         if self.channel.eventLoop.inEventLoop {
-            self.channelHandler.value.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises))
+            self.channelHandler.value.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }))
         } else {
             self.channel.eventLoop.execute {
-                self.channelHandler.value.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises))
+                self.channelHandler.value.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }))
             }
         }
 
