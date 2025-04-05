@@ -17,9 +17,33 @@ import Logging
 import NIOCore
 
 @usableFromInline
+enum ValkeyPromise<T: Sendable>: Sendable {
+    case nio(EventLoopPromise<T>)
+    case swift(CheckedContinuation<T, any Error>)
+
+    func succeed(_ t: T) {
+        switch self {
+        case .nio(let eventLoopPromise):
+            eventLoopPromise.succeed(t)
+        case .swift(let checkedContinuation):
+            checkedContinuation.resume(returning: t)
+        }
+    }
+
+    func fail(_ e: Error) {
+        switch self {
+        case .nio(let eventLoopPromise):
+            eventLoopPromise.fail(e)
+        case .swift(let checkedContinuation):
+            checkedContinuation.resume(throwing: e)
+        }
+    }
+}
+
+@usableFromInline
 enum ValkeyRequest: Sendable {
-    case single(buffer: ByteBuffer, promise: EventLoopPromise<RESPToken>)
-    case multiple(buffer: ByteBuffer, promises: [EventLoopPromise<RESPToken>])
+    case single(buffer: ByteBuffer, promise: ValkeyPromise<RESPToken>)
+    case multiple(buffer: ByteBuffer, promises: [ValkeyPromise<RESPToken>])
 }
 
 @usableFromInline
@@ -31,7 +55,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     @usableFromInline
     let eventLoop: EventLoop
-    private var commands: Deque<EventLoopPromise<RESPToken>>
+    private var commands: Deque<ValkeyPromise<RESPToken>>
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private var context: ChannelHandlerContext?
     private let logger: Logger
