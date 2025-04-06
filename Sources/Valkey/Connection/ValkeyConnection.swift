@@ -111,16 +111,12 @@ public final class ValkeyConnection: Sendable {
 
     @inlinable
     public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
-        var encoder = RESPCommandEncoder()
-        command.encode(into: &encoder)
-        let buffer = encoder.buffer
-
         let result = try await withCheckedThrowingContinuation { continuation in
             if self.channel.eventLoop.inEventLoop {
-                self.channelHandler.value.write(request: ValkeyRequest.single(buffer: buffer, promise: .swift(continuation)))
+                self.channelHandler.value.write(command: command, continuation: continuation)
             } else {
                 self.channel.eventLoop.execute {
-                    self.channelHandler.value.write(request: ValkeyRequest.single(buffer: buffer, promise: .swift(continuation)))
+                    self.channelHandler.value.write(command: command, continuation: continuation)
                 }
             }
         }
