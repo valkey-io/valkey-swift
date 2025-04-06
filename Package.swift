@@ -34,13 +34,17 @@ let package = Package(
         ),
         .testTarget(
             name: "IntegrationTests",
-            dependencies: ["Valkey"]
+            dependencies: [
+                "Valkey",
+            ]
         ),
         .testTarget(
             name: "ValkeyTests",
             dependencies: [
                 "Valkey",
                 .product(name: "NIOTestUtils", package: "swift-nio"),
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIOEmbedded", package: "swift-nio"),
             ]
         ),
     ]
