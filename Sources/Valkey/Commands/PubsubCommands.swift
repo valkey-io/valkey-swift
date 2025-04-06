@@ -43,7 +43,6 @@ public enum PUBSUB {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -55,7 +54,6 @@ public enum PUBSUB {
     /// Returns a count of unique pattern subscriptions.
     public struct NUMPAT: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -224,20 +222,7 @@ public struct UNSUBSCRIBE: RESPCommand {
     }
 }
 
-
 extension ValkeyConnection {
-    /// Listens for messages published to channels that match one or more patterns.
-    ///
-    /// - Documentation: [PSUBSCRIBE](https:/valkey.io/commands/psubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of patterns to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func psubscribe(pattern: [String]) async throws -> PSUBSCRIBE.Response {
-        try await send(command: PSUBSCRIBE(pattern: pattern))
-    }
-
     /// Posts a message to a channel.
     ///
     /// - Documentation: [PUBLISH](https:/valkey.io/commands/publish)
@@ -344,30 +329,6 @@ extension ValkeyConnection {
     @inlinable
     public func spublish(shardchannel: String, message: String) async throws -> Int {
         try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
-    }
-
-    /// Listens for messages published to shard channels.
-    ///
-    /// - Documentation: [SSUBSCRIBE](https:/valkey.io/commands/ssubscribe)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of shard channels to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `ssubscribe` is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
-    @inlinable
-    public func ssubscribe(shardchannel: [String]) async throws -> SSUBSCRIBE.Response {
-        try await send(command: SSUBSCRIBE(shardchannel: shardchannel))
-    }
-
-    /// Listens for messages published to channels.
-    ///
-    /// - Documentation: [SUBSCRIBE](https:/valkey.io/commands/subscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of channels to subscribe to.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func subscribe(channel: [String]) async throws -> SUBSCRIBE.Response {
-        try await send(command: SUBSCRIBE(channel: channel))
     }
 
     /// Stops listening to messages posted to shard channels.

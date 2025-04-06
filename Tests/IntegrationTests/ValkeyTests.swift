@@ -227,32 +227,180 @@ struct GeneratedCommands {
         }
     }
 
-    /*
     @Test
     func testSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         try await withThrowingTaskGroup(of: Void.self) { group in
-            var logger = Logger(label: "Valkey")
-            logger.logLevel = .debug
+            var logger = Logger(label: "Subscriptions")
+            logger.logLevel = .trace
             group.addTask {
-                try await ValkeyClient(.hostname("localhost", port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    _ = try await connection.subscribe(channel: "subscribe")
-                    for try await message in connection.subscriptions {
-                        try print(message.converting(to: [String].self))
-                        break
-                    }
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    let stream = try await connection.subscribe(to: "testSubscriptions")
+                    cont.finish()
+                    var iterator = stream.makeAsyncIterator()
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }
+                    _ = try await connection.unsubscribe(channel: ["testSubscriptions"])
+                    await #expect(throws: Never.self) { try await iterator.next() == nil }
                 }
             }
             group.addTask {
-                try await ValkeyClient(.hostname("localhost", port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    while true {
-                        let subscribers = try await connection.pubsubNumsub(channel: "subscribe")
-                        if try subscribers[1].converting(to: Int.self) > 0 { break }
-                        try await Task.sleep(for: .microseconds(50))
-                    }
-                    _ = try await connection.publish(channel: "subscribe", message: "hello")
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "testSubscriptions", message: "hello")
+                    _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
                 }
             }
             try await group.waitForAll()
         }
-    }*/
+    }
+
+    @Test
+    func testDoubleSubscription() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            var logger = Logger(label: "DoubleSubscription")
+            logger.logLevel = .trace
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    let stream = try await connection.subscribe(to: "testDoubleSubscription")
+                    let stream2 = try await connection.subscribe(to: "testDoubleSubscription")
+                    var iterator = stream.makeAsyncIterator()
+                    var iterator2 = stream2.makeAsyncIterator()
+                    cont.finish()
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
+                    await #expect(throws: Never.self) { try await iterator2.next()?.message == "hello" }
+                }
+            }
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "testDoubleSubscription", message: "hello")
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
+
+    @Test
+    func testTwoDifferentSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            var logger = Logger(label: "TwoDifferentSubscriptions")
+            logger.logLevel = .trace
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    let stream = try await connection.subscribe(to: "testTwoDifferentSubscriptions")
+                    let stream2 = try await connection.subscribe(to: "testTwoDifferentSubscriptions2")
+                    var iterator = stream.makeAsyncIterator()
+                    var iterator2 = stream2.makeAsyncIterator()
+                    cont.finish()
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
+                    await #expect(throws: Never.self) { try await iterator2.next()?.message == "goodbye" }
+                }
+            }
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "testTwoDifferentSubscriptions", message: "hello")
+                    _ = try await connection.publish(channel: "testTwoDifferentSubscriptions2", message: "goodbye")
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
+
+    @Test
+    func testMultipleSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            var logger = Logger(label: "MultipleSubscriptions")
+            logger.logLevel = .trace
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    let stream = try await connection.subscribe(to: "multi1", "multi2", "multi3")
+                    var iterator = stream.makeAsyncIterator()
+                    cont.yield()
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "1" }
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "2" }
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
+                    // unsubscribe from multi2
+                    _ = try await connection.unsubscribe(channel: ["multi2"])
+                    // trigger second publish
+                    cont.finish()
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "1" }
+                    await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
+                }
+            }
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    _ = await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "multi1", message: "1")
+                    _ = try await connection.publish(channel: "multi2", message: "2")
+                    _ = try await connection.publish(channel: "multi3", message: "3")
+                    _ = await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "multi1", message: "1")
+                    _ = try await connection.publish(channel: "multi2", message: "2")
+                    _ = try await connection.publish(channel: "multi3", message: "3")
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
+
+    @Test
+    func testPatternSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            var logger = Logger(label: "PatternSubscriptions")
+            logger.logLevel = .trace
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    let stream = try await connection.psubscribe(to: "pattern.*")
+                    cont.finish()
+                    var iterator = stream.makeAsyncIterator()
+                    try #expect(await iterator.next() == .init(channel: "pattern.1", message: "hello"))
+                    try #expect(await iterator.next() == .init(channel: "pattern.abc", message: "goodbye"))
+                }
+            }
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "pattern.1", message: "hello")
+                    _ = try await connection.publish(channel: "pattern.abc", message: "goodbye")
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
+
+    /// Test we can run both pattern and normal channel subscriptions on the same connection
+    @Test
+    func testPatternChannelSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            var logger = Logger(label: "PatternChannelSubscriptions")
+            logger.logLevel = .trace
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    let stream = try await connection.subscribe(to: "PatternChannelSubscriptions1")
+                    let stream2 = try await connection.psubscribe(to: "PatternChannelSubscriptions*")
+                    var iterator = stream.makeAsyncIterator()
+                    var iterator2 = stream2.makeAsyncIterator()
+                    cont.finish()
+                    try #expect(await iterator.next() == .init(channel: "PatternChannelSubscriptions1", message: "hello"))
+                    try #expect(await iterator2.next() == .init(channel: "PatternChannelSubscriptions1", message: "hello"))
+                    try #expect(await iterator2.next() == .init(channel: "PatternChannelSubscriptions2", message: "goodbye"))
+                }
+            }
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "PatternChannelSubscriptions1", message: "hello")
+                    _ = try await connection.publish(channel: "PatternChannelSubscriptions2", message: "goodbye")
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
 }

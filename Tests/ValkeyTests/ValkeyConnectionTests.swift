@@ -30,7 +30,7 @@ struct ConnectionTests {
         async let fooResult = connection.get(key: "foo")
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == ByteBuffer(string: "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n"))
+        #expect(String(buffer: outbound) == "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
 
         try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))
         #expect(try await fooResult == "Bar")
