@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        image: ["swift:6.0", "swift:6.1"]
+        image: ["swift:6.0", "swift:6.1", "swiftlang/swift:nightly-main-jammy"]
     container:
       image: ${{ matrix.image }}
     services:
@@ -31,6 +31,10 @@ jobs:
           - 6379:6379
         options: --entrypoint valkey-server
     steps:
+      - name: Install jemalloc
+        run: |
+          apt-get update
+          apt-get install -y libjemalloc-dev
       - name: Checkout
         uses: actions/checkout@v4
       - name: Test
