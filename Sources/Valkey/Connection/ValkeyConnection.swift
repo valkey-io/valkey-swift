@@ -191,15 +191,7 @@ public final class ValkeyConnection: Sendable {
 
         let connect = bootstrap.channelInitializer { channel in
             do {
-                let sync = channel.pipeline.syncOperations
-                if case .enable(let sslContext, let tlsServerName) = configuration.tls.base {
-                    try sync.addHandler(NIOSSLClientHandler(context: sslContext, serverHostname: tlsServerName))
-                }
-                let valkeyChannelHandler = ValkeyChannelHandler(
-                    eventLoop: channel.eventLoop,
-                    logger: logger
-                )
-                try sync.addHandler(valkeyChannelHandler)
+                try self._setupChannel(channel, configuration: configuration, logger: logger)
                 return eventLoop.makeSucceededVoidFuture()
             } catch {
                 return eventLoop.makeFailedFuture(error)
@@ -224,6 +216,36 @@ public final class ValkeyConnection: Sendable {
             let handler = try channel.pipeline.syncOperations.handler(type: ValkeyChannelHandler.self)
             return ValkeyConnection(channel: channel, channelHandler: handler, configuration: configuration, logger: logger)
         }
+    }
+
+    package static func setupChannel(_ channel: any Channel, configuration: ValkeyClientConfiguration, logger: Logger) async throws -> ValkeyConnection {
+        if !channel.eventLoop.inEventLoop {
+            return try await channel.eventLoop.submit {
+                let handler = try self._setupChannel(channel, configuration: configuration, logger: logger)
+                return ValkeyConnection(channel: channel, channelHandler: handler, configuration: configuration, logger: logger)
+            }.get()
+        }
+
+        let handler = try self._setupChannel(channel, configuration: configuration, logger: logger)
+        return ValkeyConnection(channel: channel, channelHandler: handler, configuration: configuration, logger: logger)
+    }
+
+    @discardableResult
+    private static func _setupChannel(_ channel: any Channel, configuration: ValkeyClientConfiguration, logger: Logger) throws -> ValkeyChannelHandler {
+        channel.eventLoop.assertInEventLoop()
+        let sync = channel.pipeline.syncOperations
+        switch configuration.tls.base {
+        case .enable(let sslContext, let tlsServerName):
+            try sync.addHandler(NIOSSLClientHandler(context: sslContext, serverHostname: tlsServerName))
+        case .disable:
+            break
+        }
+        let valkeyChannelHandler = ValkeyChannelHandler(
+            eventLoop: channel.eventLoop,
+            logger: logger
+        )
+        try sync.addHandler(valkeyChannelHandler)
+        return valkeyChannelHandler
     }
 
     /// create a BSD sockets based bootstrap
