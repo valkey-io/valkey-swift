@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 /// Errors returned by ``ValkeyClient``
-public struct ValkeyClientError: Error, CustomStringConvertible {
+public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
     public struct ErrorCode: Equatable, Sendable {
         fileprivate enum _Internal: Equatable, Sendable {
             case connectionClosed

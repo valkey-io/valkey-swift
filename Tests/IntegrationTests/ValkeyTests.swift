@@ -171,6 +171,18 @@ struct GeneratedCommands {
         }
     }
 
+    @Test("Test command error is thrown")
+    func testCommandError() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                _ = try await connection.set(key: key, value: "Hello")
+                await #expect(throws: ValkeyClientError.self) { _ = try await connection.rpop(key: key) }
+            }
+        }
+    }
+
     @Test
     func testMultiplexing() async throws {
         var logger = Logger(label: "Valkey")
