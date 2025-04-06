@@ -117,7 +117,7 @@ public struct RESPToken: Hashable, Sendable {
 
             return .bulkString(local.readSlice(length: length)!)
 
-        case .blobError:
+        case .bulkError:
             var lengthSlice = try! local.readCRLFTerminatedSlice2()!
             let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
             let length = Int(lengthString)!
@@ -197,7 +197,7 @@ public struct RESPToken: Hashable, Sendable {
         case .simpleError:
             let slice = try! local.readCRLFTerminatedSlice2()!
             return slice
-        case .blobError:
+        case .bulkError:
             var lengthSlice = try! local.readCRLFTerminatedSlice2()!
             let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
             let length = Int(lengthString)!
@@ -205,6 +205,10 @@ public struct RESPToken: Hashable, Sendable {
         default:
             return nil
         }
+    }
+
+    public var identifier: RESPTypeIdentifier {
+        self.base.getValidatedRESP3TypeIdentifier()
     }
 
     public init?(consuming buffer: inout ByteBuffer) throws {
@@ -223,7 +227,7 @@ public struct RESPToken: Hashable, Sendable {
 
         case .some(.bulkString),
             .some(.verbatimString),
-            .some(.blobError):
+            .some(.bulkError):
             validated = try buffer.readRESPBlobStringSlice()
 
         case .some(.simpleString),
@@ -260,7 +264,7 @@ public struct RESPToken: Hashable, Sendable {
 }
 
 extension ByteBuffer {
-    fileprivate mutating func getRESP3TypeIdentifier(at index: Int) throws -> RESPTypeIdentifier? {
+    fileprivate func getRESP3TypeIdentifier(at index: Int) throws -> RESPTypeIdentifier? {
         guard let int = self.getInteger(at: index, as: UInt8.self) else {
             return nil
         }
@@ -270,6 +274,11 @@ extension ByteBuffer {
         }
 
         return id
+    }
+
+    fileprivate func getValidatedRESP3TypeIdentifier() -> RESPTypeIdentifier {
+        let int = self.getInteger(at: self.readerIndex, as: UInt8.self)!
+        return RESPTypeIdentifier(rawValue: int)!
     }
 
     fileprivate mutating func readValidatedRESP3TypeIdentifier() -> RESPTypeIdentifier {
@@ -311,7 +320,7 @@ extension ByteBuffer {
 
     fileprivate mutating func readRESPBlobStringSlice() throws -> ByteBuffer? {
         let marker = try self.getRESP3TypeIdentifier(at: self.readerIndex)!
-        precondition(marker == .bulkString || marker == .verbatimString || marker == .blobError)
+        precondition(marker == .bulkString || marker == .verbatimString || marker == .bulkError)
         guard var lengthSlice = try self.getCRLFTerminatedSlice(at: self.readerIndex + 1) else {
             return nil
         }

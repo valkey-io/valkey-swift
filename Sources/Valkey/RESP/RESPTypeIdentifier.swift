@@ -18,7 +18,7 @@ public enum RESPTypeIdentifier: UInt8 {
     case simpleString = 43  // UInt8.plus
     case simpleError = 45  // UInt8.min
     case bulkString = 36  // UInt8.dollar
-    case blobError = 33  // UInt8.exclamationMark
+    case bulkError = 33  // UInt8.exclamationMark
     case verbatimString = 61  // UInt8.equals
     case boolean = 35  // UInt8.pound
     case null = 95  // UInt8.underscore

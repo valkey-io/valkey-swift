@@ -140,10 +140,18 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     func handleToken(context: ChannelHandlerContext, token: RESPToken) {
-        guard let promise = commands.popFirst() else {
-            preconditionFailure("Unexpected response")
+        switch token.identifier {
+        case .simpleError, .bulkError:
+            guard let promise = commands.popFirst() else {
+                preconditionFailure("Unexpected response")
+            }
+            promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
+        default:
+            guard let promise = commands.popFirst() else {
+                preconditionFailure("Unexpected response")
+            }
+            promise.succeed(token)
         }
-        promise.succeed(token)
     }
 
     func handleError(context: ChannelHandlerContext, error: Error) {
