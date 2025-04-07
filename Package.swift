@@ -15,6 +15,8 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.79.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.23.0"),
+
+        .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.29.2"),
     ],
     targets: [
         .target(
@@ -31,6 +33,20 @@ let package = Package(
         .executableTarget(
             name: "ValkeyCommandsBuilder",
             resources: [.process("Resources")]
+        ),
+        .executableTarget(
+            name: "ValkeyBenchmarks",
+            dependencies: [
+                "Valkey",
+                .product(name: "Benchmark", package: "package-benchmark"),
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+            ],
+            path: "Benchmarks/ValkeyBenchmarks",
+            plugins: [
+                .plugin(name: "BenchmarkPlugin", package: "package-benchmark"),
+            ]
         ),
         .testTarget(
             name: "IntegrationTests",
