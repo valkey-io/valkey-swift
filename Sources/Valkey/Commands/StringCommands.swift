@@ -110,8 +110,18 @@ public struct GETEX: RESPCommand {
         case unixTimeMilliseconds(Date)
         case persist
 
+        public var respEntries: Int {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .persist: "PERSIST".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
@@ -275,11 +285,14 @@ public struct MSET: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += key.encode(into: &commandEncoder)
-            count += value.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            key.respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            key.encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken
@@ -308,11 +321,14 @@ public struct MSETNX: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += key.encode(into: &commandEncoder)
-            count += value.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            key.respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            key.encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -354,8 +370,15 @@ public struct SET: RESPCommand {
         case nx
         case xx
 
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xx: "XX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -369,8 +392,18 @@ public struct SET: RESPCommand {
         case unixTimeMilliseconds(Date)
         case keepttl
 
+        public var respEntries: Int {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .keepttl: "KEEPTTL".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)

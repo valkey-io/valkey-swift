@@ -22,26 +22,16 @@ function genWithoutContextParameter() {
     echo ") {"
 
     echo "        self.encodeIdentifier(.array)"
-    echo "        var count = 0"
-    echo "        let arrayCountIndex = buffer.writerIndex"
-    echo "        self.buffer.writeStaticString(\"0\\r\\n\")"
-    for ((n = 0; n<$how_many; n +=1)); do
-        echo "        count += t$(($n)).encode(into: &self)"
+    echo -n "        let count = t0.respEntries"
+    for ((n = 1; n<$how_many; n +=1)); do
+        echo -n " + t$(($n)).respEntries"
     done
-    echo "        if count > 9 {"
-    echo "            // I'm being lazy here and not supporting more than 99 arguments"
-    echo "            precondition(count < 100)"
-    echo "            // We need to rebuild ByteBuffer with space for double digit count"
-    echo "            // skip past count + \r\n"
-    echo "            let sliceStart = arrayCountIndex + 3"
-    echo "            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!"
-    echo "            self.buffer.moveWriterIndex(to: arrayCountIndex)"
-    echo "            self.buffer.writeString(String(count))"
-    echo "            self.buffer.writeStaticString(\"\\r\\n\")"
-    echo "            self.buffer.writeBuffer(&slice)"
-    echo "        } else {"
-    echo "            self.buffer.setString(String(count), at: arrayCountIndex)"
-    echo "        }"
+    echo
+    echo "        self.buffer.writeString(\"\\(count)\")"
+    echo "        self.buffer.writeStaticString(\"\\r\\n\")"
+    for ((n = 0; n<$how_many; n +=1)); do
+        echo "        t$(($n)).encode(into: &self)"
+    done
     echo "    }"
 }
 

@@ -28,8 +28,15 @@ public struct BLMOVE: RESPCommand {
         case left
         case right
 
+        public var respEntries: Int {
+            switch self {
+            case .left: "LEFT".respEntries
+            case .right: "RIGHT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -40,8 +47,15 @@ public struct BLMOVE: RESPCommand {
         case left
         case right
 
+        public var respEntries: Int {
+            switch self {
+            case .left: "LEFT".respEntries
+            case .right: "RIGHT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -75,8 +89,15 @@ public struct BLMPOP: RESPCommand {
         case left
         case right
 
+        public var respEntries: Int {
+            switch self {
+            case .left: "LEFT".respEntries
+            case .right: "RIGHT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -179,8 +200,15 @@ public struct LINSERT: RESPCommand {
         case before
         case after
 
+        public var respEntries: Int {
+            switch self {
+            case .before: "BEFORE".respEntries
+            case .after: "AFTER".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .before: "BEFORE".encode(into: &commandEncoder)
             case .after: "AFTER".encode(into: &commandEncoder)
@@ -227,8 +255,15 @@ public struct LMOVE: RESPCommand {
         case left
         case right
 
+        public var respEntries: Int {
+            switch self {
+            case .left: "LEFT".respEntries
+            case .right: "RIGHT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -239,8 +274,15 @@ public struct LMOVE: RESPCommand {
         case left
         case right
 
+        public var respEntries: Int {
+            switch self {
+            case .left: "LEFT".respEntries
+            case .right: "RIGHT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -272,8 +314,15 @@ public struct LMPOP: RESPCommand {
         case left
         case right
 
+        public var respEntries: Int {
+            switch self {
+            case .left: "LEFT".respEntries
+            case .right: "RIGHT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
