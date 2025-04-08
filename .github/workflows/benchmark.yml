@@ -27,7 +27,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-
+        image: ["swift:6.1"]
+        
+    container:
+      image: ${{ matrix.image }}
+      
     steps:
       - uses: actions/checkout@v4
         with:
