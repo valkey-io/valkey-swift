@@ -187,11 +187,14 @@ public struct HMSET: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += field.encode(into: &commandEncoder)
-            count += value.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            field.respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            field.encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken
@@ -222,11 +225,14 @@ public struct HRANDFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += count.encode(into: &commandEncoder)
-            if self.withvalues { count += "WITHVALUES".encode(into: &commandEncoder) }
-            return count
+        public var respEntries: Int {
+            count.respEntries + "WITHVALUES".respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            count.encode(into: &commandEncoder)
+            "WITHVALUES".encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken
@@ -278,11 +284,14 @@ public struct HSET: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += field.encode(into: &commandEncoder)
-            count += value.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            field.respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            field.encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int

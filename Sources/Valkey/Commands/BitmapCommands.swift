@@ -28,8 +28,15 @@ public struct BITCOUNT: RESPCommand {
         case byte
         case bit
 
+        public var respEntries: Int {
+            switch self {
+            case .byte: "BYTE".respEntries
+            case .bit: "BIT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .byte: "BYTE".encode(into: &commandEncoder)
             case .bit: "BIT".encode(into: &commandEncoder)
@@ -49,12 +56,15 @@ public struct BITCOUNT: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += start.encode(into: &commandEncoder)
-            count += end.encode(into: &commandEncoder)
-            count += unit.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            start.respEntries + end.respEntries + unit.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            start.encode(into: &commandEncoder)
+            end.encode(into: &commandEncoder)
+            unit.encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -85,11 +95,14 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += encoding.encode(into: &commandEncoder)
-            count += offset.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            encoding.respEntries + offset.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            encoding.encode(into: &commandEncoder)
+            offset.encode(into: &commandEncoder)
         }
     }
     public enum OperationWriteOverflowBlock: RESPRenderable, Sendable {
@@ -97,8 +110,16 @@ public struct BITFIELD: RESPCommand {
         case sat
         case fail
 
+        public var respEntries: Int {
+            switch self {
+            case .wrap: "WRAP".respEntries
+            case .sat: "SAT".respEntries
+            case .fail: "FAIL".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .wrap: "WRAP".encode(into: &commandEncoder)
             case .sat: "SAT".encode(into: &commandEncoder)
@@ -119,12 +140,15 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += encoding.encode(into: &commandEncoder)
-            count += offset.encode(into: &commandEncoder)
-            count += value.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            encoding.respEntries + offset.respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            encoding.encode(into: &commandEncoder)
+            offset.encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
         }
     }
     public struct OperationWriteWriteOperationIncrbyBlock: RESPRenderable, Sendable {
@@ -140,20 +164,30 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += encoding.encode(into: &commandEncoder)
-            count += offset.encode(into: &commandEncoder)
-            count += increment.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            encoding.respEntries + offset.respEntries + increment.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            encoding.encode(into: &commandEncoder)
+            offset.encode(into: &commandEncoder)
+            increment.encode(into: &commandEncoder)
         }
     }
     public enum OperationWriteWriteOperation: RESPRenderable, Sendable {
         case setBlock(OperationWriteWriteOperationSetBlock)
         case incrbyBlock(OperationWriteWriteOperationIncrbyBlock)
 
+        public var respEntries: Int {
+            switch self {
+            case .setBlock(let setBlock): RESPWithToken("SET", setBlock).respEntries
+            case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .setBlock(let setBlock): RESPWithToken("SET", setBlock).encode(into: &commandEncoder)
             case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).encode(into: &commandEncoder)
@@ -171,19 +205,29 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += RESPWithToken("OVERFLOW", overflowBlock).encode(into: &commandEncoder)
-            count += writeOperation.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            RESPWithToken("OVERFLOW", overflowBlock).respEntries + writeOperation.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            RESPWithToken("OVERFLOW", overflowBlock).encode(into: &commandEncoder)
+            writeOperation.encode(into: &commandEncoder)
         }
     }
     public enum Operation: RESPRenderable, Sendable {
         case getBlock(OperationGetBlock)
         case write(OperationWrite)
 
+        public var respEntries: Int {
+            switch self {
+            case .getBlock(let getBlock): RESPWithToken("GET", getBlock).respEntries
+            case .write(let write): write.respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .getBlock(let getBlock): RESPWithToken("GET", getBlock).encode(into: &commandEncoder)
             case .write(let write): write.encode(into: &commandEncoder)
@@ -218,11 +262,14 @@ public struct BITFIELDRO: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += encoding.encode(into: &commandEncoder)
-            count += offset.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            encoding.respEntries + offset.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            encoding.encode(into: &commandEncoder)
+            offset.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [RESPToken]
@@ -248,8 +295,17 @@ public struct BITOP: RESPCommand {
         case xor
         case not
 
+        public var respEntries: Int {
+            switch self {
+            case .and: "AND".respEntries
+            case .or: "OR".respEntries
+            case .xor: "XOR".respEntries
+            case .not: "NOT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .and: "AND".encode(into: &commandEncoder)
             case .or: "OR".encode(into: &commandEncoder)
@@ -281,8 +337,15 @@ public struct BITPOS: RESPCommand {
         case byte
         case bit
 
+        public var respEntries: Int {
+            switch self {
+            case .byte: "BYTE".respEntries
+            case .bit: "BIT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .byte: "BYTE".encode(into: &commandEncoder)
             case .bit: "BIT".encode(into: &commandEncoder)
@@ -300,11 +363,14 @@ public struct BITPOS: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += end.encode(into: &commandEncoder)
-            count += unit.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            end.respEntries + unit.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            end.encode(into: &commandEncoder)
+            unit.encode(into: &commandEncoder)
         }
     }
     public struct Range: RESPRenderable, Sendable {
@@ -318,11 +384,14 @@ public struct BITPOS: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += start.encode(into: &commandEncoder)
-            count += endUnitBlock.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            start.respEntries + endUnitBlock.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            start.encode(into: &commandEncoder)
+            endUnitBlock.encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int

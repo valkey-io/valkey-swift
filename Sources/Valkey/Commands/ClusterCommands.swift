@@ -52,11 +52,14 @@ public enum CLUSTER {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-                var count = 0
-                count += startSlot.encode(into: &commandEncoder)
-                count += endSlot.encode(into: &commandEncoder)
-                return count
+            public var respEntries: Int {
+                startSlot.respEntries + endSlot.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+                startSlot.encode(into: &commandEncoder)
+                endSlot.encode(into: &commandEncoder)
             }
         }
         public typealias Response = RESPToken
@@ -143,11 +146,14 @@ public enum CLUSTER {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-                var count = 0
-                count += startSlot.encode(into: &commandEncoder)
-                count += endSlot.encode(into: &commandEncoder)
-                return count
+            public var respEntries: Int {
+                startSlot.respEntries + endSlot.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+                startSlot.encode(into: &commandEncoder)
+                endSlot.encode(into: &commandEncoder)
             }
         }
         public typealias Response = RESPToken
@@ -169,8 +175,15 @@ public enum CLUSTER {
             case force
             case takeover
 
+            public var respEntries: Int {
+                switch self {
+                case .force: "FORCE".respEntries
+                case .takeover: "TAKEOVER".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .force: "FORCE".encode(into: &commandEncoder)
                 case .takeover: "TAKEOVER".encode(into: &commandEncoder)
@@ -383,8 +396,15 @@ public enum CLUSTER {
             case hard
             case soft
 
+            public var respEntries: Int {
+                switch self {
+                case .hard: "HARD".respEntries
+                case .soft: "SOFT".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .hard: "HARD".encode(into: &commandEncoder)
                 case .soft: "SOFT".encode(into: &commandEncoder)
@@ -440,8 +460,17 @@ public enum CLUSTER {
             case node(String)
             case stable
 
+            public var respEntries: Int {
+                switch self {
+                case .importing(let importing): RESPWithToken("IMPORTING", importing).respEntries
+                case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).respEntries
+                case .node(let node): RESPWithToken("NODE", node).respEntries
+                case .stable: "STABLE".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .importing(let importing): RESPWithToken("IMPORTING", importing).encode(into: &commandEncoder)
                 case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).encode(into: &commandEncoder)

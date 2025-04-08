@@ -27,7 +27,11 @@ package struct RESPPureToken: RESPRenderable {
         }
     }
     @inlinable
-    package func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+    package var respEntries: Int {
+        self.token != nil ? 1 : 0
+    }
+    @inlinable
+    package func encode(into commandEncoder: inout RESPCommandEncoder) {
         self.token.encode(into: &commandEncoder)
     }
 }
@@ -45,19 +49,18 @@ package struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
         self.token = token
     }
     @inlinable
-    package func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-        if let value {
-            let writerIndex = commandEncoder.writerIndex
-            _ = self.token.encode(into: &commandEncoder)
-            let count = value.encode(into: &commandEncoder)
-            if count == 0 {
-                commandEncoder.moveWriterIndex(to: writerIndex)
-                return 0
-            }
-            return count + 1
-        } else {
-            return 0
+    package var respEntries: Int {
+        guard let value = self.value, value.respEntries > 0 else { return 0 }
+        return value.respEntries + 1
+    }
+    @inlinable
+    package func encode(into commandEncoder: inout RESPCommandEncoder) {
+        guard let value, value.respEntries > 0 else {
+            return
         }
+
+        self.token.encode(into: &commandEncoder)
+        value.encode(into: &commandEncoder)
     }
 }
 
@@ -71,9 +74,12 @@ package struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
         self.array = array
     }
     @inlinable
-    package func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-        _ = array.count.encode(into: &commandEncoder)
-        let count = array.encode(into: &commandEncoder)
-        return count + 1
+    package var respEntries: Int {
+        return self.array.respEntries + 1
+    }
+    @inlinable
+    package func encode(into commandEncoder: inout RESPCommandEncoder) {
+        self.array.count.encode(into: &commandEncoder)
+        self.array.encode(into: &commandEncoder)
     }
 }

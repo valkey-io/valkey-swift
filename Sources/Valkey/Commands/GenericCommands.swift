@@ -173,8 +173,17 @@ public struct EXPIRE: RESPCommand {
         case gt
         case lt
 
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xx: "XX".respEntries
+            case .gt: "GT".respEntries
+            case .lt: "LT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -208,8 +217,17 @@ public struct EXPIREAT: RESPCommand {
         case gt
         case lt
 
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xx: "XX".respEntries
+            case .gt: "GT".respEntries
+            case .lt: "LT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -271,8 +289,15 @@ public struct MIGRATE: RESPCommand {
         case key(RESPKey)
         case emptyString
 
+        public var respEntries: Int {
+            switch self {
+            case .key(let key): key.respEntries
+            case .emptyString: "".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .key(let key): key.encode(into: &commandEncoder)
             case .emptyString: "".encode(into: &commandEncoder)
@@ -290,19 +315,29 @@ public struct MIGRATE: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += username.encode(into: &commandEncoder)
-            count += password.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            username.respEntries + password.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            username.encode(into: &commandEncoder)
+            password.encode(into: &commandEncoder)
         }
     }
     public enum Authentication: RESPRenderable, Sendable {
         case auth(String)
         case auth2(AuthenticationAuth2)
 
+        public var respEntries: Int {
+            switch self {
+            case .auth(let auth): RESPWithToken("AUTH", auth).respEntries
+            case .auth2(let auth2): RESPWithToken("AUTH2", auth2).respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .auth(let auth): RESPWithToken("AUTH", auth).encode(into: &commandEncoder)
             case .auth2(let auth2): RESPWithToken("AUTH2", auth2).encode(into: &commandEncoder)
@@ -378,8 +413,17 @@ public struct PEXPIRE: RESPCommand {
         case gt
         case lt
 
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xx: "XX".respEntries
+            case .gt: "GT".respEntries
+            case .lt: "LT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -413,8 +457,17 @@ public struct PEXPIREAT: RESPCommand {
         case gt
         case lt
 
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xx: "XX".respEntries
+            case .gt: "GT".respEntries
+            case .lt: "LT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -578,19 +631,29 @@ public struct SORT: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += offset.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            offset.respEntries + count.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            offset.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
         }
     }
     public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
+        public var respEntries: Int {
+            switch self {
+            case .asc: "ASC".respEntries
+            case .desc: "DESC".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .asc: "ASC".encode(into: &commandEncoder)
             case .desc: "DESC".encode(into: &commandEncoder)
@@ -635,19 +698,29 @@ public struct SORTRO: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += offset.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            offset.respEntries + count.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            offset.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
         }
     }
     public enum Order: RESPRenderable, Sendable {
         case asc
         case desc
 
+        public var respEntries: Int {
+            switch self {
+            case .asc: "ASC".respEntries
+            case .desc: "DESC".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .asc: "ASC".encode(into: &commandEncoder)
             case .desc: "DESC".encode(into: &commandEncoder)

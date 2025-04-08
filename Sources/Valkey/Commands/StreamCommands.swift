@@ -30,8 +30,15 @@ public enum XGROUP {
             case id(String)
             case newId
 
+            public var respEntries: Int {
+                switch self {
+                case .id(let id): id.respEntries
+                case .newId: "$".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .id(let id): id.encode(into: &commandEncoder)
                 case .newId: "$".encode(into: &commandEncoder)
@@ -133,8 +140,15 @@ public enum XGROUP {
             case id(String)
             case newId
 
+            public var respEntries: Int {
+                switch self {
+                case .id(let id): id.respEntries
+                case .newId: "$".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .id(let id): id.encode(into: &commandEncoder)
                 case .newId: "$".encode(into: &commandEncoder)
@@ -222,11 +236,14 @@ public enum XINFO {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-                var count = 0
-                if self.full { count += "FULL".encode(into: &commandEncoder) }
-                count += RESPWithToken("COUNT", count).encode(into: &commandEncoder)
-                return count
+            public var respEntries: Int {
+                "FULL".respEntries + RESPWithToken("COUNT", count).respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+                "FULL".encode(into: &commandEncoder)
+                RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             }
         }
         public typealias Response = [String: RESPToken]
@@ -271,8 +288,15 @@ public struct XADD: RESPCommand {
         case maxlen
         case minid
 
+        public var respEntries: Int {
+            switch self {
+            case .maxlen: "MAXLEN".respEntries
+            case .minid: "MINID".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .maxlen: "MAXLEN".encode(into: &commandEncoder)
             case .minid: "MINID".encode(into: &commandEncoder)
@@ -283,8 +307,15 @@ public struct XADD: RESPCommand {
         case equal
         case approximately
 
+        public var respEntries: Int {
+            switch self {
+            case .equal: "=".respEntries
+            case .approximately: "~".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .equal: "=".encode(into: &commandEncoder)
             case .approximately: "~".encode(into: &commandEncoder)
@@ -306,21 +337,31 @@ public struct XADD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += strategy.encode(into: &commandEncoder)
-            count += `operator`.encode(into: &commandEncoder)
-            count += threshold.encode(into: &commandEncoder)
-            count += RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            strategy.respEntries + `operator`.respEntries + threshold.respEntries + RESPWithToken("LIMIT", count).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            strategy.encode(into: &commandEncoder)
+            `operator`.encode(into: &commandEncoder)
+            threshold.encode(into: &commandEncoder)
+            RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
         }
     }
     public enum IdSelector: RESPRenderable, Sendable {
         case autoId
         case id(String)
 
+        public var respEntries: Int {
+            switch self {
+            case .autoId: "*".respEntries
+            case .id(let id): id.respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .autoId: "*".encode(into: &commandEncoder)
             case .id(let id): id.encode(into: &commandEncoder)
@@ -338,11 +379,14 @@ public struct XADD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += field.encode(into: &commandEncoder)
-            count += value.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            field.respEntries + value.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            field.encode(into: &commandEncoder)
+            value.encode(into: &commandEncoder)
         }
     }
     public typealias Response = String?
@@ -479,14 +523,17 @@ public struct XPENDING: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += RESPWithToken("IDLE", minIdleTime).encode(into: &commandEncoder)
-            count += start.encode(into: &commandEncoder)
-            count += end.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            count += consumer.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            RESPWithToken("IDLE", minIdleTime).respEntries + start.respEntries + end.respEntries + count.respEntries + consumer.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            RESPWithToken("IDLE", minIdleTime).encode(into: &commandEncoder)
+            start.encode(into: &commandEncoder)
+            end.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
+            consumer.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [RESPToken]
@@ -540,11 +587,14 @@ public struct XREAD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += key.encode(into: &commandEncoder)
-            count += id.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            key.respEntries + id.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            key.encode(into: &commandEncoder)
+            id.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [String: RESPToken]?
@@ -577,11 +627,14 @@ public struct XREADGROUP: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += group.encode(into: &commandEncoder)
-            count += consumer.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            group.respEntries + consumer.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            group.encode(into: &commandEncoder)
+            consumer.encode(into: &commandEncoder)
         }
     }
     public struct Streams: RESPRenderable, Sendable {
@@ -595,11 +648,14 @@ public struct XREADGROUP: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += key.encode(into: &commandEncoder)
-            count += id.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            key.respEntries + id.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            key.encode(into: &commandEncoder)
+            id.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [String: RESPToken]?
@@ -671,8 +727,15 @@ public struct XTRIM: RESPCommand {
         case maxlen
         case minid
 
+        public var respEntries: Int {
+            switch self {
+            case .maxlen: "MAXLEN".respEntries
+            case .minid: "MINID".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .maxlen: "MAXLEN".encode(into: &commandEncoder)
             case .minid: "MINID".encode(into: &commandEncoder)
@@ -683,8 +746,15 @@ public struct XTRIM: RESPCommand {
         case equal
         case approximately
 
+        public var respEntries: Int {
+            switch self {
+            case .equal: "=".respEntries
+            case .approximately: "~".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .equal: "=".encode(into: &commandEncoder)
             case .approximately: "~".encode(into: &commandEncoder)
@@ -706,13 +776,16 @@ public struct XTRIM: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += strategy.encode(into: &commandEncoder)
-            count += `operator`.encode(into: &commandEncoder)
-            count += threshold.encode(into: &commandEncoder)
-            count += RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            strategy.respEntries + `operator`.respEntries + threshold.respEntries + RESPWithToken("LIMIT", count).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            strategy.encode(into: &commandEncoder)
+            `operator`.encode(into: &commandEncoder)
+            threshold.encode(into: &commandEncoder)
+            RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
