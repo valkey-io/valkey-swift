@@ -67,8 +67,9 @@ let benchmarks: @Sendable () -> Void = {
         let token = RESPPureToken("TOKEN", true)
         benchmark.startMeasurement()
 
+        var encoder = RESPCommandEncoder()
         for _ in benchmark.scaledIterations {
-            var encoder = RESPCommandEncoder()
+            encoder.reset()
             encoder.encodeArray(string, optionalString, array, number, token)
         }
 
