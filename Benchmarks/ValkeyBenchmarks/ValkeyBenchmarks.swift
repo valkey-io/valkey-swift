@@ -59,7 +59,34 @@ let benchmarks: @Sendable () -> Void = {
         try await server?.close().get()
     }
 
-    Benchmark("RESPCommandEncoder", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+    Benchmark("RESPCommandEncoder – Simple GET", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+        let command = GET(key: "foo")
+        benchmark.startMeasurement()
+
+        var encoder = RESPCommandEncoder()
+        for _ in benchmark.scaledIterations {
+            encoder.reset()
+            command.encode(into: &encoder)
+        }
+
+        benchmark.stopMeasurement()
+    }
+
+    Benchmark("RESPCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+        let keys = (0..<15).map { RESPKey(rawValue: "foo-\($0)") }
+        let command = MGET(key: keys)
+        benchmark.startMeasurement()
+
+        var encoder = RESPCommandEncoder()
+        for _ in benchmark.scaledIterations {
+            encoder.reset()
+            command.encode(into: &encoder)
+        }
+
+        benchmark.stopMeasurement()
+    }
+
+    Benchmark("RESPCommandEncoder – Command with 7 words", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
         let string = "string"
         let optionalString: String? = "optionalString"
         let array = ["array", "of", "strings"]
