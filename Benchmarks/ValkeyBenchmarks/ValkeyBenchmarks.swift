@@ -18,7 +18,7 @@ import NIOCore
 import NIOPosix
 import Valkey
 
-let benchmarks : @Sendable () -> Void = {
+let benchmarks: @Sendable () -> Void = {
     let defaultMetrics: [BenchmarkMetric] = [
         .wallClock,
         .cpuTotal,
@@ -57,6 +57,22 @@ let benchmarks : @Sendable () -> Void = {
             .get()
     } teardown: {
         try await server?.close().get()
+    }
+
+    Benchmark("RESPCommandEncoder", configuration: .init(metrics: defaultMetrics, scalingFactor: .mega)) { benchmark in
+        let string = "string"
+        let optionalString: String? = "optionalString"
+        let array = ["array", "of", "strings"]
+        let number = 456
+        let token = RESPPureToken("TOKEN", true)
+        benchmark.startMeasurement()
+
+        for _ in benchmark.scaledIterations {
+            var encoder = RESPCommandEncoder()
+            encoder.encodeArray(string, optionalString, array, number, token)
+        }
+
+        benchmark.stopMeasurement()
     }
 }
 
