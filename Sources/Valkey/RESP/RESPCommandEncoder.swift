@@ -75,4 +75,9 @@ public struct RESPCommandEncoder {
     mutating func moveWriterIndex(to index: Int) {
         buffer.moveWriterIndex(to: index)
     }
+
+    @inlinable
+    package mutating func reset() {
+        self.buffer.clear()
+    }
 }
