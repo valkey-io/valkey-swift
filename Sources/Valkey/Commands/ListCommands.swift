@@ -28,12 +28,8 @@ public struct BLMOVE: RESPCommand {
         case left
         case right
 
-        public var respEntries: Int {
-            switch self {
-            case .left: "LEFT".respEntries
-            case .right: "RIGHT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -47,12 +43,8 @@ public struct BLMOVE: RESPCommand {
         case left
         case right
 
-        public var respEntries: Int {
-            switch self {
-            case .left: "LEFT".respEntries
-            case .right: "RIGHT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -89,12 +81,8 @@ public struct BLMPOP: RESPCommand {
         case left
         case right
 
-        public var respEntries: Int {
-            switch self {
-            case .left: "LEFT".respEntries
-            case .right: "RIGHT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -200,12 +188,8 @@ public struct LINSERT: RESPCommand {
         case before
         case after
 
-        public var respEntries: Int {
-            switch self {
-            case .before: "BEFORE".respEntries
-            case .after: "AFTER".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -255,12 +239,8 @@ public struct LMOVE: RESPCommand {
         case left
         case right
 
-        public var respEntries: Int {
-            switch self {
-            case .left: "LEFT".respEntries
-            case .right: "RIGHT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -274,12 +254,8 @@ public struct LMOVE: RESPCommand {
         case left
         case right
 
-        public var respEntries: Int {
-            switch self {
-            case .left: "LEFT".respEntries
-            case .right: "RIGHT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -314,12 +290,8 @@ public struct LMPOP: RESPCommand {
         case left
         case right
 
-        public var respEntries: Int {
-            switch self {
-            case .left: "LEFT".respEntries
-            case .right: "RIGHT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {

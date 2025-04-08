@@ -28,12 +28,8 @@ public struct BITCOUNT: RESPCommand {
         case byte
         case bit
 
-        public var respEntries: Int {
-            switch self {
-            case .byte: "BYTE".respEntries
-            case .bit: "BIT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -110,13 +106,8 @@ public struct BITFIELD: RESPCommand {
         case sat
         case fail
 
-        public var respEntries: Int {
-            switch self {
-            case .wrap: "WRAP".respEntries
-            case .sat: "SAT".respEntries
-            case .fail: "FAIL".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -179,6 +170,7 @@ public struct BITFIELD: RESPCommand {
         case setBlock(OperationWriteWriteOperationSetBlock)
         case incrbyBlock(OperationWriteWriteOperationIncrbyBlock)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .setBlock(let setBlock): RESPWithToken("SET", setBlock).respEntries
@@ -219,6 +211,7 @@ public struct BITFIELD: RESPCommand {
         case getBlock(OperationGetBlock)
         case write(OperationWrite)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .getBlock(let getBlock): RESPWithToken("GET", getBlock).respEntries
@@ -295,14 +288,8 @@ public struct BITOP: RESPCommand {
         case xor
         case not
 
-        public var respEntries: Int {
-            switch self {
-            case .and: "AND".respEntries
-            case .or: "OR".respEntries
-            case .xor: "XOR".respEntries
-            case .not: "NOT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -337,12 +324,8 @@ public struct BITPOS: RESPCommand {
         case byte
         case bit
 
-        public var respEntries: Int {
-            switch self {
-            case .byte: "BYTE".respEntries
-            case .bit: "BIT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
