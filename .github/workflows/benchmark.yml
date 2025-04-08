@@ -73,6 +73,8 @@ jobs:
         name: Pull request comment text success
         id: benchmark-nochange
         run: |
+          echo '---' >> $GITHUB_STEP_SUMMARY
+          swift package benchmark baseline compare main pull_request --no-progress --quiet --format markdown >> $GITHUB_STEP_SUMMARY
           echo 'PRTEST<<EOF' >> $GITHUB_ENV
           echo "[Pull request benchmark comparison [${{ matrix.os }}] with 'main' run at $(date -Iseconds)](https://github.com/adam-fowler/${{ github.event.repository.name }}/actions/runs/${{ github.run_id }})" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
