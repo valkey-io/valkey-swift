@@ -29,34 +29,6 @@ public struct RESPCommandEncoder {
     }
 
     @inlinable
-    package mutating func encodeArray<each Arg: RESPRenderable>(_ command: repeat each Arg) {
-        encodeIdentifier(.array)
-
-        let arrayCountIndex = buffer.writerIndex
-        // temporarily write 0 here, we will update this once everything else is written
-        buffer.writeString("0")
-        buffer.writeStaticString("\r\n")
-        var count = 0
-        for arg in repeat each command {
-            count += arg.encode(into: &self)
-        }
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            buffer.moveWriterIndex(to: arrayCountIndex)
-            buffer.writeString(String(count))
-            buffer.writeStaticString("\r\n")
-            buffer.writeBuffer(&slice)
-        } else {
-            buffer.setString(String(count), at: arrayCountIndex)
-        }
-    }
-
-    @inlinable
     mutating func encodeBulkString(_ string: String) {
         encodeIdentifier(.bulkString)
 
