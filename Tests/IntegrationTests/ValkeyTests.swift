@@ -235,13 +235,14 @@ struct GeneratedCommands {
             logger.logLevel = .trace
             group.addTask {
                 try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    let stream = try await connection.subscribe(to: "testSubscriptions")
-                    cont.finish()
-                    var iterator = stream.makeAsyncIterator()
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }
-                    _ = try await connection.unsubscribe(channel: ["testSubscriptions"])
-                    await #expect(throws: Never.self) { try await iterator.next() == nil }
+                    try await connection.subscribe(to: "testSubscriptions") { subscription in
+                        cont.finish()
+                        var iterator = subscription.makeAsyncIterator()
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }
+                        _ = try await connection.unsubscribe(channel: ["testSubscriptions"])
+                        await #expect(throws: Never.self) { try await iterator.next() == nil }
+                    }
                 }
             }
             group.addTask {
@@ -263,13 +264,15 @@ struct GeneratedCommands {
             logger.logLevel = .trace
             group.addTask {
                 try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    let stream = try await connection.subscribe(to: "testDoubleSubscription")
-                    let stream2 = try await connection.subscribe(to: "testDoubleSubscription")
-                    var iterator = stream.makeAsyncIterator()
-                    var iterator2 = stream2.makeAsyncIterator()
-                    cont.finish()
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
-                    await #expect(throws: Never.self) { try await iterator2.next()?.message == "hello" }
+                    try await connection.subscribe(to: "testDoubleSubscription") { stream in
+                        try await connection.subscribe(to: "testDoubleSubscription") { stream2 in
+                            var iterator = stream.makeAsyncIterator()
+                            var iterator2 = stream2.makeAsyncIterator()
+                            cont.finish()
+                            await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
+                            await #expect(throws: Never.self) { try await iterator2.next()?.message == "hello" }
+                        }
+                    }
                 }
             }
             group.addTask {
@@ -290,13 +293,15 @@ struct GeneratedCommands {
             logger.logLevel = .trace
             group.addTask {
                 try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    let stream = try await connection.subscribe(to: "testTwoDifferentSubscriptions")
-                    let stream2 = try await connection.subscribe(to: "testTwoDifferentSubscriptions2")
-                    var iterator = stream.makeAsyncIterator()
-                    var iterator2 = stream2.makeAsyncIterator()
-                    cont.finish()
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
-                    await #expect(throws: Never.self) { try await iterator2.next()?.message == "goodbye" }
+                    try await connection.subscribe(to: "testTwoDifferentSubscriptions") { stream in
+                        try await connection.subscribe(to: "testTwoDifferentSubscriptions2") { stream2 in
+                            var iterator = stream.makeAsyncIterator()
+                            var iterator2 = stream2.makeAsyncIterator()
+                            cont.finish()
+                            await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
+                            await #expect(throws: Never.self) { try await iterator2.next()?.message == "goodbye" }
+                        }
+                    }
                 }
             }
             group.addTask {
@@ -318,18 +323,19 @@ struct GeneratedCommands {
             logger.logLevel = .trace
             group.addTask {
                 try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    let stream = try await connection.subscribe(to: "multi1", "multi2", "multi3")
-                    var iterator = stream.makeAsyncIterator()
-                    cont.yield()
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "1" }
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "2" }
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
-                    // unsubscribe from multi2
-                    _ = try await connection.unsubscribe(channel: ["multi2"])
-                    // trigger second publish
-                    cont.finish()
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "1" }
-                    await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
+                    try await connection.subscribe(to: "multi1", "multi2", "multi3") { stream in
+                        var iterator = stream.makeAsyncIterator()
+                        cont.yield()
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "1" }
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "2" }
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
+                        // unsubscribe from multi2
+                        _ = try await connection.unsubscribe(channel: ["multi2"])
+                        // trigger second publish
+                        cont.finish()
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "1" }
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
+                    }
                 }
             }
             group.addTask {
@@ -356,11 +362,12 @@ struct GeneratedCommands {
             logger.logLevel = .trace
             group.addTask {
                 try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    let stream = try await connection.psubscribe(to: "pattern.*")
-                    cont.finish()
-                    var iterator = stream.makeAsyncIterator()
-                    try #expect(await iterator.next() == .init(channel: "pattern.1", message: "hello"))
-                    try #expect(await iterator.next() == .init(channel: "pattern.abc", message: "goodbye"))
+                    try await connection.psubscribe(to: "pattern.*") { stream in
+                        cont.finish()
+                        var iterator = stream.makeAsyncIterator()
+                        try #expect(await iterator.next() == .init(channel: "pattern.1", message: "hello"))
+                        try #expect(await iterator.next() == .init(channel: "pattern.abc", message: "goodbye"))
+                    }
                 }
             }
             group.addTask {
@@ -383,14 +390,16 @@ struct GeneratedCommands {
             logger.logLevel = .trace
             group.addTask {
                 try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    let stream = try await connection.subscribe(to: "PatternChannelSubscriptions1")
-                    let stream2 = try await connection.psubscribe(to: "PatternChannelSubscriptions*")
-                    var iterator = stream.makeAsyncIterator()
-                    var iterator2 = stream2.makeAsyncIterator()
-                    cont.finish()
-                    try #expect(await iterator.next() == .init(channel: "PatternChannelSubscriptions1", message: "hello"))
-                    try #expect(await iterator2.next() == .init(channel: "PatternChannelSubscriptions1", message: "hello"))
-                    try #expect(await iterator2.next() == .init(channel: "PatternChannelSubscriptions2", message: "goodbye"))
+                    try await connection.subscribe(to: "PatternChannelSubscriptions1") { stream in
+                        try await connection.psubscribe(to: "PatternChannelSubscriptions*") { stream2 in
+                            var iterator = stream.makeAsyncIterator()
+                            var iterator2 = stream2.makeAsyncIterator()
+                            cont.finish()
+                            try #expect(await iterator.next() == .init(channel: "PatternChannelSubscriptions1", message: "hello"))
+                            try #expect(await iterator2.next() == .init(channel: "PatternChannelSubscriptions1", message: "hello"))
+                            try #expect(await iterator2.next() == .init(channel: "PatternChannelSubscriptions2", message: "goodbye"))
+                        }
+                    }
                 }
             }
             group.addTask {

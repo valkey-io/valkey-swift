@@ -25,22 +25,46 @@ public struct ValkeySubscriptionMessage: Sendable, Equatable {
 }
 
 extension ValkeyConnection {
-    public func subscribe(to channels: String...) async throws -> ValkeySubscriptionAsyncStream {
-        try await self.subscribe(to: channels)
+    public func subscribe<Value>(
+        to channels: String...,
+        process: (ValkeySubscriptionAsyncStream) async throws -> Value
+    ) async throws -> Value {
+        try await self.subscribe(to: channels, process: process)
     }
 
-    public func subscribe(to channels: [String]) async throws -> ValkeySubscriptionAsyncStream {
+    public func subscribe<Value>(to channels: [String], process: (ValkeySubscriptionAsyncStream) async throws -> Value) async throws -> Value {
         let command = SUBSCRIBE(channel: channels)
-        return try await subscribe(command: command, filter: .channels(Set(channels)))
+        let stream = try await subscribe(command: command, filter: .channels(Set(channels)))
+        let value: Value
+        do {
+            value = try await process(stream)
+        } catch {
+            _ = try? await unsubscribe(channel: channels)
+            throw error
+        }
+        _ = try await unsubscribe(channel: channels)
+        return value
     }
 
-    public func psubscribe(to pattern: String...) async throws -> ValkeySubscriptionAsyncStream {
-        try await self.psubscribe(to: pattern)
+    public func psubscribe<Value>(
+        to patterns: String...,
+        process: (ValkeySubscriptionAsyncStream) async throws -> Value
+    ) async throws -> Value {
+        try await self.psubscribe(to: patterns, process: process)
     }
 
-    public func psubscribe(to pattern: [String]) async throws -> ValkeySubscriptionAsyncStream {
-        let command = PSUBSCRIBE(pattern: pattern)
-        return try await subscribe(command: command, filter: .patterns(Set(pattern)))
+    public func psubscribe<Value>(to patterns: [String], process: (ValkeySubscriptionAsyncStream) async throws -> Value) async throws -> Value {
+        let command = PSUBSCRIBE(pattern: patterns)
+        let stream = try await subscribe(command: command, filter: .patterns(Set(patterns)))
+        let value: Value
+        do {
+            value = try await process(stream)
+        } catch {
+            _ = try? await punsubscribe(pattern: patterns)
+            throw error
+        }
+        _ = try await punsubscribe(pattern: patterns)
+        return value
     }
 
     func subscribe(command: some RESPCommand, filter: ValkeySubscriptionFilter) async throws -> ValkeySubscriptionAsyncStream {

@@ -47,8 +47,8 @@ struct ValkeySubscriptions {
 
         self.logger.trace("\(pushToken)")
 
-        var returnValue = false
-        for index in subscriptions.indices {
+        //var returnValue = false
+        for index in subscriptions.indices.reversed() {
             switch subscriptions[index].stateMachine.receivedToken(pushToken) {
             case .sendMessage(let message):
                 subscriptions[index].subscription.sendMessage(message)
@@ -58,17 +58,17 @@ struct ValkeySubscriptions {
             case .deleteSubscriptionAndReturnOk:
                 subscriptions[index].subscription.finish()
                 subscriptions.remove(at: index)
-                returnValue = true
+                return true
             case .returnOk:
                 // push message is associated with a command. Given successful commands don't return
                 // anything unless there is an error we catch the associated push message and then
                 // return ok
-                returnValue = true
+                return true
             case .doNothing:
                 break
             }
         }
-        return returnValue
+        return false
     }
 
     /// Connection is closing lets inform all the subscriptions

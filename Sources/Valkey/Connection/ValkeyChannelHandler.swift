@@ -66,6 +66,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private let logger: Logger
+    private var isClosed = false
 
     init(eventLoop: EventLoop, logger: Logger) {
         self.eventLoop = eventLoop
@@ -99,6 +100,17 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
         guard let context = self.context else {
+            if self.isClosed {
+                switch request {
+                case .single(_, let promise):
+                    promise.fail(ValkeyClientError.init(.connectionClosed))
+                case .multiple(_, let promises):
+                    for promise in promises {
+                        promise.fail(ValkeyClientError.init(.connectionClosed))
+                    }
+                }
+                return
+            }
             preconditionFailure("Trying to use valkey connection before it is setup")
         }
         switch request {
@@ -121,20 +133,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     ) -> Int {
         self.eventLoop.assertInEventLoop()
         let id = ValkeySubscriptions.getSubscriptionID()
-        let loopBoundHandler = NIOLoopBound(self, eventLoop: self.eventLoop)
-        continuation.onTermination = { [eventLoop] termination in
-            switch termination {
-            case .cancelled:
-                eventLoop.execute {
-                    loopBoundHandler.value.subscriptions.removeSubscription(id: id)
-                }
-            case .finished:
-                break
-
-            @unknown default:
-                break
-            }
-        }
         self.subscriptions.addSubscription(id: id, continuation: continuation, filter: filter)
         return id
     }
@@ -151,6 +149,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             promise.fail(ValkeyClientError.init(.connectionClosed))
         }
         self.subscriptions.close()
+        self.isClosed = true
     }
 
     @usableFromInline
@@ -168,6 +167,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             promise.fail(ValkeyClientError.init(.connectionClosed))
         }
         self.subscriptions.close()
+        self.isClosed = true
         self.logger.trace("Channel inactive.")
     }
 
