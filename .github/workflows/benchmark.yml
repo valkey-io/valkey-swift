@@ -41,7 +41,6 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
         run: |
           apt-get -q update
-          apt-get -q dist-upgrade
           apt-get install -y libjemalloc-dev
 
       - name: Git URL token override and misc
