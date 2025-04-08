@@ -175,12 +175,8 @@ public enum CLUSTER {
             case force
             case takeover
 
-            public var respEntries: Int {
-                switch self {
-                case .force: "FORCE".respEntries
-                case .takeover: "TAKEOVER".respEntries
-                }
-            }
+            @inlinable
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -396,12 +392,8 @@ public enum CLUSTER {
             case hard
             case soft
 
-            public var respEntries: Int {
-                switch self {
-                case .hard: "HARD".respEntries
-                case .soft: "SOFT".respEntries
-                }
-            }
+            @inlinable
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -460,6 +452,7 @@ public enum CLUSTER {
             case node(String)
             case stable
 
+            @inlinable
             public var respEntries: Int {
                 switch self {
                 case .importing(let importing): RESPWithToken("IMPORTING", importing).respEntries

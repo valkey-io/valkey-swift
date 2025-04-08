@@ -173,14 +173,8 @@ public struct EXPIRE: RESPCommand {
         case gt
         case lt
 
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xx: "XX".respEntries
-            case .gt: "GT".respEntries
-            case .lt: "LT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -217,14 +211,8 @@ public struct EXPIREAT: RESPCommand {
         case gt
         case lt
 
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xx: "XX".respEntries
-            case .gt: "GT".respEntries
-            case .lt: "LT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -289,6 +277,7 @@ public struct MIGRATE: RESPCommand {
         case key(RESPKey)
         case emptyString
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .key(let key): key.respEntries
@@ -329,6 +318,7 @@ public struct MIGRATE: RESPCommand {
         case auth(String)
         case auth2(AuthenticationAuth2)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .auth(let auth): RESPWithToken("AUTH", auth).respEntries
@@ -413,14 +403,8 @@ public struct PEXPIRE: RESPCommand {
         case gt
         case lt
 
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xx: "XX".respEntries
-            case .gt: "GT".respEntries
-            case .lt: "LT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -457,14 +441,8 @@ public struct PEXPIREAT: RESPCommand {
         case gt
         case lt
 
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xx: "XX".respEntries
-            case .gt: "GT".respEntries
-            case .lt: "LT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -645,12 +623,8 @@ public struct SORT: RESPCommand {
         case asc
         case desc
 
-        public var respEntries: Int {
-            switch self {
-            case .asc: "ASC".respEntries
-            case .desc: "DESC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -712,12 +686,8 @@ public struct SORTRO: RESPCommand {
         case asc
         case desc
 
-        public var respEntries: Int {
-            switch self {
-            case .asc: "ASC".respEntries
-            case .desc: "DESC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {

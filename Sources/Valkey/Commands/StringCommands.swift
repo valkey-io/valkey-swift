@@ -110,6 +110,7 @@ public struct GETEX: RESPCommand {
         case unixTimeMilliseconds(Date)
         case persist
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
@@ -370,12 +371,8 @@ public struct SET: RESPCommand {
         case nx
         case xx
 
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xx: "XX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -392,6 +389,7 @@ public struct SET: RESPCommand {
         case unixTimeMilliseconds(Date)
         case keepttl
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries

@@ -58,12 +58,8 @@ public enum FUNCTION {
             case async
             case sync
 
-            public var respEntries: Int {
-                switch self {
-                case .async: "ASYNC".respEntries
-                case .sync: "SYNC".respEntries
-                }
-            }
+            @inlinable
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -153,13 +149,8 @@ public enum FUNCTION {
             case append
             case replace
 
-            public var respEntries: Int {
-                switch self {
-                case .flush: "FLUSH".respEntries
-                case .append: "APPEND".respEntries
-                case .replace: "REPLACE".respEntries
-                }
-            }
+            @inlinable
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -209,13 +200,8 @@ public enum SCRIPT {
             case sync
             case no
 
-            public var respEntries: Int {
-                switch self {
-                case .yes: "YES".respEntries
-                case .sync: "SYNC".respEntries
-                case .no: "NO".respEntries
-                }
-            }
+            @inlinable
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -260,12 +246,8 @@ public enum SCRIPT {
             case async
             case sync
 
-            public var respEntries: Int {
-                switch self {
-                case .async: "ASYNC".respEntries
-                case .sync: "SYNC".respEntries
-                }
-            }
+            @inlinable
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) {
