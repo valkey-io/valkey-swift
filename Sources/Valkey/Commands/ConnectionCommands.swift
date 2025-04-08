@@ -30,8 +30,15 @@ public enum CLIENT {
             case yes
             case no
 
+            public var respEntries: Int {
+                switch self {
+                case .yes: "YES".respEntries
+                case .no: "NO".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .yes: "YES".encode(into: &commandEncoder)
                 case .no: "NO".encode(into: &commandEncoder)
@@ -125,8 +132,18 @@ public enum CLIENT {
             case replica
             case pubsub
 
+            public var respEntries: Int {
+                switch self {
+                case .normal: "NORMAL".respEntries
+                case .master: "MASTER".respEntries
+                case .slave: "SLAVE".respEntries
+                case .replica: "REPLICA".respEntries
+                case .pubsub: "PUBSUB".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .normal: "NORMAL".encode(into: &commandEncoder)
                 case .master: "MASTER".encode(into: &commandEncoder)
@@ -140,8 +157,15 @@ public enum CLIENT {
             case yes
             case no
 
+            public var respEntries: Int {
+                switch self {
+                case .yes: "YES".respEntries
+                case .no: "NO".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .yes: "YES".encode(into: &commandEncoder)
                 case .no: "NO".encode(into: &commandEncoder)
@@ -156,8 +180,19 @@ public enum CLIENT {
             case laddr(String?)
             case skipme(FilterNewFormatSkipme?)
 
+            public var respEntries: Int {
+                switch self {
+                case .clientId(let clientId): RESPWithToken("ID", clientId).respEntries
+                case .clientType(let clientType): RESPWithToken("TYPE", clientType).respEntries
+                case .username(let username): RESPWithToken("USER", username).respEntries
+                case .addr(let addr): RESPWithToken("ADDR", addr).respEntries
+                case .laddr(let laddr): RESPWithToken("LADDR", laddr).respEntries
+                case .skipme(let skipme): RESPWithToken("SKIPME", skipme).respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .clientId(let clientId): RESPWithToken("ID", clientId).encode(into: &commandEncoder)
                 case .clientType(let clientType): RESPWithToken("TYPE", clientType).encode(into: &commandEncoder)
@@ -172,8 +207,15 @@ public enum CLIENT {
             case oldFormat(String)
             case newFormat([FilterNewFormat])
 
+            public var respEntries: Int {
+                switch self {
+                case .oldFormat(let oldFormat): oldFormat.respEntries
+                case .newFormat(let newFormat): newFormat.respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .oldFormat(let oldFormat): oldFormat.encode(into: &commandEncoder)
                 case .newFormat(let newFormat): newFormat.encode(into: &commandEncoder)
@@ -201,8 +243,17 @@ public enum CLIENT {
             case replica
             case pubsub
 
+            public var respEntries: Int {
+                switch self {
+                case .normal: "NORMAL".respEntries
+                case .master: "MASTER".respEntries
+                case .replica: "REPLICA".respEntries
+                case .pubsub: "PUBSUB".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .normal: "NORMAL".encode(into: &commandEncoder)
                 case .master: "MASTER".encode(into: &commandEncoder)
@@ -232,8 +283,15 @@ public enum CLIENT {
             case on
             case off
 
+            public var respEntries: Int {
+                switch self {
+                case .on: "ON".respEntries
+                case .off: "OFF".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -259,8 +317,15 @@ public enum CLIENT {
             case on
             case off
 
+            public var respEntries: Int {
+                switch self {
+                case .on: "ON".respEntries
+                case .off: "OFF".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -286,8 +351,15 @@ public enum CLIENT {
             case write
             case all
 
+            public var respEntries: Int {
+                switch self {
+                case .write: "WRITE".respEntries
+                case .all: "ALL".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .write: "WRITE".encode(into: &commandEncoder)
                 case .all: "ALL".encode(into: &commandEncoder)
@@ -316,8 +388,16 @@ public enum CLIENT {
             case off
             case skip
 
+            public var respEntries: Int {
+                switch self {
+                case .on: "ON".respEntries
+                case .off: "OFF".respEntries
+                case .skip: "SKIP".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -344,8 +424,15 @@ public enum CLIENT {
             case libname(String)
             case libver(String)
 
+            public var respEntries: Int {
+                switch self {
+                case .libname(let libname): RESPWithToken("LIB-NAME", libname).respEntries
+                case .libver(let libver): RESPWithToken("LIB-VER", libver).respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .libname(let libname): RESPWithToken("LIB-NAME", libname).encode(into: &commandEncoder)
                 case .libver(let libver): RESPWithToken("LIB-VER", libver).encode(into: &commandEncoder)
@@ -386,8 +473,15 @@ public enum CLIENT {
             case on
             case off
 
+            public var respEntries: Int {
+                switch self {
+                case .on: "ON".respEntries
+                case .off: "OFF".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -438,8 +532,15 @@ public enum CLIENT {
             case timeout
             case error
 
+            public var respEntries: Int {
+                switch self {
+                case .timeout: "TIMEOUT".respEntries
+                case .error: "ERROR".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .timeout: "TIMEOUT".encode(into: &commandEncoder)
                 case .error: "ERROR".encode(into: &commandEncoder)
@@ -521,11 +622,14 @@ public struct HELLO: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += username.encode(into: &commandEncoder)
-            count += password.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            username.respEntries + password.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            username.encode(into: &commandEncoder)
+            password.encode(into: &commandEncoder)
         }
     }
     public struct Arguments: RESPRenderable, Sendable {
@@ -541,12 +645,15 @@ public struct HELLO: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += protover.encode(into: &commandEncoder)
-            count += RESPWithToken("AUTH", auth).encode(into: &commandEncoder)
-            count += RESPWithToken("SETNAME", clientname).encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            protover.respEntries + RESPWithToken("AUTH", auth).respEntries + RESPWithToken("SETNAME", clientname).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            protover.encode(into: &commandEncoder)
+            RESPWithToken("AUTH", auth).encode(into: &commandEncoder)
+            RESPWithToken("SETNAME", clientname).encode(into: &commandEncoder)
         }
     }
     public typealias Response = [String: RESPToken]

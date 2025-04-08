@@ -148,8 +148,15 @@ public enum ACL {
             case count(Int)
             case reset
 
+            public var respEntries: Int {
+                switch self {
+                case .count(let count): count.respEntries
+                case .reset: "RESET".respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .count(let count): count.encode(into: &commandEncoder)
                 case .reset: "RESET".encode(into: &commandEncoder)
@@ -325,8 +332,16 @@ extension COMMAND {
             case category(String)
             case pattern(String)
 
+            public var respEntries: Int {
+                switch self {
+                case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).respEntries
+                case .category(let category): RESPWithToken("ACLCAT", category).respEntries
+                case .pattern(let pattern): RESPWithToken("PATTERN", pattern).respEntries
+                }
+            }
+
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
                 switch self {
                 case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).encode(into: &commandEncoder)
                 case .category(let category): RESPWithToken("ACLCAT", category).encode(into: &commandEncoder)
@@ -418,11 +433,14 @@ public enum CONFIG {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-                var count = 0
-                count += parameter.encode(into: &commandEncoder)
-                count += value.encode(into: &commandEncoder)
-                return count
+            public var respEntries: Int {
+                parameter.respEntries + value.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+                parameter.encode(into: &commandEncoder)
+                value.encode(into: &commandEncoder)
             }
         }
         public typealias Response = RESPToken
@@ -687,11 +705,14 @@ public enum MODULE {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-                var count = 0
-                count += name.encode(into: &commandEncoder)
-                count += value.encode(into: &commandEncoder)
-                return count
+            public var respEntries: Int {
+                name.respEntries + value.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+                name.encode(into: &commandEncoder)
+                value.encode(into: &commandEncoder)
             }
         }
         public typealias Response = RESPToken
@@ -855,12 +876,15 @@ public struct FAILOVER: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += host.encode(into: &commandEncoder)
-            count += port.encode(into: &commandEncoder)
-            if self.force { count += "FORCE".encode(into: &commandEncoder) }
-            return count
+        public var respEntries: Int {
+            host.respEntries + port.respEntries + "FORCE".respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            host.encode(into: &commandEncoder)
+            port.encode(into: &commandEncoder)
+            "FORCE".encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken
@@ -886,8 +910,15 @@ public struct FLUSHALL: RESPCommand {
         case async
         case sync
 
+        public var respEntries: Int {
+            switch self {
+            case .async: "ASYNC".respEntries
+            case .sync: "SYNC".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .async: "ASYNC".encode(into: &commandEncoder)
             case .sync: "SYNC".encode(into: &commandEncoder)
@@ -913,8 +944,15 @@ public struct FLUSHDB: RESPCommand {
         case async
         case sync
 
+        public var respEntries: Int {
+            switch self {
+            case .async: "ASYNC".respEntries
+            case .sync: "SYNC".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .async: "ASYNC".encode(into: &commandEncoder)
             case .sync: "SYNC".encode(into: &commandEncoder)
@@ -1033,11 +1071,14 @@ public struct REPLICAOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += host.encode(into: &commandEncoder)
-            count += port.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            host.respEntries + port.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            host.encode(into: &commandEncoder)
+            port.encode(into: &commandEncoder)
         }
     }
     public struct ArgsNoOne: RESPRenderable, Sendable {
@@ -1051,19 +1092,29 @@ public struct REPLICAOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            if self.no { count += "NO".encode(into: &commandEncoder) }
-            if self.one { count += "ONE".encode(into: &commandEncoder) }
-            return count
+        public var respEntries: Int {
+            "NO".respEntries + "ONE".respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            "NO".encode(into: &commandEncoder)
+            "ONE".encode(into: &commandEncoder)
         }
     }
     public enum Args: RESPRenderable, Sendable {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
+        public var respEntries: Int {
+            switch self {
+            case .hostPort(let hostPort): hostPort.respEntries
+            case .noOne(let noOne): noOne.respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
             case .noOne(let noOne): noOne.encode(into: &commandEncoder)
@@ -1142,8 +1193,15 @@ public struct SHUTDOWN: RESPCommand {
         case nosave
         case save
 
+        public var respEntries: Int {
+            switch self {
+            case .nosave: "NOSAVE".respEntries
+            case .save: "SAVE".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .nosave: "NOSAVE".encode(into: &commandEncoder)
             case .save: "SAVE".encode(into: &commandEncoder)
@@ -1183,11 +1241,14 @@ public struct SLAVEOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += host.encode(into: &commandEncoder)
-            count += port.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            host.respEntries + port.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            host.encode(into: &commandEncoder)
+            port.encode(into: &commandEncoder)
         }
     }
     public struct ArgsNoOne: RESPRenderable, Sendable {
@@ -1201,19 +1262,29 @@ public struct SLAVEOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            if self.no { count += "NO".encode(into: &commandEncoder) }
-            if self.one { count += "ONE".encode(into: &commandEncoder) }
-            return count
+        public var respEntries: Int {
+            "NO".respEntries + "ONE".respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            "NO".encode(into: &commandEncoder)
+            "ONE".encode(into: &commandEncoder)
         }
     }
     public enum Args: RESPRenderable, Sendable {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
+        public var respEntries: Int {
+            switch self {
+            case .hostPort(let hostPort): hostPort.respEntries
+            case .noOne(let noOne): noOne.respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
             case .noOne(let noOne): noOne.encode(into: &commandEncoder)

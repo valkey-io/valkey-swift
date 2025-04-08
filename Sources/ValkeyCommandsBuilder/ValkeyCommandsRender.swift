@@ -57,8 +57,23 @@ extension String {
             }
         }
         self.append("\n")
+        self.append("\(tab)        public var respEntries: Int {\n")
+        self.append("\(tab)            switch self {\n")
+        for arg in arguments {
+            if case .pureToken = arg.type {
+                self.append(
+                    "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!)\".respEntries\n"
+                )
+            } else {
+                self.append(
+                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false)).respEntries\n"
+                )
+            }
+        }
+        self.append("\(tab)            }\n")
+        self.append("\(tab)        }\n\n")
         self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
         self.append("\(tab)            switch self {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
@@ -106,16 +121,27 @@ extension String {
         }
         self.append("\(tab)        }\n\n")
         self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {\n")
-        self.append("\(tab)            var count = 0\n")
-        for arg in arguments {
-            if case .pureToken = arg.type {
-                self.append("\(tab)            if self.\(arg.swiftArgument) { count += \"\(arg.token!)\".encode(into: &commandEncoder) }\n")
+        self.append("\(tab)        public var respEntries: Int {\n")
+        self.append("\(tab)            ")
+        let entries = arguments.map {
+            if case .pureToken = $0.type {
+                "\"\($0.token!)\".respEntries"
             } else {
-                self.append("\(tab)            count += \(arg.respRepresentable(isArray: false)).encode(into: &commandEncoder)\n")
+                "\($0.respRepresentable(isArray: false)).respEntries"
             }
         }
-        self.append("\(tab)            return count\n")
+        self.append(entries.joined(separator: " + "))
+        self.append("\n")
+        self.append("\(tab)        }\n\n")
+        self.append("\(tab)        @inlinable\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
+        for arg in arguments {
+            if case .pureToken = arg.type {
+                self.append("\(tab)            \"\(arg.token!)\".encode(into: &commandEncoder)\n")
+            } else {
+                self.append("\(tab)            \(arg.respRepresentable(isArray: false)).encode(into: &commandEncoder)\n")
+            }
+        }
         self.append("\(tab)        }\n")
         self.append("\(tab)    }\n")
     }

@@ -39,8 +39,12 @@ extension RESPKey: CustomStringConvertible {
 }
 
 extension RESPKey: RESPRenderable {
+
     @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+    public var respEntries: Int { 1 }
+
+    @inlinable
+    public func encode(into commandEncoder: inout RESPCommandEncoder) {
         self.rawValue.encode(into: &commandEncoder)
     }
 }

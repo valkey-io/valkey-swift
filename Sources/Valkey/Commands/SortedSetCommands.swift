@@ -28,8 +28,15 @@ public struct BZMPOP: RESPCommand {
         case min
         case max
 
+        public var respEntries: Int {
+            switch self {
+            case .min: "MIN".respEntries
+            case .max: "MAX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .min: "MIN".encode(into: &commandEncoder)
             case .max: "MAX".encode(into: &commandEncoder)
@@ -95,8 +102,15 @@ public struct ZADD: RESPCommand {
         case nx
         case xx
 
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xx: "XX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
@@ -107,8 +121,15 @@ public struct ZADD: RESPCommand {
         case gt
         case lt
 
+        public var respEntries: Int {
+            switch self {
+            case .gt: "GT".respEntries
+            case .lt: "LT".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .gt: "GT".encode(into: &commandEncoder)
             case .lt: "LT".encode(into: &commandEncoder)
@@ -126,11 +147,14 @@ public struct ZADD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += score.encode(into: &commandEncoder)
-            count += member.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            score.respEntries + member.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            score.encode(into: &commandEncoder)
+            member.encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken
@@ -250,8 +274,16 @@ public struct ZINTER: RESPCommand {
         case min
         case max
 
+        public var respEntries: Int {
+            switch self {
+            case .sum: "SUM".respEntries
+            case .min: "MIN".respEntries
+            case .max: "MAX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .sum: "SUM".encode(into: &commandEncoder)
             case .min: "MIN".encode(into: &commandEncoder)
@@ -302,8 +334,16 @@ public struct ZINTERSTORE: RESPCommand {
         case min
         case max
 
+        public var respEntries: Int {
+            switch self {
+            case .sum: "SUM".respEntries
+            case .min: "MIN".respEntries
+            case .max: "MAX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .sum: "SUM".encode(into: &commandEncoder)
             case .min: "MIN".encode(into: &commandEncoder)
@@ -355,8 +395,15 @@ public struct ZMPOP: RESPCommand {
         case min
         case max
 
+        public var respEntries: Int {
+            switch self {
+            case .min: "MIN".respEntries
+            case .max: "MAX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .min: "MIN".encode(into: &commandEncoder)
             case .max: "MAX".encode(into: &commandEncoder)
@@ -444,11 +491,14 @@ public struct ZRANDMEMBER: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += count.encode(into: &commandEncoder)
-            if self.withscores { count += "WITHSCORES".encode(into: &commandEncoder) }
-            return count
+        public var respEntries: Int {
+            count.respEntries + "WITHSCORES".respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            count.encode(into: &commandEncoder)
+            "WITHSCORES".encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken
@@ -472,8 +522,15 @@ public struct ZRANGE: RESPCommand {
         case byscore
         case bylex
 
+        public var respEntries: Int {
+            switch self {
+            case .byscore: "BYSCORE".respEntries
+            case .bylex: "BYLEX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .byscore: "BYSCORE".encode(into: &commandEncoder)
             case .bylex: "BYLEX".encode(into: &commandEncoder)
@@ -491,11 +548,14 @@ public struct ZRANGE: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += offset.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            offset.respEntries + count.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            offset.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [RESPToken]
@@ -537,11 +597,14 @@ public struct ZRANGEBYLEX: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += offset.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            offset.respEntries + count.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            offset.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [RESPToken]
@@ -577,11 +640,14 @@ public struct ZRANGEBYSCORE: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += offset.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            offset.respEntries + count.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            offset.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [RESPToken]
@@ -611,8 +677,15 @@ public struct ZRANGESTORE: RESPCommand {
         case byscore
         case bylex
 
+        public var respEntries: Int {
+            switch self {
+            case .byscore: "BYSCORE".respEntries
+            case .bylex: "BYLEX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .byscore: "BYSCORE".encode(into: &commandEncoder)
             case .bylex: "BYLEX".encode(into: &commandEncoder)
@@ -630,11 +703,14 @@ public struct ZRANGESTORE: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += offset.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            offset.respEntries + count.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            offset.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -791,11 +867,14 @@ public struct ZREVRANGEBYLEX: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += offset.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            offset.respEntries + count.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            offset.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [RESPToken]
@@ -831,11 +910,14 @@ public struct ZREVRANGEBYSCORE: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
-            var count = 0
-            count += offset.encode(into: &commandEncoder)
-            count += count.encode(into: &commandEncoder)
-            return count
+        public var respEntries: Int {
+            offset.respEntries + count.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            offset.encode(into: &commandEncoder)
+            count.encode(into: &commandEncoder)
         }
     }
     public typealias Response = [RESPToken]
@@ -923,8 +1005,16 @@ public struct ZUNION: RESPCommand {
         case min
         case max
 
+        public var respEntries: Int {
+            switch self {
+            case .sum: "SUM".respEntries
+            case .min: "MIN".respEntries
+            case .max: "MAX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .sum: "SUM".encode(into: &commandEncoder)
             case .min: "MIN".encode(into: &commandEncoder)
@@ -958,8 +1048,16 @@ public struct ZUNIONSTORE: RESPCommand {
         case min
         case max
 
+        public var respEntries: Int {
+            switch self {
+            case .sum: "SUM".respEntries
+            case .min: "MIN".respEntries
+            case .max: "MAX".respEntries
+            }
+        }
+
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) -> Int {
+        public func encode(into commandEncoder: inout RESPCommandEncoder) {
             switch self {
             case .sum: "SUM".encode(into: &commandEncoder)
             case .min: "MIN".encode(into: &commandEncoder)

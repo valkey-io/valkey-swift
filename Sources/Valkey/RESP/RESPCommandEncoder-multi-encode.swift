@@ -7,450 +7,240 @@ extension RESPCommandEncoder {
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable>(_ t0: T0) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable>(_ t0: T0, _ t1: T1) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        count += t7.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
+        t7.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        count += t7.encode(into: &self)
-        count += t8.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
+        t7.encode(into: &self)
+        t8.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        count += t7.encode(into: &self)
-        count += t8.encode(into: &self)
-        count += t9.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
+        t7.encode(into: &self)
+        t8.encode(into: &self)
+        t9.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        count += t7.encode(into: &self)
-        count += t8.encode(into: &self)
-        count += t9.encode(into: &self)
-        count += t10.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
+        t7.encode(into: &self)
+        t8.encode(into: &self)
+        t9.encode(into: &self)
+        t10.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        count += t7.encode(into: &self)
-        count += t8.encode(into: &self)
-        count += t9.encode(into: &self)
-        count += t10.encode(into: &self)
-        count += t11.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
+        t7.encode(into: &self)
+        t8.encode(into: &self)
+        t9.encode(into: &self)
+        t10.encode(into: &self)
+        t11.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        count += t7.encode(into: &self)
-        count += t8.encode(into: &self)
-        count += t9.encode(into: &self)
-        count += t10.encode(into: &self)
-        count += t11.encode(into: &self)
-        count += t12.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
+        t7.encode(into: &self)
+        t8.encode(into: &self)
+        t9.encode(into: &self)
+        t10.encode(into: &self)
+        t11.encode(into: &self)
+        t12.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        count += t7.encode(into: &self)
-        count += t8.encode(into: &self)
-        count += t9.encode(into: &self)
-        count += t10.encode(into: &self)
-        count += t11.encode(into: &self)
-        count += t12.encode(into: &self)
-        count += t13.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
+        t7.encode(into: &self)
+        t8.encode(into: &self)
+        t9.encode(into: &self)
+        t10.encode(into: &self)
+        t11.encode(into: &self)
+        t12.encode(into: &self)
+        t13.encode(into: &self)
     }
 
     @inlinable
     public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14) {
         self.encodeIdentifier(.array)
-        var count = 0
-        let arrayCountIndex = buffer.writerIndex
-        self.buffer.writeStaticString("0\r\n")
-        count += t0.encode(into: &self)
-        count += t1.encode(into: &self)
-        count += t2.encode(into: &self)
-        count += t3.encode(into: &self)
-        count += t4.encode(into: &self)
-        count += t5.encode(into: &self)
-        count += t6.encode(into: &self)
-        count += t7.encode(into: &self)
-        count += t8.encode(into: &self)
-        count += t9.encode(into: &self)
-        count += t10.encode(into: &self)
-        count += t11.encode(into: &self)
-        count += t12.encode(into: &self)
-        count += t13.encode(into: &self)
-        count += t14.encode(into: &self)
-        if count > 9 {
-            // I'm being lazy here and not supporting more than 99 arguments
-            precondition(count < 100)
-            // We need to rebuild ByteBuffer with space for double digit count
-            // skip past count + \r\n
-            let sliceStart = arrayCountIndex + 3
-            var slice = buffer.getSlice(at: sliceStart, length: buffer.writerIndex - sliceStart)!
-            self.buffer.moveWriterIndex(to: arrayCountIndex)
-            self.buffer.writeString(String(count))
-            self.buffer.writeStaticString("\r\n")
-            self.buffer.writeBuffer(&slice)
-        } else {
-            self.buffer.setString(String(count), at: arrayCountIndex)
-        }
+        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+        self.buffer.writeString("\(count)")
+        self.buffer.writeStaticString("\r\n")
+        t0.encode(into: &self)
+        t1.encode(into: &self)
+        t2.encode(into: &self)
+        t3.encode(into: &self)
+        t4.encode(into: &self)
+        t5.encode(into: &self)
+        t6.encode(into: &self)
+        t7.encode(into: &self)
+        t8.encode(into: &self)
+        t9.encode(into: &self)
+        t10.encode(into: &self)
+        t11.encode(into: &self)
+        t12.encode(into: &self)
+        t13.encode(into: &self)
+        t14.encode(into: &self)
     }
 }
