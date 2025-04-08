@@ -52,10 +52,23 @@ let benchmarks: @Sendable () -> Void = {
             benchmark.stopMeasurement()
         }
     } setup: {
+        struct GetHandler: BenchmarkCommandHandler {
+            static let response = ByteBuffer(string: "$3\r\nBar\r\n")
+            func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
+                switch command {
+                case .bulkString(ByteBuffer(string: "GET")):
+                    write(Self.response)
+                default:
+                    fatalError()
+                }
+            }
+        }
         server = try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
             .childChannelInitializer { channel in
                 do {
-                    try channel.pipeline.syncOperations.addHandler(ValkeyServerChannelHandler())
+                    try channel.pipeline.syncOperations.addHandler(
+                        ValkeyServerChannelHandler(commandHandler: GetHandler())
+                    )
                     return channel.eventLoop.makeSucceededVoidFuture()
                 } catch {
                     return channel.eventLoop.makeFailedFuture(error)
@@ -112,12 +125,21 @@ let benchmarks: @Sendable () -> Void = {
     }
 }
 
-final class ValkeyServerChannelHandler: ChannelInboundHandler {
+protocol BenchmarkCommandHandler {
+    func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void)
+}
+
+final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: ChannelInboundHandler {
     typealias InboundIn = ByteBuffer
     typealias OutboundOut = ByteBuffer
 
     private var decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
-    private let response = ByteBuffer(string: "$3\r\nBar\r\n")
+    private let helloResponse = ByteBuffer(string: "%1\r\n+server\r\n+fake\r\n")
+    private let commandHandler: Handler
+
+    init(commandHandler: Handler) {
+        self.commandHandler = commandHandler
+    }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         try! self.decoder.process(buffer: self.unwrapInboundIn(data)) { token in
@@ -129,18 +151,18 @@ final class ValkeyServerChannelHandler: ChannelInboundHandler {
         guard case .array(let array) = token.value else {
             fatalError()
         }
-
         var iterator = array.makeIterator()
-        switch iterator.next()?.value {
+        guard let command = iterator.next()?.value else {
+            fatalError()
+        }
+        switch command {
         case .bulkString(ByteBuffer(string: "HELLO")):
-            let map = "%1\r\n+server\r\n+fake\r\n"
-            context.writeAndFlush(self.wrapOutboundOut(ByteBuffer(string: map)), promise: nil)
-
-        case .bulkString(ByteBuffer(string: "GET")):
-            context.writeAndFlush(self.wrapOutboundOut(self.response), promise: nil)
+            context.writeAndFlush(self.wrapOutboundOut(helloResponse), promise: nil)
 
         default:
-            fatalError()
+            commandHandler.handle(command: command, parameters: iterator) {
+                context.writeAndFlush(self.wrapOutboundOut($0), promise: nil)
+            }
         }
     }
 }
