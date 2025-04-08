@@ -148,6 +148,7 @@ public enum ACL {
             case count(Int)
             case reset
 
+            @inlinable
             public var respEntries: Int {
                 switch self {
                 case .count(let count): count.respEntries
@@ -332,6 +333,7 @@ extension COMMAND {
             case category(String)
             case pattern(String)
 
+            @inlinable
             public var respEntries: Int {
                 switch self {
                 case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).respEntries
@@ -910,12 +912,8 @@ public struct FLUSHALL: RESPCommand {
         case async
         case sync
 
-        public var respEntries: Int {
-            switch self {
-            case .async: "ASYNC".respEntries
-            case .sync: "SYNC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -944,12 +942,8 @@ public struct FLUSHDB: RESPCommand {
         case async
         case sync
 
-        public var respEntries: Int {
-            switch self {
-            case .async: "ASYNC".respEntries
-            case .sync: "SYNC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -1106,6 +1100,7 @@ public struct REPLICAOF: RESPCommand {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .hostPort(let hostPort): hostPort.respEntries
@@ -1193,12 +1188,8 @@ public struct SHUTDOWN: RESPCommand {
         case nosave
         case save
 
-        public var respEntries: Int {
-            switch self {
-            case .nosave: "NOSAVE".respEntries
-            case .save: "SAVE".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -1276,6 +1267,7 @@ public struct SLAVEOF: RESPCommand {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .hostPort(let hostPort): hostPort.respEntries

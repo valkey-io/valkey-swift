@@ -30,6 +30,7 @@ public enum XGROUP {
             case id(String)
             case newId
 
+            @inlinable
             public var respEntries: Int {
                 switch self {
                 case .id(let id): id.respEntries
@@ -140,6 +141,7 @@ public enum XGROUP {
             case id(String)
             case newId
 
+            @inlinable
             public var respEntries: Int {
                 switch self {
                 case .id(let id): id.respEntries
@@ -288,12 +290,8 @@ public struct XADD: RESPCommand {
         case maxlen
         case minid
 
-        public var respEntries: Int {
-            switch self {
-            case .maxlen: "MAXLEN".respEntries
-            case .minid: "MINID".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -307,12 +305,8 @@ public struct XADD: RESPCommand {
         case equal
         case approximately
 
-        public var respEntries: Int {
-            switch self {
-            case .equal: "=".respEntries
-            case .approximately: "~".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -353,6 +347,7 @@ public struct XADD: RESPCommand {
         case autoId
         case id(String)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .autoId: "*".respEntries
@@ -727,12 +722,8 @@ public struct XTRIM: RESPCommand {
         case maxlen
         case minid
 
-        public var respEntries: Int {
-            switch self {
-            case .maxlen: "MAXLEN".respEntries
-            case .minid: "MINID".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -746,12 +737,8 @@ public struct XTRIM: RESPCommand {
         case equal
         case approximately
 
-        public var respEntries: Int {
-            switch self {
-            case .equal: "=".respEntries
-            case .approximately: "~".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {

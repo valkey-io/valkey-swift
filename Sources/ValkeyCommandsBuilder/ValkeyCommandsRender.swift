@@ -49,29 +49,37 @@ extension String {
             }
         }
         self.append("\(tab)    public enum \(enumName): RESPRenderable, Sendable {\n")
+        var allPureTokens = true
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append("\(tab)        case \(arg.swiftArgument)\n")
             } else {
+                allPureTokens = false
                 self.append("\(tab)        case \(arg.swiftArgument)(\(variableType(arg, names: names, scope: nil, isArray: true)))\n")
             }
         }
         self.append("\n")
-        self.append("\(tab)        public var respEntries: Int {\n")
-        self.append("\(tab)            switch self {\n")
-        for arg in arguments {
-            if case .pureToken = arg.type {
-                self.append(
-                    "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!)\".respEntries\n"
-                )
-            } else {
-                self.append(
-                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false)).respEntries\n"
-                )
+        if allPureTokens {
+            self.append("\(tab)        @inlinable\n")
+            self.append("\(tab)        public var respEntries: Int { 1 }\n\n")
+        } else {
+            self.append("\(tab)        @inlinable\n")
+            self.append("\(tab)        public var respEntries: Int {\n")
+            self.append("\(tab)            switch self {\n")
+            for arg in arguments {
+                if case .pureToken = arg.type {
+                    self.append(
+                        "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!)\".respEntries\n"
+                    )
+                } else {
+                    self.append(
+                        "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false)).respEntries\n"
+                    )
+                }
             }
+            self.append("\(tab)            }\n")
+            self.append("\(tab)        }\n\n")
         }
-        self.append("\(tab)            }\n")
-        self.append("\(tab)        }\n\n")
         self.append("\(tab)        @inlinable\n")
         self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
         self.append("\(tab)            switch self {\n")

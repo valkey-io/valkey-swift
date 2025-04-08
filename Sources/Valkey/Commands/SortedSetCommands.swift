@@ -28,12 +28,8 @@ public struct BZMPOP: RESPCommand {
         case min
         case max
 
-        public var respEntries: Int {
-            switch self {
-            case .min: "MIN".respEntries
-            case .max: "MAX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -102,12 +98,8 @@ public struct ZADD: RESPCommand {
         case nx
         case xx
 
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xx: "XX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -121,12 +113,8 @@ public struct ZADD: RESPCommand {
         case gt
         case lt
 
-        public var respEntries: Int {
-            switch self {
-            case .gt: "GT".respEntries
-            case .lt: "LT".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -274,13 +262,8 @@ public struct ZINTER: RESPCommand {
         case min
         case max
 
-        public var respEntries: Int {
-            switch self {
-            case .sum: "SUM".respEntries
-            case .min: "MIN".respEntries
-            case .max: "MAX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -334,13 +317,8 @@ public struct ZINTERSTORE: RESPCommand {
         case min
         case max
 
-        public var respEntries: Int {
-            switch self {
-            case .sum: "SUM".respEntries
-            case .min: "MIN".respEntries
-            case .max: "MAX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -395,12 +373,8 @@ public struct ZMPOP: RESPCommand {
         case min
         case max
 
-        public var respEntries: Int {
-            switch self {
-            case .min: "MIN".respEntries
-            case .max: "MAX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -522,12 +496,8 @@ public struct ZRANGE: RESPCommand {
         case byscore
         case bylex
 
-        public var respEntries: Int {
-            switch self {
-            case .byscore: "BYSCORE".respEntries
-            case .bylex: "BYLEX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -677,12 +647,8 @@ public struct ZRANGESTORE: RESPCommand {
         case byscore
         case bylex
 
-        public var respEntries: Int {
-            switch self {
-            case .byscore: "BYSCORE".respEntries
-            case .bylex: "BYLEX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -1005,13 +971,8 @@ public struct ZUNION: RESPCommand {
         case min
         case max
 
-        public var respEntries: Int {
-            switch self {
-            case .sum: "SUM".respEntries
-            case .min: "MIN".respEntries
-            case .max: "MAX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -1048,13 +1009,8 @@ public struct ZUNIONSTORE: RESPCommand {
         case min
         case max
 
-        public var respEntries: Int {
-            switch self {
-            case .sum: "SUM".respEntries
-            case .min: "MIN".respEntries
-            case .max: "MAX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {

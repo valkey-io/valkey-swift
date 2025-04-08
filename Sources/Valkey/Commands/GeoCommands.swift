@@ -28,12 +28,8 @@ public struct GEOADD: RESPCommand {
         case nx
         case xx
 
-        public var respEntries: Int {
-            switch self {
-            case .nx: "NX".respEntries
-            case .xx: "XX".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -94,14 +90,8 @@ public struct GEODIST: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -175,14 +165,8 @@ public struct GEORADIUS: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -219,12 +203,8 @@ public struct GEORADIUS: RESPCommand {
         case asc
         case desc
 
-        public var respEntries: Int {
-            switch self {
-            case .asc: "ASC".respEntries
-            case .desc: "DESC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -238,6 +218,7 @@ public struct GEORADIUS: RESPCommand {
         case storekey(RESPKey)
         case storedistkey(RESPKey)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .storekey(let storekey): RESPWithToken("STORE", storekey).respEntries
@@ -295,14 +276,8 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -339,12 +314,8 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
         case asc
         case desc
 
-        public var respEntries: Int {
-            switch self {
-            case .asc: "ASC".respEntries
-            case .desc: "DESC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -358,6 +329,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
         case storekey(RESPKey)
         case storedistkey(RESPKey)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .storekey(let storekey): RESPWithToken("STORE", storekey).respEntries
@@ -413,14 +385,8 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -457,12 +423,8 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
         case asc
         case desc
 
-        public var respEntries: Int {
-            switch self {
-            case .asc: "ASC".respEntries
-            case .desc: "DESC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -510,14 +472,8 @@ public struct GEORADIUSRO: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -554,12 +510,8 @@ public struct GEORADIUSRO: RESPCommand {
         case asc
         case desc
 
-        public var respEntries: Int {
-            switch self {
-            case .asc: "ASC".respEntries
-            case .desc: "DESC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -627,6 +579,7 @@ public struct GEOSEARCH: RESPCommand {
         case member(String)
         case fromlonlat(FromFromlonlat)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .member(let member): RESPWithToken("FROMMEMBER", member).respEntries
@@ -648,14 +601,8 @@ public struct GEOSEARCH: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -694,14 +641,8 @@ public struct GEOSEARCH: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -741,6 +682,7 @@ public struct GEOSEARCH: RESPCommand {
         case circle(ByCircle)
         case box(ByBox)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .circle(let circle): circle.respEntries
@@ -760,12 +702,8 @@ public struct GEOSEARCH: RESPCommand {
         case asc
         case desc
 
-        public var respEntries: Int {
-            switch self {
-            case .asc: "ASC".respEntries
-            case .desc: "DESC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -850,6 +788,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
         case member(String)
         case fromlonlat(FromFromlonlat)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .member(let member): RESPWithToken("FROMMEMBER", member).respEntries
@@ -871,14 +810,8 @@ public struct GEOSEARCHSTORE: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -917,14 +850,8 @@ public struct GEOSEARCHSTORE: RESPCommand {
         case ft
         case mi
 
-        public var respEntries: Int {
-            switch self {
-            case .m: "M".respEntries
-            case .km: "KM".respEntries
-            case .ft: "FT".respEntries
-            case .mi: "MI".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
@@ -964,6 +891,7 @@ public struct GEOSEARCHSTORE: RESPCommand {
         case circle(ByCircle)
         case box(ByBox)
 
+        @inlinable
         public var respEntries: Int {
             switch self {
             case .circle(let circle): circle.respEntries
@@ -983,12 +911,8 @@ public struct GEOSEARCHSTORE: RESPCommand {
         case asc
         case desc
 
-        public var respEntries: Int {
-            switch self {
-            case .asc: "ASC".respEntries
-            case .desc: "DESC".respEntries
-            }
-        }
+        @inlinable
+        public var respEntries: Int { 1 }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
