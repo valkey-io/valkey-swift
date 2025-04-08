@@ -59,7 +59,7 @@ let benchmarks: @Sendable () -> Void = {
         try await server?.close().get()
     }
 
-    Benchmark("RESPCommandEncoder", configuration: .init(metrics: defaultMetrics, scalingFactor: .mega)) { benchmark in
+    Benchmark("RESPCommandEncoder", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
         let string = "string"
         let optionalString: String? = "optionalString"
         let array = ["array", "of", "strings"]
