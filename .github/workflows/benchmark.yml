@@ -40,7 +40,7 @@ jobs:
       - name: Ubuntu deps
         if: ${{ runner.os == 'Linux' }}
         run: |
-          sudo apt-get install -y libjemalloc-dev
+          apt-get install -y libjemalloc-dev
 
       - name: Git URL token override and misc
         run: |
