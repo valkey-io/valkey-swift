@@ -52,10 +52,20 @@ let benchmarks: @Sendable () -> Void = {
             benchmark.stopMeasurement()
         }
     } setup: {
+        let response = ByteBuffer(string: "$3\r\nBar\r\n")
         server = try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
             .childChannelInitializer { channel in
                 do {
-                    try channel.pipeline.syncOperations.addHandler(ValkeyServerChannelHandler())
+                    try channel.pipeline.syncOperations.addHandler(
+                        ValkeyServerChannelHandler { command, parameters, write in
+                            switch command {
+                            case .bulkString(ByteBuffer(string: "GET")):
+                                write(response)
+                            default:
+                                fatalError()
+                            }
+                        }
+                    )
                     return channel.eventLoop.makeSucceededVoidFuture()
                 } catch {
                     return channel.eventLoop.makeFailedFuture(error)
@@ -117,7 +127,12 @@ final class ValkeyServerChannelHandler: ChannelInboundHandler {
     typealias OutboundOut = ByteBuffer
 
     private var decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
-    private let response = ByteBuffer(string: "$3\r\nBar\r\n")
+    private let helloResponse = ByteBuffer(string: "%1\r\n+server\r\n+fake\r\n")
+    private let handleCommand: (RESPToken.Value, RESPToken.Array.Iterator, (ByteBuffer) -> Void) -> Void
+
+    init(_ handleCommand: @escaping (RESPToken.Value, RESPToken.Array.Iterator, (ByteBuffer) -> Void) -> Void) {
+        self.handleCommand = handleCommand
+    }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         try! self.decoder.process(buffer: self.unwrapInboundIn(data)) { token in
@@ -129,18 +144,18 @@ final class ValkeyServerChannelHandler: ChannelInboundHandler {
         guard case .array(let array) = token.value else {
             fatalError()
         }
-
         var iterator = array.makeIterator()
-        switch iterator.next()?.value {
+        guard let command = iterator.next()?.value else {
+            fatalError()
+        }
+        switch command {
         case .bulkString(ByteBuffer(string: "HELLO")):
-            let map = "%1\r\n+server\r\n+fake\r\n"
-            context.writeAndFlush(self.wrapOutboundOut(ByteBuffer(string: map)), promise: nil)
-
-        case .bulkString(ByteBuffer(string: "GET")):
-            context.writeAndFlush(self.wrapOutboundOut(self.response), promise: nil)
+            context.writeAndFlush(self.wrapOutboundOut(helloResponse), promise: nil)
 
         default:
-            fatalError()
+            handleCommand(command, iterator) {
+                context.writeAndFlush(self.wrapOutboundOut($0), promise: nil)
+            }
         }
     }
 }
