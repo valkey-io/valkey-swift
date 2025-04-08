@@ -13,19 +13,27 @@
 //===----------------------------------------------------------------------===//
 
 import Benchmark
+import Foundation
 import Logging
 import NIOCore
 import NIOPosix
 import Valkey
 
 let benchmarks: @Sendable () -> Void = {
-    let defaultMetrics: [BenchmarkMetric] = [
-        .wallClock,
-        .cpuTotal,
-        .mallocCountTotal,
-        .throughput,
-        .instructions,
-    ]
+    let defaultMetrics: [BenchmarkMetric] =
+        // There is no point comparing wallClock, cpuTotal or throughput on CI as they are too inconsistent
+        ProcessInfo.processInfo.environment["CI"] != nil
+        ? [
+            .mallocCountTotal,
+            .instructions,
+        ]
+        : [
+            .wallClock,
+            .cpuTotal,
+            .mallocCountTotal,
+            .throughput,
+            .instructions,
+        ]
 
     var server: Channel?
     Benchmark("GET benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
