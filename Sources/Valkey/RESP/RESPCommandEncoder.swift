@@ -19,7 +19,7 @@ public struct RESPCommandEncoder {
     var buffer: ByteBuffer
 
     @inlinable
-    init() {
+    package init() {
         self.buffer = .init()
     }
 
