@@ -76,6 +76,7 @@ jobs:
           echo 'PRTEST<<EOF' >> $GITHUB_ENV
           echo "[Pull request benchmark comparison [${{ matrix.os }}] with 'main' run at $(date -Iseconds)](https://github.com/adam-fowler/${{ github.event.repository.name }}/actions/runs/${{ github.run_id }})" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
+          echo "exitStatus=0" >> $GITHUB_ENV
       - if: ${{ steps.benchmark.outputs.exit-status == '2' }}
         name: Pull request comment text failure
         id: benchmark-regressions
@@ -84,8 +85,20 @@ jobs:
           swift package benchmark baseline compare main pull_request --no-progress --quiet --format markdown >> $GITHUB_STEP_SUMMARY
           echo 'PRTEST<<EOF' >> $GITHUB_ENV
           echo "[Pull request benchmark comparison [${{ matrix.os }}] with 'main' run at $(date -Iseconds)](https://github.com/adam-fowler/${{ github.event.repository.name }}/actions/runs/${{ github.run_id }})" >> $GITHUB_ENV
-          echo "_Pull request had performance regressions_" >> $GITHUB_ENV
+          echo "_Pull request has performance regressions_" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
+          echo "exitStatus=1" >> $GITHUB_ENV
+      - if: ${{ steps.benchmark.outputs.exit-status == '1' }}
+        name: Pull request comment text failure
+        id: benchmark-differences
+        run: |
+          echo '---' >> $GITHUB_STEP_SUMMARY
+          swift package benchmark baseline compare main pull_request --no-progress --quiet --format markdown >> $GITHUB_STEP_SUMMARY
+          echo 'PRTEST<<EOF' >> $GITHUB_ENV
+          echo "[Pull request benchmark comparison [${{ matrix.os }}] with 'main' run at $(date -Iseconds)](https://github.com/adam-fowler/${{ github.event.repository.name }}/actions/runs/${{ github.run_id }})" >> $GITHUB_ENV
+          echo "_Pull request has significant differences_" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+          echo "exitStatus=1" >> $GITHUB_ENV
       - if: ${{ steps.benchmark.outputs.exit-status == '4' }}
         name: Pull request comment text improvements
         id: benchmark-improvements
@@ -94,8 +107,9 @@ jobs:
           swift package benchmark baseline compare main pull_request --no-progress --quiet --format markdown >> $GITHUB_STEP_SUMMARY
           echo 'PRTEST<<EOF' >> $GITHUB_ENV
           echo "[Pull request benchmark comparison [${{ matrix.os }}] with 'main' run at $(date -Iseconds)](https://github.com/adam-fowler/${{ github.event.repository.name }}/actions/runs/${{ github.run_id }})" >> $GITHUB_ENV
-          echo "_Pull request had performance improvements_" >> $GITHUB_ENV
+          echo "_Pull request has performance improvements_" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
+          echo "exitStatus=0" >> $GITHUB_ENV
       - name: Comment PR
         if: ${{ env.hasBenchmark == '1' }}
         uses: thollander/actions-comment-pull-request@v3

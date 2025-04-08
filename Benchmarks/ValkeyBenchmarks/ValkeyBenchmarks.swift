@@ -72,7 +72,7 @@ let benchmarks: @Sendable () -> Void = {
         benchmark.startMeasurement()
 
         var encoder = RESPCommandEncoder()
-        for _ in 0..<benchmark.scaledIterations.count / 2 {
+        for _ in benchmark.scaledIterations {
             encoder.reset()
             command.encode(into: &encoder)
         }
