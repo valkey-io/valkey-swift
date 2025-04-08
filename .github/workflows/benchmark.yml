@@ -37,8 +37,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ubuntu deps
-        if: ${{ runner.os == 'Linux' }}
+      - name: Install jemalloc
         run: |
           apt-get -q update
           apt-get install -y libjemalloc-dev
@@ -53,11 +52,13 @@ jobs:
         if: ${{ env.hasBenchmark == '1' }}
         run: |
           swift package --allow-writing-to-directory .benchmarkBaselines/ benchmark baseline update pull_request
-      - name: Switch to branch 'main'
-        if: ${{ env.hasBenchmark == '1' }}
-        run: |
-          git stash
-          git checkout main
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
       - name: Run benchmarks for branch 'main'
         if: ${{ env.hasBenchmark == '1' }}
         run: |
