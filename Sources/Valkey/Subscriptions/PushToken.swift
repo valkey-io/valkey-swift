@@ -20,6 +20,9 @@ struct PushToken: RESPTokenRepresentable {
         case psubscribe(subscriptionCount: Int)
         case punsubscribe(subscriptionCount: Int)
         case pmessage(channel: String, message: String)
+        case ssubscribe(subscriptionCount: Int)
+        case sunsubscribe(subscriptionCount: Int)
+        case smessage(channel: String, message: String)
     }
     let value: ValkeySubscriptionFilter
     let type: TokenType
@@ -78,6 +81,28 @@ struct PushToken: RESPTokenRepresentable {
                     channel: String(from: arrayIterator.next()!),
                     message: String(from: arrayIterator.next()!)
                 )
+
+            case "ssubscribe":
+                guard respArray.count == 3 else {
+                    throw ValkeyClientError(.subscriptionError, message: "Received invalid ssubscribe push notification")
+                }
+                self.value = .shardChannel(try String(from: arrayIterator.next()!))
+                self.type = try TokenType.ssubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
+
+            case "sunsubscribe":
+                guard respArray.count == 3 else {
+                    throw ValkeyClientError(.subscriptionError, message: "Received invalid sunsubscribe push notification")
+                }
+                self.value = .shardChannel(try String(from: arrayIterator.next()!))
+                self.type = try TokenType.sunsubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
+
+            case "smessage":
+                guard respArray.count == 3 else {
+                    throw ValkeyClientError(.subscriptionError, message: "Received invalid smessage push notification")
+                }
+                let channel = try String(from: arrayIterator.next()!)
+                self.value = .shardChannel(channel)
+                self.type = try TokenType.smessage(channel: channel, message: String(from: arrayIterator.next()!))
 
             default:
                 throw ValkeyClientError(.subscriptionError, message: "Received unrecognised notification \(notification)")

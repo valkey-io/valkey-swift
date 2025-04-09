@@ -53,7 +53,7 @@ struct ValkeySubscriptions {
 
         var returnValue = false
         switch pushToken.type {
-        case .subscribe, .psubscribe:
+        case .subscribe, .psubscribe, .ssubscribe:
             if let subscription = try subscribeCommandStack.received(pushToken.value) {
                 for filter in subscription.filters {
                     if self.subscriptionMap[filter] == nil {
@@ -64,7 +64,7 @@ struct ValkeySubscriptions {
                 }
                 returnValue = true
             }
-        case .unsubscribe, .punsubscribe:
+        case .unsubscribe, .punsubscribe, .sunsubscribe:
             if let unsubscribedFilters = try unsubscribeCommandStack.received(pushToken.value) {
                 returnValue = true
 
@@ -73,7 +73,7 @@ struct ValkeySubscriptions {
                     self.subscriptionMap.removeValue(forKey: filter)
                 }
             }
-        case .message(let channel, let message), .pmessage(let channel, let message):
+        case .message(let channel, let message), .pmessage(let channel, let message), .smessage(let channel, let message):
             guard let subscriptions = subscriptionMap[pushToken.value] else {
                 self.logger.trace("Received message for unrecognised subscription")
                 return false
@@ -112,12 +112,13 @@ struct ValkeySubscriptions {
         case doNothing
         case unsubscribe([String])
         case punsubscribe([String])
+        case sunsubscribe([String])
     }
 
     /// Add unsubscribe
     ///
-    /// This subscription is not considered active until is has received all the associated
-    /// subscribe/psubscribe/ssubscribe push messages
+    /// Remove subscription from all the message filters. If a message filter ends up with no
+    /// subscriptions then add to list of filters to unsubscribe from
     mutating func unsubscribe(id: Int) -> UnsubscribeAction {
         var action: UnsubscribeAction = .doNothing
         guard let subscription = subscriptionIDMap[id] else { return .doNothing }
@@ -129,12 +130,17 @@ struct ValkeySubscriptions {
                     action = .unsubscribe([string])
                 case (.pattern(let string), .doNothing):
                     action = .punsubscribe([string])
+                case (.shardChannel(let string), .doNothing):
+                    action = .sunsubscribe([string])
                 case (.channel(let string), .unsubscribe(var channels)):
                     channels.append(string)
                     action = .unsubscribe(channels)
                 case (.pattern(let string), .punsubscribe(var patterns)):
                     patterns.append(string)
                     action = .punsubscribe(patterns)
+                case (.shardChannel(let string), .sunsubscribe(var patterns)):
+                    patterns.append(string)
+                    action = .sunsubscribe(patterns)
                 default:
                     preconditionFailure("Cannot mix channels and patterns")
                 }

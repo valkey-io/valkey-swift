@@ -163,6 +163,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 command: PUNSUBSCRIBE(pattern: patterns),
                 filters: patterns.map { .pattern($0) }
             )
+        case .sunsubscribe(let shardChannels):
+            return performUnsubscribe(
+                command: SUNSUBSCRIBE(shardchannel: shardChannels),
+                filters: shardChannels.map { .shardChannel($0) }
+            )
         case .doNothing:
             return self.eventLoop.makeSucceededVoidFuture()
         }

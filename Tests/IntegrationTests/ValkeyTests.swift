@@ -420,4 +420,34 @@ struct GeneratedCommands {
             try await group.waitForAll()
         }
     }
+
+    @Test
+    func testShardSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            var logger = Logger(label: "ShardSubscriptions")
+            logger.logLevel = .trace
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    try await connection.ssubscribe(to: "shard") { stream in
+                        cont.finish()
+                        var iterator = stream.makeAsyncIterator()
+                        try #expect(await iterator.next() == .init(channel: "shard", message: "hello"))
+                        try #expect(await iterator.next() == .init(channel: "shard", message: "goodbye"))
+                    }
+                    try await connection.channel.eventLoop.submit {
+                        #expect(connection.channelHandler.value.subscriptions.isEmpty)
+                    }.get()
+                }
+            }
+            group.addTask {
+                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                    await stream.first { _ in true }
+                    _ = try await connection.spublish(shardchannel: "shard", message: "hello")
+                    _ = try await connection.spublish(shardchannel: "shard", message: "goodbye")
+                }
+            }
+            try await group.waitForAll()
+        }
+    }
 }

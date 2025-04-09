@@ -16,4 +16,5 @@
 enum ValkeySubscriptionFilter: Equatable, Hashable, Sendable {
     case channel(String)
     case pattern(String)
+    case shardChannel(String)
 }

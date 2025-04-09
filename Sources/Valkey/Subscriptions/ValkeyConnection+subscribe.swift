@@ -105,6 +105,51 @@ extension ValkeyConnection {
         return value
     }
 
+    /// Subscribe to list of channel patterns and run closure with subscription
+    ///
+    /// When the closure is exited the patterns are automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// pattern
+    ///
+    /// - Parameters:
+    ///   - channels: list of channels to subscribe to
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
+    public func ssubscribe<Value>(
+        to shardchannel: String...,
+        process: (ValkeySubscriptionSequence) async throws -> Value
+    ) async throws -> Value {
+        try await self.ssubscribe(to: shardchannel, process: process)
+    }
+
+    /// Subscribe to list of pattern matching channels and run closure with subscription
+    ///
+    /// When the closure is exited the patterns are automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// pattern
+    ///
+    /// - Parameters:
+    ///   - channels: list of channels to subscribe to
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
+    public func ssubscribe<Value>(to shardchannel: [String], process: (ValkeySubscriptionSequence) async throws -> Value) async throws -> Value {
+        let command = SSUBSCRIBE(shardchannel: shardchannel)
+        let (id, stream) = try await subscribe(command: command, filters: shardchannel.map { .shardChannel($0) })
+        let value: Value
+        do {
+            value = try await process(stream)
+        } catch {
+            _ = try? await unsubscribe(id: id)
+            throw error
+        }
+        _ = try await unsubscribe(id: id)
+        return value
+    }
+
     @usableFromInline
     func subscribe(command: some RESPCommand, filters: [ValkeySubscriptionFilter]) async throws -> (Int, ValkeySubscriptionSequence) {
         let (stream, streamContinuation) = ValkeySubscriptionSequence.makeStream()

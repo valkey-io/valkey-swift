@@ -46,7 +46,7 @@ struct SubscriptionTests {
                 // expect UNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 #expect(String(buffer: outbound) == "*2\r\n$11\r\nUNSUBSCRIBE\r\n$4\r\ntest\r\n")
-                // push UNSUBSCRIBE message
+                // push unsubcribe
                 try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$4\r\ntest\r\n:0\r\n"))
             }
             try await group.waitForAll()
@@ -517,6 +517,41 @@ struct SubscriptionTests {
                 #expect(String(buffer: outbound) == "*2\r\n$11\r\nUNSUBSCRIBE\r\n$4\r\ntest\r\n")
                 // return error
                 try await channel.writeInbound(ByteBuffer(string: "!18\r\nSubscription error\r\n"))
+            }
+            try await group.waitForAll()
+        }
+        try await connection.channel.eventLoop.submit {
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
+        }.get()
+    }
+
+    @Test
+    func testShardSubscribe() async throws {
+        let channel = NIOAsyncTestingChannel()
+        var logger = Logger(label: "test")
+        logger.logLevel = .trace
+        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                try await connection.ssubscribe(to: "test") { subscription in
+                    let message = try await subscription.first { _ in true }
+                    #expect(message == .init(channel: "test", message: "Testing!"))
+                }
+            }
+            group.addTask {
+                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                // expect SUBSCRIBE command
+                #expect(String(buffer: outbound) == "*2\r\n$10\r\nSSUBSCRIBE\r\n$4\r\ntest\r\n")
+                // push subscribe
+                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$10\r\nssubscribe\r\n$4\r\ntest\r\n:1\r\n"))
+                // push message
+                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$8\r\nsmessage\r\n$4\r\ntest\r\n$8\r\nTesting!\r\n"))
+                // expect SUNSUBSCRIBE command
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(String(buffer: outbound) == "*2\r\n$12\r\nSUNSUBSCRIBE\r\n$4\r\ntest\r\n")
+                // push unsubcribe
+                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$12\r\nsunsubscribe\r\n$4\r\ntest\r\n:0\r\n"))
             }
             try await group.waitForAll()
         }
