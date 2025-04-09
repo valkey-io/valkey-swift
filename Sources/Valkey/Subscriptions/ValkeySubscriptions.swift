@@ -18,8 +18,8 @@ import Synchronization
 /// Container for all subscriptions on one connection
 struct ValkeySubscriptions {
     var subscriptionIDMap: [Int: ValkeySubscription]
-    var subscribeCommandStack: ValkeySubscriptionCommandStack<ValkeySubscription>
-    var unsubscribeCommandStack: ValkeySubscriptionCommandStack<[ValkeySubscriptionFilter]>
+    private var subscribeCommandStack: ValkeySubscriptionCommandStack<ValkeySubscription>
+    private var unsubscribeCommandStack: ValkeySubscriptionCommandStack<[ValkeySubscriptionFilter]>
     private var subscriptionMap: [ValkeySubscriptionFilter: [ValkeySubscription]]
     let logger: Logger
 
@@ -144,12 +144,20 @@ struct ValkeySubscriptions {
         return action
     }
 
+    mutating func pushSubscribeCommand(filters: [ValkeySubscriptionFilter], subscription: ValkeySubscription) {
+        subscribeCommandStack.pushCommand(filters, value: subscription)
+    }
+
+    mutating func removeUnhandledSubscribeCommand() {
+        _ = subscribeCommandStack.popCommand()
+    }
+
     mutating func pushUnsubscribeCommand(filters: [ValkeySubscriptionFilter]) {
         unsubscribeCommandStack.pushCommand(filters, value: filters)
     }
 
-    mutating func pushSubscribeCommand(filters: [ValkeySubscriptionFilter], subscription: ValkeySubscription) {
-        subscribeCommandStack.pushCommand(filters, value: subscription)
+    mutating func removeUnhandledUnsubscribeCommand() {
+        _ = unsubscribeCommandStack.popCommand()
     }
 
     /// Remove subscription
@@ -157,6 +165,14 @@ struct ValkeySubscriptions {
     /// Called when associated subscribe command fails
     mutating func removeSubscription(id: Int) {
         subscriptionIDMap[id] = nil
+    }
+
+    /// Used in tests
+    var isEmpty: Bool {
+        self.subscriptionIDMap.isEmpty
+            || self.subscriptionMap.isEmpty
+            || self.subscribeCommandStack.commands.isEmpty
+            || self.unsubscribeCommandStack.commands.isEmpty
     }
 }
 

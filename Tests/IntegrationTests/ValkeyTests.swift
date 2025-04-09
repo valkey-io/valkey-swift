@@ -243,6 +243,9 @@ struct GeneratedCommands {
                         //_ = try await connection.unsubscribe(channel: ["testSubscriptions"])
                         //await #expect(throws: Never.self) { try await iterator.next() == nil }
                     }
+                    try await connection.channel.eventLoop.submit {
+                        #expect(connection.channelHandler.value.subscriptions.isEmpty)
+                    }.get()
                 }
             }
             group.addTask {
@@ -273,6 +276,9 @@ struct GeneratedCommands {
                             await #expect(throws: Never.self) { try await iterator2.next()?.message == "hello" }
                         }
                     }
+                    try await connection.channel.eventLoop.submit {
+                        #expect(connection.channelHandler.value.subscriptions.isEmpty)
+                    }.get()
                 }
             }
             group.addTask {
@@ -302,6 +308,9 @@ struct GeneratedCommands {
                             await #expect(throws: Never.self) { try await iterator2.next()?.message == "goodbye" }
                         }
                     }
+                    try await connection.channel.eventLoop.submit {
+                        #expect(connection.channelHandler.value.subscriptions.isEmpty)
+                    }.get()
                 }
             }
             group.addTask {
@@ -330,6 +339,9 @@ struct GeneratedCommands {
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "2" }
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
                     }
+                    try await connection.channel.eventLoop.submit {
+                        #expect(connection.channelHandler.value.subscriptions.isEmpty)
+                    }.get()
                 }
             }
             group.addTask {
@@ -358,6 +370,9 @@ struct GeneratedCommands {
                         try #expect(await iterator.next() == .init(channel: "pattern.1", message: "hello"))
                         try #expect(await iterator.next() == .init(channel: "pattern.abc", message: "goodbye"))
                     }
+                    try await connection.channel.eventLoop.submit {
+                        #expect(connection.channelHandler.value.subscriptions.isEmpty)
+                    }.get()
                 }
             }
             group.addTask {
@@ -390,6 +405,9 @@ struct GeneratedCommands {
                             try #expect(await iterator2.next() == .init(channel: "PatternChannelSubscriptions2", message: "goodbye"))
                         }
                     }
+                    try await connection.channel.eventLoop.submit {
+                        #expect(connection.channelHandler.value.subscriptions.isEmpty)
+                    }.get()
                 }
             }
             group.addTask {

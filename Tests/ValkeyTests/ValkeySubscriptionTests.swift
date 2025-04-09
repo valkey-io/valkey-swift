@@ -52,7 +52,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -96,7 +96,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -162,7 +162,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -215,7 +215,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -251,7 +251,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -293,7 +293,7 @@ struct SubscriptionTests {
             }.value
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -332,7 +332,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -383,7 +383,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -415,7 +415,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -460,7 +460,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -488,8 +488,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
-            #expect(connection.channelHandler.value.subscriptions.subscribeCommandStack.commands.isEmpty)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 
@@ -522,8 +521,7 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
-            #expect(connection.channelHandler.value.subscriptions.unsubscribeCommandStack.commands.isEmpty)
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
         }.get()
     }
 }

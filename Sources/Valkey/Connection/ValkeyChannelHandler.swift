@@ -142,7 +142,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         return self._send(command: command)
             .flatMapErrorThrowing { error in
                 loopBoundSelf.value.subscriptions.removeSubscription(id: subscriptionID)
-                _ = loopBoundSelf.value.subscriptions.subscribeCommandStack.popCommand()
+                loopBoundSelf.value.subscriptions.removeUnhandledSubscribeCommand()
                 throw error
             }
             .map { _ in subscriptionID }
@@ -175,7 +175,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
         return self._send(command: command)
             .flatMapErrorThrowing { error in
-                _ = loopBoundSelf.value.subscriptions.unsubscribeCommandStack.popCommand()
+                loopBoundSelf.value.subscriptions.removeUnhandledUnsubscribeCommand()
                 throw error
             }
             .map { _ in }
