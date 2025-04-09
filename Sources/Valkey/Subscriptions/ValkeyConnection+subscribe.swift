@@ -14,25 +14,39 @@
 
 import NIOCore
 
-public struct ValkeySubscriptionMessage: Sendable, Equatable {
-    public let channel: String
-    public let message: String
-
-    package init(channel: String, message: String) {
-        self.channel = channel
-        self.message = message
-    }
-}
-
 extension ValkeyConnection {
+    /// Subscribe to list of channels and run closure with subscription
+    ///
+    /// When the closure is exited the channels are automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// channel
+    ///
+    /// - Parameters:
+    ///   - channels: list of channels to subscribe to
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
     public func subscribe<Value>(
         to channels: String...,
-        process: (ValkeySubscriptionAsyncStream) async throws -> Value
+        process: (ValkeySubscriptionSequence) async throws -> Value
     ) async throws -> Value {
         try await self.subscribe(to: channels, process: process)
     }
 
-    public func subscribe<Value>(to channels: [String], process: (ValkeySubscriptionAsyncStream) async throws -> Value) async throws -> Value {
+    @inlinable
+    /// Subscribe to list of channels and run closure with subscription
+    ///
+    /// When the closure is exited the channels are automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// channel
+    ///
+    /// - Parameters:
+    ///   - channels: list of channels to subscribe to
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    public func subscribe<Value>(to channels: [String], process: (ValkeySubscriptionSequence) async throws -> Value) async throws -> Value {
         let command = SUBSCRIBE(channel: channels)
         let (id, stream) = try await subscribe(command: command, filters: channels.map { .channel($0) })
         let value: Value
@@ -46,14 +60,38 @@ extension ValkeyConnection {
         return value
     }
 
+    /// Subscribe to list of channel patterns and run closure with subscription
+    ///
+    /// When the closure is exited the patterns are automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// pattern
+    ///
+    /// - Parameters:
+    ///   - channels: list of channels to subscribe to
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
     public func psubscribe<Value>(
         to patterns: String...,
-        process: (ValkeySubscriptionAsyncStream) async throws -> Value
+        process: (ValkeySubscriptionSequence) async throws -> Value
     ) async throws -> Value {
         try await self.psubscribe(to: patterns, process: process)
     }
 
-    public func psubscribe<Value>(to patterns: [String], process: (ValkeySubscriptionAsyncStream) async throws -> Value) async throws -> Value {
+    /// Subscribe to list of pattern matching channels and run closure with subscription
+    ///
+    /// When the closure is exited the patterns are automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// pattern
+    ///
+    /// - Parameters:
+    ///   - channels: list of channels to subscribe to
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
+    public func psubscribe<Value>(to patterns: [String], process: (ValkeySubscriptionSequence) async throws -> Value) async throws -> Value {
         let command = PSUBSCRIBE(pattern: patterns)
         let (id, stream) = try await subscribe(command: command, filters: patterns.map { .pattern($0) })
         let value: Value
@@ -67,8 +105,9 @@ extension ValkeyConnection {
         return value
     }
 
-    func subscribe(command: some RESPCommand, filters: [ValkeySubscriptionFilter]) async throws -> (Int, ValkeySubscriptionAsyncStream) {
-        let (stream, streamContinuation) = ValkeySubscriptionAsyncStream.makeStream()
+    @usableFromInline
+    func subscribe(command: some RESPCommand, filters: [ValkeySubscriptionFilter]) async throws -> (Int, ValkeySubscriptionSequence) {
+        let (stream, streamContinuation) = ValkeySubscriptionSequence.makeStream()
         let subscriptionID: Int
         if self.channel.eventLoop.inEventLoop {
             subscriptionID = try await self.channelHandler.value.subscribe(

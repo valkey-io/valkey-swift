@@ -12,8 +12,19 @@
 //
 //===----------------------------------------------------------------------===//
 
+/// Message received from subscription
+public struct ValkeySubscriptionMessage: Sendable, Equatable {
+    public let channel: String
+    public let message: String
+
+    package init(channel: String, message: String) {
+        self.channel = channel
+        self.message = message
+    }
+}
+
 /// Sequence of messages from Valkey subscription
-public struct ValkeySubscriptionAsyncStream: AsyncSequence, Sendable {
+public struct ValkeySubscriptionSequence: AsyncSequence, Sendable {
     public typealias Element = ValkeySubscriptionMessage
 
     typealias BaseAsyncSequence = AsyncThrowingStream<ValkeySubscriptionMessage, Error>

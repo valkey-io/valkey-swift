@@ -12,7 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-enum ValkeySubscriptionFilter: Equatable, Hashable {
+@usableFromInline
+enum ValkeySubscriptionFilter: Equatable, Hashable, Sendable {
     case channel(String)
     case pattern(String)
 }

@@ -62,6 +62,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     /*private*/ var encoder = RESPCommandEncoder()
     @usableFromInline
     /*private*/ var context: ChannelHandlerContext?
+    @usableFromInline
     /*private*/ var subscriptions: ValkeySubscriptions
 
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
@@ -130,7 +131,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     /// Add subscription, and call SUBSCRIBE command
     func subscribe(
         command: some RESPCommand,
-        continuation: ValkeySubscriptionAsyncStream.Continuation,
+        continuation: ValkeySubscriptionSequence.Continuation,
         filters: [ValkeySubscriptionFilter]
     ) -> EventLoopFuture<Int> {
         self.eventLoop.assertInEventLoop()
@@ -272,9 +273,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func _send<Command: RESPCommand>(command: Command) -> EventLoopFuture<RESPToken> {
         self.eventLoop.assertInEventLoop()
-        var encoder = RESPCommandEncoder()
-        command.encode(into: &encoder)
-        let buffer = encoder.buffer
+        self.encoder.reset()
+        command.encode(into: &self.encoder)
+        let buffer = self.encoder.buffer
 
         let promise = eventLoop.makePromise(of: RESPToken.self)
         self.write(request: ValkeyRequest.single(buffer: buffer, promise: .nio(promise)))

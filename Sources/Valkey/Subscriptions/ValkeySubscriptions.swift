@@ -16,6 +16,7 @@ import Logging
 import Synchronization
 
 /// Container for all subscriptions on one connection
+@usableFromInline
 struct ValkeySubscriptions {
     var subscriptionIDMap: [Int: ValkeySubscription]
     private var subscribeCommandStack: ValkeySubscriptionCommandStack<ValkeySubscription>
@@ -100,8 +101,7 @@ struct ValkeySubscriptions {
     ///
     /// This subscription is not considered active until is has received all the associated
     /// subscribe/psubscribe/ssubscribe push messages
-    mutating func addSubscription(continuation: ValkeySubscriptionAsyncStream.Continuation, filters: [ValkeySubscriptionFilter]) -> ValkeySubscription
-    {
+    mutating func addSubscription(continuation: ValkeySubscriptionSequence.Continuation, filters: [ValkeySubscriptionFilter]) -> ValkeySubscription {
         let id = Self.getSubscriptionID()
         let subscription = ValkeySubscription(id: id, continuation: continuation, filters: filters, logger: self.logger)
         subscriptionIDMap[id] = subscription
@@ -180,10 +180,10 @@ struct ValkeySubscriptions {
 final class ValkeySubscription {
     let id: Int
     let filters: [ValkeySubscriptionFilter]
-    let continuation: ValkeySubscriptionAsyncStream.Continuation
+    let continuation: ValkeySubscriptionSequence.Continuation
     let logger: Logger
 
-    init(id: Int, continuation: ValkeySubscriptionAsyncStream.Continuation, filters: [ValkeySubscriptionFilter], logger: Logger) {
+    init(id: Int, continuation: ValkeySubscriptionSequence.Continuation, filters: [ValkeySubscriptionFilter], logger: Logger) {
         self.id = id
         self.filters = filters
         self.continuation = continuation
