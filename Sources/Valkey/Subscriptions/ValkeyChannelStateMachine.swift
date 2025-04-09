@@ -13,11 +13,11 @@
 //===----------------------------------------------------------------------===//
 
 /// State machine for a single channel/pattern subscription
-struct ValkeyChannelStateMachine {
+struct ValkeyChannelStateMachine<Value: Identifiable> where Value: AnyObject {
     enum State {
         case uninitialized
-        case opening([ValkeySubscription])
-        case active([ValkeySubscription])
+        case opening([Value])
+        case active([Value])
         case closing
         case closed
     }
@@ -32,7 +32,7 @@ struct ValkeyChannelStateMachine {
         case subscribe
     }
     // Add subscription to channel
-    mutating func add(subscription: ValkeySubscription) -> AddAction {
+    mutating func add(subscription: Value) -> AddAction {
         switch state {
         case .uninitialized:
             self.state = .opening([subscription])
@@ -68,7 +68,7 @@ struct ValkeyChannelStateMachine {
     }
 
     enum ReceivedMessageAction {
-        case forwardMessage([ValkeySubscription])
+        case forwardMessage([Value])
         case doNothing
     }
     /// We received a message should we pass it on
@@ -86,7 +86,7 @@ struct ValkeyChannelStateMachine {
         case unsubscribe
     }
     /// Subscription is being removed from Channel
-    mutating func close(subscription: ValkeySubscription) -> CloseAction {
+    mutating func close(subscription: Value) -> CloseAction {
         switch self.state {
         case .uninitialized:
             self.state = .closing

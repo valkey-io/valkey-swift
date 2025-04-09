@@ -20,7 +20,7 @@ import Synchronization
 struct ValkeySubscriptions {
     var subscriptionIDMap: [Int: ValkeySubscription]
     private var commandStack: ValkeySubscriptionCommandStack
-    private var subscriptionMap: [ValkeySubscriptionFilter: ValkeyChannelStateMachine]
+    private var subscriptionMap: [ValkeySubscriptionFilter: ValkeyChannelStateMachine<ValkeySubscription>]
     let logger: Logger
 
     static let globalSubscriptionId = Atomic<Int>(0)
@@ -195,7 +195,7 @@ struct ValkeySubscriptions {
 }
 
 /// Individual subscription associated with one subscribe command
-final class ValkeySubscription {
+final class ValkeySubscription: Identifiable {
     let id: Int
     let filters: [ValkeySubscriptionFilter]
     let continuation: ValkeySubscriptionSequence.Continuation

@@ -21,6 +21,90 @@ import Testing
 
 @Suite
 struct SubscriptionTests {
+    struct StateMachine {
+        final class TestType: Identifiable {}
+        @Test
+        func testSubscribeAndUnsubscribe() async throws {
+            var stateMachine = ValkeyChannelStateMachine<TestType>()
+            let value = TestType()
+            #expect(stateMachine.add(subscription: value) == .subscribe)
+            stateMachine.added()
+            #expect(stateMachine.close(subscription: value) == .unsubscribe)
+            #expect(stateMachine.closed() == .removeChannel)
+        }
+
+        @Test
+        func testSubscribeAndReceiveMessage() async throws {
+            var stateMachine = ValkeyChannelStateMachine<TestType>()
+            let value = TestType()
+            #expect(stateMachine.add(subscription: value) == .subscribe)
+            if case .doNothing = stateMachine.receivedMessage() {
+            } else {
+                Issue.record()
+            }
+            stateMachine.added()
+            if case .forwardMessage(let values) = stateMachine.receivedMessage() {
+                #expect(value.id == values.first?.id)
+            } else {
+                Issue.record()
+            }
+            #expect(stateMachine.close(subscription: value) == .unsubscribe)
+            #expect(stateMachine.closed() == .removeChannel)
+        }
+
+        @Test
+        func testMultipleSubscriptions() async throws {
+            var stateMachine = ValkeyChannelStateMachine<TestType>()
+            let value = TestType()
+            let value2 = TestType()
+            #expect(stateMachine.add(subscription: value) == .subscribe)
+            #expect(stateMachine.add(subscription: value2) == .doNothing)
+            stateMachine.added()
+            if case .forwardMessage(let values) = stateMachine.receivedMessage() {
+                #expect(value.id == values.first?.id)
+                #expect(value2.id == values.last?.id)
+            } else {
+                Issue.record()
+            }
+            #expect(stateMachine.close(subscription: value) == .doNothing)
+            #expect(stateMachine.close(subscription: value2) == .unsubscribe)
+            #expect(stateMachine.closed() == .removeChannel)
+        }
+
+        @Test
+        func testMultipleSubscriptionsV2() async throws {
+            var stateMachine = ValkeyChannelStateMachine<TestType>()
+            let value = TestType()
+            let value2 = TestType()
+            #expect(stateMachine.add(subscription: value) == .subscribe)
+            stateMachine.added()
+            #expect(stateMachine.add(subscription: value2) == .doNothing)
+            if case .forwardMessage(let values) = stateMachine.receivedMessage() {
+                #expect(value.id == values.first?.id)
+                #expect(value2.id == values.last?.id)
+            } else {
+                Issue.record()
+            }
+            #expect(stateMachine.close(subscription: value) == .doNothing)
+            #expect(stateMachine.close(subscription: value2) == .unsubscribe)
+            #expect(stateMachine.closed() == .removeChannel)
+        }
+
+        @Test
+        func testSubscribeAfterStartingClose() async throws {
+            var stateMachine = ValkeyChannelStateMachine<TestType>()
+            let value = TestType()
+            #expect(stateMachine.add(subscription: value) == .subscribe)
+            stateMachine.added()
+            #expect(stateMachine.close(subscription: value) == .unsubscribe)
+            let value2 = TestType()
+            #expect(stateMachine.add(subscription: value2) == .subscribe)
+            stateMachine.added()
+            #expect(stateMachine.close(subscription: value2) == .unsubscribe)
+            #expect(stateMachine.closed() == .removeChannel)
+        }
+
+    }
     @Test
     func testSubscribe() async throws {
         let channel = NIOAsyncTestingChannel()
@@ -192,13 +276,14 @@ struct SubscriptionTests {
             }
             group.addTask {
                 var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                // expect SUBSCRIBE from task 1
+                // expect SUBSCRIBE from task 1, we don't get one from task 2 as we have already instigated a subscribe command
                 #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$5\r\ntest1\r\n")
                 // push subscribes
                 try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest1\r\n:1\r\n"))
 
                 // push message and wait and push another
                 try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest1\r\n$1\r\n1\r\n"))
+                // wait for task 1 to complete. We don't get an UNSUBSCRIBE as task 2 is still subscribed
                 await stream.first { _ in true }
                 try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest1\r\n$1\r\n2\r\n"))
                 // expect UNSUBSCRIBE
