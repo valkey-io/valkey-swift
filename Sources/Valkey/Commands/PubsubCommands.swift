@@ -307,18 +307,6 @@ extension ValkeyConnection {
         try await send(command: PUBSUB.SHARDNUMSUB(shardchannel: shardchannel))
     }
 
-    /// Stops listening to messages published to channels that match one or more patterns.
-    ///
-    /// - Documentation: [PUNSUBSCRIBE](https:/valkey.io/commands/punsubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of patterns to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `punsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func punsubscribe(pattern: [String] = []) async throws -> PUNSUBSCRIBE.Response {
-        try await send(command: PUNSUBSCRIBE(pattern: pattern))
-    }
-
     /// Post a message to a shard channel
     ///
     /// - Documentation: [SPUBLISH](https:/valkey.io/commands/spublish)
@@ -329,30 +317,6 @@ extension ValkeyConnection {
     @inlinable
     public func spublish(shardchannel: String, message: String) async throws -> Int {
         try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
-    }
-
-    /// Stops listening to messages posted to shard channels.
-    ///
-    /// - Documentation: [SUNSUBSCRIBE](https:/valkey.io/commands/sunsubscribe)
-    /// - Version: 7.0.0
-    /// - Complexity: O(N) where N is the number of shard channels to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `sunsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func sunsubscribe(shardchannel: [String] = []) async throws -> SUNSUBSCRIBE.Response {
-        try await send(command: SUNSUBSCRIBE(shardchannel: shardchannel))
-    }
-
-    /// Stops listening to messages posted to channels.
-    ///
-    /// - Documentation: [UNSUBSCRIBE](https:/valkey.io/commands/unsubscribe)
-    /// - Version: 2.0.0
-    /// - Complexity: O(N) where N is the number of channels to unsubscribe.
-    /// - Categories: @pubsub, @slow
-    /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `unsubscribe` is pushed as a confirmation that the command succeeded.
-    @inlinable
-    public func unsubscribe(channel: [String] = []) async throws -> UNSUBSCRIBE.Response {
-        try await send(command: UNSUBSCRIBE(channel: channel))
     }
 
 }

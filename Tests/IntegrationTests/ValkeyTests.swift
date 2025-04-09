@@ -240,8 +240,8 @@ struct GeneratedCommands {
                         var iterator = subscription.makeAsyncIterator()
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }
-                        _ = try await connection.unsubscribe(channel: ["testSubscriptions"])
-                        await #expect(throws: Never.self) { try await iterator.next() == nil }
+                        //_ = try await connection.unsubscribe(channel: ["testSubscriptions"])
+                        //await #expect(throws: Never.self) { try await iterator.next() == nil }
                     }
                 }
             }
@@ -329,21 +329,11 @@ struct GeneratedCommands {
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "1" }
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "2" }
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
-                        // unsubscribe from multi2
-                        _ = try await connection.unsubscribe(channel: ["multi2"])
-                        // trigger second publish
-                        cont.finish()
-                        await #expect(throws: Never.self) { try await iterator.next()?.message == "1" }
-                        await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
                     }
                 }
             }
             group.addTask {
                 try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    _ = await stream.first { _ in true }
-                    _ = try await connection.publish(channel: "multi1", message: "1")
-                    _ = try await connection.publish(channel: "multi2", message: "2")
-                    _ = try await connection.publish(channel: "multi3", message: "3")
                     _ = await stream.first { _ in true }
                     _ = try await connection.publish(channel: "multi1", message: "1")
                     _ = try await connection.publish(channel: "multi2", message: "2")

@@ -326,7 +326,7 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
     }
 
     /// Remove subscribe functions as we implement our own versions in code
-    let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE"]
+    let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE", "UNSUBSCRIBE", "PUNSUBSCRIBE", "SUNSUBSCRIBE"]
     keys.removeAll { subscribeFunctions.contains($0) }
 
     string.append("\n")

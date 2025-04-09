@@ -129,12 +129,28 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     func addSubscription(
         continuation: ValkeySubscriptionAsyncStream.Continuation,
-        filter: ValkeySubscriptionFilter
+        filters: [ValkeySubscriptionFilter]
     ) -> Int {
         self.eventLoop.assertInEventLoop()
         let id = ValkeySubscriptions.getSubscriptionID()
-        self.subscriptions.addSubscription(id: id, continuation: continuation, filter: filter)
+        self.subscriptions.addSubscription(id: id, continuation: continuation, filters: filters)
         return id
+    }
+
+    func unsubscribe(id: Int) -> EventLoopFuture<Void> {
+        self.eventLoop.assertInEventLoop()
+        switch self.subscriptions.unsubscribe(id: id) {
+        case .unsubscribe(let channels):
+            let command = UNSUBSCRIBE(channel: channels)
+            self.subscriptions.pushUnsubscribeCommand(filters: channels.map { .channel($0) })
+            return self._send(command: command).map { _ in }
+        case .punsubscribe(let patterns):
+            let command = PUNSUBSCRIBE(pattern: patterns)
+            self.subscriptions.pushUnsubscribeCommand(filters: patterns.map { .pattern($0) })
+            return self._send(command: command).map { _ in }
+        case .doNothing:
+            return self.eventLoop.makeSucceededVoidFuture()
+        }
     }
 
     @usableFromInline
@@ -222,5 +238,18 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             preconditionFailure("Unexpected response")
         }
         promise.fail(error)
+    }
+
+    // Function used internally by subscribe
+    @inlinable
+    func _send<Command: RESPCommand>(command: Command) -> EventLoopFuture<RESPToken> {
+        self.eventLoop.assertInEventLoop()
+        var encoder = RESPCommandEncoder()
+        command.encode(into: &encoder)
+        let buffer = encoder.buffer
+
+        let promise = eventLoop.makePromise(of: RESPToken.self)
+        self.write(request: ValkeyRequest.single(buffer: buffer, promise: .nio(promise)))
+        return promise.futureResult
     }
 }

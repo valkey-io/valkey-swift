@@ -14,52 +14,47 @@
 
 import DequeModule
 
-struct ValkeySubscriptionCommandStack {
-    struct Command {
-        enum CommandType {
-            case subscribe
-            case unsubscribe
-            case psubscribe
-            case punsubscribe
-        }
-        let type: CommandType
-        var values: [String]
+/// A subscription command does not return any values instead it pushes messages for each
+/// channel/pattern that has been subscribed/unsubscribed to. This struct catches each
+/// push notification and at the point we have received all the pushes required it returns
+/// the associated value
+struct ValkeySubscriptionCommandStack<Value> {
+    struct SubscribeCommand {
+        var filters: [ValkeySubscriptionFilter]
+        var value: Value
 
-        mutating func process(token: PushToken) throws -> Bool {
-            switch (self.type, token.type) {
-            case (.subscribe, .subscribe), (.unsubscribe, .unsubscribe), (.psubscribe, .psubscribe), (.punsubscribe, .punsubscribe):
-                try self.removeEntry(token.value)
-                if self.values.isEmpty {
-                    return true
-                } else {
-                    return false
-                }
-            case (_, .pmessage), (_, .message):
+        mutating func received(_ subscription: ValkeySubscriptionFilter) throws -> Bool {
+            guard let index = self.filters.firstIndex(of: subscription) else {
+                throw ValkeyClientError(.subscriptionError, message: "Received unexpected push")
+            }
+            self.filters.remove(at: index)
+            if self.filters.isEmpty {
+                return true
+            } else {
                 return false
-            default:
-                throw ValkeyClientError(.subscriptionError, message: "Received unexpected push")
             }
         }
-
-        mutating func removeEntry(_ entry: String) throws {
-            guard let index = self.values.firstIndex(of: entry) else {
-                throw ValkeyClientError(.subscriptionError, message: "Received unexpected push")
-            }
-            self.values.remove(at: index)
-        }
     }
-    var commands: Deque<Command>
+    var commands: Deque<SubscribeCommand>
 
-    mutating func addCommand(_ command: Command) {
-        commands.append(command)
+    init(value: Value.Type = Value.self) {
+        self.commands = []
     }
 
-    mutating func process(token: PushToken) throws -> Bool {
-        if try commands[commands.startIndex].process(token: token) {
-            _ = commands.popFirst()
-            return true
+    mutating func pushCommand(_ subscriptions: [ValkeySubscriptionFilter], value: Value) {
+        self.commands.append(.init(filters: subscriptions, value: value))
+    }
+
+    mutating func popCommand() -> Value? {
+        self.commands.popFirst()?.value
+    }
+
+    mutating func received(_ subscription: ValkeySubscriptionFilter) throws -> Value? {
+        if try commands[commands.startIndex].received(subscription) {
+            let command = commands.popFirst()
+            return command?.value
         } else {
-            return false
+            return nil
         }
     }
 }

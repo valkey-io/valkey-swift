@@ -17,17 +17,20 @@ import Synchronization
 
 /// Container for all subscriptions on one connection
 struct ValkeySubscriptions {
-    struct Subscription {
-        let id: Int
-        let subscription: ValkeySubscription
-        var stateMachine: ValkeySubscriptionStateMachine
-    }
+    var subscriptionIDMap: [Int: ValkeySubscription]
+    var subscribeCommandStack: ValkeySubscriptionCommandStack<ValkeySubscription>
+    var unsubscribeCommandStack: ValkeySubscriptionCommandStack<[ValkeySubscriptionFilter]>
+    var subscriptionMap: [ValkeySubscriptionFilter: [ValkeySubscription]]
+    let logger: Logger
 
     static let globalSubscriptionId = Atomic<Int>(0)
 
     init(logger: Logger) {
-        self.subscriptions = []
+        self.subscriptionIDMap = [:]
         self.logger = logger
+        self.subscribeCommandStack = .init()
+        self.unsubscribeCommandStack = .init()
+        self.subscriptionMap = [:]
     }
 
     /// We received a push notification
@@ -38,45 +41,55 @@ struct ValkeySubscriptions {
         } catch {
             // push error to all subscriptions on this channel. We're about to close
             // the channel we should tell them why
-            for subscription in subscriptions {
-                subscription.subscription.sendError(error)
+            for subscription in subscriptionIDMap.values {
+                subscription.sendError(error)
             }
-            subscriptions = []
+            subscriptionIDMap = [:]
             throw error
         }
 
         self.logger.trace("\(pushToken)")
 
-        //var returnValue = false
-        for index in subscriptions.indices.reversed() {
-            switch subscriptions[index].stateMachine.receivedToken(pushToken) {
-            case .sendMessage(let message):
-                subscriptions[index].subscription.sendMessage(message)
-            case .fail(let error):
-                subscriptions[index].subscription.sendError(error)
-                subscriptions.remove(at: index)
-            case .deleteSubscriptionAndReturnOk:
-                subscriptions[index].subscription.finish()
-                subscriptions.remove(at: index)
-                return true
-            case .returnOk:
-                // push message is associated with a command. Given successful commands don't return
-                // anything unless there is an error we catch the associated push message and then
-                // return ok
-                return true
-            case .doNothing:
-                break
+        var returnValue = false
+        switch pushToken.type {
+        case .subscribe, .psubscribe:
+            if let subscription = try subscribeCommandStack.received(pushToken.value) {
+                for filter in subscription.filters {
+                    if self.subscriptionMap[filter] == nil {
+                        self.subscriptionMap[filter] = [subscription]
+                    } else {
+                        self.subscriptionMap[filter]?.append(subscription)
+                    }
+                }
+                returnValue = true
+            }
+        case .unsubscribe, .punsubscribe:
+            if let unsubscribedFilters = try unsubscribeCommandStack.received(pushToken.value) {
+                returnValue = true
+
+                for filter in unsubscribedFilters {
+                    precondition(self.subscriptionMap[filter]?.count == 0, "Filter should have no subscriptions attached to it")
+                    self.subscriptionMap.removeValue(forKey: filter)
+                }
+            }
+        case .message(let channel, let message), .pmessage(let channel, let message):
+            guard let subscriptions = subscriptionMap[pushToken.value] else {
+                self.logger.trace("Received message for unrecognised subscription")
+                return false
+            }
+            for subscription in subscriptions {
+                subscription.sendMessage(.init(channel: channel, message: message))
             }
         }
-        return false
+        return returnValue
     }
 
     /// Connection is closing lets inform all the subscriptions
     mutating func close() {
-        for subscription in subscriptions {
-            subscription.subscription.sendError(ValkeyClientError(.connectionClosed))
+        for subscription in subscriptionIDMap.values {
+            subscription.sendError(ValkeyClientError(.connectionClosed))
         }
-        self.subscriptions = []
+        self.subscriptionIDMap = [:]
     }
 
     static func getSubscriptionID() -> Int {
@@ -87,36 +100,71 @@ struct ValkeySubscriptions {
     ///
     /// This subscription is not considered active until is has received all the associated
     /// subscribe/psubscribe/ssubscribe push messages
-    mutating func addSubscription(id: Int, continuation: ValkeySubscriptionAsyncStream.Continuation, filter: ValkeySubscriptionFilter) {
-        subscriptions.append(
-            .init(
-                id: id,
-                subscription: .init(continuation: continuation, filter: filter, logger: self.logger),
-                stateMachine: .init(filter: filter)
-            )
-        )
+    mutating func addSubscription(id: Int, continuation: ValkeySubscriptionAsyncStream.Continuation, filters: [ValkeySubscriptionFilter]) {
+        let subscription = ValkeySubscription(id: id, continuation: continuation, filters: filters, logger: self.logger)
+        subscriptionIDMap[id] = subscription
+        subscribeCommandStack.pushCommand(filters, value: subscription)
+    }
+
+    enum UnsubscribeAction {
+        case doNothing
+        case unsubscribe([String])
+        case punsubscribe([String])
+    }
+
+    /// Add unsubscribe
+    ///
+    /// This subscription is not considered active until is has received all the associated
+    /// subscribe/psubscribe/ssubscribe push messages
+    mutating func unsubscribe(id: Int) -> UnsubscribeAction {
+        var action: UnsubscribeAction = .doNothing
+        guard let subscription = subscriptionIDMap[id] else { return .doNothing }
+        for filter in subscription.filters {
+            self.subscriptionMap[filter]?.removeAll { $0.id == id }
+            if self.subscriptionMap[filter]?.count == 0 {
+                switch (filter, action) {
+                case (.channel(let string), .doNothing):
+                    action = .unsubscribe([string])
+                case (.pattern(let string), .doNothing):
+                    action = .punsubscribe([string])
+                case (.channel(let string), .unsubscribe(var channels)):
+                    channels.append(string)
+                    action = .unsubscribe(channels)
+                case (.pattern(let string), .punsubscribe(var patterns)):
+                    patterns.append(string)
+                    action = .punsubscribe(patterns)
+                default:
+                    preconditionFailure("Cannot mix channels and patterns")
+                }
+            }
+        }
+        subscriptionIDMap[id] = nil
+        return action
+    }
+
+    mutating func pushUnsubscribeCommand(filters: [ValkeySubscriptionFilter]) {
+        unsubscribeCommandStack.pushCommand(filters, value: filters)
     }
 
     /// Remove subscription
     ///
     /// Called when associated subscribe command fails
     mutating func removeSubscription(id: Int) {
-        subscriptions.removeAll { $0.id == id }
+        subscriptionIDMap[id] = nil
     }
-
-    var subscriptions: [Subscription]
-    let logger: Logger
 }
 
 /// Individual subscription associated with one subscribe command
-struct ValkeySubscription {
-    var stateMachine: ValkeySubscriptionStateMachine
+final class ValkeySubscription {
+    let id: Int
+    let filters: [ValkeySubscriptionFilter]
     let continuation: ValkeySubscriptionAsyncStream.Continuation
     let logger: Logger
 
-    init(continuation: ValkeySubscriptionAsyncStream.Continuation, filter: ValkeySubscriptionFilter, logger: Logger) {
+    init(id: Int, continuation: ValkeySubscriptionAsyncStream.Continuation, filters: [ValkeySubscriptionFilter], logger: Logger) {
+        self.id = id
+        self.filters = filters
         self.continuation = continuation
-        self.stateMachine = .init(filter: filter)
         self.logger = logger
     }
 

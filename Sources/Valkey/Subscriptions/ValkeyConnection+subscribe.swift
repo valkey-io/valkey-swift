@@ -34,15 +34,15 @@ extension ValkeyConnection {
 
     public func subscribe<Value>(to channels: [String], process: (ValkeySubscriptionAsyncStream) async throws -> Value) async throws -> Value {
         let command = SUBSCRIBE(channel: channels)
-        let stream = try await subscribe(command: command, filter: .channels(Set(channels)))
+        let (id, stream) = try await subscribe(command: command, filters: channels.map { .channel($0) })
         let value: Value
         do {
             value = try await process(stream)
         } catch {
-            _ = try? await unsubscribe(channel: channels)
+            _ = try? await unsubscribe(id: id)
             throw error
         }
-        _ = try await unsubscribe(channel: channels)
+        _ = try await unsubscribe(id: id)
         return value
     }
 
@@ -55,57 +55,58 @@ extension ValkeyConnection {
 
     public func psubscribe<Value>(to patterns: [String], process: (ValkeySubscriptionAsyncStream) async throws -> Value) async throws -> Value {
         let command = PSUBSCRIBE(pattern: patterns)
-        let stream = try await subscribe(command: command, filter: .patterns(Set(patterns)))
+        let (id, stream) = try await subscribe(command: command, filters: patterns.map { .pattern($0) })
         let value: Value
         do {
             value = try await process(stream)
         } catch {
-            _ = try? await punsubscribe(pattern: patterns)
+            _ = try? await unsubscribe(id: id)
             throw error
         }
-        _ = try await punsubscribe(pattern: patterns)
+        _ = try await unsubscribe(id: id)
         return value
     }
 
-    func subscribe(command: some RESPCommand, filter: ValkeySubscriptionFilter) async throws -> ValkeySubscriptionAsyncStream {
+    func subscribe(command: some RESPCommand, filters: [ValkeySubscriptionFilter]) async throws -> (Int, ValkeySubscriptionAsyncStream) {
         let (stream, streamContinuation) = ValkeySubscriptionAsyncStream.makeStream()
+        let subscriptionID: Int
         if self.channel.eventLoop.inEventLoop {
-            let subscriptionID = self.channelHandler.value.addSubscription(
+            subscriptionID = self.channelHandler.value.addSubscription(
                 continuation: streamContinuation,
-                filter: filter
+                filters: filters
             )
-            _ = try await self._send(command: command)
+            _ = try await self.channelHandler.value._send(command: command)
                 .flatMapErrorThrowing { error in
                     self.channelHandler.value.subscriptions.removeSubscription(id: subscriptionID)
                     throw error
                 }
                 .get()
         } else {
-            _ = try await self.channel.eventLoop.flatSubmit {
+            subscriptionID = try await self.channel.eventLoop.flatSubmit {
                 let subscriptionID = self.channelHandler.value.addSubscription(
                     continuation: streamContinuation,
-                    filter: filter
+                    filters: filters
                 )
-                return self._send(command: command)
+                return self.channelHandler.value._send(command: command)
                     .flatMapErrorThrowing { error in
                         self.channelHandler.value.subscriptions.removeSubscription(id: subscriptionID)
                         throw error
                     }
+                    .map { _ in subscriptionID }
             }.get()
         }
-        return stream
+        return (subscriptionID, stream)
     }
 
-    // Function used internally by subscribe
-    @inlinable
-    func _send<Command: RESPCommand>(command: Command) -> EventLoopFuture<RESPToken> {
-        self.channel.eventLoop.assertInEventLoop()
-        var encoder = RESPCommandEncoder()
-        command.encode(into: &encoder)
-        let buffer = encoder.buffer
-
-        let promise = channel.eventLoop.makePromise(of: RESPToken.self)
-        self.channelHandler.value.write(request: ValkeyRequest.single(buffer: buffer, promise: .nio(promise)))
-        return promise.futureResult
+    @usableFromInline
+    func unsubscribe(id: Int) async throws {
+        if self.channel.eventLoop.inEventLoop {
+            try await self.channelHandler.value.unsubscribe(id: id).get()
+        } else {
+            _ = try await self.channel.eventLoop.flatSubmit {
+                self.channelHandler.value.unsubscribe(id: id)
+            }.get()
+        }
+        return
     }
 }
