@@ -54,10 +54,15 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     typealias InboundIn = ByteBuffer
 
     @usableFromInline
-    let eventLoop: EventLoop
-    private var commands: Deque<ValkeyPromise<RESPToken>>
+    /*private*/ let eventLoop: EventLoop
+    @usableFromInline
+    /*private*/ var commands: Deque<ValkeyPromise<RESPToken>>
+    @usableFromInline
+    /*private*/ var encoder = RESPCommandEncoder()
+    @usableFromInline
+    /*private*/ var context: ChannelHandlerContext?
+
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
-    private var context: ChannelHandlerContext?
     private let logger: Logger
 
     init(eventLoop: EventLoop, logger: Logger) {
@@ -75,6 +80,24 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func write(request: ValkeyRequest) {
         self._write(request: request)
+    }
+
+    /// Write valkey command/commands to channel
+    /// - Parameters:
+    ///   - request: Valkey command request
+    ///   - promise: Promise to fulfill when command is complete
+    @inlinable
+    func write<Command: RESPCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>) {
+        guard let context = self.context else {
+            preconditionFailure("Trying to use valkey connection before it is setup")
+        }
+
+        self.encoder.reset()
+        command.encode(into: &self.encoder)
+        let buffer = self.encoder.buffer
+
+        self.commands.append(.swift(continuation))
+        context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
     }
 
     @usableFromInline
