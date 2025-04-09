@@ -18,10 +18,9 @@ import DequeModule
 /// channel/pattern that has been subscribed/unsubscribed to. This struct catches each
 /// push notification and at the point we have received all the pushes required it returns
 /// the associated value
-struct ValkeySubscriptionCommandStack<Value> {
+struct ValkeySubscriptionCommandStack {
     struct SubscribeCommand {
         var filters: [ValkeySubscriptionFilter]
-        var value: Value
 
         mutating func received(_ subscription: ValkeySubscriptionFilter) throws -> Bool {
             guard let index = self.filters.firstIndex(of: subscription) else {
@@ -37,22 +36,22 @@ struct ValkeySubscriptionCommandStack<Value> {
     }
     var commands: Deque<SubscribeCommand>
 
-    init(value: Value.Type = Value.self) {
+    init() {
         self.commands = []
     }
 
-    mutating func pushCommand(_ subscriptions: [ValkeySubscriptionFilter], value: Value) {
-        self.commands.append(.init(filters: subscriptions, value: value))
+    mutating func pushCommand(_ subscriptions: [ValkeySubscriptionFilter]) {
+        self.commands.append(.init(filters: subscriptions))
     }
 
-    mutating func popCommand() -> Value? {
-        self.commands.popFirst()?.value
+    mutating func popCommand() -> SubscribeCommand? {
+        self.commands.popFirst()
     }
 
-    mutating func received(_ subscription: ValkeySubscriptionFilter) throws -> Value? {
+    mutating func received(_ subscription: ValkeySubscriptionFilter) throws -> SubscribeCommand? {
         if try commands[commands.startIndex].received(subscription) {
             let command = commands.popFirst()
-            return command?.value
+            return command
         } else {
             return nil
         }

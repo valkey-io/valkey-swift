@@ -19,9 +19,8 @@ import Synchronization
 @usableFromInline
 struct ValkeySubscriptions {
     var subscriptionIDMap: [Int: ValkeySubscription]
-    private var subscribeCommandStack: ValkeySubscriptionCommandStack<ValkeySubscription>
-    private var unsubscribeCommandStack: ValkeySubscriptionCommandStack<[ValkeySubscriptionFilter]>
-    private var subscriptionMap: [ValkeySubscriptionFilter: [ValkeySubscription]]
+    private var commandStack: ValkeySubscriptionCommandStack
+    private var subscriptionMap: [ValkeySubscriptionFilter: ValkeyChannelStateMachine]
     let logger: Logger
 
     static let globalSubscriptionId = Atomic<Int>(0)
@@ -29,8 +28,7 @@ struct ValkeySubscriptions {
     init(logger: Logger) {
         self.subscriptionIDMap = [:]
         self.logger = logger
-        self.subscribeCommandStack = .init()
-        self.unsubscribeCommandStack = .init()
+        self.commandStack = .init()
         self.subscriptionMap = [:]
     }
 
@@ -54,32 +52,30 @@ struct ValkeySubscriptions {
         var returnValue = false
         switch pushToken.type {
         case .subscribe, .psubscribe, .ssubscribe:
-            if let subscription = try subscribeCommandStack.received(pushToken.value) {
-                for filter in subscription.filters {
-                    if self.subscriptionMap[filter] == nil {
-                        self.subscriptionMap[filter] = [subscription]
-                    } else {
-                        self.subscriptionMap[filter]?.append(subscription)
-                    }
-                }
+            if let _ = try commandStack.received(pushToken.value) {
                 returnValue = true
             }
-        case .unsubscribe, .punsubscribe, .sunsubscribe:
-            if let unsubscribedFilters = try unsubscribeCommandStack.received(pushToken.value) {
-                returnValue = true
+            self.subscriptionMap[pushToken.value, default: .init()].added()
 
-                for filter in unsubscribedFilters {
-                    precondition(self.subscriptionMap[filter]?.count == 0, "Filter should have no subscriptions attached to it")
-                    self.subscriptionMap.removeValue(forKey: filter)
-                }
+        case .unsubscribe, .punsubscribe, .sunsubscribe:
+            if let _ = try commandStack.received(pushToken.value) {
+                returnValue = true
             }
+            switch self.subscriptionMap[pushToken.value, default: .init()].closed() {
+            case .removeChannel:
+                self.subscriptionMap.removeValue(forKey: pushToken.value)
+            case .doNothing:
+                break
+            }
+
         case .message(let channel, let message), .pmessage(let channel, let message), .smessage(let channel, let message):
-            guard let subscriptions = subscriptionMap[pushToken.value] else {
-                self.logger.trace("Received message for unrecognised subscription")
-                return false
-            }
-            for subscription in subscriptions {
-                subscription.sendMessage(.init(channel: channel, message: message))
+            switch self.subscriptionMap[pushToken.value, default: .init()].receivedMessage() {
+            case .forwardMessage(let subscriptions):
+                for subscription in subscriptions {
+                    subscription.sendMessage(.init(channel: channel, message: message))
+                }
+            case .doNothing:
+                self.logger.trace("Received message for inactive subscription \(pushToken.value)")
             }
         }
         return returnValue
@@ -97,15 +93,38 @@ struct ValkeySubscriptions {
         Self.globalSubscriptionId.wrappingAdd(1, ordering: .relaxed).newValue
     }
 
+    enum SubscribeAction {
+        case doNothing(ValkeySubscription)
+        case subscribe(ValkeySubscription, [ValkeySubscriptionFilter])
+    }
+
     /// Add subscription to channel.
     ///
     /// This subscription is not considered active until is has received all the associated
     /// subscribe/psubscribe/ssubscribe push messages
-    mutating func addSubscription(continuation: ValkeySubscriptionSequence.Continuation, filters: [ValkeySubscriptionFilter]) -> ValkeySubscription {
+    mutating func addSubscription(
+        continuation: ValkeySubscriptionSequence.Continuation,
+        filters: [ValkeySubscriptionFilter]
+    ) -> SubscribeAction {
         let id = Self.getSubscriptionID()
         let subscription = ValkeySubscription(id: id, continuation: continuation, filters: filters, logger: self.logger)
         subscriptionIDMap[id] = subscription
-        return subscription
+        var action = SubscribeAction.doNothing(subscription)
+        for filter in filters {
+            switch subscriptionMap[filter, default: .init()].add(subscription: subscription) {
+            case .subscribe:
+                switch action {
+                case .doNothing(let subscription):
+                    action = .subscribe(subscription, [filter])
+                case .subscribe(let subscription, var filters):
+                    filters.append(filter)
+                    action = .subscribe(subscription, filters)
+                }
+            case .doNothing:
+                break
+            }
+        }
+        return action
     }
 
     enum UnsubscribeAction {
@@ -123,8 +142,8 @@ struct ValkeySubscriptions {
         var action: UnsubscribeAction = .doNothing
         guard let subscription = subscriptionIDMap[id] else { return .doNothing }
         for filter in subscription.filters {
-            self.subscriptionMap[filter]?.removeAll { $0.id == id }
-            if self.subscriptionMap[filter]?.count == 0 {
+            switch self.subscriptionMap[filter, default: .init()].close(subscription: subscription) {
+            case .unsubscribe:
                 switch (filter, action) {
                 case (.channel(let string), .doNothing):
                     action = .unsubscribe([string])
@@ -144,26 +163,20 @@ struct ValkeySubscriptions {
                 default:
                     preconditionFailure("Cannot mix channels and patterns")
                 }
+            case .doNothing:
+                break
             }
         }
         subscriptionIDMap[id] = nil
         return action
     }
 
-    mutating func pushSubscribeCommand(filters: [ValkeySubscriptionFilter], subscription: ValkeySubscription) {
-        subscribeCommandStack.pushCommand(filters, value: subscription)
+    mutating func pushCommand(filters: [ValkeySubscriptionFilter]) {
+        commandStack.pushCommand(filters)
     }
 
-    mutating func removeUnhandledSubscribeCommand() {
-        _ = subscribeCommandStack.popCommand()
-    }
-
-    mutating func pushUnsubscribeCommand(filters: [ValkeySubscriptionFilter]) {
-        unsubscribeCommandStack.pushCommand(filters, value: filters)
-    }
-
-    mutating func removeUnhandledUnsubscribeCommand() {
-        _ = unsubscribeCommandStack.popCommand()
+    mutating func removeUnhandledCommand() {
+        _ = commandStack.popCommand()
     }
 
     /// Remove subscription
@@ -177,8 +190,7 @@ struct ValkeySubscriptions {
     var isEmpty: Bool {
         self.subscriptionIDMap.isEmpty
             || self.subscriptionMap.isEmpty
-            || self.subscribeCommandStack.commands.isEmpty
-            || self.unsubscribeCommandStack.commands.isEmpty
+            || self.commandStack.commands.isEmpty
     }
 }
 

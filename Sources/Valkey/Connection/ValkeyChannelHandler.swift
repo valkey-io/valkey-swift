@@ -135,18 +135,25 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         filters: [ValkeySubscriptionFilter]
     ) -> EventLoopFuture<Int> {
         self.eventLoop.assertInEventLoop()
-        let subscription = self.subscriptions.addSubscription(continuation: continuation, filters: filters)
-        self.subscriptions.pushSubscribeCommand(filters: filters, subscription: subscription)
+        switch self.subscriptions.addSubscription(continuation: continuation, filters: filters) {
+        case .subscribe(let subscription, _):
+            // TODO: currently ignoring returned filter array, as we have already constructed the subscribe command
+            //   But it would be cool to build the subscribe command based on what filters we aren't subscribed to
+            self.subscriptions.pushCommand(filters: subscription.filters)
 
-        let subscriptionID = subscription.id
-        let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
-        return self._send(command: command)
-            .flatMapErrorThrowing { error in
-                loopBoundSelf.value.subscriptions.removeSubscription(id: subscriptionID)
-                loopBoundSelf.value.subscriptions.removeUnhandledSubscribeCommand()
-                throw error
-            }
-            .map { _ in subscriptionID }
+            let subscriptionID = subscription.id
+            let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
+            return self._send(command: command)
+                .flatMapErrorThrowing { error in
+                    loopBoundSelf.value.subscriptions.removeSubscription(id: subscriptionID)
+                    loopBoundSelf.value.subscriptions.removeUnhandledCommand()
+                    throw error
+                }
+                .map { _ in subscriptionID }
+
+        case .doNothing(let subscription):
+            return self.eventLoop.makeSucceededFuture(subscription.id)
+        }
     }
 
     /// Remove subscription and if required call UNSUBSCRIBE command
@@ -177,11 +184,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         command: some RESPCommand,
         filters: [ValkeySubscriptionFilter]
     ) -> EventLoopFuture<Void> {
-        self.subscriptions.pushUnsubscribeCommand(filters: filters)
+        self.subscriptions.pushCommand(filters: filters)
         let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
         return self._send(command: command)
             .flatMapErrorThrowing { error in
-                loopBoundSelf.value.subscriptions.removeUnhandledUnsubscribeCommand()
+                loopBoundSelf.value.subscriptions.removeUnhandledCommand()
                 throw error
             }
             .map { _ in }
