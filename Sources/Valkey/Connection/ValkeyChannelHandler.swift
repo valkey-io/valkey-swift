@@ -127,30 +127,58 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
     }
 
-    func addSubscription(
+    /// Add subscription, and call SUBSCRIBE command
+    func subscribe(
+        command: some RESPCommand,
         continuation: ValkeySubscriptionAsyncStream.Continuation,
         filters: [ValkeySubscriptionFilter]
-    ) -> Int {
+    ) -> EventLoopFuture<Int> {
         self.eventLoop.assertInEventLoop()
-        let id = ValkeySubscriptions.getSubscriptionID()
-        self.subscriptions.addSubscription(id: id, continuation: continuation, filters: filters)
-        return id
+        let subscription = self.subscriptions.addSubscription(continuation: continuation, filters: filters)
+        self.subscriptions.subscribeCommandStack.pushCommand(filters, value: subscription)
+
+        let subscriptionID = subscription.id
+        let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
+        return self._send(command: command)
+            .flatMapErrorThrowing { error in
+                loopBoundSelf.value.subscriptions.removeSubscription(id: subscriptionID)
+                _ = loopBoundSelf.value.subscriptions.subscribeCommandStack.popCommand()
+                throw error
+            }
+            .map { _ in subscriptionID }
     }
 
+    /// Remove subscription and if required call UNSUBSCRIBE command
     func unsubscribe(id: Int) -> EventLoopFuture<Void> {
         self.eventLoop.assertInEventLoop()
         switch self.subscriptions.unsubscribe(id: id) {
         case .unsubscribe(let channels):
-            let command = UNSUBSCRIBE(channel: channels)
-            self.subscriptions.pushUnsubscribeCommand(filters: channels.map { .channel($0) })
-            return self._send(command: command).map { _ in }
+            return performUnsubscribe(
+                command: UNSUBSCRIBE(channel: channels),
+                filters: channels.map { .channel($0) }
+            )
         case .punsubscribe(let patterns):
-            let command = PUNSUBSCRIBE(pattern: patterns)
-            self.subscriptions.pushUnsubscribeCommand(filters: patterns.map { .pattern($0) })
-            return self._send(command: command).map { _ in }
+            return performUnsubscribe(
+                command: PUNSUBSCRIBE(pattern: patterns),
+                filters: patterns.map { .pattern($0) }
+            )
         case .doNothing:
             return self.eventLoop.makeSucceededVoidFuture()
         }
+    }
+
+    func performUnsubscribe(
+        command: some RESPCommand,
+        filters: [ValkeySubscriptionFilter]
+    ) -> EventLoopFuture<Void> {
+        self.subscriptions.pushUnsubscribeCommand(filters: filters)
+        let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
+        return self._send(command: command)
+            .flatMapErrorThrowing { error in
+                _ = loopBoundSelf.value.subscriptions.subscribeCommandStack.popCommand()
+                throw error
+            }
+            .map { _ in }
     }
 
     @usableFromInline

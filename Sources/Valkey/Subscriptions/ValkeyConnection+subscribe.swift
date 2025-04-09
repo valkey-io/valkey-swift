@@ -71,28 +71,18 @@ extension ValkeyConnection {
         let (stream, streamContinuation) = ValkeySubscriptionAsyncStream.makeStream()
         let subscriptionID: Int
         if self.channel.eventLoop.inEventLoop {
-            subscriptionID = self.channelHandler.value.addSubscription(
+            subscriptionID = try await self.channelHandler.value.subscribe(
+                command: command,
                 continuation: streamContinuation,
                 filters: filters
-            )
-            _ = try await self.channelHandler.value._send(command: command)
-                .flatMapErrorThrowing { error in
-                    self.channelHandler.value.subscriptions.removeSubscription(id: subscriptionID)
-                    throw error
-                }
-                .get()
+            ).get()
         } else {
             subscriptionID = try await self.channel.eventLoop.flatSubmit {
-                let subscriptionID = self.channelHandler.value.addSubscription(
+                self.channelHandler.value.subscribe(
+                    command: command,
                     continuation: streamContinuation,
                     filters: filters
                 )
-                return self.channelHandler.value._send(command: command)
-                    .flatMapErrorThrowing { error in
-                        self.channelHandler.value.subscriptions.removeSubscription(id: subscriptionID)
-                        throw error
-                    }
-                    .map { _ in subscriptionID }
             }.get()
         }
         return (subscriptionID, stream)

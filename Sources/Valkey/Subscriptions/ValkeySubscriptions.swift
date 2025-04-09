@@ -100,10 +100,12 @@ struct ValkeySubscriptions {
     ///
     /// This subscription is not considered active until is has received all the associated
     /// subscribe/psubscribe/ssubscribe push messages
-    mutating func addSubscription(id: Int, continuation: ValkeySubscriptionAsyncStream.Continuation, filters: [ValkeySubscriptionFilter]) {
+    mutating func addSubscription(continuation: ValkeySubscriptionAsyncStream.Continuation, filters: [ValkeySubscriptionFilter]) -> ValkeySubscription
+    {
+        let id = Self.getSubscriptionID()
         let subscription = ValkeySubscription(id: id, continuation: continuation, filters: filters, logger: self.logger)
         subscriptionIDMap[id] = subscription
-        subscribeCommandStack.pushCommand(filters, value: subscription)
+        return subscription
     }
 
     enum UnsubscribeAction {
@@ -144,6 +146,10 @@ struct ValkeySubscriptions {
 
     mutating func pushUnsubscribeCommand(filters: [ValkeySubscriptionFilter]) {
         unsubscribeCommandStack.pushCommand(filters, value: filters)
+    }
+
+    mutating func pushSubscribeCommand(filters: [ValkeySubscriptionFilter], subscription: ValkeySubscription) {
+        subscribeCommandStack.pushCommand(filters, value: subscription)
     }
 
     /// Remove subscription
