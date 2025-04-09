@@ -123,6 +123,15 @@ let benchmarks: @Sendable () -> Void = {
 
         benchmark.stopMeasurement()
     }
+
+    Benchmark("HashSlot – {user}.whatever", configuration: .init(metrics: defaultMetrics, scalingFactor: .mega)) { benchmark in
+        let key = "{user}.whatever"
+
+        benchmark.startMeasurement()
+        for _ in benchmark.scaledIterations {
+            blackHole(HashSlot(key: key))
+        }
+    }
 }
 
 protocol BenchmarkCommandHandler {
