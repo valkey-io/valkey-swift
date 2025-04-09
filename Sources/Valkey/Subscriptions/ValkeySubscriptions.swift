@@ -20,7 +20,7 @@ struct ValkeySubscriptions {
     var subscriptionIDMap: [Int: ValkeySubscription]
     var subscribeCommandStack: ValkeySubscriptionCommandStack<ValkeySubscription>
     var unsubscribeCommandStack: ValkeySubscriptionCommandStack<[ValkeySubscriptionFilter]>
-    var subscriptionMap: [ValkeySubscriptionFilter: [ValkeySubscription]]
+    private var subscriptionMap: [ValkeySubscriptionFilter: [ValkeySubscription]]
     let logger: Logger
 
     static let globalSubscriptionId = Atomic<Int>(0)

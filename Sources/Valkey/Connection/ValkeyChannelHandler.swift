@@ -135,7 +135,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     ) -> EventLoopFuture<Int> {
         self.eventLoop.assertInEventLoop()
         let subscription = self.subscriptions.addSubscription(continuation: continuation, filters: filters)
-        self.subscriptions.subscribeCommandStack.pushCommand(filters, value: subscription)
+        self.subscriptions.pushSubscribeCommand(filters: filters, subscription: subscription)
 
         let subscriptionID = subscription.id
         let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
@@ -175,7 +175,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
         return self._send(command: command)
             .flatMapErrorThrowing { error in
-                _ = loopBoundSelf.value.subscriptions.subscribeCommandStack.popCommand()
+                _ = loopBoundSelf.value.subscriptions.unsubscribeCommandStack.popCommand()
                 throw error
             }
             .map { _ in }

@@ -489,6 +489,7 @@ struct SubscriptionTests {
         }
         try await connection.channel.eventLoop.submit {
             #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.subscribeCommandStack.commands.isEmpty)
         }.get()
     }
 
@@ -522,6 +523,7 @@ struct SubscriptionTests {
         }
         try await connection.channel.eventLoop.submit {
             #expect(connection.channelHandler.value.subscriptions.subscriptionIDMap.count == 0)
+            #expect(connection.channelHandler.value.subscriptions.unsubscribeCommandStack.commands.isEmpty)
         }.get()
     }
 }
