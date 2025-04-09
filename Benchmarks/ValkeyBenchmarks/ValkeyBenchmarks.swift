@@ -75,7 +75,7 @@ let benchmarks: @Sendable () -> Void = {
         for _ in benchmark.scaledIterations {
             encoder.reset()
             command.encode(into: &encoder)
-            command.encode(into: &encoder)
+            blackHole(["Test"])
         }
 
         benchmark.stopMeasurement()
