@@ -94,7 +94,7 @@ struct ValkeySubscriptions {
     }
 
     enum SubscribeAction {
-        case doNothing(ValkeySubscription)
+        case doNothing(Int)
         case subscribe(ValkeySubscription, [ValkeySubscriptionFilter])
     }
 
@@ -109,12 +109,12 @@ struct ValkeySubscriptions {
         let id = Self.getSubscriptionID()
         let subscription = ValkeySubscription(id: id, continuation: continuation, filters: filters, logger: self.logger)
         subscriptionIDMap[id] = subscription
-        var action = SubscribeAction.doNothing(subscription)
+        var action = SubscribeAction.doNothing(id)
         for filter in filters {
             switch subscriptionMap[filter, default: .init()].add(subscription: subscription) {
             case .subscribe:
                 switch action {
-                case .doNothing(let subscription):
+                case .doNothing:
                     action = .subscribe(subscription, [filter])
                 case .subscribe(let subscription, var filters):
                     filters.append(filter)

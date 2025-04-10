@@ -17,7 +17,8 @@ import DequeModule
 /// A subscription command does not return any values instead it pushes messages for each
 /// channel/pattern that has been subscribed/unsubscribed to. This struct catches each
 /// push notification and at the point we have received all the pushes required it returns
-/// the associated value
+/// the associated command. This can then be used to indicate the subscribe/unsubscribe has
+/// been successful
 struct ValkeySubscriptionCommandStack {
     struct SubscribeCommand {
         var filters: [ValkeySubscriptionFilter]

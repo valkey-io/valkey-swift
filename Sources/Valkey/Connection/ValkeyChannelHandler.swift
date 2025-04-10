@@ -128,7 +128,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
     }
 
-    /// Add subscription, and call SUBSCRIBE command
+    /// Add subscription, and call SUBSCRIBE command if required
     func subscribe(
         command: some RESPCommand,
         continuation: ValkeySubscriptionSequence.Continuation,
@@ -151,8 +151,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 }
                 .map { _ in subscriptionID }
 
-        case .doNothing(let subscription):
-            return self.eventLoop.makeSucceededFuture(subscription.id)
+        case .doNothing(let subscriptionID):
+            return self.eventLoop.makeSucceededFuture(subscriptionID)
         }
     }
 
