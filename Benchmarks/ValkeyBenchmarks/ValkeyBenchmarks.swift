@@ -47,6 +47,8 @@ let benchmarks: @Sendable () -> Void = {
             for _ in benchmark.scaledIterations {
                 let foo = try await connection.get(key: "foo")
                 precondition(foo == "Bar")
+                let foo2 = try await connection.get(key: "foo")
+                precondition(foo2 == "Bar")
             }
 
             benchmark.stopMeasurement()
@@ -75,7 +77,6 @@ let benchmarks: @Sendable () -> Void = {
         for _ in benchmark.scaledIterations {
             encoder.reset()
             command.encode(into: &encoder)
-            blackHole(["Test"])
         }
 
         benchmark.stopMeasurement()
