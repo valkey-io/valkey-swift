@@ -131,67 +131,80 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     /// Add subscription, and call SUBSCRIBE command if required
     func subscribe(
         command: some RESPCommand,
-        continuation: ValkeySubscriptionSequence.Continuation,
-        filters: [ValkeySubscriptionFilter]
-    ) -> EventLoopFuture<Int> {
+        streamContinuation: ValkeySubscriptionSequence.Continuation,
+        filters: [ValkeySubscriptionFilter],
+        promise: ValkeyPromise<Int>
+    ) {
         self.eventLoop.assertInEventLoop()
-        switch self.subscriptions.addSubscription(continuation: continuation, filters: filters) {
+        switch self.subscriptions.addSubscription(continuation: streamContinuation, filters: filters) {
         case .subscribe(let subscription, _):
             // TODO: currently ignoring returned filter array, as we have already constructed the subscribe command
             //   But it would be cool to build the subscribe command based on what filters we aren't subscribed to
             self.subscriptions.pushCommand(filters: subscription.filters)
-
             let subscriptionID = subscription.id
             let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
-            return self._send(command: command)
-                .flatMapErrorThrowing { error in
+            return self._send(command: command).whenComplete { result in
+                switch result {
+                case .success:
+                    promise.succeed(subscriptionID)
+                case .failure(let error):
                     loopBoundSelf.value.subscriptions.removeSubscription(id: subscriptionID)
                     loopBoundSelf.value.subscriptions.removeUnhandledCommand()
-                    throw error
+                    promise.fail(error)
                 }
-                .map { _ in subscriptionID }
+            }
 
         case .doNothing(let subscriptionID):
-            return self.eventLoop.makeSucceededFuture(subscriptionID)
+            promise.succeed(subscriptionID)
         }
     }
 
     /// Remove subscription and if required call UNSUBSCRIBE command
-    func unsubscribe(id: Int) -> EventLoopFuture<Void> {
+    func unsubscribe(
+        id: Int,
+        promise: ValkeyPromise<Void>
+    ) {
         self.eventLoop.assertInEventLoop()
         switch self.subscriptions.unsubscribe(id: id) {
         case .unsubscribe(let channels):
-            return performUnsubscribe(
+            performUnsubscribe(
                 command: UNSUBSCRIBE(channel: channels),
-                filters: channels.map { .channel($0) }
+                filters: channels.map { .channel($0) },
+                promise: promise
             )
         case .punsubscribe(let patterns):
-            return performUnsubscribe(
+            performUnsubscribe(
                 command: PUNSUBSCRIBE(pattern: patterns),
-                filters: patterns.map { .pattern($0) }
+                filters: patterns.map { .pattern($0) },
+                promise: promise
             )
         case .sunsubscribe(let shardChannels):
-            return performUnsubscribe(
+            performUnsubscribe(
                 command: SUNSUBSCRIBE(shardchannel: shardChannels),
-                filters: shardChannels.map { .shardChannel($0) }
+                filters: shardChannels.map { .shardChannel($0) },
+                promise: promise
             )
         case .doNothing:
-            return self.eventLoop.makeSucceededVoidFuture()
+            promise.succeed(())
         }
     }
 
     func performUnsubscribe(
         command: some RESPCommand,
-        filters: [ValkeySubscriptionFilter]
-    ) -> EventLoopFuture<Void> {
+        filters: [ValkeySubscriptionFilter],
+        promise: ValkeyPromise<Void>
+    ) {
         self.subscriptions.pushCommand(filters: filters)
         let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
-        return self._send(command: command)
-            .flatMapErrorThrowing { error in
+        self._send(command: command).whenComplete { result in
+            switch result {
+            case .success:
+                promise.succeed(())
+            case .failure(let error):
                 loopBoundSelf.value.subscriptions.removeUnhandledCommand()
-                throw error
+                promise.fail(error)
             }
-            .map { _ in }
+        }
     }
 
     @usableFromInline
