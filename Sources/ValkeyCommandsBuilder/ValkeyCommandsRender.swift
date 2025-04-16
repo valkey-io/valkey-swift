@@ -212,61 +212,7 @@ extension String {
         }
         self.append("\(tab)    }\n\n")
         if keyArguments.count > 0 {
-            let clusterKeysType: String
-            let clusterKeys: String
-            if keyArguments.count == 1 {
-                if keyArguments.first!.multiple {
-                    clusterKeysType = "[RESPKey]"
-                    clusterKeys = keyArguments.first!.name.swiftVariable
-                } else {
-                    clusterKeysType = "CollectionOfOne<RESPKey>"
-                    clusterKeys = ".init(\(keyArguments.first!.name.swiftVariable))"
-                }
-            } else {
-                clusterKeysType = "[RESPKey]"
-                var clusterKeysBuilder: String = ""
-                var inArray = false
-                var first = true
-                for key in keyArguments {
-                    if key.multiple {
-                        if inArray {
-                            clusterKeysBuilder += "]"
-                            inArray = false
-                        }
-                        if !first {
-                            clusterKeysBuilder += " + "
-                        }
-                        clusterKeysBuilder += "\(key.name.swiftVariable)"
-                    } else if key.optional {
-                        if inArray {
-                            clusterKeysBuilder += "]"
-                            inArray = false
-                        }
-                        if !first {
-                            clusterKeysBuilder += " + "
-                        }
-                        clusterKeysBuilder += "(\(key.name.swiftVariable).map { [$0] } ?? [])"
-                    } else {
-                        if !inArray {
-                            if !first {
-                                clusterKeysBuilder += " + "
-                            }
-                            clusterKeysBuilder += "[\(key.name.swiftVariable)"
-                            inArray = true
-                        } else {
-                            if !first {
-                                clusterKeysBuilder += ", "
-                            }
-                            clusterKeysBuilder += "\(key.name.swiftVariable)"
-                        }
-                    }
-                    first = false
-                }
-                if inArray {
-                    clusterKeysBuilder += "]"
-                }
-                clusterKeys = clusterKeysBuilder
-            }
+            let (clusterKeysType, clusterKeys) = constructClusterKeys(keyArguments)
             self.append("\(tab)    public var clusterKeys: \(clusterKeysType) { \(clusterKeys) }\n\n")
         }
 
@@ -386,6 +332,59 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
     }
     string.append("}\n")
     return string
+}
+
+private func constructClusterKeys(_ keyArguments: [RESPCommand.Argument]) -> (type: String, value: String) {
+    if keyArguments.count == 1 {
+        if keyArguments.first!.multiple {
+            return (type: "[RESPKey]", value: keyArguments.first!.name.swiftVariable)
+        } else {
+            return (type: "CollectionOfOne<RESPKey>", value: ".init(\(keyArguments.first!.name.swiftVariable))")
+        }
+    } else {
+        var clusterKeysBuilder: String = ""
+        var inArray = false
+        var first = true
+        for key in keyArguments {
+            if key.multiple {
+                if inArray {
+                    clusterKeysBuilder += "]"
+                    inArray = false
+                }
+                if !first {
+                    clusterKeysBuilder += " + "
+                }
+                clusterKeysBuilder += "\(key.name.swiftVariable)"
+            } else if key.optional {
+                if inArray {
+                    clusterKeysBuilder += "]"
+                    inArray = false
+                }
+                if !first {
+                    clusterKeysBuilder += " + "
+                }
+                clusterKeysBuilder += "(\(key.name.swiftVariable).map { [$0] } ?? [])"
+            } else {
+                if !inArray {
+                    if !first {
+                        clusterKeysBuilder += " + "
+                    }
+                    clusterKeysBuilder += "[\(key.name.swiftVariable)"
+                    inArray = true
+                } else {
+                    if !first {
+                        clusterKeysBuilder += ", "
+                    }
+                    clusterKeysBuilder += "\(key.name.swiftVariable)"
+                }
+            }
+            first = false
+        }
+        if inArray {
+            clusterKeysBuilder += "]"
+        }
+        return (type: "[RESPKey]", value: clusterKeysBuilder)
+    }
 }
 
 private func subCommand(_ command: String) -> (String.SubSequence, String.SubSequence?) {
