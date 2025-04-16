@@ -126,7 +126,8 @@ extension Array: RESPTokenRepresentable where Element: RESPTokenRepresentable {
             }
             self = array
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            let value = try Element(from: token)
+            self = [value]
         }
     }
 }
