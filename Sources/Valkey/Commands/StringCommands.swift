@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Appends a string to the value of a key. Creates the key if it doesn't exist.
-public struct APPEND: RESPCommand {
+public struct APPEND: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -34,13 +34,15 @@ public struct APPEND: RESPCommand {
         self.value = value
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("APPEND", key, value)
     }
 }
 
 /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
-public struct DECR: RESPCommand {
+public struct DECR: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -49,13 +51,15 @@ public struct DECR: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DECR", key)
     }
 }
 
 /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
-public struct DECRBY: RESPCommand {
+public struct DECRBY: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -66,13 +70,15 @@ public struct DECRBY: RESPCommand {
         self.decrement = decrement
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DECRBY", key, decrement)
     }
 }
 
 /// Returns the string value of a key.
-public struct GET: RESPCommand {
+public struct GET: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String?
 
     public var key: RESPKey
@@ -80,6 +86,8 @@ public struct GET: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GET", key)
@@ -87,7 +95,7 @@ public struct GET: RESPCommand {
 }
 
 /// Returns the string value of a key after deleting the key.
-public struct GETDEL: RESPCommand {
+public struct GETDEL: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String?
 
     public var key: RESPKey
@@ -96,13 +104,15 @@ public struct GETDEL: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETDEL", key)
     }
 }
 
 /// Returns the string value of a key after setting its expiration time.
-public struct GETEX: RESPCommand {
+public struct GETEX: RESPCommand, ValkeyClusterCommand {
     public enum Expiration: RESPRenderable, Sendable {
         case seconds(Int)
         case milliseconds(Int)
@@ -142,13 +152,15 @@ public struct GETEX: RESPCommand {
         self.expiration = expiration
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETEX", key, expiration)
     }
 }
 
 /// Returns a substring of the string stored at a key.
-public struct GETRANGE: RESPCommand {
+public struct GETRANGE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String
 
     public var key: RESPKey
@@ -161,6 +173,8 @@ public struct GETRANGE: RESPCommand {
         self.end = end
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETRANGE", key, start, end)
     }
@@ -168,7 +182,7 @@ public struct GETRANGE: RESPCommand {
 
 /// Returns the previous string value of a key after setting it to a new value.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
-public struct GETSET: RESPCommand {
+public struct GETSET: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String?
 
     public var key: RESPKey
@@ -179,13 +193,15 @@ public struct GETSET: RESPCommand {
         self.value = value
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETSET", key, value)
     }
 }
 
 /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
-public struct INCR: RESPCommand {
+public struct INCR: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -194,13 +210,15 @@ public struct INCR: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("INCR", key)
     }
 }
 
 /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
-public struct INCRBY: RESPCommand {
+public struct INCRBY: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -211,13 +229,15 @@ public struct INCRBY: RESPCommand {
         self.increment = increment
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("INCRBY", key, increment)
     }
 }
 
 /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
-public struct INCRBYFLOAT: RESPCommand {
+public struct INCRBYFLOAT: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String
 
     public var key: RESPKey
@@ -228,13 +248,15 @@ public struct INCRBYFLOAT: RESPCommand {
         self.increment = increment
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("INCRBYFLOAT", key, increment)
     }
 }
 
 /// Finds the longest common substring.
-public struct LCS: RESPCommand {
+public struct LCS: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key1: RESPKey
@@ -253,13 +275,15 @@ public struct LCS: RESPCommand {
         self.withmatchlen = withmatchlen
     }
 
+    public var clusterKeys: [RESPKey] { [key1, key2] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LCS", key1, key2, RESPPureToken("LEN", len), RESPPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RESPPureToken("WITHMATCHLEN", withmatchlen))
     }
 }
 
 /// Atomically returns the string values of one or more keys.
-public struct MGET: RESPCommand {
+public struct MGET: RESPCommand, ValkeyClusterCommand {
     public typealias Response = [RESPToken]
 
     public var key: [RESPKey]
@@ -267,6 +291,8 @@ public struct MGET: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var clusterKeys: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MGET", key)
@@ -347,7 +373,7 @@ public struct MSETNX: RESPCommand {
 
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
-public struct PSETEX: RESPCommand {
+public struct PSETEX: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -360,13 +386,15 @@ public struct PSETEX: RESPCommand {
         self.value = value
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PSETEX", key, milliseconds, value)
     }
 }
 
 /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
-public struct SET: RESPCommand {
+public struct SET: RESPCommand, ValkeyClusterCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -427,6 +455,8 @@ public struct SET: RESPCommand {
         self.expiration = expiration
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SET", key, value, condition, RESPPureToken("GET", get), expiration)
     }
@@ -434,7 +464,7 @@ public struct SET: RESPCommand {
 
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
-public struct SETEX: RESPCommand {
+public struct SETEX: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -447,6 +477,8 @@ public struct SETEX: RESPCommand {
         self.value = value
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SETEX", key, seconds, value)
     }
@@ -454,7 +486,7 @@ public struct SETEX: RESPCommand {
 
 /// Set the string value of a key only when the key doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
-public struct SETNX: RESPCommand {
+public struct SETNX: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -465,13 +497,15 @@ public struct SETNX: RESPCommand {
         self.value = value
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SETNX", key, value)
     }
 }
 
 /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
-public struct SETRANGE: RESPCommand {
+public struct SETRANGE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -484,13 +518,15 @@ public struct SETRANGE: RESPCommand {
         self.value = value
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SETRANGE", key, offset, value)
     }
 }
 
 /// Returns the length of a string value.
-public struct STRLEN: RESPCommand {
+public struct STRLEN: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -499,6 +535,8 @@ public struct STRLEN: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("STRLEN", key)
     }
@@ -506,7 +544,7 @@ public struct STRLEN: RESPCommand {
 
 /// Returns a substring from a string value.
 @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
-public struct SUBSTR: RESPCommand {
+public struct SUBSTR: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String
 
     public var key: RESPKey
@@ -518,6 +556,8 @@ public struct SUBSTR: RESPCommand {
         self.start = start
         self.end = end
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUBSTR", key, start, end)

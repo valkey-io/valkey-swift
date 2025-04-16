@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-public struct PFADD: RESPCommand {
+public struct PFADD: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -34,13 +34,15 @@ public struct PFADD: RESPCommand {
         self.element = element
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFADD", key, element)
     }
 }
 
 /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
-public struct PFCOUNT: RESPCommand {
+public struct PFCOUNT: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
@@ -49,13 +51,15 @@ public struct PFCOUNT: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFCOUNT", key)
     }
 }
 
 /// Merges one or more HyperLogLog values into a single key.
-public struct PFMERGE: RESPCommand {
+public struct PFMERGE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var destkey: RESPKey
@@ -65,6 +69,8 @@ public struct PFMERGE: RESPCommand {
         self.destkey = destkey
         self.sourcekey = sourcekey
     }
+
+    public var clusterKeys: [RESPKey] { [destkey] + sourcekey }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)

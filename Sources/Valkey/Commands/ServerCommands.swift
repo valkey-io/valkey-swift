@@ -631,7 +631,7 @@ public enum MEMORY {
     }
 
     /// Estimates the memory usage of a key.
-    public struct USAGE: RESPCommand {
+    public struct USAGE: RESPCommand, ValkeyClusterCommand {
         public typealias Response = Int?
 
         public var key: RESPKey
@@ -641,6 +641,8 @@ public enum MEMORY {
             self.key = key
             self.count = count
         }
+
+        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
@@ -1130,7 +1132,7 @@ public struct REPLICAOF: RESPCommand {
 }
 
 /// An internal command for migrating keys in a cluster.
-public struct RESTOREASKING: RESPCommand {
+public struct RESTOREASKING: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -1150,6 +1152,8 @@ public struct RESTOREASKING: RESPCommand {
         self.seconds = seconds
         self.frequency = frequency
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))

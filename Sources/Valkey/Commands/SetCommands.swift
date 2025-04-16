@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds one or more members to a set. Creates the key if it doesn't exist.
-public struct SADD: RESPCommand {
+public struct SADD: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -34,13 +34,15 @@ public struct SADD: RESPCommand {
         self.member = member
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SADD", key, member)
     }
 }
 
 /// Returns the number of members in a set.
-public struct SCARD: RESPCommand {
+public struct SCARD: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -49,13 +51,15 @@ public struct SCARD: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SCARD", key)
     }
 }
 
 /// Returns the difference of multiple sets.
-public struct SDIFF: RESPCommand {
+public struct SDIFF: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: [RESPKey]
@@ -64,13 +68,15 @@ public struct SDIFF: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SDIFF", key)
     }
 }
 
 /// Stores the difference of multiple sets in a key.
-public struct SDIFFSTORE: RESPCommand {
+public struct SDIFFSTORE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var destination: RESPKey
@@ -81,13 +87,15 @@ public struct SDIFFSTORE: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { [destination] + key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SDIFFSTORE", destination, key)
     }
 }
 
 /// Returns the intersect of multiple sets.
-public struct SINTER: RESPCommand {
+public struct SINTER: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: [RESPKey]
@@ -96,13 +104,15 @@ public struct SINTER: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTER", key)
     }
 }
 
 /// Returns the number of members of the intersect of multiple sets.
-public struct SINTERCARD: RESPCommand {
+public struct SINTERCARD: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
@@ -113,13 +123,15 @@ public struct SINTERCARD: RESPCommand {
         self.limit = limit
     }
 
+    public var clusterKeys: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
     }
 }
 
 /// Stores the intersect of multiple sets in a key.
-public struct SINTERSTORE: RESPCommand {
+public struct SINTERSTORE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var destination: RESPKey
@@ -130,13 +142,15 @@ public struct SINTERSTORE: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { [destination] + key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTERSTORE", destination, key)
     }
 }
 
 /// Determines whether a member belongs to a set.
-public struct SISMEMBER: RESPCommand {
+public struct SISMEMBER: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -147,13 +161,15 @@ public struct SISMEMBER: RESPCommand {
         self.member = member
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SISMEMBER", key, member)
     }
 }
 
 /// Returns all members of a set.
-public struct SMEMBERS: RESPCommand {
+public struct SMEMBERS: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -162,13 +178,15 @@ public struct SMEMBERS: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMEMBERS", key)
     }
 }
 
 /// Determines whether multiple members belong to a set.
-public struct SMISMEMBER: RESPCommand {
+public struct SMISMEMBER: RESPCommand, ValkeyClusterCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -179,13 +197,15 @@ public struct SMISMEMBER: RESPCommand {
         self.member = member
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMISMEMBER", key, member)
     }
 }
 
 /// Moves a member from one set to another.
-public struct SMOVE: RESPCommand {
+public struct SMOVE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var source: RESPKey
@@ -198,13 +218,15 @@ public struct SMOVE: RESPCommand {
         self.member = member
     }
 
+    public var clusterKeys: [RESPKey] { [source, destination] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMOVE", source, destination, member)
     }
 }
 
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
-public struct SPOP: RESPCommand {
+public struct SPOP: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -214,6 +236,8 @@ public struct SPOP: RESPCommand {
         self.key = key
         self.count = count
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SPOP", key, count)
@@ -221,7 +245,7 @@ public struct SPOP: RESPCommand {
 }
 
 /// Get one or multiple random members from a set
-public struct SRANDMEMBER: RESPCommand {
+public struct SRANDMEMBER: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -232,13 +256,15 @@ public struct SRANDMEMBER: RESPCommand {
         self.count = count
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SRANDMEMBER", key, count)
     }
 }
 
 /// Removes one or more members from a set. Deletes the set if the last member was removed.
-public struct SREM: RESPCommand {
+public struct SREM: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -249,13 +275,15 @@ public struct SREM: RESPCommand {
         self.member = member
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SREM", key, member)
     }
 }
 
 /// Iterates over members of a set.
-public struct SSCAN: RESPCommand {
+public struct SSCAN: RESPCommand, ValkeyClusterCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -270,13 +298,15 @@ public struct SSCAN: RESPCommand {
         self.count = count
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 }
 
 /// Returns the union of multiple sets.
-public struct SUNION: RESPCommand {
+public struct SUNION: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: [RESPKey]
@@ -285,13 +315,15 @@ public struct SUNION: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUNION", key)
     }
 }
 
 /// Stores the union of multiple sets in a key.
-public struct SUNIONSTORE: RESPCommand {
+public struct SUNIONSTORE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var destination: RESPKey
@@ -301,6 +333,8 @@ public struct SUNIONSTORE: RESPCommand {
         self.destination = destination
         self.key = key
     }
+
+    public var clusterKeys: [RESPKey] { [destination] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUNIONSTORE", destination, key)

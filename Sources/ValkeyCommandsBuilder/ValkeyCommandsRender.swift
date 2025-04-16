@@ -167,10 +167,17 @@ extension String {
             typeName = name.commandTypeName
         }
 
+        let keyArguments = command.arguments?.filter { $0.type == .key } ?? []
+        let conformance =
+            if keyArguments.count > 0 {
+                "RESPCommand, ValkeyClusterCommand"
+            } else {
+                "RESPCommand"
+            }
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, reply: reply, tab: tab)
         self.appendDeprecatedMessage(command: command, name: name, tab: tab)
-        self.append("\(tab)public struct \(typeName): RESPCommand {\n")
+        self.append("\(tab)public struct \(typeName): \(conformance) {\n")
 
         let arguments = (command.arguments ?? [])
         // Enums
@@ -204,6 +211,65 @@ extension String {
             self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
         self.append("\(tab)    }\n\n")
+        if keyArguments.count > 0 {
+            let clusterKeysType: String
+            let clusterKeys: String
+            if keyArguments.count == 1 {
+                if keyArguments.first!.multiple {
+                    clusterKeysType = "[RESPKey]"
+                    clusterKeys = keyArguments.first!.name.swiftVariable
+                } else {
+                    clusterKeysType = "CollectionOfOne<RESPKey>"
+                    clusterKeys = ".init(\(keyArguments.first!.name.swiftVariable))"
+                }
+            } else {
+                clusterKeysType = "[RESPKey]"
+                var clusterKeysBuilder: String = ""
+                var inArray = false
+                var first = true
+                for key in keyArguments {
+                    if key.multiple {
+                        if inArray {
+                            clusterKeysBuilder += "]"
+                            inArray = false
+                        }
+                        if !first {
+                            clusterKeysBuilder += " + "
+                        }
+                        clusterKeysBuilder += "\(key.name.swiftVariable)"
+                    } else if key.optional {
+                        if inArray {
+                            clusterKeysBuilder += "]"
+                            inArray = false
+                        }
+                        if !first {
+                            clusterKeysBuilder += " + "
+                        }
+                        clusterKeysBuilder += "(\(key.name.swiftVariable).map { [$0] } ?? [])"
+                    } else {
+                        if !inArray {
+                            if !first {
+                                clusterKeysBuilder += " + "
+                            }
+                            clusterKeysBuilder += "[\(key.name.swiftVariable)"
+                            inArray = true
+                        } else {
+                            if !first {
+                                clusterKeysBuilder += ", "
+                            }
+                            clusterKeysBuilder += "\(key.name.swiftVariable)"
+                        }
+                    }
+                    first = false
+                }
+                if inArray {
+                    clusterKeysBuilder += "]"
+                }
+                clusterKeys = clusterKeysBuilder
+            }
+            self.append("\(tab)    public var clusterKeys: \(clusterKeysType) { \(clusterKeys) }\n\n")
+        }
+
         self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
         self.append("\(tab)        commandEncoder.encodeArray(\(commandArgumentsString))\n")
         self.append("\(tab)    }\n")

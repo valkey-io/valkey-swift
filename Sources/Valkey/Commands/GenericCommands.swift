@@ -25,7 +25,7 @@ import Foundation
 /// A container for object introspection commands.
 public enum OBJECT {
     /// Returns the internal encoding of a Valkey object.
-    public struct ENCODING: RESPCommand {
+    public struct ENCODING: RESPCommand, ValkeyClusterCommand {
         public typealias Response = String?
 
         public var key: RESPKey
@@ -34,13 +34,15 @@ public enum OBJECT {
             self.key = key
         }
 
+        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "ENCODING", key)
         }
     }
 
     /// Returns the logarithmic access frequency counter of a Valkey object.
-    public struct FREQ: RESPCommand {
+    public struct FREQ: RESPCommand, ValkeyClusterCommand {
         public typealias Response = Int?
 
         public var key: RESPKey
@@ -48,6 +50,8 @@ public enum OBJECT {
         @inlinable public init(key: RESPKey) {
             self.key = key
         }
+
+        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "FREQ", key)
@@ -68,7 +72,7 @@ public enum OBJECT {
     }
 
     /// Returns the time since the last access to a Valkey object.
-    public struct IDLETIME: RESPCommand {
+    public struct IDLETIME: RESPCommand, ValkeyClusterCommand {
         public typealias Response = Int?
 
         public var key: RESPKey
@@ -76,6 +80,8 @@ public enum OBJECT {
         @inlinable public init(key: RESPKey) {
             self.key = key
         }
+
+        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "IDLETIME", key)
@@ -83,7 +89,7 @@ public enum OBJECT {
     }
 
     /// Returns the reference count of a value of a key.
-    public struct REFCOUNT: RESPCommand {
+    public struct REFCOUNT: RESPCommand, ValkeyClusterCommand {
         public typealias Response = Int?
 
         public var key: RESPKey
@@ -91,6 +97,8 @@ public enum OBJECT {
         @inlinable public init(key: RESPKey) {
             self.key = key
         }
+
+        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "REFCOUNT", key)
@@ -100,7 +108,7 @@ public enum OBJECT {
 }
 
 /// Copies the value of a key to a new key.
-public struct COPY: RESPCommand {
+public struct COPY: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var source: RESPKey
@@ -115,13 +123,15 @@ public struct COPY: RESPCommand {
         self.replace = replace
     }
 
+    public var clusterKeys: [RESPKey] { [source, destination] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("COPY", source, destination, RESPWithToken("DB", destinationDb), RESPPureToken("REPLACE", replace))
     }
 }
 
 /// Deletes one or more keys.
-public struct DEL: RESPCommand {
+public struct DEL: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
@@ -130,13 +140,15 @@ public struct DEL: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DEL", key)
     }
 }
 
 /// Returns a serialized representation of the value stored at a key.
-public struct DUMP: RESPCommand {
+public struct DUMP: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String?
 
     public var key: RESPKey
@@ -145,13 +157,15 @@ public struct DUMP: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DUMP", key)
     }
 }
 
 /// Determines whether one or more keys exist.
-public struct EXISTS: RESPCommand {
+public struct EXISTS: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
@@ -160,13 +174,15 @@ public struct EXISTS: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXISTS", key)
     }
 }
 
 /// Sets the expiration time of a key in seconds.
-public struct EXPIRE: RESPCommand {
+public struct EXPIRE: RESPCommand, ValkeyClusterCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -198,13 +214,15 @@ public struct EXPIRE: RESPCommand {
         self.condition = condition
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXPIRE", key, seconds, condition)
     }
 }
 
 /// Sets the expiration time of a key to a Unix timestamp.
-public struct EXPIREAT: RESPCommand {
+public struct EXPIREAT: RESPCommand, ValkeyClusterCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -236,13 +254,15 @@ public struct EXPIREAT: RESPCommand {
         self.condition = condition
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXPIREAT", key, Int(unixTimeSeconds.timeIntervalSince1970), condition)
     }
 }
 
 /// Returns the expiration time of a key as a Unix timestamp.
-public struct EXPIRETIME: RESPCommand {
+public struct EXPIRETIME: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -250,6 +270,8 @@ public struct EXPIRETIME: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXPIRETIME", key)
@@ -272,7 +294,7 @@ public struct KEYS: RESPCommand {
 }
 
 /// Atomically transfers a key from one Valkey instance to another.
-public struct MIGRATE: RESPCommand {
+public struct MIGRATE: RESPCommand, ValkeyClusterCommand {
     public enum KeySelector: RESPRenderable, Sendable {
         case key(RESPKey)
         case emptyString
@@ -358,13 +380,15 @@ public struct MIGRATE: RESPCommand {
         self.keys = keys
     }
 
+    public var clusterKeys: [RESPKey] { keys }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MIGRATE", host, port, keySelector, destinationDb, timeout, RESPPureToken("COPY", copy), RESPPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
     }
 }
 
 /// Moves a key to another database.
-public struct MOVE: RESPCommand {
+public struct MOVE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -375,13 +399,15 @@ public struct MOVE: RESPCommand {
         self.db = db
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MOVE", key, db)
     }
 }
 
 /// Removes the expiration time of a key.
-public struct PERSIST: RESPCommand {
+public struct PERSIST: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -390,13 +416,15 @@ public struct PERSIST: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PERSIST", key)
     }
 }
 
 /// Sets the expiration time of a key in milliseconds.
-public struct PEXPIRE: RESPCommand {
+public struct PEXPIRE: RESPCommand, ValkeyClusterCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -428,13 +456,15 @@ public struct PEXPIRE: RESPCommand {
         self.condition = condition
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PEXPIRE", key, milliseconds, condition)
     }
 }
 
 /// Sets the expiration time of a key to a Unix milliseconds timestamp.
-public struct PEXPIREAT: RESPCommand {
+public struct PEXPIREAT: RESPCommand, ValkeyClusterCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -466,13 +496,15 @@ public struct PEXPIREAT: RESPCommand {
         self.condition = condition
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PEXPIREAT", key, Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000), condition)
     }
 }
 
 /// Returns the expiration time of a key as a Unix milliseconds timestamp.
-public struct PEXPIRETIME: RESPCommand {
+public struct PEXPIRETIME: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -480,6 +512,8 @@ public struct PEXPIRETIME: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PEXPIRETIME", key)
@@ -487,7 +521,7 @@ public struct PEXPIRETIME: RESPCommand {
 }
 
 /// Returns the expiration time in milliseconds of a key.
-public struct PTTL: RESPCommand {
+public struct PTTL: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -495,6 +529,8 @@ public struct PTTL: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PTTL", key)
@@ -515,7 +551,7 @@ public struct RANDOMKEY: RESPCommand {
 }
 
 /// Renames a key and overwrites the destination.
-public struct RENAME: RESPCommand {
+public struct RENAME: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -526,13 +562,15 @@ public struct RENAME: RESPCommand {
         self.newkey = newkey
     }
 
+    public var clusterKeys: [RESPKey] { [key, newkey] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RENAME", key, newkey)
     }
 }
 
 /// Renames a key only when the target key name doesn't exist.
-public struct RENAMENX: RESPCommand {
+public struct RENAMENX: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -543,13 +581,15 @@ public struct RENAMENX: RESPCommand {
         self.newkey = newkey
     }
 
+    public var clusterKeys: [RESPKey] { [key, newkey] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RENAMENX", key, newkey)
     }
 }
 
 /// Creates a key from the serialized representation of a value.
-public struct RESTORE: RESPCommand {
+public struct RESTORE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -569,6 +609,8 @@ public struct RESTORE: RESPCommand {
         self.seconds = seconds
         self.frequency = frequency
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RESTORE", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
@@ -597,7 +639,7 @@ public struct SCAN: RESPCommand {
 }
 
 /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
-public struct SORT: RESPCommand {
+public struct SORT: RESPCommand, ValkeyClusterCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
@@ -654,13 +696,15 @@ public struct SORT: RESPCommand {
         self.destination = destination
     }
 
+    public var clusterKeys: [RESPKey] { [key] + (destination.map { [$0] } ?? []) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
     }
 }
 
 /// Returns the sorted elements of a list, a set, or a sorted set.
-public struct SORTRO: RESPCommand {
+public struct SORTRO: RESPCommand, ValkeyClusterCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
@@ -715,13 +759,15 @@ public struct SORTRO: RESPCommand {
         self.sorting = sorting
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting))
     }
 }
 
 /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
-public struct TOUCH: RESPCommand {
+public struct TOUCH: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
@@ -730,13 +776,15 @@ public struct TOUCH: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("TOUCH", key)
     }
 }
 
 /// Returns the expiration time in seconds of a key.
-public struct TTL: RESPCommand {
+public struct TTL: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -745,13 +793,15 @@ public struct TTL: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("TTL", key)
     }
 }
 
 /// Determines the type of value stored at a key.
-public struct TYPE: RESPCommand {
+public struct TYPE: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String
 
     public var key: RESPKey
@@ -760,13 +810,15 @@ public struct TYPE: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("TYPE", key)
     }
 }
 
 /// Asynchronously deletes one or more keys.
-public struct UNLINK: RESPCommand {
+public struct UNLINK: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
@@ -774,6 +826,8 @@ public struct UNLINK: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var clusterKeys: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("UNLINK", key)

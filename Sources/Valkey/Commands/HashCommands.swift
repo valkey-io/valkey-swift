@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
-public struct HDEL: RESPCommand {
+public struct HDEL: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -34,13 +34,15 @@ public struct HDEL: RESPCommand {
         self.field = field
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HDEL", key, field)
     }
 }
 
 /// Determines whether a field exists in a hash.
-public struct HEXISTS: RESPCommand {
+public struct HEXISTS: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -51,13 +53,15 @@ public struct HEXISTS: RESPCommand {
         self.field = field
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HEXISTS", key, field)
     }
 }
 
 /// Returns the value of a field in a hash.
-public struct HGET: RESPCommand {
+public struct HGET: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String?
 
     public var key: RESPKey
@@ -68,13 +72,15 @@ public struct HGET: RESPCommand {
         self.field = field
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HGET", key, field)
     }
 }
 
 /// Returns all fields and values in a hash.
-public struct HGETALL: RESPCommand {
+public struct HGETALL: RESPCommand, ValkeyClusterCommand {
     public typealias Response = [String: RESPToken]
 
     public var key: RESPKey
@@ -83,13 +89,15 @@ public struct HGETALL: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HGETALL", key)
     }
 }
 
 /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
-public struct HINCRBY: RESPCommand {
+public struct HINCRBY: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -102,13 +110,15 @@ public struct HINCRBY: RESPCommand {
         self.increment = increment
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HINCRBY", key, field, increment)
     }
 }
 
 /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
-public struct HINCRBYFLOAT: RESPCommand {
+public struct HINCRBYFLOAT: RESPCommand, ValkeyClusterCommand {
     public typealias Response = String
 
     public var key: RESPKey
@@ -121,13 +131,15 @@ public struct HINCRBYFLOAT: RESPCommand {
         self.increment = increment
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HINCRBYFLOAT", key, field, increment)
     }
 }
 
 /// Returns all fields in a hash.
-public struct HKEYS: RESPCommand {
+public struct HKEYS: RESPCommand, ValkeyClusterCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -136,13 +148,15 @@ public struct HKEYS: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HKEYS", key)
     }
 }
 
 /// Returns the number of fields in a hash.
-public struct HLEN: RESPCommand {
+public struct HLEN: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -151,13 +165,15 @@ public struct HLEN: RESPCommand {
         self.key = key
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HLEN", key)
     }
 }
 
 /// Returns the values of all fields in a hash.
-public struct HMGET: RESPCommand {
+public struct HMGET: RESPCommand, ValkeyClusterCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -168,6 +184,8 @@ public struct HMGET: RESPCommand {
         self.field = field
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HMGET", key, field)
     }
@@ -175,7 +193,7 @@ public struct HMGET: RESPCommand {
 
 /// Sets the values of multiple fields.
 @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
-public struct HMSET: RESPCommand {
+public struct HMSET: RESPCommand, ValkeyClusterCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let field: String
         @usableFromInline let value: String
@@ -207,13 +225,15 @@ public struct HMSET: RESPCommand {
         self.data = data
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HMSET", key, data)
     }
 }
 
 /// Returns one or more random fields from a hash.
-public struct HRANDFIELD: RESPCommand {
+public struct HRANDFIELD: RESPCommand, ValkeyClusterCommand {
     public struct Options: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
@@ -245,13 +265,15 @@ public struct HRANDFIELD: RESPCommand {
         self.options = options
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HRANDFIELD", key, options)
     }
 }
 
 /// Iterates over fields and values of a hash.
-public struct HSCAN: RESPCommand {
+public struct HSCAN: RESPCommand, ValkeyClusterCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -266,13 +288,15 @@ public struct HSCAN: RESPCommand {
         self.count = count
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
 }
 
 /// Creates or modifies the value of a field in a hash.
-public struct HSET: RESPCommand {
+public struct HSET: RESPCommand, ValkeyClusterCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let field: String
         @usableFromInline let value: String
@@ -304,13 +328,15 @@ public struct HSET: RESPCommand {
         self.data = data
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSET", key, data)
     }
 }
 
 /// Sets the value of a field in a hash only when the field doesn't exist.
-public struct HSETNX: RESPCommand {
+public struct HSETNX: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -323,13 +349,15 @@ public struct HSETNX: RESPCommand {
         self.value = value
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSETNX", key, field, value)
     }
 }
 
 /// Returns the length of the value of a field.
-public struct HSTRLEN: RESPCommand {
+public struct HSTRLEN: RESPCommand, ValkeyClusterCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -340,13 +368,15 @@ public struct HSTRLEN: RESPCommand {
         self.field = field
     }
 
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSTRLEN", key, field)
     }
 }
 
 /// Returns all values in a hash.
-public struct HVALS: RESPCommand {
+public struct HVALS: RESPCommand, ValkeyClusterCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -354,6 +384,8 @@ public struct HVALS: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HVALS", key)
