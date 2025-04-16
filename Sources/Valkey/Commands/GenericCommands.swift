@@ -516,8 +516,6 @@ public struct RANDOMKEY: RESPCommand {
 
 /// Renames a key and overwrites the destination.
 public struct RENAME: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var newkey: RESPKey
 
@@ -550,8 +548,6 @@ public struct RENAMENX: RESPCommand {
 
 /// Creates a key from the serialized representation of a value.
 public struct RESTORE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var ttl: Int
     public var serializedValue: String
@@ -634,8 +630,6 @@ public struct SORT: RESPCommand {
             }
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var byPattern: String? = nil
     public var limit: Limit? = nil
@@ -1115,8 +1109,8 @@ extension ValkeyConnection {
     /// - Categories: @keyspace, @write, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func rename(key: RESPKey, newkey: RESPKey) async throws -> RESPToken {
-        try await send(command: RENAME(key: key, newkey: newkey))
+    public func rename(key: RESPKey, newkey: RESPKey) async throws {
+        _ = try await send(command: RENAME(key: key, newkey: newkey))
     }
 
     /// Renames a key only when the target key name doesn't exist.
@@ -1141,8 +1135,8 @@ extension ValkeyConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func restore(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws -> RESPToken {
-        try await send(command: RESTORE(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
+    public func restore(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
+        _ = try await send(command: RESTORE(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 
     /// Iterates over the key names in the database.
@@ -1168,7 +1162,7 @@ extension ValkeyConnection {
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
     ///     [Integer](https:/valkey.io/topics/protocol/#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
     @inlinable
-    public func sort(key: RESPKey, byPattern: String? = nil, limit: SORT.Limit? = nil, getPattern: [String] = [], order: SORT.Order? = nil, sorting: Bool = false, destination: RESPKey? = nil) async throws -> RESPToken {
+    public func sort(key: RESPKey, byPattern: String? = nil, limit: SORT.Limit? = nil, getPattern: [String] = [], order: SORT.Order? = nil, sorting: Bool = false, destination: RESPKey? = nil) async throws -> SORT.Response {
         try await send(command: SORT(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting, destination: destination))
     }
 

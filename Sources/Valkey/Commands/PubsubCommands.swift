@@ -114,8 +114,6 @@ public enum PUBSUB {
 
 /// Listens for messages published to channels that match one or more patterns.
 public struct PSUBSCRIBE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var pattern: [String]
 
     @inlinable public init(pattern: [String]) {
@@ -146,8 +144,6 @@ public struct PUBLISH: RESPCommand {
 
 /// Stops listening to messages published to channels that match one or more patterns.
 public struct PUNSUBSCRIBE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var pattern: [String] = []
 
     @inlinable public init(pattern: [String] = []) {
@@ -178,8 +174,6 @@ public struct SPUBLISH: RESPCommand {
 
 /// Listens for messages published to shard channels.
 public struct SSUBSCRIBE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var shardchannel: [String]
 
     @inlinable public init(shardchannel: [String]) {
@@ -193,8 +187,6 @@ public struct SSUBSCRIBE: RESPCommand {
 
 /// Listens for messages published to channels.
 public struct SUBSCRIBE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var channel: [String]
 
     @inlinable public init(channel: [String]) {
@@ -208,8 +200,6 @@ public struct SUBSCRIBE: RESPCommand {
 
 /// Stops listening to messages posted to shard channels.
 public struct SUNSUBSCRIBE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var shardchannel: [String] = []
 
     @inlinable public init(shardchannel: [String] = []) {
@@ -223,8 +213,6 @@ public struct SUNSUBSCRIBE: RESPCommand {
 
 /// Stops listening to messages posted to channels.
 public struct UNSUBSCRIBE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var channel: [String] = []
 
     @inlinable public init(channel: [String] = []) {
@@ -246,7 +234,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `psubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func psubscribe(pattern: [String]) async throws -> RESPToken {
+    public func psubscribe(pattern: [String]) async throws -> PSUBSCRIBE.Response {
         try await send(command: PSUBSCRIBE(pattern: pattern))
     }
 
@@ -342,7 +330,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each pattern, one message with the first element being the string `punsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func punsubscribe(pattern: [String] = []) async throws -> RESPToken {
+    public func punsubscribe(pattern: [String] = []) async throws -> PUNSUBSCRIBE.Response {
         try await send(command: PUNSUBSCRIBE(pattern: pattern))
     }
 
@@ -366,7 +354,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `ssubscribe` is pushed as a confirmation that the command succeeded. Note that this command can also return a -MOVED redirect.
     @inlinable
-    public func ssubscribe(shardchannel: [String]) async throws -> RESPToken {
+    public func ssubscribe(shardchannel: [String]) async throws -> SSUBSCRIBE.Response {
         try await send(command: SSUBSCRIBE(shardchannel: shardchannel))
     }
 
@@ -378,7 +366,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `subscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func subscribe(channel: [String]) async throws -> RESPToken {
+    public func subscribe(channel: [String]) async throws -> SUBSCRIBE.Response {
         try await send(command: SUBSCRIBE(channel: channel))
     }
 
@@ -390,7 +378,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each shard channel, one message with the first element being the string `sunsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func sunsubscribe(shardchannel: [String] = []) async throws -> RESPToken {
+    public func sunsubscribe(shardchannel: [String] = []) async throws -> SUNSUBSCRIBE.Response {
         try await send(command: SUNSUBSCRIBE(shardchannel: shardchannel))
     }
 
@@ -402,7 +390,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: When successful, this command doesn't return anything. Instead, for each channel, one message with the first element being the string `unsubscribe` is pushed as a confirmation that the command succeeded.
     @inlinable
-    public func unsubscribe(channel: [String] = []) async throws -> RESPToken {
+    public func unsubscribe(channel: [String] = []) async throws -> UNSUBSCRIBE.Response {
         try await send(command: UNSUBSCRIBE(channel: channel))
     }
 

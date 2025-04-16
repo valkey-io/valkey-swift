@@ -197,8 +197,6 @@ public struct HMSET: RESPCommand {
             value.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var data: [Data]
 
@@ -235,8 +233,6 @@ public struct HRANDFIELD: RESPCommand {
             "WITHVALUES".encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var options: Options? = nil
 
@@ -483,8 +479,8 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
-    public func hmset(key: RESPKey, data: [HMSET.Data]) async throws -> RESPToken {
-        try await send(command: HMSET(key: key, data: data))
+    public func hmset(key: RESPKey, data: [HMSET.Data]) async throws {
+        _ = try await send(command: HMSET(key: key, data: data))
     }
 
     /// Returns one or more random fields from a hash.
@@ -499,7 +495,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list containing `count` fields when the `count` option is used, or an empty array if the key does not exists.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list of fields and their values when `count` and `WITHVALUES` were both used.
     @inlinable
-    public func hrandfield(key: RESPKey, options: HRANDFIELD.Options? = nil) async throws -> RESPToken {
+    public func hrandfield(key: RESPKey, options: HRANDFIELD.Options? = nil) async throws -> HRANDFIELD.Response {
         try await send(command: HRANDFIELD(key: key, options: options))
     }
 

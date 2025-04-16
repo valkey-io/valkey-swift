@@ -235,8 +235,6 @@ public struct INCRBYFLOAT: RESPCommand {
 
 /// Finds the longest common substring.
 public struct LCS: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key1: RESPKey
     public var key2: RESPKey
     public var len: Bool = false
@@ -296,8 +294,6 @@ public struct MSET: RESPCommand {
             value.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var data: [Data]
 
     @inlinable public init(data: [Data]) {
@@ -348,8 +344,6 @@ public struct MSETNX: RESPCommand {
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
 public struct PSETEX: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var milliseconds: Int
     public var value: String
@@ -435,8 +429,6 @@ public struct SET: RESPCommand {
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
 public struct SETEX: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var seconds: Int
     public var value: String
@@ -677,7 +669,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
     @inlinable
-    public func lcs(key1: RESPKey, key2: RESPKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> RESPToken {
+    public func lcs(key1: RESPKey, key2: RESPKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> LCS.Response {
         try await send(command: LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
@@ -701,8 +693,8 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): always `OK` because `MSET` can't fail.
     @inlinable
-    public func mset(data: [MSET.Data]) async throws -> RESPToken {
-        try await send(command: MSET(data: data))
+    public func mset(data: [MSET.Data]) async throws {
+        _ = try await send(command: MSET(data: data))
     }
 
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
@@ -728,8 +720,8 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
-    public func psetex(key: RESPKey, milliseconds: Int, value: String) async throws -> RESPToken {
-        try await send(command: PSETEX(key: key, milliseconds: milliseconds, value: value))
+    public func psetex(key: RESPKey, milliseconds: Int, value: String) async throws {
+        _ = try await send(command: PSETEX(key: key, milliseconds: milliseconds, value: value))
     }
 
     /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
@@ -762,8 +754,8 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
-    public func setex(key: RESPKey, seconds: Int, value: String) async throws -> RESPToken {
-        try await send(command: SETEX(key: key, seconds: seconds, value: value))
+    public func setex(key: RESPKey, seconds: Int, value: String) async throws {
+        _ = try await send(command: SETEX(key: key, seconds: seconds, value: value))
     }
 
     /// Set the string value of a key only when the key doesn't exist.

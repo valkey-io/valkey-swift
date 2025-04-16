@@ -46,8 +46,6 @@ public enum XGROUP {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var key: RESPKey
         public var group: String
         public var idSelector: IdSelector
@@ -157,8 +155,6 @@ public enum XGROUP {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var key: RESPKey
         public var group: String
         public var idSelector: IdSelector
@@ -697,8 +693,6 @@ public struct XREVRANGE: RESPCommand {
 
 /// An internal command for replicating stream values.
 public struct XSETID: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var lastId: String
     public var entriesAdded: Int? = nil
@@ -867,8 +861,8 @@ extension ValkeyConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate(key: RESPKey, group: String, idSelector: XGROUP.CREATE.IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws -> RESPToken {
-        try await send(command: XGROUP.CREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
+    public func xgroupCreate(key: RESPKey, group: String, idSelector: XGROUP.CREATE.IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws {
+        _ = try await send(command: XGROUP.CREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
     }
 
     /// Creates a consumer in a consumer group.
@@ -927,8 +921,8 @@ extension ValkeyConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func xgroupSetid(key: RESPKey, group: String, idSelector: XGROUP.SETID.IdSelector, entriesread: Int? = nil) async throws -> RESPToken {
-        try await send(command: XGROUP.SETID(key: key, group: group, idSelector: idSelector, entriesread: entriesread))
+    public func xgroupSetid(key: RESPKey, group: String, idSelector: XGROUP.SETID.IdSelector, entriesread: Int? = nil) async throws {
+        _ = try await send(command: XGROUP.SETID(key: key, group: group, idSelector: idSelector, entriesread: entriesread))
     }
 
     /// Returns a list of the consumers in a consumer group.
@@ -1064,8 +1058,8 @@ extension ValkeyConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func xsetid(key: RESPKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) async throws -> RESPToken {
-        try await send(command: XSETID(key: key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
+    public func xsetid(key: RESPKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) async throws {
+        _ = try await send(command: XSETID(key: key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
     }
 
     /// Deletes messages from the beginning of a stream.

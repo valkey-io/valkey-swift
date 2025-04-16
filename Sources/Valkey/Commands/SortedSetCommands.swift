@@ -145,8 +145,6 @@ public struct ZADD: RESPCommand {
             member.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var condition: Condition? = nil
     public var comparison: Comparison? = nil
@@ -475,8 +473,6 @@ public struct ZRANDMEMBER: RESPCommand {
             "WITHSCORES".encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var options: Options? = nil
 
@@ -706,8 +702,6 @@ public struct ZRANGESTORE: RESPCommand {
 
 /// Returns the index of a member in a sorted set ordered by ascending scores.
 public struct ZRANK: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var member: String
     public var withscore: Bool = false
@@ -909,8 +903,6 @@ public struct ZREVRANGEBYSCORE: RESPCommand {
 
 /// Returns the index of a member in a sorted set ordered by descending scores.
 public struct ZREVRANK: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var member: String
     public var withscore: Bool = false
@@ -1096,7 +1088,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/valkey.io/topics/protocol/#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> RESPToken {
+    public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> ZADD.Response {
         try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 
@@ -1269,7 +1261,7 @@ extension ValkeyConnection {
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or [Null](https:/valkey.io/topics/protocol/#nulls) when _key_ doesn't exist.
     ///     [Array](https:/valkey.io/topics/protocol/#arrays): when the additional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist. If the _WITHSCORES_ modifier is used, the reply is a list of members and their scores from the sorted set.
     @inlinable
-    public func zrandmember(key: RESPKey, options: ZRANDMEMBER.Options? = nil) async throws -> RESPToken {
+    public func zrandmember(key: RESPKey, options: ZRANDMEMBER.Options? = nil) async throws -> ZRANDMEMBER.Response {
         try await send(command: ZRANDMEMBER(key: key, options: options))
     }
 
@@ -1334,7 +1326,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> RESPToken {
+    public func zrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> ZRANK.Response {
         try await send(command: ZRANK(key: key, member: member, withscore: withscore))
     }
 
@@ -1436,7 +1428,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): The rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): The rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrevrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> RESPToken {
+    public func zrevrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> ZREVRANK.Response {
         try await send(command: ZREVRANK(key: key, member: member, withscore: withscore))
     }
 

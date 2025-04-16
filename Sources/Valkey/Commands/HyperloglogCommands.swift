@@ -56,8 +56,6 @@ public struct PFCOUNT: RESPCommand {
 
 /// Merges one or more HyperLogLog values into a single key.
 public struct PFMERGE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var destkey: RESPKey
     public var sourcekey: [RESPKey] = []
 
@@ -73,8 +71,6 @@ public struct PFMERGE: RESPCommand {
 
 /// An internal command for testing HyperLogLog values.
 public struct PFSELFTEST: RESPCommand {
-    public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -120,8 +116,8 @@ extension ValkeyConnection {
     /// - Categories: @write, @hyperloglog, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func pfmerge(destkey: RESPKey, sourcekey: [RESPKey] = []) async throws -> RESPToken {
-        try await send(command: PFMERGE(destkey: destkey, sourcekey: sourcekey))
+    public func pfmerge(destkey: RESPKey, sourcekey: [RESPKey] = []) async throws {
+        _ = try await send(command: PFMERGE(destkey: destkey, sourcekey: sourcekey))
     }
 
     /// An internal command for testing HyperLogLog values.
@@ -132,8 +128,8 @@ extension ValkeyConnection {
     /// - Categories: @hyperloglog, @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func pfselftest() async throws -> RESPToken {
-        try await send(command: PFSELFTEST())
+    public func pfselftest() async throws {
+        _ = try await send(command: PFSELFTEST())
     }
 
 }

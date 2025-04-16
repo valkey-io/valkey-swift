@@ -234,8 +234,6 @@ public struct GEORADIUS: RESPCommand {
             }
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var longitude: Double
     public var latitude: Double
@@ -345,8 +343,6 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
             }
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var member: String
     public var radius: Double
@@ -434,8 +430,6 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
             }
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var member: String
     public var radius: Double
@@ -521,8 +515,6 @@ public struct GEORADIUSRO: RESPCommand {
             }
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var longitude: Double
     public var latitude: Double
@@ -734,8 +726,6 @@ public struct GEOSEARCH: RESPCommand {
             "ANY".encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var from: From
     public var by: By
@@ -1038,7 +1028,7 @@ extension ValkeyConnection {
     ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.")
-    public func georadius(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUS.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUS.CountBlock? = nil, order: GEORADIUS.Order? = nil, store: GEORADIUS.Store? = nil) async throws -> RESPToken {
+    public func georadius(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUS.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUS.CountBlock? = nil, order: GEORADIUS.Order? = nil, store: GEORADIUS.Store? = nil) async throws -> GEORADIUS.Response {
         try await send(command: GEORADIUS(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
 
@@ -1056,7 +1046,7 @@ extension ValkeyConnection {
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-    public func georadiusbymember(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBER.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER.CountBlock? = nil, order: GEORADIUSBYMEMBER.Order? = nil, store: GEORADIUSBYMEMBER.Store? = nil) async throws -> RESPToken {
+    public func georadiusbymember(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBER.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER.CountBlock? = nil, order: GEORADIUSBYMEMBER.Order? = nil, store: GEORADIUSBYMEMBER.Store? = nil) async throws -> GEORADIUSBYMEMBER.Response {
         try await send(command: GEORADIUSBYMEMBER(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
 
@@ -1074,7 +1064,7 @@ extension ValkeyConnection {
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-    public func georadiusbymemberRo(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil, order: GEORADIUSBYMEMBERRO.Order? = nil) async throws -> RESPToken {
+    public func georadiusbymemberRo(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil, order: GEORADIUSBYMEMBERRO.Order? = nil) async throws -> GEORADIUSBYMEMBERRO.Response {
         try await send(command: GEORADIUSBYMEMBERRO(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
@@ -1092,7 +1082,7 @@ extension ValkeyConnection {
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.")
-    public func georadiusRo(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> RESPToken {
+    public func georadiusRo(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> GEORADIUSRO.Response {
         try await send(command: GEORADIUSRO(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
@@ -1109,7 +1099,7 @@ extension ValkeyConnection {
     ///         * The Geohash integer.
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
-    public func geosearch(key: RESPKey, from: GEOSEARCH.From, by: GEOSEARCH.By, order: GEOSEARCH.Order? = nil, countBlock: GEOSEARCH.CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> RESPToken {
+    public func geosearch(key: RESPKey, from: GEOSEARCH.From, by: GEOSEARCH.By, order: GEOSEARCH.Order? = nil, countBlock: GEOSEARCH.CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> GEOSEARCH.Response {
         try await send(command: GEOSEARCH(key: key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash))
     }
 
