@@ -86,7 +86,7 @@ jobs:
               ;;
             *)
               # Get error string from benchmark output
-              BENCHMARK_ERROR=echo $GITHUB_STEP_SUMMARY | grep -e "^error:.*" | tail -n 1 | cut -f 2 -w
+              BENCHMARK_ERROR=echo $GITHUB_STEP_SUMMARY | grep -e "^error: .*" | tail -n 1 | cut -c 8-
               case "${BENCHMARK_ERROR}" in
                 "benchmarkThresholdRegression")
                   echo "_Pull request has performance regressions ❌_" >> comment.md
