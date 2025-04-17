@@ -69,9 +69,9 @@ jobs:
           echo $(date) >> $GITHUB_STEP_SUMMARY
           set +e
           CHECK_OUTPUT=$(swift package benchmark baseline check main pull_request --format markdown)
-          echo  $CHECK_OUTPUT >> $GITHUB_STEP_SUMMARY
+          echo  -e $CHECK_OUTPUT >> $GITHUB_STEP_SUMMARY
           echo "exit-status=$?" >> $GITHUB_OUTPUT
-          echo "benchmark-error=$(echo $CHECK_OUTPUT | grep -e "^error: .*" | tail -n 1 | cut -c 8-)" >> $GITHUB_OUTPUT
+          echo "benchmark-error=$(echo -e $CHECK_OUTPUT | grep -e "^error: .*" | tail -n 1 | cut -c 8-)" >> $GITHUB_OUTPUT
           set -e
       - name: Pull request comment text
         id: benchmark-comment
@@ -88,7 +88,9 @@ jobs:
               ;;
             *)
               # Get error string from benchmark output
-              case '${{steps.benchmark.outputs.benchmark-error}}' in
+              BENCHMARK_ERROR='${{steps.benchmark.outputs.benchmark-error}}'
+              echo "Benchmark error $BENCHMARK_ERROR"
+              case "${BENCHMARK_ERROR}" in
                 "benchmarkThresholdRegression")
                   echo "_Pull request has performance regressions ❌_" >> comment.md
                   echo "exitStatus=1" >> $GITHUB_ENV
