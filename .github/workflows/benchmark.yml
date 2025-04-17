@@ -69,8 +69,8 @@ jobs:
           echo $(date) >> $GITHUB_STEP_SUMMARY
           set +e
           CHECK_OUTPUT=$(swift package benchmark baseline check main pull_request --format markdown)
-          echo  -e $CHECK_OUTPUT >> $GITHUB_STEP_SUMMARY
           echo "exit-status=$?" >> $GITHUB_OUTPUT
+          echo -e $CHECK_OUTPUT >> $GITHUB_STEP_SUMMARY
           echo "benchmark-error=$(echo -e $CHECK_OUTPUT | grep -e "^error: .*" | tail -n 1 | cut -c 8-)" >> $GITHUB_OUTPUT
           set -e
       - name: Pull request comment text
