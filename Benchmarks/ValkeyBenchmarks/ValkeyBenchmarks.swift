@@ -24,15 +24,15 @@ let benchmarks: @Sendable () -> Void = {
         // There is no point comparing wallClock, cpuTotal or throughput on CI as they are too inconsistent
         ProcessInfo.processInfo.environment["CI"] != nil
         ? [
-            .mallocCountTotal,
             .instructions,
+            .mallocCountTotal,
         ]
         : [
             .wallClock,
             .cpuTotal,
+            .instructions,
             .mallocCountTotal,
             .throughput,
-            .instructions,
         ]
 
     var server: Channel?
@@ -45,6 +45,8 @@ let benchmarks: @Sendable () -> Void = {
             benchmark.startMeasurement()
 
             for _ in benchmark.scaledIterations {
+                let foo = try await connection.get(key: "foo")
+                precondition(foo == "Bar")
             }
 
             benchmark.stopMeasurement()
