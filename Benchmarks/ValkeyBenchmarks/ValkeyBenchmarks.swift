@@ -24,15 +24,15 @@ let benchmarks: @Sendable () -> Void = {
         // There is no point comparing wallClock, cpuTotal or throughput on CI as they are too inconsistent
         ProcessInfo.processInfo.environment["CI"] != nil
         ? [
-            .mallocCountTotal,
             .instructions,
+            .mallocCountTotal,
         ]
         : [
             .wallClock,
             .cpuTotal,
+            .instructions,
             .mallocCountTotal,
             .throughput,
-            .instructions,
         ]
 
     var server: Channel?
@@ -122,6 +122,15 @@ let benchmarks: @Sendable () -> Void = {
         }
 
         benchmark.stopMeasurement()
+    }
+
+    Benchmark("HashSlot – {user}.whatever", configuration: .init(metrics: defaultMetrics, scalingFactor: .mega)) { benchmark in
+        let key = "{user}.whatever"
+
+        benchmark.startMeasurement()
+        for _ in benchmark.scaledIterations {
+            blackHole(HashSlot(key: key))
+        }
     }
 }
 
