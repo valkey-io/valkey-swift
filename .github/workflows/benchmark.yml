@@ -68,10 +68,11 @@ jobs:
           echo '## Summary' >> $GITHUB_STEP_SUMMARY
           echo $(date) >> $GITHUB_STEP_SUMMARY
           set +e
-          CHECK_OUTPUT=$(swift package benchmark baseline check main pull_request --format markdown)
+          # split output of benchmark check. stdout being pushed to GITHUB_STEP_SUMMARY and stderr 
+          # being redirected to variable benchmark-stderr
+          { benchmark-stderr=$(swift package benchmark baseline check main pull_request --format markdown 2>&1 >&3 3>&-); } 3>> $GITHUB_STEP_SUMMARY
           echo "exit-status=$?" >> $GITHUB_OUTPUT
-          echo -e $CHECK_OUTPUT >> $GITHUB_STEP_SUMMARY
-          echo "benchmark-error=$(echo -e $CHECK_OUTPUT | grep -e "^error: .*" | tail -n 1 | cut -c 8-)" >> $GITHUB_OUTPUT
+          echo "benchmark-error=$(echo -e "$benchmark-stderr" | grep -e "^error: .*" | tail -n 1 | cut -c 8-)" >> $GITHUB_OUTPUT
           set -e
       - name: Pull request comment text
         id: benchmark-comment
