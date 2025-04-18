@@ -25,7 +25,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             self.value = value
         }
 
-        /// Provided URL is invalid
+        /// Connection is closed
         public static var connectionClosed: Self { .init(.connectionClosed) }
         /// Error returned by Valkey command
         public static var commandError: Self { .init(.commandError) }

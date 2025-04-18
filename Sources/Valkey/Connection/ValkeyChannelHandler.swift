@@ -78,16 +78,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     ///   - request: Valkey command request
     ///   - promise: Promise to fulfill when command is complete
     @inlinable
-    func write(request: ValkeyRequest) {
-        self._write(request: request)
-    }
-
-    /// Write valkey command/commands to channel
-    /// - Parameters:
-    ///   - request: Valkey command request
-    ///   - promise: Promise to fulfill when command is complete
-    @inlinable
     func write<Command: RESPCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>) {
+        self.eventLoop.assertInEventLoop()
         guard let context = self.context else {
             preconditionFailure("Trying to use valkey connection before it is setup")
         }
@@ -101,7 +93,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     @usableFromInline
-    func _write(request: ValkeyRequest) {
+    func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
         guard let context = self.context else {
             preconditionFailure("Trying to use valkey connection before it is setup")
