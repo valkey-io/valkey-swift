@@ -105,11 +105,13 @@ jobs:
               ;;
           esac
 
+          set +e
           echo "<details><summary>Summary</summary>" >> comment.md
           swift package benchmark baseline check main pull_request --format markdown >> comment.md
           echo "</details><details><summary>Full Benchmark Comparison</summary>" >> comment.md
           swift package benchmark baseline compare main pull_request --no-progress --quiet --format markdown >> comment.md
           echo "</details>" >> comment.md
+          set -e
 
       - name: Comment PR
         if: ${{ env.hasBenchmark == '1' }}
