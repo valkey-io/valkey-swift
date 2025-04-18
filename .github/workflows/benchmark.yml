@@ -118,4 +118,4 @@ jobs:
           comment-tag: benchmark
       - name: Exit with correct status
         run: |
-          exit ${exitStatus}
+          exit ${{env.exitStatus}}
