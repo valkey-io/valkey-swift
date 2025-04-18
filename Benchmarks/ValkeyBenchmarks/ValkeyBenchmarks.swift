@@ -24,15 +24,15 @@ let benchmarks: @Sendable () -> Void = {
         // There is no point comparing wallClock, cpuTotal or throughput on CI as they are too inconsistent
         ProcessInfo.processInfo.environment["CI"] != nil
         ? [
-            .mallocCountTotal,
             .instructions,
+            .mallocCountTotal,
         ]
         : [
             .wallClock,
             .cpuTotal,
+            .instructions,
             .mallocCountTotal,
             .throughput,
-            .instructions,
         ]
 
     var server: Channel?
