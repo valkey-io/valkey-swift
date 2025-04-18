@@ -9,3 +9,4 @@ DerivedData/
 .vscode
 Package.resolved
 .benchmarkBaselines/
+.swift-version
