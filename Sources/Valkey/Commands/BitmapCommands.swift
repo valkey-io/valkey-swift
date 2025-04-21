@@ -93,6 +93,8 @@ public struct BITCOUNT: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITCOUNT", key, range)
     }
@@ -299,6 +301,8 @@ public struct BITFIELDRO: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
     }
@@ -417,6 +421,8 @@ public struct BITPOS: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITPOS", key, bit, range)
     }
@@ -435,6 +441,8 @@ public struct GETBIT: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GETBIT", key, offset)

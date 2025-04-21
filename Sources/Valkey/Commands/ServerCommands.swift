@@ -599,6 +599,8 @@ public enum MEMORY {
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+        public var readOnly: Bool { true }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
         }
@@ -795,6 +797,8 @@ public struct DBSIZE: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("DBSIZE")
     }
@@ -939,6 +943,8 @@ public struct LOLWUT: ValkeyCommand, Hashable {
     @inlinable public init(version: Int? = nil) {
         self.version = version
     }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LOLWUT", RESPWithToken("VERSION", version))

@@ -182,6 +182,8 @@ public struct ZCARD: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZCARD", key)
     }
@@ -203,6 +205,8 @@ public struct ZCOUNT: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZCOUNT", key, min, max)
     }
@@ -221,6 +225,8 @@ public struct ZDIFF: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZDIFF", RESPArrayWithCount(key), RESPPureToken("WITHSCORES", withscores))
@@ -302,6 +308,8 @@ public struct ZINTER: ValkeyCommand, Hashable {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
     }
@@ -320,6 +328,8 @@ public struct ZINTERCARD: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
@@ -382,6 +392,8 @@ public struct ZLEXCOUNT<Min: RESPStringRenderable, Max: RESPStringRenderable>: V
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZLEXCOUNT", key, RESPBulkString(min), RESPBulkString(max))
     }
@@ -434,6 +446,8 @@ public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZMSCORE", key, member.map { RESPBulkString($0) })
@@ -509,6 +523,8 @@ public struct ZRANDMEMBER: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZRANDMEMBER", key, options)
     }
@@ -574,6 +590,8 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZRANGE", key, RESPBulkString(start), RESPBulkString(stop), sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
     }
@@ -618,6 +636,8 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZRANGEBYLEX", key, RESPBulkString(min), RESPBulkString(max), RESPWithToken("LIMIT", limit))
@@ -665,6 +685,8 @@ public struct ZRANGEBYSCORE: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZRANGEBYSCORE", key, min, max, RESPPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
@@ -751,6 +773,8 @@ public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZRANK", key, RESPBulkString(member), RESPPureToken("WITHSCORE", withscore))
@@ -858,6 +882,8 @@ public struct ZREVRANGE: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGE", key, start, stop, RESPPureToken("WITHSCORES", withscores))
     }
@@ -902,6 +928,8 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGEBYLEX", key, RESPBulkString(max), RESPBulkString(min), RESPWithToken("LIMIT", limit))
@@ -950,6 +978,8 @@ public struct ZREVRANGEBYSCORE: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGEBYSCORE", key, max, min, RESPPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
@@ -970,6 +1000,8 @@ public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANK", key, RESPBulkString(member), RESPPureToken("WITHSCORE", withscore))
@@ -996,6 +1028,8 @@ public struct ZSCAN: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPPureToken("NOSCORES", noscores))
     }
@@ -1014,6 +1048,8 @@ public struct ZSCORE<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZSCORE", key, RESPBulkString(member))
@@ -1054,6 +1090,8 @@ public struct ZUNION: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))

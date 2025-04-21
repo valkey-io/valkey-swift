@@ -53,6 +53,8 @@ public struct SCARD: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SCARD", key)
     }
@@ -69,6 +71,8 @@ public struct SDIFF: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SDIFF", key)
@@ -106,6 +110,8 @@ public struct SINTER: ValkeyCommand, Hashable {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SINTER", key)
     }
@@ -124,6 +130,8 @@ public struct SINTERCARD: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
@@ -163,6 +171,8 @@ public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SISMEMBER", key, RESPBulkString(member))
     }
@@ -179,6 +189,8 @@ public struct SMEMBERS: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SMEMBERS", key)
@@ -198,6 +210,8 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand, Hashable 
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SMISMEMBER", key, member.map { RESPBulkString($0) })
@@ -258,6 +272,8 @@ public struct SRANDMEMBER: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SRANDMEMBER", key, count)
     }
@@ -300,6 +316,8 @@ public struct SSCAN: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
@@ -316,6 +334,8 @@ public struct SUNION: ValkeyCommand, Hashable {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SUNION", key)

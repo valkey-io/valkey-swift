@@ -304,6 +304,7 @@ struct ValkeyCommand: Decodable {
     let deprecatedSince: String?
     let replacedBy: String?
     let aclCategories: [String]?
+    let commandFlags: [String]
     let arguments: [Argument]?
     let replySchema: ReplySchema?
 
@@ -318,6 +319,7 @@ struct ValkeyCommand: Decodable {
         self.deprecatedSince = try container.decodeIfPresent(String.self, forKey: .deprecatedSince)
         self.replacedBy = try container.decodeIfPresent(String.self, forKey: .replacedBy)
         self.aclCategories = try container.decodeIfPresent([String].self, forKey: .aclCategories)
+        self.commandFlags = try container.decodeIfPresent([String].self, forKey: .commandFlags) ?? []
         if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
             if let keySpecs = try container.decodeIfPresent([KeySpec].self, forKey: .keySpecs) {
                 // combine argument and keyspec
@@ -352,14 +354,6 @@ struct ValkeyCommand: Decodable {
         case arguments
         case replySchema = "reply_schema"
         case keySpecs = "key_specs"
-    }
-}
-
-struct RESPReplies: Decodable {
-    let commands: [String: [String]]
-
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        self.commands = try container.decode([String: [String]].self)
+        case commandFlags = "command_flags"
     }
 }

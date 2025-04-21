@@ -199,6 +199,8 @@ public enum XINFO {
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+        public var readOnly: Bool { true }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "CONSUMERS", key, RESPBulkString(group))
         }
@@ -215,6 +217,8 @@ public enum XINFO {
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+        public var readOnly: Bool { true }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "GROUPS", key)
@@ -267,6 +271,8 @@ public enum XINFO {
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+        public var readOnly: Bool { true }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "STREAM", key, fullBlock)
@@ -516,6 +522,8 @@ public struct XLEN: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("XLEN", key)
     }
@@ -567,6 +575,8 @@ public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand, Hashable {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("XPENDING", key, RESPBulkString(group), filters)
     }
@@ -589,6 +599,8 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: Va
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("XRANGE", key, RESPBulkString(start), RESPBulkString(end), RESPWithToken("COUNT", count))
@@ -629,6 +641,8 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand, Hashable {
         self.milliseconds = milliseconds
         self.streams = streams
     }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
@@ -717,6 +731,8 @@ public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>:
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var readOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("XREVRANGE", key, RESPBulkString(end), RESPBulkString(start), RESPWithToken("COUNT", count))

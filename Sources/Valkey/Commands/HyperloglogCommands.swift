@@ -53,6 +53,8 @@ public struct PFCOUNT: ValkeyCommand, Hashable {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var readOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PFCOUNT", key)
     }

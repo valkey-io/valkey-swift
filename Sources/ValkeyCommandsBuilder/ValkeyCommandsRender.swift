@@ -243,11 +243,16 @@ extension String {
             self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
         self.append("\(tab)    }\n\n")
+        // keys affected
         if keyArguments.count > 0 {
             let (keysAffectedType, keysAffected) = constructKeysAffected(keyArguments)
             self.append("\(tab)    public var keysAffected: \(keysAffectedType) { \(keysAffected) }\n\n")
         }
-
+        // read only
+        if command.commandFlags.contains("READONLY") {
+            self.append("\(tab)    public var readOnly: Bool { true }\n\n")
+        }
+        // encode function
         self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
         self.append("\(tab)        commandEncoder.encodeArray(\(commandArgumentsString))\n")
         self.append("\(tab)    }\n")

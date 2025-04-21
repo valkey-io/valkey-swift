@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+/// Protocol for type that can process Valkey commands
 public protocol ValkeyCommands {
     func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response
 }

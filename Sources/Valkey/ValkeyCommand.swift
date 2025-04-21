@@ -23,6 +23,9 @@ public protocol ValkeyCommand: Sendable, Hashable {
     /// shard to connect to.
     var keysAffected: Keys { get }
 
+    /// Is command readonly
+    var readOnly: Bool { get }
+
     ///
     /// Encode Valkey Command into RESP
     /// - Parameter commandEncoder: ValkeyCommandEncoder
@@ -32,6 +35,9 @@ public protocol ValkeyCommand: Sendable, Hashable {
 extension ValkeyCommand {
     /// Default to no keys affected
     public var keysAffected: [ValkeyKey] { [] }
+
+    /// Is command readonly
+    public var readOnly: Bool { false }
 }
 
 /// Wrapper for Valkey command that returns the response as a `RESPToken`
