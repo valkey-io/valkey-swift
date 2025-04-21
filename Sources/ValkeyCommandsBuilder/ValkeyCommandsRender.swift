@@ -168,12 +168,7 @@ extension String {
         }
 
         let keyArguments = command.arguments?.filter { $0.type == .key } ?? []
-        let conformance =
-            if keyArguments.count > 0 {
-                "RESPCommand"
-            } else {
-                "RESPCommand"
-            }
+        let conformance = "RESPCommand"
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, reply: reply, tab: tab)
         self.appendDeprecatedMessage(command: command, name: name, tab: tab)
