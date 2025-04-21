@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
-public struct GEOADD: RESPCommand, ValkeyClusterCommand {
+public struct GEOADD: RESPCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -77,7 +77,7 @@ public struct GEOADD: RESPCommand, ValkeyClusterCommand {
         self.data = data
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOADD", key, condition, RESPPureToken("CH", change), data)
@@ -85,7 +85,7 @@ public struct GEOADD: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the distance between two members of a geospatial index.
-public struct GEODIST: RESPCommand, ValkeyClusterCommand {
+public struct GEODIST: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -119,7 +119,7 @@ public struct GEODIST: RESPCommand, ValkeyClusterCommand {
         self.unit = unit
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEODIST", key, member1, member2, unit)
@@ -127,7 +127,7 @@ public struct GEODIST: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns members from a geospatial index as geohash strings.
-public struct GEOHASH: RESPCommand, ValkeyClusterCommand {
+public struct GEOHASH: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -138,7 +138,7 @@ public struct GEOHASH: RESPCommand, ValkeyClusterCommand {
         self.member = member
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOHASH", key, member)
@@ -146,7 +146,7 @@ public struct GEOHASH: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the longitude and latitude of members from a geospatial index.
-public struct GEOPOS: RESPCommand, ValkeyClusterCommand {
+public struct GEOPOS: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -157,7 +157,7 @@ public struct GEOPOS: RESPCommand, ValkeyClusterCommand {
         self.member = member
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOPOS", key, member)
@@ -166,7 +166,7 @@ public struct GEOPOS: RESPCommand, ValkeyClusterCommand {
 
 /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.")
-public struct GEORADIUS: RESPCommand, ValkeyClusterCommand {
+public struct GEORADIUS: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -270,7 +270,7 @@ public struct GEORADIUS: RESPCommand, ValkeyClusterCommand {
         self.store = store
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUS", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
@@ -279,7 +279,7 @@ public struct GEORADIUS: RESPCommand, ValkeyClusterCommand {
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-public struct GEORADIUSBYMEMBER: RESPCommand, ValkeyClusterCommand {
+public struct GEORADIUSBYMEMBER: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -381,7 +381,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand, ValkeyClusterCommand {
         self.store = store
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
@@ -390,7 +390,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand, ValkeyClusterCommand {
 
 /// Returns members from a geospatial index that are within a distance from a member.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-public struct GEORADIUSBYMEMBERRO: RESPCommand, ValkeyClusterCommand {
+public struct GEORADIUSBYMEMBERRO: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -470,7 +470,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand, ValkeyClusterCommand {
         self.order = order
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
@@ -479,7 +479,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand, ValkeyClusterCommand {
 
 /// Returns members from a geospatial index that are within a distance from a coordinate.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.")
-public struct GEORADIUSRO: RESPCommand, ValkeyClusterCommand {
+public struct GEORADIUSRO: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -561,7 +561,7 @@ public struct GEORADIUSRO: RESPCommand, ValkeyClusterCommand {
         self.order = order
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUS_RO", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
@@ -569,7 +569,7 @@ public struct GEORADIUSRO: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Queries a geospatial index for members inside an area of a box or a circle.
-public struct GEOSEARCH: RESPCommand, ValkeyClusterCommand {
+public struct GEOSEARCH: RESPCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
@@ -772,7 +772,7 @@ public struct GEOSEARCH: RESPCommand, ValkeyClusterCommand {
         self.withhash = withhash
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOSEARCH", key, from, by, order, countBlock, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash))
@@ -780,7 +780,7 @@ public struct GEOSEARCH: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
-public struct GEOSEARCHSTORE: RESPCommand, ValkeyClusterCommand {
+public struct GEOSEARCHSTORE: RESPCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
@@ -981,7 +981,7 @@ public struct GEOSEARCHSTORE: RESPCommand, ValkeyClusterCommand {
         self.storedist = storedist
     }
 
-    public var clusterKeys: [RESPKey] { [destination, source] }
+    public var keysAffected: [RESPKey] { [destination, source] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RESPPureToken("STOREDIST", storedist))

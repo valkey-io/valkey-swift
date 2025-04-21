@@ -75,7 +75,7 @@ public struct UNWATCH: RESPCommand {
 }
 
 /// Monitors changes to keys to determine the execution of a transaction.
-public struct WATCH: RESPCommand, ValkeyClusterCommand {
+public struct WATCH: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: [RESPKey]
@@ -84,7 +84,7 @@ public struct WATCH: RESPCommand, ValkeyClusterCommand {
         self.key = key
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("WATCH", key)

@@ -25,7 +25,7 @@ import Foundation
 /// A container for consumer groups commands.
 public enum XGROUP {
     /// Creates a consumer group.
-    public struct CREATE: RESPCommand, ValkeyClusterCommand {
+    public struct CREATE: RESPCommand {
         public enum IdSelector: RESPRenderable, Sendable {
             case id(String)
             case newId
@@ -62,7 +62,7 @@ public enum XGROUP {
             self.entriesRead = entriesRead
         }
 
-        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "CREATE", key, group, idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
@@ -70,7 +70,7 @@ public enum XGROUP {
     }
 
     /// Creates a consumer in a consumer group.
-    public struct CREATECONSUMER: RESPCommand, ValkeyClusterCommand {
+    public struct CREATECONSUMER: RESPCommand {
         public typealias Response = Int
 
         public var key: RESPKey
@@ -83,7 +83,7 @@ public enum XGROUP {
             self.consumer = consumer
         }
 
-        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, group, consumer)
@@ -91,7 +91,7 @@ public enum XGROUP {
     }
 
     /// Deletes a consumer from a consumer group.
-    public struct DELCONSUMER: RESPCommand, ValkeyClusterCommand {
+    public struct DELCONSUMER: RESPCommand {
         public typealias Response = Int
 
         public var key: RESPKey
@@ -104,7 +104,7 @@ public enum XGROUP {
             self.consumer = consumer
         }
 
-        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, group, consumer)
@@ -112,7 +112,7 @@ public enum XGROUP {
     }
 
     /// Destroys a consumer group.
-    public struct DESTROY: RESPCommand, ValkeyClusterCommand {
+    public struct DESTROY: RESPCommand {
         public typealias Response = Int
 
         public var key: RESPKey
@@ -123,7 +123,7 @@ public enum XGROUP {
             self.group = group
         }
 
-        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "DESTROY", key, group)
@@ -144,7 +144,7 @@ public enum XGROUP {
     }
 
     /// Sets the last-delivered ID of a consumer group.
-    public struct SETID: RESPCommand, ValkeyClusterCommand {
+    public struct SETID: RESPCommand {
         public enum IdSelector: RESPRenderable, Sendable {
             case id(String)
             case newId
@@ -179,7 +179,7 @@ public enum XGROUP {
             self.entriesread = entriesread
         }
 
-        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
@@ -191,7 +191,7 @@ public enum XGROUP {
 /// A container for stream introspection commands.
 public enum XINFO {
     /// Returns a list of the consumers in a consumer group.
-    public struct CONSUMERS: RESPCommand, ValkeyClusterCommand {
+    public struct CONSUMERS: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var key: RESPKey
@@ -202,7 +202,7 @@ public enum XINFO {
             self.group = group
         }
 
-        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "CONSUMERS", key, group)
@@ -210,7 +210,7 @@ public enum XINFO {
     }
 
     /// Returns a list of the consumer groups of a stream.
-    public struct GROUPS: RESPCommand, ValkeyClusterCommand {
+    public struct GROUPS: RESPCommand {
         public typealias Response = [RESPToken]
 
         public var key: RESPKey
@@ -219,7 +219,7 @@ public enum XINFO {
             self.key = key
         }
 
-        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "GROUPS", key)
@@ -240,7 +240,7 @@ public enum XINFO {
     }
 
     /// Returns information about a stream.
-    public struct STREAM: RESPCommand, ValkeyClusterCommand {
+    public struct STREAM: RESPCommand {
         public struct FullBlock: RESPRenderable, Sendable {
             @usableFromInline let full: Bool
             @usableFromInline let count: Int?
@@ -272,7 +272,7 @@ public enum XINFO {
             self.fullBlock = fullBlock
         }
 
-        public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "STREAM", key, fullBlock)
@@ -282,7 +282,7 @@ public enum XINFO {
 }
 
 /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
-public struct XACK: RESPCommand, ValkeyClusterCommand {
+public struct XACK: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -295,7 +295,7 @@ public struct XACK: RESPCommand, ValkeyClusterCommand {
         self.id = id
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XACK", key, group, id)
@@ -303,7 +303,7 @@ public struct XACK: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Appends a new message to a stream. Creates the key if it doesn't exist.
-public struct XADD: RESPCommand, ValkeyClusterCommand {
+public struct XADD: RESPCommand {
     public enum TrimStrategy: RESPRenderable, Sendable {
         case maxlen
         case minid
@@ -418,7 +418,7 @@ public struct XADD: RESPCommand, ValkeyClusterCommand {
         self.data = data
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XADD", key, RESPPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
@@ -426,7 +426,7 @@ public struct XADD: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
-public struct XAUTOCLAIM: RESPCommand, ValkeyClusterCommand {
+public struct XAUTOCLAIM: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -447,7 +447,7 @@ public struct XAUTOCLAIM: RESPCommand, ValkeyClusterCommand {
         self.justid = justid
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
@@ -455,7 +455,7 @@ public struct XAUTOCLAIM: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
-public struct XCLAIM: RESPCommand, ValkeyClusterCommand {
+public struct XCLAIM: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -484,7 +484,7 @@ public struct XCLAIM: RESPCommand, ValkeyClusterCommand {
         self.lastid = lastid
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
@@ -492,7 +492,7 @@ public struct XCLAIM: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the number of messages after removing them from a stream.
-public struct XDEL: RESPCommand, ValkeyClusterCommand {
+public struct XDEL: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -503,7 +503,7 @@ public struct XDEL: RESPCommand, ValkeyClusterCommand {
         self.id = id
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XDEL", key, id)
@@ -511,7 +511,7 @@ public struct XDEL: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Return the number of messages in a stream.
-public struct XLEN: RESPCommand, ValkeyClusterCommand {
+public struct XLEN: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -520,7 +520,7 @@ public struct XLEN: RESPCommand, ValkeyClusterCommand {
         self.key = key
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XLEN", key)
@@ -528,7 +528,7 @@ public struct XLEN: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the information and entries from a stream consumer group's pending entries list.
-public struct XPENDING: RESPCommand, ValkeyClusterCommand {
+public struct XPENDING: RESPCommand {
     public struct Filters: RESPRenderable, Sendable {
         @usableFromInline let minIdleTime: Int?
         @usableFromInline let start: String
@@ -571,7 +571,7 @@ public struct XPENDING: RESPCommand, ValkeyClusterCommand {
         self.filters = filters
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XPENDING", key, group, filters)
@@ -579,7 +579,7 @@ public struct XPENDING: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the messages from a stream within a range of IDs.
-public struct XRANGE: RESPCommand, ValkeyClusterCommand {
+public struct XRANGE: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -594,7 +594,7 @@ public struct XRANGE: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XRANGE", key, start, end, RESPWithToken("COUNT", count))
@@ -707,7 +707,7 @@ public struct XREADGROUP: RESPCommand {
 }
 
 /// Returns the messages from a stream within a range of IDs in reverse order.
-public struct XREVRANGE: RESPCommand, ValkeyClusterCommand {
+public struct XREVRANGE: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -722,7 +722,7 @@ public struct XREVRANGE: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
@@ -730,7 +730,7 @@ public struct XREVRANGE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// An internal command for replicating stream values.
-public struct XSETID: RESPCommand, ValkeyClusterCommand {
+public struct XSETID: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -745,7 +745,7 @@ public struct XSETID: RESPCommand, ValkeyClusterCommand {
         self.maxDeletedId = maxDeletedId
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
@@ -753,7 +753,7 @@ public struct XSETID: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Deletes messages from the beginning of a stream.
-public struct XTRIM: RESPCommand, ValkeyClusterCommand {
+public struct XTRIM: RESPCommand {
     public enum TrimStrategy: RESPRenderable, Sendable {
         case maxlen
         case minid
@@ -821,7 +821,7 @@ public struct XTRIM: RESPCommand, ValkeyClusterCommand {
         self.trim = trim
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XTRIM", key, trim)

@@ -214,7 +214,11 @@ public final class ValkeyConnection: Sendable {
         }
     }
 
-    package static func setupChannel(_ channel: any Channel, configuration: ValkeyClientConfiguration, logger: Logger) async throws -> ValkeyConnection {
+    package static func setupChannel(
+        _ channel: any Channel,
+        configuration: ValkeyClientConfiguration,
+        logger: Logger
+    ) async throws -> ValkeyConnection {
         if !channel.eventLoop.inEventLoop {
             return try await channel.eventLoop.submit {
                 let handler = try self._setupChannel(channel, configuration: configuration, logger: logger)
@@ -227,7 +231,8 @@ public final class ValkeyConnection: Sendable {
     }
 
     @discardableResult
-    private static func _setupChannel(_ channel: any Channel, configuration: ValkeyClientConfiguration, logger: Logger) throws -> ValkeyChannelHandler {
+    private static func _setupChannel(_ channel: any Channel, configuration: ValkeyClientConfiguration, logger: Logger) throws -> ValkeyChannelHandler
+    {
         channel.eventLoop.assertInEventLoop()
         let sync = channel.pipeline.syncOperations
         switch configuration.tls.base {

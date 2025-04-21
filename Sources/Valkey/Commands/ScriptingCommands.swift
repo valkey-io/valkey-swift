@@ -314,7 +314,7 @@ public enum SCRIPT {
 }
 
 /// Executes a server-side Lua script.
-public struct EVAL: RESPCommand, ValkeyClusterCommand {
+public struct EVAL: RESPCommand {
     public typealias Response = RESPToken
 
     public var script: String
@@ -327,7 +327,7 @@ public struct EVAL: RESPCommand, ValkeyClusterCommand {
         self.arg = arg
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EVAL", script, RESPArrayWithCount(key), arg)
@@ -335,7 +335,7 @@ public struct EVAL: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Executes a server-side Lua script by SHA1 digest.
-public struct EVALSHA: RESPCommand, ValkeyClusterCommand {
+public struct EVALSHA: RESPCommand {
     public typealias Response = RESPToken
 
     public var sha1: String
@@ -348,7 +348,7 @@ public struct EVALSHA: RESPCommand, ValkeyClusterCommand {
         self.arg = arg
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EVALSHA", sha1, RESPArrayWithCount(key), arg)
@@ -356,7 +356,7 @@ public struct EVALSHA: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Executes a read-only server-side Lua script by SHA1 digest.
-public struct EVALSHARO: RESPCommand, ValkeyClusterCommand {
+public struct EVALSHARO: RESPCommand {
     public typealias Response = RESPToken
 
     public var sha1: String
@@ -369,7 +369,7 @@ public struct EVALSHARO: RESPCommand, ValkeyClusterCommand {
         self.arg = arg
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EVALSHA_RO", sha1, RESPArrayWithCount(key), arg)
@@ -377,7 +377,7 @@ public struct EVALSHARO: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Executes a read-only server-side Lua script.
-public struct EVALRO: RESPCommand, ValkeyClusterCommand {
+public struct EVALRO: RESPCommand {
     public typealias Response = RESPToken
 
     public var script: String
@@ -390,7 +390,7 @@ public struct EVALRO: RESPCommand, ValkeyClusterCommand {
         self.arg = arg
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EVAL_RO", script, RESPArrayWithCount(key), arg)
@@ -398,7 +398,7 @@ public struct EVALRO: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Invokes a function.
-public struct FCALL: RESPCommand, ValkeyClusterCommand {
+public struct FCALL: RESPCommand {
     public typealias Response = RESPToken
 
     public var function: String
@@ -411,7 +411,7 @@ public struct FCALL: RESPCommand, ValkeyClusterCommand {
         self.arg = arg
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("FCALL", function, RESPArrayWithCount(key), arg)
@@ -419,7 +419,7 @@ public struct FCALL: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Invokes a read-only function.
-public struct FCALLRO: RESPCommand, ValkeyClusterCommand {
+public struct FCALLRO: RESPCommand {
     public typealias Response = RESPToken
 
     public var function: String
@@ -432,7 +432,7 @@ public struct FCALLRO: RESPCommand, ValkeyClusterCommand {
         self.arg = arg
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("FCALL_RO", function, RESPArrayWithCount(key), arg)

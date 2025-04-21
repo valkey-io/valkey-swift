@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
-public struct BZMPOP: RESPCommand, ValkeyClusterCommand {
+public struct BZMPOP: RESPCommand {
     public enum Where: RESPRenderable, Sendable {
         case min
         case max
@@ -53,7 +53,7 @@ public struct BZMPOP: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
@@ -61,7 +61,7 @@ public struct BZMPOP: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
-public struct BZPOPMAX: RESPCommand, ValkeyClusterCommand {
+public struct BZPOPMAX: RESPCommand {
     public typealias Response = [RESPToken]?
 
     public var key: [RESPKey]
@@ -72,7 +72,7 @@ public struct BZPOPMAX: RESPCommand, ValkeyClusterCommand {
         self.timeout = timeout
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZPOPMAX", key, timeout)
@@ -80,7 +80,7 @@ public struct BZPOPMAX: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
-public struct BZPOPMIN: RESPCommand, ValkeyClusterCommand {
+public struct BZPOPMIN: RESPCommand {
     public typealias Response = [RESPToken]?
 
     public var key: [RESPKey]
@@ -91,7 +91,7 @@ public struct BZPOPMIN: RESPCommand, ValkeyClusterCommand {
         self.timeout = timeout
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZPOPMIN", key, timeout)
@@ -99,7 +99,7 @@ public struct BZPOPMIN: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
-public struct ZADD: RESPCommand, ValkeyClusterCommand {
+public struct ZADD: RESPCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -169,7 +169,7 @@ public struct ZADD: RESPCommand, ValkeyClusterCommand {
         self.data = data
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZADD", key, condition, comparison, RESPPureToken("CH", change), RESPPureToken("INCR", increment), data)
@@ -177,7 +177,7 @@ public struct ZADD: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the number of members in a sorted set.
-public struct ZCARD: RESPCommand, ValkeyClusterCommand {
+public struct ZCARD: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -186,7 +186,7 @@ public struct ZCARD: RESPCommand, ValkeyClusterCommand {
         self.key = key
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZCARD", key)
@@ -194,7 +194,7 @@ public struct ZCARD: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the count of members in a sorted set that have scores within a range.
-public struct ZCOUNT: RESPCommand, ValkeyClusterCommand {
+public struct ZCOUNT: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -207,7 +207,7 @@ public struct ZCOUNT: RESPCommand, ValkeyClusterCommand {
         self.max = max
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZCOUNT", key, min, max)
@@ -215,7 +215,7 @@ public struct ZCOUNT: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the difference between multiple sorted sets.
-public struct ZDIFF: RESPCommand, ValkeyClusterCommand {
+public struct ZDIFF: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: [RESPKey]
@@ -226,7 +226,7 @@ public struct ZDIFF: RESPCommand, ValkeyClusterCommand {
         self.withscores = withscores
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZDIFF", RESPArrayWithCount(key), RESPPureToken("WITHSCORES", withscores))
@@ -234,7 +234,7 @@ public struct ZDIFF: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Stores the difference of multiple sorted sets in a key.
-public struct ZDIFFSTORE: RESPCommand, ValkeyClusterCommand {
+public struct ZDIFFSTORE: RESPCommand {
     public typealias Response = Int
 
     public var destination: RESPKey
@@ -245,7 +245,7 @@ public struct ZDIFFSTORE: RESPCommand, ValkeyClusterCommand {
         self.key = key
     }
 
-    public var clusterKeys: [RESPKey] { [destination] + key }
+    public var keysAffected: [RESPKey] { [destination] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZDIFFSTORE", destination, RESPArrayWithCount(key))
@@ -253,7 +253,7 @@ public struct ZDIFFSTORE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Increments the score of a member in a sorted set.
-public struct ZINCRBY: RESPCommand, ValkeyClusterCommand {
+public struct ZINCRBY: RESPCommand {
     public typealias Response = Double
 
     public var key: RESPKey
@@ -266,7 +266,7 @@ public struct ZINCRBY: RESPCommand, ValkeyClusterCommand {
         self.member = member
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINCRBY", key, increment, member)
@@ -274,7 +274,7 @@ public struct ZINCRBY: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the intersect of multiple sorted sets.
-public struct ZINTER: RESPCommand, ValkeyClusterCommand {
+public struct ZINTER: RESPCommand {
     public enum Aggregate: RESPRenderable, Sendable {
         case sum
         case min
@@ -306,7 +306,7 @@ public struct ZINTER: RESPCommand, ValkeyClusterCommand {
         self.withscores = withscores
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
@@ -314,7 +314,7 @@ public struct ZINTER: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the number of members of the intersect of multiple sorted sets.
-public struct ZINTERCARD: RESPCommand, ValkeyClusterCommand {
+public struct ZINTERCARD: RESPCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
@@ -325,7 +325,7 @@ public struct ZINTERCARD: RESPCommand, ValkeyClusterCommand {
         self.limit = limit
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
@@ -333,7 +333,7 @@ public struct ZINTERCARD: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Stores the intersect of multiple sorted sets in a key.
-public struct ZINTERSTORE: RESPCommand, ValkeyClusterCommand {
+public struct ZINTERSTORE: RESPCommand {
     public enum Aggregate: RESPRenderable, Sendable {
         case sum
         case min
@@ -365,7 +365,7 @@ public struct ZINTERSTORE: RESPCommand, ValkeyClusterCommand {
         self.aggregate = aggregate
     }
 
-    public var clusterKeys: [RESPKey] { [destination] + key }
+    public var keysAffected: [RESPKey] { [destination] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
@@ -373,7 +373,7 @@ public struct ZINTERSTORE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the number of members in a sorted set within a lexicographical range.
-public struct ZLEXCOUNT: RESPCommand, ValkeyClusterCommand {
+public struct ZLEXCOUNT: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -386,7 +386,7 @@ public struct ZLEXCOUNT: RESPCommand, ValkeyClusterCommand {
         self.max = max
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZLEXCOUNT", key, min, max)
@@ -394,7 +394,7 @@ public struct ZLEXCOUNT: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
-public struct ZMPOP: RESPCommand, ValkeyClusterCommand {
+public struct ZMPOP: RESPCommand {
     public enum Where: RESPRenderable, Sendable {
         case min
         case max
@@ -422,7 +422,7 @@ public struct ZMPOP: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
@@ -430,7 +430,7 @@ public struct ZMPOP: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the score of one or more members in a sorted set.
-public struct ZMSCORE: RESPCommand, ValkeyClusterCommand {
+public struct ZMSCORE: RESPCommand {
     public typealias Response = [RESPToken]?
 
     public var key: RESPKey
@@ -441,7 +441,7 @@ public struct ZMSCORE: RESPCommand, ValkeyClusterCommand {
         self.member = member
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZMSCORE", key, member)
@@ -449,7 +449,7 @@ public struct ZMSCORE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
-public struct ZPOPMAX: RESPCommand, ValkeyClusterCommand {
+public struct ZPOPMAX: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -460,7 +460,7 @@ public struct ZPOPMAX: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZPOPMAX", key, count)
@@ -468,7 +468,7 @@ public struct ZPOPMAX: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
-public struct ZPOPMIN: RESPCommand, ValkeyClusterCommand {
+public struct ZPOPMIN: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -479,7 +479,7 @@ public struct ZPOPMIN: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZPOPMIN", key, count)
@@ -487,7 +487,7 @@ public struct ZPOPMIN: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns one or more random members from a sorted set.
-public struct ZRANDMEMBER: RESPCommand, ValkeyClusterCommand {
+public struct ZRANDMEMBER: RESPCommand {
     public struct Options: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let withscores: Bool
@@ -519,7 +519,7 @@ public struct ZRANDMEMBER: RESPCommand, ValkeyClusterCommand {
         self.options = options
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANDMEMBER", key, options)
@@ -527,7 +527,7 @@ public struct ZRANDMEMBER: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns members in a sorted set within a range of indexes.
-public struct ZRANGE: RESPCommand, ValkeyClusterCommand {
+public struct ZRANGE: RESPCommand {
     public enum Sortby: RESPRenderable, Sendable {
         case byscore
         case bylex
@@ -584,7 +584,7 @@ public struct ZRANGE: RESPCommand, ValkeyClusterCommand {
         self.withscores = withscores
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGE", key, start, stop, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
@@ -593,7 +593,7 @@ public struct ZRANGE: RESPCommand, ValkeyClusterCommand {
 
 /// Returns members in a sorted set within a lexicographical range.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.")
-public struct ZRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
+public struct ZRANGEBYLEX: RESPCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
@@ -629,7 +629,7 @@ public struct ZRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
         self.limit = limit
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
@@ -638,7 +638,7 @@ public struct ZRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
 
 /// Returns members in a sorted set within a range of scores.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.")
-public struct ZRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
+public struct ZRANGEBYSCORE: RESPCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
@@ -676,7 +676,7 @@ public struct ZRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
         self.limit = limit
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGEBYSCORE", key, min, max, RESPPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
@@ -684,7 +684,7 @@ public struct ZRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Stores a range of members from sorted set in a key.
-public struct ZRANGESTORE: RESPCommand, ValkeyClusterCommand {
+public struct ZRANGESTORE: RESPCommand {
     public enum Sortby: RESPRenderable, Sendable {
         case byscore
         case bylex
@@ -741,7 +741,7 @@ public struct ZRANGESTORE: RESPCommand, ValkeyClusterCommand {
         self.limit = limit
     }
 
-    public var clusterKeys: [RESPKey] { [dst, src] }
+    public var keysAffected: [RESPKey] { [dst, src] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGESTORE", dst, src, min, max, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit))
@@ -749,7 +749,7 @@ public struct ZRANGESTORE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the index of a member in a sorted set ordered by ascending scores.
-public struct ZRANK: RESPCommand, ValkeyClusterCommand {
+public struct ZRANK: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -762,7 +762,7 @@ public struct ZRANK: RESPCommand, ValkeyClusterCommand {
         self.withscore = withscore
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANK", key, member, RESPPureToken("WITHSCORE", withscore))
@@ -770,7 +770,7 @@ public struct ZRANK: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
-public struct ZREM: RESPCommand, ValkeyClusterCommand {
+public struct ZREM: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -781,7 +781,7 @@ public struct ZREM: RESPCommand, ValkeyClusterCommand {
         self.member = member
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREM", key, member)
@@ -789,7 +789,7 @@ public struct ZREM: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
+public struct ZREMRANGEBYLEX: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -802,7 +802,7 @@ public struct ZREMRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
         self.max = max
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYLEX", key, min, max)
@@ -810,7 +810,7 @@ public struct ZREMRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYRANK: RESPCommand, ValkeyClusterCommand {
+public struct ZREMRANGEBYRANK: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -823,7 +823,7 @@ public struct ZREMRANGEBYRANK: RESPCommand, ValkeyClusterCommand {
         self.stop = stop
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYRANK", key, start, stop)
@@ -831,7 +831,7 @@ public struct ZREMRANGEBYRANK: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
+public struct ZREMRANGEBYSCORE: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -844,7 +844,7 @@ public struct ZREMRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
         self.max = max
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYSCORE", key, min, max)
@@ -853,7 +853,7 @@ public struct ZREMRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
 
 /// Returns members in a sorted set within a range of indexes in reverse order.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
-public struct ZREVRANGE: RESPCommand, ValkeyClusterCommand {
+public struct ZREVRANGE: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -868,7 +868,7 @@ public struct ZREVRANGE: RESPCommand, ValkeyClusterCommand {
         self.withscores = withscores
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGE", key, start, stop, RESPPureToken("WITHSCORES", withscores))
@@ -877,7 +877,7 @@ public struct ZREVRANGE: RESPCommand, ValkeyClusterCommand {
 
 /// Returns members in a sorted set within a lexicographical range in reverse order.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.")
-public struct ZREVRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
+public struct ZREVRANGEBYLEX: RESPCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
@@ -913,7 +913,7 @@ public struct ZREVRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
         self.limit = limit
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
@@ -922,7 +922,7 @@ public struct ZREVRANGEBYLEX: RESPCommand, ValkeyClusterCommand {
 
 /// Returns members in a sorted set within a range of scores in reverse order.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.")
-public struct ZREVRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
+public struct ZREVRANGEBYSCORE: RESPCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
@@ -960,7 +960,7 @@ public struct ZREVRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
         self.limit = limit
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGEBYSCORE", key, max, min, RESPPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
@@ -968,7 +968,7 @@ public struct ZREVRANGEBYSCORE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the index of a member in a sorted set ordered by descending scores.
-public struct ZREVRANK: RESPCommand, ValkeyClusterCommand {
+public struct ZREVRANK: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -981,7 +981,7 @@ public struct ZREVRANK: RESPCommand, ValkeyClusterCommand {
         self.withscore = withscore
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANK", key, member, RESPPureToken("WITHSCORE", withscore))
@@ -989,7 +989,7 @@ public struct ZREVRANK: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Iterates over members and scores of a sorted set.
-public struct ZSCAN: RESPCommand, ValkeyClusterCommand {
+public struct ZSCAN: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -1004,7 +1004,7 @@ public struct ZSCAN: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
@@ -1012,7 +1012,7 @@ public struct ZSCAN: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the score of a member in a sorted set.
-public struct ZSCORE: RESPCommand, ValkeyClusterCommand {
+public struct ZSCORE: RESPCommand {
     public typealias Response = Double?
 
     public var key: RESPKey
@@ -1023,7 +1023,7 @@ public struct ZSCORE: RESPCommand, ValkeyClusterCommand {
         self.member = member
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZSCORE", key, member)
@@ -1031,7 +1031,7 @@ public struct ZSCORE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the union of multiple sorted sets.
-public struct ZUNION: RESPCommand, ValkeyClusterCommand {
+public struct ZUNION: RESPCommand {
     public enum Aggregate: RESPRenderable, Sendable {
         case sum
         case min
@@ -1063,7 +1063,7 @@ public struct ZUNION: RESPCommand, ValkeyClusterCommand {
         self.withscores = withscores
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
@@ -1071,7 +1071,7 @@ public struct ZUNION: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Stores the union of multiple sorted sets in a key.
-public struct ZUNIONSTORE: RESPCommand, ValkeyClusterCommand {
+public struct ZUNIONSTORE: RESPCommand {
     public enum Aggregate: RESPRenderable, Sendable {
         case sum
         case min
@@ -1103,7 +1103,7 @@ public struct ZUNIONSTORE: RESPCommand, ValkeyClusterCommand {
         self.aggregate = aggregate
     }
 
-    public var clusterKeys: [RESPKey] { [destination] + key }
+    public var keysAffected: [RESPKey] { [destination] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))

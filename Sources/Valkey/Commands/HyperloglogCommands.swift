@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-public struct PFADD: RESPCommand, ValkeyClusterCommand {
+public struct PFADD: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -34,7 +34,7 @@ public struct PFADD: RESPCommand, ValkeyClusterCommand {
         self.element = element
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFADD", key, element)
@@ -42,7 +42,7 @@ public struct PFADD: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
-public struct PFCOUNT: RESPCommand, ValkeyClusterCommand {
+public struct PFCOUNT: RESPCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
@@ -51,7 +51,7 @@ public struct PFCOUNT: RESPCommand, ValkeyClusterCommand {
         self.key = key
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFCOUNT", key)
@@ -59,7 +59,7 @@ public struct PFCOUNT: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Merges one or more HyperLogLog values into a single key.
-public struct PFMERGE: RESPCommand, ValkeyClusterCommand {
+public struct PFMERGE: RESPCommand {
     public typealias Response = RESPToken
 
     public var destkey: RESPKey
@@ -70,7 +70,7 @@ public struct PFMERGE: RESPCommand, ValkeyClusterCommand {
         self.sourcekey = sourcekey
     }
 
-    public var clusterKeys: [RESPKey] { [destkey] + sourcekey }
+    public var keysAffected: [RESPKey] { [destkey] + sourcekey }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)

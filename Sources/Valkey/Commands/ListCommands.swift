@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
-public struct BLMOVE: RESPCommand, ValkeyClusterCommand {
+public struct BLMOVE: RESPCommand {
     public enum Wherefrom: RESPRenderable, Sendable {
         case left
         case right
@@ -70,7 +70,7 @@ public struct BLMOVE: RESPCommand, ValkeyClusterCommand {
         self.timeout = timeout
     }
 
-    public var clusterKeys: [RESPKey] { [source, destination] }
+    public var keysAffected: [RESPKey] { [source, destination] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLMOVE", source, destination, wherefrom, whereto, timeout)
@@ -78,7 +78,7 @@ public struct BLMOVE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BLMPOP: RESPCommand, ValkeyClusterCommand {
+public struct BLMPOP: RESPCommand {
     public enum Where: RESPRenderable, Sendable {
         case left
         case right
@@ -108,7 +108,7 @@ public struct BLMPOP: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
@@ -116,7 +116,7 @@ public struct BLMPOP: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BLPOP: RESPCommand, ValkeyClusterCommand {
+public struct BLPOP: RESPCommand {
     public typealias Response = [RESPToken]?
 
     public var key: [RESPKey]
@@ -127,7 +127,7 @@ public struct BLPOP: RESPCommand, ValkeyClusterCommand {
         self.timeout = timeout
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLPOP", key, timeout)
@@ -135,7 +135,7 @@ public struct BLPOP: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BRPOP: RESPCommand, ValkeyClusterCommand {
+public struct BRPOP: RESPCommand {
     public typealias Response = [RESPToken]?
 
     public var key: [RESPKey]
@@ -146,7 +146,7 @@ public struct BRPOP: RESPCommand, ValkeyClusterCommand {
         self.timeout = timeout
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BRPOP", key, timeout)
@@ -155,7 +155,7 @@ public struct BRPOP: RESPCommand, ValkeyClusterCommand {
 
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
-public struct BRPOPLPUSH: RESPCommand, ValkeyClusterCommand {
+public struct BRPOPLPUSH: RESPCommand {
     public typealias Response = String?
 
     public var source: RESPKey
@@ -168,7 +168,7 @@ public struct BRPOPLPUSH: RESPCommand, ValkeyClusterCommand {
         self.timeout = timeout
     }
 
-    public var clusterKeys: [RESPKey] { [source, destination] }
+    public var keysAffected: [RESPKey] { [source, destination] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BRPOPLPUSH", source, destination, timeout)
@@ -176,7 +176,7 @@ public struct BRPOPLPUSH: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns an element from a list by its index.
-public struct LINDEX: RESPCommand, ValkeyClusterCommand {
+public struct LINDEX: RESPCommand {
     public typealias Response = String?
 
     public var key: RESPKey
@@ -187,7 +187,7 @@ public struct LINDEX: RESPCommand, ValkeyClusterCommand {
         self.index = index
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LINDEX", key, index)
@@ -195,7 +195,7 @@ public struct LINDEX: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Inserts an element before or after another element in a list.
-public struct LINSERT: RESPCommand, ValkeyClusterCommand {
+public struct LINSERT: RESPCommand {
     public enum Where: RESPRenderable, Sendable {
         case before
         case after
@@ -225,7 +225,7 @@ public struct LINSERT: RESPCommand, ValkeyClusterCommand {
         self.element = element
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LINSERT", key, `where`, pivot, element)
@@ -233,7 +233,7 @@ public struct LINSERT: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the length of a list.
-public struct LLEN: RESPCommand, ValkeyClusterCommand {
+public struct LLEN: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -242,7 +242,7 @@ public struct LLEN: RESPCommand, ValkeyClusterCommand {
         self.key = key
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LLEN", key)
@@ -250,7 +250,7 @@ public struct LLEN: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
-public struct LMOVE: RESPCommand, ValkeyClusterCommand {
+public struct LMOVE: RESPCommand {
     public enum Wherefrom: RESPRenderable, Sendable {
         case left
         case right
@@ -295,7 +295,7 @@ public struct LMOVE: RESPCommand, ValkeyClusterCommand {
         self.whereto = whereto
     }
 
-    public var clusterKeys: [RESPKey] { [source, destination] }
+    public var keysAffected: [RESPKey] { [source, destination] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LMOVE", source, destination, wherefrom, whereto)
@@ -303,7 +303,7 @@ public struct LMOVE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
-public struct LMPOP: RESPCommand, ValkeyClusterCommand {
+public struct LMPOP: RESPCommand {
     public enum Where: RESPRenderable, Sendable {
         case left
         case right
@@ -331,7 +331,7 @@ public struct LMPOP: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: [RESPKey] { key }
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
@@ -339,7 +339,7 @@ public struct LMPOP: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
-public struct LPOP: RESPCommand, ValkeyClusterCommand {
+public struct LPOP: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -350,7 +350,7 @@ public struct LPOP: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPOP", key, count)
@@ -358,7 +358,7 @@ public struct LPOP: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns the index of matching elements in a list.
-public struct LPOS: RESPCommand, ValkeyClusterCommand {
+public struct LPOS: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -375,7 +375,7 @@ public struct LPOS: RESPCommand, ValkeyClusterCommand {
         self.len = len
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
@@ -383,7 +383,7 @@ public struct LPOS: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
-public struct LPUSH: RESPCommand, ValkeyClusterCommand {
+public struct LPUSH: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -394,7 +394,7 @@ public struct LPUSH: RESPCommand, ValkeyClusterCommand {
         self.element = element
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPUSH", key, element)
@@ -402,7 +402,7 @@ public struct LPUSH: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Prepends one or more elements to a list only when the list exists.
-public struct LPUSHX: RESPCommand, ValkeyClusterCommand {
+public struct LPUSHX: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -413,7 +413,7 @@ public struct LPUSHX: RESPCommand, ValkeyClusterCommand {
         self.element = element
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPUSHX", key, element)
@@ -421,7 +421,7 @@ public struct LPUSHX: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns a range of elements from a list.
-public struct LRANGE: RESPCommand, ValkeyClusterCommand {
+public struct LRANGE: RESPCommand {
     public typealias Response = [RESPToken]
 
     public var key: RESPKey
@@ -434,7 +434,7 @@ public struct LRANGE: RESPCommand, ValkeyClusterCommand {
         self.stop = stop
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LRANGE", key, start, stop)
@@ -442,7 +442,7 @@ public struct LRANGE: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes elements from a list. Deletes the list if the last element was removed.
-public struct LREM: RESPCommand, ValkeyClusterCommand {
+public struct LREM: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -455,7 +455,7 @@ public struct LREM: RESPCommand, ValkeyClusterCommand {
         self.element = element
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LREM", key, count, element)
@@ -463,7 +463,7 @@ public struct LREM: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Sets the value of an element in a list by its index.
-public struct LSET: RESPCommand, ValkeyClusterCommand {
+public struct LSET: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -476,7 +476,7 @@ public struct LSET: RESPCommand, ValkeyClusterCommand {
         self.element = element
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LSET", key, index, element)
@@ -484,7 +484,7 @@ public struct LSET: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
-public struct LTRIM: RESPCommand, ValkeyClusterCommand {
+public struct LTRIM: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -497,7 +497,7 @@ public struct LTRIM: RESPCommand, ValkeyClusterCommand {
         self.stop = stop
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LTRIM", key, start, stop)
@@ -505,7 +505,7 @@ public struct LTRIM: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
-public struct RPOP: RESPCommand, ValkeyClusterCommand {
+public struct RPOP: RESPCommand {
     public typealias Response = RESPToken
 
     public var key: RESPKey
@@ -516,7 +516,7 @@ public struct RPOP: RESPCommand, ValkeyClusterCommand {
         self.count = count
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPOP", key, count)
@@ -525,7 +525,7 @@ public struct RPOP: RESPCommand, ValkeyClusterCommand {
 
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
-public struct RPOPLPUSH: RESPCommand, ValkeyClusterCommand {
+public struct RPOPLPUSH: RESPCommand {
     public typealias Response = String?
 
     public var source: RESPKey
@@ -536,7 +536,7 @@ public struct RPOPLPUSH: RESPCommand, ValkeyClusterCommand {
         self.destination = destination
     }
 
-    public var clusterKeys: [RESPKey] { [source, destination] }
+    public var keysAffected: [RESPKey] { [source, destination] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPOPLPUSH", source, destination)
@@ -544,7 +544,7 @@ public struct RPOPLPUSH: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Appends one or more elements to a list. Creates the key if it doesn't exist.
-public struct RPUSH: RESPCommand, ValkeyClusterCommand {
+public struct RPUSH: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -555,7 +555,7 @@ public struct RPUSH: RESPCommand, ValkeyClusterCommand {
         self.element = element
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPUSH", key, element)
@@ -563,7 +563,7 @@ public struct RPUSH: RESPCommand, ValkeyClusterCommand {
 }
 
 /// Appends an element to a list only when the list exists.
-public struct RPUSHX: RESPCommand, ValkeyClusterCommand {
+public struct RPUSHX: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -574,7 +574,7 @@ public struct RPUSHX: RESPCommand, ValkeyClusterCommand {
         self.element = element
     }
 
-    public var clusterKeys: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPUSHX", key, element)

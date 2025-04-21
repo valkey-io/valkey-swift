@@ -170,7 +170,7 @@ extension String {
         let keyArguments = command.arguments?.filter { $0.type == .key } ?? []
         let conformance =
             if keyArguments.count > 0 {
-                "RESPCommand, ValkeyClusterCommand"
+                "RESPCommand"
             } else {
                 "RESPCommand"
             }
@@ -212,8 +212,8 @@ extension String {
         }
         self.append("\(tab)    }\n\n")
         if keyArguments.count > 0 {
-            let (clusterKeysType, clusterKeys) = constructClusterKeys(keyArguments)
-            self.append("\(tab)    public var clusterKeys: \(clusterKeysType) { \(clusterKeys) }\n\n")
+            let (keysAffectedType, keysAffected) = constructKeysAffected(keyArguments)
+            self.append("\(tab)    public var keysAffected: \(keysAffectedType) { \(keysAffected) }\n\n")
         }
 
         self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
@@ -334,7 +334,7 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
     return string
 }
 
-private func constructClusterKeys(_ keyArguments: [RESPCommand.Argument]) -> (type: String, value: String) {
+private func constructKeysAffected(_ keyArguments: [RESPCommand.Argument]) -> (type: String, value: String) {
     if keyArguments.count == 1 {
         if keyArguments.first!.multiple {
             return (type: "[RESPKey]", value: keyArguments.first!.name.swiftVariable)
@@ -342,48 +342,48 @@ private func constructClusterKeys(_ keyArguments: [RESPCommand.Argument]) -> (ty
             return (type: "CollectionOfOne<RESPKey>", value: ".init(\(keyArguments.first!.name.swiftVariable))")
         }
     } else {
-        var clusterKeysBuilder: String = ""
+        var keysAffectedBuilder: String = ""
         var inArray = false
         var first = true
         for key in keyArguments {
             if key.multiple {
                 if inArray {
-                    clusterKeysBuilder += "]"
+                    keysAffectedBuilder += "]"
                     inArray = false
                 }
                 if !first {
-                    clusterKeysBuilder += " + "
+                    keysAffectedBuilder += " + "
                 }
-                clusterKeysBuilder += "\(key.name.swiftVariable)"
+                keysAffectedBuilder += "\(key.name.swiftVariable)"
             } else if key.optional {
                 if inArray {
-                    clusterKeysBuilder += "]"
+                    keysAffectedBuilder += "]"
                     inArray = false
                 }
                 if !first {
-                    clusterKeysBuilder += " + "
+                    keysAffectedBuilder += " + "
                 }
-                clusterKeysBuilder += "(\(key.name.swiftVariable).map { [$0] } ?? [])"
+                keysAffectedBuilder += "(\(key.name.swiftVariable).map { [$0] } ?? [])"
             } else {
                 if !inArray {
                     if !first {
-                        clusterKeysBuilder += " + "
+                        keysAffectedBuilder += " + "
                     }
-                    clusterKeysBuilder += "[\(key.name.swiftVariable)"
+                    keysAffectedBuilder += "[\(key.name.swiftVariable)"
                     inArray = true
                 } else {
                     if !first {
-                        clusterKeysBuilder += ", "
+                        keysAffectedBuilder += ", "
                     }
-                    clusterKeysBuilder += "\(key.name.swiftVariable)"
+                    keysAffectedBuilder += "\(key.name.swiftVariable)"
                 }
             }
             first = false
         }
         if inArray {
-            clusterKeysBuilder += "]"
+            keysAffectedBuilder += "]"
         }
-        return (type: "[RESPKey]", value: clusterKeysBuilder)
+        return (type: "[RESPKey]", value: keysAffectedBuilder)
     }
 }
 
