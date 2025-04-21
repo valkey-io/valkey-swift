@@ -25,7 +25,7 @@ import Foundation
 /// A container for Sentinel commands.
 public enum SENTINEL {
     /// Checks for a Sentinel quorum.
-    public struct CKQUORUM<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct CKQUORUM<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var primaryName: PrimaryName
 
         @inlinable public init(primaryName: PrimaryName) {
@@ -38,8 +38,8 @@ public enum SENTINEL {
     }
 
     /// Configures Sentinel.
-    public struct CONFIG: ValkeyCommand {
-        public struct ActionSet: RESPRenderable, Sendable {
+    public struct CONFIG: ValkeyCommand, Hashable {
+        public struct ActionSet: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
@@ -60,7 +60,7 @@ public enum SENTINEL {
                 value.encode(into: &commandEncoder)
             }
         }
-        public enum Action: RESPRenderable, Sendable {
+        public enum Action: RESPRenderable, Sendable, Hashable {
             case set([ActionSet])
             case parameter([String])
 
@@ -94,8 +94,8 @@ public enum SENTINEL {
     }
 
     /// Lists or updates the current configurable parameters of Sentinel.
-    public struct DEBUG: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+    public struct DEBUG: ValkeyCommand, Hashable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
@@ -130,7 +130,7 @@ public enum SENTINEL {
     }
 
     /// Forces a Sentinel failover.
-    public struct FAILOVER<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct FAILOVER<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var primaryName: PrimaryName
 
         @inlinable public init(primaryName: PrimaryName) {
@@ -143,7 +143,7 @@ public enum SENTINEL {
     }
 
     /// Rewrites the Sentinel configuration file.
-    public struct FLUSHCONFIG: ValkeyCommand {
+    public struct FLUSHCONFIG: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -154,7 +154,7 @@ public enum SENTINEL {
 
     /// Returns the port and address of a primary instance.
     @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.")
-    public struct GETMASTERADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct GETMASTERADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var primaryName: PrimaryName
@@ -169,7 +169,7 @@ public enum SENTINEL {
     }
 
     /// Returns the port and address of a primary instance.
-    public struct GETPRIMARYADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct GETPRIMARYADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var primaryName: PrimaryName
@@ -184,7 +184,7 @@ public enum SENTINEL {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -196,7 +196,7 @@ public enum SENTINEL {
     }
 
     /// Returns the cached `INFO` replies from the deployment's instances.
-    public struct INFOCACHE<Nodename: RESPStringRenderable>: ValkeyCommand {
+    public struct INFOCACHE<Nodename: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var nodename: [Nodename]
@@ -212,7 +212,7 @@ public enum SENTINEL {
 
     /// Determines whether a primary instance is down.
     @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL IS-PRIMARY-DOWN-BY-ADDR`.")
-    public struct ISMASTERDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
+    public struct ISMASTERDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var ip: Ip
@@ -233,7 +233,7 @@ public enum SENTINEL {
     }
 
     /// Determines whether a primary instance is down.
-    public struct ISPRIMARYDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
+    public struct ISPRIMARYDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var ip: Ip
@@ -255,7 +255,7 @@ public enum SENTINEL {
 
     /// Returns the state of a primary instance.
     @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARY`.")
-    public struct MASTER<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct MASTER<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map
 
         public var primaryName: PrimaryName
@@ -271,7 +271,7 @@ public enum SENTINEL {
 
     /// Returns a list of monitored primaries.
     @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARIES`.")
-    public struct MASTERS: ValkeyCommand {
+    public struct MASTERS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -283,7 +283,7 @@ public enum SENTINEL {
     }
 
     /// Starts monitoring.
-    public struct MONITOR<Name: RESPStringRenderable, Ip: RESPStringRenderable>: ValkeyCommand {
+    public struct MONITOR<Name: RESPStringRenderable, Ip: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var name: Name
         public var ip: Ip
         public var port: Int
@@ -302,7 +302,7 @@ public enum SENTINEL {
     }
 
     /// Returns the Sentinel instance ID.
-    public struct MYID: ValkeyCommand {
+    public struct MYID: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -312,7 +312,7 @@ public enum SENTINEL {
     }
 
     /// Returns information about pending scripts for Sentinel.
-    public struct PENDINGSCRIPTS: ValkeyCommand {
+    public struct PENDINGSCRIPTS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -324,7 +324,7 @@ public enum SENTINEL {
     }
 
     /// Returns a list of monitored primaries.
-    public struct PRIMARIES: ValkeyCommand {
+    public struct PRIMARIES: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -336,7 +336,7 @@ public enum SENTINEL {
     }
 
     /// Returns the state of a primary instance.
-    public struct PRIMARY<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct PRIMARY<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map
 
         public var primaryName: PrimaryName
@@ -351,7 +351,7 @@ public enum SENTINEL {
     }
 
     /// Stops monitoring.
-    public struct REMOVE<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct REMOVE<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var primaryName: PrimaryName
 
         @inlinable public init(primaryName: PrimaryName) {
@@ -364,7 +364,7 @@ public enum SENTINEL {
     }
 
     /// Returns a list of the monitored replicas.
-    public struct REPLICAS<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct REPLICAS<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var primaryName: PrimaryName
@@ -379,7 +379,7 @@ public enum SENTINEL {
     }
 
     /// Resets primaries by name matching a pattern.
-    public struct RESET: ValkeyCommand {
+    public struct RESET: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var pattern: String
@@ -394,7 +394,7 @@ public enum SENTINEL {
     }
 
     /// Returns a list of Sentinel instances.
-    public struct SENTINELS<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct SENTINELS<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var primaryName: PrimaryName
@@ -409,8 +409,8 @@ public enum SENTINEL {
     }
 
     /// Changes the configuration of a monitored primary.
-    public struct SET<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+    public struct SET<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand, Hashable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let option: Option
             @usableFromInline let value: Value
 
@@ -445,8 +445,8 @@ public enum SENTINEL {
     }
 
     /// Simulates failover scenarios.
-    public struct SIMULATEFAILURE: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+    public struct SIMULATEFAILURE: ValkeyCommand, Hashable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case crashAfterElection
             case crashAfterPromotion
             case help
@@ -478,7 +478,7 @@ public enum SENTINEL {
 
     /// Returns a list of the monitored replicas.
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `SENTINEL REPLICAS`.")
-    public struct SLAVES<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+    public struct SLAVES<PrimaryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var primaryName: PrimaryName
@@ -494,7 +494,7 @@ public enum SENTINEL {
 
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Checks for a Sentinel quorum.
     ///
     /// - Documentation: [SENTINEL CKQUORUM](https:/valkey.io/commands/sentinel-ckquorum)

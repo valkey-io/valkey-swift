@@ -23,8 +23,8 @@ import Foundation
 #endif
 
 /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
-public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
 
@@ -39,7 +39,7 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
         @usableFromInline let member: Member
@@ -85,8 +85,8 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the distance between two members of a geospatial index.
-public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderable>: ValkeyCommand {
-    public enum Unit: RESPRenderable, Sendable {
+public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -127,7 +127,7 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
 }
 
 /// Returns members from a geospatial index as geohash strings.
-public struct GEOHASH: ValkeyCommand {
+public struct GEOHASH: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -146,7 +146,7 @@ public struct GEOHASH: ValkeyCommand {
 }
 
 /// Returns the longitude and latitude of members from a geospatial index.
-public struct GEOPOS: ValkeyCommand {
+public struct GEOPOS: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -166,8 +166,8 @@ public struct GEOPOS: ValkeyCommand {
 
 /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.")
-public struct GEORADIUS: ValkeyCommand {
-    public enum Unit: RESPRenderable, Sendable {
+public struct GEORADIUS: ValkeyCommand, Hashable {
+    public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -186,7 +186,7 @@ public struct GEORADIUS: ValkeyCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable, Sendable {
+    public struct CountBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -207,7 +207,7 @@ public struct GEORADIUS: ValkeyCommand {
             "ANY".encode(into: &commandEncoder)
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -222,7 +222,7 @@ public struct GEORADIUS: ValkeyCommand {
             }
         }
     }
-    public enum Store: RESPRenderable, Sendable {
+    public enum Store: RESPRenderable, Sendable, Hashable {
         case storekey(ValkeyKey)
         case storedistkey(ValkeyKey)
 
@@ -277,8 +277,8 @@ public struct GEORADIUS: ValkeyCommand {
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
-    public enum Unit: RESPRenderable, Sendable {
+public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -297,7 +297,7 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable, Sendable {
+    public struct CountBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -318,7 +318,7 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
             "ANY".encode(into: &commandEncoder)
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -333,7 +333,7 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public enum Store: RESPRenderable, Sendable {
+    public enum Store: RESPRenderable, Sendable, Hashable {
         case storekey(ValkeyKey)
         case storedistkey(ValkeyKey)
 
@@ -386,8 +386,8 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 
 /// Returns members from a geospatial index that are within a distance from a member.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
-    public enum Unit: RESPRenderable, Sendable {
+public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -406,7 +406,7 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable, Sendable {
+    public struct CountBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -427,7 +427,7 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
             "ANY".encode(into: &commandEncoder)
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -475,8 +475,8 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
 
 /// Returns members from a geospatial index that are within a distance from a coordinate.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.")
-public struct GEORADIUSRO: ValkeyCommand {
-    public enum Unit: RESPRenderable, Sendable {
+public struct GEORADIUSRO: ValkeyCommand, Hashable {
+    public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -495,7 +495,7 @@ public struct GEORADIUSRO: ValkeyCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable, Sendable {
+    public struct CountBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -516,7 +516,7 @@ public struct GEORADIUSRO: ValkeyCommand {
             "ANY".encode(into: &commandEncoder)
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -565,8 +565,8 @@ public struct GEORADIUSRO: ValkeyCommand {
 }
 
 /// Queries a geospatial index for members inside an area of a box or a circle.
-public struct GEOSEARCH: ValkeyCommand {
-    public struct FromFromlonlat: RESPRenderable, Sendable {
+public struct GEOSEARCH: ValkeyCommand, Hashable {
+    public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
@@ -587,7 +587,7 @@ public struct GEOSEARCH: ValkeyCommand {
             latitude.encode(into: &commandEncoder)
         }
     }
-    public enum From: RESPRenderable, Sendable {
+    public enum From: RESPRenderable, Sendable, Hashable {
         case member(String)
         case fromlonlat(FromFromlonlat)
 
@@ -607,7 +607,7 @@ public struct GEOSEARCH: ValkeyCommand {
             }
         }
     }
-    public enum ByCircleUnit: RESPRenderable, Sendable {
+    public enum ByCircleUnit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -626,7 +626,7 @@ public struct GEOSEARCH: ValkeyCommand {
             }
         }
     }
-    public struct ByCircle: RESPRenderable, Sendable {
+    public struct ByCircle: RESPRenderable, Sendable, Hashable {
         @usableFromInline let radius: Double
         @usableFromInline let unit: ByCircleUnit
 
@@ -647,7 +647,7 @@ public struct GEOSEARCH: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
-    public enum ByBoxUnit: RESPRenderable, Sendable {
+    public enum ByBoxUnit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -666,7 +666,7 @@ public struct GEOSEARCH: ValkeyCommand {
             }
         }
     }
-    public struct ByBox: RESPRenderable, Sendable {
+    public struct ByBox: RESPRenderable, Sendable, Hashable {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
         @usableFromInline let unit: ByBoxUnit
@@ -690,7 +690,7 @@ public struct GEOSEARCH: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
-    public enum By: RESPRenderable, Sendable {
+    public enum By: RESPRenderable, Sendable, Hashable {
         case circle(ByCircle)
         case box(ByBox)
 
@@ -710,7 +710,7 @@ public struct GEOSEARCH: ValkeyCommand {
             }
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -725,7 +725,7 @@ public struct GEOSEARCH: ValkeyCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable, Sendable {
+    public struct CountBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 
@@ -776,8 +776,8 @@ public struct GEOSEARCH: ValkeyCommand {
 }
 
 /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
-public struct GEOSEARCHSTORE: ValkeyCommand {
-    public struct FromFromlonlat: RESPRenderable, Sendable {
+public struct GEOSEARCHSTORE: ValkeyCommand, Hashable {
+    public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
 
@@ -798,7 +798,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             latitude.encode(into: &commandEncoder)
         }
     }
-    public enum From: RESPRenderable, Sendable {
+    public enum From: RESPRenderable, Sendable, Hashable {
         case member(String)
         case fromlonlat(FromFromlonlat)
 
@@ -818,7 +818,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             }
         }
     }
-    public enum ByCircleUnit: RESPRenderable, Sendable {
+    public enum ByCircleUnit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -837,7 +837,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             }
         }
     }
-    public struct ByCircle: RESPRenderable, Sendable {
+    public struct ByCircle: RESPRenderable, Sendable, Hashable {
         @usableFromInline let radius: Double
         @usableFromInline let unit: ByCircleUnit
 
@@ -858,7 +858,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
-    public enum ByBoxUnit: RESPRenderable, Sendable {
+    public enum ByBoxUnit: RESPRenderable, Sendable, Hashable {
         case m
         case km
         case ft
@@ -877,7 +877,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             }
         }
     }
-    public struct ByBox: RESPRenderable, Sendable {
+    public struct ByBox: RESPRenderable, Sendable, Hashable {
         @usableFromInline let width: Double
         @usableFromInline let height: Double
         @usableFromInline let unit: ByBoxUnit
@@ -901,7 +901,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
-    public enum By: RESPRenderable, Sendable {
+    public enum By: RESPRenderable, Sendable, Hashable {
         case circle(ByCircle)
         case box(ByBox)
 
@@ -921,7 +921,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             }
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -936,7 +936,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             }
         }
     }
-    public struct CountBlock: RESPRenderable, Sendable {
+    public struct CountBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let any: Bool
 

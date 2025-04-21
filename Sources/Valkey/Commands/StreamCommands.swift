@@ -25,8 +25,8 @@ import Foundation
 /// A container for consumer groups commands.
 public enum XGROUP {
     /// Creates a consumer group.
-    public struct CREATE<Group: RESPStringRenderable>: ValkeyCommand {
-        public enum IdSelector: RESPRenderable, Sendable {
+    public struct CREATE<Group: RESPStringRenderable>: ValkeyCommand, Hashable {
+        public enum IdSelector: RESPRenderable, Sendable, Hashable {
             case id(String)
             case newId
 
@@ -68,7 +68,7 @@ public enum XGROUP {
     }
 
     /// Creates a consumer in a consumer group.
-    public struct CREATECONSUMER<Group: RESPStringRenderable, Consumer: RESPStringRenderable>: ValkeyCommand {
+    public struct CREATECONSUMER<Group: RESPStringRenderable, Consumer: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var key: ValkeyKey
@@ -89,7 +89,7 @@ public enum XGROUP {
     }
 
     /// Deletes a consumer from a consumer group.
-    public struct DELCONSUMER<Group: RESPStringRenderable, Consumer: RESPStringRenderable>: ValkeyCommand {
+    public struct DELCONSUMER<Group: RESPStringRenderable, Consumer: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var key: ValkeyKey
@@ -110,7 +110,7 @@ public enum XGROUP {
     }
 
     /// Destroys a consumer group.
-    public struct DESTROY<Group: RESPStringRenderable>: ValkeyCommand {
+    public struct DESTROY<Group: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var key: ValkeyKey
@@ -129,7 +129,7 @@ public enum XGROUP {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -141,8 +141,8 @@ public enum XGROUP {
     }
 
     /// Sets the last-delivered ID of a consumer group.
-    public struct SETID<Group: RESPStringRenderable>: ValkeyCommand {
-        public enum IdSelector: RESPRenderable, Sendable {
+    public struct SETID<Group: RESPStringRenderable>: ValkeyCommand, Hashable {
+        public enum IdSelector: RESPRenderable, Sendable, Hashable {
             case id(String)
             case newId
 
@@ -186,7 +186,7 @@ public enum XGROUP {
 /// A container for stream introspection commands.
 public enum XINFO {
     /// Returns a list of the consumers in a consumer group.
-    public struct CONSUMERS<Group: RESPStringRenderable>: ValkeyCommand {
+    public struct CONSUMERS<Group: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var key: ValkeyKey
@@ -205,7 +205,7 @@ public enum XINFO {
     }
 
     /// Returns a list of the consumer groups of a stream.
-    public struct GROUPS: ValkeyCommand {
+    public struct GROUPS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var key: ValkeyKey
@@ -222,7 +222,7 @@ public enum XINFO {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -234,8 +234,8 @@ public enum XINFO {
     }
 
     /// Returns information about a stream.
-    public struct STREAM: ValkeyCommand {
-        public struct FullBlock: RESPRenderable, Sendable {
+    public struct STREAM: ValkeyCommand, Hashable {
+        public struct FullBlock: RESPRenderable, Sendable, Hashable {
             @usableFromInline let full: Bool
             @usableFromInline let count: Int?
 
@@ -276,7 +276,7 @@ public enum XINFO {
 }
 
 /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
-public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand {
+public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -297,8 +297,8 @@ public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: Valke
 }
 
 /// Appends a new message to a stream. Creates the key if it doesn't exist.
-public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-    public enum TrimStrategy: RESPRenderable, Sendable {
+public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum TrimStrategy: RESPRenderable, Sendable, Hashable {
         case maxlen
         case minid
 
@@ -313,7 +313,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             }
         }
     }
-    public enum TrimOperator: RESPRenderable, Sendable {
+    public enum TrimOperator: RESPRenderable, Sendable, Hashable {
         case equal
         case approximately
 
@@ -328,7 +328,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             }
         }
     }
-    public struct Trim: RESPRenderable, Sendable {
+    public struct Trim: RESPRenderable, Sendable, Hashable {
         @usableFromInline let strategy: TrimStrategy
         @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: String
@@ -355,7 +355,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
         }
     }
-    public enum IdSelector: RESPRenderable, Sendable {
+    public enum IdSelector: RESPRenderable, Sendable, Hashable {
         case autoId
         case id(String)
 
@@ -375,7 +375,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             }
         }
     }
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 
@@ -420,7 +420,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
 }
 
 /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
-public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>: ValkeyCommand {
+public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -449,7 +449,7 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
 }
 
 /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
-public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand {
+public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -486,7 +486,7 @@ public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable
 }
 
 /// Returns the number of messages after removing them from a stream.
-public struct XDEL<Id: RESPStringRenderable>: ValkeyCommand {
+public struct XDEL<Id: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -505,7 +505,7 @@ public struct XDEL<Id: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Return the number of messages in a stream.
-public struct XLEN: ValkeyCommand {
+public struct XLEN: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -522,8 +522,8 @@ public struct XLEN: ValkeyCommand {
 }
 
 /// Returns the information and entries from a stream consumer group's pending entries list.
-public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
-    public struct Filters: RESPRenderable, Sendable {
+public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct Filters: RESPRenderable, Sendable, Hashable {
         @usableFromInline let minIdleTime: Int?
         @usableFromInline let start: String
         @usableFromInline let end: String
@@ -573,7 +573,7 @@ public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the messages from a stream within a range of IDs.
-public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: ValkeyCommand {
+public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -596,8 +596,8 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: Va
 }
 
 /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
-public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
-    public struct Streams: RESPRenderable, Sendable {
+public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct Streams: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: [ValkeyKey]
         @usableFromInline let id: [Id]
 
@@ -636,8 +636,8 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
-public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand {
-    public struct GroupBlock: RESPRenderable, Sendable {
+public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct GroupBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let group: Group
         @usableFromInline let consumer: Consumer
 
@@ -658,7 +658,7 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
             RESPBulkString(consumer).encode(into: &commandEncoder)
         }
     }
-    public struct Streams: RESPRenderable, Sendable {
+    public struct Streams: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: [ValkeyKey]
         @usableFromInline let id: [Id]
 
@@ -701,7 +701,7 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 }
 
 /// Returns the messages from a stream within a range of IDs in reverse order.
-public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>: ValkeyCommand {
+public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -724,7 +724,7 @@ public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>:
 }
 
 /// An internal command for replicating stream values.
-public struct XSETID<LastId: RESPStringRenderable>: ValkeyCommand {
+public struct XSETID<LastId: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var lastId: LastId
     public var entriesAdded: Int?
@@ -745,8 +745,8 @@ public struct XSETID<LastId: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Deletes messages from the beginning of a stream.
-public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
-    public enum TrimStrategy: RESPRenderable, Sendable {
+public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum TrimStrategy: RESPRenderable, Sendable, Hashable {
         case maxlen
         case minid
 
@@ -761,7 +761,7 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public enum TrimOperator: RESPRenderable, Sendable {
+    public enum TrimOperator: RESPRenderable, Sendable, Hashable {
         case equal
         case approximately
 
@@ -776,7 +776,7 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Trim: RESPRenderable, Sendable {
+    public struct Trim: RESPRenderable, Sendable, Hashable {
         @usableFromInline let strategy: TrimStrategy
         @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: Threshold

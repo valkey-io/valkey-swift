@@ -23,8 +23,8 @@ import Foundation
 #endif
 
 /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
-public struct BZMPOP: ValkeyCommand {
-    public enum Where: RESPRenderable, Sendable {
+public struct BZMPOP: ValkeyCommand, Hashable {
+    public enum Where: RESPRenderable, Sendable, Hashable {
         case min
         case max
 
@@ -59,7 +59,7 @@ public struct BZMPOP: ValkeyCommand {
 }
 
 /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
-public struct BZPOPMAX: ValkeyCommand {
+public struct BZPOPMAX: ValkeyCommand, Hashable {
     public var key: [ValkeyKey]
     public var timeout: Double
 
@@ -76,7 +76,7 @@ public struct BZPOPMAX: ValkeyCommand {
 }
 
 /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
-public struct BZPOPMIN: ValkeyCommand {
+public struct BZPOPMIN: ValkeyCommand, Hashable {
     public var key: [ValkeyKey]
     public var timeout: Double
 
@@ -93,8 +93,8 @@ public struct BZPOPMIN: ValkeyCommand {
 }
 
 /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
-public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
 
@@ -109,7 +109,7 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public enum Comparison: RESPRenderable, Sendable {
+    public enum Comparison: RESPRenderable, Sendable, Hashable {
         case gt
         case lt
 
@@ -124,7 +124,7 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let score: Double
         @usableFromInline let member: Member
 
@@ -171,7 +171,7 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the number of members in a sorted set.
-public struct ZCARD: ValkeyCommand {
+public struct ZCARD: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -188,7 +188,7 @@ public struct ZCARD: ValkeyCommand {
 }
 
 /// Returns the count of members in a sorted set that have scores within a range.
-public struct ZCOUNT: ValkeyCommand {
+public struct ZCOUNT: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -209,7 +209,7 @@ public struct ZCOUNT: ValkeyCommand {
 }
 
 /// Returns the difference between multiple sorted sets.
-public struct ZDIFF: ValkeyCommand {
+public struct ZDIFF: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: [ValkeyKey]
@@ -228,7 +228,7 @@ public struct ZDIFF: ValkeyCommand {
 }
 
 /// Stores the difference of multiple sorted sets in a key.
-public struct ZDIFFSTORE: ValkeyCommand {
+public struct ZDIFFSTORE: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var destination: ValkeyKey
@@ -247,7 +247,7 @@ public struct ZDIFFSTORE: ValkeyCommand {
 }
 
 /// Increments the score of a member in a sorted set.
-public struct ZINCRBY<Member: RESPStringRenderable>: ValkeyCommand {
+public struct ZINCRBY<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Double
 
     public var key: ValkeyKey
@@ -268,8 +268,8 @@ public struct ZINCRBY<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the intersect of multiple sorted sets.
-public struct ZINTER: ValkeyCommand {
-    public enum Aggregate: RESPRenderable, Sendable {
+public struct ZINTER: ValkeyCommand, Hashable {
+    public enum Aggregate: RESPRenderable, Sendable, Hashable {
         case sum
         case min
         case max
@@ -308,7 +308,7 @@ public struct ZINTER: ValkeyCommand {
 }
 
 /// Returns the number of members of the intersect of multiple sorted sets.
-public struct ZINTERCARD: ValkeyCommand {
+public struct ZINTERCARD: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: [ValkeyKey]
@@ -327,8 +327,8 @@ public struct ZINTERCARD: ValkeyCommand {
 }
 
 /// Stores the intersect of multiple sorted sets in a key.
-public struct ZINTERSTORE: ValkeyCommand {
-    public enum Aggregate: RESPRenderable, Sendable {
+public struct ZINTERSTORE: ValkeyCommand, Hashable {
+    public enum Aggregate: RESPRenderable, Sendable, Hashable {
         case sum
         case min
         case max
@@ -367,7 +367,7 @@ public struct ZINTERSTORE: ValkeyCommand {
 }
 
 /// Returns the number of members in a sorted set within a lexicographical range.
-public struct ZLEXCOUNT<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
+public struct ZLEXCOUNT<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -388,8 +388,8 @@ public struct ZLEXCOUNT<Min: RESPStringRenderable, Max: RESPStringRenderable>: V
 }
 
 /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
-public struct ZMPOP: ValkeyCommand {
-    public enum Where: RESPRenderable, Sendable {
+public struct ZMPOP: ValkeyCommand, Hashable {
+    public enum Where: RESPRenderable, Sendable, Hashable {
         case min
         case max
 
@@ -422,7 +422,7 @@ public struct ZMPOP: ValkeyCommand {
 }
 
 /// Returns the score of one or more members in a sorted set.
-public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand {
+public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -441,7 +441,7 @@ public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
-public struct ZPOPMAX: ValkeyCommand {
+public struct ZPOPMAX: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var count: Int?
 
@@ -458,7 +458,7 @@ public struct ZPOPMAX: ValkeyCommand {
 }
 
 /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
-public struct ZPOPMIN: ValkeyCommand {
+public struct ZPOPMIN: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var count: Int?
 
@@ -475,8 +475,8 @@ public struct ZPOPMIN: ValkeyCommand {
 }
 
 /// Returns one or more random members from a sorted set.
-public struct ZRANDMEMBER: ValkeyCommand {
-    public struct Options: RESPRenderable, Sendable {
+public struct ZRANDMEMBER: ValkeyCommand, Hashable {
+    public struct Options: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let withscores: Bool
 
@@ -515,8 +515,8 @@ public struct ZRANDMEMBER: ValkeyCommand {
 }
 
 /// Returns members in a sorted set within a range of indexes.
-public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: ValkeyCommand {
-    public enum Sortby: RESPRenderable, Sendable {
+public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Sortby: RESPRenderable, Sendable, Hashable {
         case byscore
         case bylex
 
@@ -531,7 +531,7 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
             }
         }
     }
-    public struct Limit: RESPRenderable, Sendable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -581,8 +581,8 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
 
 /// Returns members in a sorted set within a lexicographical range.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.")
-public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
-    public struct Limit: RESPRenderable, Sendable {
+public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -626,8 +626,8 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
 
 /// Returns members in a sorted set within a range of scores.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.")
-public struct ZRANGEBYSCORE: ValkeyCommand {
-    public struct Limit: RESPRenderable, Sendable {
+public struct ZRANGEBYSCORE: ValkeyCommand, Hashable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -672,8 +672,8 @@ public struct ZRANGEBYSCORE: ValkeyCommand {
 }
 
 /// Stores a range of members from sorted set in a key.
-public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
-    public enum Sortby: RESPRenderable, Sendable {
+public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Sortby: RESPRenderable, Sendable, Hashable {
         case byscore
         case bylex
 
@@ -688,7 +688,7 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
             }
         }
     }
-    public struct Limit: RESPRenderable, Sendable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -737,7 +737,7 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
 }
 
 /// Returns the index of a member in a sorted set ordered by ascending scores.
-public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand {
+public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -758,7 +758,7 @@ public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
-public struct ZREM<Member: RESPStringRenderable>: ValkeyCommand {
+public struct ZREM<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -777,7 +777,7 @@ public struct ZREM<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
+public struct ZREMRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -798,7 +798,7 @@ public struct ZREMRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderabl
 }
 
 /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYRANK: ValkeyCommand {
+public struct ZREMRANGEBYRANK: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -819,7 +819,7 @@ public struct ZREMRANGEBYRANK: ValkeyCommand {
 }
 
 /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
-public struct ZREMRANGEBYSCORE: ValkeyCommand {
+public struct ZREMRANGEBYSCORE: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -841,7 +841,7 @@ public struct ZREMRANGEBYSCORE: ValkeyCommand {
 
 /// Returns members in a sorted set within a range of indexes in reverse order.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
-public struct ZREVRANGE: ValkeyCommand {
+public struct ZREVRANGE: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -865,8 +865,8 @@ public struct ZREVRANGE: ValkeyCommand {
 
 /// Returns members in a sorted set within a lexicographical range in reverse order.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.")
-public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderable>: ValkeyCommand {
-    public struct Limit: RESPRenderable, Sendable {
+public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -910,8 +910,8 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
 
 /// Returns members in a sorted set within a range of scores in reverse order.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.")
-public struct ZREVRANGEBYSCORE: ValkeyCommand {
-    public struct Limit: RESPRenderable, Sendable {
+public struct ZREVRANGEBYSCORE: ValkeyCommand, Hashable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -956,7 +956,7 @@ public struct ZREVRANGEBYSCORE: ValkeyCommand {
 }
 
 /// Returns the index of a member in a sorted set ordered by descending scores.
-public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand {
+public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -977,7 +977,7 @@ public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Iterates over members and scores of a sorted set.
-public struct ZSCAN: ValkeyCommand {
+public struct ZSCAN: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -1002,7 +1002,7 @@ public struct ZSCAN: ValkeyCommand {
 }
 
 /// Returns the score of a member in a sorted set.
-public struct ZSCORE<Member: RESPStringRenderable>: ValkeyCommand {
+public struct ZSCORE<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Double?
 
     public var key: ValkeyKey
@@ -1021,8 +1021,8 @@ public struct ZSCORE<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the union of multiple sorted sets.
-public struct ZUNION: ValkeyCommand {
-    public enum Aggregate: RESPRenderable, Sendable {
+public struct ZUNION: ValkeyCommand, Hashable {
+    public enum Aggregate: RESPRenderable, Sendable, Hashable {
         case sum
         case min
         case max
@@ -1061,8 +1061,8 @@ public struct ZUNION: ValkeyCommand {
 }
 
 /// Stores the union of multiple sorted sets in a key.
-public struct ZUNIONSTORE: ValkeyCommand {
-    public enum Aggregate: RESPRenderable, Sendable {
+public struct ZUNIONSTORE: ValkeyCommand, Hashable {
+    public enum Aggregate: RESPRenderable, Sendable, Hashable {
         case sum
         case min
         case max

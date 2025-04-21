@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Appends a string to the value of a key. Creates the key if it doesn't exist.
-public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
+public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -42,7 +42,7 @@ public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
-public struct DECR: ValkeyCommand {
+public struct DECR: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -59,7 +59,7 @@ public struct DECR: ValkeyCommand {
 }
 
 /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
-public struct DECRBY: ValkeyCommand {
+public struct DECRBY: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -78,7 +78,7 @@ public struct DECRBY: ValkeyCommand {
 }
 
 /// Returns the string value of a key.
-public struct GET: ValkeyCommand {
+public struct GET: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -95,7 +95,7 @@ public struct GET: ValkeyCommand {
 }
 
 /// Returns the string value of a key after deleting the key.
-public struct GETDEL: ValkeyCommand {
+public struct GETDEL: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -112,8 +112,8 @@ public struct GETDEL: ValkeyCommand {
 }
 
 /// Returns the string value of a key after setting its expiration time.
-public struct GETEX: ValkeyCommand {
-    public enum Expiration: RESPRenderable, Sendable {
+public struct GETEX: ValkeyCommand, Hashable {
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
@@ -160,7 +160,7 @@ public struct GETEX: ValkeyCommand {
 }
 
 /// Returns a substring of the string stored at a key.
-public struct GETRANGE: ValkeyCommand {
+public struct GETRANGE: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var start: Int
     public var end: Int
@@ -180,7 +180,7 @@ public struct GETRANGE: ValkeyCommand {
 
 /// Returns the previous string value of a key after setting it to a new value.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
-public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
+public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -199,7 +199,7 @@ public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
-public struct INCR: ValkeyCommand {
+public struct INCR: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -216,7 +216,7 @@ public struct INCR: ValkeyCommand {
 }
 
 /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
-public struct INCRBY: ValkeyCommand {
+public struct INCRBY: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -235,7 +235,7 @@ public struct INCRBY: ValkeyCommand {
 }
 
 /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
-public struct INCRBYFLOAT: ValkeyCommand {
+public struct INCRBYFLOAT: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var increment: Double
 
@@ -252,7 +252,7 @@ public struct INCRBYFLOAT: ValkeyCommand {
 }
 
 /// Finds the longest common substring.
-public struct LCS: ValkeyCommand {
+public struct LCS: ValkeyCommand, Hashable {
     public var key1: ValkeyKey
     public var key2: ValkeyKey
     public var len: Bool
@@ -277,7 +277,7 @@ public struct LCS: ValkeyCommand {
 }
 
 /// Atomically returns the string values of one or more keys.
-public struct MGET: ValkeyCommand {
+public struct MGET: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: [ValkeyKey]
@@ -294,8 +294,8 @@ public struct MGET: ValkeyCommand {
 }
 
 /// Atomically creates or modifies the string values of one or more keys.
-public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+public struct MSET<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: ValkeyKey
         @usableFromInline let value: Value
 
@@ -328,8 +328,8 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
-public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: ValkeyKey
         @usableFromInline let value: Value
 
@@ -365,7 +365,7 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
 
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
-public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
+public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var milliseconds: Int
     public var value: Value
@@ -384,8 +384,8 @@ public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
-public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+public struct SET<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
 
@@ -400,7 +400,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public enum Expiration: RESPRenderable, Sendable {
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
@@ -454,7 +454,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
 
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
-public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
+public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var seconds: Int
     public var value: Value
@@ -474,7 +474,7 @@ public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
 
 /// Set the string value of a key only when the key doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
-public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
+public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -493,7 +493,7 @@ public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
-public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
+public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -514,7 +514,7 @@ public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the length of a string value.
-public struct STRLEN: ValkeyCommand {
+public struct STRLEN: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -532,7 +532,7 @@ public struct STRLEN: ValkeyCommand {
 
 /// Returns a substring from a string value.
 @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
-public struct SUBSTR: ValkeyCommand {
+public struct SUBSTR: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var start: Int
     public var end: Int

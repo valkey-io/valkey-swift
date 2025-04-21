@@ -25,7 +25,7 @@ import Foundation
 /// A container for object introspection commands.
 public enum OBJECT {
     /// Returns the internal encoding of an object.
-    public struct ENCODING: ValkeyCommand {
+    public struct ENCODING: ValkeyCommand, Hashable {
         public typealias Response = RESPToken?
 
         public var key: ValkeyKey
@@ -42,7 +42,7 @@ public enum OBJECT {
     }
 
     /// Returns the logarithmic access frequency counter of an object.
-    public struct FREQ: ValkeyCommand {
+    public struct FREQ: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var key: ValkeyKey
@@ -59,7 +59,7 @@ public enum OBJECT {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -71,7 +71,7 @@ public enum OBJECT {
     }
 
     /// Returns the time since the last access to an object.
-    public struct IDLETIME: ValkeyCommand {
+    public struct IDLETIME: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var key: ValkeyKey
@@ -88,7 +88,7 @@ public enum OBJECT {
     }
 
     /// Returns the reference count of a value of a key.
-    public struct REFCOUNT: ValkeyCommand {
+    public struct REFCOUNT: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var key: ValkeyKey
@@ -107,7 +107,7 @@ public enum OBJECT {
 }
 
 /// Copies the value of a key to a new key.
-public struct COPY: ValkeyCommand {
+public struct COPY: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var source: ValkeyKey
@@ -130,7 +130,7 @@ public struct COPY: ValkeyCommand {
 }
 
 /// Deletes one or more keys.
-public struct DEL: ValkeyCommand {
+public struct DEL: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: [ValkeyKey]
@@ -147,7 +147,7 @@ public struct DEL: ValkeyCommand {
 }
 
 /// Returns a serialized representation of the value stored at a key.
-public struct DUMP: ValkeyCommand {
+public struct DUMP: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -164,7 +164,7 @@ public struct DUMP: ValkeyCommand {
 }
 
 /// Determines whether one or more keys exist.
-public struct EXISTS: ValkeyCommand {
+public struct EXISTS: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: [ValkeyKey]
@@ -181,8 +181,8 @@ public struct EXISTS: ValkeyCommand {
 }
 
 /// Sets the expiration time of a key in seconds.
-public struct EXPIRE: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+public struct EXPIRE: ValkeyCommand, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case gt
@@ -221,8 +221,8 @@ public struct EXPIRE: ValkeyCommand {
 }
 
 /// Sets the expiration time of a key to a Unix timestamp.
-public struct EXPIREAT: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+public struct EXPIREAT: ValkeyCommand, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case gt
@@ -261,7 +261,7 @@ public struct EXPIREAT: ValkeyCommand {
 }
 
 /// Returns the expiration time of a key as a Unix timestamp.
-public struct EXPIRETIME: ValkeyCommand {
+public struct EXPIRETIME: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -278,7 +278,7 @@ public struct EXPIRETIME: ValkeyCommand {
 }
 
 /// Returns all key names that match a pattern.
-public struct KEYS: ValkeyCommand {
+public struct KEYS: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var pattern: String
@@ -293,8 +293,8 @@ public struct KEYS: ValkeyCommand {
 }
 
 /// Atomically transfers a key from one instance to another.
-public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
-    public enum KeySelector: RESPRenderable, Sendable {
+public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum KeySelector: RESPRenderable, Sendable, Hashable {
         case key(ValkeyKey)
         case emptyString
 
@@ -314,7 +314,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct AuthenticationAuth2: RESPRenderable, Sendable {
+    public struct AuthenticationAuth2: RESPRenderable, Sendable, Hashable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -335,7 +335,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
             password.encode(into: &commandEncoder)
         }
     }
-    public enum Authentication: RESPRenderable, Sendable {
+    public enum Authentication: RESPRenderable, Sendable, Hashable {
         case auth(String)
         case auth2(AuthenticationAuth2)
 
@@ -387,7 +387,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Moves a key to another database.
-public struct MOVE: ValkeyCommand {
+public struct MOVE: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -406,7 +406,7 @@ public struct MOVE: ValkeyCommand {
 }
 
 /// Removes the expiration time of a key.
-public struct PERSIST: ValkeyCommand {
+public struct PERSIST: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -423,8 +423,8 @@ public struct PERSIST: ValkeyCommand {
 }
 
 /// Sets the expiration time of a key in milliseconds.
-public struct PEXPIRE: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+public struct PEXPIRE: ValkeyCommand, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case gt
@@ -463,8 +463,8 @@ public struct PEXPIRE: ValkeyCommand {
 }
 
 /// Sets the expiration time of a key to a Unix milliseconds timestamp.
-public struct PEXPIREAT: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+public struct PEXPIREAT: ValkeyCommand, Hashable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case gt
@@ -503,7 +503,7 @@ public struct PEXPIREAT: ValkeyCommand {
 }
 
 /// Returns the expiration time of a key as a Unix milliseconds timestamp.
-public struct PEXPIRETIME: ValkeyCommand {
+public struct PEXPIRETIME: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -520,7 +520,7 @@ public struct PEXPIRETIME: ValkeyCommand {
 }
 
 /// Returns the expiration time in milliseconds of a key.
-public struct PTTL: ValkeyCommand {
+public struct PTTL: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -537,7 +537,7 @@ public struct PTTL: ValkeyCommand {
 }
 
 /// Returns a random key name from the database.
-public struct RANDOMKEY: ValkeyCommand {
+public struct RANDOMKEY: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     @inlinable public init() {
@@ -549,7 +549,7 @@ public struct RANDOMKEY: ValkeyCommand {
 }
 
 /// Renames a key and overwrites the destination.
-public struct RENAME: ValkeyCommand {
+public struct RENAME: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var newkey: ValkeyKey
 
@@ -566,7 +566,7 @@ public struct RENAME: ValkeyCommand {
 }
 
 /// Renames a key only when the target key name doesn't exist.
-public struct RENAMENX: ValkeyCommand {
+public struct RENAMENX: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -585,7 +585,7 @@ public struct RENAMENX: ValkeyCommand {
 }
 
 /// Creates a key from the serialized representation of a value.
-public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
+public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var ttl: Int
     public var serializedValue: SerializedValue
@@ -612,7 +612,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Iterates over the key names in the database.
-public struct SCAN: ValkeyCommand {
+public struct SCAN: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var cursor: Int
@@ -633,8 +633,8 @@ public struct SCAN: ValkeyCommand {
 }
 
 /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
-public struct SORT: ValkeyCommand {
-    public struct Limit: RESPRenderable, Sendable {
+public struct SORT: ValkeyCommand, Hashable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -655,7 +655,7 @@ public struct SORT: ValkeyCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -696,8 +696,8 @@ public struct SORT: ValkeyCommand {
 }
 
 /// Returns the sorted elements of a list, a set, or a sorted set.
-public struct SORTRO: ValkeyCommand {
-    public struct Limit: RESPRenderable, Sendable {
+public struct SORTRO: ValkeyCommand, Hashable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -718,7 +718,7 @@ public struct SORTRO: ValkeyCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -759,7 +759,7 @@ public struct SORTRO: ValkeyCommand {
 }
 
 /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
-public struct TOUCH: ValkeyCommand {
+public struct TOUCH: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: [ValkeyKey]
@@ -776,7 +776,7 @@ public struct TOUCH: ValkeyCommand {
 }
 
 /// Returns the expiration time in seconds of a key.
-public struct TTL: ValkeyCommand {
+public struct TTL: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -793,7 +793,7 @@ public struct TTL: ValkeyCommand {
 }
 
 /// Determines the type of value stored at a key.
-public struct TYPE: ValkeyCommand {
+public struct TYPE: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -810,7 +810,7 @@ public struct TYPE: ValkeyCommand {
 }
 
 /// Asynchronously deletes one or more keys.
-public struct UNLINK: ValkeyCommand {
+public struct UNLINK: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: [ValkeyKey]
@@ -827,7 +827,7 @@ public struct UNLINK: ValkeyCommand {
 }
 
 /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
-public struct WAIT: ValkeyCommand {
+public struct WAIT: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var numreplicas: Int
@@ -844,7 +844,7 @@ public struct WAIT: ValkeyCommand {
 }
 
 /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the primary and/or replicas.
-public struct WAITAOF: ValkeyCommand {
+public struct WAITAOF: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var numlocal: Int

@@ -25,8 +25,8 @@ import Foundation
 /// A container for client connection commands.
 public enum CLIENT {
     /// Instructs the server whether to track the keys in the next request.
-    public struct CACHING: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+    public struct CACHING: ValkeyCommand, Hashable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case yes
             case no
 
@@ -53,7 +53,7 @@ public enum CLIENT {
     }
 
     /// A client claims its capability.
-    public struct CAPA<Capability: RESPStringRenderable>: ValkeyCommand {
+    public struct CAPA<Capability: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var capability: [Capability]
 
         @inlinable public init(capability: [Capability]) {
@@ -66,7 +66,7 @@ public enum CLIENT {
     }
 
     /// Returns the name of the connection.
-    public struct GETNAME: ValkeyCommand {
+    public struct GETNAME: ValkeyCommand, Hashable {
         public typealias Response = RESPToken?
 
         @inlinable public init() {
@@ -78,7 +78,7 @@ public enum CLIENT {
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
-    public struct GETREDIR: ValkeyCommand {
+    public struct GETREDIR: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         @inlinable public init() {
@@ -90,7 +90,7 @@ public enum CLIENT {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -102,7 +102,7 @@ public enum CLIENT {
     }
 
     /// Returns the unique client ID of the connection.
-    public struct ID: ValkeyCommand {
+    public struct ID: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         @inlinable public init() {
@@ -114,7 +114,7 @@ public enum CLIENT {
     }
 
     /// Returns information about the connection.
-    public struct INFO: ValkeyCommand {
+    public struct INFO: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -124,8 +124,8 @@ public enum CLIENT {
     }
 
     /// Terminates open connections.
-    public struct KILL: ValkeyCommand {
-        public enum FilterNewFormatClientType: RESPRenderable, Sendable {
+    public struct KILL: ValkeyCommand, Hashable {
+        public enum FilterNewFormatClientType: RESPRenderable, Sendable, Hashable {
             case normal
             case master
             case primary
@@ -148,7 +148,7 @@ public enum CLIENT {
                 }
             }
         }
-        public enum FilterNewFormatSkipme: RESPRenderable, Sendable {
+        public enum FilterNewFormatSkipme: RESPRenderable, Sendable, Hashable {
             case yes
             case no
 
@@ -163,7 +163,7 @@ public enum CLIENT {
                 }
             }
         }
-        public enum FilterNewFormat: RESPRenderable, Sendable {
+        public enum FilterNewFormat: RESPRenderable, Sendable, Hashable {
             case clientId(Int?)
             case clientType(FilterNewFormatClientType?)
             case username(String?)
@@ -198,7 +198,7 @@ public enum CLIENT {
                 }
             }
         }
-        public enum Filter: RESPRenderable, Sendable {
+        public enum Filter: RESPRenderable, Sendable, Hashable {
             case oldFormat(String)
             case newFormat([FilterNewFormat])
 
@@ -232,8 +232,8 @@ public enum CLIENT {
     }
 
     /// Lists open connections.
-    public struct LIST: ValkeyCommand {
-        public enum ClientType: RESPRenderable, Sendable {
+    public struct LIST: ValkeyCommand, Hashable {
+        public enum ClientType: RESPRenderable, Sendable, Hashable {
             case normal
             case master
             case replica
@@ -266,8 +266,8 @@ public enum CLIENT {
     }
 
     /// Sets the client eviction mode of the connection.
-    public struct NOEVICT: ValkeyCommand {
-        public enum Enabled: RESPRenderable, Sendable {
+    public struct NOEVICT: ValkeyCommand, Hashable {
+        public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -294,8 +294,8 @@ public enum CLIENT {
     }
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
-    public struct NOTOUCH: ValkeyCommand {
-        public enum Enabled: RESPRenderable, Sendable {
+    public struct NOTOUCH: ValkeyCommand, Hashable {
+        public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -322,8 +322,8 @@ public enum CLIENT {
     }
 
     /// Suspends commands processing.
-    public struct PAUSE: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+    public struct PAUSE: ValkeyCommand, Hashable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case write
             case all
 
@@ -352,8 +352,8 @@ public enum CLIENT {
     }
 
     /// Instructs the server whether to reply to commands.
-    public struct REPLY: ValkeyCommand {
-        public enum Action: RESPRenderable, Sendable {
+    public struct REPLY: ValkeyCommand, Hashable {
+        public enum Action: RESPRenderable, Sendable, Hashable {
             case on
             case off
             case skip
@@ -382,8 +382,8 @@ public enum CLIENT {
     }
 
     /// Sets information specific to the client or connection.
-    public struct SETINFO: ValkeyCommand {
-        public enum Attr: RESPRenderable, Sendable {
+    public struct SETINFO: ValkeyCommand, Hashable {
+        public enum Attr: RESPRenderable, Sendable, Hashable {
             case libname(String)
             case libver(String)
 
@@ -415,7 +415,7 @@ public enum CLIENT {
     }
 
     /// Sets the connection name.
-    public struct SETNAME<ConnectionName: RESPStringRenderable>: ValkeyCommand {
+    public struct SETNAME<ConnectionName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var connectionName: ConnectionName
 
         @inlinable public init(connectionName: ConnectionName) {
@@ -428,8 +428,8 @@ public enum CLIENT {
     }
 
     /// Controls server-assisted client-side caching for the connection.
-    public struct TRACKING: ValkeyCommand {
-        public enum Status: RESPRenderable, Sendable {
+    public struct TRACKING: ValkeyCommand, Hashable {
+        public enum Status: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -468,7 +468,7 @@ public enum CLIENT {
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
-    public struct TRACKINGINFO: ValkeyCommand {
+    public struct TRACKINGINFO: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map
 
         @inlinable public init() {
@@ -480,8 +480,8 @@ public enum CLIENT {
     }
 
     /// Unblocks a client blocked by a blocking command from a different connection.
-    public struct UNBLOCK: ValkeyCommand {
-        public enum UnblockType: RESPRenderable, Sendable {
+    public struct UNBLOCK: ValkeyCommand, Hashable {
+        public enum UnblockType: RESPRenderable, Sendable, Hashable {
             case timeout
             case error
 
@@ -512,7 +512,7 @@ public enum CLIENT {
     }
 
     /// Resumes processing commands from paused clients.
-    public struct UNPAUSE: ValkeyCommand {
+    public struct UNPAUSE: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -524,7 +524,7 @@ public enum CLIENT {
 }
 
 /// Authenticates the connection.
-public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
+public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var username: String?
     public var password: Password
 
@@ -539,7 +539,7 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the given string.
-public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
+public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var message: Message
 
     @inlinable public init(message: Message) {
@@ -552,8 +552,8 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Handshakes with the server.
-public struct HELLO: ValkeyCommand {
-    public struct ArgumentsAuth: RESPRenderable, Sendable {
+public struct HELLO: ValkeyCommand, Hashable {
+    public struct ArgumentsAuth: RESPRenderable, Sendable, Hashable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -574,7 +574,7 @@ public struct HELLO: ValkeyCommand {
             password.encode(into: &commandEncoder)
         }
     }
-    public struct Arguments: RESPRenderable, Sendable {
+    public struct Arguments: RESPRenderable, Sendable, Hashable {
         @usableFromInline let protover: Int
         @usableFromInline let auth: ArgumentsAuth?
         @usableFromInline let clientname: String?
@@ -612,7 +612,7 @@ public struct HELLO: ValkeyCommand {
 }
 
 /// Returns the server's liveliness response.
-public struct PING: ValkeyCommand {
+public struct PING: ValkeyCommand, Hashable {
     public var message: String?
 
     @inlinable public init(message: String? = nil) {
@@ -626,7 +626,7 @@ public struct PING: ValkeyCommand {
 
 /// Closes the connection.
 @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
-public struct QUIT: ValkeyCommand {
+public struct QUIT: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -636,7 +636,7 @@ public struct QUIT: ValkeyCommand {
 }
 
 /// Resets the connection.
-public struct RESET: ValkeyCommand {
+public struct RESET: ValkeyCommand, Hashable {
     public typealias Response = String
 
     @inlinable public init() {
@@ -648,7 +648,7 @@ public struct RESET: ValkeyCommand {
 }
 
 /// Changes the selected database.
-public struct SELECT: ValkeyCommand {
+public struct SELECT: ValkeyCommand, Hashable {
     public var index: Int
 
     @inlinable public init(index: Int) {

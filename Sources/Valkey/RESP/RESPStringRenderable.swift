@@ -21,7 +21,7 @@ import Foundation
 #endif
 
 /// Type that can be rendered as a single bulk string
-public protocol RESPStringRenderable: Sendable {
+public protocol RESPStringRenderable: Sendable, Hashable {
     func encode(into commandEncoder: inout ValkeyCommandEncoder)
 }
 

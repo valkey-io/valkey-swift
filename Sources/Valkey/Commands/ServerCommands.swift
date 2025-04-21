@@ -25,7 +25,7 @@ import Foundation
 /// A container for Access List Control commands.
 public enum ACL {
     /// Lists the ACL categories, or the commands inside a category.
-    public struct CAT: ValkeyCommand {
+    public struct CAT: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var category: String?
@@ -40,7 +40,7 @@ public enum ACL {
     }
 
     /// Deletes ACL users, and terminates their connections.
-    public struct DELUSER<Username: RESPStringRenderable>: ValkeyCommand {
+    public struct DELUSER<Username: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var username: [Username]
@@ -55,7 +55,7 @@ public enum ACL {
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
-    public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: ValkeyCommand {
+    public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken?
 
         public var username: Username
@@ -74,7 +74,7 @@ public enum ACL {
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
-    public struct GENPASS: ValkeyCommand {
+    public struct GENPASS: ValkeyCommand, Hashable {
         public var bits: Int?
 
         @inlinable public init(bits: Int? = nil) {
@@ -87,7 +87,7 @@ public enum ACL {
     }
 
     /// Lists the ACL rules of a user.
-    public struct GETUSER<Username: RESPStringRenderable>: ValkeyCommand {
+    public struct GETUSER<Username: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map?
 
         public var username: Username
@@ -102,7 +102,7 @@ public enum ACL {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -114,7 +114,7 @@ public enum ACL {
     }
 
     /// Dumps the effective rules in ACL file format.
-    public struct LIST: ValkeyCommand {
+    public struct LIST: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -126,7 +126,7 @@ public enum ACL {
     }
 
     /// Reloads the rules from the configured ACL file.
-    public struct LOAD: ValkeyCommand {
+    public struct LOAD: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -136,8 +136,8 @@ public enum ACL {
     }
 
     /// Lists recent security events generated due to ACL rules.
-    public struct LOG: ValkeyCommand {
-        public enum Operation: RESPRenderable, Sendable {
+    public struct LOG: ValkeyCommand, Hashable {
+        public enum Operation: RESPRenderable, Sendable, Hashable {
             case count(Int)
             case reset
 
@@ -171,7 +171,7 @@ public enum ACL {
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
-    public struct SAVE: ValkeyCommand {
+    public struct SAVE: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -181,7 +181,7 @@ public enum ACL {
     }
 
     /// Creates and modifies an ACL user and its rules.
-    public struct SETUSER<Username: RESPStringRenderable>: ValkeyCommand {
+    public struct SETUSER<Username: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var username: Username
         public var rule: [String]
 
@@ -196,7 +196,7 @@ public enum ACL {
     }
 
     /// Lists all ACL users.
-    public struct USERS: ValkeyCommand {
+    public struct USERS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -208,7 +208,7 @@ public enum ACL {
     }
 
     /// Returns the authenticated username of the current connection.
-    public struct WHOAMI: ValkeyCommand {
+    public struct WHOAMI: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -221,7 +221,7 @@ public enum ACL {
 
 extension COMMAND {
     /// Returns a count of commands.
-    public struct COUNT: ValkeyCommand {
+    public struct COUNT: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         @inlinable public init() {
@@ -233,7 +233,7 @@ extension COMMAND {
     }
 
     /// Returns documentary information about one, multiple or all commands.
-    public struct DOCS: ValkeyCommand {
+    public struct DOCS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map
 
         public var commandName: [String]
@@ -248,7 +248,7 @@ extension COMMAND {
     }
 
     /// Extracts the key names from an arbitrary command.
-    public struct GETKEYS<Command: RESPStringRenderable>: ValkeyCommand {
+    public struct GETKEYS<Command: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var command: Command
@@ -265,7 +265,7 @@ extension COMMAND {
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
-    public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: ValkeyCommand {
+    public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var command: Command
@@ -282,7 +282,7 @@ extension COMMAND {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -294,7 +294,7 @@ extension COMMAND {
     }
 
     /// Returns information about one, multiple or all commands.
-    public struct INFO: ValkeyCommand {
+    public struct INFO: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var commandName: [String]
@@ -309,8 +309,8 @@ extension COMMAND {
     }
 
     /// Returns a list of command names.
-    public struct LIST: ValkeyCommand {
-        public enum Filterby: RESPRenderable, Sendable {
+    public struct LIST: ValkeyCommand, Hashable {
+        public enum Filterby: RESPRenderable, Sendable, Hashable {
             case moduleName(String)
             case category(String)
             case pattern(String)
@@ -351,7 +351,7 @@ extension COMMAND {
 /// A container for server configuration commands.
 public enum CONFIG {
     /// Returns the effective values of configuration parameters.
-    public struct GET<Parameter: RESPStringRenderable>: ValkeyCommand {
+    public struct GET<Parameter: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map
 
         public var parameter: [Parameter]
@@ -366,7 +366,7 @@ public enum CONFIG {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -378,7 +378,7 @@ public enum CONFIG {
     }
 
     /// Resets the server's statistics.
-    public struct RESETSTAT: ValkeyCommand {
+    public struct RESETSTAT: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -388,7 +388,7 @@ public enum CONFIG {
     }
 
     /// Persists the effective configuration to file.
-    public struct REWRITE: ValkeyCommand {
+    public struct REWRITE: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -398,8 +398,8 @@ public enum CONFIG {
     }
 
     /// Sets configuration parameters in-flight.
-    public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+    public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand, Hashable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: Parameter
             @usableFromInline let value: Value
 
@@ -436,7 +436,7 @@ public enum CONFIG {
 /// A container for latency diagnostics commands.
 public enum LATENCY {
     /// Returns a human-readable latency analysis report.
-    public struct DOCTOR: ValkeyCommand {
+    public struct DOCTOR: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -446,7 +446,7 @@ public enum LATENCY {
     }
 
     /// Returns a latency graph for an event.
-    public struct GRAPH<Event: RESPStringRenderable>: ValkeyCommand {
+    public struct GRAPH<Event: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var event: Event
 
         @inlinable public init(event: Event) {
@@ -459,7 +459,7 @@ public enum LATENCY {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -471,7 +471,7 @@ public enum LATENCY {
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
-    public struct HISTOGRAM: ValkeyCommand {
+    public struct HISTOGRAM: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map
 
         public var command: [String]
@@ -486,7 +486,7 @@ public enum LATENCY {
     }
 
     /// Returns timestamp-latency samples for an event.
-    public struct HISTORY<Event: RESPStringRenderable>: ValkeyCommand {
+    public struct HISTORY<Event: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var event: Event
@@ -501,7 +501,7 @@ public enum LATENCY {
     }
 
     /// Returns the latest latency samples for all events.
-    public struct LATEST: ValkeyCommand {
+    public struct LATEST: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -513,7 +513,7 @@ public enum LATENCY {
     }
 
     /// Resets the latency data for one or more events.
-    public struct RESET: ValkeyCommand {
+    public struct RESET: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var event: [String]
@@ -532,7 +532,7 @@ public enum LATENCY {
 /// A container for memory diagnostics commands.
 public enum MEMORY {
     /// Outputs a memory problems report.
-    public struct DOCTOR: ValkeyCommand {
+    public struct DOCTOR: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -542,7 +542,7 @@ public enum MEMORY {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -554,7 +554,7 @@ public enum MEMORY {
     }
 
     /// Returns the allocator statistics.
-    public struct MALLOCSTATS: ValkeyCommand {
+    public struct MALLOCSTATS: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -564,7 +564,7 @@ public enum MEMORY {
     }
 
     /// Asks the allocator to release memory.
-    public struct PURGE: ValkeyCommand {
+    public struct PURGE: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -574,7 +574,7 @@ public enum MEMORY {
     }
 
     /// Returns details about memory usage.
-    public struct STATS: ValkeyCommand {
+    public struct STATS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map
 
         @inlinable public init() {
@@ -586,7 +586,7 @@ public enum MEMORY {
     }
 
     /// Estimates the memory usage of a key.
-    public struct USAGE: ValkeyCommand {
+    public struct USAGE: ValkeyCommand, Hashable {
         public typealias Response = Int?
 
         public var key: ValkeyKey
@@ -609,7 +609,7 @@ public enum MEMORY {
 /// A container for module commands.
 public enum MODULE {
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -621,7 +621,7 @@ public enum MODULE {
     }
 
     /// Returns all loaded modules.
-    public struct LIST: ValkeyCommand {
+    public struct LIST: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -633,7 +633,7 @@ public enum MODULE {
     }
 
     /// Loads a module.
-    public struct LOAD<Path: RESPStringRenderable>: ValkeyCommand {
+    public struct LOAD<Path: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var path: Path
         public var arg: [String]
 
@@ -648,8 +648,8 @@ public enum MODULE {
     }
 
     /// Loads a module using extended parameters.
-    public struct LOADEX<Path: RESPStringRenderable>: ValkeyCommand {
-        public struct Configs: RESPRenderable, Sendable {
+    public struct LOADEX<Path: RESPStringRenderable>: ValkeyCommand, Hashable {
+        public struct Configs: RESPRenderable, Sendable, Hashable {
             @usableFromInline let name: String
             @usableFromInline let value: String
 
@@ -686,7 +686,7 @@ public enum MODULE {
     }
 
     /// Unloads a module.
-    public struct UNLOAD<Name: RESPStringRenderable>: ValkeyCommand {
+    public struct UNLOAD<Name: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var name: Name
 
         @inlinable public init(name: Name) {
@@ -703,7 +703,7 @@ public enum MODULE {
 /// A container for slow log commands.
 public enum SLOWLOG {
     /// Returns the slow log's entries.
-    public struct GET: ValkeyCommand {
+    public struct GET: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var count: Int?
@@ -718,7 +718,7 @@ public enum SLOWLOG {
     }
 
     /// Show helpful text about the different subcommands
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -730,7 +730,7 @@ public enum SLOWLOG {
     }
 
     /// Returns the number of entries in the slow log.
-    public struct LEN: ValkeyCommand {
+    public struct LEN: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         @inlinable public init() {
@@ -742,7 +742,7 @@ public enum SLOWLOG {
     }
 
     /// Clears all entries from the slow log.
-    public struct RESET: ValkeyCommand {
+    public struct RESET: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -754,7 +754,7 @@ public enum SLOWLOG {
 }
 
 /// Asynchronously rewrites the append-only file to disk.
-public struct BGREWRITEAOF: ValkeyCommand {
+public struct BGREWRITEAOF: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -764,7 +764,7 @@ public struct BGREWRITEAOF: ValkeyCommand {
 }
 
 /// Asynchronously saves the database(s) to disk.
-public struct BGSAVE: ValkeyCommand {
+public struct BGSAVE: ValkeyCommand, Hashable {
     public typealias Response = String
 
     public var schedule: Bool
@@ -779,7 +779,7 @@ public struct BGSAVE: ValkeyCommand {
 }
 
 /// Returns detailed information about all commands.
-public struct COMMAND: ValkeyCommand {
+public struct COMMAND: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -789,7 +789,7 @@ public struct COMMAND: ValkeyCommand {
 }
 
 /// Returns the number of keys in the database.
-public struct DBSIZE: ValkeyCommand {
+public struct DBSIZE: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     @inlinable public init() {
@@ -801,7 +801,7 @@ public struct DBSIZE: ValkeyCommand {
 }
 
 /// A container for debugging commands.
-public struct DEBUG: ValkeyCommand {
+public struct DEBUG: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -811,8 +811,8 @@ public struct DEBUG: ValkeyCommand {
 }
 
 /// Starts a coordinated failover from a server to one of its replicas.
-public struct FAILOVER: ValkeyCommand {
-    public struct Target: RESPRenderable, Sendable {
+public struct FAILOVER: ValkeyCommand, Hashable {
+    public struct Target: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
@@ -852,8 +852,8 @@ public struct FAILOVER: ValkeyCommand {
 }
 
 /// Removes all keys from all databases.
-public struct FLUSHALL: ValkeyCommand {
-    public enum FlushType: RESPRenderable, Sendable {
+public struct FLUSHALL: ValkeyCommand, Hashable {
+    public enum FlushType: RESPRenderable, Sendable, Hashable {
         case async
         case sync
 
@@ -880,8 +880,8 @@ public struct FLUSHALL: ValkeyCommand {
 }
 
 /// Remove all keys from the current database.
-public struct FLUSHDB: ValkeyCommand {
-    public enum FlushType: RESPRenderable, Sendable {
+public struct FLUSHDB: ValkeyCommand, Hashable {
+    public enum FlushType: RESPRenderable, Sendable, Hashable {
         case async
         case sync
 
@@ -908,7 +908,7 @@ public struct FLUSHDB: ValkeyCommand {
 }
 
 /// Returns information and statistics about the server.
-public struct INFO: ValkeyCommand {
+public struct INFO: ValkeyCommand, Hashable {
     public var section: [String]
 
     @inlinable public init(section: [String] = []) {
@@ -921,7 +921,7 @@ public struct INFO: ValkeyCommand {
 }
 
 /// Returns the Unix timestamp of the last successful save to disk.
-public struct LASTSAVE: ValkeyCommand {
+public struct LASTSAVE: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     @inlinable public init() {
@@ -933,7 +933,7 @@ public struct LASTSAVE: ValkeyCommand {
 }
 
 /// Displays computer art and the server version
-public struct LOLWUT: ValkeyCommand {
+public struct LOLWUT: ValkeyCommand, Hashable {
     public var version: Int?
 
     @inlinable public init(version: Int? = nil) {
@@ -946,7 +946,7 @@ public struct LOLWUT: ValkeyCommand {
 }
 
 /// Listens for all requests received by the server in real-time.
-public struct MONITOR: ValkeyCommand {
+public struct MONITOR: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -956,7 +956,7 @@ public struct MONITOR: ValkeyCommand {
 }
 
 /// An internal command used in replication.
-public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
+public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var replicationid: Replicationid
     public var offset: Int
 
@@ -971,7 +971,7 @@ public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// An internal command for configuring the replication stream.
-public struct REPLCONF: ValkeyCommand {
+public struct REPLCONF: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -981,8 +981,8 @@ public struct REPLCONF: ValkeyCommand {
 }
 
 /// Configures a server as replica of another, or promotes it to a primary.
-public struct REPLICAOF: ValkeyCommand {
-    public struct ArgsHostPort: RESPRenderable, Sendable {
+public struct REPLICAOF: ValkeyCommand, Hashable {
+    public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -1003,7 +1003,7 @@ public struct REPLICAOF: ValkeyCommand {
             port.encode(into: &commandEncoder)
         }
     }
-    public struct ArgsNoOne: RESPRenderable, Sendable {
+    public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -1024,7 +1024,7 @@ public struct REPLICAOF: ValkeyCommand {
             "ONE".encode(into: &commandEncoder)
         }
     }
-    public enum Args: RESPRenderable, Sendable {
+    public enum Args: RESPRenderable, Sendable, Hashable {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
@@ -1056,7 +1056,7 @@ public struct REPLICAOF: ValkeyCommand {
 }
 
 /// An internal command for migrating keys in a cluster.
-public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: ValkeyCommand {
+public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var ttl: Int
     public var serializedValue: SerializedValue
@@ -1083,7 +1083,7 @@ public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: ValkeyComman
 }
 
 /// Returns the replication role.
-public struct ROLE: ValkeyCommand {
+public struct ROLE: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     @inlinable public init() {
@@ -1095,7 +1095,7 @@ public struct ROLE: ValkeyCommand {
 }
 
 /// Synchronously saves the database(s) to disk.
-public struct SAVE: ValkeyCommand {
+public struct SAVE: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -1105,8 +1105,8 @@ public struct SAVE: ValkeyCommand {
 }
 
 /// Synchronously saves the database(s) to disk and shuts down the server.
-public struct SHUTDOWN: ValkeyCommand {
-    public enum AbortSelectorSaveSelectorBlockSaveSelector: RESPRenderable, Sendable {
+public struct SHUTDOWN: ValkeyCommand, Hashable {
+    public enum AbortSelectorSaveSelectorBlockSaveSelector: RESPRenderable, Sendable, Hashable {
         case nosave
         case save
 
@@ -1121,7 +1121,7 @@ public struct SHUTDOWN: ValkeyCommand {
             }
         }
     }
-    public struct AbortSelectorSaveSelectorBlock: RESPRenderable, Sendable {
+    public struct AbortSelectorSaveSelectorBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let saveSelector: AbortSelectorSaveSelectorBlockSaveSelector?
         @usableFromInline let now: Bool
         @usableFromInline let force: Bool
@@ -1145,7 +1145,7 @@ public struct SHUTDOWN: ValkeyCommand {
             "FORCE".encode(into: &commandEncoder)
         }
     }
-    public enum AbortSelector: RESPRenderable, Sendable {
+    public enum AbortSelector: RESPRenderable, Sendable, Hashable {
         case saveSelectorBlock(AbortSelectorSaveSelectorBlock)
         case abort
 
@@ -1178,8 +1178,8 @@ public struct SHUTDOWN: ValkeyCommand {
 
 /// Sets a server as a replica of another, or promotes it to being a primary.
 @available(*, deprecated, message: "Since 5.0.0. Replaced by `REPLICAOF`.")
-public struct SLAVEOF: ValkeyCommand {
-    public struct ArgsHostPort: RESPRenderable, Sendable {
+public struct SLAVEOF: ValkeyCommand, Hashable {
+    public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -1200,7 +1200,7 @@ public struct SLAVEOF: ValkeyCommand {
             port.encode(into: &commandEncoder)
         }
     }
-    public struct ArgsNoOne: RESPRenderable, Sendable {
+    public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -1221,7 +1221,7 @@ public struct SLAVEOF: ValkeyCommand {
             "ONE".encode(into: &commandEncoder)
         }
     }
-    public enum Args: RESPRenderable, Sendable {
+    public enum Args: RESPRenderable, Sendable, Hashable {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
@@ -1253,7 +1253,7 @@ public struct SLAVEOF: ValkeyCommand {
 }
 
 /// Swaps two databases.
-public struct SWAPDB: ValkeyCommand {
+public struct SWAPDB: ValkeyCommand, Hashable {
     public var index1: Int
     public var index2: Int
 
@@ -1268,7 +1268,7 @@ public struct SWAPDB: ValkeyCommand {
 }
 
 /// An internal command used in replication.
-public struct SYNC: ValkeyCommand {
+public struct SYNC: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -1278,7 +1278,7 @@ public struct SYNC: ValkeyCommand {
 }
 
 /// Returns the server time.
-public struct TIME: ValkeyCommand {
+public struct TIME: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     @inlinable public init() {

@@ -23,8 +23,8 @@ import Foundation
 #endif
 
 /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
-public struct BLMOVE: ValkeyCommand {
-    public enum Wherefrom: RESPRenderable, Sendable {
+public struct BLMOVE: ValkeyCommand, Hashable {
+    public enum Wherefrom: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -39,7 +39,7 @@ public struct BLMOVE: ValkeyCommand {
             }
         }
     }
-    public enum Whereto: RESPRenderable, Sendable {
+    public enum Whereto: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -78,8 +78,8 @@ public struct BLMOVE: ValkeyCommand {
 }
 
 /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BLMPOP: ValkeyCommand {
-    public enum Where: RESPRenderable, Sendable {
+public struct BLMPOP: ValkeyCommand, Hashable {
+    public enum Where: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -116,7 +116,7 @@ public struct BLMPOP: ValkeyCommand {
 }
 
 /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BLPOP: ValkeyCommand {
+public struct BLPOP: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array?
 
     public var key: [ValkeyKey]
@@ -135,7 +135,7 @@ public struct BLPOP: ValkeyCommand {
 }
 
 /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BRPOP: ValkeyCommand {
+public struct BRPOP: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array?
 
     public var key: [ValkeyKey]
@@ -155,7 +155,7 @@ public struct BRPOP: ValkeyCommand {
 
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
-public struct BRPOPLPUSH: ValkeyCommand {
+public struct BRPOPLPUSH: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var source: ValkeyKey
@@ -176,7 +176,7 @@ public struct BRPOPLPUSH: ValkeyCommand {
 }
 
 /// Returns an element from a list by its index.
-public struct LINDEX: ValkeyCommand {
+public struct LINDEX: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -195,8 +195,8 @@ public struct LINDEX: ValkeyCommand {
 }
 
 /// Inserts an element before or after another element in a list.
-public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable>: ValkeyCommand {
-    public enum Where: RESPRenderable, Sendable {
+public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public enum Where: RESPRenderable, Sendable, Hashable {
         case before
         case after
 
@@ -233,7 +233,7 @@ public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable
 }
 
 /// Returns the length of a list.
-public struct LLEN: ValkeyCommand {
+public struct LLEN: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -250,8 +250,8 @@ public struct LLEN: ValkeyCommand {
 }
 
 /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
-public struct LMOVE: ValkeyCommand {
-    public enum Wherefrom: RESPRenderable, Sendable {
+public struct LMOVE: ValkeyCommand, Hashable {
+    public enum Wherefrom: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -266,7 +266,7 @@ public struct LMOVE: ValkeyCommand {
             }
         }
     }
-    public enum Whereto: RESPRenderable, Sendable {
+    public enum Whereto: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -301,8 +301,8 @@ public struct LMOVE: ValkeyCommand {
 }
 
 /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
-public struct LMPOP: ValkeyCommand {
-    public enum Where: RESPRenderable, Sendable {
+public struct LMPOP: ValkeyCommand, Hashable {
+    public enum Where: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -337,7 +337,7 @@ public struct LMPOP: ValkeyCommand {
 }
 
 /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
-public struct LPOP: ValkeyCommand {
+public struct LPOP: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -356,7 +356,7 @@ public struct LPOP: ValkeyCommand {
 }
 
 /// Returns the index of matching elements in a list.
-public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
+public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = [Int]?
 
     public var key: ValkeyKey
@@ -381,7 +381,7 @@ public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
-public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
+public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -400,7 +400,7 @@ public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Prepends one or more elements to a list only when the list exists.
-public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
+public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -419,7 +419,7 @@ public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns a range of elements from a list.
-public struct LRANGE: ValkeyCommand {
+public struct LRANGE: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -440,7 +440,7 @@ public struct LRANGE: ValkeyCommand {
 }
 
 /// Removes elements from a list. Deletes the list if the last element was removed.
-public struct LREM<Element: RESPStringRenderable>: ValkeyCommand {
+public struct LREM<Element: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -461,7 +461,7 @@ public struct LREM<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets the value of an element in a list by its index.
-public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
+public struct LSET<Element: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var index: Int
     public var element: Element
@@ -480,7 +480,7 @@ public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
-public struct LTRIM: ValkeyCommand {
+public struct LTRIM: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var start: Int
     public var stop: Int
@@ -499,7 +499,7 @@ public struct LTRIM: ValkeyCommand {
 }
 
 /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
-public struct RPOP: ValkeyCommand {
+public struct RPOP: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -519,7 +519,7 @@ public struct RPOP: ValkeyCommand {
 
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
-public struct RPOPLPUSH: ValkeyCommand {
+public struct RPOPLPUSH: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var source: ValkeyKey
@@ -538,7 +538,7 @@ public struct RPOPLPUSH: ValkeyCommand {
 }
 
 /// Appends one or more elements to a list. Creates the key if it doesn't exist.
-public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
+public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -557,7 +557,7 @@ public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Appends an element to a list only when the list exists.
-public struct RPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
+public struct RPUSHX<Element: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey

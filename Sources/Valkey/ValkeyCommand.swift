@@ -15,7 +15,7 @@
 import NIOCore
 
 /// A Valkey command that can be executed on a connection.
-public protocol ValkeyCommand: Sendable {
+public protocol ValkeyCommand: Sendable, Hashable {
     associatedtype Response: RESPTokenDecodable = RESPToken
     associatedtype Keys: Collection<ValkeyKey>
 

@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-public struct PFADD: ValkeyCommand {
+public struct PFADD: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -42,7 +42,7 @@ public struct PFADD: ValkeyCommand {
 }
 
 /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
-public struct PFCOUNT: ValkeyCommand {
+public struct PFCOUNT: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: [ValkeyKey]
@@ -59,7 +59,7 @@ public struct PFCOUNT: ValkeyCommand {
 }
 
 /// Internal commands for debugging HyperLogLog values.
-public struct PFDEBUG<Subcommand: RESPStringRenderable>: ValkeyCommand {
+public struct PFDEBUG<Subcommand: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var subcommand: Subcommand
     public var key: ValkeyKey
 
@@ -76,7 +76,7 @@ public struct PFDEBUG<Subcommand: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Merges one or more HyperLogLog values into a single key.
-public struct PFMERGE: ValkeyCommand {
+public struct PFMERGE: ValkeyCommand, Hashable {
     public var destkey: ValkeyKey
     public var sourcekey: [ValkeyKey]
 
@@ -93,7 +93,7 @@ public struct PFMERGE: ValkeyCommand {
 }
 
 /// An internal command for testing HyperLogLog values.
-public struct PFSELFTEST: ValkeyCommand {
+public struct PFSELFTEST: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 

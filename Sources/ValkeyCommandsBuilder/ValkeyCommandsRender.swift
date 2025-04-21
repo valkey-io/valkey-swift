@@ -72,7 +72,7 @@ extension String {
                 self.appendBlock(argument: arg, names: names, tab: tab, genericStrings: false)
             }
         }
-        self.append("\(tab)    public enum \(enumName): RESPRenderable, Sendable {\n")
+        self.append("\(tab)    public enum \(enumName): RESPRenderable, Sendable, Hashable {\n")
         var allPureTokens = true
         for arg in arguments {
             if case .pureToken = arg.type {
@@ -138,7 +138,7 @@ extension String {
                 self.appendBlock(argument: arg, names: names, tab: tab, genericStrings: genericStrings)
             }
         }
-        self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable {\n")
+        self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable, Hashable {\n")
         for arg in arguments {
             self.append(
                 "\(tab)        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: genericStrings))\n"
@@ -195,7 +195,7 @@ extension String {
             typeName = name.commandTypeName
         }
         let keyArguments = command.arguments?.filter { $0.type == .key } ?? []
-        let conformance = "ValkeyCommand"
+        let conformance = "ValkeyCommand, Hashable"
         let genericTypeParameters = genericTypeParameters(command.arguments)
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, tab: tab)

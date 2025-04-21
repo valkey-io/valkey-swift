@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds one or more members to a set. Creates the key if it doesn't exist.
-public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
+public struct SADD<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -42,7 +42,7 @@ public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the number of members in a set.
-public struct SCARD: ValkeyCommand {
+public struct SCARD: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -59,7 +59,7 @@ public struct SCARD: ValkeyCommand {
 }
 
 /// Returns the difference of multiple sets.
-public struct SDIFF: ValkeyCommand {
+public struct SDIFF: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: [ValkeyKey]
@@ -76,7 +76,7 @@ public struct SDIFF: ValkeyCommand {
 }
 
 /// Stores the difference of multiple sets in a key.
-public struct SDIFFSTORE: ValkeyCommand {
+public struct SDIFFSTORE: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var destination: ValkeyKey
@@ -95,7 +95,7 @@ public struct SDIFFSTORE: ValkeyCommand {
 }
 
 /// Returns the intersect of multiple sets.
-public struct SINTER: ValkeyCommand {
+public struct SINTER: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: [ValkeyKey]
@@ -112,7 +112,7 @@ public struct SINTER: ValkeyCommand {
 }
 
 /// Returns the number of members of the intersect of multiple sets.
-public struct SINTERCARD: ValkeyCommand {
+public struct SINTERCARD: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: [ValkeyKey]
@@ -131,7 +131,7 @@ public struct SINTERCARD: ValkeyCommand {
 }
 
 /// Stores the intersect of multiple sets in a key.
-public struct SINTERSTORE: ValkeyCommand {
+public struct SINTERSTORE: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var destination: ValkeyKey
@@ -150,7 +150,7 @@ public struct SINTERSTORE: ValkeyCommand {
 }
 
 /// Determines whether a member belongs to a set.
-public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
+public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -169,7 +169,7 @@ public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns all members of a set.
-public struct SMEMBERS: ValkeyCommand {
+public struct SMEMBERS: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -186,7 +186,7 @@ public struct SMEMBERS: ValkeyCommand {
 }
 
 /// Determines whether multiple members belong to a set.
-public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
+public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -205,7 +205,7 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Moves a member from one set to another.
-public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
+public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var source: ValkeyKey
@@ -226,7 +226,7 @@ public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
-public struct SPOP: ValkeyCommand {
+public struct SPOP: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -245,7 +245,7 @@ public struct SPOP: ValkeyCommand {
 }
 
 /// Get one or multiple random members from a set
-public struct SRANDMEMBER: ValkeyCommand {
+public struct SRANDMEMBER: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -264,7 +264,7 @@ public struct SRANDMEMBER: ValkeyCommand {
 }
 
 /// Removes one or more members from a set. Deletes the set if the last member was removed.
-public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
+public struct SREM<Member: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -283,7 +283,7 @@ public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Iterates over members of a set.
-public struct SSCAN: ValkeyCommand {
+public struct SSCAN: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -306,7 +306,7 @@ public struct SSCAN: ValkeyCommand {
 }
 
 /// Returns the union of multiple sets.
-public struct SUNION: ValkeyCommand {
+public struct SUNION: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: [ValkeyKey]
@@ -323,7 +323,7 @@ public struct SUNION: ValkeyCommand {
 }
 
 /// Stores the union of multiple sets in a key.
-public struct SUNIONSTORE: ValkeyCommand {
+public struct SUNIONSTORE: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var destination: ValkeyKey

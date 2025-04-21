@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
-public struct HDEL<Field: RESPStringRenderable>: ValkeyCommand {
+public struct HDEL<Field: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -42,7 +42,7 @@ public struct HDEL<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Determines whether a field exists in a hash.
-public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
+public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -61,7 +61,7 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the value of a field in a hash.
-public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
+public struct HGET<Field: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken?
 
     public var key: ValkeyKey
@@ -80,7 +80,7 @@ public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns all fields and values in a hash.
-public struct HGETALL: ValkeyCommand {
+public struct HGETALL: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Map
 
     public var key: ValkeyKey
@@ -97,7 +97,7 @@ public struct HGETALL: ValkeyCommand {
 }
 
 /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
-public struct HINCRBY<Field: RESPStringRenderable>: ValkeyCommand {
+public struct HINCRBY<Field: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -118,7 +118,7 @@ public struct HINCRBY<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
-public struct HINCRBYFLOAT<Field: RESPStringRenderable>: ValkeyCommand {
+public struct HINCRBYFLOAT<Field: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var key: ValkeyKey
     public var field: Field
     public var increment: Double
@@ -137,7 +137,7 @@ public struct HINCRBYFLOAT<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns all fields in a hash.
-public struct HKEYS: ValkeyCommand {
+public struct HKEYS: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -154,7 +154,7 @@ public struct HKEYS: ValkeyCommand {
 }
 
 /// Returns the number of fields in a hash.
-public struct HLEN: ValkeyCommand {
+public struct HLEN: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -171,7 +171,7 @@ public struct HLEN: ValkeyCommand {
 }
 
 /// Returns the values of all fields in a hash.
-public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
+public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -191,8 +191,8 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
 
 /// Sets the values of multiple fields.
 @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
-public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 
@@ -229,8 +229,8 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
 }
 
 /// Returns one or more random fields from a hash.
-public struct HRANDFIELD: ValkeyCommand {
-    public struct Options: RESPRenderable, Sendable {
+public struct HRANDFIELD: ValkeyCommand, Hashable {
+    public struct Options: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
 
@@ -269,7 +269,7 @@ public struct HRANDFIELD: ValkeyCommand {
 }
 
 /// Iterates over fields and values of a hash.
-public struct HSCAN: ValkeyCommand {
+public struct HSCAN: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
@@ -294,8 +294,8 @@ public struct HSCAN: ValkeyCommand {
 }
 
 /// Creates or modifies the value of a field in a hash.
-public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand, Hashable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 
@@ -334,7 +334,7 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
 }
 
 /// Sets the value of a field in a hash only when the field doesn't exist.
-public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
+public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -355,7 +355,7 @@ public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
 }
 
 /// Returns the length of the value of a field.
-public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
+public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand, Hashable {
     public typealias Response = Int
 
     public var key: ValkeyKey
@@ -374,7 +374,7 @@ public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns all values in a hash.
-public struct HVALS: ValkeyCommand {
+public struct HVALS: ValkeyCommand, Hashable {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey

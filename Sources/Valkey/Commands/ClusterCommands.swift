@@ -25,7 +25,7 @@ import Foundation
 /// A container for Cluster commands.
 public enum CLUSTER {
     /// Assigns new hash slots to a node.
-    public struct ADDSLOTS: ValkeyCommand {
+    public struct ADDSLOTS: ValkeyCommand, Hashable {
         public var slot: [Int]
 
         @inlinable public init(slot: [Int]) {
@@ -38,8 +38,8 @@ public enum CLUSTER {
     }
 
     /// Assigns new hash slot ranges to a node.
-    public struct ADDSLOTSRANGE: ValkeyCommand {
-        public struct Range: RESPRenderable, Sendable {
+    public struct ADDSLOTSRANGE: ValkeyCommand, Hashable {
+        public struct Range: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
@@ -72,7 +72,7 @@ public enum CLUSTER {
     }
 
     /// Advances the cluster config epoch.
-    public struct BUMPEPOCH: ValkeyCommand {
+    public struct BUMPEPOCH: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -82,7 +82,7 @@ public enum CLUSTER {
     }
 
     /// Returns the number of active failure reports active for a node.
-    public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: ValkeyCommand {
+    public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var nodeId: NodeId
@@ -97,7 +97,7 @@ public enum CLUSTER {
     }
 
     /// Returns the number of keys in a hash slot.
-    public struct COUNTKEYSINSLOT: ValkeyCommand {
+    public struct COUNTKEYSINSLOT: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var slot: Int
@@ -112,7 +112,7 @@ public enum CLUSTER {
     }
 
     /// Sets hash slots as unbound for a node.
-    public struct DELSLOTS: ValkeyCommand {
+    public struct DELSLOTS: ValkeyCommand, Hashable {
         public var slot: [Int]
 
         @inlinable public init(slot: [Int]) {
@@ -125,8 +125,8 @@ public enum CLUSTER {
     }
 
     /// Sets hash slot ranges as unbound for a node.
-    public struct DELSLOTSRANGE: ValkeyCommand {
-        public struct Range: RESPRenderable, Sendable {
+    public struct DELSLOTSRANGE: ValkeyCommand, Hashable {
+        public struct Range: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
@@ -159,8 +159,8 @@ public enum CLUSTER {
     }
 
     /// Forces a replica to perform a manual failover of its primary.
-    public struct FAILOVER: ValkeyCommand {
-        public enum Options: RESPRenderable, Sendable {
+    public struct FAILOVER: ValkeyCommand, Hashable {
+        public enum Options: RESPRenderable, Sendable, Hashable {
             case force
             case takeover
 
@@ -187,7 +187,7 @@ public enum CLUSTER {
     }
 
     /// Deletes all slots information from a node.
-    public struct FLUSHSLOTS: ValkeyCommand {
+    public struct FLUSHSLOTS: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -197,7 +197,7 @@ public enum CLUSTER {
     }
 
     /// Removes a node from the nodes table.
-    public struct FORGET<NodeId: RESPStringRenderable>: ValkeyCommand {
+    public struct FORGET<NodeId: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var nodeId: NodeId
 
         @inlinable public init(nodeId: NodeId) {
@@ -210,7 +210,7 @@ public enum CLUSTER {
     }
 
     /// Returns the key names in a hash slot.
-    public struct GETKEYSINSLOT: ValkeyCommand {
+    public struct GETKEYSINSLOT: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var slot: Int
@@ -227,7 +227,7 @@ public enum CLUSTER {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -239,7 +239,7 @@ public enum CLUSTER {
     }
 
     /// Returns information about the state of a node.
-    public struct INFO: ValkeyCommand {
+    public struct INFO: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -249,7 +249,7 @@ public enum CLUSTER {
     }
 
     /// Returns the hash slot for a key.
-    public struct KEYSLOT<Key: RESPStringRenderable>: ValkeyCommand {
+    public struct KEYSLOT<Key: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = Int
 
         public var key: Key
@@ -264,7 +264,7 @@ public enum CLUSTER {
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
-    public struct LINKS: ValkeyCommand {
+    public struct LINKS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -276,7 +276,7 @@ public enum CLUSTER {
     }
 
     /// Forces a node to handshake with another node.
-    public struct MEET<Ip: RESPStringRenderable>: ValkeyCommand {
+    public struct MEET<Ip: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var ip: Ip
         public var port: Int
         public var clusterBusPort: Int?
@@ -293,7 +293,7 @@ public enum CLUSTER {
     }
 
     /// Returns the ID of a node.
-    public struct MYID: ValkeyCommand {
+    public struct MYID: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -303,7 +303,7 @@ public enum CLUSTER {
     }
 
     /// Returns the shard ID of a node.
-    public struct MYSHARDID: ValkeyCommand {
+    public struct MYSHARDID: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -313,7 +313,7 @@ public enum CLUSTER {
     }
 
     /// Returns the cluster configuration for a node.
-    public struct NODES: ValkeyCommand {
+    public struct NODES: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -323,7 +323,7 @@ public enum CLUSTER {
     }
 
     /// Lists the replica nodes of a primary node.
-    public struct REPLICAS<NodeId: RESPStringRenderable>: ValkeyCommand {
+    public struct REPLICAS<NodeId: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var nodeId: NodeId
@@ -338,7 +338,7 @@ public enum CLUSTER {
     }
 
     /// Configure a node as replica of a primary node.
-    public struct REPLICATE<NodeId: RESPStringRenderable>: ValkeyCommand {
+    public struct REPLICATE<NodeId: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var nodeId: NodeId
 
         @inlinable public init(nodeId: NodeId) {
@@ -351,8 +351,8 @@ public enum CLUSTER {
     }
 
     /// Resets a node.
-    public struct RESET: ValkeyCommand {
-        public enum ResetType: RESPRenderable, Sendable {
+    public struct RESET: ValkeyCommand, Hashable {
+        public enum ResetType: RESPRenderable, Sendable, Hashable {
             case hard
             case soft
 
@@ -379,7 +379,7 @@ public enum CLUSTER {
     }
 
     /// Forces a node to save the cluster configuration to disk.
-    public struct SAVECONFIG: ValkeyCommand {
+    public struct SAVECONFIG: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -389,7 +389,7 @@ public enum CLUSTER {
     }
 
     /// Sets the configuration epoch for a new node.
-    public struct SETCONFIGEPOCH: ValkeyCommand {
+    public struct SETCONFIGEPOCH: ValkeyCommand, Hashable {
         public var configEpoch: Int
 
         @inlinable public init(configEpoch: Int) {
@@ -402,8 +402,8 @@ public enum CLUSTER {
     }
 
     /// Binds a hash slot to a node.
-    public struct SETSLOT: ValkeyCommand {
-        public enum Subcommand: RESPRenderable, Sendable {
+    public struct SETSLOT: ValkeyCommand, Hashable {
+        public enum Subcommand: RESPRenderable, Sendable, Hashable {
             case importing(String)
             case migrating(String)
             case node(String)
@@ -445,7 +445,7 @@ public enum CLUSTER {
     }
 
     /// Returns the mapping of cluster slots to shards.
-    public struct SHARDS: ValkeyCommand {
+    public struct SHARDS: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -456,7 +456,7 @@ public enum CLUSTER {
 
     /// Lists the replica nodes of a primary node.
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
-    public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand {
+    public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var nodeId: NodeId
@@ -471,8 +471,8 @@ public enum CLUSTER {
     }
 
     /// Return an array of slot usage statistics for slots assigned to the current node.
-    public struct SLOTSTATS: ValkeyCommand {
-        public struct FilterSlotsrange: RESPRenderable, Sendable {
+    public struct SLOTSTATS: ValkeyCommand, Hashable {
+        public struct FilterSlotsrange: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
@@ -493,7 +493,7 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
-        public enum FilterOrderbyOrder: RESPRenderable, Sendable {
+        public enum FilterOrderbyOrder: RESPRenderable, Sendable, Hashable {
             case asc
             case desc
 
@@ -508,7 +508,7 @@ public enum CLUSTER {
                 }
             }
         }
-        public struct FilterOrderby: RESPRenderable, Sendable {
+        public struct FilterOrderby: RESPRenderable, Sendable, Hashable {
             @usableFromInline let metric: String
             @usableFromInline let limit: Int?
             @usableFromInline let order: FilterOrderbyOrder?
@@ -532,7 +532,7 @@ public enum CLUSTER {
                 order.encode(into: &commandEncoder)
             }
         }
-        public enum Filter: RESPRenderable, Sendable {
+        public enum Filter: RESPRenderable, Sendable, Hashable {
             case slotsrange(FilterSlotsrange)
             case orderby(FilterOrderby)
 
@@ -566,7 +566,7 @@ public enum CLUSTER {
     }
 
     /// Returns the mapping of cluster slots to nodes.
-    public struct SLOTS: ValkeyCommand {
+    public struct SLOTS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -580,7 +580,7 @@ public enum CLUSTER {
 }
 
 /// Signals that a cluster client is following an -ASK redirect.
-public struct ASKING: ValkeyCommand {
+public struct ASKING: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -590,7 +590,7 @@ public struct ASKING: ValkeyCommand {
 }
 
 /// Enables read-only queries for a connection to a Valkey replica node.
-public struct READONLY: ValkeyCommand {
+public struct READONLY: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 
@@ -600,7 +600,7 @@ public struct READONLY: ValkeyCommand {
 }
 
 /// Enables read-write queries for a connection to a Valkey replica node.
-public struct READWRITE: ValkeyCommand {
+public struct READWRITE: ValkeyCommand, Hashable {
     @inlinable public init() {
     }
 

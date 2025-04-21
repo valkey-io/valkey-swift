@@ -25,7 +25,7 @@ import Foundation
 /// A container for function commands.
 public enum FUNCTION {
     /// Deletes a library and its functions.
-    public struct DELETE<LibraryName: RESPStringRenderable>: ValkeyCommand {
+    public struct DELETE<LibraryName: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var libraryName: LibraryName
 
         @inlinable public init(libraryName: LibraryName) {
@@ -38,7 +38,7 @@ public enum FUNCTION {
     }
 
     /// Dumps all libraries into a serialized binary payload.
-    public struct DUMP: ValkeyCommand {
+    public struct DUMP: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -48,8 +48,8 @@ public enum FUNCTION {
     }
 
     /// Deletes all libraries and functions.
-    public struct FLUSH: ValkeyCommand {
-        public enum FlushType: RESPRenderable, Sendable {
+    public struct FLUSH: ValkeyCommand, Hashable {
+        public enum FlushType: RESPRenderable, Sendable, Hashable {
             case async
             case sync
 
@@ -76,7 +76,7 @@ public enum FUNCTION {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -88,7 +88,7 @@ public enum FUNCTION {
     }
 
     /// Terminates a function during execution.
-    public struct KILL: ValkeyCommand {
+    public struct KILL: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -98,7 +98,7 @@ public enum FUNCTION {
     }
 
     /// Returns information about all libraries.
-    public struct LIST: ValkeyCommand {
+    public struct LIST: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var libraryNamePattern: String?
@@ -115,7 +115,7 @@ public enum FUNCTION {
     }
 
     /// Creates a library.
-    public struct LOAD<FunctionCode: RESPStringRenderable>: ValkeyCommand {
+    public struct LOAD<FunctionCode: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var replace: Bool
         public var functionCode: FunctionCode
 
@@ -130,8 +130,8 @@ public enum FUNCTION {
     }
 
     /// Restores all libraries from a payload.
-    public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
-        public enum Policy: RESPRenderable, Sendable {
+    public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand, Hashable {
+        public enum Policy: RESPRenderable, Sendable, Hashable {
             case flush
             case append
             case replace
@@ -162,7 +162,7 @@ public enum FUNCTION {
     }
 
     /// Returns information about a function during execution.
-    public struct STATS: ValkeyCommand {
+    public struct STATS: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Map
 
         @inlinable public init() {
@@ -178,8 +178,8 @@ public enum FUNCTION {
 /// A container for Lua scripts management commands.
 public enum SCRIPT {
     /// Sets the debug mode of server-side Lua scripts.
-    public struct DEBUG: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+    public struct DEBUG: ValkeyCommand, Hashable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case yes
             case sync
             case no
@@ -208,7 +208,7 @@ public enum SCRIPT {
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
-    public struct EXISTS<Sha1: RESPStringRenderable>: ValkeyCommand {
+    public struct EXISTS<Sha1: RESPStringRenderable>: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         public var sha1: [Sha1]
@@ -223,8 +223,8 @@ public enum SCRIPT {
     }
 
     /// Removes all server-side Lua scripts from the script cache.
-    public struct FLUSH: ValkeyCommand {
-        public enum FlushType: RESPRenderable, Sendable {
+    public struct FLUSH: ValkeyCommand, Hashable {
+        public enum FlushType: RESPRenderable, Sendable, Hashable {
             case async
             case sync
 
@@ -251,7 +251,7 @@ public enum SCRIPT {
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: ValkeyCommand {
+    public struct HELP: ValkeyCommand, Hashable {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
@@ -263,7 +263,7 @@ public enum SCRIPT {
     }
 
     /// Terminates a server-side Lua script during execution.
-    public struct KILL: ValkeyCommand {
+    public struct KILL: ValkeyCommand, Hashable {
         @inlinable public init() {
         }
 
@@ -273,7 +273,7 @@ public enum SCRIPT {
     }
 
     /// Loads a server-side Lua script to the script cache.
-    public struct LOAD<Script: RESPStringRenderable>: ValkeyCommand {
+    public struct LOAD<Script: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var script: Script
 
         @inlinable public init(script: Script) {
@@ -286,7 +286,7 @@ public enum SCRIPT {
     }
 
     /// Show server-side Lua script in the script cache.
-    public struct SHOW<Sha1: RESPStringRenderable>: ValkeyCommand {
+    public struct SHOW<Sha1: RESPStringRenderable>: ValkeyCommand, Hashable {
         public var sha1: Sha1
 
         @inlinable public init(sha1: Sha1) {
@@ -301,7 +301,7 @@ public enum SCRIPT {
 }
 
 /// Executes a server-side Lua script.
-public struct EVAL<Script: RESPStringRenderable>: ValkeyCommand {
+public struct EVAL<Script: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var script: Script
     public var key: [ValkeyKey]
     public var arg: [String]
@@ -320,7 +320,7 @@ public struct EVAL<Script: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Executes a server-side Lua script by SHA1 digest.
-public struct EVALSHA<Sha1: RESPStringRenderable>: ValkeyCommand {
+public struct EVALSHA<Sha1: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var sha1: Sha1
     public var key: [ValkeyKey]
     public var arg: [String]
@@ -339,7 +339,7 @@ public struct EVALSHA<Sha1: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Executes a read-only server-side Lua script by SHA1 digest.
-public struct EVALSHARO<Sha1: RESPStringRenderable>: ValkeyCommand {
+public struct EVALSHARO<Sha1: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var sha1: Sha1
     public var key: [ValkeyKey]
     public var arg: [String]
@@ -358,7 +358,7 @@ public struct EVALSHARO<Sha1: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Executes a read-only server-side Lua script.
-public struct EVALRO<Script: RESPStringRenderable>: ValkeyCommand {
+public struct EVALRO<Script: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var script: Script
     public var key: [ValkeyKey]
     public var arg: [String]
@@ -377,7 +377,7 @@ public struct EVALRO<Script: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Invokes a function.
-public struct FCALL<Function: RESPStringRenderable>: ValkeyCommand {
+public struct FCALL<Function: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var function: Function
     public var key: [ValkeyKey]
     public var arg: [String]
@@ -396,7 +396,7 @@ public struct FCALL<Function: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Invokes a read-only function.
-public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand {
+public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand, Hashable {
     public var function: Function
     public var key: [ValkeyKey]
     public var arg: [String]
