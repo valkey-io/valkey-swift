@@ -34,9 +34,11 @@ public protocol ValkeyCommand: Sendable, Hashable {
 
 extension ValkeyCommand {
     /// Default to no keys affected
+    @inlinable
     public var keysAffected: [ValkeyKey] { [] }
 
     /// Is command readonly
+    @inlinable
     public var readOnly: Bool { false }
 }
 
@@ -53,6 +55,9 @@ struct ValkeyRawResponseCommand<Command: ValkeyCommand>: ValkeyCommand {
 
     @usableFromInline
     var keysAffected: [ValkeyKey] { command.keysAffected }
+
+    @usableFromInline
+    var readOnly: Bool { command.readOnly }
 
     @inlinable
     func encode(into commandEncoder: inout ValkeyCommandEncoder) {

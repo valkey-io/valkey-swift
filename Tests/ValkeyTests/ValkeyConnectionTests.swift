@@ -283,4 +283,69 @@ struct ConnectionTests {
         let results = try await asyncResults
         #expect(throws: ValkeyClientError(.commandError, message: "error")) { try results.1.get() }
     }
+
+    @Test
+    func testCachedConnection() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        let channel = NIOAsyncTestingChannel()
+        var logger = Logger(label: "test")
+        logger.logLevel = .trace
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let cachedConnection = ValkeyCachedConnection(connection: connection)
+            group.addTask {
+                // start tracking
+                _ = try await connection.clientTracking(status: .on)
+                try await cachedConnection.run()
+            }
+            group.addTask {
+                await stream.first { _ in true }
+                _ = try await cachedConnection.set(key: "foo", value: "bar")
+                var value = try await cachedConnection.get(key: "foo")
+                try #expect(value?.decode(as: String.self) == "bar")
+                value = try await cachedConnection.get(key: "foo")
+                try #expect(value?.decode(as: String.self) == "bar")
+                _ = try await cachedConnection.set(key: "foo", value: "baz")
+                try await Task.sleep(for: .milliseconds(10))
+                value = try await cachedConnection.get(key: "foo")
+                try #expect(value?.decode(as: String.self) == "baz")
+            }
+
+            group.addTask {
+                // CLIENT TRACKING on
+                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["CLIENT", "TRACKING", "ON"])).base)
+                try await channel.writeInbound(RESPToken(.simpleString("Ok")).base)
+                // SUBSCRIBE command
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "__redis__:invalidate"])).base)
+                // push subscribe
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("__redis__:invalidate"), .number(1)])).base)
+                cont.finish()
+                // SET foo bar
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SET", "foo", "bar"])).base)
+                try await channel.writeInbound(RESPToken(.simpleString("Ok")).base)
+                // GET foo
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
+                try await channel.writeInbound(RESPToken(.bulkString("bar")).base)
+                // SET foo baz
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SET", "foo", "baz"])).base)
+                try await channel.writeInbound(RESPToken(.simpleString("Ok")).base)
+                // push invalidate
+                try await channel.writeInbound(RESPToken(.push([.bulkString("invalidate"), .bulkString("foo")])).base)
+                // GET foo
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
+                try await channel.writeInbound(RESPToken(.bulkString("baz")).base)
+            }
+            _ = try await group.next()
+            _ = try await group.next()
+            try await channel.close()
+        }
+    }
 }

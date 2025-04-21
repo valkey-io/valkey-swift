@@ -310,6 +310,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                     promise.succeed(Self.simpleOk)
                 }
             } catch {
+                self.logger.debug("Closing because of error", metadata: ["error": "\(error)"])
                 context.close(mode: .all, promise: nil)
             }
 

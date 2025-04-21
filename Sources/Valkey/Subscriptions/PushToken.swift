@@ -24,17 +24,20 @@ struct PushToken: RESPTokenDecodable {
     static let ssubscribeString = ByteBuffer(string: "ssubscribe")
     static let sunsubscribeString = ByteBuffer(string: "sunsubscribe")
     static let smessageString = ByteBuffer(string: "smessage")
+    static let invalidateString = ByteBuffer(string: "invalidate")
 
     enum TokenType: CustomStringConvertible {
         case subscribe(subscriptionCount: Int)
         case unsubscribe(subscriptionCount: Int)
         case message(channel: String, message: String)
+        case invalidate(keys: [ValkeyKey])
 
         var description: String {
             switch self {
             case .subscribe: "subscribe"
             case .unsubscribe: "unsubscribe"
             case .message: "message"
+            case .invalidate: "invalidate"
             }
         }
     }
@@ -119,6 +122,13 @@ struct PushToken: RESPTokenDecodable {
                 let channel = try String(fromRESP: arrayIterator.next()!)
                 self.value = .shardChannel(channel)
                 self.type = try TokenType.message(channel: channel, message: String(fromRESP: arrayIterator.next()!))
+
+            case Self.invalidateString:
+                guard respArray.count == 2 else {
+                    throw ValkeyClientError(.subscriptionError, message: "Received invalid invalidate push notification")
+                }
+                self.value = .channel(ValkeyCachedConnection.invalidateChannel)
+                self.type = try TokenType.invalidate(keys: [ValkeyKey](fromRESP: arrayIterator.next()!))
 
             default:
                 throw ValkeyClientError(.subscriptionError, message: "Received unrecognised notification \(String(buffer: notification))")

@@ -46,6 +46,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// Connection ID, used by connection pool
     public let id: ID
     /// Logger used by Server
+    @usableFromInline
     let logger: Logger
     @usableFromInline
     let channel: Channel

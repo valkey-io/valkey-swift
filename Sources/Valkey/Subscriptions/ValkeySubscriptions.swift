@@ -77,7 +77,20 @@ struct ValkeySubscriptions {
             case .doNothing, .none:
                 self.logger.trace("Received message for inactive subscription", metadata: ["subscription": "\(pushToken.value)"])
             }
+
+        case .invalidate(let keys):
+            switch self.subscriptionMap[pushToken.value, default: .init()].receivedMessage() {
+            case .forwardMessage(let subscriptions):
+                for subscription in subscriptions {
+                    for key in keys {
+                        subscription.sendMessage(.init(channel: ValkeyCachedConnection.invalidateChannel, message: key.rawValue))
+                    }
+                }
+            case .doNothing:
+                self.logger.trace("Received message for inactive subscription \(pushToken.value)")
+            }
         }
+
         return returnValue
     }
 
