@@ -19,7 +19,8 @@ public protocol RESPCommand: Sendable {
     associatedtype Response: RESPTokenRepresentable = RESPToken
     associatedtype Keys: Collection<RESPKey>
 
-    /// Keys affected by command
+    /// Keys affected by command. This is used in cluster mode to determine which
+    /// shard to connect to.
     var keysAffected: Keys { get }
 
     ///
