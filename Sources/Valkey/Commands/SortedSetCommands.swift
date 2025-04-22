@@ -53,6 +53,8 @@ public struct BZMPOP: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
@@ -70,6 +72,8 @@ public struct BZPOPMAX: RESPCommand {
         self.timeout = timeout
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZPOPMAX", key, timeout)
     }
@@ -86,6 +90,8 @@ public struct BZPOPMIN: RESPCommand {
         self.key = key
         self.timeout = timeout
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BZPOPMIN", key, timeout)
@@ -163,6 +169,8 @@ public struct ZADD: RESPCommand {
         self.data = data
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZADD", key, condition, comparison, RESPPureToken("CH", change), RESPPureToken("INCR", increment), data)
     }
@@ -177,6 +185,8 @@ public struct ZCARD: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZCARD", key)
@@ -197,6 +207,8 @@ public struct ZCOUNT: RESPCommand {
         self.max = max
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZCOUNT", key, min, max)
     }
@@ -214,6 +226,8 @@ public struct ZDIFF: RESPCommand {
         self.withscores = withscores
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZDIFF", RESPArrayWithCount(key), RESPPureToken("WITHSCORES", withscores))
     }
@@ -230,6 +244,8 @@ public struct ZDIFFSTORE: RESPCommand {
         self.destination = destination
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { [destination] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZDIFFSTORE", destination, RESPArrayWithCount(key))
@@ -249,6 +265,8 @@ public struct ZINCRBY: RESPCommand {
         self.increment = increment
         self.member = member
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINCRBY", key, increment, member)
@@ -288,6 +306,8 @@ public struct ZINTER: RESPCommand {
         self.withscores = withscores
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
     }
@@ -304,6 +324,8 @@ public struct ZINTERCARD: RESPCommand {
         self.key = key
         self.limit = limit
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
@@ -343,6 +365,8 @@ public struct ZINTERSTORE: RESPCommand {
         self.aggregate = aggregate
     }
 
+    public var keysAffected: [RESPKey] { [destination] + key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
     }
@@ -361,6 +385,8 @@ public struct ZLEXCOUNT: RESPCommand {
         self.min = min
         self.max = max
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZLEXCOUNT", key, min, max)
@@ -396,6 +422,8 @@ public struct ZMPOP: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
@@ -412,6 +440,8 @@ public struct ZMSCORE: RESPCommand {
         self.key = key
         self.member = member
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZMSCORE", key, member)
@@ -430,6 +460,8 @@ public struct ZPOPMAX: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZPOPMAX", key, count)
     }
@@ -446,6 +478,8 @@ public struct ZPOPMIN: RESPCommand {
         self.key = key
         self.count = count
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZPOPMIN", key, count)
@@ -484,6 +518,8 @@ public struct ZRANDMEMBER: RESPCommand {
         self.key = key
         self.options = options
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANDMEMBER", key, options)
@@ -548,6 +584,8 @@ public struct ZRANGE: RESPCommand {
         self.withscores = withscores
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGE", key, start, stop, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
     }
@@ -590,6 +628,8 @@ public struct ZRANGEBYLEX: RESPCommand {
         self.max = max
         self.limit = limit
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
@@ -635,6 +675,8 @@ public struct ZRANGEBYSCORE: RESPCommand {
         self.withscores = withscores
         self.limit = limit
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGEBYSCORE", key, min, max, RESPPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
@@ -699,6 +741,8 @@ public struct ZRANGESTORE: RESPCommand {
         self.limit = limit
     }
 
+    public var keysAffected: [RESPKey] { [dst, src] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANGESTORE", dst, src, min, max, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit))
     }
@@ -718,6 +762,8 @@ public struct ZRANK: RESPCommand {
         self.withscore = withscore
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZRANK", key, member, RESPPureToken("WITHSCORE", withscore))
     }
@@ -734,6 +780,8 @@ public struct ZREM: RESPCommand {
         self.key = key
         self.member = member
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREM", key, member)
@@ -754,6 +802,8 @@ public struct ZREMRANGEBYLEX: RESPCommand {
         self.max = max
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYLEX", key, min, max)
     }
@@ -773,6 +823,8 @@ public struct ZREMRANGEBYRANK: RESPCommand {
         self.stop = stop
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYRANK", key, start, stop)
     }
@@ -791,6 +843,8 @@ public struct ZREMRANGEBYSCORE: RESPCommand {
         self.min = min
         self.max = max
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREMRANGEBYSCORE", key, min, max)
@@ -813,6 +867,8 @@ public struct ZREVRANGE: RESPCommand {
         self.stop = stop
         self.withscores = withscores
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGE", key, start, stop, RESPPureToken("WITHSCORES", withscores))
@@ -856,6 +912,8 @@ public struct ZREVRANGEBYLEX: RESPCommand {
         self.min = min
         self.limit = limit
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
@@ -902,6 +960,8 @@ public struct ZREVRANGEBYSCORE: RESPCommand {
         self.limit = limit
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANGEBYSCORE", key, max, min, RESPPureToken("WITHSCORES", withscores), RESPWithToken("LIMIT", limit))
     }
@@ -920,6 +980,8 @@ public struct ZREVRANK: RESPCommand {
         self.member = member
         self.withscore = withscore
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZREVRANK", key, member, RESPPureToken("WITHSCORE", withscore))
@@ -942,6 +1004,8 @@ public struct ZSCAN: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
@@ -958,6 +1022,8 @@ public struct ZSCORE: RESPCommand {
         self.key = key
         self.member = member
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZSCORE", key, member)
@@ -997,6 +1063,8 @@ public struct ZUNION: RESPCommand {
         self.withscores = withscores
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
     }
@@ -1034,6 +1102,8 @@ public struct ZUNIONSTORE: RESPCommand {
         self.weight = weight
         self.aggregate = aggregate
     }
+
+    public var keysAffected: [RESPKey] { [destination] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))

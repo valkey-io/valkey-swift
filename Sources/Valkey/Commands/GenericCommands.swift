@@ -34,6 +34,8 @@ public enum OBJECT {
             self.key = key
         }
 
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "ENCODING", key)
         }
@@ -48,6 +50,8 @@ public enum OBJECT {
         @inlinable public init(key: RESPKey) {
             self.key = key
         }
+
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "FREQ", key)
@@ -77,6 +81,8 @@ public enum OBJECT {
             self.key = key
         }
 
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "IDLETIME", key)
         }
@@ -91,6 +97,8 @@ public enum OBJECT {
         @inlinable public init(key: RESPKey) {
             self.key = key
         }
+
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "REFCOUNT", key)
@@ -115,6 +123,8 @@ public struct COPY: RESPCommand {
         self.replace = replace
     }
 
+    public var keysAffected: [RESPKey] { [source, destination] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("COPY", source, destination, RESPWithToken("DB", destinationDb), RESPPureToken("REPLACE", replace))
     }
@@ -129,6 +139,8 @@ public struct DEL: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DEL", key)
@@ -145,6 +157,8 @@ public struct DUMP: RESPCommand {
         self.key = key
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("DUMP", key)
     }
@@ -159,6 +173,8 @@ public struct EXISTS: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXISTS", key)
@@ -198,6 +214,8 @@ public struct EXPIRE: RESPCommand {
         self.condition = condition
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXPIRE", key, seconds, condition)
     }
@@ -236,6 +254,8 @@ public struct EXPIREAT: RESPCommand {
         self.condition = condition
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXPIREAT", key, Int(unixTimeSeconds.timeIntervalSince1970), condition)
     }
@@ -250,6 +270,8 @@ public struct EXPIRETIME: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EXPIRETIME", key)
@@ -358,6 +380,8 @@ public struct MIGRATE: RESPCommand {
         self.keys = keys
     }
 
+    public var keysAffected: [RESPKey] { keys }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MIGRATE", host, port, keySelector, destinationDb, timeout, RESPPureToken("COPY", copy), RESPPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
     }
@@ -375,6 +399,8 @@ public struct MOVE: RESPCommand {
         self.db = db
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("MOVE", key, db)
     }
@@ -389,6 +415,8 @@ public struct PERSIST: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PERSIST", key)
@@ -428,6 +456,8 @@ public struct PEXPIRE: RESPCommand {
         self.condition = condition
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PEXPIRE", key, milliseconds, condition)
     }
@@ -466,6 +496,8 @@ public struct PEXPIREAT: RESPCommand {
         self.condition = condition
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PEXPIREAT", key, Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000), condition)
     }
@@ -481,6 +513,8 @@ public struct PEXPIRETIME: RESPCommand {
         self.key = key
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PEXPIRETIME", key)
     }
@@ -495,6 +529,8 @@ public struct PTTL: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PTTL", key)
@@ -526,6 +562,8 @@ public struct RENAME: RESPCommand {
         self.newkey = newkey
     }
 
+    public var keysAffected: [RESPKey] { [key, newkey] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RENAME", key, newkey)
     }
@@ -542,6 +580,8 @@ public struct RENAMENX: RESPCommand {
         self.key = key
         self.newkey = newkey
     }
+
+    public var keysAffected: [RESPKey] { [key, newkey] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RENAMENX", key, newkey)
@@ -569,6 +609,8 @@ public struct RESTORE: RESPCommand {
         self.seconds = seconds
         self.frequency = frequency
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RESTORE", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
@@ -654,6 +696,8 @@ public struct SORT: RESPCommand {
         self.destination = destination
     }
 
+    public var keysAffected: [RESPKey] { [key] + (destination.map { [$0] } ?? []) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))
     }
@@ -715,6 +759,8 @@ public struct SORTRO: RESPCommand {
         self.sorting = sorting
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting))
     }
@@ -729,6 +775,8 @@ public struct TOUCH: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("TOUCH", key)
@@ -745,6 +793,8 @@ public struct TTL: RESPCommand {
         self.key = key
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("TTL", key)
     }
@@ -760,6 +810,8 @@ public struct TYPE: RESPCommand {
         self.key = key
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("TYPE", key)
     }
@@ -774,6 +826,8 @@ public struct UNLINK: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("UNLINK", key)

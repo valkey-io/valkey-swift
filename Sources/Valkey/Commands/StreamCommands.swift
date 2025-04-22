@@ -62,6 +62,8 @@ public enum XGROUP {
             self.entriesRead = entriesRead
         }
 
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "CREATE", key, group, idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
         }
@@ -80,6 +82,8 @@ public enum XGROUP {
             self.group = group
             self.consumer = consumer
         }
+
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, group, consumer)
@@ -100,6 +104,8 @@ public enum XGROUP {
             self.consumer = consumer
         }
 
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, group, consumer)
         }
@@ -116,6 +122,8 @@ public enum XGROUP {
             self.key = key
             self.group = group
         }
+
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "DESTROY", key, group)
@@ -171,6 +179,8 @@ public enum XGROUP {
             self.entriesread = entriesread
         }
 
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
         }
@@ -192,6 +202,8 @@ public enum XINFO {
             self.group = group
         }
 
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "CONSUMERS", key, group)
         }
@@ -206,6 +218,8 @@ public enum XINFO {
         @inlinable public init(key: RESPKey) {
             self.key = key
         }
+
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "GROUPS", key)
@@ -258,6 +272,8 @@ public enum XINFO {
             self.fullBlock = fullBlock
         }
 
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("XINFO", "STREAM", key, fullBlock)
         }
@@ -278,6 +294,8 @@ public struct XACK: RESPCommand {
         self.group = group
         self.id = id
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XACK", key, group, id)
@@ -400,6 +418,8 @@ public struct XADD: RESPCommand {
         self.data = data
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XADD", key, RESPPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
     }
@@ -426,6 +446,8 @@ public struct XAUTOCLAIM: RESPCommand {
         self.count = count
         self.justid = justid
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
@@ -462,6 +484,8 @@ public struct XCLAIM: RESPCommand {
         self.lastid = lastid
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
@@ -479,6 +503,8 @@ public struct XDEL: RESPCommand {
         self.id = id
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XDEL", key, id)
     }
@@ -493,6 +519,8 @@ public struct XLEN: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XLEN", key)
@@ -543,6 +571,8 @@ public struct XPENDING: RESPCommand {
         self.filters = filters
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XPENDING", key, group, filters)
     }
@@ -563,6 +593,8 @@ public struct XRANGE: RESPCommand {
         self.end = end
         self.count = count
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XRANGE", key, start, end, RESPWithToken("COUNT", count))
@@ -690,6 +722,8 @@ public struct XREVRANGE: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
     }
@@ -710,6 +744,8 @@ public struct XSETID: RESPCommand {
         self.entriesAdded = entriesAdded
         self.maxDeletedId = maxDeletedId
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
@@ -784,6 +820,8 @@ public struct XTRIM: RESPCommand {
         self.key = key
         self.trim = trim
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("XTRIM", key, trim)

@@ -34,6 +34,8 @@ public struct PFADD: RESPCommand {
         self.element = element
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFADD", key, element)
     }
@@ -48,6 +50,8 @@ public struct PFCOUNT: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFCOUNT", key)
@@ -65,6 +69,8 @@ public struct PFMERGE: RESPCommand {
         self.destkey = destkey
         self.sourcekey = sourcekey
     }
+
+    public var keysAffected: [RESPKey] { [destkey] + sourcekey }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)

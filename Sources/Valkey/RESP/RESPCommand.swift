@@ -17,6 +17,18 @@ import NIOCore
 /// A RESP command that can be executed on a connection.
 public protocol RESPCommand: Sendable {
     associatedtype Response: RESPTokenRepresentable = RESPToken
+    associatedtype Keys: Collection<RESPKey>
 
+    /// Keys affected by command
+    var keysAffected: Keys { get }
+
+    ///
+    /// Encode RESP Command
+    /// - Parameter commandEncoder: RESPCommandEncoder
     func encode(into commandEncoder: inout RESPCommandEncoder)
+}
+
+extension RESPCommand {
+    /// Default to no keys affected
+    public var keysAffected: [RESPKey] { [] }
 }

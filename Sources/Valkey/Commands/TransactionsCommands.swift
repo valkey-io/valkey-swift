@@ -84,6 +84,8 @@ public struct WATCH: RESPCommand {
         self.key = key
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("WATCH", key)
     }
