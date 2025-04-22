@@ -34,6 +34,8 @@ public struct HDEL: RESPCommand {
         self.field = field
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HDEL", key, field)
     }
@@ -50,6 +52,8 @@ public struct HEXISTS: RESPCommand {
         self.key = key
         self.field = field
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HEXISTS", key, field)
@@ -68,6 +72,8 @@ public struct HGET: RESPCommand {
         self.field = field
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HGET", key, field)
     }
@@ -82,6 +88,8 @@ public struct HGETALL: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HGETALL", key)
@@ -102,6 +110,8 @@ public struct HINCRBY: RESPCommand {
         self.increment = increment
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HINCRBY", key, field, increment)
     }
@@ -121,6 +131,8 @@ public struct HINCRBYFLOAT: RESPCommand {
         self.increment = increment
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HINCRBYFLOAT", key, field, increment)
     }
@@ -136,6 +148,8 @@ public struct HKEYS: RESPCommand {
         self.key = key
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HKEYS", key)
     }
@@ -150,6 +164,8 @@ public struct HLEN: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HLEN", key)
@@ -167,6 +183,8 @@ public struct HMGET: RESPCommand {
         self.key = key
         self.field = field
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HMGET", key, field)
@@ -207,6 +225,8 @@ public struct HMSET: RESPCommand {
         self.data = data
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HMSET", key, data)
     }
@@ -245,6 +265,8 @@ public struct HRANDFIELD: RESPCommand {
         self.options = options
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HRANDFIELD", key, options)
     }
@@ -265,6 +287,8 @@ public struct HSCAN: RESPCommand {
         self.pattern = pattern
         self.count = count
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
@@ -304,6 +328,8 @@ public struct HSET: RESPCommand {
         self.data = data
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSET", key, data)
     }
@@ -323,6 +349,8 @@ public struct HSETNX: RESPCommand {
         self.value = value
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSETNX", key, field, value)
     }
@@ -340,6 +368,8 @@ public struct HSTRLEN: RESPCommand {
         self.field = field
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HSTRLEN", key, field)
     }
@@ -354,6 +384,8 @@ public struct HVALS: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("HVALS", key)

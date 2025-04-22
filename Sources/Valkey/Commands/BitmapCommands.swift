@@ -73,6 +73,8 @@ public struct BITCOUNT: RESPCommand {
         self.range = range
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITCOUNT", key, range)
     }
@@ -237,6 +239,8 @@ public struct BITFIELD: RESPCommand {
         self.operation = operation
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITFIELD", key, operation)
     }
@@ -275,6 +279,8 @@ public struct BITFIELDRO: RESPCommand {
         self.getBlock = getBlock
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
     }
@@ -312,6 +318,8 @@ public struct BITOP: RESPCommand {
         self.destkey = destkey
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { [destkey] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITOP", operation, destkey, key)
@@ -389,6 +397,8 @@ public struct BITPOS: RESPCommand {
         self.range = range
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BITPOS", key, bit, range)
     }
@@ -405,6 +415,8 @@ public struct GETBIT: RESPCommand {
         self.key = key
         self.offset = offset
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GETBIT", key, offset)
@@ -424,6 +436,8 @@ public struct SETBIT: RESPCommand {
         self.offset = offset
         self.value = value
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SETBIT", key, offset, value)

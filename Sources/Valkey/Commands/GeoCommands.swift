@@ -77,6 +77,8 @@ public struct GEOADD: RESPCommand {
         self.data = data
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOADD", key, condition, RESPPureToken("CH", change), data)
     }
@@ -117,6 +119,8 @@ public struct GEODIST: RESPCommand {
         self.unit = unit
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEODIST", key, member1, member2, unit)
     }
@@ -134,6 +138,8 @@ public struct GEOHASH: RESPCommand {
         self.member = member
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOHASH", key, member)
     }
@@ -150,6 +156,8 @@ public struct GEOPOS: RESPCommand {
         self.key = key
         self.member = member
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOPOS", key, member)
@@ -262,6 +270,8 @@ public struct GEORADIUS: RESPCommand {
         self.store = store
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUS", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
@@ -371,6 +381,8 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
         self.store = store
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
@@ -457,6 +469,8 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
         self.countBlock = countBlock
         self.order = order
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
@@ -546,6 +560,8 @@ public struct GEORADIUSRO: RESPCommand {
         self.countBlock = countBlock
         self.order = order
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUS_RO", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
@@ -756,6 +772,8 @@ public struct GEOSEARCH: RESPCommand {
         self.withhash = withhash
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOSEARCH", key, from, by, order, countBlock, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash))
     }
@@ -962,6 +980,8 @@ public struct GEOSEARCHSTORE: RESPCommand {
         self.countBlock = countBlock
         self.storedist = storedist
     }
+
+    public var keysAffected: [RESPKey] { [destination, source] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("GEOSEARCHSTORE", destination, source, from, by, order, countBlock, RESPPureToken("STOREDIST", storedist))

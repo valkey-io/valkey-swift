@@ -70,6 +70,8 @@ public struct BLMOVE: RESPCommand {
         self.timeout = timeout
     }
 
+    public var keysAffected: [RESPKey] { [source, destination] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
@@ -106,6 +108,8 @@ public struct BLMPOP: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
@@ -123,6 +127,8 @@ public struct BLPOP: RESPCommand {
         self.timeout = timeout
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BLPOP", key, timeout)
     }
@@ -139,6 +145,8 @@ public struct BRPOP: RESPCommand {
         self.key = key
         self.timeout = timeout
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BRPOP", key, timeout)
@@ -160,6 +168,8 @@ public struct BRPOPLPUSH: RESPCommand {
         self.timeout = timeout
     }
 
+    public var keysAffected: [RESPKey] { [source, destination] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("BRPOPLPUSH", source, destination, timeout)
     }
@@ -176,6 +186,8 @@ public struct LINDEX: RESPCommand {
         self.key = key
         self.index = index
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LINDEX", key, index)
@@ -213,6 +225,8 @@ public struct LINSERT: RESPCommand {
         self.element = element
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LINSERT", key, `where`, pivot, element)
     }
@@ -227,6 +241,8 @@ public struct LLEN: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LLEN", key)
@@ -279,6 +295,8 @@ public struct LMOVE: RESPCommand {
         self.whereto = whereto
     }
 
+    public var keysAffected: [RESPKey] { [source, destination] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LMOVE", source, destination, wherefrom, whereto)
     }
@@ -313,6 +331,8 @@ public struct LMPOP: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
@@ -329,6 +349,8 @@ public struct LPOP: RESPCommand {
         self.key = key
         self.count = count
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPOP", key, count)
@@ -353,6 +375,8 @@ public struct LPOS: RESPCommand {
         self.len = len
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
@@ -370,6 +394,8 @@ public struct LPUSH: RESPCommand {
         self.element = element
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPUSH", key, element)
     }
@@ -386,6 +412,8 @@ public struct LPUSHX: RESPCommand {
         self.key = key
         self.element = element
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LPUSHX", key, element)
@@ -406,6 +434,8 @@ public struct LRANGE: RESPCommand {
         self.stop = stop
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LRANGE", key, start, stop)
     }
@@ -424,6 +454,8 @@ public struct LREM: RESPCommand {
         self.count = count
         self.element = element
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LREM", key, count, element)
@@ -444,6 +476,8 @@ public struct LSET: RESPCommand {
         self.element = element
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LSET", key, index, element)
     }
@@ -463,6 +497,8 @@ public struct LTRIM: RESPCommand {
         self.stop = stop
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("LTRIM", key, start, stop)
     }
@@ -479,6 +515,8 @@ public struct RPOP: RESPCommand {
         self.key = key
         self.count = count
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPOP", key, count)
@@ -498,6 +536,8 @@ public struct RPOPLPUSH: RESPCommand {
         self.destination = destination
     }
 
+    public var keysAffected: [RESPKey] { [source, destination] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPOPLPUSH", source, destination)
     }
@@ -515,6 +555,8 @@ public struct RPUSH: RESPCommand {
         self.element = element
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPUSH", key, element)
     }
@@ -531,6 +573,8 @@ public struct RPUSHX: RESPCommand {
         self.key = key
         self.element = element
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RPUSHX", key, element)

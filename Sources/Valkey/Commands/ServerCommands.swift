@@ -642,6 +642,8 @@ public enum MEMORY {
             self.count = count
         }
 
+        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
         }
@@ -1150,6 +1152,8 @@ public struct RESTOREASKING: RESPCommand {
         self.seconds = seconds
         self.frequency = frequency
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))

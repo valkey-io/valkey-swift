@@ -327,6 +327,8 @@ public struct EVAL: RESPCommand {
         self.arg = arg
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EVAL", script, RESPArrayWithCount(key), arg)
     }
@@ -345,6 +347,8 @@ public struct EVALSHA: RESPCommand {
         self.key = key
         self.arg = arg
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EVALSHA", sha1, RESPArrayWithCount(key), arg)
@@ -365,6 +369,8 @@ public struct EVALSHARO: RESPCommand {
         self.arg = arg
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EVALSHA_RO", sha1, RESPArrayWithCount(key), arg)
     }
@@ -383,6 +389,8 @@ public struct EVALRO: RESPCommand {
         self.key = key
         self.arg = arg
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("EVAL_RO", script, RESPArrayWithCount(key), arg)
@@ -403,6 +411,8 @@ public struct FCALL: RESPCommand {
         self.arg = arg
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("FCALL", function, RESPArrayWithCount(key), arg)
     }
@@ -421,6 +431,8 @@ public struct FCALLRO: RESPCommand {
         self.key = key
         self.arg = arg
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("FCALL_RO", function, RESPArrayWithCount(key), arg)

@@ -34,6 +34,8 @@ public struct SADD: RESPCommand {
         self.member = member
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SADD", key, member)
     }
@@ -49,6 +51,8 @@ public struct SCARD: RESPCommand {
         self.key = key
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SCARD", key)
     }
@@ -63,6 +67,8 @@ public struct SDIFF: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SDIFF", key)
@@ -81,6 +87,8 @@ public struct SDIFFSTORE: RESPCommand {
         self.key = key
     }
 
+    public var keysAffected: [RESPKey] { [destination] + key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SDIFFSTORE", destination, key)
     }
@@ -95,6 +103,8 @@ public struct SINTER: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTER", key)
@@ -113,6 +123,8 @@ public struct SINTERCARD: RESPCommand {
         self.limit = limit
     }
 
+    public var keysAffected: [RESPKey] { key }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
     }
@@ -129,6 +141,8 @@ public struct SINTERSTORE: RESPCommand {
         self.destination = destination
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { [destination] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SINTERSTORE", destination, key)
@@ -147,6 +161,8 @@ public struct SISMEMBER: RESPCommand {
         self.member = member
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SISMEMBER", key, member)
     }
@@ -161,6 +177,8 @@ public struct SMEMBERS: RESPCommand {
     @inlinable public init(key: RESPKey) {
         self.key = key
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMEMBERS", key)
@@ -178,6 +196,8 @@ public struct SMISMEMBER: RESPCommand {
         self.key = key
         self.member = member
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMISMEMBER", key, member)
@@ -198,6 +218,8 @@ public struct SMOVE: RESPCommand {
         self.member = member
     }
 
+    public var keysAffected: [RESPKey] { [source, destination] }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SMOVE", source, destination, member)
     }
@@ -214,6 +236,8 @@ public struct SPOP: RESPCommand {
         self.key = key
         self.count = count
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SPOP", key, count)
@@ -232,6 +256,8 @@ public struct SRANDMEMBER: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SRANDMEMBER", key, count)
     }
@@ -248,6 +274,8 @@ public struct SREM: RESPCommand {
         self.key = key
         self.member = member
     }
+
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SREM", key, member)
@@ -270,6 +298,8 @@ public struct SSCAN: RESPCommand {
         self.count = count
     }
 
+    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
     }
@@ -284,6 +314,8 @@ public struct SUNION: RESPCommand {
     @inlinable public init(key: [RESPKey]) {
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUNION", key)
@@ -301,6 +333,8 @@ public struct SUNIONSTORE: RESPCommand {
         self.destination = destination
         self.key = key
     }
+
+    public var keysAffected: [RESPKey] { [destination] + key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeArray("SUNIONSTORE", destination, key)
