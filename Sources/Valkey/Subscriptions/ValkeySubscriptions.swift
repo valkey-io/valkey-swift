@@ -51,13 +51,13 @@ struct ValkeySubscriptions {
 
         var returnValue = false
         switch pushToken.type {
-        case .subscribe, .psubscribe, .ssubscribe:
+        case .subscribe:
             if let _ = try commandStack.received(pushToken.value) {
                 returnValue = true
             }
             self.subscriptionMap[pushToken.value, default: .init()].added()
 
-        case .unsubscribe, .punsubscribe, .sunsubscribe:
+        case .unsubscribe:
             if let _ = try commandStack.received(pushToken.value) {
                 returnValue = true
             }
@@ -68,7 +68,7 @@ struct ValkeySubscriptions {
                 break
             }
 
-        case .message(let channel, let message), .pmessage(let channel, let message), .smessage(let channel, let message):
+        case .message(let channel, let message):
             switch self.subscriptionMap[pushToken.value, default: .init()].receivedMessage() {
             case .forwardMessage(let subscriptions):
                 for subscription in subscriptions {

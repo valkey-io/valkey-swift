@@ -17,12 +17,6 @@ struct PushToken: RESPTokenRepresentable {
         case subscribe(subscriptionCount: Int)
         case unsubscribe(subscriptionCount: Int)
         case message(channel: String, message: String)
-        case psubscribe(subscriptionCount: Int)
-        case punsubscribe(subscriptionCount: Int)
-        case pmessage(channel: String, message: String)
-        case ssubscribe(subscriptionCount: Int)
-        case sunsubscribe(subscriptionCount: Int)
-        case smessage(channel: String, message: String)
     }
     let value: ValkeySubscriptionFilter
     let type: TokenType
@@ -63,21 +57,21 @@ struct PushToken: RESPTokenRepresentable {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid psubscribe push notification")
                 }
                 self.value = .pattern(try String(from: arrayIterator.next()!))
-                self.type = try TokenType.psubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
+                self.type = try TokenType.subscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
             case "punsubscribe":
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid punsubscribe push notification")
                 }
                 self.value = .pattern(try String(from: arrayIterator.next()!))
-                self.type = try TokenType.punsubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
+                self.type = try TokenType.unsubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
             case "pmessage":
                 guard respArray.count == 4 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid pmessage push notification")
                 }
                 self.value = .pattern(try String(from: arrayIterator.next()!))
-                self.type = try TokenType.pmessage(
+                self.type = try TokenType.message(
                     channel: String(from: arrayIterator.next()!),
                     message: String(from: arrayIterator.next()!)
                 )
@@ -87,14 +81,14 @@ struct PushToken: RESPTokenRepresentable {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid ssubscribe push notification")
                 }
                 self.value = .shardChannel(try String(from: arrayIterator.next()!))
-                self.type = try TokenType.ssubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
+                self.type = try TokenType.subscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
             case "sunsubscribe":
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid sunsubscribe push notification")
                 }
                 self.value = .shardChannel(try String(from: arrayIterator.next()!))
-                self.type = try TokenType.sunsubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
+                self.type = try TokenType.unsubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
             case "smessage":
                 guard respArray.count == 3 else {
@@ -102,7 +96,7 @@ struct PushToken: RESPTokenRepresentable {
                 }
                 let channel = try String(from: arrayIterator.next()!)
                 self.value = .shardChannel(channel)
-                self.type = try TokenType.smessage(channel: channel, message: String(from: arrayIterator.next()!))
+                self.type = try TokenType.message(channel: channel, message: String(from: arrayIterator.next()!))
 
             default:
                 throw ValkeyClientError(.subscriptionError, message: "Received unrecognised notification \(notification)")
