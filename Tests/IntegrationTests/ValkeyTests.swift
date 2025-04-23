@@ -163,7 +163,7 @@ struct GeneratedCommands {
                     INCR(key: key),
                     GET(key: key)
                 )
-                #expect(responses.2 == "101")
+                #expect(try responses.2.get() == "101")
             }
         }
     }

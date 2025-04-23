@@ -19,9 +19,9 @@ function genWithoutContextParameter() {
     for ((n = 1; n<$how_many; n +=1)); do
         echo -n ", _ c$(($n)): C$(($n))"
     done
-    echo -n ") async throws -> (C0.Response"
+    echo -n ") async throws -> (Result<C0.Response, Error>"
     for ((n = 1; n<$how_many; n +=1)); do
-        echo -n ", C$(($n)).Response"
+        echo -n ", Result<C$(($n)).Response, Error>"
     done
     echo ") {"
     echo -n "        guard let responses = try await self.pipeline(MULTI(), "
@@ -30,7 +30,7 @@ function genWithoutContextParameter() {
     done
     echo "EXEC()).$(($how_many+1)).get() else { throw ValkeyClientError(.transactionAborted) }"
 
-    echo -n "        return try (responses[0].convertingWithErrors()"
+    echo -n "        return (responses[0].convertingWithErrors()"
     for ((n = 1; n<$how_many; n +=1)); do
         echo -n ", responses[$(($n))].convertingWithErrors()"
     done
