@@ -158,4 +158,38 @@ struct ConnectionTests {
         }
         try await channel.closeFuture.get()
     }
+
+    func testPipeline() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+
+        async let results = connection.pipeline(
+            SET(key: "foo", value: "bar"),
+            GET(key: "foo")
+        )
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        #expect(String(buffer: outbound) == "*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
+        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n$3\r\nBar\r\n"))
+        #expect(try await results.1.get() == "Bar")
+    }
+
+    @Test
+    func testTransaction() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+
+        async let results = connection.transaction(
+            SET(key: "foo", value: "10"),
+            INCR(key: "foo")
+        )
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        #expect(
+            String(buffer: outbound)
+                == "*1\r\n$5\r\nMULTI\r\n*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$2\r\n10\r\n*2\r\n$4\r\nINCR\r\n$3\r\nfoo\r\n*1\r\n$4\r\nEXEC\r\n"
+        )
+        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n+OK\r\n+OK\r\n*2\r\n+OK\r\n:11\r\n"))
+        #expect(try await results.1 == 11)
+    }
 }
