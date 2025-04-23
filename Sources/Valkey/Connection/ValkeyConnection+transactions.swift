@@ -20,16 +20,18 @@ extension ValkeyConnection {
 
     @inlinable
     public func transaction<C0: RESPCommand>(_ c0: C0) async throws -> (C0.Response) {
-        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), EXEC()).2 else { throw ValkeyClientError(.transactionAborted) }
-        return try (responses[0].converting())
+        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), EXEC()).2.get() else {
+            throw ValkeyClientError(.transactionAborted)
+        }
+        return try (responses[0].convertingWithErrors())
     }
 
     @inlinable
     public func transaction<C0: RESPCommand, C1: RESPCommand>(_ c0: C0, _ c1: C1) async throws -> (C0.Response, C1.Response) {
-        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), TransactionCommand(c1), EXEC()).3 else {
+        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), TransactionCommand(c1), EXEC()).3.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
-        return try (responses[0].converting(), responses[1].converting())
+        return try (responses[0].convertingWithErrors(), responses[1].convertingWithErrors())
     }
 
     @inlinable
@@ -38,9 +40,9 @@ extension ValkeyConnection {
         _ c1: C1,
         _ c2: C2
     ) async throws -> (C0.Response, C1.Response, C2.Response) {
-        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), TransactionCommand(c1), TransactionCommand(c2), EXEC()).4
+        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), TransactionCommand(c1), TransactionCommand(c2), EXEC()).4.get()
         else { throw ValkeyClientError(.transactionAborted) }
-        return try (responses[0].converting(), responses[1].converting(), responses[2].converting())
+        return try (responses[0].convertingWithErrors(), responses[1].convertingWithErrors(), responses[2].convertingWithErrors())
     }
 
     @inlinable
@@ -58,9 +60,12 @@ extension ValkeyConnection {
                 TransactionCommand(c2),
                 TransactionCommand(c3),
                 EXEC()
-            ).5
+            ).5.get()
         else { throw ValkeyClientError(.transactionAborted) }
-        return try (responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting())
+        return try (
+            responses[0].convertingWithErrors(), responses[1].convertingWithErrors(), responses[2].convertingWithErrors(),
+            responses[3].convertingWithErrors()
+        )
     }
 
     @inlinable
@@ -80,10 +85,11 @@ extension ValkeyConnection {
                 TransactionCommand(c3),
                 TransactionCommand(c4),
                 EXEC()
-            ).6
+            ).6.get()
         else { throw ValkeyClientError(.transactionAborted) }
         return try (
-            responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting()
+            responses[0].convertingWithErrors(), responses[1].convertingWithErrors(), responses[2].convertingWithErrors(),
+            responses[3].convertingWithErrors(), responses[4].convertingWithErrors()
         )
     }
 
@@ -106,11 +112,11 @@ extension ValkeyConnection {
                 TransactionCommand(c4),
                 TransactionCommand(c5),
                 EXEC()
-            ).7
+            ).7.get()
         else { throw ValkeyClientError(.transactionAborted) }
         return try (
-            responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
-            responses[5].converting()
+            responses[0].convertingWithErrors(), responses[1].convertingWithErrors(), responses[2].convertingWithErrors(),
+            responses[3].convertingWithErrors(), responses[4].convertingWithErrors(), responses[5].convertingWithErrors()
         )
     }
 
@@ -135,11 +141,12 @@ extension ValkeyConnection {
                 TransactionCommand(c5),
                 TransactionCommand(c6),
                 EXEC()
-            ).8
+            ).8.get()
         else { throw ValkeyClientError(.transactionAborted) }
         return try (
-            responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
-            responses[5].converting(), responses[6].converting()
+            responses[0].convertingWithErrors(), responses[1].convertingWithErrors(), responses[2].convertingWithErrors(),
+            responses[3].convertingWithErrors(), responses[4].convertingWithErrors(), responses[5].convertingWithErrors(),
+            responses[6].convertingWithErrors()
         )
     }
 
@@ -175,11 +182,12 @@ extension ValkeyConnection {
                 TransactionCommand(c6),
                 TransactionCommand(c7),
                 EXEC()
-            ).9
+            ).9.get()
         else { throw ValkeyClientError(.transactionAborted) }
         return try (
-            responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
-            responses[5].converting(), responses[6].converting(), responses[7].converting()
+            responses[0].convertingWithErrors(), responses[1].convertingWithErrors(), responses[2].convertingWithErrors(),
+            responses[3].convertingWithErrors(), responses[4].convertingWithErrors(), responses[5].convertingWithErrors(),
+            responses[6].convertingWithErrors(), responses[7].convertingWithErrors()
         )
     }
 
@@ -218,11 +226,12 @@ extension ValkeyConnection {
                 TransactionCommand(c7),
                 TransactionCommand(c8),
                 EXEC()
-            ).10
+            ).10.get()
         else { throw ValkeyClientError(.transactionAborted) }
         return try (
-            responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
-            responses[5].converting(), responses[6].converting(), responses[7].converting(), responses[8].converting()
+            responses[0].convertingWithErrors(), responses[1].convertingWithErrors(), responses[2].convertingWithErrors(),
+            responses[3].convertingWithErrors(), responses[4].convertingWithErrors(), responses[5].convertingWithErrors(),
+            responses[6].convertingWithErrors(), responses[7].convertingWithErrors(), responses[8].convertingWithErrors()
         )
     }
 
@@ -266,11 +275,13 @@ extension ValkeyConnection {
                 TransactionCommand(c8),
                 TransactionCommand(c9),
                 EXEC()
-            ).11
+            ).11.get()
         else { throw ValkeyClientError(.transactionAborted) }
         return try (
-            responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
-            responses[5].converting(), responses[6].converting(), responses[7].converting(), responses[8].converting(), responses[9].converting()
+            responses[0].convertingWithErrors(), responses[1].convertingWithErrors(), responses[2].convertingWithErrors(),
+            responses[3].convertingWithErrors(), responses[4].convertingWithErrors(), responses[5].convertingWithErrors(),
+            responses[6].convertingWithErrors(), responses[7].convertingWithErrors(), responses[8].convertingWithErrors(),
+            responses[9].convertingWithErrors()
         )
     }
 }

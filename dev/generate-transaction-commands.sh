@@ -28,11 +28,11 @@ function genWithoutContextParameter() {
     for ((n = 0; n<$how_many; n +=1)); do
         echo -n "TransactionCommand(c$(($n))), "
     done
-    echo "EXEC()).$(($how_many+1)) else { throw ValkeyClientError(.transactionAborted) }"
+    echo "EXEC()).$(($how_many+1)).get() else { throw ValkeyClientError(.transactionAborted) }"
 
-    echo -n "        return try (responses[0].converting()"
+    echo -n "        return try (responses[0].convertingWithErrors()"
     for ((n = 1; n<$how_many; n +=1)); do
-        echo -n ", responses[$(($n))].converting()"
+        echo -n ", responses[$(($n))].convertingWithErrors()"
     done
     echo ")"
     echo "    }"
