@@ -183,6 +183,15 @@ struct ValkeySubscriptions {
     ///
     /// Called when associated subscribe command fails
     mutating func removeSubscription(id: Int) {
+        guard let subscription = subscriptionIDMap[id] else { return }
+        for filter in subscription.filters {
+            switch self.subscriptionMap[filter, default: .init()].close(subscription: subscription) {
+            case .doNothing:
+                break
+            case .unsubscribe:
+                self.subscriptionMap[filter] = nil
+            }
+        }
         subscriptionIDMap[id] = nil
     }
 

@@ -140,6 +140,34 @@ struct SubscriptionTests {
         }.get()
     }
 
+    @Test
+    func testSubscribeFailed() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+
+        async let subscribeResult: Void = connection.subscribe(to: "test") { _ in }
+        _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        try await channel.writeInbound(ByteBuffer(string: "!10\r\nBulkError!\r\n"))
+        do {
+            _ = try await subscribeResult
+            Issue.record()
+        } catch let error as ValkeyClientError {
+            #expect(error.errorCode == .commandError)
+            #expect(error.message == "BulkError!")
+        }
+        // Verify GET runs fine after failing subscription
+        async let fooResult = connection.get(key: "foo")
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        #expect(String(buffer: outbound) == "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
+        try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))
+        #expect(try await fooResult == "Bar")
+
+        try await connection.channel.eventLoop.submit {
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
+        }.get()
+    }
+
     /// Test a single subscription can subscribe to multiple channels
     @Test
     func testSubscribeMultipleChannels() async throws {
