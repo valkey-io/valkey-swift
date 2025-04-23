@@ -26,7 +26,7 @@ function genWithoutContextParameter() {
     echo ") {"
     echo -n "        guard let responses = try await self.pipeline(MULTI(), "
     for ((n = 0; n<$how_many; n +=1)); do
-        echo -n "c$(($n)), "
+        echo -n "TransactionCommand(c$(($n))), "
     done
     echo "EXEC()).$(($how_many+1)) else { throw ValkeyClientError(.transactionAborted) }"
 
@@ -46,8 +46,22 @@ echo
 
 echo "import NIOCore"
 echo ""
-echo "extension ValkeyConnection {"
-
+echo "extension ValkeyConnection {
+    /// Generic command used to disable conversion to a command Response type 
+    @usableFromInline
+    struct TransactionCommand<Command: RESPCommand>: RESPCommand {
+        @usableFromInline
+        let command: Command
+        @usableFromInline
+        init(_ command: Command) {
+            self.command = command
+        }
+        @usableFromInline
+        func encode(into commandEncoder: inout RESPCommandEncoder) {
+            self.command.encode(into: &commandEncoder)
+        }
+    }
+"
 # note:
 # - widening the inverval below (eg. going from {1..15} to {1..25}) is Semver minor
 # - narrowing the interval below is SemVer _MAJOR_!

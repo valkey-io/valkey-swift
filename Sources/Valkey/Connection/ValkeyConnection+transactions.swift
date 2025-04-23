@@ -3,16 +3,32 @@
 import NIOCore
 
 extension ValkeyConnection {
+    /// Generic command used to disable conversion to a command Response type
+    @usableFromInline
+    struct TransactionCommand<Command: RESPCommand>: RESPCommand {
+        @usableFromInline
+        let command: Command
+        @usableFromInline
+        init(_ command: Command) {
+            self.command = command
+        }
+        @usableFromInline
+        func encode(into commandEncoder: inout RESPCommandEncoder) {
+            self.command.encode(into: &commandEncoder)
+        }
+    }
 
     @inlinable
     public func transaction<C0: RESPCommand>(_ c0: C0) async throws -> (C0.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, EXEC()).2 else { throw ValkeyClientError(.transactionAborted) }
+        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), EXEC()).2 else { throw ValkeyClientError(.transactionAborted) }
         return try (responses[0].converting())
     }
 
     @inlinable
     public func transaction<C0: RESPCommand, C1: RESPCommand>(_ c0: C0, _ c1: C1) async throws -> (C0.Response, C1.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, EXEC()).3 else { throw ValkeyClientError(.transactionAborted) }
+        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), TransactionCommand(c1), EXEC()).3 else {
+            throw ValkeyClientError(.transactionAborted)
+        }
         return try (responses[0].converting(), responses[1].converting())
     }
 
@@ -22,7 +38,8 @@ extension ValkeyConnection {
         _ c1: C1,
         _ c2: C2
     ) async throws -> (C0.Response, C1.Response, C2.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, c2, EXEC()).4 else { throw ValkeyClientError(.transactionAborted) }
+        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), TransactionCommand(c1), TransactionCommand(c2), EXEC()).4
+        else { throw ValkeyClientError(.transactionAborted) }
         return try (responses[0].converting(), responses[1].converting(), responses[2].converting())
     }
 
@@ -33,7 +50,16 @@ extension ValkeyConnection {
         _ c2: C2,
         _ c3: C3
     ) async throws -> (C0.Response, C1.Response, C2.Response, C3.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, c2, c3, EXEC()).5 else { throw ValkeyClientError(.transactionAborted) }
+        guard
+            let responses = try await self.pipeline(
+                MULTI(),
+                TransactionCommand(c0),
+                TransactionCommand(c1),
+                TransactionCommand(c2),
+                TransactionCommand(c3),
+                EXEC()
+            ).5
+        else { throw ValkeyClientError(.transactionAborted) }
         return try (responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting())
     }
 
@@ -45,7 +71,17 @@ extension ValkeyConnection {
         _ c3: C3,
         _ c4: C4
     ) async throws -> (C0.Response, C1.Response, C2.Response, C3.Response, C4.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, c2, c3, c4, EXEC()).6 else { throw ValkeyClientError(.transactionAborted) }
+        guard
+            let responses = try await self.pipeline(
+                MULTI(),
+                TransactionCommand(c0),
+                TransactionCommand(c1),
+                TransactionCommand(c2),
+                TransactionCommand(c3),
+                TransactionCommand(c4),
+                EXEC()
+            ).6
+        else { throw ValkeyClientError(.transactionAborted) }
         return try (
             responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting()
         )
@@ -60,7 +96,18 @@ extension ValkeyConnection {
         _ c4: C4,
         _ c5: C5
     ) async throws -> (C0.Response, C1.Response, C2.Response, C3.Response, C4.Response, C5.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, c2, c3, c4, c5, EXEC()).7 else { throw ValkeyClientError(.transactionAborted) }
+        guard
+            let responses = try await self.pipeline(
+                MULTI(),
+                TransactionCommand(c0),
+                TransactionCommand(c1),
+                TransactionCommand(c2),
+                TransactionCommand(c3),
+                TransactionCommand(c4),
+                TransactionCommand(c5),
+                EXEC()
+            ).7
+        else { throw ValkeyClientError(.transactionAborted) }
         return try (
             responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
             responses[5].converting()
@@ -77,9 +124,19 @@ extension ValkeyConnection {
         _ c5: C5,
         _ c6: C6
     ) async throws -> (C0.Response, C1.Response, C2.Response, C3.Response, C4.Response, C5.Response, C6.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, c2, c3, c4, c5, c6, EXEC()).8 else {
-            throw ValkeyClientError(.transactionAborted)
-        }
+        guard
+            let responses = try await self.pipeline(
+                MULTI(),
+                TransactionCommand(c0),
+                TransactionCommand(c1),
+                TransactionCommand(c2),
+                TransactionCommand(c3),
+                TransactionCommand(c4),
+                TransactionCommand(c5),
+                TransactionCommand(c6),
+                EXEC()
+            ).8
+        else { throw ValkeyClientError(.transactionAborted) }
         return try (
             responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
             responses[5].converting(), responses[6].converting()
@@ -106,9 +163,20 @@ extension ValkeyConnection {
         _ c6: C6,
         _ c7: C7
     ) async throws -> (C0.Response, C1.Response, C2.Response, C3.Response, C4.Response, C5.Response, C6.Response, C7.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, c2, c3, c4, c5, c6, c7, EXEC()).9 else {
-            throw ValkeyClientError(.transactionAborted)
-        }
+        guard
+            let responses = try await self.pipeline(
+                MULTI(),
+                TransactionCommand(c0),
+                TransactionCommand(c1),
+                TransactionCommand(c2),
+                TransactionCommand(c3),
+                TransactionCommand(c4),
+                TransactionCommand(c5),
+                TransactionCommand(c6),
+                TransactionCommand(c7),
+                EXEC()
+            ).9
+        else { throw ValkeyClientError(.transactionAborted) }
         return try (
             responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
             responses[5].converting(), responses[6].converting(), responses[7].converting()
@@ -137,9 +205,21 @@ extension ValkeyConnection {
         _ c7: C7,
         _ c8: C8
     ) async throws -> (C0.Response, C1.Response, C2.Response, C3.Response, C4.Response, C5.Response, C6.Response, C7.Response, C8.Response) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, c2, c3, c4, c5, c6, c7, c8, EXEC()).10 else {
-            throw ValkeyClientError(.transactionAborted)
-        }
+        guard
+            let responses = try await self.pipeline(
+                MULTI(),
+                TransactionCommand(c0),
+                TransactionCommand(c1),
+                TransactionCommand(c2),
+                TransactionCommand(c3),
+                TransactionCommand(c4),
+                TransactionCommand(c5),
+                TransactionCommand(c6),
+                TransactionCommand(c7),
+                TransactionCommand(c8),
+                EXEC()
+            ).10
+        else { throw ValkeyClientError(.transactionAborted) }
         return try (
             responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
             responses[5].converting(), responses[6].converting(), responses[7].converting(), responses[8].converting()
@@ -172,9 +252,22 @@ extension ValkeyConnection {
     ) async throws -> (
         C0.Response, C1.Response, C2.Response, C3.Response, C4.Response, C5.Response, C6.Response, C7.Response, C8.Response, C9.Response
     ) {
-        guard let responses = try await self.pipeline(MULTI(), c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, EXEC()).11 else {
-            throw ValkeyClientError(.transactionAborted)
-        }
+        guard
+            let responses = try await self.pipeline(
+                MULTI(),
+                TransactionCommand(c0),
+                TransactionCommand(c1),
+                TransactionCommand(c2),
+                TransactionCommand(c3),
+                TransactionCommand(c4),
+                TransactionCommand(c5),
+                TransactionCommand(c6),
+                TransactionCommand(c7),
+                TransactionCommand(c8),
+                TransactionCommand(c9),
+                EXEC()
+            ).11
+        else { throw ValkeyClientError(.transactionAborted) }
         return try (
             responses[0].converting(), responses[1].converting(), responses[2].converting(), responses[3].converting(), responses[4].converting(),
             responses[5].converting(), responses[6].converting(), responses[7].converting(), responses[8].converting(), responses[9].converting()

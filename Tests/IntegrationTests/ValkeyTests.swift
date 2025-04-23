@@ -153,16 +153,17 @@ struct GeneratedCommands {
     }
 
     @Test
-    func testTransactionSetGet() async throws {
+    func testTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
         try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 let responses = try await connection.transaction(
-                    SET(key: key, value: "Pipelined Hello"),
+                    SET(key: key, value: "100"),
+                    INCR(key: key),
                     GET(key: key)
                 )
-                #expect(responses.1 == "Pipelined Hello")
+                #expect(responses.2 == "101")
             }
         }
     }

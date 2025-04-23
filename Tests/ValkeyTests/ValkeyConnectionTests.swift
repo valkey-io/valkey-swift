@@ -189,7 +189,7 @@ struct ConnectionTests {
             String(buffer: outbound)
                 == "*1\r\n$5\r\nMULTI\r\n*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$2\r\n10\r\n*2\r\n$4\r\nINCR\r\n$3\r\nfoo\r\n*1\r\n$4\r\nEXEC\r\n"
         )
-        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n+OK\r\n+OK\r\n*2\r\n+OK\r\n:11\r\n"))
+        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n+QUEUED\r\n+QUEUED\r\n*2\r\n+OK\r\n:11\r\n"))
         #expect(try await results.1 == 11)
     }
 }
