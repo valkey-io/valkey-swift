@@ -62,7 +62,7 @@ public struct HEXISTS: RESPCommand {
 
 /// Returns the value of a field in a hash.
 public struct HGET: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
     public var field: String
@@ -119,7 +119,7 @@ public struct HINCRBY: RESPCommand {
 
 /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
 public struct HINCRBYFLOAT: RESPCommand {
-    public typealias Response = String
+    public typealias Response = RESPToken
 
     public var key: RESPKey
     public var field: String
@@ -426,7 +426,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The value associated with the field.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): If the field is not present in the hash or key does not exist.
     @inlinable
-    public func hget(key: RESPKey, field: String) async throws -> String? {
+    public func hget(key: RESPKey, field: String) async throws -> RESPToken? {
         try await send(command: HGET(key: key, field: field))
     }
 
@@ -462,7 +462,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the field after the increment operation.
     @inlinable
-    public func hincrbyfloat(key: RESPKey, field: String, increment: Double) async throws -> String {
+    public func hincrbyfloat(key: RESPKey, field: String, increment: Double) async throws -> RESPToken {
         try await send(command: HINCRBYFLOAT(key: key, field: field, increment: increment))
     }
 

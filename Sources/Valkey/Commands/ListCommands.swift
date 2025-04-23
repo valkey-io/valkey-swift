@@ -54,7 +54,7 @@ public struct BLMOVE: RESPCommand {
             }
         }
     }
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var source: RESPKey
     public var destination: RESPKey
@@ -156,7 +156,7 @@ public struct BRPOP: RESPCommand {
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
 public struct BRPOPLPUSH: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var source: RESPKey
     public var destination: RESPKey
@@ -177,7 +177,7 @@ public struct BRPOPLPUSH: RESPCommand {
 
 /// Returns an element from a list by its index.
 public struct LINDEX: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
     public var index: Int
@@ -281,7 +281,7 @@ public struct LMOVE: RESPCommand {
             }
         }
     }
-    public typealias Response = String
+    public typealias Response = RESPToken
 
     public var source: RESPKey
     public var destination: RESPKey
@@ -516,7 +516,7 @@ public struct RPOP: RESPCommand {
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
 public struct RPOPLPUSH: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var source: RESPKey
     public var destination: RESPKey
@@ -583,7 +583,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the operation timed-out
     @inlinable
-    public func blmove(source: RESPKey, destination: RESPKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> String? {
+    public func blmove(source: RESPKey, destination: RESPKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> RESPToken? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
@@ -640,7 +640,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the timeout is reached.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
-    public func brpoplpush(source: RESPKey, destination: RESPKey, timeout: Double) async throws -> String? {
+    public func brpoplpush(source: RESPKey, destination: RESPKey, timeout: Double) async throws -> RESPToken? {
         try await send(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
 
@@ -654,7 +654,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when _index_ is out of range.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the requested element.
     @inlinable
-    public func lindex(key: RESPKey, index: Int) async throws -> String? {
+    public func lindex(key: RESPKey, index: Int) async throws -> RESPToken? {
         try await send(command: LINDEX(key: key, index: index))
     }
 
@@ -693,7 +693,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped and pushed.
     @inlinable
-    public func lmove(source: RESPKey, destination: RESPKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> String {
+    public func lmove(source: RESPKey, destination: RESPKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> RESPToken {
         try await send(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
@@ -839,7 +839,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the source list is empty.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
-    public func rpoplpush(source: RESPKey, destination: RESPKey) async throws -> String? {
+    public func rpoplpush(source: RESPKey, destination: RESPKey) async throws -> RESPToken? {
         try await send(command: RPOPLPUSH(source: source, destination: destination))
     }
 

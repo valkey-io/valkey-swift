@@ -27,7 +27,7 @@ struct ConnectionTests {
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
 
-        async let fooResult = connection.get(key: "foo")
+        async let fooResult = connection.get(key: "foo")?.converting(to: String.self)
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == ByteBuffer(string: "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n"))

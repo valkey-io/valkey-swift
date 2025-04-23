@@ -105,7 +105,7 @@ public struct GEODIST: RESPCommand {
             }
         }
     }
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
     public var member1: String
@@ -1002,7 +1002,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): one or both of the elements are missing.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): distance as a double (represented as a string) in the specified units.
     @inlinable
-    public func geodist(key: RESPKey, member1: String, member2: String, unit: GEODIST.Unit? = nil) async throws -> String? {
+    public func geodist(key: RESPKey, member1: String, member2: String, unit: GEODIST.Unit? = nil) async throws -> RESPToken? {
         try await send(command: GEODIST(key: key, member1: member1, member2: member2, unit: unit))
     }
 

@@ -56,7 +56,7 @@ public enum ACL {
 
     /// Simulates the execution of a command by a user, without executing the command.
     public struct DRYRUN: RESPCommand {
-        public typealias Response = String?
+        public typealias Response = RESPToken?
 
         public var username: String
         public var command: String
@@ -75,7 +75,7 @@ public enum ACL {
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     public struct GENPASS: RESPCommand {
-        public typealias Response = String
+        public typealias Response = RESPToken
 
         public var bits: Int? = nil
 
@@ -107,7 +107,6 @@ public enum ACL {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -119,7 +118,6 @@ public enum ACL {
     /// Dumps the effective rules in ACL file format.
     public struct LIST: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -205,7 +203,6 @@ public enum ACL {
     public struct USERS: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -216,8 +213,7 @@ public enum ACL {
 
     /// Returns the authenticated username of the current connection.
     public struct WHOAMI: RESPCommand {
-        public typealias Response = String
-
+        public typealias Response = RESPToken
 
         @inlinable public init() {
         }
@@ -233,7 +229,6 @@ extension COMMAND {
     /// Returns a count of commands.
     public struct COUNT: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -295,7 +290,6 @@ extension COMMAND {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -381,7 +375,6 @@ public enum CONFIG {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -418,7 +411,6 @@ public enum CONFIG {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
-
             @inlinable public init(parameter: String, value: String) {
                 self.parameter = parameter
                 self.value = value
@@ -454,7 +446,6 @@ public enum LATENCY {
     public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -465,7 +456,7 @@ public enum LATENCY {
 
     /// Returns a latency graph for an event.
     public struct GRAPH: RESPCommand {
-        public typealias Response = String
+        public typealias Response = RESPToken
 
         public var event: String
 
@@ -481,7 +472,6 @@ public enum LATENCY {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -525,7 +515,6 @@ public enum LATENCY {
     public struct LATEST: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -557,7 +546,6 @@ public enum MEMORY {
     public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -570,7 +558,6 @@ public enum MEMORY {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -581,8 +568,7 @@ public enum MEMORY {
 
     /// Returns the allocator statistics.
     public struct MALLOCSTATS: RESPCommand {
-        public typealias Response = String
-
+        public typealias Response = RESPToken
 
         @inlinable public init() {
         }
@@ -606,7 +592,6 @@ public enum MEMORY {
     /// Returns details about memory usage.
     public struct STATS: RESPCommand {
         public typealias Response = RESPToken.Map
-
 
         @inlinable public init() {
         }
@@ -643,7 +628,6 @@ public enum MODULE {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -655,7 +639,6 @@ public enum MODULE {
     /// Returns all loaded modules.
     public struct LIST: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -685,7 +668,6 @@ public enum MODULE {
         public struct Configs: RESPRenderable, Sendable {
             @usableFromInline let name: String
             @usableFromInline let value: String
-
 
             @inlinable public init(name: String, value: String) {
                 self.name = name
@@ -754,7 +736,6 @@ public enum SLOWLOG {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -766,7 +747,6 @@ public enum SLOWLOG {
     /// Returns the number of entries in the slow log.
     public struct LEN: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -791,8 +771,7 @@ public enum SLOWLOG {
 
 /// Asynchronously rewrites the append-only file to disk.
 public struct BGREWRITEAOF: RESPCommand {
-    public typealias Response = String
-
+    public typealias Response = RESPToken
 
     @inlinable public init() {
     }
@@ -821,7 +800,6 @@ public struct BGSAVE: RESPCommand {
 public struct COMMAND: RESPCommand {
     public typealias Response = RESPToken.Array
 
-
     @inlinable public init() {
     }
 
@@ -833,7 +811,6 @@ public struct COMMAND: RESPCommand {
 /// Returns the number of keys in the database.
 public struct DBSIZE: RESPCommand {
     public typealias Response = Int
-
 
     @inlinable public init() {
     }
@@ -849,7 +826,6 @@ public struct FAILOVER: RESPCommand {
         @usableFromInline let host: String
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
-
 
         @inlinable public init(host: String, port: Int, force: Bool = false) {
             self.host = host
@@ -942,7 +918,7 @@ public struct FLUSHDB: RESPCommand {
 
 /// Returns information and statistics about the server.
 public struct INFO: RESPCommand {
-    public typealias Response = String
+    public typealias Response = RESPToken
 
     public var section: [String] = []
 
@@ -958,7 +934,6 @@ public struct INFO: RESPCommand {
 /// Returns the Unix timestamp of the last successful save to disk.
 public struct LASTSAVE: RESPCommand {
     public typealias Response = Int
-
 
     @inlinable public init() {
     }
@@ -1026,7 +1001,6 @@ public struct REPLICAOF: RESPCommand {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
-
         @inlinable public init(host: String, port: Int) {
             self.host = host
             self.port = port
@@ -1046,7 +1020,6 @@ public struct REPLICAOF: RESPCommand {
     public struct ArgsNoOne: RESPRenderable, Sendable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
-
 
         @inlinable public init(no: Bool = false, one: Bool = false) {
             self.no = no
@@ -1105,7 +1078,15 @@ public struct RESTOREASKING: RESPCommand {
     public var seconds: Int? = nil
     public var frequency: Int? = nil
 
-    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+    @inlinable public init(
+        key: RESPKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -1118,14 +1099,22 @@ public struct RESTOREASKING: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+        commandEncoder.encodeArray(
+            "RESTORE-ASKING",
+            key,
+            ttl,
+            serializedValue,
+            RESPPureToken("REPLACE", replace),
+            RESPPureToken("ABSTTL", absttl),
+            RESPWithToken("IDLETIME", seconds),
+            RESPWithToken("FREQ", frequency)
+        )
     }
 }
 
 /// Returns the replication role.
 public struct ROLE: RESPCommand {
     public typealias Response = RESPToken.Array
-
 
     @inlinable public init() {
     }
@@ -1187,7 +1176,6 @@ public struct SLAVEOF: RESPCommand {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
-
         @inlinable public init(host: String, port: Int) {
             self.host = host
             self.port = port
@@ -1207,7 +1195,6 @@ public struct SLAVEOF: RESPCommand {
     public struct ArgsNoOne: RESPRenderable, Sendable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
-
 
         @inlinable public init(no: Bool = false, one: Bool = false) {
             self.no = no
@@ -1286,7 +1273,6 @@ public struct SYNC: RESPCommand {
 public struct TIME: RESPCommand {
     public typealias Response = RESPToken.Array
 
-
     @inlinable public init() {
     }
 
@@ -1294,7 +1280,6 @@ public struct TIME: RESPCommand {
         commandEncoder.encodeArray("TIME")
     }
 }
-
 
 extension ValkeyConnection {
     /// Lists the ACL categories, or the commands inside a category.
@@ -1333,7 +1318,7 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
-    public func aclDryrun(username: String, command: String, arg: [String] = []) async throws -> String? {
+    public func aclDryrun(username: String, command: String, arg: [String] = []) async throws -> RESPToken? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 
@@ -1345,7 +1330,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
-    public func aclGenpass(bits: Int? = nil) async throws -> String {
+    public func aclGenpass(bits: Int? = nil) async throws -> RESPToken {
         try await send(command: ACL.GENPASS(bits: bits))
     }
 
@@ -1394,7 +1379,7 @@ extension ValkeyConnection {
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
-    ///     
+    ///
     ///     The command may fail with an error for several reasons: if the file is not readable, if there is an error inside the file, and in such cases, the error will be reported to the user in the error.
     ///     Finally, the command will fail if the server is not configured to use an external ACL file.
     @inlinable
@@ -1463,7 +1448,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the username of the current connection.
     @inlinable
-    public func aclWhoami() async throws -> String {
+    public func aclWhoami() async throws -> RESPToken {
         try await send(command: ACL.WHOAMI())
     }
 
@@ -1474,10 +1459,10 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a simple string reply indicating that the rewriting started or is about to start ASAP when the call is executed with success.
-    ///     
+    ///
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
-    public func bgrewriteaof() async throws -> String {
+    public func bgrewriteaof() async throws -> RESPToken {
         try await send(command: BGREWRITEAOF())
     }
 
@@ -1706,10 +1691,10 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     /// - Categories: @slow, @dangerous
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a map of info fields, one field per line in the form of `<field>:<value>` where the value can be a comma separated map like `<key>=<val>`. Also contains section header lines starting with `#` and blank lines.
-    ///     
+    ///
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
-    public func info(section: [String] = []) async throws -> String {
+    public func info(section: [String] = []) async throws -> RESPToken {
         try await send(command: INFO(section: section))
     }
 
@@ -1745,7 +1730,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): Latency graph
     @inlinable
-    public func latencyGraph(event: String) async throws -> String {
+    public func latencyGraph(event: String) async throws -> RESPToken {
         try await send(command: LATENCY.GRAPH(event: event))
     }
 
@@ -1852,7 +1837,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the memory allocator's internal statistics report.
     @inlinable
-    public func memoryMallocStats() async throws -> String {
+    public func memoryMallocStats() async throws -> RESPToken {
         try await send(command: MEMORY.MALLOCSTATS())
     }
 
@@ -2010,8 +1995,26 @@ extension ValkeyConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
-        _ = try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
+    public func restoreAsking(
+        key: RESPKey,
+        ttl: Int,
+        serializedValue: String,
+        replace: Bool = false,
+        absttl: Bool = false,
+        seconds: Int? = nil,
+        frequency: Int? = nil
+    ) async throws {
+        _ = try await send(
+            command: RESTOREASKING(
+                key: key,
+                ttl: ttl,
+                serializedValue: serializedValue,
+                replace: replace,
+                absttl: absttl,
+                seconds: seconds,
+                frequency: frequency
+            )
+        )
     }
 
     /// Returns the replication role.
