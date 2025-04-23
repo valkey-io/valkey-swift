@@ -142,14 +142,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             //   But it would be cool to build the subscribe command based on what filters we aren't subscribed to
             self.subscriptions.pushCommand(filters: subscription.filters)
             let subscriptionID = subscription.id
-            let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
-            return self._send(command: command).whenComplete { result in
+            return self._send(command: command).assumeIsolated().whenComplete { result in
                 switch result {
                 case .success:
                     promise.succeed(subscriptionID)
                 case .failure(let error):
-                    loopBoundSelf.value.subscriptions.removeSubscription(id: subscriptionID)
-                    loopBoundSelf.value.subscriptions.removeUnhandledCommand()
+                    self.subscriptions.removeSubscription(id: subscriptionID)
+                    self.subscriptions.removeUnhandledCommand()
                     promise.fail(error)
                 }
             }
