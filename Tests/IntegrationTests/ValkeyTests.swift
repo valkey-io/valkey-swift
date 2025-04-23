@@ -248,12 +248,10 @@ struct GeneratedCommands {
                     }.get()
                 }
             }
-            group.addTask {
-                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    await stream.first { _ in true }
-                    _ = try await connection.publish(channel: "testSubscriptions", message: "hello")
-                    _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
-                }
+            try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                await stream.first { _ in true }
+                _ = try await connection.publish(channel: "testSubscriptions", message: "hello")
+                _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
             }
             try await group.waitForAll()
         }
@@ -274,6 +272,9 @@ struct GeneratedCommands {
                             cont.finish()
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
                             await #expect(throws: Never.self) { try await iterator2.next()?.message == "hello" }
+                            // ensure we only see the message once, by waiting for second message.
+                            await #expect(throws: Never.self) { try await iterator.next()?.message == "world" }
+                            await #expect(throws: Never.self) { try await iterator2.next()?.message == "world" }
                         }
                     }
                     try await connection.channel.eventLoop.submit {
@@ -281,11 +282,10 @@ struct GeneratedCommands {
                     }.get()
                 }
             }
-            group.addTask {
-                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    await stream.first { _ in true }
-                    _ = try await connection.publish(channel: "testDoubleSubscription", message: "hello")
-                }
+            try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                await stream.first { _ in true }
+                _ = try await connection.publish(channel: "testDoubleSubscription", message: "hello")
+                _ = try await connection.publish(channel: "testDoubleSubscription", message: "world")
             }
             try await group.waitForAll()
         }
@@ -313,12 +313,10 @@ struct GeneratedCommands {
                     }.get()
                 }
             }
-            group.addTask {
-                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    await stream.first { _ in true }
-                    _ = try await connection.publish(channel: "testTwoDifferentSubscriptions", message: "hello")
-                    _ = try await connection.publish(channel: "testTwoDifferentSubscriptions2", message: "goodbye")
-                }
+            try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                await stream.first { _ in true }
+                _ = try await connection.publish(channel: "testTwoDifferentSubscriptions", message: "hello")
+                _ = try await connection.publish(channel: "testTwoDifferentSubscriptions2", message: "goodbye")
             }
             try await group.waitForAll()
         }
@@ -344,13 +342,11 @@ struct GeneratedCommands {
                     }.get()
                 }
             }
-            group.addTask {
-                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    _ = await stream.first { _ in true }
-                    _ = try await connection.publish(channel: "multi1", message: "1")
-                    _ = try await connection.publish(channel: "multi2", message: "2")
-                    _ = try await connection.publish(channel: "multi3", message: "3")
-                }
+            try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                _ = await stream.first { _ in true }
+                _ = try await connection.publish(channel: "multi1", message: "1")
+                _ = try await connection.publish(channel: "multi2", message: "2")
+                _ = try await connection.publish(channel: "multi3", message: "3")
             }
             try await group.waitForAll()
         }
@@ -375,12 +371,10 @@ struct GeneratedCommands {
                     }.get()
                 }
             }
-            group.addTask {
-                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    await stream.first { _ in true }
-                    _ = try await connection.publish(channel: "pattern.1", message: "hello")
-                    _ = try await connection.publish(channel: "pattern.abc", message: "goodbye")
-                }
+            try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                await stream.first { _ in true }
+                _ = try await connection.publish(channel: "pattern.1", message: "hello")
+                _ = try await connection.publish(channel: "pattern.abc", message: "goodbye")
             }
             try await group.waitForAll()
         }
@@ -410,12 +404,10 @@ struct GeneratedCommands {
                     }.get()
                 }
             }
-            group.addTask {
-                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    await stream.first { _ in true }
-                    _ = try await connection.publish(channel: "PatternChannelSubscriptions1", message: "hello")
-                    _ = try await connection.publish(channel: "PatternChannelSubscriptions2", message: "goodbye")
-                }
+            try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                await stream.first { _ in true }
+                _ = try await connection.publish(channel: "PatternChannelSubscriptions1", message: "hello")
+                _ = try await connection.publish(channel: "PatternChannelSubscriptions2", message: "goodbye")
             }
             try await group.waitForAll()
         }
@@ -440,12 +432,10 @@ struct GeneratedCommands {
                     }.get()
                 }
             }
-            group.addTask {
-                try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-                    await stream.first { _ in true }
-                    _ = try await connection.spublish(shardchannel: "shard", message: "hello")
-                    _ = try await connection.spublish(shardchannel: "shard", message: "goodbye")
-                }
+            try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                await stream.first { _ in true }
+                _ = try await connection.spublish(shardchannel: "shard", message: "hello")
+                _ = try await connection.spublish(shardchannel: "shard", message: "goodbye")
             }
             try await group.waitForAll()
         }
