@@ -166,7 +166,11 @@ extension ValkeyConnection {
     }
 
     @usableFromInline
-    func subscribe(command: some RESPCommand, filters: [ValkeySubscriptionFilter]) async throws -> (Int, ValkeySubscriptionSequence) {
+    func subscribe(
+        command: some RESPCommand,
+        filters: [ValkeySubscriptionFilter],
+        isolation: isolated (any Actor)? = #isolation
+    ) async throws -> (Int, ValkeySubscriptionSequence) {
         let (stream, streamContinuation) = ValkeySubscriptionSequence.makeStream()
         let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
             if self.channel.eventLoop.inEventLoop {
@@ -191,7 +195,10 @@ extension ValkeyConnection {
     }
 
     @usableFromInline
-    func unsubscribe(id: Int) async throws {
+    func unsubscribe(
+        id: Int,
+        isolation: isolated (any Actor)? = #isolation
+    ) async throws {
         try await withCheckedThrowingContinuation { continuation in
             if self.channel.eventLoop.inEventLoop {
                 self.channelHandler.value.unsubscribe(id: id, promise: .swift(continuation))
