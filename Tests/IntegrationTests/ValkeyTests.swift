@@ -227,6 +227,7 @@ struct GeneratedCommands {
         }
     }
 
+    /// Test subscribing to a channel works
     @Test
     func testSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
@@ -257,6 +258,8 @@ struct GeneratedCommands {
         }
     }
 
+    /// Test two different subscriptions to the same channel both receive messages and that when one ends the other still
+    /// receives messages
     @Test
     func testDoubleSubscription() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
@@ -266,16 +269,18 @@ struct GeneratedCommands {
             group.addTask {
                 try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
                     try await connection.subscribe(to: "testDoubleSubscription") { stream in
+                        var iterator = stream.makeAsyncIterator()
                         try await connection.subscribe(to: "testDoubleSubscription") { stream2 in
-                            var iterator = stream.makeAsyncIterator()
                             var iterator2 = stream2.makeAsyncIterator()
-                            cont.finish()
+                            cont.yield()
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
                             await #expect(throws: Never.self) { try await iterator2.next()?.message == "hello" }
                             // ensure we only see the message once, by waiting for second message.
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "world" }
                             await #expect(throws: Never.self) { try await iterator2.next()?.message == "world" }
                         }
+                        cont.yield()
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "!" }
                     }
                     try await connection.channel.eventLoop.submit {
                         #expect(connection.channelHandler.value.subscriptions.isEmpty)
@@ -286,11 +291,13 @@ struct GeneratedCommands {
                 await stream.first { _ in true }
                 _ = try await connection.publish(channel: "testDoubleSubscription", message: "hello")
                 _ = try await connection.publish(channel: "testDoubleSubscription", message: "world")
+                _ = try await connection.publish(channel: "testDoubleSubscription", message: "!")
             }
             try await group.waitForAll()
         }
     }
 
+    /// Test two different subscriptions to two different channels both receive messages
     @Test
     func testTwoDifferentSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
@@ -322,6 +329,7 @@ struct GeneratedCommands {
         }
     }
 
+    /// Test multiple subscriptions in one command all receive messages
     @Test
     func testMultipleSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
@@ -352,6 +360,7 @@ struct GeneratedCommands {
         }
     }
 
+    /// Test subscribing to a channel pattern works
     @Test
     func testPatternSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
