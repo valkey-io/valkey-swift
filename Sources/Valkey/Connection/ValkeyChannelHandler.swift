@@ -166,19 +166,19 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.eventLoop.assertInEventLoop()
         switch self.subscriptions.unsubscribe(id: id) {
         case .unsubscribe(let channels):
-            performUnsubscribe(
+            self.performUnsubscribe(
                 command: UNSUBSCRIBE(channel: channels),
                 filters: channels.map { .channel($0) },
                 promise: promise
             )
         case .punsubscribe(let patterns):
-            performUnsubscribe(
+            self.performUnsubscribe(
                 command: PUNSUBSCRIBE(pattern: patterns),
                 filters: patterns.map { .pattern($0) },
                 promise: promise
             )
         case .sunsubscribe(let shardChannels):
-            performUnsubscribe(
+            self.performUnsubscribe(
                 command: SUNSUBSCRIBE(shardchannel: shardChannels),
                 filters: shardChannels.map { .shardChannel($0) },
                 promise: promise
