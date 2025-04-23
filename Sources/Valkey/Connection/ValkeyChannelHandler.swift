@@ -194,13 +194,12 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         promise: ValkeyPromise<Void>
     ) {
         self.subscriptions.pushCommand(filters: filters)
-        let loopBoundSelf = NIOLoopBound(self, eventLoop: self.eventLoop)
-        self._send(command: command).whenComplete { result in
+        self._send(command: command).assumeIsolated().whenComplete { result in
             switch result {
             case .success:
                 promise.succeed(())
             case .failure(let error):
-                loopBoundSelf.value.subscriptions.removeUnhandledCommand()
+                self.subscriptions.removeUnhandledCommand()
                 promise.fail(error)
             }
         }
