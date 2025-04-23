@@ -131,7 +131,16 @@ public final class ValkeyConnection: Sendable {
     @inlinable
     public func pipeline<each Command: RESPCommand>(
         _ commands: repeat each Command
-    ) async throws -> (repeat (each Command).Response) {
+    ) async -> (repeat Result<(each Command).Response, Error>) {
+        func convert<Response: RESPTokenRepresentable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
+            result.flatMap {
+                do {
+                    return try .success(Response(from: $0))
+                } catch {
+                    return .failure(error)
+                }
+            }
+        }
         // this currently allocates a promise for every command. We could collpase this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
         var encoder = RESPCommandEncoder()
@@ -152,7 +161,7 @@ public final class ValkeyConnection: Sendable {
 
         // get response from channel handler
         var index = AutoIncrementingInteger()
-        return try await (repeat (each Command).Response(from: promises[index.next()].futureResult.get()))
+        return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
     }
 
     /// Try to upgrade to RESP3
