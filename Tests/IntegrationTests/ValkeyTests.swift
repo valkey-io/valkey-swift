@@ -95,11 +95,11 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                let responses = try await connection.pipeline(
+                let responses = await connection.pipeline(
                     SET(key: key, value: "Pipelined Hello"),
                     GET(key: key)
                 )
-                #expect(responses.1 == "Pipelined Hello")
+                try #expect(responses.1.get() == "Pipelined Hello")
             }
         }
     }
@@ -214,11 +214,11 @@ struct GeneratedCommands {
                     for _ in 0..<100 {
                         group.addTask {
                             let value = UUID().uuidString
-                            let responses = try await connection.pipeline(
+                            let responses = await connection.pipeline(
                                 SET(key: key, value: value),
                                 GET(key: key)
                             )
-                            #expect(responses.1 == value)
+                            try #expect(responses.1.get() == value)
                         }
                     }
                 }
