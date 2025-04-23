@@ -70,12 +70,14 @@ public final class ValkeyConnection: Sendable {
     ///
     /// - Parameters:
     ///   - address: Internet address of database
+    ///   - name: Name of connection
     ///   - configuration: Configuration of Valkey connection
     ///   - eventLoopGroup: EventLoopGroup to use
     ///   - logger: Logger for connection
     /// - Returns: ValkeyConnection
     public static func connect(
         address: ServerAddress,
+        name: String? = nil,
         configuration: ValkeyClientConfiguration,
         eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger
@@ -89,9 +91,14 @@ public final class ValkeyConnection: Sendable {
                 }
             }
         let connection = try await future.get()
-        if configuration.respVersion == .v3 {
-            try await connection.resp3Upgrade()
-        }
+        // send hello with protocol, authentication and client name details
+        _ = try await connection.hello(
+            arguments: .init(
+                protover: configuration.respVersion.rawValue,
+                auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                clientname: name
+            )
+        )
         return connection
     }
 
@@ -161,11 +168,6 @@ public final class ValkeyConnection: Sendable {
         // get response from channel handler
         var index = AutoIncrementingInteger()
         return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
-    }
-
-    /// Try to upgrade to RESP3
-    private func resp3Upgrade() async throws {
-        _ = try await send(command: HELLO(arguments: .init(protover: 3, auth: nil, clientname: nil)))
     }
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
