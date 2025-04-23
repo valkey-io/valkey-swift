@@ -150,7 +150,7 @@ struct GeneratedCommands {
     @Test("Array with count using LMPOP")
     func testArrayWithCount() async throws {
         var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
+        logger.logLevel = .trace
         try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await withKey(connection: connection) { key2 in
@@ -174,7 +174,7 @@ struct GeneratedCommands {
     @Test("Test command error is thrown")
     func testCommandError() async throws {
         var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
+        logger.logLevel = .trace
         try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.set(key: key, value: "Hello")

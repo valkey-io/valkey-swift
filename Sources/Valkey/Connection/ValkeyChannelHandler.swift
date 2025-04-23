@@ -116,7 +116,10 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
         switch request {
         case .single(let buffer, let tokenPromise):
-            self.logger.trace("\((try? [String](from: RESPToken(validated: buffer))).map { $0.joined(separator: ", ") } ?? "")")
+            self.logger.trace(
+                "Send command",
+                metadata: ["command": "\((try? [String](from: RESPToken(validated: buffer))).map { $0.joined(separator: " ") } ?? "")"]
+            )
             self.commands.append(tokenPromise)
             context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
 
@@ -285,7 +288,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     func handleError(context: ChannelHandlerContext, error: Error) {
-        self.logger.debug("ValkeyCommandHandler: ERROR \(error)")
+        self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
         guard let promise = commands.popFirst() else {
             preconditionFailure("Unexpected response")
         }

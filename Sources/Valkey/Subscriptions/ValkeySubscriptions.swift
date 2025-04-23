@@ -47,7 +47,7 @@ struct ValkeySubscriptions {
             throw error
         }
 
-        self.logger.trace("\(pushToken)")
+        self.logger.trace("Received PUSH token", metadata: ["subscription": "\(pushToken.value)", "type": "\(pushToken.type)"])
 
         var returnValue = false
         switch pushToken.type {
@@ -75,7 +75,7 @@ struct ValkeySubscriptions {
                     subscription.sendMessage(.init(channel: channel, message: message))
                 }
             case .doNothing:
-                self.logger.trace("Received message for inactive subscription \(pushToken.value)")
+                self.logger.trace("Received message for inactive subscription", metadata: ["subscription": "\(pushToken.value)"])
             }
         }
         return returnValue

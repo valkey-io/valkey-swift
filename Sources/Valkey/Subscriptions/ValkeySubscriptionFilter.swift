@@ -18,3 +18,17 @@ enum ValkeySubscriptionFilter: Equatable, Hashable, Sendable {
     case pattern(String)
     case shardChannel(String)
 }
+
+extension ValkeySubscriptionFilter: CustomStringConvertible {
+    @usableFromInline
+    var description: String {
+        switch self {
+        case .channel(let string):
+            "channel(\(string))"
+        case .pattern(let string):
+            "pattern(\(string))"
+        case .shardChannel(let string):
+            "shardChannel(\(string))"
+        }
+    }
+}

@@ -13,10 +13,18 @@
 //===----------------------------------------------------------------------===//
 
 struct PushToken: RESPTokenRepresentable {
-    enum TokenType {
+    enum TokenType: CustomStringConvertible {
         case subscribe(subscriptionCount: Int)
         case unsubscribe(subscriptionCount: Int)
         case message(channel: String, message: String)
+
+        var description: String {
+            switch self {
+            case .subscribe: "subscribe"
+            case .unsubscribe: "unsubscribe"
+            case .message: "message"
+            }
+        }
     }
     let value: ValkeySubscriptionFilter
     let type: TokenType
