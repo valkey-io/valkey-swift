@@ -26,7 +26,7 @@ struct ConnectionTests {
     func testConnectionCreationAndGET() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         async let fooResult = connection.get(key: "foo")
 
@@ -41,7 +41,7 @@ struct ConnectionTests {
     func testConnectionCreationHelloV3() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannel(channel, configuration: .init(respVersion: .v3), logger: logger)
+        _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v3), logger: logger)
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == ByteBuffer(string: "*2\r\n$5\r\nHELLO\r\n$1\r\n3\r\n"))
@@ -51,7 +51,7 @@ struct ConnectionTests {
     func testConnectionCreationHelloError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannel(channel, configuration: .init(respVersion: .v3), logger: logger)
+        _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v3), logger: logger)
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == ByteBuffer(string: "*2\r\n$5\r\nHELLO\r\n$1\r\n3\r\n"))
@@ -66,7 +66,7 @@ struct ConnectionTests {
     func testConnectionCreationHelloAuth() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannel(
+        _ = try await ValkeyConnection.setupChannelAndConnect(
             channel,
             configuration: .init(
                 respVersion: .v3,
@@ -83,7 +83,7 @@ struct ConnectionTests {
     func testConnectionCreationHelloClientName() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannel(
+        _ = try await ValkeyConnection.setupChannelAndConnect(
             channel,
             configuration: .init(respVersion: .v2),
             clientName: "Testing",
@@ -98,7 +98,7 @@ struct ConnectionTests {
     func testSimpleError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         async let fooResult = connection.get(key: "foo")
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -117,7 +117,7 @@ struct ConnectionTests {
     func testBulkError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         async let fooResult = connection.get(key: "foo")
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)

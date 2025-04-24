@@ -217,26 +217,40 @@ public final class ValkeyConnection: Sendable {
         }
     }
 
-    package static func setupChannel(
+    package static func setupChannelAndConnect(
         _ channel: any Channel,
         configuration: ValkeyClientConfiguration,
         clientName: String? = nil,
         logger: Logger
     ) async throws -> ValkeyConnection {
         if !channel.eventLoop.inEventLoop {
-            return try await channel.eventLoop.submit {
-                let handler = try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
-                return ValkeyConnection(
-                    channel: channel,
-                    channelHandler: handler,
-                    configuration: configuration,
-                    logger: logger
-                )
+            return try await channel.eventLoop.flatSubmit {
+                _setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger)
             }.get()
         }
+        return try await _setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger).get()
+    }
 
-        let handler = try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
-        return ValkeyConnection(channel: channel, channelHandler: handler, configuration: configuration, logger: logger)
+    private static func _setupChannelAndConnect(
+        _ channel: any Channel,
+        configuration: ValkeyClientConfiguration,
+        clientName: String? = nil,
+        logger: Logger
+    ) -> EventLoopFuture<ValkeyConnection> {
+        do {
+            let handler = try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
+            let connection = ValkeyConnection(
+                channel: channel,
+                channelHandler: handler,
+                configuration: configuration,
+                logger: logger
+            )
+            return channel.connect(to: try SocketAddress(ipAddress: "127.0.0.1", port: 6379)).map {
+                connection
+            }
+        } catch {
+            return channel.eventLoop.makeFailedFuture(error)
+        }
     }
 
     @discardableResult
