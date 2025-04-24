@@ -23,7 +23,7 @@ struct ValkeySubscriptions {
     private var subscriptionMap: [ValkeySubscriptionFilter: ValkeyChannelStateMachine<ValkeySubscription>]
     let logger: Logger
 
-    static let globalSubscriptionId = Atomic<Int>(0)
+    static let globalSubscriptionID = Atomic<Int>(0)
 
     init(logger: Logger) {
         self.subscriptionIDMap = [:]
