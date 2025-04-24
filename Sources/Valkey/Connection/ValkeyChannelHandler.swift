@@ -316,7 +316,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         while let promise = self.commands.popFirst() {
             promise.fail(error)
         }
-        self.subscriptions.close(error: ValkeyClientError(.connectionClosed))
+        self.subscriptions.close(error: error)
     }
 
     func failPendingCommandsAndSubscriptionsAndCloseConnection(_ error: any Error, context: ChannelHandlerContext) {

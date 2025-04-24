@@ -168,6 +168,39 @@ struct SubscriptionTests {
         }.get()
     }
 
+    @Test
+    func testSubscribeAfterChannelError() async throws {
+        let channel = NIOAsyncTestingChannel()
+        var logger = Logger(label: "test")
+        logger.logLevel = .trace
+        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                try await connection.subscribe(to: "test") { subscription in
+                    _ = await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
+                        for try await _ in subscription {}
+                    }
+                }
+            }
+            group.addTask {
+                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                // expect SUBSCRIBE command
+                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$4\r\ntest\r\n")
+                // push subscribe
+                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$4\r\ntest\r\n:1\r\n"))
+                // push unsolicited message
+                await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
+                    try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))
+                }
+            }
+            try await group.waitForAll()
+        }
+        try await connection.channel.eventLoop.submit {
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
+        }.get()
+    }
+
     /// Test a single subscription can subscribe to multiple channels
     @Test
     func testSubscribeMultipleChannels() async throws {
