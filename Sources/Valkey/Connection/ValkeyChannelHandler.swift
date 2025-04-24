@@ -261,7 +261,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         switch token.identifier {
         case .simpleError, .bulkError:
             guard let promise = commands.popFirst() else {
-                preconditionFailure("Unexpected response")
+                context.fireErrorCaught(ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command"))
+                context.close(promise: nil)
+                return
             }
             promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
 
@@ -303,7 +305,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handleError(context: ChannelHandlerContext, error: Error) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
         guard let promise = commands.popFirst() else {
-            context.fireErrorCaught(ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command"))
+            context.fireErrorCaught(ValkeyClientError(.unsolicitedToken, message: "Received an error decoding a token without having sent a command"))
             context.close(promise: nil)
             return
         }

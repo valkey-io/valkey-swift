@@ -73,4 +73,16 @@ struct ConnectionTests {
             #expect(error.message == "BulkError!")
         }
     }
+
+    @Test
+    func testUnsolicitedToken() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        _ = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+
+        await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command")) {
+            try await channel.writeInbound(ByteBuffer(string: "-Error!\r\n"))
+        }
+        try await channel.closeFuture.get()
+    }
 }
