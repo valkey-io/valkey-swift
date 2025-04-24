@@ -48,6 +48,11 @@ enum ValkeyRequest: Sendable {
 
 @usableFromInline
 final class ValkeyChannelHandler: ChannelInboundHandler {
+    struct Configuration {
+        let respVersion: ValkeyClientConfiguration.RESPVersion
+        let authentication: ValkeyClientConfiguration.Authentication?
+        let clientName: String?
+    }
     @usableFromInline
     typealias OutboundOut = ByteBuffer
     @usableFromInline
@@ -68,8 +73,10 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private let logger: Logger
     private var isClosed = false
+    private let configuration: Configuration
 
-    init(eventLoop: EventLoop, logger: Logger) {
+    init(configuration: Configuration, eventLoop: EventLoop, logger: Logger) {
+        self.configuration = configuration
         self.eventLoop = eventLoop
         self.commands = .init()
         self.subscriptions = .init(logger: logger)
@@ -211,12 +218,32 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func handlerAdded(context: ChannelHandlerContext) {
         self.context = context
+        // send hello with protocol, authentication and client name details
+        if configuration.respVersion == .v3 || configuration.authentication != nil || configuration.clientName != nil {
+            _send(
+                command: HELLO(
+                    arguments: .init(
+                        protover: configuration.respVersion.rawValue,
+                        auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                        clientname: configuration.clientName
+                    )
+                )
+            ).assumeIsolated().whenComplete { result in
+                switch result {
+                case .failure(let error):
+                    context.fireErrorCaught(error)
+                    context.close(promise: nil)
+                case .success:
+                    break
+                }
+            }
+        }
     }
 
     @usableFromInline
     func handlerRemoved(context: ChannelHandlerContext) {
         self.context = nil
-        self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed), context: context)
+        self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed))
         self.isClosed = true
     }
 
@@ -231,7 +258,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         } catch {
             preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
         }
-        self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed), context: context)
+        self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed))
         self.isClosed = true
         self.logger.trace("Channel inactive.")
     }
@@ -312,7 +339,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         promise.fail(error)
     }
 
-    private func failPendingCommandsAndSubscriptions(_ error: any Error, context: ChannelHandlerContext) {
+    private func failPendingCommandsAndSubscriptions(_ error: any Error) {
         while let promise = self.commands.popFirst() {
             promise.fail(error)
         }
@@ -320,7 +347,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     private func failPendingCommandsAndSubscriptionsAndCloseConnection(_ error: any Error, context: ChannelHandlerContext) {
-        self.failPendingCommandsAndSubscriptions(error, context: context)
+        self.failPendingCommandsAndSubscriptions(error)
         context.fireErrorCaught(error)
         context.close(promise: nil)
     }
