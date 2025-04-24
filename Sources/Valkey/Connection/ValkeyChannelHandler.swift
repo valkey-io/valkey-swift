@@ -216,7 +216,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func handlerRemoved(context: ChannelHandlerContext) {
         self.context = nil
-        failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed), context: context)
+        self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed), context: context)
         self.isClosed = true
     }
 
