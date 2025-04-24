@@ -21,6 +21,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case subscriptionError
             case unsolicitedToken
             case transactionAborted
+            case tokenDoesNotExist
         }
 
         fileprivate let value: _Internal
@@ -38,6 +39,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var unsolicitedToken: Self { .init(.unsolicitedToken) }
         /// Transaction was aborted because a watched key was touched
         public static var transactionAborted: Self { .init(.transactionAborted) }
+        /// Expected token to exist. Throw when iterating an array of tokens that is too short
+        public static var tokenDoesNotExist: Self { .init(.tokenDoesNotExist) }
     }
 
     public let errorCode: ErrorCode
@@ -54,6 +57,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         case .subscriptionError: self.message ?? "Received invalid subscription push event"
         case .unsolicitedToken: self.message ?? "Received unsolicited token from Valkey server"
         case .transactionAborted: self.message ?? "Transaction was aborted because a watched key was touched"
+        case .tokenDoesNotExist: self.message ?? "Expected token does not exist."
         }
     }
 }

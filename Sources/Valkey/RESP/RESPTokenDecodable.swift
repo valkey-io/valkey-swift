@@ -29,6 +29,26 @@ extension RESPToken: RESPTokenDecodable {
         try Value(fromRESP: self)
     }
 
+    /// Convert RESP3Token to a Result containing the type to convert to or any error found while converting
+    ///
+    /// This function also checks for RESP error types and returns them if found
+    ///
+    /// - Parameter type: Type to convert to
+    /// - Returns: Result contaoining either the Value or an error
+    @usableFromInline
+    func decodeResult<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) -> Result<Value, Error> {
+        switch self.identifier {
+        case .simpleError, .bulkError:
+            return .failure(ValkeyClientError(.commandError, message: self.errorString.map { String(buffer: $0) }))
+        default:
+            do {
+                return try .success(Value(fromRESP: self))
+            } catch {
+                return .failure(error)
+            }
+        }
+    }
+
     @inlinable
     public init(fromRESP token: RESPToken) throws {
         self = token
@@ -309,6 +329,27 @@ extension RESPToken.Array: RESPTokenDecodable {
         }
         var iterator = self.makeIterator()
         return try (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
+    }
+
+    /// Convert RESP3Token Array to a tuple of values
+    /// - Parameter as: Tuple of types to convert to
+    /// - Throws: RESPDecodeError
+    /// - Returns: Tuple of decoded values
+    @inlinable
+    public func decodeElementResults<each Value: RESPTokenDecodable>(
+        as: (repeat (each Value)).Type = (repeat (each Value)).self
+    ) -> (repeat Result<(each Value), Error>) {
+        func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, Error> {
+            switch token {
+            case .some(let value):
+                return value.decodeResult(as: T.self)
+            case .none:
+                // TODO: Fixup error when we have a decoding error
+                return .failure(RESPParsingError(code: .unexpectedType, buffer: token?.base ?? .init()))
+            }
+        }
+        var iterator = self.makeIterator()
+        return (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
     }
 }
 
