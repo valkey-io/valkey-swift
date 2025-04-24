@@ -216,8 +216,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     @usableFromInline
-    func handlerAdded(context: ChannelHandlerContext) {
-        self.context = context
+    func hello(context: ChannelHandlerContext) {
         // send hello with protocol, authentication and client name details
         if configuration.respVersion == .v3 || configuration.authentication != nil || configuration.clientName != nil {
             _send(
@@ -241,10 +240,23 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     @usableFromInline
+    func handlerAdded(context: ChannelHandlerContext) {
+        self.context = context
+        if context.channel.isActive {
+            hello(context: context)
+        }
+    }
+
+    @usableFromInline
     func handlerRemoved(context: ChannelHandlerContext) {
         self.context = nil
         self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed))
         self.isClosed = true
+    }
+
+    @usableFromInline
+    func channelActive(context: ChannelHandlerContext) {
+        hello(context: context)
     }
 
     @usableFromInline
