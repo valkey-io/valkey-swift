@@ -312,7 +312,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         promise.fail(error)
     }
 
-    func failPendingCommandsAndSubscriptions(_ error: any Error, context: ChannelHandlerContext) {
+    private func failPendingCommandsAndSubscriptions(_ error: any Error, context: ChannelHandlerContext) {
         while let promise = self.commands.popFirst() {
             promise.fail(error)
         }
