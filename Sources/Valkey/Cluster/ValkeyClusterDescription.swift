@@ -56,6 +56,28 @@ package struct ValkeyClusterDescription: Hashable, Sendable {
         package var role: Role
         package var replicationOffset: Int
         package var health: Health
+
+        package init(
+            id: String,
+            port: Int? = nil,
+            tlsPort: Int? = nil,
+            ip: String,
+            hostname: String? = nil,
+            endpoint: String,
+            role: Role,
+            replicationOffset: Int,
+            health: Health
+        ) {
+            self.id = id
+            self.port = port
+            self.tlsPort = tlsPort
+            self.ip = ip
+            self.hostname = hostname
+            self.endpoint = endpoint
+            self.role = role
+            self.replicationOffset = replicationOffset
+            self.health = health
+        }
     }
 
     package struct Shard: Hashable, Sendable {
@@ -68,6 +90,11 @@ package struct ValkeyClusterDescription: Hashable, Sendable {
 
         package var replicas: ArraySlice<Node> {
             self.nodes.dropFirst(1)
+        }
+
+        package init(slotRanges: HashSlots, nodes: [Node]) {
+            self.slotRanges = slotRanges
+            self.nodes = nodes
         }
     }
 
