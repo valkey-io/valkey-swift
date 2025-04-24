@@ -50,7 +50,7 @@ public struct ValkeyClientConfiguration: Sendable {
     /// Version of RESP protocol
     public var respVersion: RESPVersion
     /// authentication details
-    public let authentication: Authentication?
+    public var authentication: Authentication?
     /// TLS setup
     public var tls: TLS
 
