@@ -1,9 +1,16 @@
+//===----------------------------------------------------------------------===//
 //
-//  RESP3Builder.swift
-//  swift-valkey
+// This source file is part of the swift-valkey open source project
 //
-//  Created by Fabian Fett on 24.04.25.
+// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
+// Licensed under Apache License v2.0
 //
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
 
 import NIOCore
 import Valkey
