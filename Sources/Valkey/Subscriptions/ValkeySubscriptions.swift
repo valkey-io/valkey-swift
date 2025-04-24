@@ -40,10 +40,10 @@ struct ValkeySubscriptions {
         } catch {
             // push error to all subscriptions on this channel. We're about to close
             // the channel we should tell them why
-            for subscription in subscriptionIDMap.values {
+            for subscription in self.subscriptionIDMap.values {
                 subscription.sendError(error)
             }
-            subscriptionIDMap = [:]
+            self.subscriptionIDMap = [:]
             throw error
         }
 
