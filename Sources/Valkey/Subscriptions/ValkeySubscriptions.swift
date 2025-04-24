@@ -52,7 +52,7 @@ struct ValkeySubscriptions {
         var returnValue = false
         switch pushToken.type {
         case .subscribe:
-            if let _ = try commandStack.received(pushToken.value) {
+            if let _ = try self.commandStack.received(pushToken.value) {
                 returnValue = true
             }
             self.subscriptionMap[pushToken.value, default: .init()].added()
