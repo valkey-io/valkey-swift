@@ -142,7 +142,8 @@ struct ValkeySubscriptions {
         var action: UnsubscribeAction = .doNothing
         guard let subscription = subscriptionIDMap[id] else { return .doNothing }
         for filter in subscription.filters {
-            switch self.subscriptionMap[filter, default: .init()].close(subscription: subscription) {
+            let closeAction = self.subscriptionMap[filter]?.close(subscription: subscription)
+            switch closeAction {
             case .unsubscribe:
                 switch (filter, action) {
                 case (.channel(let string), .doNothing):
@@ -163,7 +164,7 @@ struct ValkeySubscriptions {
                 default:
                     preconditionFailure("Cannot mix channels and patterns")
                 }
-            case .doNothing:
+            case .doNothing, .none:
                 break
             }
         }

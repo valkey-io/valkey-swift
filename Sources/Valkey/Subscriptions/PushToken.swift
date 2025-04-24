@@ -12,7 +12,19 @@
 //
 //===----------------------------------------------------------------------===//
 
+import NIOCore
+
 struct PushToken: RESPTokenRepresentable {
+    static let subscribeString = ByteBuffer(string: "subscribe")
+    static let unsubscribeString = ByteBuffer(string: "unsubscribe")
+    static let messageString = ByteBuffer(string: "message")
+    static let psubscribeString = ByteBuffer(string: "psubscribe")
+    static let punsubscribeString = ByteBuffer(string: "punsubscribe")
+    static let pmessageString = ByteBuffer(string: "pmessage")
+    static let ssubscribeString = ByteBuffer(string: "ssubscribe")
+    static let sunsubscribeString = ByteBuffer(string: "sunsubscribe")
+    static let smessageString = ByteBuffer(string: "smessage")
+
     enum TokenType: CustomStringConvertible {
         case subscribe(subscriptionCount: Int)
         case unsubscribe(subscriptionCount: Int)
@@ -36,23 +48,25 @@ struct PushToken: RESPTokenRepresentable {
             guard let first = arrayIterator.next() else {
                 throw ValkeyClientError(.subscriptionError, message: "Received empty notification")
             }
-            let notification = try String(from: first)
+            guard case .bulkString(let notification) = first.value else {
+                throw ValkeyClientError(.subscriptionError, message: "Invalid notification identifier")
+            }
             switch notification {
-            case "subscribe":
+            case Self.subscribeString:
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid subscribe push notification")
                 }
                 self.value = .channel(try String(from: arrayIterator.next()!))
                 self.type = try TokenType.subscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
-            case "unsubscribe":
+            case Self.unsubscribeString:
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid unsubscribe push notification")
                 }
                 self.value = .channel(try String(from: arrayIterator.next()!))
                 self.type = try TokenType.unsubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
-            case "message":
+            case Self.messageString:
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid message push notification")
                 }
@@ -60,21 +74,21 @@ struct PushToken: RESPTokenRepresentable {
                 self.value = .channel(channel)
                 self.type = try TokenType.message(channel: channel, message: String(from: arrayIterator.next()!))
 
-            case "psubscribe":
+            case Self.psubscribeString:
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid psubscribe push notification")
                 }
                 self.value = .pattern(try String(from: arrayIterator.next()!))
                 self.type = try TokenType.subscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
-            case "punsubscribe":
+            case Self.punsubscribeString:
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid punsubscribe push notification")
                 }
                 self.value = .pattern(try String(from: arrayIterator.next()!))
                 self.type = try TokenType.unsubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
-            case "pmessage":
+            case Self.pmessageString:
                 guard respArray.count == 4 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid pmessage push notification")
                 }
@@ -84,21 +98,21 @@ struct PushToken: RESPTokenRepresentable {
                     message: String(from: arrayIterator.next()!)
                 )
 
-            case "ssubscribe":
+            case Self.ssubscribeString:
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid ssubscribe push notification")
                 }
                 self.value = .shardChannel(try String(from: arrayIterator.next()!))
                 self.type = try TokenType.subscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
-            case "sunsubscribe":
+            case Self.sunsubscribeString:
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid sunsubscribe push notification")
                 }
                 self.value = .shardChannel(try String(from: arrayIterator.next()!))
                 self.type = try TokenType.unsubscribe(subscriptionCount: Int(from: arrayIterator.next()!))
 
-            case "smessage":
+            case Self.smessageString:
                 guard respArray.count == 3 else {
                     throw ValkeyClientError(.subscriptionError, message: "Received invalid smessage push notification")
                 }
@@ -107,9 +121,22 @@ struct PushToken: RESPTokenRepresentable {
                 self.type = try TokenType.message(channel: channel, message: String(from: arrayIterator.next()!))
 
             default:
-                throw ValkeyClientError(.subscriptionError, message: "Received unrecognised notification \(notification)")
+                throw ValkeyClientError(.subscriptionError, message: "Received unrecognised notification \(String(buffer: notification))")
             }
-        default:
+        case .simpleString,
+            .bulkString,
+            .verbatimString,
+            .simpleError,
+            .blobError,
+            .number,
+            .double,
+            .boolean,
+            .null,
+            .bigNumber,
+            .array,
+            .map,
+            .set,
+            .attribute:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }

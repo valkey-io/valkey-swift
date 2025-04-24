@@ -100,18 +100,18 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
-        guard let context = self.context else {
-            if self.isClosed {
-                switch request {
-                case .single(_, let promise):
+        if self.isClosed {
+            switch request {
+            case .single(_, let promise):
+                promise.fail(ValkeyClientError.init(.connectionClosed))
+            case .multiple(_, let promises):
+                for promise in promises {
                     promise.fail(ValkeyClientError.init(.connectionClosed))
-                case .multiple(_, let promises):
-                    for promise in promises {
-                        promise.fail(ValkeyClientError.init(.connectionClosed))
-                    }
                 }
-                return
             }
+            return
+        }
+        guard let context = self.context else {
             preconditionFailure("Trying to use valkey connection before it is setup")
         }
         switch request {
@@ -279,7 +279,18 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 context.close(mode: .all, promise: nil)
             }
 
-        default:
+        case .simpleString,
+            .bulkString,
+            .verbatimString,
+            .integer,
+            .double,
+            .boolean,
+            .null,
+            .bigNumber,
+            .array,
+            .map,
+            .set,
+            .attribute:
             guard let promise = commands.popFirst() else {
                 preconditionFailure("Unexpected response")
             }
@@ -296,7 +307,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     // Function used internally by subscribe
-    @inlinable
     func _send<Command: RESPCommand>(command: Command) -> EventLoopFuture<RESPToken> {
         self.eventLoop.assertInEventLoop()
         self.encoder.reset()
