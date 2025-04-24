@@ -161,8 +161,6 @@ public struct GETEX: RESPCommand {
 
 /// Returns a substring of the string stored at a key.
 public struct GETRANGE: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var start: Int
     public var end: Int
@@ -238,8 +236,6 @@ public struct INCRBY: RESPCommand {
 
 /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
 public struct INCRBYFLOAT: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var increment: Double
 
@@ -537,8 +533,6 @@ public struct STRLEN: RESPCommand {
 /// Returns a substring from a string value.
 @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
 public struct SUBSTR: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var start: Int
     public var end: Int
@@ -643,7 +637,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @string, @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func getrange(key: RESPKey, start: Int, end: Int) async throws -> RESPToken {
+    public func getrange(key: RESPKey, start: Int, end: Int) async throws -> GETRANGE.Response {
         try await send(command: GETRANGE(key: key, start: start, end: end))
     }
 
@@ -694,7 +688,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the key after the increment.
     @inlinable
-    public func incrbyfloat(key: RESPKey, increment: Double) async throws -> RESPToken {
+    public func incrbyfloat(key: RESPKey, increment: Double) async throws -> INCRBYFLOAT.Response {
         try await send(command: INCRBYFLOAT(key: key, increment: increment))
     }
 
@@ -846,7 +840,7 @@ extension ValkeyConnection {
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
-    public func substr(key: RESPKey, start: Int, end: Int) async throws -> RESPToken {
+    public func substr(key: RESPKey, start: Int, end: Int) async throws -> SUBSTR.Response {
         try await send(command: SUBSTR(key: key, start: start, end: end))
     }
 

@@ -119,8 +119,6 @@ public struct HINCRBY: RESPCommand {
 
 /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
 public struct HINCRBYFLOAT: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var field: String
     public var increment: Double
@@ -462,7 +460,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the field after the increment operation.
     @inlinable
-    public func hincrbyfloat(key: RESPKey, field: String, increment: Double) async throws -> RESPToken {
+    public func hincrbyfloat(key: RESPKey, field: String, increment: Double) async throws -> HINCRBYFLOAT.Response {
         try await send(command: HINCRBYFLOAT(key: key, field: field, increment: increment))
     }
 

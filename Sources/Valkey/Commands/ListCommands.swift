@@ -281,8 +281,6 @@ public struct LMOVE: RESPCommand {
             }
         }
     }
-    public typealias Response = RESPToken
-
     public var source: RESPKey
     public var destination: RESPKey
     public var wherefrom: Wherefrom
@@ -693,7 +691,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped and pushed.
     @inlinable
-    public func lmove(source: RESPKey, destination: RESPKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> RESPToken {
+    public func lmove(source: RESPKey, destination: RESPKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> LMOVE.Response {
         try await send(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
