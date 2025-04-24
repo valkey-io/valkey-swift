@@ -241,8 +241,6 @@ struct GeneratedCommands {
                         var iterator = subscription.makeAsyncIterator()
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }
-                        //_ = try await connection.unsubscribe(channel: ["testSubscriptions"])
-                        //await #expect(throws: Never.self) { try await iterator.next() == nil }
                     }
                     try await connection.channel.eventLoop.submit {
                         #expect(connection.channelHandler.value.subscriptions.isEmpty)
@@ -445,6 +443,46 @@ struct GeneratedCommands {
                 await stream.first { _ in true }
                 _ = try await connection.spublish(shardchannel: "shard", message: "hello")
                 _ = try await connection.spublish(shardchannel: "shard", message: "goodbye")
+            }
+            try await group.waitForAll()
+        }
+    }
+
+    /// Test subscriptions and sending command on same connection works
+    @Test
+    func testSubscriptionAndCommandOnSameConnection() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            var logger = Logger(label: "Subscriptions")
+            logger.logLevel = .trace
+            group.addTask {
+                try await ValkeyClient(
+                    .hostname(valkeyHostname, port: 6379),
+                    configuration: .init(respVersion: .v3),
+                    logger: logger
+                ).withConnection(logger: logger) { connection in
+                    try await connection.subscribe(to: "testSubscriptions") { subscription in
+                        cont.finish()
+                        var iterator = subscription.makeAsyncIterator()
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
+                        // test we can send commands on subscription connection
+                        try await withKey(connection: connection) { key in
+                            _ = try await connection.set(key: key, value: "Hello")
+                            let response = try await connection.get(key: key)
+                            #expect(response == "Hello")
+                        }
+
+                        await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }
+                    }
+                    try await connection.channel.eventLoop.submit {
+                        #expect(connection.channelHandler.value.subscriptions.isEmpty)
+                    }.get()
+                }
+            }
+            try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+                await stream.first { _ in true }
+                _ = try await connection.publish(channel: "testSubscriptions", message: "hello")
+                _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
             }
             try await group.waitForAll()
         }
