@@ -290,7 +290,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             .set,
             .attribute:
             guard let promise = commands.popFirst() else {
-                failPendingCommandsAndSubscriptionsAndCloseConnection(
+                self.failPendingCommandsAndSubscriptionsAndCloseConnection(
                     ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"),
                     context: context
                 )
