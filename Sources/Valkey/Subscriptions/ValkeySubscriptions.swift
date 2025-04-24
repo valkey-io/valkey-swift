@@ -90,7 +90,7 @@ struct ValkeySubscriptions {
     }
 
     static func getSubscriptionID() -> Int {
-        Self.globalSubscriptionId.wrappingAdd(1, ordering: .relaxed).newValue
+        Self.globalSubscriptionID.wrappingAdd(1, ordering: .relaxed).newValue
     }
 
     enum SubscribeAction {
