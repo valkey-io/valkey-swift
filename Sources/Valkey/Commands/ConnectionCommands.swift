@@ -41,8 +41,6 @@ public enum CLIENT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var mode: Mode
 
         @inlinable public init(mode: Mode) {
@@ -82,7 +80,7 @@ public enum CLIENT {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -275,8 +273,6 @@ public enum CLIENT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var enabled: Enabled
 
         @inlinable public init(enabled: Enabled) {
@@ -305,8 +301,6 @@ public enum CLIENT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var enabled: Enabled
 
         @inlinable public init(enabled: Enabled) {
@@ -335,8 +329,6 @@ public enum CLIENT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var timeout: Int
         public var mode: Mode? = nil
 
@@ -369,8 +361,6 @@ public enum CLIENT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var action: Action
 
         @inlinable public init(action: Action) {
@@ -404,8 +394,6 @@ public enum CLIENT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var attr: Attr
 
         @inlinable public init(attr: Attr) {
@@ -419,8 +407,6 @@ public enum CLIENT {
 
     /// Sets the connection name.
     public struct SETNAME: RESPCommand {
-        public typealias Response = RESPToken
-
         public var connectionName: String
 
         @inlinable public init(connectionName: String) {
@@ -449,8 +435,6 @@ public enum CLIENT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var status: Status
         public var clientId: Int? = nil
         public var prefix: [String] = []
@@ -476,7 +460,7 @@ public enum CLIENT {
 
     /// Returns information about server-assisted client-side caching for the connection.
     public struct TRACKINGINFO: RESPCommand {
-        public typealias Response = [String: RESPToken]
+        public typealias Response = RESPToken.Map
 
 
         @inlinable public init() {
@@ -521,8 +505,6 @@ public enum CLIENT {
 
     /// Resumes processing commands from paused clients.
     public struct UNPAUSE: RESPCommand {
-        public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -536,8 +518,6 @@ public enum CLIENT {
 
 /// Authenticates the connection.
 public struct AUTH: RESPCommand {
-    public typealias Response = RESPToken
-
     public var username: String? = nil
     public var password: String
 
@@ -613,7 +593,7 @@ public struct HELLO: RESPCommand {
             RESPWithToken("SETNAME", clientname).encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [String: RESPToken]
+    public typealias Response = RESPToken.Map
 
     public var arguments: Arguments? = nil
 
@@ -644,8 +624,6 @@ public struct PING: RESPCommand {
 /// Closes the connection.
 @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
 public struct QUIT: RESPCommand {
-    public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -670,8 +648,6 @@ public struct RESET: RESPCommand {
 
 /// Changes the selected database.
 public struct SELECT: RESPCommand {
-    public typealias Response = RESPToken
-
     public var index: Int
 
     @inlinable public init(index: Int) {
@@ -693,8 +669,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
     @inlinable
-    public func auth(username: String? = nil, password: String) async throws -> RESPToken {
-        try await send(command: AUTH(username: username, password: password))
+    public func auth(username: String? = nil, password: String) async throws {
+        _ = try await send(command: AUTH(username: username, password: password))
     }
 
     /// Instructs the server whether to track the keys in the next request.
@@ -705,8 +681,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` or an error if the argument is not "yes" or "no".
     @inlinable
-    public func clientCaching(mode: CLIENT.CACHING.Mode) async throws -> RESPToken {
-        try await send(command: CLIENT.CACHING(mode: mode))
+    public func clientCaching(mode: CLIENT.CACHING.Mode) async throws {
+        _ = try await send(command: CLIENT.CACHING(mode: mode))
     }
 
     /// Returns the name of the connection.
@@ -746,7 +722,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
     @inlinable
-    public func clientHelp() async throws -> [RESPToken] {
+    public func clientHelp() async throws -> RESPToken.Array {
         try await send(command: CLIENT.HELP())
     }
 
@@ -808,8 +784,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func clientNoEvict(enabled: CLIENT.NOEVICT.Enabled) async throws -> RESPToken {
-        try await send(command: CLIENT.NOEVICT(enabled: enabled))
+    public func clientNoEvict(enabled: CLIENT.NOEVICT.Enabled) async throws {
+        _ = try await send(command: CLIENT.NOEVICT(enabled: enabled))
     }
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
@@ -820,8 +796,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func clientNoTouch(enabled: CLIENT.NOTOUCH.Enabled) async throws -> RESPToken {
-        try await send(command: CLIENT.NOTOUCH(enabled: enabled))
+    public func clientNoTouch(enabled: CLIENT.NOTOUCH.Enabled) async throws {
+        _ = try await send(command: CLIENT.NOTOUCH(enabled: enabled))
     }
 
     /// Suspends commands processing.
@@ -832,8 +808,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` or an error if the timeout is invalid.
     @inlinable
-    public func clientPause(timeout: Int, mode: CLIENT.PAUSE.Mode? = nil) async throws -> RESPToken {
-        try await send(command: CLIENT.PAUSE(timeout: timeout, mode: mode))
+    public func clientPause(timeout: Int, mode: CLIENT.PAUSE.Mode? = nil) async throws {
+        _ = try await send(command: CLIENT.PAUSE(timeout: timeout, mode: mode))
     }
 
     /// Instructs the server whether to reply to commands.
@@ -844,8 +820,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when called with `ON`. When called with either `OFF` or `SKIP` sub-commands, no reply is made.
     @inlinable
-    public func clientReply(action: CLIENT.REPLY.Action) async throws -> RESPToken {
-        try await send(command: CLIENT.REPLY(action: action))
+    public func clientReply(action: CLIENT.REPLY.Action) async throws {
+        _ = try await send(command: CLIENT.REPLY(action: action))
     }
 
     /// Sets information specific to the client or connection.
@@ -856,8 +832,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the attribute name was successfully set.
     @inlinable
-    public func clientSetinfo(attr: CLIENT.SETINFO.Attr) async throws -> RESPToken {
-        try await send(command: CLIENT.SETINFO(attr: attr))
+    public func clientSetinfo(attr: CLIENT.SETINFO.Attr) async throws {
+        _ = try await send(command: CLIENT.SETINFO(attr: attr))
     }
 
     /// Sets the connection name.
@@ -868,8 +844,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection name was successfully set.
     @inlinable
-    public func clientSetname(connectionName: String) async throws -> RESPToken {
-        try await send(command: CLIENT.SETNAME(connectionName: connectionName))
+    public func clientSetname(connectionName: String) async throws {
+        _ = try await send(command: CLIENT.SETNAME(connectionName: connectionName))
     }
 
     /// Controls server-assisted client-side caching for the connection.
@@ -880,8 +856,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws -> RESPToken {
-        try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
+    public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
+        _ = try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
@@ -892,7 +868,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of tracking information sections and their respective values.
     @inlinable
-    public func clientTrackinginfo() async throws -> [String: RESPToken] {
+    public func clientTrackinginfo() async throws -> RESPToken.Map {
         try await send(command: CLIENT.TRACKINGINFO())
     }
 
@@ -918,8 +894,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func clientUnpause() async throws -> RESPToken {
-        try await send(command: CLIENT.UNPAUSE())
+    public func clientUnpause() async throws {
+        _ = try await send(command: CLIENT.UNPAUSE())
     }
 
     /// Returns the given string.
@@ -943,7 +919,7 @@ extension ValkeyConnection {
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of server properties.
     ///     [Simple error](https:/valkey.io/topics/protocol/#simple-errors): if the `protover` requested does not exist.
     @inlinable
-    public func hello(arguments: HELLO.Arguments? = nil) async throws -> [String: RESPToken] {
+    public func hello(arguments: HELLO.Arguments? = nil) async throws -> RESPToken.Map {
         try await send(command: HELLO(arguments: arguments))
     }
 
@@ -970,8 +946,8 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
-    public func quit() async throws -> RESPToken {
-        try await send(command: QUIT())
+    public func quit() async throws {
+        _ = try await send(command: QUIT())
     }
 
     /// Resets the connection.
@@ -994,8 +970,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func select(index: Int) async throws -> RESPToken {
-        try await send(command: SELECT(index: index))
+    public func select(index: Int) async throws {
+        _ = try await send(command: SELECT(index: index))
     }
 
 }

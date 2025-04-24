@@ -126,7 +126,8 @@ extension Array: RESPTokenRepresentable where Element: RESPTokenRepresentable {
             }
             self = array
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            let value = try Element(from: token)
+            self = [value]
         }
     }
 }
@@ -163,5 +164,53 @@ extension Dictionary: RESPTokenRepresentable where Value: RESPTokenRepresentable
         default:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
+    }
+}
+
+extension RESPToken.Array: RESPTokenRepresentable {
+    @inlinable
+    public init(from token: RESPToken) throws {
+        switch token.value {
+        case .array(let respArray), .push(let respArray):
+            self = respArray
+        default:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+        }
+    }
+
+    /// Convert RESP3Token Array to a value array
+    /// - Parameter type: Type to convert to
+    /// - Throws: ValkeyClientError.unexpectedType
+    /// - Returns: Array of Value
+    @inlinable
+    public func converting<Value: RESPTokenRepresentable>(to type: [Value].Type = [Value].self) throws -> [Value] {
+        try self.map { try $0.converting() }
+    }
+}
+
+extension RESPToken.Map: RESPTokenRepresentable {
+    @inlinable
+    public init(from token: RESPToken) throws {
+        switch token.value {
+        case .map(let respArray):
+            self = respArray
+        default:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+        }
+    }
+
+    /// Convert RESP3Token Map to a Dictionary with String keys
+    /// - Parameter type: Type to convert to
+    /// - Throws: ValkeyClientError.unexpectedType
+    /// - Returns: String value dictionary
+    @inlinable
+    public func converting<Value: RESPTokenRepresentable>(to type: [String: Value].Type = [String: Value].self) throws -> [String: Value] {
+        var array: [(String, Value)] = []
+        for respElement in self {
+            let key = try String(from: respElement.key)
+            let value = try Value(from: respElement.value)
+            array.append((key, value))
+        }
+        return .init(array) { first, _ in first }
     }
 }

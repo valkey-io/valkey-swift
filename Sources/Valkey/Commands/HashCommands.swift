@@ -81,7 +81,7 @@ public struct HGET: RESPCommand {
 
 /// Returns all fields and values in a hash.
 public struct HGETALL: RESPCommand {
-    public typealias Response = [String: RESPToken]
+    public typealias Response = RESPToken.Map
 
     public var key: RESPKey
 
@@ -140,7 +140,7 @@ public struct HINCRBYFLOAT: RESPCommand {
 
 /// Returns all fields in a hash.
 public struct HKEYS: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
 
@@ -174,7 +174,7 @@ public struct HLEN: RESPCommand {
 
 /// Returns the values of all fields in a hash.
 public struct HMGET: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var field: [String]
@@ -215,8 +215,6 @@ public struct HMSET: RESPCommand {
             value.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var data: [Data]
 
@@ -255,8 +253,6 @@ public struct HRANDFIELD: RESPCommand {
             "WITHVALUES".encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var options: Options? = nil
 
@@ -274,7 +270,7 @@ public struct HRANDFIELD: RESPCommand {
 
 /// Iterates over fields and values of a hash.
 public struct HSCAN: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var cursor: Int
@@ -377,7 +373,7 @@ public struct HSTRLEN: RESPCommand {
 
 /// Returns all values in a hash.
 public struct HVALS: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
 
@@ -442,7 +438,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @hash, @slow
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a map of fields and their values stored in the hash, or an empty list when key does not exist.
     @inlinable
-    public func hgetall(key: RESPKey) async throws -> [String: RESPToken] {
+    public func hgetall(key: RESPKey) async throws -> RESPToken.Map {
         try await send(command: HGETALL(key: key))
     }
 
@@ -478,7 +474,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @hash, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of fields in the hash, or an empty list when the key does not exist.
     @inlinable
-    public func hkeys(key: RESPKey) async throws -> [RESPToken] {
+    public func hkeys(key: RESPKey) async throws -> RESPToken.Array {
         try await send(command: HKEYS(key: key))
     }
 
@@ -502,7 +498,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @hash, @fast
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of values associated with the given fields, in the same order as they are requested.
     @inlinable
-    public func hmget(key: RESPKey, field: [String]) async throws -> [RESPToken] {
+    public func hmget(key: RESPKey, field: [String]) async throws -> RESPToken.Array {
         try await send(command: HMGET(key: key, field: field))
     }
 
@@ -515,8 +511,8 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
-    public func hmset(key: RESPKey, data: [HMSET.Data]) async throws -> RESPToken {
-        try await send(command: HMSET(key: key, data: data))
+    public func hmset(key: RESPKey, data: [HMSET.Data]) async throws {
+        _ = try await send(command: HMSET(key: key, data: data))
     }
 
     /// Returns one or more random fields from a hash.
@@ -531,7 +527,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list containing `count` fields when the `count` option is used, or an empty array if the key does not exists.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list of fields and their values when `count` and `WITHVALUES` were both used.
     @inlinable
-    public func hrandfield(key: RESPKey, options: HRANDFIELD.Options? = nil) async throws -> RESPToken {
+    public func hrandfield(key: RESPKey, options: HRANDFIELD.Options? = nil) async throws -> HRANDFIELD.Response {
         try await send(command: HRANDFIELD(key: key, options: options))
     }
 
@@ -545,7 +541,7 @@ extension ValkeyConnection {
     ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) of field/value pairs that were scanned. When `NOVALUES` option is on, a list of keys from the hash.
     @inlinable
-    public func hscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
+    public func hscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: HSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 
@@ -595,7 +591,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @hash, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of values in the hash, or an empty list when the key does not exist.
     @inlinable
-    public func hvals(key: RESPKey) async throws -> [RESPToken] {
+    public func hvals(key: RESPKey) async throws -> RESPToken.Array {
         try await send(command: HVALS(key: key))
     }
 

@@ -229,7 +229,7 @@ public struct BITFIELD: RESPCommand {
             }
         }
     }
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var key: RESPKey
     public var operation: [Operation] = []
@@ -269,7 +269,7 @@ public struct BITFIELDRO: RESPCommand {
             offset.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var getBlock: [GetBlock] = []
@@ -468,7 +468,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): each entry being the corresponding result of the sub-command given at the same position.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if OVERFLOW FAIL was given and overflows or underflows are detected.
     @inlinable
-    public func bitfield(key: RESPKey, operation: [BITFIELD.Operation] = []) async throws -> [RESPToken]? {
+    public func bitfield(key: RESPKey, operation: [BITFIELD.Operation] = []) async throws -> RESPToken.Array? {
         try await send(command: BITFIELD(key: key, operation: operation))
     }
 
@@ -480,7 +480,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @bitmap, @fast
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): each entry being the corresponding result of the sub-command given at the same position.
     @inlinable
-    public func bitfieldRo(key: RESPKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> [RESPToken] {
+    public func bitfieldRo(key: RESPKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> RESPToken.Array {
         try await send(command: BITFIELDRO(key: key, getBlock: getBlock))
     }
 
