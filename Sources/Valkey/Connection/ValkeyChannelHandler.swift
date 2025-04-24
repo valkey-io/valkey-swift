@@ -303,7 +303,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handleError(context: ChannelHandlerContext, error: Error) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
         guard let promise = commands.popFirst() else {
-            failPendingCommandsAndSubscriptionsAndCloseConnection(
+            self.failPendingCommandsAndSubscriptionsAndCloseConnection(
                 ValkeyClientError(.unsolicitedToken, message: "Received an error decoding a token without having sent a command"),
                 context: context
             )
