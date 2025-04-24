@@ -19,6 +19,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case connectionClosed
             case commandError
             case subscriptionError
+            case unsolicitedToken
         }
 
         fileprivate let value: _Internal
@@ -32,6 +33,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var commandError: Self { .init(.commandError) }
         /// Error returned by Valkey subscription
         public static var subscriptionError: Self { .init(.subscriptionError) }
+        /// Received an unsolicited token from the server
+        public static var unsolicitedToken: Self { .init(.unsolicitedToken) }
     }
 
     public let errorCode: ErrorCode
@@ -46,6 +49,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         case .connectionClosed: "Connection has been closed"
         case .commandError: self.message ?? "Valkey command returned an error"
         case .subscriptionError: self.message ?? "Received invalid subscription push event"
+        case .unsolicitedToken: self.message ?? "Received unsolicited token from Valkey server"
         }
     }
 }
