@@ -319,7 +319,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.subscriptions.close(error: error)
     }
 
-    func failPendingCommandsAndSubscriptionsAndCloseConnection(_ error: any Error, context: ChannelHandlerContext) {
+    private func failPendingCommandsAndSubscriptionsAndCloseConnection(_ error: any Error, context: ChannelHandlerContext) {
         self.failPendingCommandsAndSubscriptions(error, context: context)
         context.fireErrorCaught(error)
         context.close(promise: nil)
