@@ -487,4 +487,26 @@ struct GeneratedCommands {
             try await group.waitForAll()
         }
     }
+
+    @Test
+    func testKeyspaceSubscription() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                _ = try await connection.configSet(data: [.init(parameter: "notify-keyspace-events", value: "KE$")])
+                try await connection.subscribe(to: ["__keyspace@0__:\(key)"]) { subscription in
+                    _ = try await connection.set(key: key, value: "1")
+                    _ = try await connection.incrby(key: key, increment: 20)
+                    var iterator = subscription.makeAsyncIterator()
+                    var value = try await iterator.next()
+                    #expect(value?.channel == "__keyspace@0__:\(key)")
+                    #expect(value?.message == "set")
+                    value = try await iterator.next()
+                    #expect(value?.channel == "__keyspace@0__:\(key)")
+                    #expect(value?.message == "incrby")
+                }
+            }
+        }
+    }
 }
