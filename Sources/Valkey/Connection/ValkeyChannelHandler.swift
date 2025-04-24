@@ -255,7 +255,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         switch token.identifier {
         case .simpleError, .bulkError:
             guard let promise = commands.popFirst() else {
-                failPendingCommandsAndSubscriptionsAndCloseConnection(
+                self.failPendingCommandsAndSubscriptionsAndCloseConnection(
                     ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command"),
                     context: context
                 )
