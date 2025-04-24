@@ -80,7 +80,7 @@ public enum CLIENT {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -460,7 +460,7 @@ public enum CLIENT {
 
     /// Returns information about server-assisted client-side caching for the connection.
     public struct TRACKINGINFO: RESPCommand {
-        public typealias Response = [String: RESPToken]
+        public typealias Response = RESPToken.Map
 
 
         @inlinable public init() {
@@ -593,7 +593,7 @@ public struct HELLO: RESPCommand {
             RESPWithToken("SETNAME", clientname).encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [String: RESPToken]
+    public typealias Response = RESPToken.Map
 
     public var arguments: Arguments? = nil
 
@@ -722,7 +722,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
     @inlinable
-    public func clientHelp() async throws -> [RESPToken] {
+    public func clientHelp() async throws -> RESPToken.Array {
         try await send(command: CLIENT.HELP())
     }
 
@@ -868,7 +868,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of tracking information sections and their respective values.
     @inlinable
-    public func clientTrackinginfo() async throws -> [String: RESPToken] {
+    public func clientTrackinginfo() async throws -> RESPToken.Map {
         try await send(command: CLIENT.TRACKINGINFO())
     }
 
@@ -919,7 +919,7 @@ extension ValkeyConnection {
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of server properties.
     ///     [Simple error](https:/valkey.io/topics/protocol/#simple-errors): if the `protover` requested does not exist.
     @inlinable
-    public func hello(arguments: HELLO.Arguments? = nil) async throws -> [String: RESPToken] {
+    public func hello(arguments: HELLO.Arguments? = nil) async throws -> RESPToken.Map {
         try await send(command: HELLO(arguments: arguments))
     }
 

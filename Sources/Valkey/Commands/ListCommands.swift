@@ -92,7 +92,7 @@ public struct BLMPOP: RESPCommand {
             }
         }
     }
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var timeout: Double
     public var key: [RESPKey]
@@ -113,7 +113,7 @@ public struct BLMPOP: RESPCommand {
 
 /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
 public struct BLPOP: RESPCommand {
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var key: [RESPKey]
     public var timeout: Double
@@ -130,7 +130,7 @@ public struct BLPOP: RESPCommand {
 
 /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
 public struct BRPOP: RESPCommand {
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var key: [RESPKey]
     public var timeout: Double
@@ -301,7 +301,7 @@ public struct LMPOP: RESPCommand {
             }
         }
     }
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var key: [RESPKey]
     public var `where`: Where
@@ -390,7 +390,7 @@ public struct LPUSHX: RESPCommand {
 
 /// Returns a range of elements from a list.
 public struct LRANGE: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var start: Int
@@ -553,7 +553,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public func blmpop(timeout: Double, key: [RESPKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+    public func blmpop(timeout: Double, key: [RESPKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
         try await send(command: BLMPOP(timeout: timeout, key: key, where: `where`, count: count))
     }
 
@@ -567,7 +567,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): no element could be popped and the timeout expired
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the key from which the element was popped and the value of the popped element.
     @inlinable
-    public func blpop(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
+    public func blpop(key: [RESPKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BLPOP(key: key, timeout: timeout))
     }
 
@@ -581,7 +581,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): no element could be popped and the timeout expired.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the key from which the element was popped and the value of the popped element
     @inlinable
-    public func brpop(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
+    public func brpop(key: [RESPKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BRPOP(key: key, timeout: timeout))
     }
 
@@ -663,7 +663,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if no element could be popped.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public func lmpop(key: [RESPKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+    public func lmpop(key: [RESPKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
         try await send(command: LMPOP(key: key, where: `where`, count: count))
     }
 
@@ -729,7 +729,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @list, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of elements in the specified range, or an empty array if the key doesn't exist.
     @inlinable
-    public func lrange(key: RESPKey, start: Int, stop: Int) async throws -> [RESPToken] {
+    public func lrange(key: RESPKey, start: Int, stop: Int) async throws -> RESPToken.Array {
         try await send(command: LRANGE(key: key, start: start, stop: stop))
     }
 

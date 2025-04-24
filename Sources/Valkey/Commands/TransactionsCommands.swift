@@ -35,7 +35,7 @@ public struct DISCARD: RESPCommand {
 
 /// Executes all commands in a transaction.
 public struct EXEC: RESPCommand {
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
 
     @inlinable public init() {
@@ -105,7 +105,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): each element being the reply to each of the commands in the atomic transaction.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the transaction was aborted because a `WATCH`ed key was touched.
     @inlinable
-    public func exec() async throws -> [RESPToken]? {
+    public func exec() async throws -> RESPToken.Array? {
         try await send(command: EXEC())
     }
 

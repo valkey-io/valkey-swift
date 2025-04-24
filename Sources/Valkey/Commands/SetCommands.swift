@@ -56,7 +56,7 @@ public struct SCARD: RESPCommand {
 
 /// Returns the difference of multiple sets.
 public struct SDIFF: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
 
@@ -88,7 +88,7 @@ public struct SDIFFSTORE: RESPCommand {
 
 /// Returns the intersect of multiple sets.
 public struct SINTER: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
 
@@ -154,7 +154,7 @@ public struct SISMEMBER: RESPCommand {
 
 /// Returns all members of a set.
 public struct SMEMBERS: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
 
@@ -169,7 +169,7 @@ public struct SMEMBERS: RESPCommand {
 
 /// Determines whether multiple members belong to a set.
 public struct SMISMEMBER: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var member: [String]
@@ -252,7 +252,7 @@ public struct SREM: RESPCommand {
 
 /// Iterates over members of a set.
 public struct SSCAN: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var cursor: Int
@@ -273,7 +273,7 @@ public struct SSCAN: RESPCommand {
 
 /// Returns the union of multiple sets.
 public struct SUNION: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
 
@@ -337,7 +337,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sdiff(key: [RESPKey]) async throws -> [RESPToken] {
+    public func sdiff(key: [RESPKey]) async throws -> RESPToken.Array {
         try await send(command: SDIFF(key: key))
     }
 
@@ -361,7 +361,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sinter(key: [RESPKey]) async throws -> [RESPToken] {
+    public func sinter(key: [RESPKey]) async throws -> RESPToken.Array {
         try await send(command: SINTER(key: key))
     }
 
@@ -411,7 +411,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): all members of the set.
     @inlinable
-    public func smembers(key: RESPKey) async throws -> [RESPToken] {
+    public func smembers(key: RESPKey) async throws -> RESPToken.Array {
         try await send(command: SMEMBERS(key: key))
     }
 
@@ -423,7 +423,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @fast
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember(key: RESPKey, member: [String]) async throws -> [RESPToken] {
+    public func smismember(key: RESPKey, member: [String]) async throws -> RESPToken.Array {
         try await send(command: SMISMEMBER(key: key, member: member))
     }
 
@@ -492,7 +492,7 @@ extension ValkeyConnection {
     ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) with the names of scanned members.
     @inlinable
-    public func sscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
+    public func sscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 
@@ -504,7 +504,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sunion(key: [RESPKey]) async throws -> [RESPToken] {
+    public func sunion(key: [RESPKey]) async throws -> RESPToken.Array {
         try await send(command: SUNION(key: key))
     }
 

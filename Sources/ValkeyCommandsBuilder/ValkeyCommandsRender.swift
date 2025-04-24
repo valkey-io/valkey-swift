@@ -423,14 +423,9 @@ private func getReturnType(reply: some StringProtocol) -> String? {
                 return "String"
             }
         } else if reply.hasPrefix("[Array") || reply.hasPrefix("[Set") {
-            if let range: Range = reply.firstRange(of: "): an array of ") {
-                if let element = getReturnType(reply: reply[range.upperBound...]) {
-                    return "[\(element)]"
-                }
-            }
-            return "[RESPToken]"
+            return "RESPToken.Array"
         } else if reply.hasPrefix("[Map") {
-            return "[String: RESPToken]"
+            return "RESPToken.Map"
         } else if reply.hasPrefix("[Null") || reply.hasPrefix("[Nil") {
             return "Void"
         } else if reply.hasPrefix("[Simple error") {

@@ -215,7 +215,7 @@ public enum CLUSTER {
 
     /// Returns the key names in a hash slot.
     public struct GETKEYSINSLOT: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var slot: Int
         public var count: Int
@@ -232,7 +232,7 @@ public enum CLUSTER {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -273,7 +273,7 @@ public enum CLUSTER {
 
     /// Returns a list of all TCP links to and from peer nodes.
     public struct LINKS: RESPCommand {
-        public typealias Response = [[String: RESPToken]]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -342,7 +342,7 @@ public enum CLUSTER {
 
     /// Lists the replica nodes of a master node.
     public struct REPLICAS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var nodeId: String
 
@@ -463,7 +463,7 @@ public enum CLUSTER {
 
     /// Returns the mapping of cluster slots to shards.
     public struct SHARDS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -477,7 +477,7 @@ public enum CLUSTER {
     /// Lists the replica nodes of a master node.
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
     public struct SLAVES: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var nodeId: String
 
@@ -493,7 +493,7 @@ public enum CLUSTER {
     /// Returns the mapping of cluster slots to nodes.
     @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
     public struct SLOTS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -683,7 +683,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array with up to count elements.
     @inlinable
-    public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> [RESPToken] {
+    public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
     }
 
@@ -695,7 +695,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
     @inlinable
-    public func clusterHelp() async throws -> [RESPToken] {
+    public func clusterHelp() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.HELP())
     }
 
@@ -731,7 +731,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Map](https:/valkey.io/topics/protocol/#maps) where each map contains various attributes and their values of a cluster link.
     @inlinable
-    public func clusterLinks() async throws -> [[String: RESPToken]] {
+    public func clusterLinks() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.LINKS())
     }
 
@@ -791,7 +791,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
     @inlinable
-    public func clusterReplicas(nodeId: String) async throws -> [RESPToken] {
+    public func clusterReplicas(nodeId: String) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
@@ -863,7 +863,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of [Map](https:/valkey.io/topics/protocol/#maps) of hash ranges and shard nodes describing individual shards.
     @inlinable
-    public func clusterShards() async throws -> [RESPToken] {
+    public func clusterShards() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SHARDS())
     }
 
@@ -876,7 +876,7 @@ extension ValkeyConnection {
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
     @inlinable
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
-    public func clusterSlaves(nodeId: String) async throws -> [RESPToken] {
+    public func clusterSlaves(nodeId: String) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLAVES(nodeId: nodeId))
     }
 
@@ -889,7 +889,7 @@ extension ValkeyConnection {
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): nested list of slot ranges with networking information.
     @inlinable
     @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
-    public func clusterSlots() async throws -> [RESPToken] {
+    public func clusterSlots() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLOTS())
     }
 

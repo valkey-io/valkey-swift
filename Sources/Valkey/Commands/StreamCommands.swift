@@ -122,7 +122,7 @@ public enum XGROUP {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -178,7 +178,7 @@ public enum XGROUP {
 public enum XINFO {
     /// Returns a list of the consumers in a consumer group.
     public struct CONSUMERS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var key: RESPKey
         public var group: String
@@ -195,7 +195,7 @@ public enum XINFO {
 
     /// Returns a list of the consumer groups of a stream.
     public struct GROUPS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var key: RESPKey
 
@@ -210,7 +210,7 @@ public enum XINFO {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -244,7 +244,7 @@ public enum XINFO {
                 RESPWithToken("COUNT", count).encode(into: &commandEncoder)
             }
         }
-        public typealias Response = [String: RESPToken]
+        public typealias Response = RESPToken.Map
 
         public var key: RESPKey
         public var fullBlock: FullBlock? = nil
@@ -403,7 +403,7 @@ public struct XADD: RESPCommand {
 
 /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
 public struct XAUTOCLAIM: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var group: String
@@ -430,7 +430,7 @@ public struct XAUTOCLAIM: RESPCommand {
 
 /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
 public struct XCLAIM: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var group: String
@@ -527,7 +527,7 @@ public struct XPENDING: RESPCommand {
             consumer.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var group: String
@@ -546,7 +546,7 @@ public struct XPENDING: RESPCommand {
 
 /// Returns the messages from a stream within a range of IDs.
 public struct XRANGE: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var start: String
@@ -588,7 +588,7 @@ public struct XREAD: RESPCommand {
             id.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [String: RESPToken]?
+    public typealias Response = RESPToken.Map?
 
     public var count: Int? = nil
     public var milliseconds: Int? = nil
@@ -649,7 +649,7 @@ public struct XREADGROUP: RESPCommand {
             id.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [String: RESPToken]?
+    public typealias Response = RESPToken.Map?
 
     public var groupBlock: GroupBlock
     public var count: Int? = nil
@@ -672,7 +672,7 @@ public struct XREADGROUP: RESPCommand {
 
 /// Returns the messages from a stream within a range of IDs in reverse order.
 public struct XREVRANGE: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var end: String
@@ -823,7 +823,7 @@ extension ValkeyConnection {
     ///     2. An [Array](https:/valkey.io/topics/protocol/#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
     ///     3. An [Array](https:/valkey.io/topics/protocol/#arrays) containing message IDs that no longer exist in the stream, and were deleted from the PEL in which they were found.
     @inlinable
-    public func xautoclaim(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) async throws -> [RESPToken] {
+    public func xautoclaim(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) async throws -> RESPToken.Array {
         try await send(command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
     }
 
@@ -837,7 +837,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim(key: RESPKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> [RESPToken] {
+    public func xclaim(key: RESPKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> RESPToken.Array {
         try await send(command: XCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
     }
 
@@ -909,7 +909,7 @@ extension ValkeyConnection {
     /// - Categories: @stream, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func xgroupHelp() async throws -> [RESPToken] {
+    public func xgroupHelp() async throws -> RESPToken.Array {
         try await send(command: XGROUP.HELP())
     }
 
@@ -933,7 +933,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @stream, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of consumers and their attributes.
     @inlinable
-    public func xinfoConsumers(key: RESPKey, group: String) async throws -> [RESPToken] {
+    public func xinfoConsumers(key: RESPKey, group: String) async throws -> RESPToken.Array {
         try await send(command: XINFO.CONSUMERS(key: key, group: group))
     }
 
@@ -945,7 +945,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @stream, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of consumer groups.
     @inlinable
-    public func xinfoGroups(key: RESPKey) async throws -> [RESPToken] {
+    public func xinfoGroups(key: RESPKey) async throws -> RESPToken.Array {
         try await send(command: XINFO.GROUPS(key: key))
     }
 
@@ -957,7 +957,7 @@ extension ValkeyConnection {
     /// - Categories: @stream, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func xinfoHelp() async throws -> [RESPToken] {
+    public func xinfoHelp() async throws -> RESPToken.Array {
         try await send(command: XINFO.HELP())
     }
 
@@ -971,7 +971,7 @@ extension ValkeyConnection {
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): when the _FULL_ argument was not given, a list of information about a stream in summary form.
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): when the _FULL_ argument was given, a list of information about a stream in extended form.
     @inlinable
-    public func xinfoStream(key: RESPKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws -> [String: RESPToken] {
+    public func xinfoStream(key: RESPKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws -> RESPToken.Map {
         try await send(command: XINFO.STREAM(key: key, fullBlock: fullBlock))
     }
 
@@ -995,7 +995,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @stream, @slow
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): different data depending on the way XPENDING is called, as explained on this page.
     @inlinable
-    public func xpending(key: RESPKey, group: String, filters: XPENDING.Filters? = nil) async throws -> [RESPToken] {
+    public func xpending(key: RESPKey, group: String, filters: XPENDING.Filters? = nil) async throws -> RESPToken.Array {
         try await send(command: XPENDING(key: key, group: group, filters: filters))
     }
 
@@ -1007,7 +1007,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @stream, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of stream entries with IDs matching the specified range.
     @inlinable
-    public func xrange(key: RESPKey, start: String, end: String, count: Int? = nil) async throws -> [RESPToken] {
+    public func xrange(key: RESPKey, start: String, end: String, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: XRANGE(key: key, start: start, end: end, count: count))
     }
 
@@ -1020,7 +1020,7 @@ extension ValkeyConnection {
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xread(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD.Streams) async throws -> [String: RESPToken]? {
+    public func xread(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD.Streams) async throws -> RESPToken.Map? {
         try await send(command: XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
@@ -1034,7 +1034,7 @@ extension ValkeyConnection {
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(groupBlock: XREADGROUP.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP.Streams) async throws -> [String: RESPToken]? {
+    public func xreadgroup(groupBlock: XREADGROUP.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP.Streams) async throws -> RESPToken.Map? {
         try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
@@ -1046,7 +1046,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @stream, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): The command returns the entries with IDs matching the specified range. The returned entries are complete, which means that the ID and all the fields they are composed of are returned. Moreover, the entries are returned with their fields and values in the same order as `XADD` added them.
     @inlinable
-    public func xrevrange(key: RESPKey, end: String, start: String, count: Int? = nil) async throws -> [RESPToken] {
+    public func xrevrange(key: RESPKey, end: String, start: String, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: XREVRANGE(key: key, end: end, start: start, count: count))
     }
 

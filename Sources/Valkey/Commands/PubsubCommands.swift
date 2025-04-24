@@ -26,7 +26,7 @@ import Foundation
 public enum PUBSUB {
     /// Returns the active channels.
     public struct CHANNELS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var pattern: String? = nil
 
@@ -41,7 +41,7 @@ public enum PUBSUB {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -67,7 +67,7 @@ public enum PUBSUB {
 
     /// Returns a count of subscribers to channels.
     public struct NUMSUB: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var channel: [String] = []
 
@@ -82,7 +82,7 @@ public enum PUBSUB {
 
     /// Returns the active shard channels.
     public struct SHARDCHANNELS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var pattern: String? = nil
 
@@ -97,7 +97,7 @@ public enum PUBSUB {
 
     /// Returns the count of subscribers of shard channels.
     public struct SHARDNUMSUB: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var shardchannel: [String] = []
 
@@ -258,7 +258,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
-    public func pubsubChannels(pattern: String? = nil) async throws -> [RESPToken] {
+    public func pubsubChannels(pattern: String? = nil) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.CHANNELS(pattern: pattern))
     }
 
@@ -270,7 +270,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func pubsubHelp() async throws -> [RESPToken] {
+    public func pubsubHelp() async throws -> RESPToken.Array {
         try await send(command: PUBSUB.HELP())
     }
 
@@ -294,7 +294,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
     @inlinable
-    public func pubsubNumsub(channel: [String] = []) async throws -> [RESPToken] {
+    public func pubsubNumsub(channel: [String] = []) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.NUMSUB(channel: channel))
     }
 
@@ -306,7 +306,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
-    public func pubsubShardchannels(pattern: String? = nil) async throws -> [RESPToken] {
+    public func pubsubShardchannels(pattern: String? = nil) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.SHARDCHANNELS(pattern: pattern))
     }
 
@@ -318,7 +318,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
-    public func pubsubShardnumsub(shardchannel: [String] = []) async throws -> [RESPToken] {
+    public func pubsubShardnumsub(shardchannel: [String] = []) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.SHARDNUMSUB(shardchannel: shardchannel))
     }
 

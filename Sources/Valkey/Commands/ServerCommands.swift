@@ -26,7 +26,7 @@ import Foundation
 public enum ACL {
     /// Lists the ACL categories, or the commands inside a category.
     public struct CAT: RESPCommand {
-        public typealias Response = [String]
+        public typealias Response = RESPToken.Array
 
         public var category: String? = nil
 
@@ -90,7 +90,7 @@ public enum ACL {
 
     /// Lists the ACL rules of a user.
     public struct GETUSER: RESPCommand {
-        public typealias Response = [String: RESPToken]?
+        public typealias Response = RESPToken.Map?
 
         public var username: String
 
@@ -105,7 +105,7 @@ public enum ACL {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -118,7 +118,7 @@ public enum ACL {
 
     /// Dumps the effective rules in ACL file format.
     public struct LIST: RESPCommand {
-        public typealias Response = [String]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -162,7 +162,7 @@ public enum ACL {
                 }
             }
         }
-        public typealias Response = [String]?
+        public typealias Response = RESPToken.Array?
 
         public var operation: Operation? = nil
 
@@ -203,7 +203,7 @@ public enum ACL {
 
     /// Lists all ACL users.
     public struct USERS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -245,7 +245,7 @@ extension COMMAND {
 
     /// Returns documentary information about one, multiple or all commands.
     public struct DOCS: RESPCommand {
-        public typealias Response = [String: RESPToken]
+        public typealias Response = RESPToken.Map
 
         public var commandName: [String] = []
 
@@ -260,7 +260,7 @@ extension COMMAND {
 
     /// Extracts the key names from an arbitrary command.
     public struct GETKEYS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var command: String
         public var arg: [String] = []
@@ -277,7 +277,7 @@ extension COMMAND {
 
     /// Extracts the key names and access flags for an arbitrary command.
     public struct GETKEYSANDFLAGS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var command: String
         public var arg: [String] = []
@@ -294,7 +294,7 @@ extension COMMAND {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -307,7 +307,7 @@ extension COMMAND {
 
     /// Returns information about one, multiple or all commands.
     public struct INFO: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var commandName: [String] = []
 
@@ -345,7 +345,7 @@ extension COMMAND {
                 }
             }
         }
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var filterby: Filterby? = nil
 
@@ -364,7 +364,7 @@ extension COMMAND {
 public enum CONFIG {
     /// Returns the effective values of configuration parameters.
     public struct GET: RESPCommand {
-        public typealias Response = [String: RESPToken]
+        public typealias Response = RESPToken.Map
 
         public var parameter: [String]
 
@@ -379,7 +379,7 @@ public enum CONFIG {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -480,7 +480,7 @@ public enum LATENCY {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -493,7 +493,7 @@ public enum LATENCY {
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
     public struct HISTOGRAM: RESPCommand {
-        public typealias Response = [String: RESPToken]
+        public typealias Response = RESPToken.Map
 
         public var command: [String] = []
 
@@ -508,7 +508,7 @@ public enum LATENCY {
 
     /// Returns timestamp-latency samples for an event.
     public struct HISTORY: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var event: String
 
@@ -523,7 +523,7 @@ public enum LATENCY {
 
     /// Returns the latest latency samples for all events.
     public struct LATEST: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -568,7 +568,7 @@ public enum MEMORY {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -605,7 +605,7 @@ public enum MEMORY {
 
     /// Returns details about memory usage.
     public struct STATS: RESPCommand {
-        public typealias Response = [String: RESPToken]
+        public typealias Response = RESPToken.Map
 
 
         @inlinable public init() {
@@ -639,7 +639,7 @@ public enum MEMORY {
 public enum MODULE {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -652,7 +652,7 @@ public enum MODULE {
 
     /// Returns all loaded modules.
     public struct LIST: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -735,7 +735,7 @@ public enum MODULE {
 public enum SLOWLOG {
     /// Returns the slow log's entries.
     public struct GET: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var count: Int? = nil
 
@@ -750,7 +750,7 @@ public enum SLOWLOG {
 
     /// Show helpful text about the different subcommands
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -817,7 +817,7 @@ public struct BGSAVE: RESPCommand {
 
 /// Returns detailed information about all commands.
 public struct COMMAND: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
 
     @inlinable public init() {
@@ -1120,7 +1120,7 @@ public struct RESTOREASKING: RESPCommand {
 
 /// Returns the replication role.
 public struct ROLE: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
 
     @inlinable public init() {
@@ -1280,7 +1280,7 @@ public struct SYNC: RESPCommand {
 
 /// Returns the server time.
 public struct TIME: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
 
     @inlinable public init() {
@@ -1303,7 +1303,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) elements representing ACL categories or commands in a given category.
     ///     * [Simple error](https:/valkey.io/topics/protocol/#simple-errors): the command returns an error if an invalid category name is given.
     @inlinable
-    public func aclCat(category: String? = nil) async throws -> [String] {
+    public func aclCat(category: String? = nil) async throws -> RESPToken.Array {
         try await send(command: ACL.CAT(category: category))
     }
 
@@ -1355,7 +1355,7 @@ extension ValkeyConnection {
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): a set of ACL rule definitions for the user
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if user does not exist.
     @inlinable
-    public func aclGetuser(username: String) async throws -> [String: RESPToken]? {
+    public func aclGetuser(username: String) async throws -> RESPToken.Map? {
         try await send(command: ACL.GETUSER(username: username))
     }
 
@@ -1367,7 +1367,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
     @inlinable
-    public func aclHelp() async throws -> [RESPToken] {
+    public func aclHelp() async throws -> RESPToken.Array {
         try await send(command: ACL.HELP())
     }
 
@@ -1379,7 +1379,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) elements.
     @inlinable
-    public func aclList() async throws -> [String] {
+    public func aclList() async throws -> RESPToken.Array {
         try await send(command: ACL.LIST())
     }
 
@@ -1409,7 +1409,7 @@ extension ValkeyConnection {
     ///     When called with `RESET`:
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the security log was cleared.
     @inlinable
-    public func aclLog(operation: ACL.LOG.Operation? = nil) async throws -> [String]? {
+    public func aclLog(operation: ACL.LOG.Operation? = nil) async throws -> RESPToken.Array? {
         try await send(command: ACL.LOG(operation: operation))
     }
 
@@ -1447,7 +1447,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): list of existing ACL users.
     @inlinable
-    public func aclUsers() async throws -> [RESPToken] {
+    public func aclUsers() async throws -> RESPToken.Array {
         try await send(command: ACL.USERS())
     }
 
@@ -1499,7 +1499,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of command details. The order of the commands in the array is random.
     @inlinable
-    public func command() async throws -> [RESPToken] {
+    public func command() async throws -> RESPToken.Array {
         try await send(command: COMMAND())
     }
 
@@ -1523,7 +1523,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
-    public func commandDocs(commandName: [String] = []) async throws -> [String: RESPToken] {
+    public func commandDocs(commandName: [String] = []) async throws -> RESPToken.Map {
         try await send(command: COMMAND.DOCS(commandName: commandName))
     }
 
@@ -1535,7 +1535,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys from the given command.
     @inlinable
-    public func commandGetkeys(command: String, arg: [String] = []) async throws -> [RESPToken] {
+    public func commandGetkeys(command: String, arg: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYS(command: command, arg: arg))
     }
 
@@ -1547,7 +1547,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys from the given command and their usage flags.
     @inlinable
-    public func commandGetkeysandflags(command: String, arg: [String] = []) async throws -> [RESPToken] {
+    public func commandGetkeysandflags(command: String, arg: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, arg: arg))
     }
 
@@ -1559,7 +1559,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func commandHelp() async throws -> [RESPToken] {
+    public func commandHelp() async throws -> RESPToken.Array {
         try await send(command: COMMAND.HELP())
     }
 
@@ -1571,7 +1571,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of command details.
     @inlinable
-    public func commandInfo(commandName: [String] = []) async throws -> [RESPToken] {
+    public func commandInfo(commandName: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.INFO(commandName: commandName))
     }
 
@@ -1583,7 +1583,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of command names.
     @inlinable
-    public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> [RESPToken] {
+    public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> RESPToken.Array {
         try await send(command: COMMAND.LIST(filterby: filterby))
     }
 
@@ -1595,7 +1595,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
-    public func configGet(parameter: [String]) async throws -> [String: RESPToken] {
+    public func configGet(parameter: [String]) async throws -> RESPToken.Map {
         try await send(command: CONFIG.GET(parameter: parameter))
     }
 
@@ -1607,7 +1607,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func configHelp() async throws -> [RESPToken] {
+    public func configHelp() async throws -> RESPToken.Array {
         try await send(command: CONFIG.HELP())
     }
 
@@ -1753,7 +1753,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func latencyHelp() async throws -> [RESPToken] {
+    public func latencyHelp() async throws -> RESPToken.Array {
         try await send(command: LATENCY.HELP())
     }
 
@@ -1765,7 +1765,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
-    public func latencyHistogram(command: [String] = []) async throws -> [String: RESPToken] {
+    public func latencyHistogram(command: [String] = []) async throws -> RESPToken.Map {
         try await send(command: LATENCY.HISTOGRAM(command: command))
     }
 
@@ -1777,7 +1777,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing the timestamp and the latency of the event.
     @inlinable
-    public func latencyHistory(event: String) async throws -> [RESPToken] {
+    public func latencyHistory(event: String) async throws -> RESPToken.Array {
         try await send(command: LATENCY.HISTORY(event: event))
     }
 
@@ -1789,7 +1789,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.
     @inlinable
-    public func latencyLatest() async throws -> [RESPToken] {
+    public func latencyLatest() async throws -> RESPToken.Array {
         try await send(command: LATENCY.LATEST())
     }
 
@@ -1836,7 +1836,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func memoryHelp() async throws -> [RESPToken] {
+    public func memoryHelp() async throws -> RESPToken.Array {
         try await send(command: MEMORY.HELP())
     }
 
@@ -1872,7 +1872,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): memory usage metrics and their values.
     @inlinable
-    public func memoryStats() async throws -> [String: RESPToken] {
+    public func memoryStats() async throws -> RESPToken.Map {
         try await send(command: MEMORY.STATS())
     }
 
@@ -1898,7 +1898,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions
     @inlinable
-    public func moduleHelp() async throws -> [RESPToken] {
+    public func moduleHelp() async throws -> RESPToken.Array {
         try await send(command: MODULE.HELP())
     }
 
@@ -1912,7 +1912,7 @@ extension ValkeyConnection {
     ///     * name: the name of the module.
     ///     * ver: the version of the module.
     @inlinable
-    public func moduleList() async throws -> [RESPToken] {
+    public func moduleList() async throws -> RESPToken.Array {
         try await send(command: MODULE.LIST())
     }
 
@@ -2018,7 +2018,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @fast, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): where the first element is one of `master`, `slave`, or `sentinel`, and the additional elements are role-specific as illustrated above.
     @inlinable
-    public func role() async throws -> [RESPToken] {
+    public func role() async throws -> RESPToken.Array {
         try await send(command: ROLE())
     }
 
@@ -2067,7 +2067,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of slow log entries per the above format.
     @inlinable
-    public func slowlogGet(count: Int? = nil) async throws -> [RESPToken] {
+    public func slowlogGet(count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.GET(count: count))
     }
 
@@ -2079,7 +2079,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func slowlogHelp() async throws -> [RESPToken] {
+    public func slowlogHelp() async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.HELP())
     }
 
@@ -2138,7 +2138,7 @@ extension ValkeyConnection {
     /// - Categories: @fast
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): specifically, a two-element array consisting of the Unix timestamp in seconds and the microseconds' count.
     @inlinable
-    public func time() async throws -> [RESPToken] {
+    public func time() async throws -> RESPToken.Array {
         try await send(command: TIME())
     }
 

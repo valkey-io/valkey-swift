@@ -258,7 +258,7 @@ public struct LCS: RESPCommand {
 
 /// Atomically returns the string values of one or more keys.
 public struct MGET: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
 
@@ -681,7 +681,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @string, @fast
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of values at the specified keys.
     @inlinable
-    public func mget(key: [RESPKey]) async throws -> [RESPToken] {
+    public func mget(key: [RESPKey]) async throws -> RESPToken.Array {
         try await send(command: MGET(key: key))
     }
 

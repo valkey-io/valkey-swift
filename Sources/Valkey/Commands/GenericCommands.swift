@@ -56,7 +56,7 @@ public enum OBJECT {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -258,7 +258,7 @@ public struct EXPIRETIME: RESPCommand {
 
 /// Returns all key names that match a pattern.
 public struct KEYS: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var pattern: String
 
@@ -573,7 +573,7 @@ public struct RESTORE: RESPCommand {
 
 /// Iterates over the key names in the database.
 public struct SCAN: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var cursor: Int
     public var pattern: String? = nil
@@ -691,7 +691,7 @@ public struct SORTRO: RESPCommand {
             }
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var byPattern: String? = nil
@@ -793,7 +793,7 @@ public struct WAIT: RESPCommand {
 
 /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
 public struct WAITAOF: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var numlocal: Int
     public var numreplicas: Int
@@ -915,7 +915,7 @@ extension ValkeyConnection {
     /// - Categories: @keyspace, @read, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys matching _pattern_.
     @inlinable
-    public func keys(pattern: String) async throws -> [RESPToken] {
+    public func keys(pattern: String) async throws -> RESPToken.Array {
         try await send(command: KEYS(pattern: pattern))
     }
 
@@ -983,7 +983,7 @@ extension ValkeyConnection {
     /// - Categories: @keyspace, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func objectHelp() async throws -> [RESPToken] {
+    public func objectHelp() async throws -> RESPToken.Array {
         try await send(command: OBJECT.HELP())
     }
 
@@ -1149,7 +1149,7 @@ extension ValkeyConnection {
     ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) with the names of scanned keys.
     @inlinable
-    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> [RESPToken] {
+    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> RESPToken.Array {
         try await send(command: SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
     }
 
@@ -1174,7 +1174,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sorted elements.
     @inlinable
-    public func sortRo(key: RESPKey, byPattern: String? = nil, limit: SORTRO.Limit? = nil, getPattern: [String] = [], order: SORTRO.Order? = nil, sorting: Bool = false) async throws -> [RESPToken] {
+    public func sortRo(key: RESPKey, byPattern: String? = nil, limit: SORTRO.Limit? = nil, getPattern: [String] = [], order: SORTRO.Order? = nil, sorting: Bool = false) async throws -> RESPToken.Array {
         try await send(command: SORTRO(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
     }
 
@@ -1251,7 +1251,7 @@ extension ValkeyConnection {
     ///     1. The first is the number of local Valkey nodes (0 or 1) that have fsynced to AOF all writes performed in the context of the current connection
     ///     2. The second is the number of replicas that have acknowledged doing the same.
     @inlinable
-    public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> [RESPToken] {
+    public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> RESPToken.Array {
         try await send(command: WAITAOF(numlocal: numlocal, numreplicas: numreplicas, timeout: timeout))
     }
 
