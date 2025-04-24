@@ -219,7 +219,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func hello(context: ChannelHandlerContext) {
         // send hello with protocol, authentication and client name details
         if configuration.respVersion == .v3 || configuration.authentication != nil || configuration.clientName != nil {
-            _send(
+            self._send(
                 command: HELLO(
                     arguments: .init(
                         protover: configuration.respVersion.rawValue,
