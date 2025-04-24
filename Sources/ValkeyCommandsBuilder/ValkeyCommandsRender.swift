@@ -290,7 +290,7 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
 
         """
 
-    let keys = commands.keys.sorted()
+    var keys = commands.keys.sorted()
     let namespaces = Set<String>(
         keys.compactMap {
             let (container, subCommand) = subCommand($0)
@@ -324,6 +324,11 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
         guard let reply = replies.commands[key], reply.count > 0 else { continue }
         string.appendCommand(command: command, reply: reply, name: key, tab: "")
     }
+
+    /// Remove subscribe functions as we implement our own versions in code
+    let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE", "UNSUBSCRIBE", "PUNSUBSCRIBE", "SUNSUBSCRIBE"]
+    keys.removeAll { subscribeFunctions.contains($0) }
+
     string.append("\n")
     string.append("extension ValkeyConnection {\n")
     for key in keys {

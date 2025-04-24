@@ -18,6 +18,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         fileprivate enum _Internal: Equatable, Sendable {
             case connectionClosed
             case commandError
+            case subscriptionError
         }
 
         fileprivate let value: _Internal
@@ -29,6 +30,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var connectionClosed: Self { .init(.connectionClosed) }
         /// Error returned by Valkey command
         public static var commandError: Self { .init(.commandError) }
+        /// Error returned by Valkey subscription
+        public static var subscriptionError: Self { .init(.subscriptionError) }
     }
 
     public let errorCode: ErrorCode
@@ -42,6 +45,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         switch self.errorCode.value {
         case .connectionClosed: "Connection has been closed"
         case .commandError: self.message ?? "Valkey command returned an error"
+        case .subscriptionError: self.message ?? "Received invalid subscription push event"
         }
     }
 }

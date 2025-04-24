@@ -108,7 +108,6 @@ public final class ValkeyConnection: Sendable {
     /// Send RESP command to Valkey connection
     /// - Parameter command: RESPCommand structure
     /// - Returns: The command response as defined in the RESPCommand
-
     @inlinable
     public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
         let result = try await withCheckedThrowingContinuation { continuation in
