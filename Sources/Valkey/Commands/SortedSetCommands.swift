@@ -39,7 +39,7 @@ public struct BZMPOP: RESPCommand {
             }
         }
     }
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var timeout: Double
     public var key: [RESPKey]
@@ -62,7 +62,7 @@ public struct BZMPOP: RESPCommand {
 
 /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
 public struct BZPOPMAX: RESPCommand {
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var key: [RESPKey]
     public var timeout: Double
@@ -81,7 +81,7 @@ public struct BZPOPMAX: RESPCommand {
 
 /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
 public struct BZPOPMIN: RESPCommand {
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var key: [RESPKey]
     public var timeout: Double
@@ -151,8 +151,6 @@ public struct ZADD: RESPCommand {
             member.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var condition: Condition? = nil
     public var comparison: Comparison? = nil
@@ -216,7 +214,7 @@ public struct ZCOUNT: RESPCommand {
 
 /// Returns the difference between multiple sorted sets.
 public struct ZDIFF: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
     public var withscores: Bool = false
@@ -292,7 +290,7 @@ public struct ZINTER: RESPCommand {
             }
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
     public var weight: [Int] = []
@@ -410,7 +408,7 @@ public struct ZMPOP: RESPCommand {
             }
         }
     }
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var key: [RESPKey]
     public var `where`: Where
@@ -431,7 +429,7 @@ public struct ZMPOP: RESPCommand {
 
 /// Returns the score of one or more members in a sorted set.
 public struct ZMSCORE: RESPCommand {
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
     public var key: RESPKey
     public var member: [String]
@@ -450,7 +448,7 @@ public struct ZMSCORE: RESPCommand {
 
 /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
 public struct ZPOPMAX: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var count: Int? = nil
@@ -469,7 +467,7 @@ public struct ZPOPMAX: RESPCommand {
 
 /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
 public struct ZPOPMIN: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var count: Int? = nil
@@ -509,8 +507,6 @@ public struct ZRANDMEMBER: RESPCommand {
             "WITHSCORES".encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var options: Options? = nil
 
@@ -564,7 +560,7 @@ public struct ZRANGE: RESPCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var start: String
@@ -615,7 +611,7 @@ public struct ZRANGEBYLEX: RESPCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var min: String
@@ -660,7 +656,7 @@ public struct ZRANGEBYSCORE: RESPCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var min: Double
@@ -750,8 +746,6 @@ public struct ZRANGESTORE: RESPCommand {
 
 /// Returns the index of a member in a sorted set ordered by ascending scores.
 public struct ZRANK: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var member: String
     public var withscore: Bool = false
@@ -854,7 +848,7 @@ public struct ZREMRANGEBYSCORE: RESPCommand {
 /// Returns members in a sorted set within a range of indexes in reverse order.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
 public struct ZREVRANGE: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var start: Int
@@ -899,7 +893,7 @@ public struct ZREVRANGEBYLEX: RESPCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var max: String
@@ -944,7 +938,7 @@ public struct ZREVRANGEBYSCORE: RESPCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var max: Double
@@ -969,8 +963,6 @@ public struct ZREVRANGEBYSCORE: RESPCommand {
 
 /// Returns the index of a member in a sorted set ordered by descending scores.
 public struct ZREVRANK: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var member: String
     public var withscore: Bool = false
@@ -990,7 +982,7 @@ public struct ZREVRANK: RESPCommand {
 
 /// Iterates over members and scores of a sorted set.
 public struct ZSCAN: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var cursor: Int
@@ -1049,7 +1041,7 @@ public struct ZUNION: RESPCommand {
             }
         }
     }
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
     public var weight: [Int] = []
@@ -1122,7 +1114,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func bzmpop(timeout: Double, key: [RESPKey], `where`: BZMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+    public func bzmpop(timeout: Double, key: [RESPKey], `where`: BZMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
         try await send(command: BZMPOP(timeout: timeout, key: key, where: `where`, count: count))
     }
 
@@ -1136,7 +1128,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the keyname, popped member, and its score.
     @inlinable
-    public func bzpopmax(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
+    public func bzpopmax(key: [RESPKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BZPOPMAX(key: key, timeout: timeout))
     }
 
@@ -1150,7 +1142,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the keyname, popped member, and its score.
     @inlinable
-    public func bzpopmin(key: [RESPKey], timeout: Double) async throws -> [RESPToken]? {
+    public func bzpopmin(key: [RESPKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BZPOPMIN(key: key, timeout: timeout))
     }
 
@@ -1166,7 +1158,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/valkey.io/topics/protocol/#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> RESPToken {
+    public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> ZADD.Response {
         try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 
@@ -1202,7 +1194,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zdiff(key: [RESPKey], withscores: Bool = false) async throws -> [RESPToken] {
+    public func zdiff(key: [RESPKey], withscores: Bool = false) async throws -> RESPToken.Array {
         try await send(command: ZDIFF(key: key, withscores: withscores))
     }
 
@@ -1238,7 +1230,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
-    public func zinter(key: [RESPKey], weight: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zinter(key: [RESPKey], weight: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
         try await send(command: ZINTER(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
     }
 
@@ -1288,7 +1280,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     @inlinable
-    public func zmpop(key: [RESPKey], `where`: ZMPOP.Where, count: Int? = nil) async throws -> [RESPToken]? {
+    public func zmpop(key: [RESPKey], `where`: ZMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
         try await send(command: ZMPOP(key: key, where: `where`, count: count))
     }
 
@@ -1302,7 +1294,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the member does not exist in the sorted set.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list of [Double](https:/valkey.io/topics/protocol/#doubles) _member_ scores as double-precision floating point numbers.
     @inlinable
-    public func zmscore(key: RESPKey, member: [String]) async throws -> [RESPToken]? {
+    public func zmscore(key: RESPKey, member: [String]) async throws -> RESPToken.Array? {
         try await send(command: ZMSCORE(key: key, member: member))
     }
 
@@ -1314,7 +1306,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of popped elements and scores.
     @inlinable
-    public func zpopmax(key: RESPKey, count: Int? = nil) async throws -> [RESPToken] {
+    public func zpopmax(key: RESPKey, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: ZPOPMAX(key: key, count: count))
     }
 
@@ -1326,7 +1318,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @sortedset, @fast
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of popped elements and scores.
     @inlinable
-    public func zpopmin(key: RESPKey, count: Int? = nil) async throws -> [RESPToken] {
+    public func zpopmin(key: RESPKey, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: ZPOPMIN(key: key, count: count))
     }
 
@@ -1339,7 +1331,7 @@ extension ValkeyConnection {
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or [Null](https:/valkey.io/topics/protocol/#nulls) when _key_ doesn't exist.
     ///     [Array](https:/valkey.io/topics/protocol/#arrays): when the additional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist. If the _WITHSCORES_ modifier is used, the reply is a list of members and their scores from the sorted set.
     @inlinable
-    public func zrandmember(key: RESPKey, options: ZRANDMEMBER.Options? = nil) async throws -> RESPToken {
+    public func zrandmember(key: RESPKey, options: ZRANDMEMBER.Options? = nil) async throws -> ZRANDMEMBER.Response {
         try await send(command: ZRANDMEMBER(key: key, options: options))
     }
 
@@ -1351,7 +1343,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
-    public func zrange(key: RESPKey, start: String, stop: String, sortby: ZRANGE.Sortby? = nil, rev: Bool = false, limit: ZRANGE.Limit? = nil, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zrange(key: RESPKey, start: String, stop: String, sortby: ZRANGE.Sortby? = nil, rev: Bool = false, limit: ZRANGE.Limit? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
         try await send(command: ZRANGE(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
     }
 
@@ -1364,7 +1356,7 @@ extension ValkeyConnection {
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of elements in the specified score range.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.")
-    public func zrangebylex(key: RESPKey, min: String, max: String, limit: ZRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
+    public func zrangebylex(key: RESPKey, min: String, max: String, limit: ZRANGEBYLEX.Limit? = nil) async throws -> RESPToken.Array {
         try await send(command: ZRANGEBYLEX(key: key, min: min, max: max, limit: limit))
     }
 
@@ -1377,7 +1369,7 @@ extension ValkeyConnection {
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.")
-    public func zrangebyscore(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
+    public func zrangebyscore(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> RESPToken.Array {
         try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
     }
 
@@ -1404,7 +1396,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> RESPToken {
+    public func zrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> ZRANK.Response {
         try await send(command: ZRANK(key: key, member: member, withscore: withscore))
     }
 
@@ -1465,7 +1457,7 @@ extension ValkeyConnection {
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members in the specified range, optionally with their scores if _WITHSCORE_ was used.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
-    public func zrevrange(key: RESPKey, start: Int, stop: Int, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zrevrange(key: RESPKey, start: Int, stop: Int, withscores: Bool = false) async throws -> RESPToken.Array {
         try await send(command: ZREVRANGE(key: key, start: start, stop: stop, withscores: withscores))
     }
 
@@ -1478,7 +1470,7 @@ extension ValkeyConnection {
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members in the specified score range.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.")
-    public func zrevrangebylex(key: RESPKey, max: String, min: String, limit: ZREVRANGEBYLEX.Limit? = nil) async throws -> [RESPToken] {
+    public func zrevrangebylex(key: RESPKey, max: String, min: String, limit: ZREVRANGEBYLEX.Limit? = nil) async throws -> RESPToken.Array {
         try await send(command: ZREVRANGEBYLEX(key: key, max: max, min: min, limit: limit))
     }
 
@@ -1491,7 +1483,7 @@ extension ValkeyConnection {
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.")
-    public func zrevrangebyscore(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> [RESPToken] {
+    public func zrevrangebyscore(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> RESPToken.Array {
         try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
     }
 
@@ -1506,7 +1498,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): The rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): The rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrevrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> RESPToken {
+    public func zrevrank(key: RESPKey, member: String, withscore: Bool = false) async throws -> ZREVRANK.Response {
         try await send(command: ZREVRANK(key: key, member: member, withscore: withscore))
     }
 
@@ -1520,7 +1512,7 @@ extension ValkeyConnection {
     ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) of member/score pairs that were scanned. When `NOSCORES` option is on, a list of members from the sorted set.
     @inlinable
-    public func zscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
+    public func zscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: ZSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 
@@ -1546,7 +1538,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @sortedset, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
-    public func zunion(key: [RESPKey], weight: [Int] = [], aggregate: ZUNION.Aggregate? = nil, withscores: Bool = false) async throws -> [RESPToken] {
+    public func zunion(key: [RESPKey], weight: [Int] = [], aggregate: ZUNION.Aggregate? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
         try await send(command: ZUNION(key: key, weight: weight, aggregate: aggregate, withscores: withscores))
     }
 

@@ -156,12 +156,12 @@ struct GeneratedCommands {
                 try await withKey(connection: connection) { key2 in
                     _ = try await connection.lpush(key: key, element: ["a"])
                     _ = try await connection.lpush(key: key2, element: ["b"])
-                    let rt1: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!
+                    let rt1: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!.converting()
                     let keyReturned1 = try RESPKey(from: rt1[0])
                     let values1 = try [String](from: rt1[1])
                     #expect(keyReturned1 == key)
                     #expect(values1.first == "a")
-                    let rt2: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!
+                    let rt2: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!.converting()
                     let keyReturned2 = try RESPKey(from: rt2[0])
                     let values2 = try [String](from: rt2[1])
                     #expect(keyReturned2 == key2)

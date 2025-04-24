@@ -26,8 +26,6 @@ import Foundation
 public enum CLUSTER {
     /// Assigns new hash slots to a node.
     public struct ADDSLOTS: RESPCommand {
-        public typealias Response = RESPToken
-
         public var slot: [Int]
 
         @inlinable public init(slot: [Int]) {
@@ -62,8 +60,6 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
-        public typealias Response = RESPToken
-
         public var range: [Range]
 
         @inlinable public init(range: [Range]) {
@@ -120,8 +116,6 @@ public enum CLUSTER {
 
     /// Sets hash slots as unbound for a node.
     public struct DELSLOTS: RESPCommand {
-        public typealias Response = RESPToken
-
         public var slot: [Int]
 
         @inlinable public init(slot: [Int]) {
@@ -156,8 +150,6 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
-        public typealias Response = RESPToken
-
         public var range: [Range]
 
         @inlinable public init(range: [Range]) {
@@ -186,8 +178,6 @@ public enum CLUSTER {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var options: Options? = nil
 
         @inlinable public init(options: Options? = nil) {
@@ -201,8 +191,6 @@ public enum CLUSTER {
 
     /// Deletes all slots information from a node.
     public struct FLUSHSLOTS: RESPCommand {
-        public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -214,8 +202,6 @@ public enum CLUSTER {
 
     /// Removes a node from the nodes table.
     public struct FORGET: RESPCommand {
-        public typealias Response = RESPToken
-
         public var nodeId: String
 
         @inlinable public init(nodeId: String) {
@@ -229,7 +215,7 @@ public enum CLUSTER {
 
     /// Returns the key names in a hash slot.
     public struct GETKEYSINSLOT: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var slot: Int
         public var count: Int
@@ -246,7 +232,7 @@ public enum CLUSTER {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -287,7 +273,7 @@ public enum CLUSTER {
 
     /// Returns a list of all TCP links to and from peer nodes.
     public struct LINKS: RESPCommand {
-        public typealias Response = [[String: RESPToken]]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -300,8 +286,6 @@ public enum CLUSTER {
 
     /// Forces a node to handshake with another node.
     public struct MEET: RESPCommand {
-        public typealias Response = RESPToken
-
         public var ip: String
         public var port: Int
         public var clusterBusPort: Int? = nil
@@ -358,7 +342,7 @@ public enum CLUSTER {
 
     /// Lists the replica nodes of a master node.
     public struct REPLICAS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var nodeId: String
 
@@ -373,8 +357,6 @@ public enum CLUSTER {
 
     /// Configure a node as replica of a master node.
     public struct REPLICATE: RESPCommand {
-        public typealias Response = RESPToken
-
         public var nodeId: String
 
         @inlinable public init(nodeId: String) {
@@ -403,8 +385,6 @@ public enum CLUSTER {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var resetType: ResetType? = nil
 
         @inlinable public init(resetType: ResetType? = nil) {
@@ -418,8 +398,6 @@ public enum CLUSTER {
 
     /// Forces a node to save the cluster configuration to disk.
     public struct SAVECONFIG: RESPCommand {
-        public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -431,8 +409,6 @@ public enum CLUSTER {
 
     /// Sets the configuration epoch for a new node.
     public struct SETCONFIGEPOCH: RESPCommand {
-        public typealias Response = RESPToken
-
         public var configEpoch: Int
 
         @inlinable public init(configEpoch: Int) {
@@ -472,8 +448,6 @@ public enum CLUSTER {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var slot: Int
         public var subcommand: Subcommand
 
@@ -489,7 +463,7 @@ public enum CLUSTER {
 
     /// Returns the mapping of cluster slots to shards.
     public struct SHARDS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -503,7 +477,7 @@ public enum CLUSTER {
     /// Lists the replica nodes of a master node.
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
     public struct SLAVES: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var nodeId: String
 
@@ -519,7 +493,7 @@ public enum CLUSTER {
     /// Returns the mapping of cluster slots to nodes.
     @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
     public struct SLOTS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -534,8 +508,6 @@ public enum CLUSTER {
 
 /// Signals that a cluster client is following an -ASK redirect.
 public struct ASKING: RESPCommand {
-    public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -547,8 +519,6 @@ public struct ASKING: RESPCommand {
 
 /// Enables read-only queries for a connection to a Valkey Cluster replica node.
 public struct READONLY: RESPCommand {
-    public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -560,8 +530,6 @@ public struct READONLY: RESPCommand {
 
 /// Enables read-write queries for a connection to a Reids Cluster replica node.
 public struct READWRITE: RESPCommand {
-    public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -581,8 +549,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func asking() async throws -> RESPToken {
-        try await send(command: ASKING())
+    public func asking() async throws {
+        _ = try await send(command: ASKING())
     }
 
     /// Assigns new hash slots to a node.
@@ -593,8 +561,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterAddslots(slot: [Int]) async throws -> RESPToken {
-        try await send(command: CLUSTER.ADDSLOTS(slot: slot))
+    public func clusterAddslots(slot: [Int]) async throws {
+        _ = try await send(command: CLUSTER.ADDSLOTS(slot: slot))
     }
 
     /// Assigns new hash slot ranges to a node.
@@ -605,8 +573,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterAddslotsrange(range: [CLUSTER.ADDSLOTSRANGE.Range]) async throws -> RESPToken {
-        try await send(command: CLUSTER.ADDSLOTSRANGE(range: range))
+    public func clusterAddslotsrange(range: [CLUSTER.ADDSLOTSRANGE.Range]) async throws {
+        _ = try await send(command: CLUSTER.ADDSLOTSRANGE(range: range))
     }
 
     /// Advances the cluster config epoch.
@@ -655,8 +623,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterDelslots(slot: [Int]) async throws -> RESPToken {
-        try await send(command: CLUSTER.DELSLOTS(slot: slot))
+    public func clusterDelslots(slot: [Int]) async throws {
+        _ = try await send(command: CLUSTER.DELSLOTS(slot: slot))
     }
 
     /// Sets hash slot ranges as unbound for a node.
@@ -667,8 +635,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterDelslotsrange(range: [CLUSTER.DELSLOTSRANGE.Range]) async throws -> RESPToken {
-        try await send(command: CLUSTER.DELSLOTSRANGE(range: range))
+    public func clusterDelslotsrange(range: [CLUSTER.DELSLOTSRANGE.Range]) async throws {
+        _ = try await send(command: CLUSTER.DELSLOTSRANGE(range: range))
     }
 
     /// Forces a replica to perform a manual failover of its master.
@@ -679,8 +647,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was accepted and a manual failover is going to be attempted. An error if the operation cannot be executed, for example if the client is connected to a node that is already a primary.
     @inlinable
-    public func clusterFailover(options: CLUSTER.FAILOVER.Options? = nil) async throws -> RESPToken {
-        try await send(command: CLUSTER.FAILOVER(options: options))
+    public func clusterFailover(options: CLUSTER.FAILOVER.Options? = nil) async throws {
+        _ = try await send(command: CLUSTER.FAILOVER(options: options))
     }
 
     /// Deletes all slots information from a node.
@@ -691,8 +659,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func clusterFlushslots() async throws -> RESPToken {
-        try await send(command: CLUSTER.FLUSHSLOTS())
+    public func clusterFlushslots() async throws {
+        _ = try await send(command: CLUSTER.FLUSHSLOTS())
     }
 
     /// Removes a node from the nodes table.
@@ -703,8 +671,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was executed successfully. Otherwise an error is returned.
     @inlinable
-    public func clusterForget(nodeId: String) async throws -> RESPToken {
-        try await send(command: CLUSTER.FORGET(nodeId: nodeId))
+    public func clusterForget(nodeId: String) async throws {
+        _ = try await send(command: CLUSTER.FORGET(nodeId: nodeId))
     }
 
     /// Returns the key names in a hash slot.
@@ -715,7 +683,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array with up to count elements.
     @inlinable
-    public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> [RESPToken] {
+    public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
     }
 
@@ -727,7 +695,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
     @inlinable
-    public func clusterHelp() async throws -> [RESPToken] {
+    public func clusterHelp() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.HELP())
     }
 
@@ -763,7 +731,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Map](https:/valkey.io/topics/protocol/#maps) where each map contains various attributes and their values of a cluster link.
     @inlinable
-    public func clusterLinks() async throws -> [[String: RESPToken]] {
+    public func clusterLinks() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.LINKS())
     }
 
@@ -775,8 +743,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. If the port or cluster bus port number is out of range, or if an invalid address is specified, an error is returned.
     @inlinable
-    public func clusterMeet(ip: String, port: Int, clusterBusPort: Int? = nil) async throws -> RESPToken {
-        try await send(command: CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
+    public func clusterMeet(ip: String, port: Int, clusterBusPort: Int? = nil) async throws {
+        _ = try await send(command: CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
     }
 
     /// Returns the ID of a node.
@@ -823,7 +791,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
     @inlinable
-    public func clusterReplicas(nodeId: String) async throws -> [RESPToken] {
+    public func clusterReplicas(nodeId: String) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
@@ -835,8 +803,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterReplicate(nodeId: String) async throws -> RESPToken {
-        try await send(command: CLUSTER.REPLICATE(nodeId: nodeId))
+    public func clusterReplicate(nodeId: String) async throws {
+        _ = try await send(command: CLUSTER.REPLICATE(nodeId: nodeId))
     }
 
     /// Resets a node.
@@ -847,8 +815,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterReset(resetType: CLUSTER.RESET.ResetType? = nil) async throws -> RESPToken {
-        try await send(command: CLUSTER.RESET(resetType: resetType))
+    public func clusterReset(resetType: CLUSTER.RESET.ResetType? = nil) async throws {
+        _ = try await send(command: CLUSTER.RESET(resetType: resetType))
     }
 
     /// Forces a node to save the cluster configuration to disk.
@@ -859,8 +827,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterSaveconfig() async throws -> RESPToken {
-        try await send(command: CLUSTER.SAVECONFIG())
+    public func clusterSaveconfig() async throws {
+        _ = try await send(command: CLUSTER.SAVECONFIG())
     }
 
     /// Sets the configuration epoch for a new node.
@@ -871,8 +839,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterSetConfigEpoch(configEpoch: Int) async throws -> RESPToken {
-        try await send(command: CLUSTER.SETCONFIGEPOCH(configEpoch: configEpoch))
+    public func clusterSetConfigEpoch(configEpoch: Int) async throws {
+        _ = try await send(command: CLUSTER.SETCONFIGEPOCH(configEpoch: configEpoch))
     }
 
     /// Binds a hash slot to a node.
@@ -883,8 +851,8 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): all the sub-commands return `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterSetslot(slot: Int, subcommand: CLUSTER.SETSLOT.Subcommand) async throws -> RESPToken {
-        try await send(command: CLUSTER.SETSLOT(slot: slot, subcommand: subcommand))
+    public func clusterSetslot(slot: Int, subcommand: CLUSTER.SETSLOT.Subcommand) async throws {
+        _ = try await send(command: CLUSTER.SETSLOT(slot: slot, subcommand: subcommand))
     }
 
     /// Returns the mapping of cluster slots to shards.
@@ -895,7 +863,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of [Map](https:/valkey.io/topics/protocol/#maps) of hash ranges and shard nodes describing individual shards.
     @inlinable
-    public func clusterShards() async throws -> [RESPToken] {
+    public func clusterShards() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SHARDS())
     }
 
@@ -908,7 +876,7 @@ extension ValkeyConnection {
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
     @inlinable
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
-    public func clusterSlaves(nodeId: String) async throws -> [RESPToken] {
+    public func clusterSlaves(nodeId: String) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLAVES(nodeId: nodeId))
     }
 
@@ -921,7 +889,7 @@ extension ValkeyConnection {
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): nested list of slot ranges with networking information.
     @inlinable
     @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
-    public func clusterSlots() async throws -> [RESPToken] {
+    public func clusterSlots() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLOTS())
     }
 
@@ -933,8 +901,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func readonly() async throws -> RESPToken {
-        try await send(command: READONLY())
+    public func readonly() async throws {
+        _ = try await send(command: READONLY())
     }
 
     /// Enables read-write queries for a connection to a Reids Cluster replica node.
@@ -945,8 +913,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func readwrite() async throws -> RESPToken {
-        try await send(command: READWRITE())
+    public func readwrite() async throws {
+        _ = try await send(command: READWRITE())
     }
 
 }

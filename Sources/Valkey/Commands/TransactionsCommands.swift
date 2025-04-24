@@ -24,8 +24,6 @@ import Foundation
 
 /// Discards a transaction.
 public struct DISCARD: RESPCommand {
-    public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -37,7 +35,7 @@ public struct DISCARD: RESPCommand {
 
 /// Executes all commands in a transaction.
 public struct EXEC: RESPCommand {
-    public typealias Response = [RESPToken]?
+    public typealias Response = RESPToken.Array?
 
 
     @inlinable public init() {
@@ -50,8 +48,6 @@ public struct EXEC: RESPCommand {
 
 /// Starts a transaction.
 public struct MULTI: RESPCommand {
-    public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -63,8 +59,6 @@ public struct MULTI: RESPCommand {
 
 /// Forgets about watched keys of a transaction.
 public struct UNWATCH: RESPCommand {
-    public typealias Response = RESPToken
-
 
     @inlinable public init() {
     }
@@ -76,8 +70,6 @@ public struct UNWATCH: RESPCommand {
 
 /// Monitors changes to keys to determine the execution of a transaction.
 public struct WATCH: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: [RESPKey]
 
     @inlinable public init(key: [RESPKey]) {
@@ -101,8 +93,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func discard() async throws -> RESPToken {
-        try await send(command: DISCARD())
+    public func discard() async throws {
+        _ = try await send(command: DISCARD())
     }
 
     /// Executes all commands in a transaction.
@@ -115,7 +107,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): each element being the reply to each of the commands in the atomic transaction.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the transaction was aborted because a `WATCH`ed key was touched.
     @inlinable
-    public func exec() async throws -> [RESPToken]? {
+    public func exec() async throws -> RESPToken.Array? {
         try await send(command: EXEC())
     }
 
@@ -127,8 +119,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func multi() async throws -> RESPToken {
-        try await send(command: MULTI())
+    public func multi() async throws {
+        _ = try await send(command: MULTI())
     }
 
     /// Forgets about watched keys of a transaction.
@@ -139,8 +131,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func unwatch() async throws -> RESPToken {
-        try await send(command: UNWATCH())
+    public func unwatch() async throws {
+        _ = try await send(command: UNWATCH())
     }
 
     /// Monitors changes to keys to determine the execution of a transaction.
@@ -151,8 +143,8 @@ extension ValkeyConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func watch(key: [RESPKey]) async throws -> RESPToken {
-        try await send(command: WATCH(key: key))
+    public func watch(key: [RESPKey]) async throws {
+        _ = try await send(command: WATCH(key: key))
     }
 
 }

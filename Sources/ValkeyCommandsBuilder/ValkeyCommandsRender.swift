@@ -184,7 +184,10 @@ extension String {
             }
         }
         // return type
-        let returnType = getReturnType(reply: reply) ?? "RESPToken"
+        var returnType = getReturnType(reply: reply) ?? "RESPToken"
+        if returnType == "Void" {
+            returnType = "RESPToken"
+        }
         // Command function
         let commandParametersString =
             arguments
@@ -197,7 +200,9 @@ extension String {
                 ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true) }
             }
         let commandArgumentsString = commandArguments.joined(separator: ", ")
-        self.append("\(tab)    public typealias Response = \(returnType)\n\n")
+        if returnType != "RESPToken" {
+            self.append("\(tab)    public typealias Response = \(returnType)\n\n")
+        }
         for arg in arguments {
             self.append("\(tab)    public var \(arg.name.swiftVariable): \(parameterType(arg, names: [], scope: nil, isArray: true))\n")
         }
@@ -220,10 +225,12 @@ extension String {
     mutating func appendFunction(command: RESPCommand, reply: [String], name: String) {
         let arguments = (command.arguments ?? [])
         //var converting: Bool = false
-        var returnType: String = " -> RESPToken"
+        var returnType: String = " -> \(name.commandTypeName).Response"
+        var ignoreSendResponse = ""
         if let type = getReturnType(reply: reply) {
             if type == "Void" {
                 returnType = ""
+                ignoreSendResponse = "_ = "
             } else if type != "RESPToken" {
                 //converting = true
                 returnType = " -> \(type)"
@@ -243,7 +250,7 @@ extension String {
             let commandArguments = arguments.map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
             let argumentsString = commandArguments.joined(separator: ", ")
             self.append(
-                "        try await send(command: \(name.commandTypeName)(\(argumentsString)))\n"
+                "        \(ignoreSendResponse)try await send(command: \(name.commandTypeName)(\(argumentsString)))\n"
             )
             self.append("    }\n\n")
         }
@@ -430,9 +437,6 @@ private func getReturnType(reply replies: [String]) -> String? {
     let replies = replies.filter { $0.hasPrefix("[") || $0.hasPrefix("* [") }
     if replies.count == 1 {
         let returnType = getReturnType(reply: replies[0].dropPrefix("* "))
-        if returnType == "Void" {
-            return "RESPToken"
-        }
         return returnType
     } else if replies.count > 1 {
         var returnType = getReturnType(reply: replies[0].dropPrefix("* "))
@@ -478,15 +482,10 @@ private func getReturnType(reply: some StringProtocol) -> String? {
             } else {
                 return "String"
             }
-        } else if reply.hasPrefix("[Array") {
-            if let range: Range = reply.firstRange(of: "): an array of ") {
-                if let element = getReturnType(reply: reply[range.upperBound...]) {
-                    return "[\(element)]"
-                }
-            }
-            return "[RESPToken]"
+        } else if reply.hasPrefix("[Array") || reply.hasPrefix("[Set") {
+            return "RESPToken.Array"
         } else if reply.hasPrefix("[Map") {
-            return "[String: RESPToken]"
+            return "RESPToken.Map"
         } else if reply.hasPrefix("[Null") || reply.hasPrefix("[Nil") {
             return "Void"
         } else if reply.hasPrefix("[Simple error") {

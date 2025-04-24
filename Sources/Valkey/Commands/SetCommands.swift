@@ -60,7 +60,7 @@ public struct SCARD: RESPCommand {
 
 /// Returns the difference of multiple sets.
 public struct SDIFF: RESPCommand {
-    public typealias Response = RESPToken
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
 
@@ -96,7 +96,7 @@ public struct SDIFFSTORE: RESPCommand {
 
 /// Returns the intersect of multiple sets.
 public struct SINTER: RESPCommand {
-    public typealias Response = RESPToken
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
 
@@ -170,7 +170,7 @@ public struct SISMEMBER: RESPCommand {
 
 /// Returns all members of a set.
 public struct SMEMBERS: RESPCommand {
-    public typealias Response = RESPToken
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
 
@@ -187,7 +187,7 @@ public struct SMEMBERS: RESPCommand {
 
 /// Determines whether multiple members belong to a set.
 public struct SMISMEMBER: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var member: [String]
@@ -227,8 +227,6 @@ public struct SMOVE: RESPCommand {
 
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
 public struct SPOP: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var count: Int? = nil
 
@@ -246,8 +244,6 @@ public struct SPOP: RESPCommand {
 
 /// Get one or multiple random members from a set
 public struct SRANDMEMBER: RESPCommand {
-    public typealias Response = RESPToken
-
     public var key: RESPKey
     public var count: Int? = nil
 
@@ -284,7 +280,7 @@ public struct SREM: RESPCommand {
 
 /// Iterates over members of a set.
 public struct SSCAN: RESPCommand {
-    public typealias Response = [RESPToken]
+    public typealias Response = RESPToken.Array
 
     public var key: RESPKey
     public var cursor: Int
@@ -307,7 +303,7 @@ public struct SSCAN: RESPCommand {
 
 /// Returns the union of multiple sets.
 public struct SUNION: RESPCommand {
-    public typealias Response = RESPToken
+    public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
 
@@ -375,7 +371,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sdiff(key: [RESPKey]) async throws -> RESPToken {
+    public func sdiff(key: [RESPKey]) async throws -> RESPToken.Array {
         try await send(command: SDIFF(key: key))
     }
 
@@ -399,7 +395,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sinter(key: [RESPKey]) async throws -> RESPToken {
+    public func sinter(key: [RESPKey]) async throws -> RESPToken.Array {
         try await send(command: SINTER(key: key))
     }
 
@@ -449,7 +445,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): all members of the set.
     @inlinable
-    public func smembers(key: RESPKey) async throws -> RESPToken {
+    public func smembers(key: RESPKey) async throws -> RESPToken.Array {
         try await send(command: SMEMBERS(key: key))
     }
 
@@ -461,7 +457,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @fast
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember(key: RESPKey, member: [String]) async throws -> [RESPToken] {
+    public func smismember(key: RESPKey, member: [String]) async throws -> RESPToken.Array {
         try await send(command: SMISMEMBER(key: key, member: member))
     }
 
@@ -490,7 +486,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): when called without the _count_ argument, the removed member.
     ///     * [Set](https:/valkey.io/topics/protocol/#sets): when called with the _count_ argument, the set of removed members.
     @inlinable
-    public func spop(key: RESPKey, count: Int? = nil) async throws -> RESPToken {
+    public func spop(key: RESPKey, count: Int? = nil) async throws -> SPOP.Response {
         try await send(command: SPOP(key: key, count: count))
     }
 
@@ -504,7 +500,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or a [Null](https:/valkey.io/topics/protocol/#nulls) when _key_ doesn't exist.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when the optional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist.
     @inlinable
-    public func srandmember(key: RESPKey, count: Int? = nil) async throws -> RESPToken {
+    public func srandmember(key: RESPKey, count: Int? = nil) async throws -> SRANDMEMBER.Response {
         try await send(command: SRANDMEMBER(key: key, count: count))
     }
 
@@ -530,7 +526,7 @@ extension ValkeyConnection {
     ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) with the names of scanned members.
     @inlinable
-    public func sscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> [RESPToken] {
+    public func sscan(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 
@@ -542,7 +538,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @slow
     /// - Returns: [Set](https:/valkey.io/topics/protocol/#sets): the resulting set.
     @inlinable
-    public func sunion(key: [RESPKey]) async throws -> RESPToken {
+    public func sunion(key: [RESPKey]) async throws -> RESPToken.Array {
         try await send(command: SUNION(key: key))
     }
 

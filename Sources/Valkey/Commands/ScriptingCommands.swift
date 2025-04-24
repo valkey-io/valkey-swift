@@ -26,8 +26,6 @@ import Foundation
 public enum FUNCTION {
     /// Deletes a library and its functions.
     public struct DELETE: RESPCommand {
-        public typealias Response = RESPToken
-
         public var libraryName: String
 
         @inlinable public init(libraryName: String) {
@@ -69,8 +67,6 @@ public enum FUNCTION {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var flushType: FlushType? = nil
 
         @inlinable public init(flushType: FlushType? = nil) {
@@ -84,7 +80,7 @@ public enum FUNCTION {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -97,8 +93,6 @@ public enum FUNCTION {
 
     /// Terminates a function during execution.
     public struct KILL: RESPCommand {
-        public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -110,7 +104,7 @@ public enum FUNCTION {
 
     /// Returns information about all libraries.
     public struct LIST: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var libraryNamePattern: String? = nil
         public var withcode: Bool = false
@@ -161,8 +155,6 @@ public enum FUNCTION {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var serializedValue: String
         public var policy: Policy? = nil
 
@@ -178,7 +170,7 @@ public enum FUNCTION {
 
     /// Returns information about a function during execution.
     public struct STATS: RESPCommand {
-        public typealias Response = [String: RESPToken]
+        public typealias Response = RESPToken.Map
 
 
         @inlinable public init() {
@@ -212,8 +204,6 @@ public enum SCRIPT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var mode: Mode
 
         @inlinable public init(mode: Mode) {
@@ -227,7 +217,7 @@ public enum SCRIPT {
 
     /// Determines whether server-side Lua scripts exist in the script cache.
     public struct EXISTS: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
         public var sha1: [String]
 
@@ -257,8 +247,6 @@ public enum SCRIPT {
                 }
             }
         }
-        public typealias Response = RESPToken
-
         public var flushType: FlushType? = nil
 
         @inlinable public init(flushType: FlushType? = nil) {
@@ -272,7 +260,7 @@ public enum SCRIPT {
 
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
-        public typealias Response = [RESPToken]
+        public typealias Response = RESPToken.Array
 
 
         @inlinable public init() {
@@ -285,8 +273,6 @@ public enum SCRIPT {
 
     /// Terminates a server-side Lua script during execution.
     public struct KILL: RESPCommand {
-        public typealias Response = RESPToken
-
 
         @inlinable public init() {
         }
@@ -315,8 +301,6 @@ public enum SCRIPT {
 
 /// Executes a server-side Lua script.
 public struct EVAL: RESPCommand {
-    public typealias Response = RESPToken
-
     public var script: String
     public var key: [RESPKey] = []
     public var arg: [String] = []
@@ -336,8 +320,6 @@ public struct EVAL: RESPCommand {
 
 /// Executes a server-side Lua script by SHA1 digest.
 public struct EVALSHA: RESPCommand {
-    public typealias Response = RESPToken
-
     public var sha1: String
     public var key: [RESPKey] = []
     public var arg: [String] = []
@@ -357,8 +339,6 @@ public struct EVALSHA: RESPCommand {
 
 /// Executes a read-only server-side Lua script by SHA1 digest.
 public struct EVALSHARO: RESPCommand {
-    public typealias Response = RESPToken
-
     public var sha1: String
     public var key: [RESPKey] = []
     public var arg: [String] = []
@@ -378,8 +358,6 @@ public struct EVALSHARO: RESPCommand {
 
 /// Executes a read-only server-side Lua script.
 public struct EVALRO: RESPCommand {
-    public typealias Response = RESPToken
-
     public var script: String
     public var key: [RESPKey] = []
     public var arg: [String] = []
@@ -399,8 +377,6 @@ public struct EVALRO: RESPCommand {
 
 /// Invokes a function.
 public struct FCALL: RESPCommand {
-    public typealias Response = RESPToken
-
     public var function: String
     public var key: [RESPKey] = []
     public var arg: [String] = []
@@ -420,8 +396,6 @@ public struct FCALL: RESPCommand {
 
 /// Invokes a read-only function.
 public struct FCALLRO: RESPCommand {
-    public typealias Response = RESPToken
-
     public var function: String
     public var key: [RESPKey] = []
     public var arg: [String] = []
@@ -449,7 +423,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func eval(script: String, key: [RESPKey] = [], arg: [String] = []) async throws -> RESPToken {
+    public func eval(script: String, key: [RESPKey] = [], arg: [String] = []) async throws -> EVAL.Response {
         try await send(command: EVAL(script: script, key: key, arg: arg))
     }
 
@@ -461,7 +435,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalsha(sha1: String, key: [RESPKey] = [], arg: [String] = []) async throws -> RESPToken {
+    public func evalsha(sha1: String, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALSHA.Response {
         try await send(command: EVALSHA(sha1: sha1, key: key, arg: arg))
     }
 
@@ -473,7 +447,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalshaRo(sha1: String, key: [RESPKey] = [], arg: [String] = []) async throws -> RESPToken {
+    public func evalshaRo(sha1: String, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALSHARO.Response {
         try await send(command: EVALSHARO(sha1: sha1, key: key, arg: arg))
     }
 
@@ -485,7 +459,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalRo(script: String, key: [RESPKey] = [], arg: [String] = []) async throws -> RESPToken {
+    public func evalRo(script: String, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALRO.Response {
         try await send(command: EVALRO(script: script, key: key, arg: arg))
     }
 
@@ -497,7 +471,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcall(function: String, key: [RESPKey] = [], arg: [String] = []) async throws -> RESPToken {
+    public func fcall(function: String, key: [RESPKey] = [], arg: [String] = []) async throws -> FCALL.Response {
         try await send(command: FCALL(function: function, key: key, arg: arg))
     }
 
@@ -509,7 +483,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcallRo(function: String, key: [RESPKey] = [], arg: [String] = []) async throws -> RESPToken {
+    public func fcallRo(function: String, key: [RESPKey] = [], arg: [String] = []) async throws -> FCALLRO.Response {
         try await send(command: FCALLRO(function: function, key: key, arg: arg))
     }
 
@@ -521,8 +495,8 @@ extension ValkeyConnection {
     /// - Categories: @write, @slow, @scripting
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func functionDelete(libraryName: String) async throws -> RESPToken {
-        try await send(command: FUNCTION.DELETE(libraryName: libraryName))
+    public func functionDelete(libraryName: String) async throws {
+        _ = try await send(command: FUNCTION.DELETE(libraryName: libraryName))
     }
 
     /// Dumps all libraries into a serialized binary payload.
@@ -545,8 +519,8 @@ extension ValkeyConnection {
     /// - Categories: @write, @slow, @scripting
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws -> RESPToken {
-        try await send(command: FUNCTION.FLUSH(flushType: flushType))
+    public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws {
+        _ = try await send(command: FUNCTION.FLUSH(flushType: flushType))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -557,7 +531,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func functionHelp() async throws -> [RESPToken] {
+    public func functionHelp() async throws -> RESPToken.Array {
         try await send(command: FUNCTION.HELP())
     }
 
@@ -569,8 +543,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func functionKill() async throws -> RESPToken {
-        try await send(command: FUNCTION.KILL())
+    public func functionKill() async throws {
+        _ = try await send(command: FUNCTION.KILL())
     }
 
     /// Returns information about all libraries.
@@ -581,7 +555,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): information about functions and libraries.
     @inlinable
-    public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> [RESPToken] {
+    public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
         try await send(command: FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
     }
 
@@ -605,8 +579,8 @@ extension ValkeyConnection {
     /// - Categories: @write, @slow, @scripting
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func functionRestore(serializedValue: String, policy: FUNCTION.RESTORE.Policy? = nil) async throws -> RESPToken {
-        try await send(command: FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
+    public func functionRestore(serializedValue: String, policy: FUNCTION.RESTORE.Policy? = nil) async throws {
+        _ = try await send(command: FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
     }
 
     /// Returns information about a function during execution.
@@ -617,7 +591,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): information about the function that's currently running and information about the available execution engines.
     @inlinable
-    public func functionStats() async throws -> [String: RESPToken] {
+    public func functionStats() async throws -> RESPToken.Map {
         try await send(command: FUNCTION.STATS())
     }
 
@@ -629,8 +603,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws -> RESPToken {
-        try await send(command: SCRIPT.DEBUG(mode: mode))
+    public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws {
+        _ = try await send(command: SCRIPT.DEBUG(mode: mode))
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
@@ -641,7 +615,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
-    public func scriptExists(sha1: [String]) async throws -> [RESPToken] {
+    public func scriptExists(sha1: [String]) async throws -> RESPToken.Array {
         try await send(command: SCRIPT.EXISTS(sha1: sha1))
     }
 
@@ -653,8 +627,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws -> RESPToken {
-        try await send(command: SCRIPT.FLUSH(flushType: flushType))
+    public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws {
+        _ = try await send(command: SCRIPT.FLUSH(flushType: flushType))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -665,7 +639,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
-    public func scriptHelp() async throws -> [RESPToken] {
+    public func scriptHelp() async throws -> RESPToken.Array {
         try await send(command: SCRIPT.HELP())
     }
 
@@ -677,8 +651,8 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func scriptKill() async throws -> RESPToken {
-        try await send(command: SCRIPT.KILL())
+    public func scriptKill() async throws {
+        _ = try await send(command: SCRIPT.KILL())
     }
 
     /// Loads a server-side Lua script to the script cache.
