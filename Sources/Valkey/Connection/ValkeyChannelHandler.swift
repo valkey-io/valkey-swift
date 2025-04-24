@@ -231,7 +231,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         } catch {
             preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
         }
-        failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed), context: context)
+        self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed), context: context)
         self.isClosed = true
         self.logger.trace("Channel inactive.")
     }
