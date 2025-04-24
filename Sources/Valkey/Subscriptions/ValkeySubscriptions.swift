@@ -61,20 +61,20 @@ struct ValkeySubscriptions {
             if let _ = try self.commandStack.received(pushToken.value) {
                 returnValue = true
             }
-            switch self.subscriptionMap[pushToken.value, default: .init()].closed() {
+            switch self.subscriptionMap[pushToken.value]?.closed() {
             case .removeChannel:
                 self.subscriptionMap.removeValue(forKey: pushToken.value)
-            case .doNothing:
+            case .doNothing, .none:
                 break
             }
 
         case .message(let channel, let message):
-            switch self.subscriptionMap[pushToken.value, default: .init()].receivedMessage() {
+            switch self.subscriptionMap[pushToken.value]?.receivedMessage() {
             case .forwardMessage(let subscriptions):
                 for subscription in subscriptions {
                     subscription.sendMessage(.init(channel: channel, message: message))
                 }
-            case .doNothing:
+            case .doNothing, .none:
                 self.logger.trace("Received message for inactive subscription", metadata: ["subscription": "\(pushToken.value)"])
             }
         }
@@ -186,8 +186,8 @@ struct ValkeySubscriptions {
     mutating func removeSubscription(id: Int) {
         guard let subscription = subscriptionIDMap[id] else { return }
         for filter in subscription.filters {
-            switch self.subscriptionMap[filter, default: .init()].close(subscription: subscription) {
-            case .doNothing:
+            switch self.subscriptionMap[filter]?.close(subscription: subscription) {
+            case .doNothing, .none:
                 break
             case .unsubscribe:
                 self.subscriptionMap[filter] = nil
