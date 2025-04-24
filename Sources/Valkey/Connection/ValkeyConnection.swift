@@ -225,10 +225,10 @@ public final class ValkeyConnection: Sendable {
     ) async throws -> ValkeyConnection {
         if !channel.eventLoop.inEventLoop {
             return try await channel.eventLoop.flatSubmit {
-                _setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger)
+                self._setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger)
             }.get()
         }
-        return try await _setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger).get()
+        return try await self._setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger).get()
     }
 
     private static func _setupChannelAndConnect(
