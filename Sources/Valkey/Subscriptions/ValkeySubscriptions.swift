@@ -167,7 +167,7 @@ struct ValkeySubscriptions {
                 break
             }
         }
-        subscriptionIDMap[id] = nil
+        self.subscriptionIDMap[id] = nil
         return action
     }
 
