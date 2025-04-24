@@ -38,8 +38,8 @@ public struct ValkeyClientConfiguration: Sendable {
 
     /// Authentication details
     public struct Authentication: Sendable {
-        let username: String
-        let password: String
+        public var username: String
+        public var password: String
 
         public init(username: String, password: String) {
             self.username = username
