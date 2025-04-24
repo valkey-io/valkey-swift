@@ -16,7 +16,8 @@ import Logging
 import NIOCore
 import NIOEmbedded
 import Testing
-import Valkey
+
+@testable import Valkey
 
 @Suite
 struct ConnectionTests {
@@ -72,5 +73,29 @@ struct ConnectionTests {
             #expect(error.errorCode == .commandError)
             #expect(error.message == "BulkError!")
         }
+    }
+
+    @Test
+    func testUnsolicitedErrorToken() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        _ = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+
+        await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command")) {
+            try await channel.writeInbound(ByteBuffer(string: "-Error!\r\n"))
+        }
+        try await channel.closeFuture.get()
+    }
+
+    @Test
+    func testUnsolicitedToken() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        _ = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+
+        await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
+            try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))
+        }
+        try await channel.closeFuture.get()
     }
 }

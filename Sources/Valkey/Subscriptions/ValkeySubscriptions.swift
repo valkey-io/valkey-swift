@@ -82,9 +82,9 @@ struct ValkeySubscriptions {
     }
 
     /// Connection is closing lets inform all the subscriptions
-    mutating func close() {
+    mutating func close(error: any Error) {
         for subscription in subscriptionIDMap.values {
-            subscription.sendError(ValkeyClientError(.connectionClosed))
+            subscription.sendError(error)
         }
         self.subscriptionIDMap = [:]
     }
