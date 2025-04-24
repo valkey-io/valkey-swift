@@ -136,7 +136,7 @@ struct ConnectionTests {
     func testUnsolicitedErrorToken() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command")) {
             try await channel.writeInbound(ByteBuffer(string: "-Error!\r\n"))
@@ -148,7 +148,7 @@ struct ConnectionTests {
     func testUnsolicitedToken() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
             try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))

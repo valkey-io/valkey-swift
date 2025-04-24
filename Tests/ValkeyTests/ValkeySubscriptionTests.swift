@@ -173,7 +173,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
