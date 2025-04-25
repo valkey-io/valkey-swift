@@ -24,7 +24,6 @@ import Foundation
 
 /// Discards a transaction.
 public struct DISCARD: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -37,7 +36,6 @@ public struct DISCARD: RESPCommand {
 public struct EXEC: RESPCommand {
     public typealias Response = RESPToken.Array?
 
-
     @inlinable public init() {
     }
 
@@ -48,7 +46,6 @@ public struct EXEC: RESPCommand {
 
 /// Starts a transaction.
 public struct MULTI: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -59,7 +56,6 @@ public struct MULTI: RESPCommand {
 
 /// Forgets about watched keys of a transaction.
 public struct UNWATCH: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -82,7 +78,6 @@ public struct WATCH: RESPCommand {
         commandEncoder.encodeArray("WATCH", key)
     }
 }
-
 
 extension ValkeyConnection {
     /// Discards a transaction.

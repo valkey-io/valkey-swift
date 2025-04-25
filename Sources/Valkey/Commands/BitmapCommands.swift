@@ -444,7 +444,6 @@ public struct SETBIT: RESPCommand {
     }
 }
 
-
 extension ValkeyConnection {
     /// Counts the number of set bits (population counting) in a string.
     ///

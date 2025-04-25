@@ -978,7 +978,6 @@ public struct GEOSEARCHSTORE: RESPCommand {
     }
 }
 
-
 extension ValkeyConnection {
     /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
     ///

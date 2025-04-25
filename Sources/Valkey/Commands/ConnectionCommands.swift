@@ -56,7 +56,6 @@ public enum CLIENT {
     public struct GETNAME: RESPCommand {
         public typealias Response = RESPToken?
 
-
         @inlinable public init() {
         }
 
@@ -68,7 +67,6 @@ public enum CLIENT {
     /// Returns the client ID to which the connection's tracking notifications are redirected.
     public struct GETREDIR: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -82,7 +80,6 @@ public enum CLIENT {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -95,7 +92,6 @@ public enum CLIENT {
     public struct ID: RESPCommand {
         public typealias Response = Int
 
-
         @inlinable public init() {
         }
 
@@ -106,7 +102,6 @@ public enum CLIENT {
 
     /// Returns information about the connection.
     public struct INFO: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -458,7 +453,6 @@ public enum CLIENT {
     public struct TRACKINGINFO: RESPCommand {
         public typealias Response = RESPToken.Map
 
-
         @inlinable public init() {
         }
 
@@ -501,7 +495,6 @@ public enum CLIENT {
 
     /// Resumes processing commands from paused clients.
     public struct UNPAUSE: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -616,7 +609,6 @@ public struct PING: RESPCommand {
 /// Closes the connection.
 @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
 public struct QUIT: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -628,7 +620,6 @@ public struct QUIT: RESPCommand {
 /// Resets the connection.
 public struct RESET: RESPCommand {
     public typealias Response = String
-
 
     @inlinable public init() {
     }
@@ -650,7 +641,6 @@ public struct SELECT: RESPCommand {
         commandEncoder.encodeArray("SELECT", index)
     }
 }
-
 
 extension ValkeyConnection {
     /// Authenticates the connection.
