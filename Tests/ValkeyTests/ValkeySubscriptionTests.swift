@@ -161,7 +161,7 @@ struct SubscriptionTests {
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(String(buffer: outbound) == "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
         try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))
-        #expect(try await fooResult == "Bar")
+        #expect(try await fooResult?.decode() == "Bar")
 
         try await connection.channel.eventLoop.submit {
             #expect(connection.channelHandler.value.subscriptions.isEmpty)
@@ -573,7 +573,7 @@ struct SubscriptionTests {
                     var iterator = subscription.makeAsyncIterator()
                     try #expect(await iterator.next() == .init(channel: "test", message: "Testing!"))
                     let value = try await connection.get(key: "foo")
-                    #expect(value == "bar")
+                    #expect(try value?.decode() == "bar")
                     try #expect(await iterator.next() == .init(channel: "test", message: "Testing2!"))
                 }
             }
