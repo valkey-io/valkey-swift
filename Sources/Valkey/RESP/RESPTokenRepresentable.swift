@@ -25,7 +25,7 @@ extension RESPToken: RESPTokenRepresentable {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Value
     @inlinable
-    public func converting<Value: RESPTokenRepresentable>(to type: Value.Type = Value.self) throws -> Value {
+    public func decode<Value: RESPTokenRepresentable>(as type: Value.Type = Value.self) throws -> Value {
         try Value(from: self)
     }
 
@@ -41,8 +41,8 @@ extension Array where Element == RESPToken {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Array of Value
     @inlinable
-    public func converting<Value: RESPTokenRepresentable>(to type: [Value].Type = [Value].self) throws -> [Value] {
-        try self.map { try $0.converting() }
+    public func decode<Value: RESPTokenRepresentable>(as type: [Value].Type = [Value].self) throws -> [Value] {
+        try self.map { try $0.decode() }
     }
 }
 
@@ -183,8 +183,8 @@ extension RESPToken.Array: RESPTokenRepresentable {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Array of Value
     @inlinable
-    public func converting<Value: RESPTokenRepresentable>(to type: [Value].Type = [Value].self) throws -> [Value] {
-        try self.map { try $0.converting() }
+    public func decode<Value: RESPTokenRepresentable>(as type: [Value].Type = [Value].self) throws -> [Value] {
+        try self.map { try $0.decode() }
     }
 }
 
@@ -204,7 +204,7 @@ extension RESPToken.Map: RESPTokenRepresentable {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: String value dictionary
     @inlinable
-    public func converting<Value: RESPTokenRepresentable>(to type: [String: Value].Type = [String: Value].self) throws -> [String: Value] {
+    public func decode<Value: RESPTokenRepresentable>(as type: [String: Value].Type = [String: Value].self) throws -> [String: Value] {
         var array: [(String, Value)] = []
         for respElement in self {
             let key = try String(from: respElement.key)
