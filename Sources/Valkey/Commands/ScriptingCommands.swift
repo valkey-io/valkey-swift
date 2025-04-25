@@ -39,8 +39,6 @@ public enum FUNCTION {
 
     /// Dumps all libraries into a serialized binary payload.
     public struct DUMP: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -121,8 +119,6 @@ public enum FUNCTION {
 
     /// Creates a library.
     public struct LOAD: RESPCommand {
-        public typealias Response = String
-
         public var replace: Bool = false
         public var functionCode: String
 
@@ -284,8 +280,6 @@ public enum SCRIPT {
 
     /// Loads a server-side Lua script to the script cache.
     public struct LOAD: RESPCommand {
-        public typealias Response = String
-
         public var script: String
 
         @inlinable public init(script: String) {
@@ -507,7 +501,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the serialized payload
     @inlinable
-    public func functionDump() async throws -> String {
+    public func functionDump() async throws -> FUNCTION.DUMP.Response {
         try await send(command: FUNCTION.DUMP())
     }
 
@@ -567,7 +561,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @slow, @scripting
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the library name that was loaded.
     @inlinable
-    public func functionLoad(replace: Bool = false, functionCode: String) async throws -> String {
+    public func functionLoad(replace: Bool = false, functionCode: String) async throws -> FUNCTION.LOAD.Response {
         try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
     }
 
@@ -663,7 +657,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the SHA1 digest of the script added into the script cache.
     @inlinable
-    public func scriptLoad(script: String) async throws -> String {
+    public func scriptLoad(script: String) async throws -> SCRIPT.LOAD.Response {
         try await send(command: SCRIPT.LOAD(script: script))
     }
 

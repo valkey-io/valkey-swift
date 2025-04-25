@@ -56,7 +56,7 @@ public enum ACL {
 
     /// Simulates the execution of a command by a user, without executing the command.
     public struct DRYRUN: RESPCommand {
-        public typealias Response = String?
+        public typealias Response = RESPToken?
 
         public var username: String
         public var command: String
@@ -75,8 +75,6 @@ public enum ACL {
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     public struct GENPASS: RESPCommand {
-        public typealias Response = String
-
         public var bits: Int? = nil
 
         @inlinable public init(bits: Int? = nil) {
@@ -216,8 +214,6 @@ public enum ACL {
 
     /// Returns the authenticated username of the current connection.
     public struct WHOAMI: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -465,8 +461,6 @@ public enum LATENCY {
 
     /// Returns a latency graph for an event.
     public struct GRAPH: RESPCommand {
-        public typealias Response = String
-
         public var event: String
 
         @inlinable public init(event: String) {
@@ -581,8 +575,6 @@ public enum MEMORY {
 
     /// Returns the allocator statistics.
     public struct MALLOCSTATS: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -791,8 +783,6 @@ public enum SLOWLOG {
 
 /// Asynchronously rewrites the append-only file to disk.
 public struct BGREWRITEAOF: RESPCommand {
-    public typealias Response = String
-
 
     @inlinable public init() {
     }
@@ -942,8 +932,6 @@ public struct FLUSHDB: RESPCommand {
 
 /// Returns information and statistics about the server.
 public struct INFO: RESPCommand {
-    public typealias Response = String
-
     public var section: [String] = []
 
     @inlinable public init(section: [String] = []) {
@@ -1333,7 +1321,7 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
-    public func aclDryrun(username: String, command: String, arg: [String] = []) async throws -> String? {
+    public func aclDryrun(username: String, command: String, arg: [String] = []) async throws -> RESPToken? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 
@@ -1345,7 +1333,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
-    public func aclGenpass(bits: Int? = nil) async throws -> String {
+    public func aclGenpass(bits: Int? = nil) async throws -> ACL.GENPASS.Response {
         try await send(command: ACL.GENPASS(bits: bits))
     }
 
@@ -1463,7 +1451,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the username of the current connection.
     @inlinable
-    public func aclWhoami() async throws -> String {
+    public func aclWhoami() async throws -> ACL.WHOAMI.Response {
         try await send(command: ACL.WHOAMI())
     }
 
@@ -1477,7 +1465,7 @@ extension ValkeyConnection {
     ///     
     ///     The command may reply with an error in certain cases, as documented above.
     @inlinable
-    public func bgrewriteaof() async throws -> String {
+    public func bgrewriteaof() async throws -> BGREWRITEAOF.Response {
         try await send(command: BGREWRITEAOF())
     }
 
@@ -1709,7 +1697,7 @@ extension ValkeyConnection {
     ///     
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
-    public func info(section: [String] = []) async throws -> String {
+    public func info(section: [String] = []) async throws -> INFO.Response {
         try await send(command: INFO(section: section))
     }
 
@@ -1745,7 +1733,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): Latency graph
     @inlinable
-    public func latencyGraph(event: String) async throws -> String {
+    public func latencyGraph(event: String) async throws -> LATENCY.GRAPH.Response {
         try await send(command: LATENCY.GRAPH(event: event))
     }
 
@@ -1852,7 +1840,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the memory allocator's internal statistics report.
     @inlinable
-    public func memoryMallocStats() async throws -> String {
+    public func memoryMallocStats() async throws -> MEMORY.MALLOCSTATS.Response {
         try await send(command: MEMORY.MALLOCSTATS())
     }
 

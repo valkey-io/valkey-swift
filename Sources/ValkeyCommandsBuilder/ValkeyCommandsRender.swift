@@ -478,7 +478,7 @@ private func getReturnType(reply: some StringProtocol) -> String? {
         } else if reply.hasPrefix("[Double") {
             return "Double"
         } else if reply.hasPrefix("[Bulk string") {
-            return "String"
+            return "RESPToken"
         } else if reply.hasPrefix("[Verbatim string") {
             return "String"
         } else if reply.hasPrefix("[Simple string") {

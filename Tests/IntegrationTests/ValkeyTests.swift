@@ -67,8 +67,10 @@ struct GeneratedCommands {
         try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.set(key: key, value: "Hello")
-                let response = try await connection.get(key: key)
+                let response = try await connection.get(key: key)?.converting(to: String.self)
                 #expect(response == "Hello")
+                let response2 = try await connection.get(key: "sdf65fsdf")?.converting(to: String.self)
+                #expect(response2 == nil)
             }
         }
     }
@@ -80,7 +82,7 @@ struct GeneratedCommands {
         try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.set(key: key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 1))
-                let response = try await connection.get(key: key)
+                let response = try await connection.get(key: key)?.converting(to: String.self)
                 #expect(response == "Hello")
                 try await Task.sleep(for: .seconds(2))
                 let response2 = try await connection.get(key: key)
@@ -99,7 +101,7 @@ struct GeneratedCommands {
                     SET(key: key, value: "Pipelined Hello"),
                     GET(key: key)
                 )
-                try #expect(responses.1.get() == "Pipelined Hello")
+                try #expect(responses.1.get()?.converting(to: String.self) == "Pipelined Hello")
             }
         }
     }
@@ -193,7 +195,7 @@ struct GeneratedCommands {
                     group.addTask {
                         try await withKey(connection: connection) { key in
                             _ = try await connection.set(key: key, value: key.rawValue)
-                            let response = try await connection.get(key: key)
+                            let response = try await connection.get(key: key)?.converting(to: String.self)
                             #expect(response == key.rawValue)
                         }
                     }
@@ -218,7 +220,7 @@ struct GeneratedCommands {
                                 SET(key: key, value: value),
                                 GET(key: key)
                             )
-                            try #expect(responses.1.get() == value)
+                            try #expect(responses.1.get()?.converting(to: String.self) == value)
                         }
                     }
                 }
