@@ -21,6 +21,12 @@ public struct RESPToken: Hashable, Sendable {
         public let count: Int
         let buffer: ByteBuffer
 
+        @usableFromInline
+        init(count: Int, buffer: ByteBuffer) {
+            self.count = count
+            self.buffer = buffer
+        }
+
         public func makeIterator() -> Iterator {
             Iterator(buffer: self.buffer)
         }

@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-public enum RESPTypeIdentifier: UInt8 {
+public enum RESPTypeIdentifier: UInt8, Sendable {
     case integer = 58  // UInt8(ascii: ":")
     case double = 44  // UInt8.comma
     case simpleString = 43  // UInt8.plus
@@ -28,6 +28,28 @@ public enum RESPTypeIdentifier: UInt8 {
     case set = 126  // UInt8.tilde
     case attribute = 124  // UInt8.pipe
     case push = 62  // UInt8.rightAngledBracket
+}
+
+extension RESPTypeIdentifier: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .integer: "integer"
+        case .double: "double"
+        case .simpleString: "simpleString"
+        case .simpleError: "simpleError"
+        case .bulkString: "bulkString"
+        case .bulkError: "bulkError"
+        case .verbatimString: "verbatimString"
+        case .boolean: "boolean"
+        case .null: "null"
+        case .bigNumber: "bigNumber"
+        case .array: "array"
+        case .map: "map"
+        case .set: "set"
+        case .attribute: "attribute"
+        case .push: "push"
+        }
+    }
 }
 
 extension UInt8 {

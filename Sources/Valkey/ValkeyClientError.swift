@@ -20,6 +20,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case commandError
             case subscriptionError
             case unsolicitedToken
+            case unexpectedType
         }
 
         fileprivate let value: _Internal
@@ -35,6 +36,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var subscriptionError: Self { .init(.subscriptionError) }
         /// Received an unsolicited token from the server
         public static var unsolicitedToken: Self { .init(.unsolicitedToken) }
+        /// While parsing a RESP token we did not have the type we expected
+        public static var unexpectedType: Self { .init(.unexpectedType) }
     }
 
     public let errorCode: ErrorCode
@@ -50,6 +53,11 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         case .commandError: self.message ?? "Valkey command returned an error"
         case .subscriptionError: self.message ?? "Received invalid subscription push event"
         case .unsolicitedToken: self.message ?? "Received unsolicited token from Valkey server"
+        case .unexpectedType: self.message ?? "While parsing a RESP token we did not have the type we expected"
         }
+    }
+
+    static func unexpectedType(expected: RESPTypeIdentifier, received: RESPTypeIdentifier) -> Self {
+        .init(.unexpectedType, message: "Expected to find a \"\(expected)\" token but got a \"\(received)\" token")
     }
 }

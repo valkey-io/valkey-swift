@@ -29,7 +29,7 @@ extension ValkeyKey: RESPTokenDecodable {
         case .simpleString(let buffer), .bulkString(let buffer):
             self.rawValue = String(buffer: buffer)
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.unexpectedToken(Self.self, expected: [.bulkString, .simpleString], found: token.identifier)
         }
     }
 }

@@ -80,3 +80,28 @@ public struct RESPParsingError: Error {
         self.buffer = buffer
     }
 }
+
+/// Error thrown when decoding RESPTokens
+public enum RESPDecodeError: Error, CustomStringConvertible {
+    case unexpectedToken(any Any.Type, expected: [RESPTypeIdentifier], found: RESPTypeIdentifier)
+    case invalidArraySize(any Any.Type)
+    case missingToken(any Any.Type, key: String)
+
+    public var description: String {
+        switch self {
+        case .unexpectedToken(let type, let expected, let found):
+            if expected.count == 0 {
+                return "Found unexpected \"\(found)\" token while decoding \(type)"
+            } else if expected.count == 1 {
+                return "Expected to find a \(expected[0]) token but found a \"\(found)\" token while decoding \(type)"
+            } else {
+                let expectedTokens = "\(expected.dropLast().map { "\"\($0)\"" }.joined(separator: ", ")) or \"\(expected.last!)\""
+                return "Expected to find a \(expectedTokens) token but found a \"\(found)\" token while decoding \(type)"
+            }
+        case .invalidArraySize(let type):
+            return "Expected array length is greater than found while decoding \(type)"
+        case .missingToken(let type, let key):
+            return "Expected map to contain token with key \"\(key)\" while decoding \(type)"
+        }
+    }
+}

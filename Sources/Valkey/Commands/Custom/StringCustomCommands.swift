@@ -28,8 +28,8 @@ extension LCS {
         }
 
         case subSequence(String)
-        case subSequenceLength(Int)
-        case matches(length: Int, matches: [Match])
+        case subSequenceLength(Int64)
+        case matches(length: Int64, matches: [Match])
 
         public init(fromRESP token: RESPToken) throws {
             switch token.value {
