@@ -62,7 +62,6 @@ public enum OBJECT {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -541,7 +540,6 @@ public struct PTTL: RESPCommand {
 public struct RANDOMKEY: RESPCommand {
     public typealias Response = RESPToken?
 
-
     @inlinable public init() {
     }
 
@@ -863,7 +861,6 @@ public struct WAITAOF: RESPCommand {
         commandEncoder.encodeArray("WAITAOF", numlocal, numreplicas, timeout)
     }
 }
-
 
 extension ValkeyConnection {
     /// Copies the value of a key to a new key.
