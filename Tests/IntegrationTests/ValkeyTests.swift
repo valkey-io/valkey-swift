@@ -112,7 +112,7 @@ struct GeneratedCommands {
             try await withKey(connection: connection) { key in
                 _ = try await connection.rpush(key: key, element: ["Hello"])
                 _ = try await connection.rpush(key: key, element: ["Good", "Bye"])
-                let values: [String] = try await connection.lrange(key: key, start: 0, stop: -1).converting()
+                let values = try await connection.lrange(key: key, start: 0, stop: -1).decode(as: [String.self])
                 #expect(values == ["Hello", "Good", "Bye"])
             }
         }
@@ -126,7 +126,7 @@ struct GeneratedCommands {
             try await withKey(connection: connection) { key in
                 let count = try await connection.rpush(key: key, element: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
                 #expect(count == 10)
-                let values: [String] = try await connection.lrange(key: key, start: 0, stop: -1).converting()
+                let values = try await connection.lrange(key: key, start: 0, stop: -1).decode(as: [String.self])
                 #expect(values == ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
             }
         }
@@ -141,7 +141,7 @@ struct GeneratedCommands {
                 _ = try await connection.lpush(key: key, element: ["a"])
                 _ = try await connection.lpush(key: key, element: ["c"])
                 _ = try await connection.lpush(key: key, element: ["b"])
-                let list = try await connection.sort(key: key, sorting: true).converting(to: [String].self)
+                let list = try await connection.sort(key: key, sorting: true).decode(as: [String].self)
                 #expect(list == ["a", "b", "c"])
             }
         }
@@ -156,12 +156,12 @@ struct GeneratedCommands {
                 try await withKey(connection: connection) { key2 in
                     _ = try await connection.lpush(key: key, element: ["a"])
                     _ = try await connection.lpush(key: key2, element: ["b"])
-                    let rt1: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!.converting()
+                    let rt1 = try await connection.lmpop(key: [key, key2], where: .left)!.decode(as: [RESPToken].self)
                     let keyReturned1 = try RESPKey(from: rt1[0])
                     let values1 = try [String](from: rt1[1])
                     #expect(keyReturned1 == key)
                     #expect(values1.first == "a")
-                    let rt2: [RESPToken] = try await connection.lmpop(key: [key, key2], where: .left)!.converting()
+                    let rt2 = try await connection.lmpop(key: [key, key2], where: .left)!.decode(as: [RESPToken].self)
                     let keyReturned2 = try RESPKey(from: rt2[0])
                     let values2 = try [String](from: rt2[1])
                     #expect(keyReturned2 == key2)
