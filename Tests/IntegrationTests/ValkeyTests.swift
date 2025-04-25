@@ -227,7 +227,34 @@ struct GeneratedCommands {
         }
     }
 
-    /// Test subscribing to a channel works
+    @Test
+    func testClientName() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        let valkeyClient = ValkeyClient(.hostname(valkeyHostname), logger: logger)
+        try await valkeyClient.withConnection(name: "phileasfogg", logger: logger) { connection in
+            let name = try await connection.clientGetname()
+            #expect(name == "phileasfogg")
+        }
+    }
+
+    @Test
+    func testAuthentication() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await ValkeyClient(.hostname(valkeyHostname), logger: logger).withConnection(logger: logger) { connection in
+            _ = try await connection.aclSetuser(username: "johnsmith", rule: ["on", ">3guygsf43", "+ACL|WHOAMI"])
+        }
+        try await ValkeyClient(
+            .hostname(valkeyHostname),
+            configuration: .init(authentication: .init(username: "johnsmith", password: "3guygsf43")),
+            logger: logger
+        ).withConnection(logger: logger) { connection in
+            let user = try await connection.aclWhoami()
+            #expect(user == "johnsmith")
+        }
+    }
+
     @Test
     func testSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)

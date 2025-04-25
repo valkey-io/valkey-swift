@@ -110,7 +110,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -144,7 +144,7 @@ struct SubscriptionTests {
     func testSubscribeFailed() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         async let subscribeResult: Void = connection.subscribe(to: "test") { _ in }
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -173,7 +173,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -207,7 +207,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -251,7 +251,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
@@ -317,7 +317,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
@@ -365,7 +365,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -401,7 +401,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -443,7 +443,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -482,7 +482,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -533,7 +533,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -565,7 +565,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -610,7 +610,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -638,7 +638,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -671,7 +671,7 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannel(channel, configuration: .init(), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
