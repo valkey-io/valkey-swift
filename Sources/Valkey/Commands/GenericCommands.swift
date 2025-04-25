@@ -26,7 +26,7 @@ import Foundation
 public enum OBJECT {
     /// Returns the internal encoding of a Valkey object.
     public struct ENCODING: RESPCommand {
-        public typealias Response = String?
+        public typealias Response = RESPToken?
 
         public var key: RESPKey
 
@@ -149,7 +149,7 @@ public struct DEL: RESPCommand {
 
 /// Returns a serialized representation of the value stored at a key.
 public struct DUMP: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
 
@@ -539,7 +539,7 @@ public struct PTTL: RESPCommand {
 
 /// Returns a random key name from the database.
 public struct RANDOMKEY: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
 
     @inlinable public init() {
@@ -902,7 +902,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the serialized value of the key.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the key does not exist.
     @inlinable
-    public func dump(key: RESPKey) async throws -> String? {
+    public func dump(key: RESPKey) async throws -> RESPToken? {
         try await send(command: DUMP(key: key))
     }
 
@@ -1011,7 +1011,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key doesn't exist.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the encoding of the object.
     @inlinable
-    public func objectEncoding(key: RESPKey) async throws -> String? {
+    public func objectEncoding(key: RESPKey) async throws -> RESPToken? {
         try await send(command: OBJECT.ENCODING(key: key))
     }
 
@@ -1151,7 +1151,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when the database is empty.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a random key in the database.
     @inlinable
-    public func randomkey() async throws -> String? {
+    public func randomkey() async throws -> RESPToken? {
         try await send(command: RANDOMKEY())
     }
 

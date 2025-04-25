@@ -79,7 +79,7 @@ public struct DECRBY: RESPCommand {
 
 /// Returns the string value of a key.
 public struct GET: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
 
@@ -96,7 +96,7 @@ public struct GET: RESPCommand {
 
 /// Returns the string value of a key after deleting the key.
 public struct GETDEL: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
 
@@ -142,7 +142,7 @@ public struct GETEX: RESPCommand {
             }
         }
     }
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
     public var expiration: Expiration? = nil
@@ -161,8 +161,6 @@ public struct GETEX: RESPCommand {
 
 /// Returns a substring of the string stored at a key.
 public struct GETRANGE: RESPCommand {
-    public typealias Response = String
-
     public var key: RESPKey
     public var start: Int
     public var end: Int
@@ -183,7 +181,7 @@ public struct GETRANGE: RESPCommand {
 /// Returns the previous string value of a key after setting it to a new value.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
 public struct GETSET: RESPCommand {
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
     public var value: String
@@ -238,8 +236,6 @@ public struct INCRBY: RESPCommand {
 
 /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
 public struct INCRBYFLOAT: RESPCommand {
-    public typealias Response = String
-
     public var key: RESPKey
     public var increment: Double
 
@@ -433,7 +429,7 @@ public struct SET: RESPCommand {
             }
         }
     }
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
     public var value: String
@@ -537,8 +533,6 @@ public struct STRLEN: RESPCommand {
 /// Returns a substring from a string value.
 @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
 public struct SUBSTR: RESPCommand {
-    public typealias Response = String
-
     public var key: RESPKey
     public var start: Int
     public var end: Int
@@ -604,7 +598,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the key.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
     @inlinable
-    public func get(key: RESPKey) async throws -> String? {
+    public func get(key: RESPKey) async throws -> RESPToken? {
         try await send(command: GET(key: key))
     }
 
@@ -618,7 +612,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the key.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist or if the key's value type is not a string.
     @inlinable
-    public func getdel(key: RESPKey) async throws -> String? {
+    public func getdel(key: RESPKey) async throws -> RESPToken? {
         try await send(command: GETDEL(key: key))
     }
 
@@ -631,7 +625,7 @@ extension ValkeyConnection {
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of `key`
     ///     [Null](https:/valkey.io/topics/protocol/#nulls): if `key` does not exist.
     @inlinable
-    public func getex(key: RESPKey, expiration: GETEX.Expiration? = nil) async throws -> String? {
+    public func getex(key: RESPKey, expiration: GETEX.Expiration? = nil) async throws -> RESPToken? {
         try await send(command: GETEX(key: key, expiration: expiration))
     }
 
@@ -643,7 +637,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @string, @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func getrange(key: RESPKey, start: Int, end: Int) async throws -> String {
+    public func getrange(key: RESPKey, start: Int, end: Int) async throws -> GETRANGE.Response {
         try await send(command: GETRANGE(key: key, start: start, end: end))
     }
 
@@ -658,7 +652,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
-    public func getset(key: RESPKey, value: String) async throws -> String? {
+    public func getset(key: RESPKey, value: String) async throws -> RESPToken? {
         try await send(command: GETSET(key: key, value: value))
     }
 
@@ -694,7 +688,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the key after the increment.
     @inlinable
-    public func incrbyfloat(key: RESPKey, increment: Double) async throws -> String {
+    public func incrbyfloat(key: RESPKey, increment: Double) async throws -> INCRBYFLOAT.Response {
         try await send(command: INCRBYFLOAT(key: key, increment: increment))
     }
 
@@ -781,7 +775,7 @@ extension ValkeyConnection {
     ///     * `GET` and `NX` given: [Null](https:/valkey.io/topics/protocol/#nulls) indicates the key was set.
     ///     * `GET` and `IFEQ` given: The key was set if the reply is equal to `comparison-value`.
     @inlinable
-    public func set(key: RESPKey, value: String, condition: SET.Condition? = nil, get: Bool = false, expiration: SET.Expiration? = nil) async throws -> String? {
+    public func set(key: RESPKey, value: String, condition: SET.Condition? = nil, get: Bool = false, expiration: SET.Expiration? = nil) async throws -> RESPToken? {
         try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
@@ -846,7 +840,7 @@ extension ValkeyConnection {
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
-    public func substr(key: RESPKey, start: Int, end: Int) async throws -> String {
+    public func substr(key: RESPKey, start: Int, end: Int) async throws -> SUBSTR.Response {
         try await send(command: SUBSTR(key: key, start: start, end: end))
     }
 

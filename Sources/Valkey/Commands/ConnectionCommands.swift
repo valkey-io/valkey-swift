@@ -54,7 +54,7 @@ public enum CLIENT {
 
     /// Returns the name of the connection.
     public struct GETNAME: RESPCommand {
-        public typealias Response = String?
+        public typealias Response = RESPToken?
 
 
         @inlinable public init() {
@@ -106,8 +106,6 @@ public enum CLIENT {
 
     /// Returns information about the connection.
     public struct INFO: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -241,8 +239,6 @@ public enum CLIENT {
                 }
             }
         }
-        public typealias Response = String
-
         public var clientType: ClientType? = nil
         public var clientId: [Int] = []
 
@@ -533,8 +529,6 @@ public struct AUTH: RESPCommand {
 
 /// Returns the given string.
 public struct ECHO: RESPCommand {
-    public typealias Response = String
-
     public var message: String
 
     @inlinable public init(message: String) {
@@ -608,8 +602,6 @@ public struct HELLO: RESPCommand {
 
 /// Returns the server's liveliness response.
 public struct PING: RESPCommand {
-    public typealias Response = String
-
     public var message: String? = nil
 
     @inlinable public init(message: String? = nil) {
@@ -695,7 +687,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the connection name of the current connection.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the connection name was not set.
     @inlinable
-    public func clientGetname() async throws -> String? {
+    public func clientGetname() async throws -> RESPToken? {
         try await send(command: CLIENT.GETNAME())
     }
 
@@ -746,7 +738,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a unique string for the current client, as described at the `CLIENT LIST` page.
     @inlinable
-    public func clientInfo() async throws -> String {
+    public func clientInfo() async throws -> CLIENT.INFO.Response {
         try await send(command: CLIENT.INFO())
     }
 
@@ -772,7 +764,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous, @connection
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): information and statistics about client connections.
     @inlinable
-    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = []) async throws -> String {
+    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = []) async throws -> CLIENT.LIST.Response {
         try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId))
     }
 
@@ -906,7 +898,7 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the given string.
     @inlinable
-    public func echo(message: String) async throws -> String {
+    public func echo(message: String) async throws -> ECHO.Response {
         try await send(command: ECHO(message: message))
     }
 
@@ -933,7 +925,7 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `PONG` when no argument is provided.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the provided argument.
     @inlinable
-    public func ping(message: String? = nil) async throws -> String {
+    public func ping(message: String? = nil) async throws -> PING.Response {
         try await send(command: PING(message: message))
     }
 

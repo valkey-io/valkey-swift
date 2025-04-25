@@ -398,7 +398,7 @@ public struct XADD: RESPCommand {
             value.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = String?
+    public typealias Response = RESPToken?
 
     public var key: RESPKey
     public var nomkstream: Bool = false
@@ -846,7 +846,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(key: RESPKey, nomkstream: Bool = false, trim: XADD.Trim? = nil, idSelector: XADD.IdSelector, data: [XADD.Data]) async throws -> String? {
+    public func xadd(key: RESPKey, nomkstream: Bool = false, trim: XADD.Trim? = nil, idSelector: XADD.IdSelector, data: [XADD.Data]) async throws -> RESPToken? {
         try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 

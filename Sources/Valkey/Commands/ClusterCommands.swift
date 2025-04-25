@@ -73,8 +73,6 @@ public enum CLUSTER {
 
     /// Advances the cluster config epoch.
     public struct BUMPEPOCH: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -245,8 +243,6 @@ public enum CLUSTER {
 
     /// Returns information about the state of a node.
     public struct INFO: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -303,8 +299,6 @@ public enum CLUSTER {
 
     /// Returns the ID of a node.
     public struct MYID: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -316,8 +310,6 @@ public enum CLUSTER {
 
     /// Returns the shard ID of a node.
     public struct MYSHARDID: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -329,8 +321,6 @@ public enum CLUSTER {
 
     /// Returns the cluster configuration for a node.
     public struct NODES: RESPCommand {
-        public typealias Response = String
-
 
         @inlinable public init() {
         }
@@ -587,7 +577,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): `BUMPED` if the epoch was incremented.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): `STILL` if the node already has the greatest configured epoch in the cluster.
     @inlinable
-    public func clusterBumpepoch() async throws -> String {
+    public func clusterBumpepoch() async throws -> CLUSTER.BUMPEPOCH.Response {
         try await send(command: CLUSTER.BUMPEPOCH())
     }
 
@@ -707,7 +697,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): A map between named fields and values in the form of `<field>:<value>` lines separated by newlines composed by the two bytes `CRLF`.
     @inlinable
-    public func clusterInfo() async throws -> String {
+    public func clusterInfo() async throws -> CLUSTER.INFO.Response {
         try await send(command: CLUSTER.INFO())
     }
 
@@ -755,7 +745,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the node ID.
     @inlinable
-    public func clusterMyid() async throws -> String {
+    public func clusterMyid() async throws -> CLUSTER.MYID.Response {
         try await send(command: CLUSTER.MYID())
     }
 
@@ -767,7 +757,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the node's shard ID.
     @inlinable
-    public func clusterMyshardid() async throws -> String {
+    public func clusterMyshardid() async throws -> CLUSTER.MYSHARDID.Response {
         try await send(command: CLUSTER.MYSHARDID())
     }
 
@@ -779,7 +769,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the serialized cluster configuration.
     @inlinable
-    public func clusterNodes() async throws -> String {
+    public func clusterNodes() async throws -> CLUSTER.NODES.Response {
         try await send(command: CLUSTER.NODES())
     }
 
