@@ -154,7 +154,7 @@ extension String {
         self.append("\(tab)    }\n")
     }
 
-    mutating func appendCommand(command: RESPCommand, reply: [String], name: String, tab: String) {
+    mutating func appendCommand(command: RESPCommand, reply: [String], name: String, tab: String, disableResponseCalculation: Bool) {
         var commandName = name
         var subCommand: String? = nil
         let typeName: String
@@ -184,7 +184,7 @@ extension String {
             }
         }
         // return type
-        var returnType = getReturnType(reply: reply) ?? "RESPToken"
+        var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(reply: reply) ?? "RESPToken"
         if returnType == "Void" {
             returnType = "RESPToken"
         }
@@ -203,10 +203,13 @@ extension String {
         if returnType != "RESPToken" {
             self.append("\(tab)    public typealias Response = \(returnType)\n\n")
         }
-        for arg in arguments {
-            self.append("\(tab)    public var \(arg.name.swiftVariable): \(parameterType(arg, names: [], scope: nil, isArray: true))\n")
+        if arguments.count > 0 {
+            for arg in arguments {
+                self.append("\(tab)    public var \(arg.name.swiftVariable): \(parameterType(arg, names: [], scope: nil, isArray: true))\n")
+            }
+            self.append("\n")
         }
-        self.append("\n\(tab)    @inlinable public init(\(commandParametersString)) {\n")
+        self.append("\(tab)    @inlinable public init(\(commandParametersString)) {\n")
         for arg in arguments {
             self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
@@ -222,12 +225,13 @@ extension String {
         self.append("\(tab)}\n\n")
     }
 
-    mutating func appendFunction(command: RESPCommand, reply: [String], name: String) {
+    mutating func appendFunction(command: RESPCommand, reply: [String], name: String, disableResponseCalculation: Bool) {
         let arguments = (command.arguments ?? [])
         //var converting: Bool = false
         var returnType: String = " -> \(name.commandTypeName).Response"
         var ignoreSendResponse = ""
-        if let type = getReturnType(reply: reply) {
+        let type = disableResponseCalculation ? nil : getResponseType(reply: reply)
+        if let type {
             if type == "Void" {
                 returnType = ""
                 ignoreSendResponse = "_ = "
@@ -262,6 +266,9 @@ extension String {
 }
 
 func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplies) -> String {
+    let disableResponseCalculationCommands: Set<String> = [
+        "CLUSTER SHARDS"
+    ]
     var string = """
         //===----------------------------------------------------------------------===//
         //
@@ -312,7 +319,13 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
                 let command = commands[key]!
                 // if there is no reply info assume command is a container command
                 guard let reply = replies.commands[key], reply.count > 0 else { continue }
-                string.appendCommand(command: command, reply: reply, name: key, tab: "    ")
+                string.appendCommand(
+                    command: command,
+                    reply: reply,
+                    name: key,
+                    tab: "    ",
+                    disableResponseCalculation: disableResponseCalculationCommands.contains(key)
+                )
             }
         }
         string.append("}\n\n")
@@ -322,20 +335,30 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
         let command = commands[key]!
         // if there is no reply info assume command is a container command
         guard let reply = replies.commands[key], reply.count > 0 else { continue }
-        string.appendCommand(command: command, reply: reply, name: key, tab: "")
+        string.appendCommand(
+            command: command,
+            reply: reply,
+            name: key,
+            tab: "",
+            disableResponseCalculation: disableResponseCalculationCommands.contains(key)
+        )
     }
 
     /// Remove subscribe functions as we implement our own versions in code
     let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE", "UNSUBSCRIBE", "PUNSUBSCRIBE", "SUNSUBSCRIBE"]
     keys.removeAll { subscribeFunctions.contains($0) }
 
-    string.append("\n")
     string.append("extension ValkeyConnection {\n")
     for key in keys {
         let command = commands[key]!
         // if there is no reply info assume command is a container command
         guard let reply = replies.commands[key], reply.count > 0 else { continue }
-        string.appendFunction(command: command, reply: reply, name: key)
+        string.appendFunction(
+            command: command,
+            reply: reply,
+            name: key,
+            disableResponseCalculation: disableResponseCalculationCommands.contains(key)
+        )
     }
     string.append("}\n")
     return string
@@ -438,7 +461,7 @@ private func variableType(_ parameter: RESPCommand.Argument, names: [String], sc
     return parameterString
 }
 
-private func getReturnType(reply replies: [String]) -> String? {
+private func getResponseType(reply replies: [String]) -> String? {
     let replies = replies.filter { $0.hasPrefix("[") || $0.hasPrefix("* [") }
     if replies.count == 1 {
         let returnType = getReturnType(reply: replies[0].dropPrefix("* "))

@@ -132,7 +132,6 @@ public enum XGROUP {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -225,7 +224,6 @@ public enum XINFO {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -821,7 +819,6 @@ public struct XTRIM: RESPCommand {
         commandEncoder.encodeArray("XTRIM", key, trim)
     }
 }
-
 
 extension ValkeyConnection {
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.

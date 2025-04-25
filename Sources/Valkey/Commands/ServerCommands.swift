@@ -105,7 +105,6 @@ public enum ACL {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -118,7 +117,6 @@ public enum ACL {
     public struct LIST: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -129,7 +127,6 @@ public enum ACL {
 
     /// Reloads the rules from the configured ACL file.
     public struct LOAD: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -175,7 +172,6 @@ public enum ACL {
 
     /// Saves the effective ACL rules in the configured ACL file.
     public struct SAVE: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -203,7 +199,6 @@ public enum ACL {
     public struct USERS: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -214,7 +209,6 @@ public enum ACL {
 
     /// Returns the authenticated username of the current connection.
     public struct WHOAMI: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -229,7 +223,6 @@ extension COMMAND {
     /// Returns a count of commands.
     public struct COUNT: RESPCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -291,7 +284,6 @@ extension COMMAND {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -377,7 +369,6 @@ public enum CONFIG {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -388,7 +379,6 @@ public enum CONFIG {
 
     /// Resets the server's statistics.
     public struct RESETSTAT: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -399,7 +389,6 @@ public enum CONFIG {
 
     /// Persists the effective configuration to file.
     public struct REWRITE: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -450,7 +439,6 @@ public enum LATENCY {
     public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -475,7 +463,6 @@ public enum LATENCY {
     /// Returns helpful text about the different subcommands.
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -519,7 +506,6 @@ public enum LATENCY {
     public struct LATEST: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -551,7 +537,6 @@ public enum MEMORY {
     public struct DOCTOR: RESPCommand {
         public typealias Response = String
 
-
         @inlinable public init() {
         }
 
@@ -564,7 +549,6 @@ public enum MEMORY {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -575,7 +559,6 @@ public enum MEMORY {
 
     /// Returns the allocator statistics.
     public struct MALLOCSTATS: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -586,7 +569,6 @@ public enum MEMORY {
 
     /// Asks the allocator to release memory.
     public struct PURGE: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -598,7 +580,6 @@ public enum MEMORY {
     /// Returns details about memory usage.
     public struct STATS: RESPCommand {
         public typealias Response = RESPToken.Map
-
 
         @inlinable public init() {
         }
@@ -635,7 +616,6 @@ public enum MODULE {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -647,7 +627,6 @@ public enum MODULE {
     /// Returns all loaded modules.
     public struct LIST: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -746,7 +725,6 @@ public enum SLOWLOG {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -759,7 +737,6 @@ public enum SLOWLOG {
     public struct LEN: RESPCommand {
         public typealias Response = Int
 
-
         @inlinable public init() {
         }
 
@@ -770,7 +747,6 @@ public enum SLOWLOG {
 
     /// Clears all entries from the slow log.
     public struct RESET: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -783,7 +759,6 @@ public enum SLOWLOG {
 
 /// Asynchronously rewrites the append-only file to disk.
 public struct BGREWRITEAOF: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -811,7 +786,6 @@ public struct BGSAVE: RESPCommand {
 public struct COMMAND: RESPCommand {
     public typealias Response = RESPToken.Array
 
-
     @inlinable public init() {
     }
 
@@ -823,7 +797,6 @@ public struct COMMAND: RESPCommand {
 /// Returns the number of keys in the database.
 public struct DBSIZE: RESPCommand {
     public typealias Response = Int
-
 
     @inlinable public init() {
     }
@@ -947,7 +920,6 @@ public struct INFO: RESPCommand {
 public struct LASTSAVE: RESPCommand {
     public typealias Response = Int
 
-
     @inlinable public init() {
     }
 
@@ -973,7 +945,6 @@ public struct LOLWUT: RESPCommand {
 
 /// Listens for all requests received by the server in real-time.
 public struct MONITOR: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -999,7 +970,6 @@ public struct PSYNC: RESPCommand {
 
 /// An internal command for configuring the replication stream.
 public struct REPLCONF: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -1114,7 +1084,6 @@ public struct RESTOREASKING: RESPCommand {
 public struct ROLE: RESPCommand {
     public typealias Response = RESPToken.Array
 
-
     @inlinable public init() {
     }
 
@@ -1125,7 +1094,6 @@ public struct ROLE: RESPCommand {
 
 /// Synchronously saves the database(s) to disk.
 public struct SAVE: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -1261,7 +1229,6 @@ public struct SWAPDB: RESPCommand {
 
 /// An internal command used in replication.
 public struct SYNC: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -1274,7 +1241,6 @@ public struct SYNC: RESPCommand {
 public struct TIME: RESPCommand {
     public typealias Response = RESPToken.Array
 
-
     @inlinable public init() {
     }
 
@@ -1282,7 +1248,6 @@ public struct TIME: RESPCommand {
         commandEncoder.encodeArray("TIME")
     }
 }
-
 
 extension ValkeyConnection {
     /// Lists the ACL categories, or the commands inside a category.

@@ -73,7 +73,6 @@ public enum CLUSTER {
 
     /// Advances the cluster config epoch.
     public struct BUMPEPOCH: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -189,7 +188,6 @@ public enum CLUSTER {
 
     /// Deletes all slots information from a node.
     public struct FLUSHSLOTS: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -232,7 +230,6 @@ public enum CLUSTER {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -243,7 +240,6 @@ public enum CLUSTER {
 
     /// Returns information about the state of a node.
     public struct INFO: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -270,7 +266,6 @@ public enum CLUSTER {
     /// Returns a list of all TCP links to and from peer nodes.
     public struct LINKS: RESPCommand {
         public typealias Response = RESPToken.Array
-
 
         @inlinable public init() {
         }
@@ -299,7 +294,6 @@ public enum CLUSTER {
 
     /// Returns the ID of a node.
     public struct MYID: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -310,7 +304,6 @@ public enum CLUSTER {
 
     /// Returns the shard ID of a node.
     public struct MYSHARDID: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -321,7 +314,6 @@ public enum CLUSTER {
 
     /// Returns the cluster configuration for a node.
     public struct NODES: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -388,7 +380,6 @@ public enum CLUSTER {
 
     /// Forces a node to save the cluster configuration to disk.
     public struct SAVECONFIG: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -453,9 +444,6 @@ public enum CLUSTER {
 
     /// Returns the mapping of cluster slots to shards.
     public struct SHARDS: RESPCommand {
-        public typealias Response = RESPToken.Array
-
-
         @inlinable public init() {
         }
 
@@ -485,7 +473,6 @@ public enum CLUSTER {
     public struct SLOTS: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -498,7 +485,6 @@ public enum CLUSTER {
 
 /// Signals that a cluster client is following an -ASK redirect.
 public struct ASKING: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -509,7 +495,6 @@ public struct ASKING: RESPCommand {
 
 /// Enables read-only queries for a connection to a Valkey Cluster replica node.
 public struct READONLY: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -520,7 +505,6 @@ public struct READONLY: RESPCommand {
 
 /// Enables read-write queries for a connection to a Reids Cluster replica node.
 public struct READWRITE: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -528,7 +512,6 @@ public struct READWRITE: RESPCommand {
         commandEncoder.encodeArray("READWRITE")
     }
 }
-
 
 extension ValkeyConnection {
     /// Signals that a cluster client is following an -ASK redirect.
@@ -853,7 +836,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of [Map](https:/valkey.io/topics/protocol/#maps) of hash ranges and shard nodes describing individual shards.
     @inlinable
-    public func clusterShards() async throws -> RESPToken.Array {
+    public func clusterShards() async throws -> CLUSTER.SHARDS.Response {
         try await send(command: CLUSTER.SHARDS())
     }
 

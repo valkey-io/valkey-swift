@@ -550,7 +550,6 @@ public struct SUBSTR: RESPCommand {
     }
 }
 
-
 extension ValkeyConnection {
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
     ///

@@ -77,7 +77,6 @@ public struct PFMERGE: RESPCommand {
 
 /// An internal command for testing HyperLogLog values.
 public struct PFSELFTEST: RESPCommand {
-
     @inlinable public init() {
     }
 
@@ -85,7 +84,6 @@ public struct PFSELFTEST: RESPCommand {
         commandEncoder.encodeArray("PFSELFTEST")
     }
 }
-
 
 extension ValkeyConnection {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.

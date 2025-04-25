@@ -386,7 +386,6 @@ public struct HVALS: RESPCommand {
     }
 }
 
-
 extension ValkeyConnection {
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
     ///

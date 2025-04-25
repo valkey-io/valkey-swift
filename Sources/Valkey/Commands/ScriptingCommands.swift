@@ -39,7 +39,6 @@ public enum FUNCTION {
 
     /// Dumps all libraries into a serialized binary payload.
     public struct DUMP: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -80,7 +79,6 @@ public enum FUNCTION {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -91,7 +89,6 @@ public enum FUNCTION {
 
     /// Terminates a function during execution.
     public struct KILL: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -167,7 +164,6 @@ public enum FUNCTION {
     /// Returns information about a function during execution.
     public struct STATS: RESPCommand {
         public typealias Response = RESPToken.Map
-
 
         @inlinable public init() {
         }
@@ -258,7 +254,6 @@ public enum SCRIPT {
     public struct HELP: RESPCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -269,7 +264,6 @@ public enum SCRIPT {
 
     /// Terminates a server-side Lua script during execution.
     public struct KILL: RESPCommand {
-
         @inlinable public init() {
         }
 
@@ -406,7 +400,6 @@ public struct FCALLRO: RESPCommand {
         commandEncoder.encodeArray("FCALL_RO", function, RESPArrayWithCount(key), arg)
     }
 }
-
 
 extension ValkeyConnection {
     /// Executes a server-side Lua script.
