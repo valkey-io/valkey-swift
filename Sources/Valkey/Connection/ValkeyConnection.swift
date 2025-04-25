@@ -36,7 +36,7 @@ public struct ServerAddress: Sendable, Equatable {
     }
 
     // Address define by host and port
-    public static func hostname(_ host: String, port: Int) -> Self { .init(.hostname(host, port: port)) }
+    public static func hostname(_ host: String, port: Int = 6379) -> Self { .init(.hostname(host, port: port)) }
     // Address defined by unxi domain socket
     public static func unixDomainSocket(path: String) -> Self { .init(.unixDomainSocket(path: path)) }
 }
@@ -70,28 +70,27 @@ public final class ValkeyConnection: Sendable {
     ///
     /// - Parameters:
     ///   - address: Internet address of database
+    ///   - name: Name of connection. The connection name is used in many of the `CLIENT` commands.
     ///   - configuration: Configuration of Valkey connection
     ///   - eventLoopGroup: EventLoopGroup to use
     ///   - logger: Logger for connection
     /// - Returns: ValkeyConnection
     public static func connect(
         address: ServerAddress,
+        name: String? = nil,
         configuration: ValkeyClientConfiguration,
         eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger
     ) async throws -> ValkeyConnection {
         let future =
             if eventLoop.inEventLoop {
-                self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, logger: logger)
+                self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, clientName: name, logger: logger)
             } else {
                 eventLoop.flatSubmit {
-                    self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, logger: logger)
+                    self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, clientName: name, logger: logger)
                 }
             }
         let connection = try await future.get()
-        if configuration.respVersion == .v3 {
-            try await connection.resp3Upgrade()
-        }
         return connection
     }
 
@@ -163,16 +162,12 @@ public final class ValkeyConnection: Sendable {
         return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
     }
 
-    /// Try to upgrade to RESP3
-    private func resp3Upgrade() async throws {
-        _ = try await send(command: HELLO(arguments: .init(protover: 3, auth: nil, clientname: nil)))
-    }
-
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
     private static func _makeClient(
         address: ServerAddress,
         eventLoop: EventLoop,
         configuration: ValkeyClientConfiguration,
+        clientName: String?,
         logger: Logger
     ) -> EventLoopFuture<ValkeyConnection> {
         eventLoop.assertInEventLoop()
@@ -195,7 +190,7 @@ public final class ValkeyConnection: Sendable {
 
         let connect = bootstrap.channelInitializer { channel in
             do {
-                try self._setupChannel(channel, configuration: configuration, logger: logger)
+                try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
                 return eventLoop.makeSucceededVoidFuture()
             } catch {
                 return eventLoop.makeFailedFuture(error)
@@ -222,25 +217,49 @@ public final class ValkeyConnection: Sendable {
         }
     }
 
-    package static func setupChannel(
+    package static func setupChannelAndConnect(
         _ channel: any Channel,
         configuration: ValkeyClientConfiguration,
+        clientName: String? = nil,
         logger: Logger
     ) async throws -> ValkeyConnection {
         if !channel.eventLoop.inEventLoop {
-            return try await channel.eventLoop.submit {
-                let handler = try self._setupChannel(channel, configuration: configuration, logger: logger)
-                return ValkeyConnection(channel: channel, channelHandler: handler, configuration: configuration, logger: logger)
+            return try await channel.eventLoop.flatSubmit {
+                self._setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger)
             }.get()
         }
+        return try await self._setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger).get()
+    }
 
-        let handler = try self._setupChannel(channel, configuration: configuration, logger: logger)
-        return ValkeyConnection(channel: channel, channelHandler: handler, configuration: configuration, logger: logger)
+    private static func _setupChannelAndConnect(
+        _ channel: any Channel,
+        configuration: ValkeyClientConfiguration,
+        clientName: String? = nil,
+        logger: Logger
+    ) -> EventLoopFuture<ValkeyConnection> {
+        do {
+            let handler = try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
+            let connection = ValkeyConnection(
+                channel: channel,
+                channelHandler: handler,
+                configuration: configuration,
+                logger: logger
+            )
+            return channel.connect(to: try SocketAddress(ipAddress: "127.0.0.1", port: 6379)).map {
+                connection
+            }
+        } catch {
+            return channel.eventLoop.makeFailedFuture(error)
+        }
     }
 
     @discardableResult
-    private static func _setupChannel(_ channel: any Channel, configuration: ValkeyClientConfiguration, logger: Logger) throws -> ValkeyChannelHandler
-    {
+    private static func _setupChannel(
+        _ channel: any Channel,
+        configuration: ValkeyClientConfiguration,
+        clientName: String?,
+        logger: Logger
+    ) throws -> ValkeyChannelHandler {
         channel.eventLoop.assertInEventLoop()
         let sync = channel.pipeline.syncOperations
         switch configuration.tls.base {
@@ -250,6 +269,7 @@ public final class ValkeyConnection: Sendable {
             break
         }
         let valkeyChannelHandler = ValkeyChannelHandler(
+            configuration: .init(respVersion: configuration.respVersion, authentication: configuration.authentication, clientName: clientName),
             eventLoop: channel.eventLoop,
             logger: logger
         )

@@ -61,11 +61,13 @@ extension ValkeyClient {
     ///   - logger: Logger
     ///   - operation: Closure handling Valkey connection
     public func withConnection<Value: Sendable>(
+        name: String? = nil,
         logger: Logger,
         operation: (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
         let valkeyConnection = try await ValkeyConnection.connect(
             address: self.serverAddress,
+            name: name,
             configuration: self.configuration,
             eventLoop: self.eventLoopGroup.any(),
             logger: logger
