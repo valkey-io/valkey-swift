@@ -67,9 +67,9 @@ struct GeneratedCommands {
         try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.set(key: key, value: "Hello")
-                let response = try await connection.get(key: key)?.converting(to: String.self)
+                let response = try await connection.get(key: key)?.decode(as: String.self)
                 #expect(response == "Hello")
-                let response2 = try await connection.get(key: "sdf65fsdf")?.converting(to: String.self)
+                let response2 = try await connection.get(key: "sdf65fsdf")?.decode(as: String.self)
                 #expect(response2 == nil)
             }
         }
@@ -82,7 +82,7 @@ struct GeneratedCommands {
         try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 _ = try await connection.set(key: key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 1))
-                let response = try await connection.get(key: key)?.converting(to: String.self)
+                let response = try await connection.get(key: key)?.decode(as: String.self)
                 #expect(response == "Hello")
                 try await Task.sleep(for: .seconds(2))
                 let response2 = try await connection.get(key: key)
@@ -101,7 +101,7 @@ struct GeneratedCommands {
                     SET(key: key, value: "Pipelined Hello"),
                     GET(key: key)
                 )
-                try #expect(responses.1.get()?.converting(to: String.self) == "Pipelined Hello")
+                try #expect(responses.1.get()?.decode(as: String.self) == "Pipelined Hello")
             }
         }
     }
@@ -114,7 +114,7 @@ struct GeneratedCommands {
             try await withKey(connection: connection) { key in
                 _ = try await connection.rpush(key: key, element: ["Hello"])
                 _ = try await connection.rpush(key: key, element: ["Good", "Bye"])
-                let values = try await connection.lrange(key: key, start: 0, stop: -1).decode(as: [String.self])
+                let values = try await connection.lrange(key: key, start: 0, stop: -1).decode(as: [String].self)
                 #expect(values == ["Hello", "Good", "Bye"])
             }
         }
@@ -128,7 +128,7 @@ struct GeneratedCommands {
             try await withKey(connection: connection) { key in
                 let count = try await connection.rpush(key: key, element: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
                 #expect(count == 10)
-                let values = try await connection.lrange(key: key, start: 0, stop: -1).decode(as: [String.self])
+                let values = try await connection.lrange(key: key, start: 0, stop: -1).decode(as: [String].self)
                 #expect(values == ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
             }
         }
@@ -195,7 +195,7 @@ struct GeneratedCommands {
                     group.addTask {
                         try await withKey(connection: connection) { key in
                             _ = try await connection.set(key: key, value: key.rawValue)
-                            let response = try await connection.get(key: key)?.converting(to: String.self)
+                            let response = try await connection.get(key: key)?.decode(as: String.self)
                             #expect(response == key.rawValue)
                         }
                     }
@@ -220,7 +220,7 @@ struct GeneratedCommands {
                                 SET(key: key, value: value),
                                 GET(key: key)
                             )
-                            try #expect(responses.1.get()?.converting(to: String.self) == value)
+                            try #expect(responses.1.get()?.decode(as: String.self) == value)
                         }
                     }
                 }
@@ -236,7 +236,7 @@ struct GeneratedCommands {
         let valkeyClient = ValkeyClient(.hostname(valkeyHostname), logger: logger)
         try await valkeyClient.withConnection(name: "phileasfogg", logger: logger) { connection in
             let name = try await connection.clientGetname()
-            #expect(name == "phileasfogg")
+            #expect(try name?.decode() == "phileasfogg")
         }
     }
 
@@ -253,7 +253,7 @@ struct GeneratedCommands {
             logger: logger
         ).withConnection(logger: logger) { connection in
             let user = try await connection.aclWhoami()
-            #expect(user == "johnsmith")
+            #expect(try user.decode() == "johnsmith")
         }
     }
 
@@ -498,7 +498,7 @@ struct GeneratedCommands {
                         try await withKey(connection: connection) { key in
                             _ = try await connection.set(key: key, value: "Hello")
                             let response = try await connection.get(key: key)
-                            #expect(response == "Hello")
+                            #expect(try response?.decode() == "Hello")
                         }
 
                         await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }

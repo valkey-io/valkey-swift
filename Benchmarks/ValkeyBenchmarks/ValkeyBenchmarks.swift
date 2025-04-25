@@ -45,7 +45,7 @@ let benchmarks: @Sendable () -> Void = {
             benchmark.startMeasurement()
 
             for _ in benchmark.scaledIterations {
-                let foo = try await connection.get(key: "foo")?.converting(to: String.self)
+                let foo = try await connection.get(key: "foo")?.decode(as: String.self)
                 precondition(foo == "Bar")
             }
 
