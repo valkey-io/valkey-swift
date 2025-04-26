@@ -66,7 +66,7 @@ public struct BITCOUNT: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var range: Range? = nil
+    public var range: Range?
 
     @inlinable public init(key: RESPKey, range: Range? = nil) {
         self.key = key
@@ -232,7 +232,7 @@ public struct BITFIELD: RESPCommand {
     public typealias Response = RESPToken.Array?
 
     public var key: RESPKey
-    public var operation: [Operation] = []
+    public var operation: [Operation]
 
     @inlinable public init(key: RESPKey, operation: [Operation] = []) {
         self.key = key
@@ -272,7 +272,7 @@ public struct BITFIELDRO: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var getBlock: [GetBlock] = []
+    public var getBlock: [GetBlock]
 
     @inlinable public init(key: RESPKey, getBlock: [GetBlock] = []) {
         self.key = key
@@ -389,7 +389,7 @@ public struct BITPOS: RESPCommand {
 
     public var key: RESPKey
     public var bit: Int
-    public var range: Range? = nil
+    public var range: Range?
 
     @inlinable public init(key: RESPKey, bit: Int, range: Range? = nil) {
         self.key = key

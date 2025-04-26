@@ -99,7 +99,7 @@ public struct BLMPOP: RESPCommand {
     public var timeout: Double
     public var key: [RESPKey]
     public var `where`: Where
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(timeout: Double, key: [RESPKey], `where`: Where, count: Int? = nil) {
         self.timeout = timeout
@@ -321,7 +321,7 @@ public struct LMPOP: RESPCommand {
 
     public var key: [RESPKey]
     public var `where`: Where
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: [RESPKey], `where`: Where, count: Int? = nil) {
         self.key = key
@@ -339,7 +339,7 @@ public struct LMPOP: RESPCommand {
 /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
 public struct LPOP: RESPCommand {
     public var key: RESPKey
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
@@ -357,9 +357,9 @@ public struct LPOP: RESPCommand {
 public struct LPOS: RESPCommand {
     public var key: RESPKey
     public var element: String
-    public var rank: Int? = nil
-    public var numMatches: Int? = nil
-    public var len: Int? = nil
+    public var rank: Int?
+    public var numMatches: Int?
+    public var len: Int?
 
     @inlinable public init(key: RESPKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) {
         self.key = key
@@ -497,7 +497,7 @@ public struct LTRIM: RESPCommand {
 /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
 public struct RPOP: RESPCommand {
     public var key: RESPKey
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key

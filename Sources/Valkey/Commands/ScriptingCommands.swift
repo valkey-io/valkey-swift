@@ -64,7 +64,7 @@ public enum FUNCTION {
                 }
             }
         }
-        public var flushType: FlushType? = nil
+        public var flushType: FlushType?
 
         @inlinable public init(flushType: FlushType? = nil) {
             self.flushType = flushType
@@ -101,8 +101,8 @@ public enum FUNCTION {
     public struct LIST: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var libraryNamePattern: String? = nil
-        public var withcode: Bool = false
+        public var libraryNamePattern: String?
+        public var withcode: Bool
 
         @inlinable public init(libraryNamePattern: String? = nil, withcode: Bool = false) {
             self.libraryNamePattern = libraryNamePattern
@@ -116,7 +116,7 @@ public enum FUNCTION {
 
     /// Creates a library.
     public struct LOAD: RESPCommand {
-        public var replace: Bool = false
+        public var replace: Bool
         public var functionCode: String
 
         @inlinable public init(replace: Bool = false, functionCode: String) {
@@ -149,7 +149,7 @@ public enum FUNCTION {
             }
         }
         public var serializedValue: String
-        public var policy: Policy? = nil
+        public var policy: Policy?
 
         @inlinable public init(serializedValue: String, policy: Policy? = nil) {
             self.serializedValue = serializedValue
@@ -239,7 +239,7 @@ public enum SCRIPT {
                 }
             }
         }
-        public var flushType: FlushType? = nil
+        public var flushType: FlushType?
 
         @inlinable public init(flushType: FlushType? = nil) {
             self.flushType = flushType
@@ -290,8 +290,8 @@ public enum SCRIPT {
 /// Executes a server-side Lua script.
 public struct EVAL: RESPCommand {
     public var script: String
-    public var key: [RESPKey] = []
-    public var arg: [String] = []
+    public var key: [RESPKey]
+    public var arg: [String]
 
     @inlinable public init(script: String, key: [RESPKey] = [], arg: [String] = []) {
         self.script = script
@@ -309,8 +309,8 @@ public struct EVAL: RESPCommand {
 /// Executes a server-side Lua script by SHA1 digest.
 public struct EVALSHA: RESPCommand {
     public var sha1: String
-    public var key: [RESPKey] = []
-    public var arg: [String] = []
+    public var key: [RESPKey]
+    public var arg: [String]
 
     @inlinable public init(sha1: String, key: [RESPKey] = [], arg: [String] = []) {
         self.sha1 = sha1
@@ -328,8 +328,8 @@ public struct EVALSHA: RESPCommand {
 /// Executes a read-only server-side Lua script by SHA1 digest.
 public struct EVALSHARO: RESPCommand {
     public var sha1: String
-    public var key: [RESPKey] = []
-    public var arg: [String] = []
+    public var key: [RESPKey]
+    public var arg: [String]
 
     @inlinable public init(sha1: String, key: [RESPKey] = [], arg: [String] = []) {
         self.sha1 = sha1
@@ -347,8 +347,8 @@ public struct EVALSHARO: RESPCommand {
 /// Executes a read-only server-side Lua script.
 public struct EVALRO: RESPCommand {
     public var script: String
-    public var key: [RESPKey] = []
-    public var arg: [String] = []
+    public var key: [RESPKey]
+    public var arg: [String]
 
     @inlinable public init(script: String, key: [RESPKey] = [], arg: [String] = []) {
         self.script = script
@@ -366,8 +366,8 @@ public struct EVALRO: RESPCommand {
 /// Invokes a function.
 public struct FCALL: RESPCommand {
     public var function: String
-    public var key: [RESPKey] = []
-    public var arg: [String] = []
+    public var key: [RESPKey]
+    public var arg: [String]
 
     @inlinable public init(function: String, key: [RESPKey] = [], arg: [String] = []) {
         self.function = function
@@ -385,8 +385,8 @@ public struct FCALL: RESPCommand {
 /// Invokes a read-only function.
 public struct FCALLRO: RESPCommand {
     public var function: String
-    public var key: [RESPKey] = []
-    public var arg: [String] = []
+    public var key: [RESPKey]
+    public var arg: [String]
 
     @inlinable public init(function: String, key: [RESPKey] = [], arg: [String] = []) {
         self.function = function

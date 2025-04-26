@@ -66,8 +66,8 @@ public struct GEOADD: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var condition: Condition? = nil
-    public var change: Bool = false
+    public var condition: Condition?
+    public var change: Bool
     public var data: [Data]
 
     @inlinable public init(key: RESPKey, condition: Condition? = nil, change: Bool = false, data: [Data]) {
@@ -110,7 +110,7 @@ public struct GEODIST: RESPCommand {
     public var key: RESPKey
     public var member1: String
     public var member2: String
-    public var unit: Unit? = nil
+    public var unit: Unit?
 
     @inlinable public init(key: RESPKey, member1: String, member2: String, unit: Unit? = nil) {
         self.key = key
@@ -131,7 +131,7 @@ public struct GEOHASH: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var member: [String] = []
+    public var member: [String]
 
     @inlinable public init(key: RESPKey, member: [String] = []) {
         self.key = key
@@ -150,7 +150,7 @@ public struct GEOPOS: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var member: [String] = []
+    public var member: [String]
 
     @inlinable public init(key: RESPKey, member: [String] = []) {
         self.key = key
@@ -247,12 +247,12 @@ public struct GEORADIUS: RESPCommand {
     public var latitude: Double
     public var radius: Double
     public var unit: Unit
-    public var withcoord: Bool = false
-    public var withdist: Bool = false
-    public var withhash: Bool = false
-    public var countBlock: CountBlock? = nil
-    public var order: Order? = nil
-    public var store: Store? = nil
+    public var withcoord: Bool
+    public var withdist: Bool
+    public var withhash: Bool
+    public var countBlock: CountBlock?
+    public var order: Order?
+    public var store: Store?
 
     @inlinable public init(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
         self.key = key
@@ -357,12 +357,12 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
     public var member: String
     public var radius: Double
     public var unit: Unit
-    public var withcoord: Bool = false
-    public var withdist: Bool = false
-    public var withhash: Bool = false
-    public var countBlock: CountBlock? = nil
-    public var order: Order? = nil
-    public var store: Store? = nil
+    public var withcoord: Bool
+    public var withdist: Bool
+    public var withhash: Bool
+    public var countBlock: CountBlock?
+    public var order: Order?
+    public var store: Store?
 
     @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
         self.key = key
@@ -446,11 +446,11 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
     public var member: String
     public var radius: Double
     public var unit: Unit
-    public var withcoord: Bool = false
-    public var withdist: Bool = false
-    public var withhash: Bool = false
-    public var countBlock: CountBlock? = nil
-    public var order: Order? = nil
+    public var withcoord: Bool
+    public var withdist: Bool
+    public var withhash: Bool
+    public var countBlock: CountBlock?
+    public var order: Order?
 
     @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
         self.key = key
@@ -534,11 +534,11 @@ public struct GEORADIUSRO: RESPCommand {
     public var latitude: Double
     public var radius: Double
     public var unit: Unit
-    public var withcoord: Bool = false
-    public var withdist: Bool = false
-    public var withhash: Bool = false
-    public var countBlock: CountBlock? = nil
-    public var order: Order? = nil
+    public var withcoord: Bool
+    public var withdist: Bool
+    public var withhash: Bool
+    public var countBlock: CountBlock?
+    public var order: Order?
 
     @inlinable public init(key: RESPKey, longitude: Double, latitude: Double, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
         self.key = key
@@ -745,11 +745,11 @@ public struct GEOSEARCH: RESPCommand {
     public var key: RESPKey
     public var from: From
     public var by: By
-    public var order: Order? = nil
-    public var countBlock: CountBlock? = nil
-    public var withcoord: Bool = false
-    public var withdist: Bool = false
-    public var withhash: Bool = false
+    public var order: Order?
+    public var countBlock: CountBlock?
+    public var withcoord: Bool
+    public var withdist: Bool
+    public var withhash: Bool
 
     @inlinable public init(key: RESPKey, from: From, by: By, order: Order? = nil, countBlock: CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) {
         self.key = key
@@ -957,9 +957,9 @@ public struct GEOSEARCHSTORE: RESPCommand {
     public var source: RESPKey
     public var from: From
     public var by: By
-    public var order: Order? = nil
-    public var countBlock: CountBlock? = nil
-    public var storedist: Bool = false
+    public var order: Order?
+    public var countBlock: CountBlock?
+    public var storedist: Bool
 
     @inlinable public init(destination: RESPKey, source: RESPKey, from: From, by: By, order: Order? = nil, countBlock: CountBlock? = nil, storedist: Bool = false) {
         self.destination = destination

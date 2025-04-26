@@ -234,8 +234,8 @@ public enum CLIENT {
                 }
             }
         }
-        public var clientType: ClientType? = nil
-        public var clientId: [Int] = []
+        public var clientType: ClientType?
+        public var clientId: [Int]
 
         @inlinable public init(clientType: ClientType? = nil, clientId: [Int] = []) {
             self.clientType = clientType
@@ -321,7 +321,7 @@ public enum CLIENT {
             }
         }
         public var timeout: Int
-        public var mode: Mode? = nil
+        public var mode: Mode?
 
         @inlinable public init(timeout: Int, mode: Mode? = nil) {
             self.timeout = timeout
@@ -427,12 +427,12 @@ public enum CLIENT {
             }
         }
         public var status: Status
-        public var clientId: Int? = nil
-        public var prefix: [String] = []
-        public var bcast: Bool = false
-        public var optin: Bool = false
-        public var optout: Bool = false
-        public var noloop: Bool = false
+        public var clientId: Int?
+        public var prefix: [String]
+        public var bcast: Bool
+        public var optin: Bool
+        public var optout: Bool
+        public var noloop: Bool
 
         @inlinable public init(status: Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) {
             self.status = status
@@ -481,7 +481,7 @@ public enum CLIENT {
         public typealias Response = Int
 
         public var clientId: Int
-        public var unblockType: UnblockType? = nil
+        public var unblockType: UnblockType?
 
         @inlinable public init(clientId: Int, unblockType: UnblockType? = nil) {
             self.clientId = clientId
@@ -507,7 +507,7 @@ public enum CLIENT {
 
 /// Authenticates the connection.
 public struct AUTH: RESPCommand {
-    public var username: String? = nil
+    public var username: String?
     public var password: String
 
     @inlinable public init(username: String? = nil, password: String) {
@@ -582,7 +582,7 @@ public struct HELLO: RESPCommand {
     }
     public typealias Response = RESPToken.Map
 
-    public var arguments: Arguments? = nil
+    public var arguments: Arguments?
 
     @inlinable public init(arguments: Arguments? = nil) {
         self.arguments = arguments
@@ -595,7 +595,7 @@ public struct HELLO: RESPCommand {
 
 /// Returns the server's liveliness response.
 public struct PING: RESPCommand {
-    public var message: String? = nil
+    public var message: String?
 
     @inlinable public init(message: String? = nil) {
         self.message = message
