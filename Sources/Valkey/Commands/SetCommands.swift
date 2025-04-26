@@ -116,7 +116,7 @@ public struct SINTERCARD: RESPCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
-    public var limit: Int? = nil
+    public var limit: Int?
 
     @inlinable public init(key: [RESPKey], limit: Int? = nil) {
         self.key = key
@@ -228,7 +228,7 @@ public struct SMOVE: RESPCommand {
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
 public struct SPOP: RESPCommand {
     public var key: RESPKey
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
@@ -245,7 +245,7 @@ public struct SPOP: RESPCommand {
 /// Get one or multiple random members from a set
 public struct SRANDMEMBER: RESPCommand {
     public var key: RESPKey
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
@@ -284,8 +284,8 @@ public struct SSCAN: RESPCommand {
 
     public var key: RESPKey
     public var cursor: Int
-    public var pattern: String? = nil
-    public var count: Int? = nil
+    public var pattern: String?
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
         self.key = key

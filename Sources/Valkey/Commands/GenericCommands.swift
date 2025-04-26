@@ -112,8 +112,8 @@ public struct COPY: RESPCommand {
 
     public var source: RESPKey
     public var destination: RESPKey
-    public var destinationDb: Int? = nil
-    public var replace: Bool = false
+    public var destinationDb: Int?
+    public var replace: Bool
 
     @inlinable public init(source: RESPKey, destination: RESPKey, destinationDb: Int? = nil, replace: Bool = false) {
         self.source = source
@@ -205,7 +205,7 @@ public struct EXPIRE: RESPCommand {
 
     public var key: RESPKey
     public var seconds: Int
-    public var condition: Condition? = nil
+    public var condition: Condition?
 
     @inlinable public init(key: RESPKey, seconds: Int, condition: Condition? = nil) {
         self.key = key
@@ -245,7 +245,7 @@ public struct EXPIREAT: RESPCommand {
 
     public var key: RESPKey
     public var unixTimeSeconds: Date
-    public var condition: Condition? = nil
+    public var condition: Condition?
 
     @inlinable public init(key: RESPKey, unixTimeSeconds: Date, condition: Condition? = nil) {
         self.key = key
@@ -362,10 +362,10 @@ public struct MIGRATE: RESPCommand {
     public var keySelector: KeySelector
     public var destinationDb: Int
     public var timeout: Int
-    public var copy: Bool = false
-    public var replace: Bool = false
-    public var authentication: Authentication? = nil
-    public var keys: [RESPKey] = []
+    public var copy: Bool
+    public var replace: Bool
+    public var authentication: Authentication?
+    public var keys: [RESPKey]
 
     @inlinable public init(host: String, port: Int, keySelector: KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: Authentication? = nil, keys: [RESPKey] = []) {
         self.host = host
@@ -447,7 +447,7 @@ public struct PEXPIRE: RESPCommand {
 
     public var key: RESPKey
     public var milliseconds: Int
-    public var condition: Condition? = nil
+    public var condition: Condition?
 
     @inlinable public init(key: RESPKey, milliseconds: Int, condition: Condition? = nil) {
         self.key = key
@@ -487,7 +487,7 @@ public struct PEXPIREAT: RESPCommand {
 
     public var key: RESPKey
     public var unixTimeMilliseconds: Date
-    public var condition: Condition? = nil
+    public var condition: Condition?
 
     @inlinable public init(key: RESPKey, unixTimeMilliseconds: Date, condition: Condition? = nil) {
         self.key = key
@@ -589,10 +589,10 @@ public struct RESTORE: RESPCommand {
     public var key: RESPKey
     public var ttl: Int
     public var serializedValue: String
-    public var replace: Bool = false
-    public var absttl: Bool = false
-    public var seconds: Int? = nil
-    public var frequency: Int? = nil
+    public var replace: Bool
+    public var absttl: Bool
+    public var seconds: Int?
+    public var frequency: Int?
 
     @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
         self.key = key
@@ -616,9 +616,9 @@ public struct SCAN: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var cursor: Int
-    public var pattern: String? = nil
-    public var count: Int? = nil
-    public var type: String? = nil
+    public var pattern: String?
+    public var count: Int?
+    public var type: String?
 
     @inlinable public init(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) {
         self.cursor = cursor
@@ -671,12 +671,12 @@ public struct SORT: RESPCommand {
         }
     }
     public var key: RESPKey
-    public var byPattern: String? = nil
-    public var limit: Limit? = nil
-    public var getPattern: [String] = []
-    public var order: Order? = nil
-    public var sorting: Bool = false
-    public var destination: RESPKey? = nil
+    public var byPattern: String?
+    public var limit: Limit?
+    public var getPattern: [String]
+    public var order: Order?
+    public var sorting: Bool
+    public var destination: RESPKey?
 
     @inlinable public init(key: RESPKey, byPattern: String? = nil, limit: Limit? = nil, getPattern: [String] = [], order: Order? = nil, sorting: Bool = false, destination: RESPKey? = nil) {
         self.key = key
@@ -736,11 +736,11 @@ public struct SORTRO: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var byPattern: String? = nil
-    public var limit: Limit? = nil
-    public var getPattern: [String] = []
-    public var order: Order? = nil
-    public var sorting: Bool = false
+    public var byPattern: String?
+    public var limit: Limit?
+    public var getPattern: [String]
+    public var order: Order?
+    public var sorting: Bool
 
     @inlinable public init(key: RESPKey, byPattern: String? = nil, limit: Limit? = nil, getPattern: [String] = [], order: Order? = nil, sorting: Bool = false) {
         self.key = key

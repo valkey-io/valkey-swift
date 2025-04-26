@@ -44,7 +44,7 @@ public struct BZMPOP: RESPCommand {
     public var timeout: Double
     public var key: [RESPKey]
     public var `where`: Where
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(timeout: Double, key: [RESPKey], `where`: Where, count: Int? = nil) {
         self.timeout = timeout
@@ -152,10 +152,10 @@ public struct ZADD: RESPCommand {
         }
     }
     public var key: RESPKey
-    public var condition: Condition? = nil
-    public var comparison: Comparison? = nil
-    public var change: Bool = false
-    public var increment: Bool = false
+    public var condition: Condition?
+    public var comparison: Comparison?
+    public var change: Bool
+    public var increment: Bool
     public var data: [Data]
 
     @inlinable public init(key: RESPKey, condition: Condition? = nil, comparison: Comparison? = nil, change: Bool = false, increment: Bool = false, data: [Data]) {
@@ -217,7 +217,7 @@ public struct ZDIFF: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
-    public var withscores: Bool = false
+    public var withscores: Bool
 
     @inlinable public init(key: [RESPKey], withscores: Bool = false) {
         self.key = key
@@ -293,9 +293,9 @@ public struct ZINTER: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
-    public var weight: [Int] = []
-    public var aggregate: Aggregate? = nil
-    public var withscores: Bool = false
+    public var weight: [Int]
+    public var aggregate: Aggregate?
+    public var withscores: Bool
 
     @inlinable public init(key: [RESPKey], weight: [Int] = [], aggregate: Aggregate? = nil, withscores: Bool = false) {
         self.key = key
@@ -316,7 +316,7 @@ public struct ZINTERCARD: RESPCommand {
     public typealias Response = Int
 
     public var key: [RESPKey]
-    public var limit: Int? = nil
+    public var limit: Int?
 
     @inlinable public init(key: [RESPKey], limit: Int? = nil) {
         self.key = key
@@ -353,8 +353,8 @@ public struct ZINTERSTORE: RESPCommand {
 
     public var destination: RESPKey
     public var key: [RESPKey]
-    public var weight: [Int] = []
-    public var aggregate: Aggregate? = nil
+    public var weight: [Int]
+    public var aggregate: Aggregate?
 
     @inlinable public init(destination: RESPKey, key: [RESPKey], weight: [Int] = [], aggregate: Aggregate? = nil) {
         self.destination = destination
@@ -412,7 +412,7 @@ public struct ZMPOP: RESPCommand {
 
     public var key: [RESPKey]
     public var `where`: Where
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: [RESPKey], `where`: Where, count: Int? = nil) {
         self.key = key
@@ -451,7 +451,7 @@ public struct ZPOPMAX: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
@@ -470,7 +470,7 @@ public struct ZPOPMIN: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, count: Int? = nil) {
         self.key = key
@@ -508,7 +508,7 @@ public struct ZRANDMEMBER: RESPCommand {
         }
     }
     public var key: RESPKey
-    public var options: Options? = nil
+    public var options: Options?
 
     @inlinable public init(key: RESPKey, options: Options? = nil) {
         self.key = key
@@ -565,10 +565,10 @@ public struct ZRANGE: RESPCommand {
     public var key: RESPKey
     public var start: String
     public var stop: String
-    public var sortby: Sortby? = nil
-    public var rev: Bool = false
-    public var limit: Limit? = nil
-    public var withscores: Bool = false
+    public var sortby: Sortby?
+    public var rev: Bool
+    public var limit: Limit?
+    public var withscores: Bool
 
     @inlinable public init(key: RESPKey, start: String, stop: String, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil, withscores: Bool = false) {
         self.key = key
@@ -616,7 +616,7 @@ public struct ZRANGEBYLEX: RESPCommand {
     public var key: RESPKey
     public var min: String
     public var max: String
-    public var limit: Limit? = nil
+    public var limit: Limit?
 
     @inlinable public init(key: RESPKey, min: String, max: String, limit: Limit? = nil) {
         self.key = key
@@ -661,8 +661,8 @@ public struct ZRANGEBYSCORE: RESPCommand {
     public var key: RESPKey
     public var min: Double
     public var max: Double
-    public var withscores: Bool = false
-    public var limit: Limit? = nil
+    public var withscores: Bool
+    public var limit: Limit?
 
     @inlinable public init(key: RESPKey, min: Double, max: Double, withscores: Bool = false, limit: Limit? = nil) {
         self.key = key
@@ -723,9 +723,9 @@ public struct ZRANGESTORE: RESPCommand {
     public var src: RESPKey
     public var min: String
     public var max: String
-    public var sortby: Sortby? = nil
-    public var rev: Bool = false
-    public var limit: Limit? = nil
+    public var sortby: Sortby?
+    public var rev: Bool
+    public var limit: Limit?
 
     @inlinable public init(dst: RESPKey, src: RESPKey, min: String, max: String, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil) {
         self.dst = dst
@@ -748,7 +748,7 @@ public struct ZRANGESTORE: RESPCommand {
 public struct ZRANK: RESPCommand {
     public var key: RESPKey
     public var member: String
-    public var withscore: Bool = false
+    public var withscore: Bool
 
     @inlinable public init(key: RESPKey, member: String, withscore: Bool = false) {
         self.key = key
@@ -853,7 +853,7 @@ public struct ZREVRANGE: RESPCommand {
     public var key: RESPKey
     public var start: Int
     public var stop: Int
-    public var withscores: Bool = false
+    public var withscores: Bool
 
     @inlinable public init(key: RESPKey, start: Int, stop: Int, withscores: Bool = false) {
         self.key = key
@@ -898,7 +898,7 @@ public struct ZREVRANGEBYLEX: RESPCommand {
     public var key: RESPKey
     public var max: String
     public var min: String
-    public var limit: Limit? = nil
+    public var limit: Limit?
 
     @inlinable public init(key: RESPKey, max: String, min: String, limit: Limit? = nil) {
         self.key = key
@@ -943,8 +943,8 @@ public struct ZREVRANGEBYSCORE: RESPCommand {
     public var key: RESPKey
     public var max: Double
     public var min: Double
-    public var withscores: Bool = false
-    public var limit: Limit? = nil
+    public var withscores: Bool
+    public var limit: Limit?
 
     @inlinable public init(key: RESPKey, max: Double, min: Double, withscores: Bool = false, limit: Limit? = nil) {
         self.key = key
@@ -965,7 +965,7 @@ public struct ZREVRANGEBYSCORE: RESPCommand {
 public struct ZREVRANK: RESPCommand {
     public var key: RESPKey
     public var member: String
-    public var withscore: Bool = false
+    public var withscore: Bool
 
     @inlinable public init(key: RESPKey, member: String, withscore: Bool = false) {
         self.key = key
@@ -986,8 +986,8 @@ public struct ZSCAN: RESPCommand {
 
     public var key: RESPKey
     public var cursor: Int
-    public var pattern: String? = nil
-    public var count: Int? = nil
+    public var pattern: String?
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
         self.key = key
@@ -1044,9 +1044,9 @@ public struct ZUNION: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: [RESPKey]
-    public var weight: [Int] = []
-    public var aggregate: Aggregate? = nil
-    public var withscores: Bool = false
+    public var weight: [Int]
+    public var aggregate: Aggregate?
+    public var withscores: Bool
 
     @inlinable public init(key: [RESPKey], weight: [Int] = [], aggregate: Aggregate? = nil, withscores: Bool = false) {
         self.key = key
@@ -1085,8 +1085,8 @@ public struct ZUNIONSTORE: RESPCommand {
 
     public var destination: RESPKey
     public var key: [RESPKey]
-    public var weight: [Int] = []
-    public var aggregate: Aggregate? = nil
+    public var weight: [Int]
+    public var aggregate: Aggregate?
 
     @inlinable public init(destination: RESPKey, key: [RESPKey], weight: [Int] = [], aggregate: Aggregate? = nil) {
         self.destination = destination

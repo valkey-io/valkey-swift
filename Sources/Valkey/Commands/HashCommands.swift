@@ -252,7 +252,7 @@ public struct HRANDFIELD: RESPCommand {
         }
     }
     public var key: RESPKey
-    public var options: Options? = nil
+    public var options: Options?
 
     @inlinable public init(key: RESPKey, options: Options? = nil) {
         self.key = key
@@ -272,8 +272,8 @@ public struct HSCAN: RESPCommand {
 
     public var key: RESPKey
     public var cursor: Int
-    public var pattern: String? = nil
-    public var count: Int? = nil
+    public var pattern: String?
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
         self.key = key

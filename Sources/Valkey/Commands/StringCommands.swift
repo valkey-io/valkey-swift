@@ -145,7 +145,7 @@ public struct GETEX: RESPCommand {
     public typealias Response = RESPToken?
 
     public var key: RESPKey
-    public var expiration: Expiration? = nil
+    public var expiration: Expiration?
 
     @inlinable public init(key: RESPKey, expiration: Expiration? = nil) {
         self.key = key
@@ -255,10 +255,10 @@ public struct INCRBYFLOAT: RESPCommand {
 public struct LCS: RESPCommand {
     public var key1: RESPKey
     public var key2: RESPKey
-    public var len: Bool = false
-    public var idx: Bool = false
-    public var minMatchLen: Int? = nil
-    public var withmatchlen: Bool = false
+    public var len: Bool
+    public var idx: Bool
+    public var minMatchLen: Int?
+    public var withmatchlen: Bool
 
     @inlinable public init(key1: RESPKey, key2: RESPKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) {
         self.key1 = key1
@@ -433,9 +433,9 @@ public struct SET: RESPCommand {
 
     public var key: RESPKey
     public var value: String
-    public var condition: Condition? = nil
-    public var get: Bool = false
-    public var expiration: Expiration? = nil
+    public var condition: Condition?
+    public var get: Bool
+    public var expiration: Expiration?
 
     @inlinable public init(key: RESPKey, value: String, condition: Condition? = nil, get: Bool = false, expiration: Expiration? = nil) {
         self.key = key

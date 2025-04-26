@@ -28,7 +28,7 @@ public enum PUBSUB {
     public struct CHANNELS: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var pattern: String? = nil
+        public var pattern: String?
 
         @inlinable public init(pattern: String? = nil) {
             self.pattern = pattern
@@ -67,7 +67,7 @@ public enum PUBSUB {
     public struct NUMSUB: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var channel: [String] = []
+        public var channel: [String]
 
         @inlinable public init(channel: [String] = []) {
             self.channel = channel
@@ -82,7 +82,7 @@ public enum PUBSUB {
     public struct SHARDCHANNELS: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var pattern: String? = nil
+        public var pattern: String?
 
         @inlinable public init(pattern: String? = nil) {
             self.pattern = pattern
@@ -97,7 +97,7 @@ public enum PUBSUB {
     public struct SHARDNUMSUB: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var shardchannel: [String] = []
+        public var shardchannel: [String]
 
         @inlinable public init(shardchannel: [String] = []) {
             self.shardchannel = shardchannel
@@ -142,7 +142,7 @@ public struct PUBLISH: RESPCommand {
 
 /// Stops listening to messages published to channels that match one or more patterns.
 public struct PUNSUBSCRIBE: RESPCommand {
-    public var pattern: [String] = []
+    public var pattern: [String]
 
     @inlinable public init(pattern: [String] = []) {
         self.pattern = pattern
@@ -198,7 +198,7 @@ public struct SUBSCRIBE: RESPCommand {
 
 /// Stops listening to messages posted to shard channels.
 public struct SUNSUBSCRIBE: RESPCommand {
-    public var shardchannel: [String] = []
+    public var shardchannel: [String]
 
     @inlinable public init(shardchannel: [String] = []) {
         self.shardchannel = shardchannel
@@ -211,7 +211,7 @@ public struct SUNSUBSCRIBE: RESPCommand {
 
 /// Stops listening to messages posted to channels.
 public struct UNSUBSCRIBE: RESPCommand {
-    public var channel: [String] = []
+    public var channel: [String]
 
     @inlinable public init(channel: [String] = []) {
         self.channel = channel

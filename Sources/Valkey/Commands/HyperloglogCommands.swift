@@ -27,7 +27,7 @@ public struct PFADD: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var element: [String] = []
+    public var element: [String]
 
     @inlinable public init(key: RESPKey, element: [String] = []) {
         self.key = key
@@ -61,7 +61,7 @@ public struct PFCOUNT: RESPCommand {
 /// Merges one or more HyperLogLog values into a single key.
 public struct PFMERGE: RESPCommand {
     public var destkey: RESPKey
-    public var sourcekey: [RESPKey] = []
+    public var sourcekey: [RESPKey]
 
     @inlinable public init(destkey: RESPKey, sourcekey: [RESPKey] = []) {
         self.destkey = destkey

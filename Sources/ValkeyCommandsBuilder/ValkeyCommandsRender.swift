@@ -205,7 +205,7 @@ extension String {
         }
         if arguments.count > 0 {
             for arg in arguments {
-                self.append("\(tab)    public var \(arg.name.swiftVariable): \(parameterType(arg, names: [], scope: nil, isArray: true))\n")
+                self.append("\(tab)    public var \(arg.name.swiftVariable): \(variableType(arg, names: [], scope: nil, isArray: true))\n")
             }
             self.append("\n")
         }

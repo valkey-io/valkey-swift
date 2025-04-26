@@ -49,8 +49,8 @@ public enum XGROUP {
         public var key: RESPKey
         public var group: String
         public var idSelector: IdSelector
-        public var mkstream: Bool = false
-        public var entriesRead: Int? = nil
+        public var mkstream: Bool
+        public var entriesRead: Int?
 
         @inlinable public init(key: RESPKey, group: String, idSelector: IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) {
             self.key = key
@@ -165,7 +165,7 @@ public enum XGROUP {
         public var key: RESPKey
         public var group: String
         public var idSelector: IdSelector
-        public var entriesread: Int? = nil
+        public var entriesread: Int?
 
         @inlinable public init(key: RESPKey, group: String, idSelector: IdSelector, entriesread: Int? = nil) {
             self.key = key
@@ -259,7 +259,7 @@ public enum XINFO {
         public typealias Response = RESPToken.Map
 
         public var key: RESPKey
-        public var fullBlock: FullBlock? = nil
+        public var fullBlock: FullBlock?
 
         @inlinable public init(key: RESPKey, fullBlock: FullBlock? = nil) {
             self.key = key
@@ -399,8 +399,8 @@ public struct XADD: RESPCommand {
     public typealias Response = RESPToken?
 
     public var key: RESPKey
-    public var nomkstream: Bool = false
-    public var trim: Trim? = nil
+    public var nomkstream: Bool
+    public var trim: Trim?
     public var idSelector: IdSelector
     public var data: [Data]
 
@@ -428,8 +428,8 @@ public struct XAUTOCLAIM: RESPCommand {
     public var consumer: String
     public var minIdleTime: String
     public var start: String
-    public var count: Int? = nil
-    public var justid: Bool = false
+    public var count: Int?
+    public var justid: Bool
 
     @inlinable public init(key: RESPKey, group: String, consumer: String, minIdleTime: String, start: String, count: Int? = nil, justid: Bool = false) {
         self.key = key
@@ -457,12 +457,12 @@ public struct XCLAIM: RESPCommand {
     public var consumer: String
     public var minIdleTime: String
     public var id: [String]
-    public var ms: Int? = nil
-    public var unixTimeMilliseconds: Date? = nil
-    public var count: Int? = nil
-    public var force: Bool = false
-    public var justid: Bool = false
-    public var lastid: String? = nil
+    public var ms: Int?
+    public var unixTimeMilliseconds: Date?
+    public var count: Int?
+    public var force: Bool
+    public var justid: Bool
+    public var lastid: String?
 
     @inlinable public init(key: RESPKey, group: String, consumer: String, minIdleTime: String, id: [String], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) {
         self.key = key
@@ -557,7 +557,7 @@ public struct XPENDING: RESPCommand {
 
     public var key: RESPKey
     public var group: String
-    public var filters: Filters? = nil
+    public var filters: Filters?
 
     @inlinable public init(key: RESPKey, group: String, filters: Filters? = nil) {
         self.key = key
@@ -579,7 +579,7 @@ public struct XRANGE: RESPCommand {
     public var key: RESPKey
     public var start: String
     public var end: String
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, start: String, end: String, count: Int? = nil) {
         self.key = key
@@ -620,8 +620,8 @@ public struct XREAD: RESPCommand {
     }
     public typealias Response = RESPToken.Map?
 
-    public var count: Int? = nil
-    public var milliseconds: Int? = nil
+    public var count: Int?
+    public var milliseconds: Int?
     public var streams: Streams
 
     @inlinable public init(count: Int? = nil, milliseconds: Int? = nil, streams: Streams) {
@@ -682,9 +682,9 @@ public struct XREADGROUP: RESPCommand {
     public typealias Response = RESPToken.Map?
 
     public var groupBlock: GroupBlock
-    public var count: Int? = nil
-    public var milliseconds: Int? = nil
-    public var noack: Bool = false
+    public var count: Int?
+    public var milliseconds: Int?
+    public var noack: Bool
     public var streams: Streams
 
     @inlinable public init(groupBlock: GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: Streams) {
@@ -707,7 +707,7 @@ public struct XREVRANGE: RESPCommand {
     public var key: RESPKey
     public var end: String
     public var start: String
-    public var count: Int? = nil
+    public var count: Int?
 
     @inlinable public init(key: RESPKey, end: String, start: String, count: Int? = nil) {
         self.key = key
@@ -727,8 +727,8 @@ public struct XREVRANGE: RESPCommand {
 public struct XSETID: RESPCommand {
     public var key: RESPKey
     public var lastId: String
-    public var entriesAdded: Int? = nil
-    public var maxDeletedId: String? = nil
+    public var entriesAdded: Int?
+    public var maxDeletedId: String?
 
     @inlinable public init(key: RESPKey, lastId: String, entriesAdded: Int? = nil, maxDeletedId: String? = nil) {
         self.key = key

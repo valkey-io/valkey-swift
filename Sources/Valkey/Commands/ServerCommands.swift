@@ -28,7 +28,7 @@ public enum ACL {
     public struct CAT: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var category: String? = nil
+        public var category: String?
 
         @inlinable public init(category: String? = nil) {
             self.category = category
@@ -60,7 +60,7 @@ public enum ACL {
 
         public var username: String
         public var command: String
-        public var arg: [String] = []
+        public var arg: [String]
 
         @inlinable public init(username: String, command: String, arg: [String] = []) {
             self.username = username
@@ -75,7 +75,7 @@ public enum ACL {
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     public struct GENPASS: RESPCommand {
-        public var bits: Int? = nil
+        public var bits: Int?
 
         @inlinable public init(bits: Int? = nil) {
             self.bits = bits
@@ -159,7 +159,7 @@ public enum ACL {
         }
         public typealias Response = RESPToken.Array?
 
-        public var operation: Operation? = nil
+        public var operation: Operation?
 
         @inlinable public init(operation: Operation? = nil) {
             self.operation = operation
@@ -183,7 +183,7 @@ public enum ACL {
     /// Creates and modifies an ACL user and its rules.
     public struct SETUSER: RESPCommand {
         public var username: String
-        public var rule: [String] = []
+        public var rule: [String]
 
         @inlinable public init(username: String, rule: [String] = []) {
             self.username = username
@@ -236,7 +236,7 @@ extension COMMAND {
     public struct DOCS: RESPCommand {
         public typealias Response = RESPToken.Map
 
-        public var commandName: [String] = []
+        public var commandName: [String]
 
         @inlinable public init(commandName: [String] = []) {
             self.commandName = commandName
@@ -252,7 +252,7 @@ extension COMMAND {
         public typealias Response = RESPToken.Array
 
         public var command: String
-        public var arg: [String] = []
+        public var arg: [String]
 
         @inlinable public init(command: String, arg: [String] = []) {
             self.command = command
@@ -269,7 +269,7 @@ extension COMMAND {
         public typealias Response = RESPToken.Array
 
         public var command: String
-        public var arg: [String] = []
+        public var arg: [String]
 
         @inlinable public init(command: String, arg: [String] = []) {
             self.command = command
@@ -297,7 +297,7 @@ extension COMMAND {
     public struct INFO: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var commandName: [String] = []
+        public var commandName: [String]
 
         @inlinable public init(commandName: [String] = []) {
             self.commandName = commandName
@@ -335,7 +335,7 @@ extension COMMAND {
         }
         public typealias Response = RESPToken.Array
 
-        public var filterby: Filterby? = nil
+        public var filterby: Filterby?
 
         @inlinable public init(filterby: Filterby? = nil) {
             self.filterby = filterby
@@ -476,7 +476,7 @@ public enum LATENCY {
     public struct HISTOGRAM: RESPCommand {
         public typealias Response = RESPToken.Map
 
-        public var command: [String] = []
+        public var command: [String]
 
         @inlinable public init(command: [String] = []) {
             self.command = command
@@ -518,7 +518,7 @@ public enum LATENCY {
     public struct RESET: RESPCommand {
         public typealias Response = Int
 
-        public var event: [String] = []
+        public var event: [String]
 
         @inlinable public init(event: [String] = []) {
             self.event = event
@@ -594,7 +594,7 @@ public enum MEMORY {
         public typealias Response = Int?
 
         public var key: RESPKey
-        public var count: Int? = nil
+        public var count: Int?
 
         @inlinable public init(key: RESPKey, count: Int? = nil) {
             self.key = key
@@ -639,7 +639,7 @@ public enum MODULE {
     /// Loads a module.
     public struct LOAD: RESPCommand {
         public var path: String
-        public var arg: [String] = []
+        public var arg: [String]
 
         @inlinable public init(path: String, arg: [String] = []) {
             self.path = path
@@ -675,8 +675,8 @@ public enum MODULE {
             }
         }
         public var path: String
-        public var configs: [Configs] = []
-        public var args: [String] = []
+        public var configs: [Configs]
+        public var args: [String]
 
         @inlinable public init(path: String, configs: [Configs] = [], args: [String] = []) {
             self.path = path
@@ -710,7 +710,7 @@ public enum SLOWLOG {
     public struct GET: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var count: Int? = nil
+        public var count: Int?
 
         @inlinable public init(count: Int? = nil) {
             self.count = count
@@ -771,7 +771,7 @@ public struct BGREWRITEAOF: RESPCommand {
 public struct BGSAVE: RESPCommand {
     public typealias Response = String
 
-    public var schedule: Bool = false
+    public var schedule: Bool
 
     @inlinable public init(schedule: Bool = false) {
         self.schedule = schedule
@@ -832,9 +832,9 @@ public struct FAILOVER: RESPCommand {
             "FORCE".encode(into: &commandEncoder)
         }
     }
-    public var target: Target? = nil
-    public var abort: Bool = false
-    public var milliseconds: Int? = nil
+    public var target: Target?
+    public var abort: Bool
+    public var milliseconds: Int?
 
     @inlinable public init(target: Target? = nil, abort: Bool = false, milliseconds: Int? = nil) {
         self.target = target
@@ -864,7 +864,7 @@ public struct FLUSHALL: RESPCommand {
             }
         }
     }
-    public var flushType: FlushType? = nil
+    public var flushType: FlushType?
 
     @inlinable public init(flushType: FlushType? = nil) {
         self.flushType = flushType
@@ -892,7 +892,7 @@ public struct FLUSHDB: RESPCommand {
             }
         }
     }
-    public var flushType: FlushType? = nil
+    public var flushType: FlushType?
 
     @inlinable public init(flushType: FlushType? = nil) {
         self.flushType = flushType
@@ -905,7 +905,7 @@ public struct FLUSHDB: RESPCommand {
 
 /// Returns information and statistics about the server.
 public struct INFO: RESPCommand {
-    public var section: [String] = []
+    public var section: [String]
 
     @inlinable public init(section: [String] = []) {
         self.section = section
@@ -932,7 +932,7 @@ public struct LASTSAVE: RESPCommand {
 public struct LOLWUT: RESPCommand {
     public typealias Response = String
 
-    public var version: Int? = nil
+    public var version: Int?
 
     @inlinable public init(version: Int? = nil) {
         self.version = version
@@ -1058,10 +1058,10 @@ public struct RESTOREASKING: RESPCommand {
     public var key: RESPKey
     public var ttl: Int
     public var serializedValue: String
-    public var replace: Bool = false
-    public var absttl: Bool = false
-    public var seconds: Int? = nil
-    public var frequency: Int? = nil
+    public var replace: Bool
+    public var absttl: Bool
+    public var seconds: Int?
+    public var frequency: Int?
 
     @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
         self.key = key
@@ -1119,10 +1119,10 @@ public struct SHUTDOWN: RESPCommand {
             }
         }
     }
-    public var saveSelector: SaveSelector? = nil
-    public var now: Bool = false
-    public var force: Bool = false
-    public var abort: Bool = false
+    public var saveSelector: SaveSelector?
+    public var now: Bool
+    public var force: Bool
+    public var abort: Bool
 
     @inlinable public init(saveSelector: SaveSelector? = nil, now: Bool = false, force: Bool = false, abort: Bool = false) {
         self.saveSelector = saveSelector

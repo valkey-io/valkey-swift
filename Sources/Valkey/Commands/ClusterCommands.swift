@@ -175,7 +175,7 @@ public enum CLUSTER {
                 }
             }
         }
-        public var options: Options? = nil
+        public var options: Options?
 
         @inlinable public init(options: Options? = nil) {
             self.options = options
@@ -279,7 +279,7 @@ public enum CLUSTER {
     public struct MEET: RESPCommand {
         public var ip: String
         public var port: Int
-        public var clusterBusPort: Int? = nil
+        public var clusterBusPort: Int?
 
         @inlinable public init(ip: String, port: Int, clusterBusPort: Int? = nil) {
             self.ip = ip
@@ -367,7 +367,7 @@ public enum CLUSTER {
                 }
             }
         }
-        public var resetType: ResetType? = nil
+        public var resetType: ResetType?
 
         @inlinable public init(resetType: ResetType? = nil) {
             self.resetType = resetType
