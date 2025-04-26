@@ -23,13 +23,13 @@ import Foundation
 #endif
 
 /// Adds one or more members to a set. Creates the key if it doesn't exist.
-public struct SADD: RESPCommand {
+public struct SADD<Member: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var member: [String]
+    public var member: [Member]
 
-    @inlinable public init(key: RESPKey, member: [String]) {
+    @inlinable public init(key: RESPKey, member: [Member]) {
         self.key = key
         self.member = member
     }
@@ -150,13 +150,13 @@ public struct SINTERSTORE: RESPCommand {
 }
 
 /// Determines whether a member belongs to a set.
-public struct SISMEMBER: RESPCommand {
+public struct SISMEMBER<Member: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var member: String
+    public var member: Member
 
-    @inlinable public init(key: RESPKey, member: String) {
+    @inlinable public init(key: RESPKey, member: Member) {
         self.key = key
         self.member = member
     }
@@ -186,13 +186,13 @@ public struct SMEMBERS: RESPCommand {
 }
 
 /// Determines whether multiple members belong to a set.
-public struct SMISMEMBER: RESPCommand {
+public struct SMISMEMBER<Member: RESPStringRenderable>: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var member: [String]
+    public var member: [Member]
 
-    @inlinable public init(key: RESPKey, member: [String]) {
+    @inlinable public init(key: RESPKey, member: [Member]) {
         self.key = key
         self.member = member
     }
@@ -205,14 +205,14 @@ public struct SMISMEMBER: RESPCommand {
 }
 
 /// Moves a member from one set to another.
-public struct SMOVE: RESPCommand {
+public struct SMOVE<Member: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var source: RESPKey
     public var destination: RESPKey
-    public var member: String
+    public var member: Member
 
-    @inlinable public init(source: RESPKey, destination: RESPKey, member: String) {
+    @inlinable public init(source: RESPKey, destination: RESPKey, member: Member) {
         self.source = source
         self.destination = destination
         self.member = member
@@ -260,13 +260,13 @@ public struct SRANDMEMBER: RESPCommand {
 }
 
 /// Removes one or more members from a set. Deletes the set if the last member was removed.
-public struct SREM: RESPCommand {
+public struct SREM<Member: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var member: [String]
+    public var member: [Member]
 
-    @inlinable public init(key: RESPKey, member: [String]) {
+    @inlinable public init(key: RESPKey, member: [Member]) {
         self.key = key
         self.member = member
     }
@@ -346,7 +346,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public func sadd(key: RESPKey, member: [String]) async throws -> Int {
+    public func sadd<Member: RESPStringRenderable>(key: RESPKey, member: [Member]) async throws -> Int {
         try await send(command: SADD(key: key, member: member))
     }
 
@@ -432,7 +432,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the element is not a member of the set, or when the key does not exist.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the element is a member of the set.
     @inlinable
-    public func sismember(key: RESPKey, member: String) async throws -> Int {
+    public func sismember<Member: RESPStringRenderable>(key: RESPKey, member: Member) async throws -> Int {
         try await send(command: SISMEMBER(key: key, member: member))
     }
 
@@ -456,7 +456,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @set, @fast
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember(key: RESPKey, member: [String]) async throws -> RESPToken.Array {
+    public func smismember<Member: RESPStringRenderable>(key: RESPKey, member: [Member]) async throws -> RESPToken.Array {
         try await send(command: SMISMEMBER(key: key, member: member))
     }
 
@@ -470,7 +470,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the element is moved.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the element is not a member of _source_ and no operation was performed.
     @inlinable
-    public func smove(source: RESPKey, destination: RESPKey, member: String) async throws -> Int {
+    public func smove<Member: RESPStringRenderable>(source: RESPKey, destination: RESPKey, member: Member) async throws -> Int {
         try await send(command: SMOVE(source: source, destination: destination, member: member))
     }
 
@@ -511,7 +511,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @set, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members that were removed from the set, not including non existing members.
     @inlinable
-    public func srem(key: RESPKey, member: [String]) async throws -> Int {
+    public func srem<Member: RESPStringRenderable>(key: RESPKey, member: [Member]) async throws -> Int {
         try await send(command: SREM(key: key, member: member))
     }
 

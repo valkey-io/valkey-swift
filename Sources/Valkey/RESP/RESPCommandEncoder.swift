@@ -39,6 +39,16 @@ public struct RESPCommandEncoder {
     }
 
     @inlinable
+    mutating func encodeBulkString<Bytes: Collection>(_ string: Bytes) where Bytes.Element == UInt8 {
+        encodeIdentifier(.bulkString)
+
+        buffer.writeString(String(string.count))
+        buffer.writeStaticString("\r\n")
+        buffer.writeBytes(string)
+        buffer.writeStaticString("\r\n")
+    }
+
+    @inlinable
     var writerIndex: Int {
         buffer.writerIndex
     }

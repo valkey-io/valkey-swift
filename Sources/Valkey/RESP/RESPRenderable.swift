@@ -15,7 +15,7 @@
 import NIOCore
 
 /// Type that can be rendered into a RESP buffer
-public protocol RESPRenderable {
+public protocol RESPRenderable: Sendable {
     var respEntries: Int { get }
 
     func encode(into commandEncoder: inout RESPCommandEncoder)
@@ -58,17 +58,6 @@ extension Array: RESPRenderable where Element: RESPRenderable {
     }
 }
 
-extension String: RESPRenderable {
-
-    @inlinable
-    public var respEntries: Int { 1 }
-
-    @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeBulkString(self)
-    }
-}
-
 extension Int: RESPRenderable {
 
     @inlinable
@@ -88,5 +77,28 @@ extension Double: RESPRenderable {
     @inlinable
     public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeBulkString(String(self))
+    }
+}
+
+/// Type that can be rendered as a bulk string
+public protocol RESPStringRenderable: RESPRenderable {
+}
+
+extension RESPStringRenderable {
+    @inlinable
+    public var respEntries: Int { 1 }
+}
+
+extension String: RESPStringRenderable {
+    @inlinable
+    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeBulkString(self)
+    }
+}
+
+extension ByteBuffer: RESPStringRenderable {
+    @inlinable
+    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeBulkString(self.readableBytesView)
     }
 }

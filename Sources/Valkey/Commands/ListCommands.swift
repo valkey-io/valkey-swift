@@ -195,7 +195,7 @@ public struct LINDEX: RESPCommand {
 }
 
 /// Inserts an element before or after another element in a list.
-public struct LINSERT: RESPCommand {
+public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable>: RESPCommand {
     public enum Where: RESPRenderable, Sendable {
         case before
         case after
@@ -215,10 +215,10 @@ public struct LINSERT: RESPCommand {
 
     public var key: RESPKey
     public var `where`: Where
-    public var pivot: String
-    public var element: String
+    public var pivot: Pivot
+    public var element: Element
 
-    @inlinable public init(key: RESPKey, `where`: Where, pivot: String, element: String) {
+    @inlinable public init(key: RESPKey, `where`: Where, pivot: Pivot, element: Element) {
         self.key = key
         self.`where` = `where`
         self.pivot = pivot
@@ -354,14 +354,14 @@ public struct LPOP: RESPCommand {
 }
 
 /// Returns the index of matching elements in a list.
-public struct LPOS: RESPCommand {
+public struct LPOS<Element: RESPStringRenderable>: RESPCommand {
     public var key: RESPKey
-    public var element: String
+    public var element: Element
     public var rank: Int?
     public var numMatches: Int?
     public var len: Int?
 
-    @inlinable public init(key: RESPKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) {
+    @inlinable public init(key: RESPKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) {
         self.key = key
         self.element = element
         self.rank = rank
@@ -377,13 +377,13 @@ public struct LPOS: RESPCommand {
 }
 
 /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
-public struct LPUSH: RESPCommand {
+public struct LPUSH<Element: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var element: [String]
+    public var element: [Element]
 
-    @inlinable public init(key: RESPKey, element: [String]) {
+    @inlinable public init(key: RESPKey, element: [Element]) {
         self.key = key
         self.element = element
     }
@@ -396,13 +396,13 @@ public struct LPUSH: RESPCommand {
 }
 
 /// Prepends one or more elements to a list only when the list exists.
-public struct LPUSHX: RESPCommand {
+public struct LPUSHX<Element: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var element: [String]
+    public var element: [Element]
 
-    @inlinable public init(key: RESPKey, element: [String]) {
+    @inlinable public init(key: RESPKey, element: [Element]) {
         self.key = key
         self.element = element
     }
@@ -436,14 +436,14 @@ public struct LRANGE: RESPCommand {
 }
 
 /// Removes elements from a list. Deletes the list if the last element was removed.
-public struct LREM: RESPCommand {
+public struct LREM<Element: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
     public var count: Int
-    public var element: String
+    public var element: Element
 
-    @inlinable public init(key: RESPKey, count: Int, element: String) {
+    @inlinable public init(key: RESPKey, count: Int, element: Element) {
         self.key = key
         self.count = count
         self.element = element
@@ -457,12 +457,12 @@ public struct LREM: RESPCommand {
 }
 
 /// Sets the value of an element in a list by its index.
-public struct LSET: RESPCommand {
+public struct LSET<Element: RESPStringRenderable>: RESPCommand {
     public var key: RESPKey
     public var index: Int
-    public var element: String
+    public var element: Element
 
-    @inlinable public init(key: RESPKey, index: Int, element: String) {
+    @inlinable public init(key: RESPKey, index: Int, element: Element) {
         self.key = key
         self.index = index
         self.element = element
@@ -532,13 +532,13 @@ public struct RPOPLPUSH: RESPCommand {
 }
 
 /// Appends one or more elements to a list. Creates the key if it doesn't exist.
-public struct RPUSH: RESPCommand {
+public struct RPUSH<Element: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var element: [String]
+    public var element: [Element]
 
-    @inlinable public init(key: RESPKey, element: [String]) {
+    @inlinable public init(key: RESPKey, element: [Element]) {
         self.key = key
         self.element = element
     }
@@ -551,13 +551,13 @@ public struct RPUSH: RESPCommand {
 }
 
 /// Appends an element to a list only when the list exists.
-public struct RPUSHX: RESPCommand {
+public struct RPUSHX<Element: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var element: [String]
+    public var element: [Element]
 
-    @inlinable public init(key: RESPKey, element: [String]) {
+    @inlinable public init(key: RESPKey, element: [Element]) {
         self.key = key
         self.element = element
     }
@@ -666,7 +666,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` when the key doesn't exist.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` when the pivot wasn't found.
     @inlinable
-    public func linsert(key: RESPKey, `where`: LINSERT.Where, pivot: String, element: String) async throws -> Int {
+    public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(key: RESPKey, `where`: LINSERT<Pivot, Element>.Where, pivot: Pivot, element: Element) async throws -> Int {
         try await send(command: LINSERT(key: key, where: `where`, pivot: pivot, element: element))
     }
 
@@ -734,7 +734,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): an integer representing the matching element.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): If the COUNT option is given, an array of integers representing the matching elements (or an empty array if there are no matches).
     @inlinable
-    public func lpos(key: RESPKey, element: String, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> LPOS.Response {
+    public func lpos<Element: RESPStringRenderable>(key: RESPKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> LPOS.Response {
         try await send(command: LPOS(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 
@@ -746,7 +746,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
     @inlinable
-    public func lpush(key: RESPKey, element: [String]) async throws -> Int {
+    public func lpush<Element: RESPStringRenderable>(key: RESPKey, element: [Element]) async throws -> Int {
         try await send(command: LPUSH(key: key, element: element))
     }
 
@@ -758,7 +758,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
     @inlinable
-    public func lpushx(key: RESPKey, element: [String]) async throws -> Int {
+    public func lpushx<Element: RESPStringRenderable>(key: RESPKey, element: [Element]) async throws -> Int {
         try await send(command: LPUSHX(key: key, element: element))
     }
 
@@ -782,7 +782,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of removed elements.
     @inlinable
-    public func lrem(key: RESPKey, count: Int, element: String) async throws -> Int {
+    public func lrem<Element: RESPStringRenderable>(key: RESPKey, count: Int, element: Element) async throws -> Int {
         try await send(command: LREM(key: key, count: count, element: element))
     }
 
@@ -794,7 +794,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func lset(key: RESPKey, index: Int, element: String) async throws {
+    public func lset<Element: RESPStringRenderable>(key: RESPKey, index: Int, element: Element) async throws {
         _ = try await send(command: LSET(key: key, index: index, element: element))
     }
 
@@ -848,7 +848,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
     @inlinable
-    public func rpush(key: RESPKey, element: [String]) async throws -> Int {
+    public func rpush<Element: RESPStringRenderable>(key: RESPKey, element: [Element]) async throws -> Int {
         try await send(command: RPUSH(key: key, element: element))
     }
 
@@ -860,7 +860,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
     @inlinable
-    public func rpushx(key: RESPKey, element: [String]) async throws -> Int {
+    public func rpushx<Element: RESPStringRenderable>(key: RESPKey, element: [Element]) async throws -> Int {
         try await send(command: RPUSHX(key: key, element: element))
     }
 

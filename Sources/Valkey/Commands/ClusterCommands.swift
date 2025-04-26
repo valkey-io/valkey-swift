@@ -82,12 +82,12 @@ public enum CLUSTER {
     }
 
     /// Returns the number of active failure reports active for a node.
-    public struct COUNTFAILUREREPORTS: RESPCommand {
+    public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: RESPCommand {
         public typealias Response = Int
 
-        public var nodeId: String
+        public var nodeId: NodeId
 
-        @inlinable public init(nodeId: String) {
+        @inlinable public init(nodeId: NodeId) {
             self.nodeId = nodeId
         }
 
@@ -197,10 +197,10 @@ public enum CLUSTER {
     }
 
     /// Removes a node from the nodes table.
-    public struct FORGET: RESPCommand {
-        public var nodeId: String
+    public struct FORGET<NodeId: RESPStringRenderable>: RESPCommand {
+        public var nodeId: NodeId
 
-        @inlinable public init(nodeId: String) {
+        @inlinable public init(nodeId: NodeId) {
             self.nodeId = nodeId
         }
 
@@ -249,12 +249,12 @@ public enum CLUSTER {
     }
 
     /// Returns the hash slot for a key.
-    public struct KEYSLOT: RESPCommand {
+    public struct KEYSLOT<Key: RESPStringRenderable>: RESPCommand {
         public typealias Response = Int
 
-        public var key: String
+        public var key: Key
 
-        @inlinable public init(key: String) {
+        @inlinable public init(key: Key) {
             self.key = key
         }
 
@@ -276,12 +276,12 @@ public enum CLUSTER {
     }
 
     /// Forces a node to handshake with another node.
-    public struct MEET: RESPCommand {
-        public var ip: String
+    public struct MEET<Ip: RESPStringRenderable>: RESPCommand {
+        public var ip: Ip
         public var port: Int
         public var clusterBusPort: Int?
 
-        @inlinable public init(ip: String, port: Int, clusterBusPort: Int? = nil) {
+        @inlinable public init(ip: Ip, port: Int, clusterBusPort: Int? = nil) {
             self.ip = ip
             self.port = port
             self.clusterBusPort = clusterBusPort
@@ -323,12 +323,12 @@ public enum CLUSTER {
     }
 
     /// Lists the replica nodes of a master node.
-    public struct REPLICAS: RESPCommand {
+    public struct REPLICAS<NodeId: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var nodeId: String
+        public var nodeId: NodeId
 
-        @inlinable public init(nodeId: String) {
+        @inlinable public init(nodeId: NodeId) {
             self.nodeId = nodeId
         }
 
@@ -338,10 +338,10 @@ public enum CLUSTER {
     }
 
     /// Configure a node as replica of a master node.
-    public struct REPLICATE: RESPCommand {
-        public var nodeId: String
+    public struct REPLICATE<NodeId: RESPStringRenderable>: RESPCommand {
+        public var nodeId: NodeId
 
-        @inlinable public init(nodeId: String) {
+        @inlinable public init(nodeId: NodeId) {
             self.nodeId = nodeId
         }
 
@@ -454,12 +454,12 @@ public enum CLUSTER {
 
     /// Lists the replica nodes of a master node.
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
-    public struct SLAVES: RESPCommand {
+    public struct SLAVES<NodeId: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var nodeId: String
+        public var nodeId: NodeId
 
-        @inlinable public init(nodeId: String) {
+        @inlinable public init(nodeId: NodeId) {
             self.nodeId = nodeId
         }
 
@@ -572,7 +572,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of active failure reports for the node.
     @inlinable
-    public func clusterCountFailureReports(nodeId: String) async throws -> Int {
+    public func clusterCountFailureReports<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> Int {
         try await send(command: CLUSTER.COUNTFAILUREREPORTS(nodeId: nodeId))
     }
 
@@ -644,7 +644,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was executed successfully. Otherwise an error is returned.
     @inlinable
-    public func clusterForget(nodeId: String) async throws {
+    public func clusterForget<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws {
         _ = try await send(command: CLUSTER.FORGET(nodeId: nodeId))
     }
 
@@ -692,7 +692,7 @@ extension ValkeyConnection {
     /// - Categories: @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): The hash slot number for the specified key
     @inlinable
-    public func clusterKeyslot(key: String) async throws -> Int {
+    public func clusterKeyslot<Key: RESPStringRenderable>(key: Key) async throws -> Int {
         try await send(command: CLUSTER.KEYSLOT(key: key))
     }
 
@@ -716,7 +716,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. If the port or cluster bus port number is out of range, or if an invalid address is specified, an error is returned.
     @inlinable
-    public func clusterMeet(ip: String, port: Int, clusterBusPort: Int? = nil) async throws {
+    public func clusterMeet<Ip: RESPStringRenderable>(ip: Ip, port: Int, clusterBusPort: Int? = nil) async throws {
         _ = try await send(command: CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
     }
 
@@ -764,7 +764,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
     @inlinable
-    public func clusterReplicas(nodeId: String) async throws -> RESPToken.Array {
+    public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
@@ -776,7 +776,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterReplicate(nodeId: String) async throws {
+    public func clusterReplicate<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws {
         _ = try await send(command: CLUSTER.REPLICATE(nodeId: nodeId))
     }
 
@@ -849,7 +849,7 @@ extension ValkeyConnection {
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
     @inlinable
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
-    public func clusterSlaves(nodeId: String) async throws -> RESPToken.Array {
+    public func clusterSlaves<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLAVES(nodeId: nodeId))
     }
 

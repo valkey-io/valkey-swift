@@ -104,7 +104,7 @@ extension String {
             preconditionFailure("OneOf without arguments")
         }
         let names = names + [argument.name.swiftTypename]
-        let enumName = enumName(names: names)
+        let blockName = enumName(names: names)
         for arg in arguments {
             if case .oneOf = arg.type {
                 self.appendOneOfEnum(argument: arg, names: names, tab: tab)
@@ -112,7 +112,7 @@ extension String {
                 self.appendBlock(argument: arg, names: names, tab: tab)
             }
         }
-        self.append("\(tab)    public struct \(enumName): RESPRenderable, Sendable {\n")
+        self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable {\n")
         for arg in arguments {
             self.append(
                 "\(tab)        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true))\n"
@@ -166,13 +166,13 @@ extension String {
         } else {
             typeName = name.commandTypeName
         }
-
         let keyArguments = command.arguments?.filter { $0.type == .key } ?? []
         let conformance = "RESPCommand"
+        let genericTypeParameters = genericTypeParameters(command.arguments)
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, reply: reply, tab: tab)
         self.appendDeprecatedMessage(command: command, name: name, tab: tab)
-        self.append("\(tab)public struct \(typeName): \(conformance) {\n")
+        self.append("\(tab)public struct \(typeName)\(genericTypeParameters): \(conformance) {\n")
 
         let arguments = (command.arguments ?? [])
         // Enums
@@ -244,13 +244,17 @@ extension String {
             // Comment header
             self.appendFunctionCommentHeader(command: command, name: name, reply: reply)
             // Operation function
+            let genericTypeParameters = genericTypeParameters(command.arguments)
+            let genericParameters = genericParameters(command.arguments)
             let parametersString =
                 arguments
-                .map { "\($0.functionLabel(isArray: isArray)): \(parameterType($0, names: [], scope: name.commandTypeName, isArray: isArray))" }
+                .map {
+                    "\($0.functionLabel(isArray: isArray)): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray))"
+                }
                 .joined(separator: ", ")
             self.append("    @inlinable\n")
             self.appendDeprecatedMessage(command: command, name: name, tab: "    ")
-            self.append("    public func \(name.swiftFunction)(\(parametersString)) async throws\(returnType) {\n")
+            self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
             let commandArguments = arguments.map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
             let argumentsString = commandArguments.joined(separator: ", ")
             self.append(
@@ -364,6 +368,7 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
     return string
 }
 
+/// Construct text for key affected by command
 private func constructKeysAffected(_ keyArguments: [RESPCommand.Argument]) -> (type: String, value: String) {
     if keyArguments.count == 1 {
         if keyArguments.first!.multiple {
@@ -425,10 +430,25 @@ private func subCommand(_ command: String) -> (String.SubSequence, String.SubSeq
     return (command[...], nil)
 }
 
+/// construct the generic parameters for a command type
+private func genericTypeParameters(_ arguments: [RESPCommand.Argument]?) -> String {
+    let stringArguments = arguments?.filter { $0.type == .string } ?? []
+    guard stringArguments.count > 0 else { return "" }
+    return "<\(stringArguments.map { "\($0.name.swiftTypename): RESPStringRenderable"}.joined(separator: ", "))>"
+}
+/// construct the generic parameters for a command type
+private func genericParameters(_ arguments: [RESPCommand.Argument]?) -> String {
+    let stringArguments = arguments?.filter { $0.type == .string } ?? []
+    guard stringArguments.count > 0 else { return "" }
+    return "<\(stringArguments.map { $0.name.swiftTypename }.joined(separator: ", "))>"
+}
+
+/// combine stack of names to create an enum name
 private func enumName(names: [String]) -> String {
     names.map { $0.upperFirst() }.joined()
 }
 
+/// Get the text for a parameter type with its default value if it is optional
 private func parameterType(_ parameter: RESPCommand.Argument, names: [String], scope: String?, isArray: Bool) -> String {
     let variableType = variableType(parameter, names: names, scope: scope, isArray: isArray)
     if parameter.type == .pureToken {
@@ -445,8 +465,12 @@ private func parameterType(_ parameter: RESPCommand.Argument, names: [String], s
     return variableType
 }
 
+/// Get the text for a variable type
 private func variableType(_ parameter: RESPCommand.Argument, names: [String], scope: String?, isArray: Bool) -> String {
     var parameterString = parameter.type.swiftName
+    if parameter.type == .string, names.count == 0 {
+        parameterString = parameter.name.swiftTypename
+    }
     if case .oneOf = parameter.type {
         parameterString = "\(scope.map {"\($0)."} ?? "")\(enumName(names: names + [parameter.name.swiftTypename]))"
     }

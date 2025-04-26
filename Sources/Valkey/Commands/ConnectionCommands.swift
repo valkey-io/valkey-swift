@@ -397,10 +397,10 @@ public enum CLIENT {
     }
 
     /// Sets the connection name.
-    public struct SETNAME: RESPCommand {
-        public var connectionName: String
+    public struct SETNAME<ConnectionName: RESPStringRenderable>: RESPCommand {
+        public var connectionName: ConnectionName
 
-        @inlinable public init(connectionName: String) {
+        @inlinable public init(connectionName: ConnectionName) {
             self.connectionName = connectionName
         }
 
@@ -410,7 +410,7 @@ public enum CLIENT {
     }
 
     /// Controls server-assisted client-side caching for the connection.
-    public struct TRACKING: RESPCommand {
+    public struct TRACKING<Prefix: RESPStringRenderable>: RESPCommand {
         public enum Status: RESPRenderable, Sendable {
             case on
             case off
@@ -428,13 +428,13 @@ public enum CLIENT {
         }
         public var status: Status
         public var clientId: Int?
-        public var prefix: [String]
+        public var prefix: [Prefix]
         public var bcast: Bool
         public var optin: Bool
         public var optout: Bool
         public var noloop: Bool
 
-        @inlinable public init(status: Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) {
+        @inlinable public init(status: Status, clientId: Int? = nil, prefix: [Prefix] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) {
             self.status = status
             self.clientId = clientId
             self.prefix = prefix
@@ -506,11 +506,11 @@ public enum CLIENT {
 }
 
 /// Authenticates the connection.
-public struct AUTH: RESPCommand {
-    public var username: String?
-    public var password: String
+public struct AUTH<Username: RESPStringRenderable, Password: RESPStringRenderable>: RESPCommand {
+    public var username: Username?
+    public var password: Password
 
-    @inlinable public init(username: String? = nil, password: String) {
+    @inlinable public init(username: Username? = nil, password: Password) {
         self.username = username
         self.password = password
     }
@@ -521,10 +521,10 @@ public struct AUTH: RESPCommand {
 }
 
 /// Returns the given string.
-public struct ECHO: RESPCommand {
-    public var message: String
+public struct ECHO<Message: RESPStringRenderable>: RESPCommand {
+    public var message: Message
 
-    @inlinable public init(message: String) {
+    @inlinable public init(message: Message) {
         self.message = message
     }
 
@@ -594,10 +594,10 @@ public struct HELLO: RESPCommand {
 }
 
 /// Returns the server's liveliness response.
-public struct PING: RESPCommand {
-    public var message: String?
+public struct PING<Message: RESPStringRenderable>: RESPCommand {
+    public var message: Message?
 
-    @inlinable public init(message: String? = nil) {
+    @inlinable public init(message: Message? = nil) {
         self.message = message
     }
 
@@ -651,7 +651,7 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
     @inlinable
-    public func auth(username: String? = nil, password: String) async throws {
+    public func auth<Username: RESPStringRenderable, Password: RESPStringRenderable>(username: Username? = nil, password: Password) async throws {
         _ = try await send(command: AUTH(username: username, password: password))
     }
 
@@ -826,7 +826,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection name was successfully set.
     @inlinable
-    public func clientSetname(connectionName: String) async throws {
+    public func clientSetname<ConnectionName: RESPStringRenderable>(connectionName: ConnectionName) async throws {
         _ = try await send(command: CLIENT.SETNAME(connectionName: connectionName))
     }
 
@@ -838,7 +838,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
+    public func clientTracking<Prefix: RESPStringRenderable>(status: CLIENT.TRACKING<Prefix>.Status, clientId: Int? = nil, prefix: [Prefix] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
         _ = try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
     }
 
@@ -888,7 +888,7 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the given string.
     @inlinable
-    public func echo(message: String) async throws -> ECHO.Response {
+    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ECHO.Response {
         try await send(command: ECHO(message: message))
     }
 
@@ -915,7 +915,7 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `PONG` when no argument is provided.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the provided argument.
     @inlinable
-    public func ping(message: String? = nil) async throws -> PING.Response {
+    public func ping<Message: RESPStringRenderable>(message: Message? = nil) async throws -> PING.Response {
         try await send(command: PING(message: message))
     }
 

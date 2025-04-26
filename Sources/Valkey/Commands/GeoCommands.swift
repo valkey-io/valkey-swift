@@ -85,7 +85,7 @@ public struct GEOADD: RESPCommand {
 }
 
 /// Returns the distance between two members of a geospatial index.
-public struct GEODIST: RESPCommand {
+public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderable>: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -108,11 +108,11 @@ public struct GEODIST: RESPCommand {
     public typealias Response = RESPToken?
 
     public var key: RESPKey
-    public var member1: String
-    public var member2: String
+    public var member1: Member1
+    public var member2: Member2
     public var unit: Unit?
 
-    @inlinable public init(key: RESPKey, member1: String, member2: String, unit: Unit? = nil) {
+    @inlinable public init(key: RESPKey, member1: Member1, member2: Member2, unit: Unit? = nil) {
         self.key = key
         self.member1 = member1
         self.member2 = member2
@@ -127,13 +127,13 @@ public struct GEODIST: RESPCommand {
 }
 
 /// Returns members from a geospatial index as geohash strings.
-public struct GEOHASH: RESPCommand {
+public struct GEOHASH<Member: RESPStringRenderable>: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var member: [String]
+    public var member: [Member]
 
-    @inlinable public init(key: RESPKey, member: [String] = []) {
+    @inlinable public init(key: RESPKey, member: [Member] = []) {
         self.key = key
         self.member = member
     }
@@ -146,13 +146,13 @@ public struct GEOHASH: RESPCommand {
 }
 
 /// Returns the longitude and latitude of members from a geospatial index.
-public struct GEOPOS: RESPCommand {
+public struct GEOPOS<Member: RESPStringRenderable>: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var member: [String]
+    public var member: [Member]
 
-    @inlinable public init(key: RESPKey, member: [String] = []) {
+    @inlinable public init(key: RESPKey, member: [Member] = []) {
         self.key = key
         self.member = member
     }
@@ -277,7 +277,7 @@ public struct GEORADIUS: RESPCommand {
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-public struct GEORADIUSBYMEMBER: RESPCommand {
+public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -354,7 +354,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
         }
     }
     public var key: RESPKey
-    public var member: String
+    public var member: Member
     public var radius: Double
     public var unit: Unit
     public var withcoord: Bool
@@ -364,7 +364,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
     public var order: Order?
     public var store: Store?
 
-    @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
+    @inlinable public init(key: RESPKey, member: Member, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
         self.key = key
         self.member = member
         self.radius = radius
@@ -386,7 +386,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
 
 /// Returns members from a geospatial index that are within a distance from a member.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-public struct GEORADIUSBYMEMBERRO: RESPCommand {
+public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -443,7 +443,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
         }
     }
     public var key: RESPKey
-    public var member: String
+    public var member: Member
     public var radius: Double
     public var unit: Unit
     public var withcoord: Bool
@@ -452,7 +452,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
     public var countBlock: CountBlock?
     public var order: Order?
 
-    @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
+    @inlinable public init(key: RESPKey, member: Member, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
         self.key = key
         self.member = member
         self.radius = radius
@@ -1001,7 +1001,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): one or both of the elements are missing.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): distance as a double (represented as a string) in the specified units.
     @inlinable
-    public func geodist(key: RESPKey, member1: String, member2: String, unit: GEODIST.Unit? = nil) async throws -> RESPToken? {
+    public func geodist<Member1: RESPStringRenderable, Member2: RESPStringRenderable>(key: RESPKey, member1: Member1, member2: Member2, unit: GEODIST<Member1, Member2>.Unit? = nil) async throws -> RESPToken? {
         try await send(command: GEODIST(key: key, member1: member1, member2: member2, unit: unit))
     }
 
@@ -1013,7 +1013,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is the Geohash corresponding to each member name passed as an argument to the command.
     @inlinable
-    public func geohash(key: RESPKey, member: [String] = []) async throws -> RESPToken.Array {
+    public func geohash<Member: RESPStringRenderable>(key: RESPKey, member: [Member] = []) async throws -> RESPToken.Array {
         try await send(command: GEOHASH(key: key, member: member))
     }
 
@@ -1025,7 +1025,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/valkey.io/topics/protocol/#nulls) elements of the array.
     @inlinable
-    public func geopos(key: RESPKey, member: [String] = []) async throws -> RESPToken.Array {
+    public func geopos<Member: RESPStringRenderable>(key: RESPKey, member: [Member] = []) async throws -> RESPToken.Array {
         try await send(command: GEOPOS(key: key, member: member))
     }
 
@@ -1065,7 +1065,7 @@ extension ValkeyConnection {
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-    public func georadiusbymember(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBER.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER.CountBlock? = nil, order: GEORADIUSBYMEMBER.Order? = nil, store: GEORADIUSBYMEMBER.Store? = nil) async throws -> GEORADIUSBYMEMBER.Response {
+    public func georadiusbymember<Member: RESPStringRenderable>(key: RESPKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBER<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBER<Member>.Order? = nil, store: GEORADIUSBYMEMBER<Member>.Store? = nil) async throws -> GEORADIUSBYMEMBER.Response {
         try await send(command: GEORADIUSBYMEMBER(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
 
@@ -1083,7 +1083,7 @@ extension ValkeyConnection {
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-    public func georadiusbymemberRo(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil, order: GEORADIUSBYMEMBERRO.Order? = nil) async throws -> GEORADIUSBYMEMBERRO.Response {
+    public func georadiusbymemberRo<Member: RESPStringRenderable>(key: RESPKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBERRO<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBERRO<Member>.Order? = nil) async throws -> GEORADIUSBYMEMBERRO.Response {
         try await send(command: GEORADIUSBYMEMBERRO(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
