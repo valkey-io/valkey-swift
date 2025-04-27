@@ -64,7 +64,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     /*private*/ var commands: Deque<ValkeyPromise<RESPToken>>
     @usableFromInline
-    /*private*/ var encoder = RESPCommandEncoder()
+    /*private*/ var encoder = ValkeyCommandEncoder()
     @usableFromInline
     /*private*/ var context: ChannelHandlerContext?
     @usableFromInline

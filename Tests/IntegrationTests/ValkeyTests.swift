@@ -46,7 +46,7 @@ struct GeneratedCommands {
                 self.key = key
             }
 
-            func encode(into commandEncoder: inout RESPCommandEncoder) {
+            func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 commandEncoder.encodeArray("GET", key)
             }
         }

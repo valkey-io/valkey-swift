@@ -25,8 +25,8 @@ public protocol ValkeyCommand: Sendable {
 
     ///
     /// Encode RESP Command
-    /// - Parameter commandEncoder: RESPCommandEncoder
-    func encode(into commandEncoder: inout RESPCommandEncoder)
+    /// - Parameter commandEncoder: ValkeyCommandEncoder
+    func encode(into commandEncoder: inout ValkeyCommandEncoder)
 }
 
 extension ValkeyCommand {

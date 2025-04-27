@@ -31,7 +31,7 @@ package struct RESPPureToken: RESPRenderable {
         self.token != nil ? 1 : 0
     }
     @inlinable
-    package func encode(into commandEncoder: inout RESPCommandEncoder) {
+    package func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         self.token.encode(into: &commandEncoder)
     }
 }
@@ -54,7 +54,7 @@ package struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
         return value.respEntries + 1
     }
     @inlinable
-    package func encode(into commandEncoder: inout RESPCommandEncoder) {
+    package func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         guard let value, value.respEntries > 0 else {
             return
         }
@@ -75,10 +75,10 @@ package struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
     }
     @inlinable
     package var respEntries: Int {
-        return self.array.respEntries + 1
+        self.array.respEntries + 1
     }
     @inlinable
-    package func encode(into commandEncoder: inout RESPCommandEncoder) {
+    package func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         self.array.count.encode(into: &commandEncoder)
         self.array.encode(into: &commandEncoder)
     }

@@ -44,7 +44,7 @@ extension ValkeyKey: RESPRenderable {
     public var respEntries: Int { 1 }
 
     @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         self.rawValue.encode(into: &commandEncoder)
     }
 }

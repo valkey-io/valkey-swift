@@ -141,7 +141,7 @@ public final class ValkeyConnection: Sendable {
         }
         // this currently allocates a promise for every command. We could collpase this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
-        var encoder = RESPCommandEncoder()
+        var encoder = ValkeyCommandEncoder()
         for command in repeat each commands {
             command.encode(into: &encoder)
             mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
