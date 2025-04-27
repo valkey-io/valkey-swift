@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// A RESP command that can be executed on a connection.
+/// A Valkey command that can be executed on a connection.
 public protocol ValkeyCommand: Sendable {
     associatedtype Response: RESPTokenDecodable = RESPToken
     associatedtype Keys: Collection<ValkeyKey>
@@ -24,7 +24,7 @@ public protocol ValkeyCommand: Sendable {
     var keysAffected: Keys { get }
 
     ///
-    /// Encode RESP Command
+    /// Encode Valkey Command into RESP
     /// - Parameter commandEncoder: ValkeyCommandEncoder
     func encode(into commandEncoder: inout ValkeyCommandEncoder)
 }

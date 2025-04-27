@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// Type representing a RESPKey
+/// Type representing a Valkey Key
 public struct ValkeyKey: RawRepresentable, Sendable {
     public var rawValue: String
 
