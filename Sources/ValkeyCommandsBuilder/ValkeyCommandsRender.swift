@@ -5,7 +5,7 @@ extension String {
             .replacing(" reply]", with: "]")
     }
 
-    mutating func appendDeprecatedMessage(command: RESPCommand, name: String, tab: String) {
+    mutating func appendDeprecatedMessage(command: ValkeyCommand, name: String, tab: String) {
         guard let deprecatedSince = command.deprecatedSince else { return }
         self.append("\(tab)@available(*, deprecated, message: \"Since \(deprecatedSince)")
         if let replacedBy = command.replacedBy {
@@ -13,11 +13,11 @@ extension String {
         }
         self.append(".\")\n")
     }
-    mutating func appendCommandCommentHeader(command: RESPCommand, name: String, reply: [String], tab: String) {
+    mutating func appendCommandCommentHeader(command: ValkeyCommand, name: String, reply: [String], tab: String) {
         self.append("\(tab)/// \(command.summary)\n")
     }
 
-    mutating func appendFunctionCommentHeader(command: RESPCommand, name: String, reply: [String]) {
+    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String, reply: [String]) {
         let linkName = name.replacing(" ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
@@ -35,7 +35,7 @@ extension String {
         }
     }
 
-    mutating func appendOneOfEnum(argument: RESPCommand.Argument, names: [String], tab: String) {
+    mutating func appendOneOfEnum(argument: ValkeyCommand.Argument, names: [String], tab: String) {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
@@ -83,7 +83,7 @@ extension String {
             self.append("\(tab)        }\n\n")
         }
         self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
         self.append("\(tab)            switch self {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
@@ -101,7 +101,7 @@ extension String {
         self.append("\(tab)    }\n")
     }
 
-    mutating func appendBlock(argument: RESPCommand.Argument, names: [String], tab: String, genericStrings: Bool) {
+    mutating func appendBlock(argument: ValkeyCommand.Argument, names: [String], tab: String, genericStrings: Bool) {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
@@ -144,7 +144,7 @@ extension String {
         self.append("\n")
         self.append("\(tab)        }\n\n")
         self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append("\(tab)            \"\(arg.token!)\".encode(into: &commandEncoder)\n")
@@ -158,7 +158,7 @@ extension String {
         self.append("\(tab)    }\n")
     }
 
-    mutating func appendCommand(command: RESPCommand, reply: [String], name: String, tab: String, disableResponseCalculation: Bool) {
+    mutating func appendCommand(command: ValkeyCommand, reply: [String], name: String, tab: String, disableResponseCalculation: Bool) {
         var commandName = name
         var subCommand: String? = nil
         let typeName: String
@@ -171,7 +171,7 @@ extension String {
             typeName = name.commandTypeName
         }
         let keyArguments = command.arguments?.filter { $0.type == .key } ?? []
-        let conformance = "RESPCommand"
+        let conformance = "ValkeyCommand"
         let genericTypeParameters = genericTypeParameters(command.arguments)
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, reply: reply, tab: tab)
@@ -225,13 +225,13 @@ extension String {
             self.append("\(tab)    public var keysAffected: \(keysAffectedType) { \(keysAffected) }\n\n")
         }
 
-        self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {\n")
+        self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
         self.append("\(tab)        commandEncoder.encodeArray(\(commandArgumentsString))\n")
         self.append("\(tab)    }\n")
         self.append("\(tab)}\n\n")
     }
 
-    mutating func appendFunction(command: RESPCommand, reply: [String], name: String, disableResponseCalculation: Bool) {
+    mutating func appendFunction(command: ValkeyCommand, reply: [String], name: String, disableResponseCalculation: Bool) {
         let arguments = (command.arguments ?? [])
         //var converting: Bool = false
         var returnType: String = " -> \(name.commandTypeName).Response"
@@ -275,7 +275,7 @@ extension String {
     }
 }
 
-func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplies) -> String {
+func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPReplies) -> String {
     let disableResponseCalculationCommands: Set<String> = [
         "CLUSTER SHARDS"
     ]
@@ -374,13 +374,12 @@ func renderValkeyCommands(_ commands: [String: RESPCommand], replies: RESPReplie
     return string
 }
 
-/// Construct text for key affected by command
-private func constructKeysAffected(_ keyArguments: [RESPCommand.Argument]) -> (type: String, value: String) {
+private func constructKeysAffected(_ keyArguments: [ValkeyCommand.Argument]) -> (type: String, value: String) {
     if keyArguments.count == 1 {
         if keyArguments.first!.multiple {
-            return (type: "[RESPKey]", value: keyArguments.first!.name.swiftVariable)
+            return (type: "[ValkeyKey]", value: keyArguments.first!.name.swiftVariable)
         } else {
-            return (type: "CollectionOfOne<RESPKey>", value: ".init(\(keyArguments.first!.name.swiftVariable))")
+            return (type: "CollectionOfOne<ValkeyKey>", value: ".init(\(keyArguments.first!.name.swiftVariable))")
         }
     } else {
         var keysAffectedBuilder: String = ""
@@ -424,7 +423,7 @@ private func constructKeysAffected(_ keyArguments: [RESPCommand.Argument]) -> (t
         if inArray {
             keysAffectedBuilder += "]"
         }
-        return (type: "[RESPKey]", value: keysAffectedBuilder)
+        return (type: "[ValkeyKey]", value: keysAffectedBuilder)
     }
 }
 
@@ -436,10 +435,10 @@ private func subCommand(_ command: String) -> (String.SubSequence, String.SubSeq
     return (command[...], nil)
 }
 
-private func getGenericParameterArguments(_ arguments: [RESPCommand.Argument]?) -> [RESPCommand.Argument] {
+private func getGenericParameterArguments(_ arguments: [ValkeyCommand.Argument]?) -> [ValkeyCommand.Argument] {
     guard let arguments else { return [] }
     return arguments.flatMap {
-        guard !$0.optional else { return [RESPCommand.Argument]() }
+        guard !$0.optional else { return [ValkeyCommand.Argument]() }
         switch $0.type {
         case .string:
             return [$0]
@@ -452,14 +451,14 @@ private func getGenericParameterArguments(_ arguments: [RESPCommand.Argument]?) 
 }
 
 /// construct the generic parameters for a command type
-private func genericTypeParameters(_ arguments: [RESPCommand.Argument]?) -> String {
+private func genericTypeParameters(_ arguments: [ValkeyCommand.Argument]?) -> String {
     let stringArguments = getGenericParameterArguments(arguments)
     //let stringArguments = arguments?.filter { $0.type == .string && !$0.optional } ?? []
     guard stringArguments.count > 0 else { return "" }
     return "<\(stringArguments.map { "\($0.name.swiftTypename): RESPStringRenderable"}.joined(separator: ", "))>"
 }
 /// construct the generic parameters for a command type
-private func genericParameters(_ arguments: [RESPCommand.Argument]?) -> String {
+private func genericParameters(_ arguments: [ValkeyCommand.Argument]?) -> String {
     let stringArguments = getGenericParameterArguments(arguments)
     //    let stringArguments = arguments?.filter { $0.type == .string && !$0.optional } ?? []
     guard stringArguments.count > 0 else { return "" }
@@ -472,7 +471,7 @@ private func enumName(names: [String]) -> String {
 }
 
 /// Get the text for a parameter type with its default value if it is optional
-private func parameterType(_ parameter: RESPCommand.Argument, names: [String], scope: String?, isArray: Bool, genericStrings: Bool) -> String {
+private func parameterType(_ parameter: ValkeyCommand.Argument, names: [String], scope: String?, isArray: Bool, genericStrings: Bool) -> String {
     let variableType = variableType(parameter, names: names, scope: scope, isArray: isArray, genericStrings: genericStrings)
     if parameter.type == .pureToken {
         return variableType + " = false"
@@ -489,7 +488,7 @@ private func parameterType(_ parameter: RESPCommand.Argument, names: [String], s
 }
 
 /// Get the text for a variable type
-private func variableType(_ parameter: RESPCommand.Argument, names: [String], scope: String?, isArray: Bool, genericStrings: Bool) -> String {
+private func variableType(_ parameter: ValkeyCommand.Argument, names: [String], scope: String?, isArray: Bool, genericStrings: Bool) -> String {
     var parameterString = parameter.type.swiftName
     // if type is a string and non-optional and convert strings to ge
     if parameter.type == .string, !parameter.optional, genericStrings {
@@ -572,13 +571,13 @@ private func getReturnType(reply: some StringProtocol) -> String? {
     return nil
 }
 
-extension RESPCommand.ArgumentType {
+extension ValkeyCommand.ArgumentType {
     var swiftName: String {
         switch self {
         case .block: "#"
         case .double: "Double"
         case .integer: "Int"
-        case .key: "RESPKey"
+        case .key: "ValkeyKey"
         case .oneOf: "#"
         case .pattern: "String"
         case .pureToken: "Bool"
@@ -588,7 +587,7 @@ extension RESPCommand.ArgumentType {
     }
 }
 
-extension RESPCommand.Argument {
+extension ValkeyCommand.Argument {
     func respRepresentable(isArray: Bool, genericString: Bool) -> String {
         var variable = self.functionLabel(isArray: multiple && isArray)
         switch self.type

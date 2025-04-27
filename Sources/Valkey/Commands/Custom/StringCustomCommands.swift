@@ -17,12 +17,12 @@ extension LCS {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the longest common subsequence.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
-    public enum Response: RESPTokenRepresentable, Equatable {
-        public struct Match: RESPTokenRepresentable, Equatable {
+    public enum Response: RESPTokenDecodable, Equatable {
+        public struct Match: RESPTokenDecodable, Equatable {
             public let first: ClosedRange<Int>
             public let second: ClosedRange<Int>
 
-            public init(from token: RESPToken) throws {
+            public init(fromRESP token: RESPToken) throws {
                 (self.first, self.second) = try token.decodeArrayElements()
             }
         }
@@ -31,7 +31,7 @@ extension LCS {
         case subSequenceLength(Int)
         case matches(length: Int, matches: [Match])
 
-        public init(from token: RESPToken) throws {
+        public init(fromRESP token: RESPToken) throws {
             switch token.value {
             case .bulkString(let buffer):
                 self = .subSequence(String(buffer: buffer))
@@ -41,9 +41,9 @@ extension LCS {
                 var matches: [Match]?
                 var length: Int64?
                 for entry in map {
-                    switch try String(from: entry.key) {
-                    case "len": length = try .init(from: entry.value)
-                    case "matches": matches = try .init(from: entry.value)
+                    switch try String(fromRESP: entry.key) {
+                    case "len": length = try .init(fromRESP: entry.value)
+                    case "matches": matches = try .init(fromRESP: entry.value)
                     default: break
                     }
                 }

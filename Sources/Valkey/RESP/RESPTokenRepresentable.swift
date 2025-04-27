@@ -14,23 +14,23 @@
 
 import NIOCore
 
-/// Type that can represented by a RESP3Token
-public protocol RESPTokenRepresentable {
-    init(from: RESPToken) throws
+/// Type that can decoded from a RESP3Token
+public protocol RESPTokenDecodable {
+    init(fromRESP: RESPToken) throws
 }
 
-extension RESPToken: RESPTokenRepresentable {
+extension RESPToken: RESPTokenDecodable {
     /// Convert RESP3Token to a value
     /// - Parameter type: Type to convert to
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Value
     @inlinable
-    public func decode<Value: RESPTokenRepresentable>(as type: Value.Type = Value.self) throws -> Value {
-        try Value(from: self)
+    public func decode<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) throws -> Value {
+        try Value(fromRESP: self)
     }
 
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         self = token
     }
 
@@ -39,7 +39,7 @@ extension RESPToken: RESPTokenRepresentable {
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
     @inlinable
-    public func decodeArrayElements<each Value: RESPTokenRepresentable>(
+    public func decodeArrayElements<each Value: RESPTokenDecodable>(
         as: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
         switch self.value {
@@ -57,14 +57,14 @@ extension Array where Element == RESPToken {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Array of Value
     @inlinable
-    public func decode<Value: RESPTokenRepresentable>(as type: [Value].Type = [Value].self) throws -> [Value] {
+    public func decode<Value: RESPTokenDecodable>(as type: [Value].Type = [Value].self) throws -> [Value] {
         try self.map { try $0.decode() }
     }
 }
 
-extension ByteBuffer: RESPTokenRepresentable {
+extension ByteBuffer: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer),
             .bulkString(let buffer),
@@ -88,9 +88,9 @@ extension ByteBuffer: RESPTokenRepresentable {
     }
 }
 
-extension String: RESPTokenRepresentable {
+extension String: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer),
             .bulkString(let buffer),
@@ -120,8 +120,8 @@ extension String: RESPTokenRepresentable {
     }
 }
 
-extension Int64: RESPTokenRepresentable {
-    public init(from token: RESPToken) throws {
+extension Int64: RESPTokenDecodable {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .number(let value):
             self = value
@@ -145,9 +145,9 @@ extension Int64: RESPTokenRepresentable {
     }
 }
 
-extension Int: RESPTokenRepresentable {
+extension Int: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .number(let value):
             guard let value = Int(exactly: value) else {
@@ -174,9 +174,9 @@ extension Int: RESPTokenRepresentable {
     }
 }
 
-extension Double: RESPTokenRepresentable {
+extension Double: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .double(let value):
             self = value
@@ -186,9 +186,9 @@ extension Double: RESPTokenRepresentable {
     }
 }
 
-extension Bool: RESPTokenRepresentable {
+extension Bool: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .boolean(let value):
             self = value
@@ -198,44 +198,44 @@ extension Bool: RESPTokenRepresentable {
     }
 }
 
-extension Optional: RESPTokenRepresentable where Wrapped: RESPTokenRepresentable {
+extension Optional: RESPTokenDecodable where Wrapped: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .null:
             self = nil
         default:
-            self = try Wrapped(from: token)
+            self = try Wrapped(fromRESP: token)
         }
     }
 }
 
-extension Array: RESPTokenRepresentable where Element: RESPTokenRepresentable {
+extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let respArray), .push(let respArray):
             var array: [Element] = []
             for respElement in respArray {
-                let element = try Element(from: respElement)
+                let element = try Element(fromRESP: respElement)
                 array.append(element)
             }
             self = array
         default:
-            let value = try Element(from: token)
+            let value = try Element(fromRESP: token)
             self = [value]
         }
     }
 }
 
-extension Set: RESPTokenRepresentable where Element: RESPTokenRepresentable {
+extension Set: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .set(let respSet):
             var set: Set<Element> = .init()
             for respElement in respSet {
-                let element = try Element(from: respElement)
+                let element = try Element(fromRESP: respElement)
                 set.insert(element)
             }
             self = set
@@ -245,15 +245,15 @@ extension Set: RESPTokenRepresentable where Element: RESPTokenRepresentable {
     }
 }
 
-extension Dictionary: RESPTokenRepresentable where Value: RESPTokenRepresentable, Key: RESPTokenRepresentable {
+extension Dictionary: RESPTokenDecodable where Value: RESPTokenDecodable, Key: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .map(let respMap), .attribute(let respMap):
             var array: [(Key, Value)] = []
             for respElement in respMap {
-                let key = try Key(from: respElement.key)
-                let value = try Value(from: respElement.value)
+                let key = try Key(fromRESP: respElement.key)
+                let value = try Value(fromRESP: respElement.value)
                 array.append((key, value))
             }
             self = .init(array) { first, _ in first }
@@ -263,16 +263,16 @@ extension Dictionary: RESPTokenRepresentable where Value: RESPTokenRepresentable
     }
 }
 
-extension ClosedRange: RESPTokenRepresentable where Bound: RESPTokenRepresentable {
-    public init(from token: RESPToken) throws {
+extension ClosedRange: RESPTokenDecodable where Bound: RESPTokenDecodable {
+    public init(fromRESP token: RESPToken) throws {
         let (min, max) = try token.decodeArrayElements(as: (Bound, Bound).self)
         self = min...max
     }
 }
 
-extension RESPToken.Array: RESPTokenRepresentable {
+extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let respArray), .push(let respArray):
             self = respArray
@@ -286,7 +286,7 @@ extension RESPToken.Array: RESPTokenRepresentable {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Array of Value
     @inlinable
-    public func decode<Value: RESPTokenRepresentable>(as type: [Value].Type = [Value].self) throws -> [Value] {
+    public func decode<Value: RESPTokenDecodable>(as type: [Value].Type = [Value].self) throws -> [Value] {
         try self.map { try $0.decode() }
     }
 
@@ -295,13 +295,13 @@ extension RESPToken.Array: RESPTokenRepresentable {
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
     @inlinable
-    public func decodeElements<each Value: RESPTokenRepresentable>(
+    public func decodeElements<each Value: RESPTokenDecodable>(
         as: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
-        func decodeOptionalRESPToken<T: RESPTokenRepresentable>(_ token: RESPToken?, as: T.Type) throws -> T {
+        func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) throws -> T {
             switch token {
             case .some(let value):
-                return try T(from: value)
+                return try T(fromRESP: value)
             case .none:
                 // TODO: Fixup error when we have a decoding error
                 throw RESPParsingError(code: .unexpectedType, buffer: token?.base ?? .init())
@@ -312,9 +312,9 @@ extension RESPToken.Array: RESPTokenRepresentable {
     }
 }
 
-extension RESPToken.Map: RESPTokenRepresentable {
+extension RESPToken.Map: RESPTokenDecodable {
     @inlinable
-    public init(from token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .map(let respArray):
             self = respArray
@@ -328,11 +328,11 @@ extension RESPToken.Map: RESPTokenRepresentable {
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: String value dictionary
     @inlinable
-    public func decode<Value: RESPTokenRepresentable>(as type: [String: Value].Type = [String: Value].self) throws -> [String: Value] {
+    public func decode<Value: RESPTokenDecodable>(as type: [String: Value].Type = [String: Value].self) throws -> [String: Value] {
         var array: [(String, Value)] = []
         for respElement in self {
-            let key = try String(from: respElement.key)
-            let value = try Value(from: respElement.value)
+            let key = try String(fromRESP: respElement.key)
+            let value = try Value(fromRESP: respElement.value)
             array.append((key, value))
         }
         return .init(array) { first, _ in first }

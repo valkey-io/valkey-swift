@@ -90,7 +90,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     ///   - request: Valkey command request
     ///   - promise: Promise to fulfill when command is complete
     @inlinable
-    func write<Command: RESPCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>) {
+    func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>) {
         self.eventLoop.assertInEventLoop()
         guard let context = self.context else {
             preconditionFailure("Trying to use valkey connection before it is setup")
@@ -125,7 +125,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         case .single(let buffer, let tokenPromise):
             self.logger.trace(
                 "Send command",
-                metadata: ["command": "\((try? [String](from: RESPToken(validated: buffer))).map { $0.joined(separator: " ") } ?? "")"]
+                metadata: ["command": "\((try? [String](fromRESP: RESPToken(validated: buffer))).map { $0.joined(separator: " ") } ?? "")"]
             )
             self.commands.append(tokenPromise)
             context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
@@ -140,7 +140,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     /// Add subscription, and call SUBSCRIBE command if required
     func subscribe(
-        command: some RESPCommand,
+        command: some ValkeyCommand,
         streamContinuation: ValkeySubscriptionSequence.Continuation,
         filters: [ValkeySubscriptionFilter],
         promise: ValkeyPromise<Int>
@@ -199,7 +199,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     func performUnsubscribe(
-        command: some RESPCommand,
+        command: some ValkeyCommand,
         filters: [ValkeySubscriptionFilter],
         promise: ValkeyPromise<Void>
     ) {
@@ -365,7 +365,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     // Function used internally by subscribe
-    func _send<Command: RESPCommand>(command: Command) -> EventLoopFuture<RESPToken> {
+    func _send<Command: ValkeyCommand>(command: Command) -> EventLoopFuture<RESPToken> {
         self.eventLoop.assertInEventLoop()
         self.encoder.reset()
         command.encode(into: &self.encoder)

@@ -94,7 +94,7 @@ let benchmarks: @Sendable () -> Void = {
     }
 
     Benchmark("RESPCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let keys = (0..<15).map { RESPKey(rawValue: "foo-\($0)") }
+        let keys = (0..<15).map { ValkeyKey(rawValue: "foo-\($0)") }
         let command = MGET(key: keys)
         benchmark.startMeasurement()
 

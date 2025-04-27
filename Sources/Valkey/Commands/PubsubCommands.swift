@@ -25,7 +25,7 @@ import Foundation
 /// A container for Pub/Sub commands.
 public enum PUBSUB {
     /// Returns the active channels.
-    public struct CHANNELS: RESPCommand {
+    public struct CHANNELS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var pattern: String?
@@ -34,37 +34,37 @@ public enum PUBSUB {
             self.pattern = pattern
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "CHANNELS", pattern)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "HELP")
         }
     }
 
     /// Returns a count of unique pattern subscriptions.
-    public struct NUMPAT: RESPCommand {
+    public struct NUMPAT: ValkeyCommand {
         public typealias Response = Int
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "NUMPAT")
         }
     }
 
     /// Returns a count of subscribers to channels.
-    public struct NUMSUB: RESPCommand {
+    public struct NUMSUB: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var channel: [String]
@@ -73,13 +73,13 @@ public enum PUBSUB {
             self.channel = channel
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "NUMSUB", channel)
         }
     }
 
     /// Returns the active shard channels.
-    public struct SHARDCHANNELS: RESPCommand {
+    public struct SHARDCHANNELS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var pattern: String?
@@ -88,13 +88,13 @@ public enum PUBSUB {
             self.pattern = pattern
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "SHARDCHANNELS", pattern)
         }
     }
 
     /// Returns the count of subscribers of shard channels.
-    public struct SHARDNUMSUB: RESPCommand {
+    public struct SHARDNUMSUB: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var shardchannel: [String]
@@ -103,7 +103,7 @@ public enum PUBSUB {
             self.shardchannel = shardchannel
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannel)
         }
     }
@@ -111,20 +111,20 @@ public enum PUBSUB {
 }
 
 /// Listens for messages published to channels that match one or more patterns.
-public struct PSUBSCRIBE: RESPCommand {
+public struct PSUBSCRIBE: ValkeyCommand {
     public var pattern: [String]
 
     @inlinable public init(pattern: [String]) {
         self.pattern = pattern
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PSUBSCRIBE", pattern)
     }
 }
 
 /// Posts a message to a channel.
-public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderable>: RESPCommand {
+public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var channel: Channel
@@ -135,26 +135,26 @@ public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderab
         self.message = message
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PUBLISH", RESPBulkString(channel), RESPBulkString(message))
     }
 }
 
 /// Stops listening to messages published to channels that match one or more patterns.
-public struct PUNSUBSCRIBE: RESPCommand {
+public struct PUNSUBSCRIBE: ValkeyCommand {
     public var pattern: [String]
 
     @inlinable public init(pattern: [String] = []) {
         self.pattern = pattern
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PUNSUBSCRIBE", pattern)
     }
 }
 
 /// Post a message to a shard channel
-public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>: RESPCommand {
+public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var shardchannel: Shardchannel
@@ -165,59 +165,59 @@ public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRe
         self.message = message
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SPUBLISH", RESPBulkString(shardchannel), RESPBulkString(message))
     }
 }
 
 /// Listens for messages published to shard channels.
-public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: RESPCommand {
+public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
     public var shardchannel: [Shardchannel]
 
     @inlinable public init(shardchannel: [Shardchannel]) {
         self.shardchannel = shardchannel
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SSUBSCRIBE", shardchannel.map { RESPBulkString($0) })
     }
 }
 
 /// Listens for messages published to channels.
-public struct SUBSCRIBE<Channel: RESPStringRenderable>: RESPCommand {
+public struct SUBSCRIBE<Channel: RESPStringRenderable>: ValkeyCommand {
     public var channel: [Channel]
 
     @inlinable public init(channel: [Channel]) {
         self.channel = channel
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SUBSCRIBE", channel.map { RESPBulkString($0) })
     }
 }
 
 /// Stops listening to messages posted to shard channels.
-public struct SUNSUBSCRIBE: RESPCommand {
+public struct SUNSUBSCRIBE: ValkeyCommand {
     public var shardchannel: [String]
 
     @inlinable public init(shardchannel: [String] = []) {
         self.shardchannel = shardchannel
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SUNSUBSCRIBE", shardchannel)
     }
 }
 
 /// Stops listening to messages posted to channels.
-public struct UNSUBSCRIBE: RESPCommand {
+public struct UNSUBSCRIBE: ValkeyCommand {
     public var channel: [String]
 
     @inlinable public init(channel: [String] = []) {
         self.channel = channel
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("UNSUBSCRIBE", channel)
     }
 }

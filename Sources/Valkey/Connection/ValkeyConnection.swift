@@ -108,7 +108,7 @@ public final class ValkeyConnection: Sendable {
     /// - Parameter command: RESPCommand structure
     /// - Returns: The command response as defined in the RESPCommand
     @inlinable
-    public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
+    public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let result = try await withCheckedThrowingContinuation { continuation in
             if self.channel.eventLoop.inEventLoop {
                 self.channelHandler.value.write(command: command, continuation: continuation)
@@ -118,7 +118,7 @@ public final class ValkeyConnection: Sendable {
                 }
             }
         }
-        return try .init(from: result)
+        return try .init(fromRESP: result)
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -127,13 +127,13 @@ public final class ValkeyConnection: Sendable {
     /// - Parameter commands: Parameter pack of RESPCommands
     /// - Returns: Parameter pack holding the responses of all the commands
     @inlinable
-    public func pipeline<each Command: RESPCommand>(
+    public func pipeline<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> (repeat Result<(each Command).Response, Error>) {
-        func convert<Response: RESPTokenRepresentable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
+        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
             result.flatMap {
                 do {
-                    return try .success(Response(from: $0))
+                    return try .success(Response(fromRESP: $0))
                 } catch {
                     return .failure(error)
                 }

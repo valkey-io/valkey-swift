@@ -23,64 +23,64 @@ import Foundation
 #endif
 
 /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-public struct PFADD: RESPCommand {
+public struct PFADD: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var element: [String]
 
-    @inlinable public init(key: RESPKey, element: [String] = []) {
+    @inlinable public init(key: ValkeyKey, element: [String] = []) {
         self.key = key
         self.element = element
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PFADD", key, element)
     }
 }
 
 /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
-public struct PFCOUNT: RESPCommand {
+public struct PFCOUNT: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
 
-    @inlinable public init(key: [RESPKey]) {
+    @inlinable public init(key: [ValkeyKey]) {
         self.key = key
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PFCOUNT", key)
     }
 }
 
 /// Merges one or more HyperLogLog values into a single key.
-public struct PFMERGE: RESPCommand {
-    public var destkey: RESPKey
-    public var sourcekey: [RESPKey]
+public struct PFMERGE: ValkeyCommand {
+    public var destkey: ValkeyKey
+    public var sourcekey: [ValkeyKey]
 
-    @inlinable public init(destkey: RESPKey, sourcekey: [RESPKey] = []) {
+    @inlinable public init(destkey: ValkeyKey, sourcekey: [ValkeyKey] = []) {
         self.destkey = destkey
         self.sourcekey = sourcekey
     }
 
-    public var keysAffected: [RESPKey] { [destkey] + sourcekey }
+    public var keysAffected: [ValkeyKey] { [destkey] + sourcekey }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)
     }
 }
 
 /// An internal command for testing HyperLogLog values.
-public struct PFSELFTEST: RESPCommand {
+public struct PFSELFTEST: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PFSELFTEST")
     }
 }
@@ -96,7 +96,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if at least one HyperLogLog internal register was altered.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if no HyperLogLog internal registers were altered.
     @inlinable
-    public func pfadd(key: RESPKey, element: [String] = []) async throws -> Int {
+    public func pfadd(key: ValkeyKey, element: [String] = []) async throws -> Int {
         try await send(command: PFADD(key: key, element: element))
     }
 
@@ -108,7 +108,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @hyperloglog, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the approximated number of unique elements observed via `PFADD`.
     @inlinable
-    public func pfcount(key: [RESPKey]) async throws -> Int {
+    public func pfcount(key: [ValkeyKey]) async throws -> Int {
         try await send(command: PFCOUNT(key: key))
     }
 
@@ -120,7 +120,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @hyperloglog, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func pfmerge(destkey: RESPKey, sourcekey: [RESPKey] = []) async throws {
+    public func pfmerge(destkey: ValkeyKey, sourcekey: [ValkeyKey] = []) async throws {
         _ = try await send(command: PFMERGE(destkey: destkey, sourcekey: sourcekey))
     }
 
