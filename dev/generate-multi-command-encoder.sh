@@ -57,4 +57,6 @@ for n in {1..15}; do
     genWithoutContextParameter "$n"
 done
 echo "}"
-} > "$here/../Sources/Valkey/RESP/RESPCommandEncoder-multi-encode.swift"
+} > "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
+
+swift format format -i "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
