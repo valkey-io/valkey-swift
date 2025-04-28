@@ -12,14 +12,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-extension ClosedRange: RESPTokenRepresentable where Bound: RESPTokenRepresentable {
-    public init(from token: RESPToken) throws {
-        let values = try token.decode(as: [Bound].self)
-        guard values.count == 2 else { throw RESPParsingError(code: .unexpectedType, buffer: token.base) }
-        self = values[0]...values[1]
-    }
-}
-
 extension LCS {
     /// - Returns: One of the following:
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the longest common subsequence.
@@ -31,10 +23,7 @@ extension LCS {
             public let second: ClosedRange<Int>
 
             public init(from token: RESPToken) throws {
-                let ranges = try token.decode(as: [RESPToken].self)
-                guard ranges.count == 2 else { throw RESPParsingError(code: .unexpectedType, buffer: token.base) }
-                self.first = try .init(from: ranges[0])
-                self.second = try .init(from: ranges[1])
+                (self.first, self.second) = try token.decodeElements()
             }
         }
 

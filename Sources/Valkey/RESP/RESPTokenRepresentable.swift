@@ -33,6 +33,22 @@ extension RESPToken: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         self = token
     }
+
+    /// Convert RESP3Token Array to a tuple of values
+    /// - Parameter as: Tuple of types to convert to
+    /// - Throws: RESPDecodeError
+    /// - Returns: Tuple of decoded values
+    @inlinable
+    public func decodeElements<each Value: RESPTokenRepresentable>(
+        as: (repeat (each Value)).Type = (repeat (each Value)).self
+    ) throws -> (repeat each Value) {
+        switch self.value {
+        case .array(let array):
+            try array.decodeElements()
+        default:
+            throw RESPParsingError(code: .unexpectedType, buffer: self.base)
+        }
+    }
 }
 
 extension Array where Element == RESPToken {
@@ -167,6 +183,13 @@ extension Dictionary: RESPTokenRepresentable where Value: RESPTokenRepresentable
     }
 }
 
+extension ClosedRange: RESPTokenRepresentable where Bound: RESPTokenRepresentable {
+    public init(from token: RESPToken) throws {
+        let (min, max) = try token.decodeElements(as: (Bound, Bound).self)
+        self = min...max
+    }
+}
+
 extension RESPToken.Array: RESPTokenRepresentable {
     @inlinable
     public init(from token: RESPToken) throws {
@@ -185,6 +208,26 @@ extension RESPToken.Array: RESPTokenRepresentable {
     @inlinable
     public func decode<Value: RESPTokenRepresentable>(as type: [Value].Type = [Value].self) throws -> [Value] {
         try self.map { try $0.decode() }
+    }
+
+    /// Convert RESP3Token Array to a tuple of values
+    /// - Parameter as: Tuple of types to convert to
+    /// - Throws: RESPDecodeError
+    /// - Returns: Tuple of decoded values
+    @inlinable
+    public func decodeElements<each Value: RESPTokenRepresentable>(
+        as: (repeat (each Value)).Type = (repeat (each Value)).self
+    ) throws -> (repeat each Value) {
+        func decodeOptionalRESPToken<T: RESPTokenRepresentable>(_ token: RESPToken?, as: T.Type) throws -> T {
+            switch token {
+            case .some(let value):
+                return try T(from: value)
+            case .none:
+                throw RESPParsingError(code: .unexpectedType, buffer: token?.base ?? .init())
+            }
+        }
+        var iterator = self.makeIterator()
+        return try (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
     }
 }
 
