@@ -58,12 +58,12 @@ struct RESPBulkString<Value: RESPStringRenderable>: RESPRenderable {
     @usableFromInline
     let value: Value
 
-    @usableFromInline
+    @inlinable
     init(_ value: Value) {
         self.value = value
     }
 
-    @usableFromInline
+    @inlinable
     func encode(into commandEncoder: inout RESPCommandEncoder) {
         self.value.encode(into: &commandEncoder)
     }
