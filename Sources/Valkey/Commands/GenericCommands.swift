@@ -618,9 +618,9 @@ public struct SCAN: RESPCommand {
     public var cursor: Int
     public var pattern: String?
     public var count: Int?
-    public var type: Type?
+    public var type: String?
 
-    @inlinable public init(cursor: Int, pattern: String? = nil, count: Int? = nil, type: Type? = nil) {
+    @inlinable public init(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) {
         self.cursor = cursor
         self.pattern = pattern
         self.count = count
@@ -1200,7 +1200,7 @@ extension ValkeyConnection {
     ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) with the names of scanned keys.
     @inlinable
-    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: Type? = nil) async throws -> RESPToken.Array {
+    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> RESPToken.Array {
         try await send(command: SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
     }
 

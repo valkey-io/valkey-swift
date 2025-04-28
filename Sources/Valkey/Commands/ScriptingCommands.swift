@@ -101,10 +101,10 @@ public enum FUNCTION {
     public struct LIST: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var libraryNamePattern: LibraryNamePattern?
+        public var libraryNamePattern: String?
         public var withcode: Bool
 
-        @inlinable public init(libraryNamePattern: LibraryNamePattern? = nil, withcode: Bool = false) {
+        @inlinable public init(libraryNamePattern: String? = nil, withcode: Bool = false) {
             self.libraryNamePattern = libraryNamePattern
             self.withcode = withcode
         }
@@ -291,9 +291,9 @@ public enum SCRIPT {
 public struct EVAL<Script: RESPStringRenderable>: RESPCommand {
     public var script: Script
     public var key: [RESPKey]
-    public var arg: [Arg]
+    public var arg: [String]
 
-    @inlinable public init(script: Script, key: [RESPKey] = [], arg: [Arg] = []) {
+    @inlinable public init(script: Script, key: [RESPKey] = [], arg: [String] = []) {
         self.script = script
         self.key = key
         self.arg = arg
@@ -310,9 +310,9 @@ public struct EVAL<Script: RESPStringRenderable>: RESPCommand {
 public struct EVALSHA<Sha1: RESPStringRenderable>: RESPCommand {
     public var sha1: Sha1
     public var key: [RESPKey]
-    public var arg: [Arg]
+    public var arg: [String]
 
-    @inlinable public init(sha1: Sha1, key: [RESPKey] = [], arg: [Arg] = []) {
+    @inlinable public init(sha1: Sha1, key: [RESPKey] = [], arg: [String] = []) {
         self.sha1 = sha1
         self.key = key
         self.arg = arg
@@ -329,9 +329,9 @@ public struct EVALSHA<Sha1: RESPStringRenderable>: RESPCommand {
 public struct EVALSHARO<Sha1: RESPStringRenderable>: RESPCommand {
     public var sha1: Sha1
     public var key: [RESPKey]
-    public var arg: [Arg]
+    public var arg: [String]
 
-    @inlinable public init(sha1: Sha1, key: [RESPKey] = [], arg: [Arg] = []) {
+    @inlinable public init(sha1: Sha1, key: [RESPKey] = [], arg: [String] = []) {
         self.sha1 = sha1
         self.key = key
         self.arg = arg
@@ -348,9 +348,9 @@ public struct EVALSHARO<Sha1: RESPStringRenderable>: RESPCommand {
 public struct EVALRO<Script: RESPStringRenderable>: RESPCommand {
     public var script: Script
     public var key: [RESPKey]
-    public var arg: [Arg]
+    public var arg: [String]
 
-    @inlinable public init(script: Script, key: [RESPKey] = [], arg: [Arg] = []) {
+    @inlinable public init(script: Script, key: [RESPKey] = [], arg: [String] = []) {
         self.script = script
         self.key = key
         self.arg = arg
@@ -367,9 +367,9 @@ public struct EVALRO<Script: RESPStringRenderable>: RESPCommand {
 public struct FCALL<Function: RESPStringRenderable>: RESPCommand {
     public var function: Function
     public var key: [RESPKey]
-    public var arg: [Arg]
+    public var arg: [String]
 
-    @inlinable public init(function: Function, key: [RESPKey] = [], arg: [Arg] = []) {
+    @inlinable public init(function: Function, key: [RESPKey] = [], arg: [String] = []) {
         self.function = function
         self.key = key
         self.arg = arg
@@ -386,9 +386,9 @@ public struct FCALL<Function: RESPStringRenderable>: RESPCommand {
 public struct FCALLRO<Function: RESPStringRenderable>: RESPCommand {
     public var function: Function
     public var key: [RESPKey]
-    public var arg: [Arg]
+    public var arg: [String]
 
-    @inlinable public init(function: Function, key: [RESPKey] = [], arg: [Arg] = []) {
+    @inlinable public init(function: Function, key: [RESPKey] = [], arg: [String] = []) {
         self.function = function
         self.key = key
         self.arg = arg
@@ -410,7 +410,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func eval<Script: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVAL.Response {
+    public func eval<Script: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [String] = []) async throws -> EVAL.Response {
         try await send(command: EVAL(script: script, key: key, arg: arg))
     }
 
@@ -422,7 +422,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALSHA.Response {
+    public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALSHA.Response {
         try await send(command: EVALSHA(sha1: sha1, key: key, arg: arg))
     }
 
@@ -434,7 +434,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALSHARO.Response {
+    public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALSHARO.Response {
         try await send(command: EVALSHARO(sha1: sha1, key: key, arg: arg))
     }
 
@@ -446,7 +446,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalRo<Script: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALRO.Response {
+    public func evalRo<Script: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALRO.Response {
         try await send(command: EVALRO(script: script, key: key, arg: arg))
     }
 
@@ -458,7 +458,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcall<Function: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [Arg] = []) async throws -> FCALL.Response {
+    public func fcall<Function: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [String] = []) async throws -> FCALL.Response {
         try await send(command: FCALL(function: function, key: key, arg: arg))
     }
 
@@ -470,7 +470,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcallRo<Function: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [Arg] = []) async throws -> FCALLRO.Response {
+    public func fcallRo<Function: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [String] = []) async throws -> FCALLRO.Response {
         try await send(command: FCALLRO(function: function, key: key, arg: arg))
     }
 
@@ -542,7 +542,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): information about functions and libraries.
     @inlinable
-    public func functionList(libraryNamePattern: LibraryNamePattern? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
+    public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
         try await send(command: FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
     }
 

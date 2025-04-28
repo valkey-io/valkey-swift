@@ -131,9 +131,9 @@ public struct GEOHASH: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var member: [Member]
+    public var member: [String]
 
-    @inlinable public init(key: RESPKey, member: [Member] = []) {
+    @inlinable public init(key: RESPKey, member: [String] = []) {
         self.key = key
         self.member = member
     }
@@ -150,9 +150,9 @@ public struct GEOPOS: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
-    public var member: [Member]
+    public var member: [String]
 
-    @inlinable public init(key: RESPKey, member: [Member] = []) {
+    @inlinable public init(key: RESPKey, member: [String] = []) {
         self.key = key
         self.member = member
     }
@@ -1013,7 +1013,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is the Geohash corresponding to each member name passed as an argument to the command.
     @inlinable
-    public func geohash(key: RESPKey, member: [Member] = []) async throws -> RESPToken.Array {
+    public func geohash(key: RESPKey, member: [String] = []) async throws -> RESPToken.Array {
         try await send(command: GEOHASH(key: key, member: member))
     }
 
@@ -1025,7 +1025,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/valkey.io/topics/protocol/#nulls) elements of the array.
     @inlinable
-    public func geopos(key: RESPKey, member: [Member] = []) async throws -> RESPToken.Array {
+    public func geopos(key: RESPKey, member: [String] = []) async throws -> RESPToken.Array {
         try await send(command: GEOPOS(key: key, member: member))
     }
 

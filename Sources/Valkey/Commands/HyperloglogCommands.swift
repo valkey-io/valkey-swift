@@ -27,9 +27,9 @@ public struct PFADD: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var element: [Element]
+    public var element: [String]
 
-    @inlinable public init(key: RESPKey, element: [Element] = []) {
+    @inlinable public init(key: RESPKey, element: [String] = []) {
         self.key = key
         self.element = element
     }
@@ -96,7 +96,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if at least one HyperLogLog internal register was altered.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if no HyperLogLog internal registers were altered.
     @inlinable
-    public func pfadd(key: RESPKey, element: [Element] = []) async throws -> Int {
+    public func pfadd(key: RESPKey, element: [String] = []) async throws -> Int {
         try await send(command: PFADD(key: key, element: element))
     }
 
