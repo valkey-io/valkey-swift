@@ -223,6 +223,7 @@ extension RESPToken.Array: RESPTokenRepresentable {
             case .some(let value):
                 return try T(from: value)
             case .none:
+                // TODO: Fixup error when we have a decoding error
                 throw RESPParsingError(code: .unexpectedType, buffer: token?.base ?? .init())
             }
         }
