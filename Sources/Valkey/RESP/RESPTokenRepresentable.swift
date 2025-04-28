@@ -66,9 +66,23 @@ extension ByteBuffer: RESPTokenRepresentable {
     @inlinable
     public init(from token: RESPToken) throws {
         switch token.value {
-        case .simpleString(let buffer), .bulkString(let buffer), .verbatimString(let buffer), .bigNumber(let buffer):
+        case .simpleString(let buffer),
+             .bulkString(let buffer),
+             .verbatimString(let buffer),
+             .bigNumber(let buffer),
+             .simpleError(let buffer),
+             .blobError(let buffer):
             self = buffer
-        default:
+
+        case .array,
+             .number,
+             .double,
+             .boolean,
+             .null,
+             .attribute,
+             .map,
+             .set,
+             .push:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
@@ -77,8 +91,58 @@ extension ByteBuffer: RESPTokenRepresentable {
 extension String: RESPTokenRepresentable {
     @inlinable
     public init(from token: RESPToken) throws {
-        let buffer = try ByteBuffer(from: token)
-        self.init(buffer: buffer)
+        switch token.value {
+        case .simpleString(let buffer),
+             .bulkString(let buffer),
+             .verbatimString(let buffer),
+             .bigNumber(let buffer),
+             .simpleError(let buffer),
+             .blobError(let buffer):
+            let buffer = try ByteBuffer(from: token)
+            self.init(buffer: buffer)
+
+        case .double(let value):
+            self = "\(value)"
+
+        case .number(let value):
+            self = "\(value)"
+
+        case .boolean(let value):
+            self = "\(value)"
+
+        case .array,
+             .null,
+             .attribute,
+             .map,
+             .set,
+             .push:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+        }
+    }
+}
+
+extension Int64: RESPTokenRepresentable {
+    public init(from token: RESPToken) throws {
+        switch token.value {
+        case .number(let value):
+            self = value
+
+        case .bulkString,
+             .simpleString,
+             .blobError,
+             .simpleError,
+             .verbatimString,
+             .double,
+             .boolean,
+             .array,
+             .attribute,
+             .bigNumber,
+             .push,
+             .set,
+             .null,
+             .map:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+        }
     }
 }
 
@@ -87,8 +151,25 @@ extension Int: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .number(let value):
-            self = numericCast(value)
-        default:
+            guard let value = Int(exactly: value) else {
+                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            }
+            self = value
+
+        case .bulkString,
+             .simpleString,
+             .blobError,
+             .simpleError,
+             .verbatimString,
+             .double,
+             .boolean,
+             .array,
+             .attribute,
+             .bigNumber,
+             .push,
+             .set,
+             .null,
+             .map:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }

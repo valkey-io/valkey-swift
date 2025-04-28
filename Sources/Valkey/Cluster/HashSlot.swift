@@ -70,6 +70,11 @@ extension HashSlot: RawRepresentable {
         self._raw = UInt16(rawValue)
     }
 
+    public init?(rawValue: Int64) {
+        guard HashSlot.min.rawValue <= rawValue, rawValue <= HashSlot.max.rawValue else { return nil }
+        self._raw = UInt16(rawValue)
+    }
+
     public var rawValue: UInt16 { self._raw }
 }
 
