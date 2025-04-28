@@ -63,7 +63,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "CREATE", key, group, idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+            commandEncoder.encodeArray("XGROUP", "CREATE", key, RESPBulkString(group), idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
         }
     }
 
@@ -84,7 +84,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, group, consumer)
+            commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, RESPBulkString(group), RESPBulkString(consumer))
         }
     }
 
@@ -105,7 +105,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, group, consumer)
+            commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, RESPBulkString(group), RESPBulkString(consumer))
         }
     }
 
@@ -124,7 +124,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "DESTROY", key, group)
+            commandEncoder.encodeArray("XGROUP", "DESTROY", key, RESPBulkString(group))
         }
     }
 
@@ -177,7 +177,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "SETID", key, group, idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+            commandEncoder.encodeArray("XGROUP", "SETID", key, RESPBulkString(group), idSelector, RESPWithToken("ENTRIESREAD", entriesread))
         }
     }
 
@@ -200,7 +200,7 @@ public enum XINFO {
         public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("XINFO", "CONSUMERS", key, group)
+            commandEncoder.encodeArray("XINFO", "CONSUMERS", key, RESPBulkString(group))
         }
     }
 
@@ -292,7 +292,7 @@ public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: RESPC
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XACK", key, group, id)
+        commandEncoder.encodeArray("XACK", key, RESPBulkString(group), id.map { RESPBulkString($0) })
     }
 }
 
@@ -387,13 +387,13 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: RE
 
         @inlinable
         public var respEntries: Int {
-            field.respEntries + value.respEntries
+            RESPBulkString(field).respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            field.encode(into: &commandEncoder)
-            value.encode(into: &commandEncoder)
+            RESPBulkString(field).encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken?
@@ -444,7 +444,7 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XAUTOCLAIM", key, group, consumer, minIdleTime, start, RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
+        commandEncoder.encodeArray("XAUTOCLAIM", key, RESPBulkString(group), RESPBulkString(consumer), RESPBulkString(minIdleTime), RESPBulkString(start), RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
     }
 }
 
@@ -481,7 +481,7 @@ public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XCLAIM", key, group, consumer, minIdleTime, id, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+        commandEncoder.encodeArray("XCLAIM", key, RESPBulkString(group), RESPBulkString(consumer), RESPBulkString(minIdleTime), id.map { RESPBulkString($0) }, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 }
 
@@ -500,7 +500,7 @@ public struct XDEL<Id: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XDEL", key, id)
+        commandEncoder.encodeArray("XDEL", key, id.map { RESPBulkString($0) })
     }
 }
 
@@ -568,7 +568,7 @@ public struct XPENDING<Group: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XPENDING", key, group, filters)
+        commandEncoder.encodeArray("XPENDING", key, RESPBulkString(group), filters)
     }
 }
 
@@ -591,7 +591,7 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: RE
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XRANGE", key, start, end, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("XRANGE", key, RESPBulkString(start), RESPBulkString(end), RESPWithToken("COUNT", count))
     }
 }
 
@@ -609,13 +609,13 @@ public struct XREAD<Id: RESPStringRenderable>: RESPCommand {
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + id.respEntries
+            key.respEntries + id.map { RESPBulkString($0) }.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             key.encode(into: &commandEncoder)
-            id.encode(into: &commandEncoder)
+            id.map { RESPBulkString($0) }.encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken.Map?
@@ -649,13 +649,13 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 
         @inlinable
         public var respEntries: Int {
-            group.respEntries + consumer.respEntries
+            RESPBulkString(group).respEntries + RESPBulkString(consumer).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            group.encode(into: &commandEncoder)
-            consumer.encode(into: &commandEncoder)
+            RESPBulkString(group).encode(into: &commandEncoder)
+            RESPBulkString(consumer).encode(into: &commandEncoder)
         }
     }
     public struct Streams: RESPRenderable, Sendable {
@@ -670,13 +670,13 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + id.respEntries
+            key.respEntries + id.map { RESPBulkString($0) }.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             key.encode(into: &commandEncoder)
-            id.encode(into: &commandEncoder)
+            id.map { RESPBulkString($0) }.encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken.Map?
@@ -719,7 +719,7 @@ public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>:
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XREVRANGE", key, end, start, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("XREVRANGE", key, RESPBulkString(end), RESPBulkString(start), RESPWithToken("COUNT", count))
     }
 }
 
@@ -740,7 +740,7 @@ public struct XSETID<LastId: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("XSETID", key, lastId, RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
+        commandEncoder.encodeArray("XSETID", key, RESPBulkString(lastId), RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
     }
 }
 
@@ -792,14 +792,14 @@ public struct XTRIM<Threshold: RESPStringRenderable>: RESPCommand {
 
         @inlinable
         public var respEntries: Int {
-            strategy.respEntries + `operator`.respEntries + threshold.respEntries + RESPWithToken("LIMIT", count).respEntries
+            strategy.respEntries + `operator`.respEntries + RESPBulkString(threshold).respEntries + RESPWithToken("LIMIT", count).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             strategy.encode(into: &commandEncoder)
             `operator`.encode(into: &commandEncoder)
-            threshold.encode(into: &commandEncoder)
+            RESPBulkString(threshold).encode(into: &commandEncoder)
             RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
         }
     }

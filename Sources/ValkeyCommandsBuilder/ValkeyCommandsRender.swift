@@ -75,7 +75,7 @@ extension String {
                     )
                 } else {
                     self.append(
-                        "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false)).respEntries\n"
+                        "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).respEntries\n"
                     )
                 }
             }
@@ -92,7 +92,7 @@ extension String {
                 )
             } else {
                 self.append(
-                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false)).encode(into: &commandEncoder)\n"
+                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).encode(into: &commandEncoder)\n"
                 )
             }
         }
@@ -137,7 +137,7 @@ extension String {
             if case .pureToken = $0.type {
                 "\"\($0.token!)\".respEntries"
             } else {
-                "\($0.respRepresentable(isArray: false)).respEntries"
+                "\($0.respRepresentable(isArray: false, genericString: genericStrings)).respEntries"
             }
         }
         self.append(entries.joined(separator: " + "))
@@ -149,7 +149,9 @@ extension String {
             if case .pureToken = arg.type {
                 self.append("\(tab)            \"\(arg.token!)\".encode(into: &commandEncoder)\n")
             } else {
-                self.append("\(tab)            \(arg.respRepresentable(isArray: false)).encode(into: &commandEncoder)\n")
+                self.append(
+                    "\(tab)            \(arg.respRepresentable(isArray: false, genericString: genericStrings)).encode(into: &commandEncoder)\n"
+                )
             }
         }
         self.append("\(tab)        }\n")
@@ -197,9 +199,9 @@ extension String {
             .joined(separator: ", ")
         let commandArguments =
             if let subCommand {
-                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.respRepresentable(isArray: true) }
+                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
             } else {
-                ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true) }
+                ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
             }
         let commandArgumentsString = commandArguments.joined(separator: ", ")
         if returnType != "RESPToken" {
@@ -587,7 +589,7 @@ extension RESPCommand.ArgumentType {
 }
 
 extension RESPCommand.Argument {
-    func respRepresentable(isArray: Bool) -> String {
+    func respRepresentable(isArray: Bool, genericString: Bool) -> String {
         var variable = self.functionLabel(isArray: multiple && isArray)
         switch self.type
         {
@@ -606,6 +608,12 @@ extension RESPCommand.Argument {
                     } else {
                         variable = "Int(\(variable).timeIntervalSince1970)"
                     }
+                }
+            } else if self.type == .string, !self.optional, genericString {
+                if self.multiple {
+                    variable = "\(variable).map { RESPBulkString($0) }"
+                } else {
+                    variable = "RESPBulkString(\(variable))"
                 }
             }
             if let token = self.token {

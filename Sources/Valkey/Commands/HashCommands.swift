@@ -37,7 +37,7 @@ public struct HDEL<Field: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("HDEL", key, field)
+        commandEncoder.encodeArray("HDEL", key, field.map { RESPBulkString($0) })
     }
 }
 
@@ -56,7 +56,7 @@ public struct HEXISTS<Field: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("HEXISTS", key, field)
+        commandEncoder.encodeArray("HEXISTS", key, RESPBulkString(field))
     }
 }
 
@@ -75,7 +75,7 @@ public struct HGET<Field: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("HGET", key, field)
+        commandEncoder.encodeArray("HGET", key, RESPBulkString(field))
     }
 }
 
@@ -113,7 +113,7 @@ public struct HINCRBY<Field: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("HINCRBY", key, field, increment)
+        commandEncoder.encodeArray("HINCRBY", key, RESPBulkString(field), increment)
     }
 }
 
@@ -132,7 +132,7 @@ public struct HINCRBYFLOAT<Field: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("HINCRBYFLOAT", key, field, increment)
+        commandEncoder.encodeArray("HINCRBYFLOAT", key, RESPBulkString(field), increment)
     }
 }
 
@@ -185,7 +185,7 @@ public struct HMGET<Field: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("HMGET", key, field)
+        commandEncoder.encodeArray("HMGET", key, field.map { RESPBulkString($0) })
     }
 }
 
@@ -204,13 +204,13 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: R
 
         @inlinable
         public var respEntries: Int {
-            field.respEntries + value.respEntries
+            RESPBulkString(field).respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            field.encode(into: &commandEncoder)
-            value.encode(into: &commandEncoder)
+            RESPBulkString(field).encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public var key: RESPKey
@@ -303,13 +303,13 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: RE
 
         @inlinable
         public var respEntries: Int {
-            field.respEntries + value.respEntries
+            RESPBulkString(field).respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            field.encode(into: &commandEncoder)
-            value.encode(into: &commandEncoder)
+            RESPBulkString(field).encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -346,7 +346,7 @@ public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("HSETNX", key, field, value)
+        commandEncoder.encodeArray("HSETNX", key, RESPBulkString(field), RESPBulkString(value))
     }
 }
 
@@ -365,7 +365,7 @@ public struct HSTRLEN<Field: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("HSTRLEN", key, field)
+        commandEncoder.encodeArray("HSTRLEN", key, RESPBulkString(field))
     }
 }
 

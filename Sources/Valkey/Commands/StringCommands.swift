@@ -37,7 +37,7 @@ public struct APPEND<Value: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("APPEND", key, value)
+        commandEncoder.encodeArray("APPEND", key, RESPBulkString(value))
     }
 }
 
@@ -194,7 +194,7 @@ public struct GETSET<Value: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("GETSET", key, value)
+        commandEncoder.encodeArray("GETSET", key, RESPBulkString(value))
     }
 }
 
@@ -307,13 +307,13 @@ public struct MSET<Value: RESPStringRenderable>: RESPCommand {
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + value.respEntries
+            key.respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             key.encode(into: &commandEncoder)
-            value.encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public var data: [Data]
@@ -341,13 +341,13 @@ public struct MSETNX<Value: RESPStringRenderable>: RESPCommand {
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + value.respEntries
+            key.respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             key.encode(into: &commandEncoder)
-            value.encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -379,7 +379,7 @@ public struct PSETEX<Value: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("PSETEX", key, milliseconds, value)
+        commandEncoder.encodeArray("PSETEX", key, milliseconds, RESPBulkString(value))
     }
 }
 
@@ -448,7 +448,7 @@ public struct SET<Value: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SET", key, value, condition, RESPPureToken("GET", get), expiration)
+        commandEncoder.encodeArray("SET", key, RESPBulkString(value), condition, RESPPureToken("GET", get), expiration)
     }
 }
 
@@ -468,7 +468,7 @@ public struct SETEX<Value: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SETEX", key, seconds, value)
+        commandEncoder.encodeArray("SETEX", key, seconds, RESPBulkString(value))
     }
 }
 
@@ -488,7 +488,7 @@ public struct SETNX<Value: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SETNX", key, value)
+        commandEncoder.encodeArray("SETNX", key, RESPBulkString(value))
     }
 }
 
@@ -509,7 +509,7 @@ public struct SETRANGE<Value: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SETRANGE", key, offset, value)
+        commandEncoder.encodeArray("SETRANGE", key, offset, RESPBulkString(value))
     }
 }
 

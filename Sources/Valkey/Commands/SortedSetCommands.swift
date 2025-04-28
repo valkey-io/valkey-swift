@@ -142,13 +142,13 @@ public struct ZADD<Member: RESPStringRenderable>: RESPCommand {
 
         @inlinable
         public var respEntries: Int {
-            score.respEntries + member.respEntries
+            score.respEntries + RESPBulkString(member).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             score.encode(into: &commandEncoder)
-            member.encode(into: &commandEncoder)
+            RESPBulkString(member).encode(into: &commandEncoder)
         }
     }
     public var key: RESPKey
@@ -267,7 +267,7 @@ public struct ZINCRBY<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZINCRBY", key, increment, member)
+        commandEncoder.encodeArray("ZINCRBY", key, increment, RESPBulkString(member))
     }
 }
 
@@ -387,7 +387,7 @@ public struct ZLEXCOUNT<Min: RESPStringRenderable, Max: RESPStringRenderable>: R
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZLEXCOUNT", key, min, max)
+        commandEncoder.encodeArray("ZLEXCOUNT", key, RESPBulkString(min), RESPBulkString(max))
     }
 }
 
@@ -442,7 +442,7 @@ public struct ZMSCORE<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZMSCORE", key, member)
+        commandEncoder.encodeArray("ZMSCORE", key, member.map { RESPBulkString($0) })
     }
 }
 
@@ -583,7 +583,7 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: R
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGE", key, start, stop, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray("ZRANGE", key, RESPBulkString(start), RESPBulkString(stop), sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
     }
 }
 
@@ -628,7 +628,7 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGEBYLEX", key, min, max, RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZRANGEBYLEX", key, RESPBulkString(min), RESPBulkString(max), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -740,7 +740,7 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
     public var keysAffected: [RESPKey] { [dst, src] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGESTORE", dst, src, min, max, sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZRANGESTORE", dst, src, RESPBulkString(min), RESPBulkString(max), sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -759,7 +759,7 @@ public struct ZRANK<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZRANK", key, member, RESPPureToken("WITHSCORE", withscore))
+        commandEncoder.encodeArray("ZRANK", key, RESPBulkString(member), RESPPureToken("WITHSCORE", withscore))
     }
 }
 
@@ -778,7 +778,7 @@ public struct ZREM<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZREM", key, member)
+        commandEncoder.encodeArray("ZREM", key, member.map { RESPBulkString($0) })
     }
 }
 
@@ -799,7 +799,7 @@ public struct ZREMRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderabl
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZREMRANGEBYLEX", key, min, max)
+        commandEncoder.encodeArray("ZREMRANGEBYLEX", key, RESPBulkString(min), RESPBulkString(max))
     }
 }
 
@@ -910,7 +910,7 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZREVRANGEBYLEX", key, max, min, RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("ZREVRANGEBYLEX", key, RESPBulkString(max), RESPBulkString(min), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -976,7 +976,7 @@ public struct ZREVRANK<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZREVRANK", key, member, RESPPureToken("WITHSCORE", withscore))
+        commandEncoder.encodeArray("ZREVRANK", key, RESPBulkString(member), RESPPureToken("WITHSCORE", withscore))
     }
 }
 
@@ -1018,7 +1018,7 @@ public struct ZSCORE<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ZSCORE", key, member)
+        commandEncoder.encodeArray("ZSCORE", key, RESPBulkString(member))
     }
 }
 

@@ -33,7 +33,7 @@ public enum FUNCTION {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("FUNCTION", "DELETE", libraryName)
+            commandEncoder.encodeArray("FUNCTION", "DELETE", RESPBulkString(libraryName))
         }
     }
 
@@ -125,7 +125,7 @@ public enum FUNCTION {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("FUNCTION", "LOAD", RESPPureToken("REPLACE", replace), functionCode)
+            commandEncoder.encodeArray("FUNCTION", "LOAD", RESPPureToken("REPLACE", replace), RESPBulkString(functionCode))
         }
     }
 
@@ -157,7 +157,7 @@ public enum FUNCTION {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("FUNCTION", "RESTORE", serializedValue, policy)
+            commandEncoder.encodeArray("FUNCTION", "RESTORE", RESPBulkString(serializedValue), policy)
         }
     }
 
@@ -218,7 +218,7 @@ public enum SCRIPT {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("SCRIPT", "EXISTS", sha1)
+            commandEncoder.encodeArray("SCRIPT", "EXISTS", sha1.map { RESPBulkString($0) })
         }
     }
 
@@ -281,7 +281,7 @@ public enum SCRIPT {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("SCRIPT", "LOAD", script)
+            commandEncoder.encodeArray("SCRIPT", "LOAD", RESPBulkString(script))
         }
     }
 
@@ -302,7 +302,7 @@ public struct EVAL<Script: RESPStringRenderable>: RESPCommand {
     public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("EVAL", script, RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("EVAL", RESPBulkString(script), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -321,7 +321,7 @@ public struct EVALSHA<Sha1: RESPStringRenderable>: RESPCommand {
     public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("EVALSHA", sha1, RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("EVALSHA", RESPBulkString(sha1), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -340,7 +340,7 @@ public struct EVALSHARO<Sha1: RESPStringRenderable>: RESPCommand {
     public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("EVALSHA_RO", sha1, RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("EVALSHA_RO", RESPBulkString(sha1), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -359,7 +359,7 @@ public struct EVALRO<Script: RESPStringRenderable>: RESPCommand {
     public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("EVAL_RO", script, RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("EVAL_RO", RESPBulkString(script), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -378,7 +378,7 @@ public struct FCALL<Function: RESPStringRenderable>: RESPCommand {
     public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("FCALL", function, RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("FCALL", RESPBulkString(function), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -397,7 +397,7 @@ public struct FCALLRO<Function: RESPStringRenderable>: RESPCommand {
     public var keysAffected: [RESPKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("FCALL_RO", function, RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("FCALL_RO", RESPBulkString(function), RESPArrayWithCount(key), arg)
     }
 }
 

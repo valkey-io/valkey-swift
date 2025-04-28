@@ -405,7 +405,7 @@ public enum CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "SETNAME", connectionName)
+            commandEncoder.encodeArray("CLIENT", "SETNAME", RESPBulkString(connectionName))
         }
     }
 
@@ -516,7 +516,7 @@ public struct AUTH<Password: RESPStringRenderable>: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("AUTH", username, password)
+        commandEncoder.encodeArray("AUTH", username, RESPBulkString(password))
     }
 }
 
@@ -529,7 +529,7 @@ public struct ECHO<Message: RESPStringRenderable>: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ECHO", message)
+        commandEncoder.encodeArray("ECHO", RESPBulkString(message))
     }
 }
 

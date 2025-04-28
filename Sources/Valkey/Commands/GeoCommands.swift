@@ -53,14 +53,14 @@ public struct GEOADD<Member: RESPStringRenderable>: RESPCommand {
 
         @inlinable
         public var respEntries: Int {
-            longitude.respEntries + latitude.respEntries + member.respEntries
+            longitude.respEntries + latitude.respEntries + RESPBulkString(member).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             longitude.encode(into: &commandEncoder)
             latitude.encode(into: &commandEncoder)
-            member.encode(into: &commandEncoder)
+            RESPBulkString(member).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -122,7 +122,7 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("GEODIST", key, member1, member2, unit)
+        commandEncoder.encodeArray("GEODIST", key, RESPBulkString(member1), RESPBulkString(member2), unit)
     }
 }
 
@@ -380,7 +380,7 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, RESPBulkString(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
@@ -467,7 +467,7 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, RESPBulkString(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 

@@ -50,7 +50,7 @@ public enum ACL {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "DELUSER", username)
+            commandEncoder.encodeArray("ACL", "DELUSER", username.map { RESPBulkString($0) })
         }
     }
 
@@ -69,7 +69,7 @@ public enum ACL {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "DRYRUN", username, command, arg)
+            commandEncoder.encodeArray("ACL", "DRYRUN", RESPBulkString(username), RESPBulkString(command), arg)
         }
     }
 
@@ -97,7 +97,7 @@ public enum ACL {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "GETUSER", username)
+            commandEncoder.encodeArray("ACL", "GETUSER", RESPBulkString(username))
         }
     }
 
@@ -191,7 +191,7 @@ public enum ACL {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "SETUSER", username, rule)
+            commandEncoder.encodeArray("ACL", "SETUSER", RESPBulkString(username), rule)
         }
     }
 
@@ -260,7 +260,7 @@ extension COMMAND {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "GETKEYS", command, arg)
+            commandEncoder.encodeArray("COMMAND", "GETKEYS", RESPBulkString(command), arg)
         }
     }
 
@@ -277,7 +277,7 @@ extension COMMAND {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", command, arg)
+            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", RESPBulkString(command), arg)
         }
     }
 
@@ -361,7 +361,7 @@ public enum CONFIG {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CONFIG", "GET", parameter)
+            commandEncoder.encodeArray("CONFIG", "GET", parameter.map { RESPBulkString($0) })
         }
     }
 
@@ -411,13 +411,13 @@ public enum CONFIG {
 
             @inlinable
             public var respEntries: Int {
-                parameter.respEntries + value.respEntries
+                RESPBulkString(parameter).respEntries + RESPBulkString(value).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) {
-                parameter.encode(into: &commandEncoder)
-                value.encode(into: &commandEncoder)
+                RESPBulkString(parameter).encode(into: &commandEncoder)
+                RESPBulkString(value).encode(into: &commandEncoder)
             }
         }
         public var data: [Data]
@@ -456,7 +456,7 @@ public enum LATENCY {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("LATENCY", "GRAPH", event)
+            commandEncoder.encodeArray("LATENCY", "GRAPH", RESPBulkString(event))
         }
     }
 
@@ -498,7 +498,7 @@ public enum LATENCY {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("LATENCY", "HISTORY", event)
+            commandEncoder.encodeArray("LATENCY", "HISTORY", RESPBulkString(event))
         }
     }
 
@@ -647,7 +647,7 @@ public enum MODULE {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOAD", path, arg)
+            commandEncoder.encodeArray("MODULE", "LOAD", RESPBulkString(path), arg)
         }
     }
 
@@ -685,7 +685,7 @@ public enum MODULE {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
         }
     }
 
@@ -698,7 +698,7 @@ public enum MODULE {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "UNLOAD", name)
+            commandEncoder.encodeArray("MODULE", "UNLOAD", RESPBulkString(name))
         }
     }
 
@@ -964,7 +964,7 @@ public struct PSYNC<Replicationid: RESPStringRenderable>: RESPCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("PSYNC", replicationid, offset)
+        commandEncoder.encodeArray("PSYNC", RESPBulkString(replicationid), offset)
     }
 }
 
@@ -1076,7 +1076,7 @@ public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: RESPCommand 
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, RESPBulkString(serializedValue), RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 }
 

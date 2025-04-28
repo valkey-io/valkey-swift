@@ -228,7 +228,7 @@ public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("LINSERT", key, `where`, pivot, element)
+        commandEncoder.encodeArray("LINSERT", key, `where`, RESPBulkString(pivot), RESPBulkString(element))
     }
 }
 
@@ -372,7 +372,7 @@ public struct LPOS<Element: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("LPOS", key, element, RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
+        commandEncoder.encodeArray("LPOS", key, RESPBulkString(element), RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 }
 
@@ -391,7 +391,7 @@ public struct LPUSH<Element: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("LPUSH", key, element)
+        commandEncoder.encodeArray("LPUSH", key, element.map { RESPBulkString($0) })
     }
 }
 
@@ -410,7 +410,7 @@ public struct LPUSHX<Element: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("LPUSHX", key, element)
+        commandEncoder.encodeArray("LPUSHX", key, element.map { RESPBulkString($0) })
     }
 }
 
@@ -452,7 +452,7 @@ public struct LREM<Element: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("LREM", key, count, element)
+        commandEncoder.encodeArray("LREM", key, count, RESPBulkString(element))
     }
 }
 
@@ -471,7 +471,7 @@ public struct LSET<Element: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("LSET", key, index, element)
+        commandEncoder.encodeArray("LSET", key, index, RESPBulkString(element))
     }
 }
 
@@ -546,7 +546,7 @@ public struct RPUSH<Element: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("RPUSH", key, element)
+        commandEncoder.encodeArray("RPUSH", key, element.map { RESPBulkString($0) })
     }
 }
 
@@ -565,7 +565,7 @@ public struct RPUSHX<Element: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("RPUSHX", key, element)
+        commandEncoder.encodeArray("RPUSHX", key, element.map { RESPBulkString($0) })
     }
 }
 

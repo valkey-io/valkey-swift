@@ -37,7 +37,7 @@ public struct SADD<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SADD", key, member)
+        commandEncoder.encodeArray("SADD", key, member.map { RESPBulkString($0) })
     }
 }
 
@@ -164,7 +164,7 @@ public struct SISMEMBER<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SISMEMBER", key, member)
+        commandEncoder.encodeArray("SISMEMBER", key, RESPBulkString(member))
     }
 }
 
@@ -200,7 +200,7 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SMISMEMBER", key, member)
+        commandEncoder.encodeArray("SMISMEMBER", key, member.map { RESPBulkString($0) })
     }
 }
 
@@ -221,7 +221,7 @@ public struct SMOVE<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: [RESPKey] { [source, destination] }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SMOVE", source, destination, member)
+        commandEncoder.encodeArray("SMOVE", source, destination, RESPBulkString(member))
     }
 }
 
@@ -274,7 +274,7 @@ public struct SREM<Member: RESPStringRenderable>: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SREM", key, member)
+        commandEncoder.encodeArray("SREM", key, member.map { RESPBulkString($0) })
     }
 }
 

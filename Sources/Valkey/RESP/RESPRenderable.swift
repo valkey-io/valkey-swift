@@ -44,6 +44,15 @@ extension Optional: RESPRenderable where Wrapped: RESPRenderable {
     }
 }
 
+extension String: RESPRenderable {
+    public var respEntries: Int { 1 }
+
+    @inlinable
+    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeBulkString(self)
+    }
+}
+
 extension Array: RESPRenderable where Element: RESPRenderable {
     @inlinable
     public var respEntries: Int {
@@ -77,28 +86,5 @@ extension Double: RESPRenderable {
     @inlinable
     public func encode(into commandEncoder: inout RESPCommandEncoder) {
         commandEncoder.encodeBulkString(String(self))
-    }
-}
-
-/// Type that can be rendered as a bulk string
-public protocol RESPStringRenderable: RESPRenderable {
-}
-
-extension RESPStringRenderable {
-    @inlinable
-    public var respEntries: Int { 1 }
-}
-
-extension String: RESPStringRenderable {
-    @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeBulkString(self)
-    }
-}
-
-extension ByteBuffer: RESPStringRenderable {
-    @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeBulkString(self.readableBytesView)
     }
 }

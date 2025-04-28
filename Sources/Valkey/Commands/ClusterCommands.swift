@@ -92,7 +92,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", nodeId)
+            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", RESPBulkString(nodeId))
         }
     }
 
@@ -205,7 +205,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "FORGET", nodeId)
+            commandEncoder.encodeArray("CLUSTER", "FORGET", RESPBulkString(nodeId))
         }
     }
 
@@ -259,7 +259,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", key)
+            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", RESPBulkString(key))
         }
     }
 
@@ -288,7 +288,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "MEET", ip, port, clusterBusPort)
+            commandEncoder.encodeArray("CLUSTER", "MEET", RESPBulkString(ip), port, clusterBusPort)
         }
     }
 
@@ -333,7 +333,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICAS", nodeId)
+            commandEncoder.encodeArray("CLUSTER", "REPLICAS", RESPBulkString(nodeId))
         }
     }
 
@@ -346,7 +346,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICATE", nodeId)
+            commandEncoder.encodeArray("CLUSTER", "REPLICATE", RESPBulkString(nodeId))
         }
     }
 
@@ -464,7 +464,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "SLAVES", nodeId)
+            commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPBulkString(nodeId))
         }
     }
 
