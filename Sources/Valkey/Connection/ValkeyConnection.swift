@@ -105,8 +105,8 @@ public final class ValkeyConnection: Sendable {
     }
 
     /// Send RESP command to Valkey connection
-    /// - Parameter command: RESPCommand structure
-    /// - Returns: The command response as defined in the RESPCommand
+    /// - Parameter command: ValkeyCommand structure
+    /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let result = try await withCheckedThrowingContinuation { continuation in
@@ -124,7 +124,7 @@ public final class ValkeyConnection: Sendable {
     /// Pipeline a series of commands to Valkey connection
     ///
     /// This function will only return once it has the results of all the commands sent
-    /// - Parameter commands: Parameter pack of RESPCommands
+    /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the responses of all the commands
     @inlinable
     public func pipeline<each Command: ValkeyCommand>(
