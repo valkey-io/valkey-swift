@@ -32,16 +32,25 @@ extension LCS {
         case matches(length: Int, matches: [Match])
 
         public init(from token: RESPToken) throws {
-            if let string = try? String(from: token) {
-                self = .subSequence(string)
-            } else if let length = try? Int(from: token) {
-                self = .subSequenceLength(length)
-            } else if let map = try? [String: RESPToken](from: token) {
-                guard let matches = map["matches"], let length = map["len"] else {
-                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            switch token.value {
+            case .bulkString(let buffer):
+                self = .subSequence(String(buffer: buffer))
+            case .number(let number):
+                self = .subSequenceLength(numericCast(number))
+            case .map(let map):
+                var matches: [Match]?
+                var length: Int64?
+                for entry in map {
+                    switch try String(from: entry.key) {
+                    case "len": length = try .init(from: entry.value)
+                    case "matches": matches = try .init(from: entry.value)
+                    default: break
+                    }
                 }
-                self = .matches(length: try Int(from: length), matches: try [Match](from: matches))
-            } else {
+                guard let matches else { throw RESPParsingError(code: .unexpectedType, buffer: token.base) }
+                guard let length else { throw RESPParsingError(code: .unexpectedType, buffer: token.base) }
+                self = .matches(length: numericCast(length), matches: matches)
+            default:
                 throw RESPParsingError(code: .unexpectedType, buffer: token.base)
             }
         }
