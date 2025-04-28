@@ -39,7 +39,7 @@ extension RESPToken: RESPTokenRepresentable {
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
     @inlinable
-    public func decodeElements<each Value: RESPTokenRepresentable>(
+    public func decodeArrayElements<each Value: RESPTokenRepresentable>(
         as: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
         switch self.value {
@@ -185,7 +185,7 @@ extension Dictionary: RESPTokenRepresentable where Value: RESPTokenRepresentable
 
 extension ClosedRange: RESPTokenRepresentable where Bound: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
-        let (min, max) = try token.decodeElements(as: (Bound, Bound).self)
+        let (min, max) = try token.decodeArrayElements(as: (Bound, Bound).self)
         self = min...max
     }
 }

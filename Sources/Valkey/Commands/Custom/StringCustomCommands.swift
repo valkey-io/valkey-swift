@@ -23,7 +23,7 @@ extension LCS {
             public let second: ClosedRange<Int>
 
             public init(from token: RESPToken) throws {
-                (self.first, self.second) = try token.decodeElements()
+                (self.first, self.second) = try token.decodeArrayElements()
             }
         }
 
