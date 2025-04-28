@@ -32,6 +32,30 @@ enum RESP3Value: Hashable {
     case set([RESP3Value])
     case push([RESP3Value])
 
+    static func bulkString(_ value: String) -> RESP3Value {
+        return .bulkString(ByteBuffer(string: value))
+    }
+
+    static func simpleString(_ value: String) -> RESP3Value {
+        return .simpleString(ByteBuffer(string: value))
+    }
+
+    static func simpleError(_ value: String) -> RESP3Value {
+        return .simpleError(ByteBuffer(string: value))
+    }
+
+    static func verbatimString(_ value: String) -> RESP3Value {
+        return .verbatimString(ByteBuffer(string: value))
+    }
+
+    static func bigNumber(_ value: String) -> RESP3Value {
+        return .bigNumber(ByteBuffer(string: value))
+    }
+
+    static func blobError(_ value: String) -> RESP3Value {
+        return .blobError(ByteBuffer(string: value))
+    }
+
     fileprivate func writeTo(_ buffer: inout ByteBuffer) {
 
         func writeLengthPrefixedBytes(_ bytes: ByteBuffer, into buffer: inout ByteBuffer) {

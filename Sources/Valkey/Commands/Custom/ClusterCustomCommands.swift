@@ -14,6 +14,10 @@
 
 import NIOCore
 
+extension CLUSTER.SHARDS {
+    public typealias Response = ValkeyClusterDescription
+}
+
 package struct ValkeyClusterParseError: Error {
     fileprivate enum Reason: Error{
         case clusterDescriptionTokenIsNotAnArray
@@ -31,38 +35,84 @@ package struct ValkeyClusterParseError: Error {
     package var token: RESPToken
 }
 
-package struct ValkeyClusterDescription: Hashable, Sendable {
+public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenRepresentable {
     /// Details for a node within a cluster shard
-    package struct Node: Hashable, Sendable {
+    public struct Node: Hashable, Sendable {
         /// Replication role of a given shard (master or replica)
-        package enum Role: String {
-            case master
-            case replica
+        public struct Role: Sendable, Hashable, RawRepresentable {
+            public static let master = Role(base: .master)
+            public static let replica = Role(base: .replica)
+
+            public init?(rawValue: String) {
+                guard let base = Base(rawValue: rawValue) else {
+                    return nil
+                }
+                self.base = base
+            }
+
+            public var rawValue: String {
+                self.base.rawValue
+            }
+
+            enum Base: String {
+                case master
+                case replica
+            }
+
+            private var base: Base
+
+            init(base: Base) {
+                self.base = base
+            }
+
         }
 
         /// Node's health status
-        package enum Health: String {
-            case online
-            case failed
-            case loading
+        public struct Health: Sendable, Hashable, RawRepresentable {
+            public static let online = Health(base: .online)
+            public static let failed = Health(base: .failed)
+            public static let loading = Health(base: .loading)
+
+            public init?(rawValue: String) {
+                guard let base = Base(rawValue: rawValue) else {
+                    return nil
+                }
+                self.base = base
+            }
+
+            public var rawValue: String {
+                self.base.rawValue
+            }
+
+            enum Base: String {
+                case online
+                case failed
+                case loading
+            }
+
+            private var base: Base
+
+            init(base: Base) {
+                self.base = base
+            }
         }
 
-        package var id: String
-        package var port: Int?
-        package var tlsPort: Int?
-        package var ip: String
-        package var hostname: String?
-        package var endpoint: String
-        package var role: Role
-        package var replicationOffset: Int
-        package var health: Health
+        public var id: String
+        public var port: Int?
+        public var tlsPort: Int?
+        public var ip: String
+        public var hostname: String?
+        public var endpoint: String
+        public var role: Role
+        public var replicationOffset: Int
+        public var health: Health
 
-        package init(
+        public init(
             id: String,
-            port: Int? = nil,
-            tlsPort: Int? = nil,
+            port: Int?,
+            tlsPort: Int?,
             ip: String,
-            hostname: String? = nil,
+            hostname: String?,
             endpoint: String,
             role: Role,
             replicationOffset: Int,
@@ -80,27 +130,27 @@ package struct ValkeyClusterDescription: Hashable, Sendable {
         }
     }
 
-    package struct Shard: Hashable, Sendable {
-        package var slotRanges: HashSlots
-        package var nodes: [Node]
+    public struct Shard: Hashable, Sendable {
+        public var slotRanges: HashSlots
+        public var nodes: [Node]
 
-        package var master: Node? {
+        public var master: Node? {
             self.nodes.first
         }
 
-        package var replicas: ArraySlice<Node> {
+        public var replicas: ArraySlice<Node> {
             self.nodes.dropFirst(1)
         }
 
-        package init(slotRanges: HashSlots, nodes: [Node]) {
+        public init(slotRanges: HashSlots, nodes: [Node]) {
             self.slotRanges = slotRanges
             self.nodes = nodes
         }
     }
 
-    package var shards: [Shard]
+    public var shards: [Shard]
 
-    package init(respToken: RESPToken) throws(ValkeyClusterParseError) {
+    public init(from respToken: RESPToken) throws {
         do {
             self = try Self.makeClusterDescription(respToken: respToken)
         } catch {
@@ -108,7 +158,7 @@ package struct ValkeyClusterDescription: Hashable, Sendable {
         }
     }
 
-    package init(_ shards: [ValkeyClusterDescription.Shard]) {
+    public init(_ shards: [ValkeyClusterDescription.Shard]) {
         self.shards = shards
     }
 }
@@ -129,7 +179,7 @@ extension ValkeyClusterDescription {
             var nodes: [ValkeyClusterDescription.Node] = []
 
             var keysAndValuesIterator = keysAndValues.makeIterator()
-            while let keyToken = keysAndValuesIterator.next(), let key = String(keyToken) {
+            while let keyToken = keysAndValuesIterator.next(), let key = try? String(from: keyToken) {
                 switch key {
                 case "slots":
                     slotRanges = try HashSlots(&keysAndValuesIterator)
@@ -151,56 +201,6 @@ extension ValkeyClusterDescription {
         }
 
         return ValkeyClusterDescription(shards)
-    }
-}
-
-extension String {
-    fileprivate init?(_ respToken: RESPToken) {
-        switch respToken.value {
-        case .bulkString(var byteBuffer),
-             .simpleString(var byteBuffer),
-             .blobError(var byteBuffer),
-             .simpleError(var byteBuffer),
-             .verbatimString(var byteBuffer):
-            self = byteBuffer.readString(length: byteBuffer.readableBytes)!
-
-        case .double(let value):
-            self = "\(value)"
-
-        case .number(let value):
-            self = "\(value)"
-
-        case .boolean(let value):
-            self = "\(value)"
-
-        case .array, .attribute, .bigNumber, .push, .set, .null, .map:
-            return nil
-        }
-    }
-}
-
-extension Int64 {
-    fileprivate init?(_ respToken: RESPToken) {
-        switch respToken.value {
-        case .number(let value):
-            self = value
-
-        case .bulkString,
-             .simpleString,
-             .blobError,
-             .simpleError,
-             .verbatimString,
-             .double,
-             .boolean,
-             .array,
-             .attribute,
-             .bigNumber,
-             .push,
-             .set,
-             .null,
-             .map:
-            return nil
-        }
     }
 }
 
@@ -256,30 +256,30 @@ extension ValkeyClusterDescription.Node {
         var health: ValkeyClusterDescription.Node.Health?
 
         var nodeIterator = array.makeIterator()
-        while let nodeKey = nodeIterator.next(), let key = String(nodeKey), let nodeVal = nodeIterator.next() {
+        while let nodeKey = nodeIterator.next(), let key = try? String(from: nodeKey), let nodeVal = nodeIterator.next() {
             switch key {
             case "id":
-                id = String(nodeVal)
+                id = try? String(from: nodeVal)
             case "port":
-                port = Int64(nodeVal)
+                port = try? Int64(from: nodeVal)
             case "tls-port":
-                tlsPort = Int64(nodeVal)
+                tlsPort = try? Int64(from: nodeVal)
             case "ip":
-                ip = String(nodeVal)
+                ip = try? String(from: nodeVal)
             case "hostname":
-                hostname = String(nodeVal)
+                hostname = try? String(from: nodeVal)
             case "endpoint":
-                endpoint = String(nodeVal)
+                endpoint = try? String(from: nodeVal)
             case "role":
-                guard let roleString = String(nodeVal), let roleValue = ValkeyClusterDescription.Node.Role(rawValue: roleString) else {
+                guard let roleString = try? String(from: nodeVal), let roleValue = ValkeyClusterDescription.Node.Role(rawValue: roleString) else {
                     throw .invalidNodeRole
                 }
                 role = roleValue
 
             case "replication-offset":
-                replicationOffset = Int64(nodeVal)
+                replicationOffset = try? Int64(from: nodeVal)
             case "health":
-                guard let healthString = String(nodeVal), let healthValue = ValkeyClusterDescription.Node.Health(rawValue: healthString) else {
+                guard let healthString = try? String(from: nodeVal), let healthValue = ValkeyClusterDescription.Node.Health(rawValue: healthString) else {
                     throw .invalidNodeHealth
                 }
                 health = healthValue
