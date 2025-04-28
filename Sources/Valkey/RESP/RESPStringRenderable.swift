@@ -52,7 +52,8 @@ extension Data: RESPStringRenderable {}
 /// to Collection when all the elements conform to RESPRenderable.
 @usableFromInline
 struct RESPBulkString<Value: RESPStringRenderable>: RESPRenderable {
-    public var respEntries: Int { 1 }
+    @usableFromInline
+    var respEntries: Int { 1 }
 
     @usableFromInline
     let value: Value
