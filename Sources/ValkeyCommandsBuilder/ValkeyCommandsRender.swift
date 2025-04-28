@@ -432,13 +432,13 @@ private func subCommand(_ command: String) -> (String.SubSequence, String.SubSeq
 
 /// construct the generic parameters for a command type
 private func genericTypeParameters(_ arguments: [RESPCommand.Argument]?) -> String {
-    let stringArguments = arguments?.filter { $0.type == .string } ?? []
+    let stringArguments = arguments?.filter { $0.type == .string && !$0.optional } ?? []
     guard stringArguments.count > 0 else { return "" }
     return "<\(stringArguments.map { "\($0.name.swiftTypename): RESPStringRenderable"}.joined(separator: ", "))>"
 }
 /// construct the generic parameters for a command type
 private func genericParameters(_ arguments: [RESPCommand.Argument]?) -> String {
-    let stringArguments = arguments?.filter { $0.type == .string } ?? []
+    let stringArguments = arguments?.filter { $0.type == .string && !$0.optional } ?? []
     guard stringArguments.count > 0 else { return "" }
     return "<\(stringArguments.map { $0.name.swiftTypename }.joined(separator: ", "))>"
 }
@@ -468,7 +468,8 @@ private func parameterType(_ parameter: RESPCommand.Argument, names: [String], s
 /// Get the text for a variable type
 private func variableType(_ parameter: RESPCommand.Argument, names: [String], scope: String?, isArray: Bool) -> String {
     var parameterString = parameter.type.swiftName
-    if parameter.type == .string, names.count == 0 {
+    // if type is a string and non-optional and the type is top level then return as a generic parameter
+    if parameter.type == .string, !parameter.optional, names.count == 0 {
         parameterString = parameter.name.swiftTypename
     }
     if case .oneOf = parameter.type {

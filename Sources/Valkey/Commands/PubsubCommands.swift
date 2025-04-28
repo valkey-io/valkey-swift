@@ -64,7 +64,7 @@ public enum PUBSUB {
     }
 
     /// Returns a count of subscribers to channels.
-    public struct NUMSUB<Channel: RESPStringRenderable>: RESPCommand {
+    public struct NUMSUB: RESPCommand {
         public typealias Response = RESPToken.Array
 
         public var channel: [Channel]
@@ -94,7 +94,7 @@ public enum PUBSUB {
     }
 
     /// Returns the count of subscribers of shard channels.
-    public struct SHARDNUMSUB<Shardchannel: RESPStringRenderable>: RESPCommand {
+    public struct SHARDNUMSUB: RESPCommand {
         public typealias Response = RESPToken.Array
 
         public var shardchannel: [Shardchannel]
@@ -197,7 +197,7 @@ public struct SUBSCRIBE<Channel: RESPStringRenderable>: RESPCommand {
 }
 
 /// Stops listening to messages posted to shard channels.
-public struct SUNSUBSCRIBE<Shardchannel: RESPStringRenderable>: RESPCommand {
+public struct SUNSUBSCRIBE: RESPCommand {
     public var shardchannel: [Shardchannel]
 
     @inlinable public init(shardchannel: [Shardchannel] = []) {
@@ -210,7 +210,7 @@ public struct SUNSUBSCRIBE<Shardchannel: RESPStringRenderable>: RESPCommand {
 }
 
 /// Stops listening to messages posted to channels.
-public struct UNSUBSCRIBE<Channel: RESPStringRenderable>: RESPCommand {
+public struct UNSUBSCRIBE: RESPCommand {
     public var channel: [Channel]
 
     @inlinable public init(channel: [Channel] = []) {
@@ -279,7 +279,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
     @inlinable
-    public func pubsubNumsub<Channel: RESPStringRenderable>(channel: [Channel] = []) async throws -> RESPToken.Array {
+    public func pubsubNumsub(channel: [Channel] = []) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.NUMSUB(channel: channel))
     }
 
@@ -303,7 +303,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
-    public func pubsubShardnumsub<Shardchannel: RESPStringRenderable>(shardchannel: [Shardchannel] = []) async throws -> RESPToken.Array {
+    public func pubsubShardnumsub(shardchannel: [Shardchannel] = []) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.SHARDNUMSUB(shardchannel: shardchannel))
     }
 

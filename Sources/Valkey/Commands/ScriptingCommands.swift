@@ -98,7 +98,7 @@ public enum FUNCTION {
     }
 
     /// Returns information about all libraries.
-    public struct LIST<LibraryNamePattern: RESPStringRenderable>: RESPCommand {
+    public struct LIST: RESPCommand {
         public typealias Response = RESPToken.Array
 
         public var libraryNamePattern: LibraryNamePattern?
@@ -288,7 +288,7 @@ public enum SCRIPT {
 }
 
 /// Executes a server-side Lua script.
-public struct EVAL<Script: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+public struct EVAL<Script: RESPStringRenderable>: RESPCommand {
     public var script: Script
     public var key: [RESPKey]
     public var arg: [Arg]
@@ -307,7 +307,7 @@ public struct EVAL<Script: RESPStringRenderable, Arg: RESPStringRenderable>: RES
 }
 
 /// Executes a server-side Lua script by SHA1 digest.
-public struct EVALSHA<Sha1: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+public struct EVALSHA<Sha1: RESPStringRenderable>: RESPCommand {
     public var sha1: Sha1
     public var key: [RESPKey]
     public var arg: [Arg]
@@ -326,7 +326,7 @@ public struct EVALSHA<Sha1: RESPStringRenderable, Arg: RESPStringRenderable>: RE
 }
 
 /// Executes a read-only server-side Lua script by SHA1 digest.
-public struct EVALSHARO<Sha1: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+public struct EVALSHARO<Sha1: RESPStringRenderable>: RESPCommand {
     public var sha1: Sha1
     public var key: [RESPKey]
     public var arg: [Arg]
@@ -345,7 +345,7 @@ public struct EVALSHARO<Sha1: RESPStringRenderable, Arg: RESPStringRenderable>: 
 }
 
 /// Executes a read-only server-side Lua script.
-public struct EVALRO<Script: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+public struct EVALRO<Script: RESPStringRenderable>: RESPCommand {
     public var script: Script
     public var key: [RESPKey]
     public var arg: [Arg]
@@ -364,7 +364,7 @@ public struct EVALRO<Script: RESPStringRenderable, Arg: RESPStringRenderable>: R
 }
 
 /// Invokes a function.
-public struct FCALL<Function: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+public struct FCALL<Function: RESPStringRenderable>: RESPCommand {
     public var function: Function
     public var key: [RESPKey]
     public var arg: [Arg]
@@ -383,7 +383,7 @@ public struct FCALL<Function: RESPStringRenderable, Arg: RESPStringRenderable>: 
 }
 
 /// Invokes a read-only function.
-public struct FCALLRO<Function: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+public struct FCALLRO<Function: RESPStringRenderable>: RESPCommand {
     public var function: Function
     public var key: [RESPKey]
     public var arg: [Arg]
@@ -410,7 +410,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func eval<Script: RESPStringRenderable, Arg: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVAL.Response {
+    public func eval<Script: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVAL.Response {
         try await send(command: EVAL(script: script, key: key, arg: arg))
     }
 
@@ -422,7 +422,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalsha<Sha1: RESPStringRenderable, Arg: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALSHA.Response {
+    public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALSHA.Response {
         try await send(command: EVALSHA(sha1: sha1, key: key, arg: arg))
     }
 
@@ -434,7 +434,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalshaRo<Sha1: RESPStringRenderable, Arg: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALSHARO.Response {
+    public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALSHARO.Response {
         try await send(command: EVALSHARO(sha1: sha1, key: key, arg: arg))
     }
 
@@ -446,7 +446,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalRo<Script: RESPStringRenderable, Arg: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALRO.Response {
+    public func evalRo<Script: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [Arg] = []) async throws -> EVALRO.Response {
         try await send(command: EVALRO(script: script, key: key, arg: arg))
     }
 
@@ -458,7 +458,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcall<Function: RESPStringRenderable, Arg: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [Arg] = []) async throws -> FCALL.Response {
+    public func fcall<Function: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [Arg] = []) async throws -> FCALL.Response {
         try await send(command: FCALL(function: function, key: key, arg: arg))
     }
 
@@ -470,7 +470,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcallRo<Function: RESPStringRenderable, Arg: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [Arg] = []) async throws -> FCALLRO.Response {
+    public func fcallRo<Function: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [Arg] = []) async throws -> FCALLRO.Response {
         try await send(command: FCALLRO(function: function, key: key, arg: arg))
     }
 
@@ -542,7 +542,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): information about functions and libraries.
     @inlinable
-    public func functionList<LibraryNamePattern: RESPStringRenderable>(libraryNamePattern: LibraryNamePattern? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
+    public func functionList(libraryNamePattern: LibraryNamePattern? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
         try await send(command: FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
     }
 

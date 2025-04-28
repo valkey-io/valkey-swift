@@ -25,7 +25,7 @@ import Foundation
 /// A container for Access List Control commands.
 public enum ACL {
     /// Lists the ACL categories, or the commands inside a category.
-    public struct CAT<Category: RESPStringRenderable>: RESPCommand {
+    public struct CAT: RESPCommand {
         public typealias Response = RESPToken.Array
 
         public var category: Category?
@@ -55,7 +55,7 @@ public enum ACL {
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
-    public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+    public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken?
 
         public var username: Username
@@ -181,7 +181,7 @@ public enum ACL {
     }
 
     /// Creates and modifies an ACL user and its rules.
-    public struct SETUSER<Username: RESPStringRenderable, Rule: RESPStringRenderable>: RESPCommand {
+    public struct SETUSER<Username: RESPStringRenderable>: RESPCommand {
         public var username: Username
         public var rule: [Rule]
 
@@ -233,7 +233,7 @@ extension COMMAND {
     }
 
     /// Returns documentary information about one, multiple or all commands.
-    public struct DOCS<CommandName: RESPStringRenderable>: RESPCommand {
+    public struct DOCS: RESPCommand {
         public typealias Response = RESPToken.Map
 
         public var commandName: [CommandName]
@@ -248,7 +248,7 @@ extension COMMAND {
     }
 
     /// Extracts the key names from an arbitrary command.
-    public struct GETKEYS<Command: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+    public struct GETKEYS<Command: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Array
 
         public var command: Command
@@ -265,7 +265,7 @@ extension COMMAND {
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
-    public struct GETKEYSANDFLAGS<Command: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+    public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Array
 
         public var command: Command
@@ -294,7 +294,7 @@ extension COMMAND {
     }
 
     /// Returns information about one, multiple or all commands.
-    public struct INFO<CommandName: RESPStringRenderable>: RESPCommand {
+    public struct INFO: RESPCommand {
         public typealias Response = RESPToken.Array
 
         public var commandName: [CommandName]
@@ -473,7 +473,7 @@ public enum LATENCY {
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
-    public struct HISTOGRAM<Command: RESPStringRenderable>: RESPCommand {
+    public struct HISTOGRAM: RESPCommand {
         public typealias Response = RESPToken.Map
 
         public var command: [Command]
@@ -515,7 +515,7 @@ public enum LATENCY {
     }
 
     /// Resets the latency data for one or more events.
-    public struct RESET<Event: RESPStringRenderable>: RESPCommand {
+    public struct RESET: RESPCommand {
         public typealias Response = Int
 
         public var event: [Event]
@@ -637,7 +637,7 @@ public enum MODULE {
     }
 
     /// Loads a module.
-    public struct LOAD<Path: RESPStringRenderable, Arg: RESPStringRenderable>: RESPCommand {
+    public struct LOAD<Path: RESPStringRenderable>: RESPCommand {
         public var path: Path
         public var arg: [Arg]
 
@@ -652,7 +652,7 @@ public enum MODULE {
     }
 
     /// Loads a module using extended parameters.
-    public struct LOADEX<Path: RESPStringRenderable, Args: RESPStringRenderable>: RESPCommand {
+    public struct LOADEX<Path: RESPStringRenderable>: RESPCommand {
         public struct Configs: RESPRenderable, Sendable {
             @usableFromInline let name: String
             @usableFromInline let value: String
@@ -904,7 +904,7 @@ public struct FLUSHDB: RESPCommand {
 }
 
 /// Returns information and statistics about the server.
-public struct INFO<Section: RESPStringRenderable>: RESPCommand {
+public struct INFO: RESPCommand {
     public var section: [Section]
 
     @inlinable public init(section: [Section] = []) {
@@ -1260,7 +1260,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) elements representing ACL categories or commands in a given category.
     ///     * [Simple error](https:/valkey.io/topics/protocol/#simple-errors): the command returns an error if an invalid category name is given.
     @inlinable
-    public func aclCat<Category: RESPStringRenderable>(category: Category? = nil) async throws -> RESPToken.Array {
+    public func aclCat(category: Category? = nil) async throws -> RESPToken.Array {
         try await send(command: ACL.CAT(category: category))
     }
 
@@ -1286,7 +1286,7 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
-    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable, Arg: RESPStringRenderable>(username: Username, command: Command, arg: [Arg] = []) async throws -> RESPToken? {
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, arg: [Arg] = []) async throws -> RESPToken? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 
@@ -1392,7 +1392,7 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     ///     If the rules contain errors, the error is returned.
     @inlinable
-    public func aclSetuser<Username: RESPStringRenderable, Rule: RESPStringRenderable>(username: Username, rule: [Rule] = []) async throws {
+    public func aclSetuser<Username: RESPStringRenderable>(username: Username, rule: [Rule] = []) async throws {
         _ = try await send(command: ACL.SETUSER(username: username, rule: rule))
     }
 
@@ -1480,7 +1480,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a map where each key is a command name, and each value is the documentary information.
     @inlinable
-    public func commandDocs<CommandName: RESPStringRenderable>(commandName: [CommandName] = []) async throws -> RESPToken.Map {
+    public func commandDocs(commandName: [CommandName] = []) async throws -> RESPToken.Map {
         try await send(command: COMMAND.DOCS(commandName: commandName))
     }
 
@@ -1492,7 +1492,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys from the given command.
     @inlinable
-    public func commandGetkeys<Command: RESPStringRenderable, Arg: RESPStringRenderable>(command: Command, arg: [Arg] = []) async throws -> RESPToken.Array {
+    public func commandGetkeys<Command: RESPStringRenderable>(command: Command, arg: [Arg] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYS(command: command, arg: arg))
     }
 
@@ -1504,7 +1504,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys from the given command and their usage flags.
     @inlinable
-    public func commandGetkeysandflags<Command: RESPStringRenderable, Arg: RESPStringRenderable>(command: Command, arg: [Arg] = []) async throws -> RESPToken.Array {
+    public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, arg: [Arg] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, arg: arg))
     }
 
@@ -1528,7 +1528,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of command details.
     @inlinable
-    public func commandInfo<CommandName: RESPStringRenderable>(commandName: [CommandName] = []) async throws -> RESPToken.Array {
+    public func commandInfo(commandName: [CommandName] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.INFO(commandName: commandName))
     }
 
@@ -1662,7 +1662,7 @@ extension ValkeyConnection {
     ///     
     ///     Lines can contain a section name (starting with a `#` character) or a property. All the properties are in the form of `field:value` terminated by `\r\n`.
     @inlinable
-    public func info<Section: RESPStringRenderable>(section: [Section] = []) async throws -> INFO.Response {
+    public func info(section: [Section] = []) async throws -> INFO.Response {
         try await send(command: INFO(section: section))
     }
 
@@ -1722,7 +1722,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
-    public func latencyHistogram<Command: RESPStringRenderable>(command: [Command] = []) async throws -> RESPToken.Map {
+    public func latencyHistogram(command: [Command] = []) async throws -> RESPToken.Map {
         try await send(command: LATENCY.HISTOGRAM(command: command))
     }
 
@@ -1758,7 +1758,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of event time series that were reset.
     @inlinable
-    public func latencyReset<Event: RESPStringRenderable>(event: [Event] = []) async throws -> Int {
+    public func latencyReset(event: [Event] = []) async throws -> Int {
         try await send(command: LATENCY.RESET(event: event))
     }
 
@@ -1881,7 +1881,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoad<Path: RESPStringRenderable, Arg: RESPStringRenderable>(path: Path, arg: [Arg] = []) async throws {
+    public func moduleLoad<Path: RESPStringRenderable>(path: Path, arg: [Arg] = []) async throws {
         _ = try await send(command: MODULE.LOAD(path: path, arg: arg))
     }
 
@@ -1893,7 +1893,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoadex<Path: RESPStringRenderable, Args: RESPStringRenderable>(path: Path, configs: [MODULE.LOADEX<Path, Args>.Configs] = [], args: [Args] = []) async throws {
+    public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configs: [MODULE.LOADEX<Path>.Configs] = [], args: [Args] = []) async throws {
         _ = try await send(command: MODULE.LOADEX(path: path, configs: configs, args: args))
     }
 

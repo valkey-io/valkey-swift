@@ -449,7 +449,7 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
 }
 
 /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
-public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable, Lastid: RESPStringRenderable>: RESPCommand {
+public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
@@ -724,7 +724,7 @@ public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>:
 }
 
 /// An internal command for replicating stream values.
-public struct XSETID<LastId: RESPStringRenderable, MaxDeletedId: RESPStringRenderable>: RESPCommand {
+public struct XSETID<LastId: RESPStringRenderable>: RESPCommand {
     public var key: RESPKey
     public var lastId: LastId
     public var entriesAdded: Int?
@@ -872,7 +872,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
     @inlinable
-    public func xclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable, Lastid: RESPStringRenderable>(key: RESPKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, id: [Id], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: Lastid? = nil) async throws -> RESPToken.Array {
+    public func xclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>(key: RESPKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, id: [Id], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: Lastid? = nil) async throws -> RESPToken.Array {
         try await send(command: XCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
     }
 
@@ -1093,7 +1093,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @stream, @fast
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func xsetid<LastId: RESPStringRenderable, MaxDeletedId: RESPStringRenderable>(key: RESPKey, lastId: LastId, entriesAdded: Int? = nil, maxDeletedId: MaxDeletedId? = nil) async throws {
+    public func xsetid<LastId: RESPStringRenderable>(key: RESPKey, lastId: LastId, entriesAdded: Int? = nil, maxDeletedId: MaxDeletedId? = nil) async throws {
         _ = try await send(command: XSETID(key: key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
     }
 

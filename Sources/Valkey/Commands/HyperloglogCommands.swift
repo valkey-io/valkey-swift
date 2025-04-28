@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
-public struct PFADD<Element: RESPStringRenderable>: RESPCommand {
+public struct PFADD: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
@@ -96,7 +96,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if at least one HyperLogLog internal register was altered.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if no HyperLogLog internal registers were altered.
     @inlinable
-    public func pfadd<Element: RESPStringRenderable>(key: RESPKey, element: [Element] = []) async throws -> Int {
+    public func pfadd(key: RESPKey, element: [Element] = []) async throws -> Int {
         try await send(command: PFADD(key: key, element: element))
     }
 

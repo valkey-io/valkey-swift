@@ -612,7 +612,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: RESPCommand {
 }
 
 /// Iterates over the key names in the database.
-public struct SCAN<Type: RESPStringRenderable>: RESPCommand {
+public struct SCAN: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var cursor: Int
@@ -1200,7 +1200,7 @@ extension ValkeyConnection {
     ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) with the names of scanned keys.
     @inlinable
-    public func scan<Type: RESPStringRenderable>(cursor: Int, pattern: String? = nil, count: Int? = nil, type: Type? = nil) async throws -> RESPToken.Array {
+    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: Type? = nil) async throws -> RESPToken.Array {
         try await send(command: SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
     }
 

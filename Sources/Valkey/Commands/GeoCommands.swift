@@ -127,7 +127,7 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
 }
 
 /// Returns members from a geospatial index as geohash strings.
-public struct GEOHASH<Member: RESPStringRenderable>: RESPCommand {
+public struct GEOHASH: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
@@ -146,7 +146,7 @@ public struct GEOHASH<Member: RESPStringRenderable>: RESPCommand {
 }
 
 /// Returns the longitude and latitude of members from a geospatial index.
-public struct GEOPOS<Member: RESPStringRenderable>: RESPCommand {
+public struct GEOPOS: RESPCommand {
     public typealias Response = RESPToken.Array
 
     public var key: RESPKey
@@ -1013,7 +1013,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is the Geohash corresponding to each member name passed as an argument to the command.
     @inlinable
-    public func geohash<Member: RESPStringRenderable>(key: RESPKey, member: [Member] = []) async throws -> RESPToken.Array {
+    public func geohash(key: RESPKey, member: [Member] = []) async throws -> RESPToken.Array {
         try await send(command: GEOHASH(key: key, member: member))
     }
 
@@ -1025,7 +1025,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @geo, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/valkey.io/topics/protocol/#nulls) elements of the array.
     @inlinable
-    public func geopos<Member: RESPStringRenderable>(key: RESPKey, member: [Member] = []) async throws -> RESPToken.Array {
+    public func geopos(key: RESPKey, member: [Member] = []) async throws -> RESPToken.Array {
         try await send(command: GEOPOS(key: key, member: member))
     }
 

@@ -410,7 +410,7 @@ public enum CLIENT {
     }
 
     /// Controls server-assisted client-side caching for the connection.
-    public struct TRACKING<Prefix: RESPStringRenderable>: RESPCommand {
+    public struct TRACKING: RESPCommand {
         public enum Status: RESPRenderable, Sendable {
             case on
             case off
@@ -506,7 +506,7 @@ public enum CLIENT {
 }
 
 /// Authenticates the connection.
-public struct AUTH<Username: RESPStringRenderable, Password: RESPStringRenderable>: RESPCommand {
+public struct AUTH<Password: RESPStringRenderable>: RESPCommand {
     public var username: Username?
     public var password: Password
 
@@ -594,7 +594,7 @@ public struct HELLO: RESPCommand {
 }
 
 /// Returns the server's liveliness response.
-public struct PING<Message: RESPStringRenderable>: RESPCommand {
+public struct PING: RESPCommand {
     public var message: Message?
 
     @inlinable public init(message: Message? = nil) {
@@ -651,7 +651,7 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
     @inlinable
-    public func auth<Username: RESPStringRenderable, Password: RESPStringRenderable>(username: Username? = nil, password: Password) async throws {
+    public func auth<Password: RESPStringRenderable>(username: Username? = nil, password: Password) async throws {
         _ = try await send(command: AUTH(username: username, password: password))
     }
 
@@ -838,7 +838,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
     @inlinable
-    public func clientTracking<Prefix: RESPStringRenderable>(status: CLIENT.TRACKING<Prefix>.Status, clientId: Int? = nil, prefix: [Prefix] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
+    public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [Prefix] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
         _ = try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
     }
 
@@ -915,7 +915,7 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `PONG` when no argument is provided.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the provided argument.
     @inlinable
-    public func ping<Message: RESPStringRenderable>(message: Message? = nil) async throws -> PING.Response {
+    public func ping(message: Message? = nil) async throws -> PING.Response {
         try await send(command: PING(message: message))
     }
 
