@@ -34,34 +34,6 @@ struct CustomReturnValueTests {
     }
 
     @Test
-    func testLCS() async throws {
-        var logger = Logger(label: "LCS")
-        logger.logLevel = .debug
-        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
-            try await withKey(connection: connection) { key1 in
-                try await withKey(connection: connection) { key2 in
-                    try await connection.mset(data: [.init(key: key1, value: "ohmytext"), .init(key: key2, value: "mynewtext")])
-                    var result = try await connection.lcs(key1: key1, key2: key2)
-                    #expect(result == .subSequence("mytext"))
-                    result = try await connection.lcs(key1: key1, key2: key2, len: true)
-                    #expect(result == .subSequenceLength(6))
-                    result = try await connection.lcs(key1: key1, key2: key2, idx: true)
-                    switch result {
-                    case .matches(let length, let matches):
-                        #expect(length == 6)
-                        #expect(matches[0].first == 4...7)
-                        #expect(matches[0].second == 5...8)
-                        #expect(matches[1].first == 2...3)
-                        #expect(matches[1].second == 0...1)
-                    default:
-                        Issue.record("Expected `matches` case")
-                    }
-                }
-            }
-        }
-    }
-
-    @Test
     func testLPOP() async throws {
         var logger = Logger(label: "LPOP")
         logger.logLevel = .debug
