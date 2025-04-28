@@ -297,7 +297,7 @@ public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: RESPC
 }
 
 /// Appends a new message to a stream. Creates the key if it doesn't exist.
-public struct XADD: RESPCommand {
+public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: RESPCommand {
     public enum TrimStrategy: RESPRenderable, Sendable {
         case maxlen
         case minid
@@ -376,11 +376,11 @@ public struct XADD: RESPCommand {
         }
     }
     public struct Data: RESPRenderable, Sendable {
-        @usableFromInline let field: String
-        @usableFromInline let value: String
+        @usableFromInline let field: Field
+        @usableFromInline let value: Value
 
 
-        @inlinable public init(field: String, value: String) {
+        @inlinable public init(field: Field, value: Value) {
             self.field = field
             self.value = value
         }
@@ -596,13 +596,13 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: RE
 }
 
 /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
-public struct XREAD: RESPCommand {
+public struct XREAD<Id: RESPStringRenderable>: RESPCommand {
     public struct Streams: RESPRenderable, Sendable {
         @usableFromInline let key: [RESPKey]
-        @usableFromInline let id: [String]
+        @usableFromInline let id: [Id]
 
 
-        @inlinable public init(key: [RESPKey], id: [String]) {
+        @inlinable public init(key: [RESPKey], id: [Id]) {
             self.key = key
             self.id = id
         }
@@ -636,13 +636,13 @@ public struct XREAD: RESPCommand {
 }
 
 /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
-public struct XREADGROUP: RESPCommand {
+public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>: RESPCommand {
     public struct GroupBlock: RESPRenderable, Sendable {
-        @usableFromInline let group: String
-        @usableFromInline let consumer: String
+        @usableFromInline let group: Group
+        @usableFromInline let consumer: Consumer
 
 
-        @inlinable public init(group: String, consumer: String) {
+        @inlinable public init(group: Group, consumer: Consumer) {
             self.group = group
             self.consumer = consumer
         }
@@ -660,10 +660,10 @@ public struct XREADGROUP: RESPCommand {
     }
     public struct Streams: RESPRenderable, Sendable {
         @usableFromInline let key: [RESPKey]
-        @usableFromInline let id: [String]
+        @usableFromInline let id: [Id]
 
 
-        @inlinable public init(key: [RESPKey], id: [String]) {
+        @inlinable public init(key: [RESPKey], id: [Id]) {
             self.key = key
             self.id = id
         }
@@ -745,7 +745,7 @@ public struct XSETID<LastId: RESPStringRenderable>: RESPCommand {
 }
 
 /// Deletes messages from the beginning of a stream.
-public struct XTRIM: RESPCommand {
+public struct XTRIM<Threshold: RESPStringRenderable>: RESPCommand {
     public enum TrimStrategy: RESPRenderable, Sendable {
         case maxlen
         case minid
@@ -779,11 +779,11 @@ public struct XTRIM: RESPCommand {
     public struct Trim: RESPRenderable, Sendable {
         @usableFromInline let strategy: TrimStrategy
         @usableFromInline let `operator`: TrimOperator?
-        @usableFromInline let threshold: String
+        @usableFromInline let threshold: Threshold
         @usableFromInline let count: Int?
 
 
-        @inlinable public init(strategy: TrimStrategy, `operator`: TrimOperator? = nil, threshold: String, count: Int? = nil) {
+        @inlinable public init(strategy: TrimStrategy, `operator`: TrimOperator? = nil, threshold: Threshold, count: Int? = nil) {
             self.strategy = strategy
             self.`operator` = `operator`
             self.threshold = threshold
@@ -843,7 +843,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd(key: RESPKey, nomkstream: Bool = false, trim: XADD.Trim? = nil, idSelector: XADD.IdSelector, data: [XADD.Data]) async throws -> RESPToken? {
+    public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: RESPKey, nomkstream: Bool = false, trim: XADD<Field, Value>.Trim? = nil, idSelector: XADD<Field, Value>.IdSelector, data: [XADD<Field, Value>.Data]) async throws -> RESPToken? {
         try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
@@ -1055,7 +1055,7 @@ extension ValkeyConnection {
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xread(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD.Streams) async throws -> RESPToken.Map? {
+    public func xread<Id: RESPStringRenderable>(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD<Id>.Streams) async throws -> RESPToken.Map? {
         try await send(command: XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
@@ -1069,7 +1069,7 @@ extension ValkeyConnection {
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
     @inlinable
-    public func xreadgroup(groupBlock: XREADGROUP.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP.Streams) async throws -> RESPToken.Map? {
+    public func xreadgroup<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>(groupBlock: XREADGROUP<Group, Consumer, Id>.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP<Group, Consumer, Id>.Streams) async throws -> RESPToken.Map? {
         try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
@@ -1105,7 +1105,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @stream, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): The number of entries deleted from the stream.
     @inlinable
-    public func xtrim(key: RESPKey, trim: XTRIM.Trim) async throws -> Int {
+    public func xtrim<Threshold: RESPStringRenderable>(key: RESPKey, trim: XTRIM<Threshold>.Trim) async throws -> Int {
         try await send(command: XTRIM(key: key, trim: trim))
     }
 

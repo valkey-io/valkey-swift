@@ -99,7 +99,7 @@ public struct BZPOPMIN: RESPCommand {
 }
 
 /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
-public struct ZADD: RESPCommand {
+public struct ZADD<Member: RESPStringRenderable>: RESPCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -132,10 +132,10 @@ public struct ZADD: RESPCommand {
     }
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let score: Double
-        @usableFromInline let member: String
+        @usableFromInline let member: Member
 
 
-        @inlinable public init(score: Double, member: String) {
+        @inlinable public init(score: Double, member: Member) {
             self.score = score
             self.member = member
         }
@@ -1157,7 +1157,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/valkey.io/topics/protocol/#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd(key: RESPKey, condition: ZADD.Condition? = nil, comparison: ZADD.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD.Data]) async throws -> ZADD.Response {
+    public func zadd<Member: RESPStringRenderable>(key: RESPKey, condition: ZADD<Member>.Condition? = nil, comparison: ZADD<Member>.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD<Member>.Data]) async throws -> ZADD.Response {
         try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 

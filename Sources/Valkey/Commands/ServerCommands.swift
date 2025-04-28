@@ -398,13 +398,13 @@ public enum CONFIG {
     }
 
     /// Sets configuration parameters in-flight.
-    public struct SET: RESPCommand {
+    public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: RESPCommand {
         public struct Data: RESPRenderable, Sendable {
-            @usableFromInline let parameter: String
-            @usableFromInline let value: String
+            @usableFromInline let parameter: Parameter
+            @usableFromInline let value: Value
 
 
-            @inlinable public init(parameter: String, value: String) {
+            @inlinable public init(parameter: Parameter, value: Value) {
                 self.parameter = parameter
                 self.value = value
             }
@@ -1600,7 +1600,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
-    public func configSet(data: [CONFIG.SET.Data]) async throws {
+    public func configSet<Parameter: RESPStringRenderable, Value: RESPStringRenderable>(data: [CONFIG.SET<Parameter, Value>.Data]) async throws {
         _ = try await send(command: CONFIG.SET(data: data))
     }
 

@@ -294,13 +294,13 @@ public struct MGET: RESPCommand {
 }
 
 /// Atomically creates or modifies the string values of one or more keys.
-public struct MSET: RESPCommand {
+public struct MSET<Value: RESPStringRenderable>: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let key: RESPKey
-        @usableFromInline let value: String
+        @usableFromInline let value: Value
 
 
-        @inlinable public init(key: RESPKey, value: String) {
+        @inlinable public init(key: RESPKey, value: Value) {
             self.key = key
             self.value = value
         }
@@ -328,13 +328,13 @@ public struct MSET: RESPCommand {
 }
 
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
-public struct MSETNX: RESPCommand {
+public struct MSETNX<Value: RESPStringRenderable>: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let key: RESPKey
-        @usableFromInline let value: String
+        @usableFromInline let value: Value
 
 
-        @inlinable public init(key: RESPKey, value: String) {
+        @inlinable public init(key: RESPKey, value: Value) {
             self.key = key
             self.value = value
         }
@@ -726,7 +726,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): always `OK` because `MSET` can't fail.
     @inlinable
-    public func mset(data: [MSET.Data]) async throws {
+    public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws {
         _ = try await send(command: MSET(data: data))
     }
 
@@ -740,7 +740,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if no key was set (at least one key already existed).
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if all the keys were set.
     @inlinable
-    public func msetnx(data: [MSETNX.Data]) async throws -> Int {
+    public func msetnx<Value: RESPStringRenderable>(data: [MSETNX<Value>.Data]) async throws -> Int {
         try await send(command: MSETNX(data: data))
     }
 

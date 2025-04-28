@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
-public struct GEOADD: RESPCommand {
+public struct GEOADD<Member: RESPStringRenderable>: RESPCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -42,10 +42,10 @@ public struct GEOADD: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
-        @usableFromInline let member: String
+        @usableFromInline let member: Member
 
 
-        @inlinable public init(longitude: Double, latitude: Double, member: String) {
+        @inlinable public init(longitude: Double, latitude: Double, member: Member) {
             self.longitude = longitude
             self.latitude = latitude
             self.member = member
@@ -987,7 +987,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public func geoadd(key: RESPKey, condition: GEOADD.Condition? = nil, change: Bool = false, data: [GEOADD.Data]) async throws -> Int {
+    public func geoadd<Member: RESPStringRenderable>(key: RESPKey, condition: GEOADD<Member>.Condition? = nil, change: Bool = false, data: [GEOADD<Member>.Data]) async throws -> Int {
         try await send(command: GEOADD(key: key, condition: condition, change: change, data: data))
     }
 

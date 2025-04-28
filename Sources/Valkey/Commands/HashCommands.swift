@@ -191,13 +191,13 @@ public struct HMGET<Field: RESPStringRenderable>: RESPCommand {
 
 /// Sets the values of multiple fields.
 @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
-public struct HMSET: RESPCommand {
+public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
-        @usableFromInline let field: String
-        @usableFromInline let value: String
+        @usableFromInline let field: Field
+        @usableFromInline let value: Value
 
 
-        @inlinable public init(field: String, value: String) {
+        @inlinable public init(field: Field, value: Value) {
             self.field = field
             self.value = value
         }
@@ -290,13 +290,13 @@ public struct HSCAN: RESPCommand {
 }
 
 /// Creates or modifies the value of a field in a hash.
-public struct HSET: RESPCommand {
+public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
-        @usableFromInline let field: String
-        @usableFromInline let value: String
+        @usableFromInline let field: Field
+        @usableFromInline let value: Value
 
 
-        @inlinable public init(field: String, value: String) {
+        @inlinable public init(field: Field, value: Value) {
             self.field = field
             self.value = value
         }
@@ -508,7 +508,7 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
-    public func hmset(key: RESPKey, data: [HMSET.Data]) async throws {
+    public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: RESPKey, data: [HMSET<Field, Value>.Data]) async throws {
         _ = try await send(command: HMSET(key: key, data: data))
     }
 
@@ -550,7 +550,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @hash, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of fields that were added.
     @inlinable
-    public func hset(key: RESPKey, data: [HSET.Data]) async throws -> Int {
+    public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: RESPKey, data: [HSET<Field, Value>.Data]) async throws -> Int {
         try await send(command: HSET(key: key, data: data))
     }
 
