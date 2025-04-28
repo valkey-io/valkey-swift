@@ -14,6 +14,7 @@
 
 import Foundation
 import Logging
+import NIOCore
 import Testing
 import Valkey
 
@@ -71,6 +72,20 @@ struct GeneratedCommands {
                 #expect(response == "Hello")
                 let response2 = try await connection.get(key: "sdf65fsdf")?.decode(as: String.self)
                 #expect(response2 == nil)
+            }
+        }
+    }
+
+    @Test
+    func testBinarySetGet() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withConnection(logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                let buffer = ByteBuffer(repeating: 12, count: 256)
+                _ = try await connection.set(key: key, value: buffer)
+                let response = try await connection.get(key: key)?.decode(as: ByteBuffer.self)
+                #expect(response == buffer)
             }
         }
     }

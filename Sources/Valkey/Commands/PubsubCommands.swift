@@ -124,19 +124,19 @@ public struct PSUBSCRIBE: RESPCommand {
 }
 
 /// Posts a message to a channel.
-public struct PUBLISH: RESPCommand {
+public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
-    public var channel: String
-    public var message: String
+    public var channel: Channel
+    public var message: Message
 
-    @inlinable public init(channel: String, message: String) {
+    @inlinable public init(channel: Channel, message: Message) {
         self.channel = channel
         self.message = message
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("PUBLISH", channel, message)
+        commandEncoder.encodeArray("PUBLISH", RESPBulkString(channel), RESPBulkString(message))
     }
 }
 
@@ -154,45 +154,45 @@ public struct PUNSUBSCRIBE: RESPCommand {
 }
 
 /// Post a message to a shard channel
-public struct SPUBLISH: RESPCommand {
+public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
-    public var shardchannel: String
-    public var message: String
+    public var shardchannel: Shardchannel
+    public var message: Message
 
-    @inlinable public init(shardchannel: String, message: String) {
+    @inlinable public init(shardchannel: Shardchannel, message: Message) {
         self.shardchannel = shardchannel
         self.message = message
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SPUBLISH", shardchannel, message)
+        commandEncoder.encodeArray("SPUBLISH", RESPBulkString(shardchannel), RESPBulkString(message))
     }
 }
 
 /// Listens for messages published to shard channels.
-public struct SSUBSCRIBE: RESPCommand {
-    public var shardchannel: [String]
+public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: RESPCommand {
+    public var shardchannel: [Shardchannel]
 
-    @inlinable public init(shardchannel: [String]) {
+    @inlinable public init(shardchannel: [Shardchannel]) {
         self.shardchannel = shardchannel
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SSUBSCRIBE", shardchannel)
+        commandEncoder.encodeArray("SSUBSCRIBE", shardchannel.map { RESPBulkString($0) })
     }
 }
 
 /// Listens for messages published to channels.
-public struct SUBSCRIBE: RESPCommand {
-    public var channel: [String]
+public struct SUBSCRIBE<Channel: RESPStringRenderable>: RESPCommand {
+    public var channel: [Channel]
 
-    @inlinable public init(channel: [String]) {
+    @inlinable public init(channel: [Channel]) {
         self.channel = channel
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SUBSCRIBE", channel)
+        commandEncoder.encodeArray("SUBSCRIBE", channel.map { RESPBulkString($0) })
     }
 }
 
@@ -231,7 +231,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of clients that received the message. Note that in a Valkey Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
-    public func publish(channel: String, message: String) async throws -> Int {
+    public func publish<Channel: RESPStringRenderable, Message: RESPStringRenderable>(channel: Channel, message: Message) async throws -> Int {
         try await send(command: PUBLISH(channel: channel, message: message))
     }
 
@@ -315,7 +315,7 @@ extension ValkeyConnection {
     /// - Categories: @pubsub, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of clients that received the message. Note that in a Valkey Cluster, only clients that are connected to the same node as the publishing client are included in the count
     @inlinable
-    public func spublish(shardchannel: String, message: String) async throws -> Int {
+    public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(shardchannel: Shardchannel, message: Message) async throws -> Int {
         try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
     }
 

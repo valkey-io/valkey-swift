@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
-public struct GEOADD: RESPCommand {
+public struct GEOADD<Member: RESPStringRenderable>: RESPCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -42,10 +42,10 @@ public struct GEOADD: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let longitude: Double
         @usableFromInline let latitude: Double
-        @usableFromInline let member: String
+        @usableFromInline let member: Member
 
 
-        @inlinable public init(longitude: Double, latitude: Double, member: String) {
+        @inlinable public init(longitude: Double, latitude: Double, member: Member) {
             self.longitude = longitude
             self.latitude = latitude
             self.member = member
@@ -53,14 +53,14 @@ public struct GEOADD: RESPCommand {
 
         @inlinable
         public var respEntries: Int {
-            longitude.respEntries + latitude.respEntries + member.respEntries
+            longitude.respEntries + latitude.respEntries + RESPBulkString(member).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             longitude.encode(into: &commandEncoder)
             latitude.encode(into: &commandEncoder)
-            member.encode(into: &commandEncoder)
+            RESPBulkString(member).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -85,7 +85,7 @@ public struct GEOADD: RESPCommand {
 }
 
 /// Returns the distance between two members of a geospatial index.
-public struct GEODIST: RESPCommand {
+public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderable>: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -108,11 +108,11 @@ public struct GEODIST: RESPCommand {
     public typealias Response = RESPToken?
 
     public var key: RESPKey
-    public var member1: String
-    public var member2: String
+    public var member1: Member1
+    public var member2: Member2
     public var unit: Unit?
 
-    @inlinable public init(key: RESPKey, member1: String, member2: String, unit: Unit? = nil) {
+    @inlinable public init(key: RESPKey, member1: Member1, member2: Member2, unit: Unit? = nil) {
         self.key = key
         self.member1 = member1
         self.member2 = member2
@@ -122,7 +122,7 @@ public struct GEODIST: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("GEODIST", key, member1, member2, unit)
+        commandEncoder.encodeArray("GEODIST", key, RESPBulkString(member1), RESPBulkString(member2), unit)
     }
 }
 
@@ -277,7 +277,7 @@ public struct GEORADIUS: RESPCommand {
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-public struct GEORADIUSBYMEMBER: RESPCommand {
+public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -354,7 +354,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
         }
     }
     public var key: RESPKey
-    public var member: String
+    public var member: Member
     public var radius: Double
     public var unit: Unit
     public var withcoord: Bool
@@ -364,7 +364,7 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
     public var order: Order?
     public var store: Store?
 
-    @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
+    @inlinable public init(key: RESPKey, member: Member, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil, store: Store? = nil) {
         self.key = key
         self.member = member
         self.radius = radius
@@ -380,13 +380,13 @@ public struct GEORADIUSBYMEMBER: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, RESPBulkString(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
 /// Returns members from a geospatial index that are within a distance from a member.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-public struct GEORADIUSBYMEMBERRO: RESPCommand {
+public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: RESPCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
         case km
@@ -443,7 +443,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
         }
     }
     public var key: RESPKey
-    public var member: String
+    public var member: Member
     public var radius: Double
     public var unit: Unit
     public var withcoord: Bool
@@ -452,7 +452,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
     public var countBlock: CountBlock?
     public var order: Order?
 
-    @inlinable public init(key: RESPKey, member: String, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
+    @inlinable public init(key: RESPKey, member: Member, radius: Double, unit: Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: CountBlock? = nil, order: Order? = nil) {
         self.key = key
         self.member = member
         self.radius = radius
@@ -467,7 +467,7 @@ public struct GEORADIUSBYMEMBERRO: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, member, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, RESPBulkString(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 
@@ -987,7 +987,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @geo, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
-    public func geoadd(key: RESPKey, condition: GEOADD.Condition? = nil, change: Bool = false, data: [GEOADD.Data]) async throws -> Int {
+    public func geoadd<Member: RESPStringRenderable>(key: RESPKey, condition: GEOADD<Member>.Condition? = nil, change: Bool = false, data: [GEOADD<Member>.Data]) async throws -> Int {
         try await send(command: GEOADD(key: key, condition: condition, change: change, data: data))
     }
 
@@ -1001,7 +1001,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): one or both of the elements are missing.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): distance as a double (represented as a string) in the specified units.
     @inlinable
-    public func geodist(key: RESPKey, member1: String, member2: String, unit: GEODIST.Unit? = nil) async throws -> RESPToken? {
+    public func geodist<Member1: RESPStringRenderable, Member2: RESPStringRenderable>(key: RESPKey, member1: Member1, member2: Member2, unit: GEODIST<Member1, Member2>.Unit? = nil) async throws -> RESPToken? {
         try await send(command: GEODIST(key: key, member1: member1, member2: member2, unit: unit))
     }
 
@@ -1065,7 +1065,7 @@ extension ValkeyConnection {
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-    public func georadiusbymember(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBER.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER.CountBlock? = nil, order: GEORADIUSBYMEMBER.Order? = nil, store: GEORADIUSBYMEMBER.Store? = nil) async throws -> GEORADIUSBYMEMBER.Response {
+    public func georadiusbymember<Member: RESPStringRenderable>(key: RESPKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBER<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBER<Member>.Order? = nil, store: GEORADIUSBYMEMBER<Member>.Store? = nil) async throws -> GEORADIUSBYMEMBER.Response {
         try await send(command: GEORADIUSBYMEMBER(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
 
@@ -1083,7 +1083,7 @@ extension ValkeyConnection {
     ///         * The coordinates as a two items x,y array (longitude,latitude).
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-    public func georadiusbymemberRo(key: RESPKey, member: String, radius: Double, unit: GEORADIUSBYMEMBERRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO.CountBlock? = nil, order: GEORADIUSBYMEMBERRO.Order? = nil) async throws -> GEORADIUSBYMEMBERRO.Response {
+    public func georadiusbymemberRo<Member: RESPStringRenderable>(key: RESPKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBERRO<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBERRO<Member>.Order? = nil) async throws -> GEORADIUSBYMEMBERRO.Response {
         try await send(command: GEORADIUSBYMEMBERRO(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 

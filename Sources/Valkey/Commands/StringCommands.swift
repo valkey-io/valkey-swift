@@ -23,13 +23,13 @@ import Foundation
 #endif
 
 /// Appends a string to the value of a key. Creates the key if it doesn't exist.
-public struct APPEND: RESPCommand {
+public struct APPEND<Value: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var value: String
+    public var value: Value
 
-    @inlinable public init(key: RESPKey, value: String) {
+    @inlinable public init(key: RESPKey, value: Value) {
         self.key = key
         self.value = value
     }
@@ -37,7 +37,7 @@ public struct APPEND: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("APPEND", key, value)
+        commandEncoder.encodeArray("APPEND", key, RESPBulkString(value))
     }
 }
 
@@ -180,13 +180,13 @@ public struct GETRANGE: RESPCommand {
 
 /// Returns the previous string value of a key after setting it to a new value.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
-public struct GETSET: RESPCommand {
+public struct GETSET<Value: RESPStringRenderable>: RESPCommand {
     public typealias Response = RESPToken?
 
     public var key: RESPKey
-    public var value: String
+    public var value: Value
 
-    @inlinable public init(key: RESPKey, value: String) {
+    @inlinable public init(key: RESPKey, value: Value) {
         self.key = key
         self.value = value
     }
@@ -194,7 +194,7 @@ public struct GETSET: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("GETSET", key, value)
+        commandEncoder.encodeArray("GETSET", key, RESPBulkString(value))
     }
 }
 
@@ -294,26 +294,26 @@ public struct MGET: RESPCommand {
 }
 
 /// Atomically creates or modifies the string values of one or more keys.
-public struct MSET: RESPCommand {
+public struct MSET<Value: RESPStringRenderable>: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let key: RESPKey
-        @usableFromInline let value: String
+        @usableFromInline let value: Value
 
 
-        @inlinable public init(key: RESPKey, value: String) {
+        @inlinable public init(key: RESPKey, value: Value) {
             self.key = key
             self.value = value
         }
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + value.respEntries
+            key.respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             key.encode(into: &commandEncoder)
-            value.encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public var data: [Data]
@@ -328,26 +328,26 @@ public struct MSET: RESPCommand {
 }
 
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
-public struct MSETNX: RESPCommand {
+public struct MSETNX<Value: RESPStringRenderable>: RESPCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let key: RESPKey
-        @usableFromInline let value: String
+        @usableFromInline let value: Value
 
 
-        @inlinable public init(key: RESPKey, value: String) {
+        @inlinable public init(key: RESPKey, value: Value) {
             self.key = key
             self.value = value
         }
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + value.respEntries
+            key.respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout RESPCommandEncoder) {
             key.encode(into: &commandEncoder)
-            value.encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -365,12 +365,12 @@ public struct MSETNX: RESPCommand {
 
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
-public struct PSETEX: RESPCommand {
+public struct PSETEX<Value: RESPStringRenderable>: RESPCommand {
     public var key: RESPKey
     public var milliseconds: Int
-    public var value: String
+    public var value: Value
 
-    @inlinable public init(key: RESPKey, milliseconds: Int, value: String) {
+    @inlinable public init(key: RESPKey, milliseconds: Int, value: Value) {
         self.key = key
         self.milliseconds = milliseconds
         self.value = value
@@ -379,12 +379,12 @@ public struct PSETEX: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("PSETEX", key, milliseconds, value)
+        commandEncoder.encodeArray("PSETEX", key, milliseconds, RESPBulkString(value))
     }
 }
 
 /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
-public struct SET: RESPCommand {
+public struct SET<Value: RESPStringRenderable>: RESPCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
@@ -432,12 +432,12 @@ public struct SET: RESPCommand {
     public typealias Response = RESPToken?
 
     public var key: RESPKey
-    public var value: String
+    public var value: Value
     public var condition: Condition?
     public var get: Bool
     public var expiration: Expiration?
 
-    @inlinable public init(key: RESPKey, value: String, condition: Condition? = nil, get: Bool = false, expiration: Expiration? = nil) {
+    @inlinable public init(key: RESPKey, value: Value, condition: Condition? = nil, get: Bool = false, expiration: Expiration? = nil) {
         self.key = key
         self.value = value
         self.condition = condition
@@ -448,18 +448,18 @@ public struct SET: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SET", key, value, condition, RESPPureToken("GET", get), expiration)
+        commandEncoder.encodeArray("SET", key, RESPBulkString(value), condition, RESPPureToken("GET", get), expiration)
     }
 }
 
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
-public struct SETEX: RESPCommand {
+public struct SETEX<Value: RESPStringRenderable>: RESPCommand {
     public var key: RESPKey
     public var seconds: Int
-    public var value: String
+    public var value: Value
 
-    @inlinable public init(key: RESPKey, seconds: Int, value: String) {
+    @inlinable public init(key: RESPKey, seconds: Int, value: Value) {
         self.key = key
         self.seconds = seconds
         self.value = value
@@ -468,19 +468,19 @@ public struct SETEX: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SETEX", key, seconds, value)
+        commandEncoder.encodeArray("SETEX", key, seconds, RESPBulkString(value))
     }
 }
 
 /// Set the string value of a key only when the key doesn't exist.
 @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
-public struct SETNX: RESPCommand {
+public struct SETNX<Value: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
-    public var value: String
+    public var value: Value
 
-    @inlinable public init(key: RESPKey, value: String) {
+    @inlinable public init(key: RESPKey, value: Value) {
         self.key = key
         self.value = value
     }
@@ -488,19 +488,19 @@ public struct SETNX: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SETNX", key, value)
+        commandEncoder.encodeArray("SETNX", key, RESPBulkString(value))
     }
 }
 
 /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
-public struct SETRANGE: RESPCommand {
+public struct SETRANGE<Value: RESPStringRenderable>: RESPCommand {
     public typealias Response = Int
 
     public var key: RESPKey
     public var offset: Int
-    public var value: String
+    public var value: Value
 
-    @inlinable public init(key: RESPKey, offset: Int, value: String) {
+    @inlinable public init(key: RESPKey, offset: Int, value: Value) {
         self.key = key
         self.offset = offset
         self.value = value
@@ -509,7 +509,7 @@ public struct SETRANGE: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("SETRANGE", key, offset, value)
+        commandEncoder.encodeArray("SETRANGE", key, offset, RESPBulkString(value))
     }
 }
 
@@ -559,7 +559,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the string after the append operation.
     @inlinable
-    public func append(key: RESPKey, value: String) async throws -> Int {
+    public func append<Value: RESPStringRenderable>(key: RESPKey, value: Value) async throws -> Int {
         try await send(command: APPEND(key: key, value: value))
     }
 
@@ -651,7 +651,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
-    public func getset(key: RESPKey, value: String) async throws -> RESPToken? {
+    public func getset<Value: RESPStringRenderable>(key: RESPKey, value: Value) async throws -> RESPToken? {
         try await send(command: GETSET(key: key, value: value))
     }
 
@@ -726,7 +726,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): always `OK` because `MSET` can't fail.
     @inlinable
-    public func mset(data: [MSET.Data]) async throws {
+    public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws {
         _ = try await send(command: MSET(data: data))
     }
 
@@ -740,7 +740,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if no key was set (at least one key already existed).
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if all the keys were set.
     @inlinable
-    public func msetnx(data: [MSETNX.Data]) async throws -> Int {
+    public func msetnx<Value: RESPStringRenderable>(data: [MSETNX<Value>.Data]) async throws -> Int {
         try await send(command: MSETNX(data: data))
     }
 
@@ -753,7 +753,7 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
-    public func psetex(key: RESPKey, milliseconds: Int, value: String) async throws {
+    public func psetex<Value: RESPStringRenderable>(key: RESPKey, milliseconds: Int, value: Value) async throws {
         _ = try await send(command: PSETEX(key: key, milliseconds: milliseconds, value: value))
     }
 
@@ -774,7 +774,7 @@ extension ValkeyConnection {
     ///     * `GET` and `NX` given: [Null](https:/valkey.io/topics/protocol/#nulls) indicates the key was set.
     ///     * `GET` and `IFEQ` given: The key was set if the reply is equal to `comparison-value`.
     @inlinable
-    public func set(key: RESPKey, value: String, condition: SET.Condition? = nil, get: Bool = false, expiration: SET.Expiration? = nil) async throws -> RESPToken? {
+    public func set<Value: RESPStringRenderable>(key: RESPKey, value: Value, condition: SET<Value>.Condition? = nil, get: Bool = false, expiration: SET<Value>.Expiration? = nil) async throws -> RESPToken? {
         try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
@@ -787,7 +787,7 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
-    public func setex(key: RESPKey, seconds: Int, value: String) async throws {
+    public func setex<Value: RESPStringRenderable>(key: RESPKey, seconds: Int, value: Value) async throws {
         _ = try await send(command: SETEX(key: key, seconds: seconds, value: value))
     }
 
@@ -802,7 +802,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the key was set.
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
-    public func setnx(key: RESPKey, value: String) async throws -> Int {
+    public func setnx<Value: RESPStringRenderable>(key: RESPKey, value: Value) async throws -> Int {
         try await send(command: SETNX(key: key, value: value))
     }
 
@@ -814,7 +814,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @string, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the string after it was modified by the command.
     @inlinable
-    public func setrange(key: RESPKey, offset: Int, value: String) async throws -> Int {
+    public func setrange<Value: RESPStringRenderable>(key: RESPKey, offset: Int, value: Value) async throws -> Int {
         try await send(command: SETRANGE(key: key, offset: offset, value: value))
     }
 
