@@ -45,7 +45,11 @@ extension ReversedCollection: RESPStringRenderable where Base.Element == UInt8 {
 extension Slice: RESPStringRenderable where Base.Element == UInt8 {}
 extension Data: RESPStringRenderable {}
 
-/// Internal type used to render RESPStringRenderable conforming type
+/// Internal type used to render RESPStringRenderable conforming type.
+///
+/// Unforunately we cannot conform RESPStringRenderable to RESPRenderable if we want
+/// Collections to conform to RESPStringRenderable, as there is already a conformance
+/// to Collection when all the elements conform to RESPRenderable.
 @usableFromInline
 struct RESPBulkString<Value: RESPStringRenderable>: RESPRenderable {
     public var respEntries: Int { 1 }
