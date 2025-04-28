@@ -397,15 +397,15 @@ public enum CLIENT {
     }
 
     /// Sets the connection name.
-    public struct SETNAME: RESPCommand {
-        public var connectionName: String
+    public struct SETNAME<ConnectionName: RESPStringRenderable>: RESPCommand {
+        public var connectionName: ConnectionName
 
-        @inlinable public init(connectionName: String) {
+        @inlinable public init(connectionName: ConnectionName) {
             self.connectionName = connectionName
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "SETNAME", connectionName)
+            commandEncoder.encodeArray("CLIENT", "SETNAME", RESPBulkString(connectionName))
         }
     }
 
@@ -506,30 +506,30 @@ public enum CLIENT {
 }
 
 /// Authenticates the connection.
-public struct AUTH: RESPCommand {
+public struct AUTH<Password: RESPStringRenderable>: RESPCommand {
     public var username: String?
-    public var password: String
+    public var password: Password
 
-    @inlinable public init(username: String? = nil, password: String) {
+    @inlinable public init(username: String? = nil, password: Password) {
         self.username = username
         self.password = password
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("AUTH", username, password)
+        commandEncoder.encodeArray("AUTH", username, RESPBulkString(password))
     }
 }
 
 /// Returns the given string.
-public struct ECHO: RESPCommand {
-    public var message: String
+public struct ECHO<Message: RESPStringRenderable>: RESPCommand {
+    public var message: Message
 
-    @inlinable public init(message: String) {
+    @inlinable public init(message: Message) {
         self.message = message
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("ECHO", message)
+        commandEncoder.encodeArray("ECHO", RESPBulkString(message))
     }
 }
 
@@ -651,7 +651,7 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
     @inlinable
-    public func auth(username: String? = nil, password: String) async throws {
+    public func auth<Password: RESPStringRenderable>(username: String? = nil, password: Password) async throws {
         _ = try await send(command: AUTH(username: username, password: password))
     }
 
@@ -826,7 +826,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection name was successfully set.
     @inlinable
-    public func clientSetname(connectionName: String) async throws {
+    public func clientSetname<ConnectionName: RESPStringRenderable>(connectionName: ConnectionName) async throws {
         _ = try await send(command: CLIENT.SETNAME(connectionName: connectionName))
     }
 
@@ -888,7 +888,7 @@ extension ValkeyConnection {
     /// - Categories: @fast, @connection
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the given string.
     @inlinable
-    public func echo(message: String) async throws -> ECHO.Response {
+    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ECHO.Response {
         try await send(command: ECHO(message: message))
     }
 

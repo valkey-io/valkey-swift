@@ -293,7 +293,7 @@ public struct KEYS: RESPCommand {
 }
 
 /// Atomically transfers a key from one Valkey instance to another.
-public struct MIGRATE: RESPCommand {
+public struct MIGRATE<Host: RESPStringRenderable>: RESPCommand {
     public enum KeySelector: RESPRenderable, Sendable {
         case key(RESPKey)
         case emptyString
@@ -357,7 +357,7 @@ public struct MIGRATE: RESPCommand {
     }
     public typealias Response = String?
 
-    public var host: String
+    public var host: Host
     public var port: Int
     public var keySelector: KeySelector
     public var destinationDb: Int
@@ -367,7 +367,7 @@ public struct MIGRATE: RESPCommand {
     public var authentication: Authentication?
     public var keys: [RESPKey]
 
-    @inlinable public init(host: String, port: Int, keySelector: KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: Authentication? = nil, keys: [RESPKey] = []) {
+    @inlinable public init(host: Host, port: Int, keySelector: KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: Authentication? = nil, keys: [RESPKey] = []) {
         self.host = host
         self.port = port
         self.keySelector = keySelector
@@ -382,7 +382,7 @@ public struct MIGRATE: RESPCommand {
     public var keysAffected: [RESPKey] { keys }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("MIGRATE", host, port, keySelector, destinationDb, timeout, RESPPureToken("COPY", copy), RESPPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
+        commandEncoder.encodeArray("MIGRATE", RESPBulkString(host), port, keySelector, destinationDb, timeout, RESPPureToken("COPY", copy), RESPPureToken("REPLACE", replace), authentication, RESPWithToken("KEYS", keys))
     }
 }
 
@@ -585,16 +585,16 @@ public struct RENAMENX: RESPCommand {
 }
 
 /// Creates a key from the serialized representation of a value.
-public struct RESTORE: RESPCommand {
+public struct RESTORE<SerializedValue: RESPStringRenderable>: RESPCommand {
     public var key: RESPKey
     public var ttl: Int
-    public var serializedValue: String
+    public var serializedValue: SerializedValue
     public var replace: Bool
     public var absttl: Bool
     public var seconds: Int?
     public var frequency: Int?
 
-    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -607,7 +607,7 @@ public struct RESTORE: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("RESTORE", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+        commandEncoder.encodeArray("RESTORE", key, ttl, RESPBulkString(serializedValue), RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 }
 
@@ -980,7 +980,7 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `NOKEY` when no keys were found in the source instance.
     @inlinable
-    public func migrate(host: String, port: Int, keySelector: MIGRATE.KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATE.Authentication? = nil, keys: [RESPKey] = []) async throws -> String? {
+    public func migrate<Host: RESPStringRenderable>(host: Host, port: Int, keySelector: MIGRATE<Host>.KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATE<Host>.Authentication? = nil, keys: [RESPKey] = []) async throws -> String? {
         try await send(command: MIGRATE(host: host, port: port, keySelector: keySelector, destinationDb: destinationDb, timeout: timeout, copy: copy, replace: replace, authentication: authentication, keys: keys))
     }
 
@@ -1186,7 +1186,7 @@ extension ValkeyConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func restore(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
+    public func restore<SerializedValue: RESPStringRenderable>(key: RESPKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
         _ = try await send(command: RESTORE(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 

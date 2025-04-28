@@ -40,36 +40,36 @@ public enum ACL {
     }
 
     /// Deletes ACL users, and terminates their connections.
-    public struct DELUSER: RESPCommand {
+    public struct DELUSER<Username: RESPStringRenderable>: RESPCommand {
         public typealias Response = Int
 
-        public var username: [String]
+        public var username: [Username]
 
-        @inlinable public init(username: [String]) {
+        @inlinable public init(username: [Username]) {
             self.username = username
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "DELUSER", username)
+            commandEncoder.encodeArray("ACL", "DELUSER", username.map { RESPBulkString($0) })
         }
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
-    public struct DRYRUN: RESPCommand {
+    public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken?
 
-        public var username: String
-        public var command: String
+        public var username: Username
+        public var command: Command
         public var arg: [String]
 
-        @inlinable public init(username: String, command: String, arg: [String] = []) {
+        @inlinable public init(username: Username, command: Command, arg: [String] = []) {
             self.username = username
             self.command = command
             self.arg = arg
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "DRYRUN", username, command, arg)
+            commandEncoder.encodeArray("ACL", "DRYRUN", RESPBulkString(username), RESPBulkString(command), arg)
         }
     }
 
@@ -87,17 +87,17 @@ public enum ACL {
     }
 
     /// Lists the ACL rules of a user.
-    public struct GETUSER: RESPCommand {
+    public struct GETUSER<Username: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Map?
 
-        public var username: String
+        public var username: Username
 
-        @inlinable public init(username: String) {
+        @inlinable public init(username: Username) {
             self.username = username
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "GETUSER", username)
+            commandEncoder.encodeArray("ACL", "GETUSER", RESPBulkString(username))
         }
     }
 
@@ -181,17 +181,17 @@ public enum ACL {
     }
 
     /// Creates and modifies an ACL user and its rules.
-    public struct SETUSER: RESPCommand {
-        public var username: String
+    public struct SETUSER<Username: RESPStringRenderable>: RESPCommand {
+        public var username: Username
         public var rule: [String]
 
-        @inlinable public init(username: String, rule: [String] = []) {
+        @inlinable public init(username: Username, rule: [String] = []) {
             self.username = username
             self.rule = rule
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "SETUSER", username, rule)
+            commandEncoder.encodeArray("ACL", "SETUSER", RESPBulkString(username), rule)
         }
     }
 
@@ -248,36 +248,36 @@ extension COMMAND {
     }
 
     /// Extracts the key names from an arbitrary command.
-    public struct GETKEYS: RESPCommand {
+    public struct GETKEYS<Command: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var command: String
+        public var command: Command
         public var arg: [String]
 
-        @inlinable public init(command: String, arg: [String] = []) {
+        @inlinable public init(command: Command, arg: [String] = []) {
             self.command = command
             self.arg = arg
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "GETKEYS", command, arg)
+            commandEncoder.encodeArray("COMMAND", "GETKEYS", RESPBulkString(command), arg)
         }
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
-    public struct GETKEYSANDFLAGS: RESPCommand {
+    public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var command: String
+        public var command: Command
         public var arg: [String]
 
-        @inlinable public init(command: String, arg: [String] = []) {
+        @inlinable public init(command: Command, arg: [String] = []) {
             self.command = command
             self.arg = arg
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", command, arg)
+            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", RESPBulkString(command), arg)
         }
     }
 
@@ -351,17 +351,17 @@ extension COMMAND {
 /// A container for server configuration commands.
 public enum CONFIG {
     /// Returns the effective values of configuration parameters.
-    public struct GET: RESPCommand {
+    public struct GET<Parameter: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Map
 
-        public var parameter: [String]
+        public var parameter: [Parameter]
 
-        @inlinable public init(parameter: [String]) {
+        @inlinable public init(parameter: [Parameter]) {
             self.parameter = parameter
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("CONFIG", "GET", parameter)
+            commandEncoder.encodeArray("CONFIG", "GET", parameter.map { RESPBulkString($0) })
         }
     }
 
@@ -398,26 +398,26 @@ public enum CONFIG {
     }
 
     /// Sets configuration parameters in-flight.
-    public struct SET: RESPCommand {
+    public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: RESPCommand {
         public struct Data: RESPRenderable, Sendable {
-            @usableFromInline let parameter: String
-            @usableFromInline let value: String
+            @usableFromInline let parameter: Parameter
+            @usableFromInline let value: Value
 
 
-            @inlinable public init(parameter: String, value: String) {
+            @inlinable public init(parameter: Parameter, value: Value) {
                 self.parameter = parameter
                 self.value = value
             }
 
             @inlinable
             public var respEntries: Int {
-                parameter.respEntries + value.respEntries
+                RESPBulkString(parameter).respEntries + RESPBulkString(value).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout RESPCommandEncoder) {
-                parameter.encode(into: &commandEncoder)
-                value.encode(into: &commandEncoder)
+                RESPBulkString(parameter).encode(into: &commandEncoder)
+                RESPBulkString(value).encode(into: &commandEncoder)
             }
         }
         public var data: [Data]
@@ -448,15 +448,15 @@ public enum LATENCY {
     }
 
     /// Returns a latency graph for an event.
-    public struct GRAPH: RESPCommand {
-        public var event: String
+    public struct GRAPH<Event: RESPStringRenderable>: RESPCommand {
+        public var event: Event
 
-        @inlinable public init(event: String) {
+        @inlinable public init(event: Event) {
             self.event = event
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("LATENCY", "GRAPH", event)
+            commandEncoder.encodeArray("LATENCY", "GRAPH", RESPBulkString(event))
         }
     }
 
@@ -488,17 +488,17 @@ public enum LATENCY {
     }
 
     /// Returns timestamp-latency samples for an event.
-    public struct HISTORY: RESPCommand {
+    public struct HISTORY<Event: RESPStringRenderable>: RESPCommand {
         public typealias Response = RESPToken.Array
 
-        public var event: String
+        public var event: Event
 
-        @inlinable public init(event: String) {
+        @inlinable public init(event: Event) {
             self.event = event
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("LATENCY", "HISTORY", event)
+            commandEncoder.encodeArray("LATENCY", "HISTORY", RESPBulkString(event))
         }
     }
 
@@ -637,22 +637,22 @@ public enum MODULE {
     }
 
     /// Loads a module.
-    public struct LOAD: RESPCommand {
-        public var path: String
+    public struct LOAD<Path: RESPStringRenderable>: RESPCommand {
+        public var path: Path
         public var arg: [String]
 
-        @inlinable public init(path: String, arg: [String] = []) {
+        @inlinable public init(path: Path, arg: [String] = []) {
             self.path = path
             self.arg = arg
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOAD", path, arg)
+            commandEncoder.encodeArray("MODULE", "LOAD", RESPBulkString(path), arg)
         }
     }
 
     /// Loads a module using extended parameters.
-    public struct LOADEX: RESPCommand {
+    public struct LOADEX<Path: RESPStringRenderable>: RESPCommand {
         public struct Configs: RESPRenderable, Sendable {
             @usableFromInline let name: String
             @usableFromInline let value: String
@@ -674,31 +674,31 @@ public enum MODULE {
                 value.encode(into: &commandEncoder)
             }
         }
-        public var path: String
+        public var path: Path
         public var configs: [Configs]
         public var args: [String]
 
-        @inlinable public init(path: String, configs: [Configs] = [], args: [String] = []) {
+        @inlinable public init(path: Path, configs: [Configs] = [], args: [String] = []) {
             self.path = path
             self.configs = configs
             self.args = args
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOADEX", path, RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
         }
     }
 
     /// Unloads a module.
-    public struct UNLOAD: RESPCommand {
-        public var name: String
+    public struct UNLOAD<Name: RESPStringRenderable>: RESPCommand {
+        public var name: Name
 
-        @inlinable public init(name: String) {
+        @inlinable public init(name: Name) {
             self.name = name
         }
 
         @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "UNLOAD", name)
+            commandEncoder.encodeArray("MODULE", "UNLOAD", RESPBulkString(name))
         }
     }
 
@@ -954,17 +954,17 @@ public struct MONITOR: RESPCommand {
 }
 
 /// An internal command used in replication.
-public struct PSYNC: RESPCommand {
-    public var replicationid: String
+public struct PSYNC<Replicationid: RESPStringRenderable>: RESPCommand {
+    public var replicationid: Replicationid
     public var offset: Int
 
-    @inlinable public init(replicationid: String, offset: Int) {
+    @inlinable public init(replicationid: Replicationid, offset: Int) {
         self.replicationid = replicationid
         self.offset = offset
     }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("PSYNC", replicationid, offset)
+        commandEncoder.encodeArray("PSYNC", RESPBulkString(replicationid), offset)
     }
 }
 
@@ -1054,16 +1054,16 @@ public struct REPLICAOF: RESPCommand {
 }
 
 /// An internal command for migrating keys in a cluster.
-public struct RESTOREASKING: RESPCommand {
+public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: RESPCommand {
     public var key: RESPKey
     public var ttl: Int
-    public var serializedValue: String
+    public var serializedValue: SerializedValue
     public var replace: Bool
     public var absttl: Bool
     public var seconds: Int?
     public var frequency: Int?
 
-    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -1076,7 +1076,7 @@ public struct RESTOREASKING: RESPCommand {
     public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
-        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, serializedValue, RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
+        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, RESPBulkString(serializedValue), RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 }
 
@@ -1272,7 +1272,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of users that were deleted. This number will not always match the number of arguments since certain users may not exist.
     @inlinable
-    public func aclDeluser(username: [String]) async throws -> Int {
+    public func aclDeluser<Username: RESPStringRenderable>(username: [Username]) async throws -> Int {
         try await send(command: ACL.DELUSER(username: username))
     }
 
@@ -1286,7 +1286,7 @@ extension ValkeyConnection {
     ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): an error describing why the user can't execute the command.
     @inlinable
-    public func aclDryrun(username: String, command: String, arg: [String] = []) async throws -> RESPToken? {
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, arg: [String] = []) async throws -> RESPToken? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 
@@ -1312,7 +1312,7 @@ extension ValkeyConnection {
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): a set of ACL rule definitions for the user
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if user does not exist.
     @inlinable
-    public func aclGetuser(username: String) async throws -> RESPToken.Map? {
+    public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws -> RESPToken.Map? {
         try await send(command: ACL.GETUSER(username: username))
     }
 
@@ -1392,7 +1392,7 @@ extension ValkeyConnection {
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     ///     If the rules contain errors, the error is returned.
     @inlinable
-    public func aclSetuser(username: String, rule: [String] = []) async throws {
+    public func aclSetuser<Username: RESPStringRenderable>(username: Username, rule: [String] = []) async throws {
         _ = try await send(command: ACL.SETUSER(username: username, rule: rule))
     }
 
@@ -1492,7 +1492,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys from the given command.
     @inlinable
-    public func commandGetkeys(command: String, arg: [String] = []) async throws -> RESPToken.Array {
+    public func commandGetkeys<Command: RESPStringRenderable>(command: Command, arg: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYS(command: command, arg: arg))
     }
 
@@ -1504,7 +1504,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @connection
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys from the given command and their usage flags.
     @inlinable
-    public func commandGetkeysandflags(command: String, arg: [String] = []) async throws -> RESPToken.Array {
+    public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, arg: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, arg: arg))
     }
 
@@ -1552,7 +1552,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of configuration parameters matching the provided arguments.
     @inlinable
-    public func configGet(parameter: [String]) async throws -> RESPToken.Map {
+    public func configGet<Parameter: RESPStringRenderable>(parameter: [Parameter]) async throws -> RESPToken.Map {
         try await send(command: CONFIG.GET(parameter: parameter))
     }
 
@@ -1600,7 +1600,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when the configuration was set properly. Otherwise an error is returned.
     @inlinable
-    public func configSet(data: [CONFIG.SET.Data]) async throws {
+    public func configSet<Parameter: RESPStringRenderable, Value: RESPStringRenderable>(data: [CONFIG.SET<Parameter, Value>.Data]) async throws {
         _ = try await send(command: CONFIG.SET(data: data))
     }
 
@@ -1698,7 +1698,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): Latency graph
     @inlinable
-    public func latencyGraph(event: String) async throws -> LATENCY.GRAPH.Response {
+    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> LATENCY.GRAPH.Response {
         try await send(command: LATENCY.GRAPH(event: event))
     }
 
@@ -1734,7 +1734,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing the timestamp and the latency of the event.
     @inlinable
-    public func latencyHistory(event: String) async throws -> RESPToken.Array {
+    public func latencyHistory<Event: RESPStringRenderable>(event: Event) async throws -> RESPToken.Array {
         try await send(command: LATENCY.HISTORY(event: event))
     }
 
@@ -1881,7 +1881,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoad(path: String, arg: [String] = []) async throws {
+    public func moduleLoad<Path: RESPStringRenderable>(path: Path, arg: [String] = []) async throws {
         _ = try await send(command: MODULE.LOAD(path: path, arg: arg))
     }
 
@@ -1893,7 +1893,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the module was loaded.
     @inlinable
-    public func moduleLoadex(path: String, configs: [MODULE.LOADEX.Configs] = [], args: [String] = []) async throws {
+    public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configs: [MODULE.LOADEX<Path>.Configs] = [], args: [String] = []) async throws {
         _ = try await send(command: MODULE.LOADEX(path: path, configs: configs, args: args))
     }
 
@@ -1905,7 +1905,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the module was unloaded.
     @inlinable
-    public func moduleUnload(name: String) async throws {
+    public func moduleUnload<Name: RESPStringRenderable>(name: Name) async throws {
         _ = try await send(command: MODULE.UNLOAD(name: name))
     }
 
@@ -1927,7 +1927,7 @@ extension ValkeyConnection {
     /// - Categories: @admin, @slow, @dangerous
     /// - Returns: **Non-standard return value**, a bulk transfer of the data followed by `PING` and write requests from the primary.
     @inlinable
-    public func psync(replicationid: String, offset: Int) async throws -> PSYNC.Response {
+    public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> PSYNC.Response {
         try await send(command: PSYNC(replicationid: replicationid, offset: offset))
     }
 
@@ -1963,7 +1963,7 @@ extension ValkeyConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking(key: RESPKey, ttl: Int, serializedValue: String, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
+    public func restoreAsking<SerializedValue: RESPStringRenderable>(key: RESPKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
         _ = try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 
