@@ -14,6 +14,12 @@
 
 import NIOCore
 
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
 /// Type that can be rendered as a single bulk string
 public protocol RESPStringRenderable: Sendable {
     func encode(into commandEncoder: inout RESPCommandEncoder)
@@ -26,6 +32,18 @@ extension ByteBuffer: RESPStringRenderable {
         commandEncoder.encodeBulkString(self.readableBytesView)
     }
 }
+
+extension RESPStringRenderable where Self: Collection<UInt8> {
+    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        commandEncoder.encodeBulkString(self)
+    }
+}
+
+extension [UInt8]: RESPStringRenderable {}
+extension ArraySlice<UInt8>: RESPStringRenderable {}
+extension ReversedCollection: RESPStringRenderable where Base.Element == UInt8 {}
+extension Slice: RESPStringRenderable where Base.Element == UInt8 {}
+extension Data: RESPStringRenderable {}
 
 /// Internal type used to render RESPStringRenderable conforming type
 @usableFromInline
