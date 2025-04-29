@@ -57,7 +57,7 @@ struct ConnectionTests {
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
         await #expect(throws: ValkeyClientError(.commandError, message: "Not supported")) {
-            try await channel.writeInbound(RESPToken(.blobError("Not supported")).base)
+            try await channel.writeInbound(RESPToken(.bulkError("Not supported")).base)
         }
 
         try await channel.closeFuture.get()
@@ -125,7 +125,7 @@ struct ConnectionTests {
         async let fooResult = connection.get(key: "foo")
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
 
-        try await channel.writeInbound(RESPToken(.blobError("BulkError!")).base)
+        try await channel.writeInbound(RESPToken(.bulkError("BulkError!")).base)
         do {
             _ = try await fooResult
             Issue.record()

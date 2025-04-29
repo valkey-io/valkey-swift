@@ -19,7 +19,7 @@ enum RESP3Value: Hashable {
     case simpleString(ByteBuffer)
     case simpleError(ByteBuffer)
     case bulkString(ByteBuffer)
-    case blobError(ByteBuffer)
+    case bulkError(ByteBuffer)
     case verbatimString(ByteBuffer)
     case number(Int64)
     case double(Double)
@@ -52,8 +52,8 @@ enum RESP3Value: Hashable {
         .bigNumber(ByteBuffer(string: value))
     }
 
-    static func blobError(_ value: String) -> RESP3Value {
-        .blobError(ByteBuffer(string: value))
+    static func bulkError(_ value: String) -> RESP3Value {
+        .bulkError(ByteBuffer(string: value))
     }
 
     static func command(_ values: [String]) -> RESP3Value {
@@ -99,7 +99,7 @@ enum RESP3Value: Hashable {
             buffer.writeBytes("$".utf8)
             writeLengthPrefixedBytes(value, into: &buffer)
 
-        case .blobError(let value):
+        case .bulkError(let value):
             buffer.writeBytes("!".utf8)
             writeLengthPrefixedBytes(value, into: &buffer)
 

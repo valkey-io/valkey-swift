@@ -127,7 +127,7 @@ struct PushToken: RESPTokenDecodable {
             .bulkString,
             .verbatimString,
             .simpleError,
-            .blobError,
+            .bulkError,
             .number,
             .double,
             .boolean,

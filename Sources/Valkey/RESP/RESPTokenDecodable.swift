@@ -71,7 +71,7 @@ extension ByteBuffer: RESPTokenDecodable {
             .verbatimString(let buffer),
             .bigNumber(let buffer),
             .simpleError(let buffer),
-            .blobError(let buffer):
+            .bulkError(let buffer):
             self = buffer
 
         case .array,
@@ -97,7 +97,7 @@ extension String: RESPTokenDecodable {
             .verbatimString(let buffer),
             .bigNumber(let buffer),
             .simpleError(let buffer),
-            .blobError(let buffer):
+            .bulkError(let buffer):
             self.init(buffer: buffer)
 
         case .double(let value):
@@ -128,7 +128,7 @@ extension Int64: RESPTokenDecodable {
 
         case .bulkString,
             .simpleString,
-            .blobError,
+            .bulkError,
             .simpleError,
             .verbatimString,
             .double,
@@ -157,7 +157,7 @@ extension Int: RESPTokenDecodable {
 
         case .bulkString,
             .simpleString,
-            .blobError,
+            .bulkError,
             .simpleError,
             .verbatimString,
             .double,
