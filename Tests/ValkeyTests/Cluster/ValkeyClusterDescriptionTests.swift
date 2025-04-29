@@ -59,7 +59,7 @@ struct ValkeyClusterDescriptionTests {
 
         #expect(description == ValkeyClusterDescription([
             .init(
-                slotRanges: [0...5],
+                slots: [0...5],
                 nodes: [
                     .init(
                         id: "foo",

@@ -131,7 +131,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     }
 
     public struct Shard: Hashable, Sendable {
-        public var slotRanges: HashSlots
+        public var slots: HashSlots
         public var nodes: [Node]
 
         public var master: Node? {
@@ -142,8 +142,8 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.nodes.dropFirst(1)
         }
 
-        public init(slotRanges: HashSlots, nodes: [Node]) {
-            self.slotRanges = slotRanges
+        public init(slots: HashSlots, nodes: [Node]) {
+            self.slots = slots
             self.nodes = nodes
         }
     }
@@ -197,7 +197,7 @@ extension ValkeyClusterDescription {
                 throw .shardIsMissingNode
             }
 
-            return ValkeyClusterDescription.Shard(slotRanges: slotRanges, nodes: nodes)
+            return ValkeyClusterDescription.Shard(slots: slotRanges, nodes: nodes)
         }
 
         return ValkeyClusterDescription(shards)
