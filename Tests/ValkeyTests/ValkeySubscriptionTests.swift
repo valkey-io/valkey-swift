@@ -110,7 +110,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -122,14 +123,14 @@ struct SubscriptionTests {
             group.addTask {
                 var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(outbound == RESPToken(.array([.bulkString("SUBSCRIBE"), .bulkString("test")])).base)
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
                 // push subscribe
                 try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
                 // push message
                 try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!")])).base)
                 // expect UNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(outbound == RESPToken(.array([.bulkString("UNSUBSCRIBE"), .bulkString("test")])).base)
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
                 // push unsubcribe
                 try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(0)])).base)
             }
@@ -144,11 +145,12 @@ struct SubscriptionTests {
     func testSubscribeFailed() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         async let subscribeResult: Void = connection.subscribe(to: "test") { _ in }
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        try await channel.writeInbound(ByteBuffer(string: "!10\r\nBulkError!\r\n"))
+        try await channel.writeInbound(RESPToken(.blobError("BulkError!")).base)
         do {
             _ = try await subscribeResult
             Issue.record()
@@ -159,8 +161,8 @@ struct SubscriptionTests {
         // Verify GET runs fine after failing subscription
         async let fooResult = connection.get(key: "foo")
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(String(buffer: outbound) == "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
-        try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))
+        #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
+        try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
         #expect(try await fooResult?.decode() == "Bar")
 
         try await connection.channel.eventLoop.submit {
@@ -173,7 +175,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -186,12 +189,12 @@ struct SubscriptionTests {
             group.addTask {
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
                 // push subscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$4\r\ntest\r\n:1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
                 // push unsolicited message
                 await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
-                    try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))
+                    try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
                 }
             }
             try await group.waitForAll()
@@ -207,7 +210,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -221,22 +225,22 @@ struct SubscriptionTests {
             group.addTask {
                 var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*4\r\n$9\r\nSUBSCRIBE\r\n$5\r\ntest1\r\n$5\r\ntest2\r\n$5\r\ntest3\r\n")
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test1", "test2", "test3"])).base)
                 // push 3 subscribes (one for each channel)
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest1\r\n:1\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest2\r\n:2\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest3\r\n:3\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test1"), .number(1)])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test2"), .number(1)])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test3"), .number(1)])).base)
                 // push 3 messages (one on each channel)
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest1\r\n$1\r\n1\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest2\r\n$1\r\n1\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest3\r\n$1\r\n1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test1"), .bulkString("1")])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test2"), .bulkString("1")])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test3"), .bulkString("1")])).base)
                 // expect UNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*4\r\n$11\r\nUNSUBSCRIBE\r\n$5\r\ntest1\r\n$5\r\ntest2\r\n$5\r\ntest3\r\n")
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test1", "test2", "test3"])).base)
                 // push UNSUBSCRIBE message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$5\r\ntest1\r\n:0\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$5\r\ntest2\r\n:0\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$5\r\ntest3\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test1"), .number(0)])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test2"), .number(0)])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test3"), .number(0)])).base)
             }
             try await group.waitForAll()
         }
@@ -251,7 +255,9 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
@@ -273,36 +279,35 @@ struct SubscriptionTests {
                 }
             }
             group.addTask {
-                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE from task 1
-                #expect(String(buffer: outbound) == "*3\r\n$9\r\nSUBSCRIBE\r\n$5\r\ntest1\r\n$5\r\ntest2\r\n")
+                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test1", "test2"])).base)
                 // push 2 subscribes
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest1\r\n:1\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest2\r\n:2\r\n"))
-                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test1"), .number(1)])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test2"), .number(1)])).base)
                 // expect SUBSCRIBE from task 2
-                #expect(String(buffer: outbound) == "*3\r\n$9\r\nSUBSCRIBE\r\n$5\r\ntest2\r\n$5\r\ntest3\r\n")
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test2", "test3"])).base)
                 // push 2 subscribes
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest2\r\n:2\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest3\r\n:2\r\n"))
-
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test2"), .number(1)])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test3"), .number(1)])).base)
                 // push 2 messages
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest1\r\n$1\r\n1\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest2\r\n$1\r\n2\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test1"), .bulkString("1")])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test2"), .bulkString("2")])).base)
                 // expect UNSUBSCRIBE from task 1
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$11\r\nUNSUBSCRIBE\r\n$5\r\ntest1\r\n")
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test1"])).base)
                 // push UNSUBSCRIBE message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$5\r\ntest1\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test1"), .number(0)])).base)
 
                 // push 1 message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest3\r\n$1\r\n3\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test3"), .bulkString("3")])).base)
                 // expect UNSUBSCRIBE from task 2
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*3\r\n$11\r\nUNSUBSCRIBE\r\n$5\r\ntest2\r\n$5\r\ntest3\r\n")
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test2", "test3"])).base)
                 // push unsubscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$5\r\ntest2\r\n:0\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$5\r\ntest3\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test2"), .number(0)])).base)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test3"), .number(0)])).base)
             }
             try await group.waitForAll()
         }
@@ -317,7 +322,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
 
         try await withThrowingTaskGroup(of: Void.self) { group in
@@ -338,20 +344,20 @@ struct SubscriptionTests {
             group.addTask {
                 var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE from task 1, we don't get one from task 2 as we have already instigated a subscribe command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$5\r\ntest1\r\n")
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test1"])).base)
                 // push subscribes
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest1\r\n:1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test1"), .number(1)])).base)
 
                 // push message and wait and push another
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest1\r\n$1\r\n1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test1"), .bulkString("1")])).base)
                 // wait for task 1 to complete. We don't get an UNSUBSCRIBE as task 2 is still subscribed
                 await stream.first { _ in true }
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest1\r\n$1\r\n2\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test1"), .bulkString("2")])).base)
                 // expect UNSUBSCRIBE
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$11\r\nUNSUBSCRIBE\r\n$5\r\ntest1\r\n")
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test1"])).base)
                 // push UNSUBSCRIBE message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$5\r\ntest1\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test1"), .number(0)])).base)
             }
             try await group.waitForAll()
         }
@@ -365,7 +371,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -381,11 +388,11 @@ struct SubscriptionTests {
             group.addTask {
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$4\r\ntest\r\n")
-                // push SUBSCRIBE channel
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$4\r\ntest\r\n:1\r\n"))
-                // push SUBSCRIBE message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$4\r\ntest\r\n$8\r\nTesting!\r\n"))
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
+                // push subscribe
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
+                // push message
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!")])).base)
                 // close
                 try await channel.close()
             }
@@ -401,7 +408,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -414,11 +422,11 @@ struct SubscriptionTests {
             group.addTask {
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
                 // push SUBSCRIBE channel
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$4\r\ntest\r\n:1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
                 // push SUBSCRIBE message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$4\r\ntest\r\n$8\r\nTesting!\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!")])).base)
             }
             try await group.next()
 
@@ -428,9 +436,9 @@ struct SubscriptionTests {
             try await Task {
                 // expect UNSUBSCRIBE command
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$11\r\nUNSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
                 // push UNSUBSCRIBE message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$4\r\ntest\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(0)])).base)
             }.value
         }
         try await connection.channel.eventLoop.submit {
@@ -443,7 +451,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -456,19 +465,25 @@ struct SubscriptionTests {
             }
             group.addTask {
                 var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$10\r\nPSUBSCRIBE\r\n$5\r\ntest*\r\n")
+                // expect PSUBSCRIBE command
+                #expect(outbound == RESPToken(.command(["PSUBSCRIBE", "test*"])).base)
                 // push psubscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$10\r\npsubscribe\r\n$5\r\ntest*\r\n:1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("psubscribe"), .bulkString("test*"), .number(1)])).base)
                 // push 3 messages (one on each channel)
-                try await channel.writeInbound(ByteBuffer(string: ">4\r\n$8\r\npmessage\r\n$5\r\ntest*\r\n$5\r\ntest1\r\n$1\r\n1\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">4\r\n$8\r\npmessage\r\n$5\r\ntest*\r\n$5\r\ntest2\r\n$1\r\n2\r\n"))
-                try await channel.writeInbound(ByteBuffer(string: ">4\r\n$8\r\npmessage\r\n$5\r\ntest*\r\n$5\r\ntest3\r\n$1\r\n3\r\n"))
+                try await channel.writeInbound(
+                    RESPToken(.push([.bulkString("pmessage"), .bulkString("test*"), .bulkString("test1"), .bulkString("1")])).base
+                )
+                try await channel.writeInbound(
+                    RESPToken(.push([.bulkString("pmessage"), .bulkString("test*"), .bulkString("test2"), .bulkString("2")])).base
+                )
+                try await channel.writeInbound(
+                    RESPToken(.push([.bulkString("pmessage"), .bulkString("test*"), .bulkString("test3"), .bulkString("3")])).base
+                )
                 // expect PUNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$12\r\nPUNSUBSCRIBE\r\n$5\r\ntest*\r\n")
+                #expect(outbound == RESPToken(.command(["PUNSUBSCRIBE", "test*"])).base)
                 // push PUNSUBSCRIBE message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$12\r\npunsubscribe\r\n$5\r\ntest*\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("punsubscribe"), .bulkString("test*"), .number(0)])).base)
             }
             try await group.waitForAll()
         }
@@ -482,7 +497,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -496,30 +512,32 @@ struct SubscriptionTests {
                 }
             }
             group.addTask {
-                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect PSUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$10\r\nPSUBSCRIBE\r\n$5\r\ntest*\r\n")
+                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["PSUBSCRIBE", "test*"])).base)
                 // push psubscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$10\r\npsubscribe\r\n$5\r\ntest*\r\n:1\r\n"))
-                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                try await channel.writeInbound(RESPToken(.push([.bulkString("psubscribe"), .bulkString("test*"), .number(1)])).base)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$5\r\ntest1\r\n")
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test1"])).base)
                 // push subscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$5\r\ntest1\r\n:1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test1"), .number(1)])).base)
                 // push pmessage
-                try await channel.writeInbound(ByteBuffer(string: ">4\r\n$8\r\npmessage\r\n$5\r\ntest*\r\n$5\r\ntest1\r\n$1\r\n1\r\n"))
+                try await channel.writeInbound(
+                    RESPToken(.push([.bulkString("pmessage"), .bulkString("test*"), .bulkString("test1"), .bulkString("1")])).base
+                )
                 // push message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$5\r\ntest1\r\n$1\r\n1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test1"), .bulkString("1")])).base)
                 // expect UNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$11\r\nUNSUBSCRIBE\r\n$5\r\ntest1\r\n")
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test1"])).base)
                 // push unsubscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$5\r\ntest1\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test1"), .number(0)])).base)
                 // expect PUNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$12\r\nPUNSUBSCRIBE\r\n$5\r\ntest*\r\n")
+                #expect(outbound == RESPToken(.command(["PUNSUBSCRIBE", "test*"])).base)
                 // push punsubscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$12\r\npunsubscribe\r\n$5\r\ntest*\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("punsubscribe"), .bulkString("test*"), .number(0)])).base)
             }
             try await group.waitForAll()
         }
@@ -533,7 +551,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -547,11 +566,13 @@ struct SubscriptionTests {
             group.addTask {
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
                 // push subscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$4\r\ntest\r\n:1\r\n"))
-                // push message before pushing subscribe
-                try await channel.writeInbound(ByteBuffer(string: ">4\r\n$7\r\nmessage\r\n$4\r\ntest\r\n$8\r\nTesting!\r\n+hello\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
+                // push invalid message
+                try await channel.writeInbound(
+                    RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!"), .number(1)])).base
+                )
             }
             try await group.waitForAll()
         }
@@ -565,7 +586,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -580,23 +602,23 @@ struct SubscriptionTests {
             group.addTask {
                 var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
                 // push subscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$4\r\ntest\r\n:1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
                 // push message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$4\r\ntest\r\n$8\r\nTesting!\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!")])).base)
                 // expect GET command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
+                #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
                 // write command response
-                try await channel.writeInbound(ByteBuffer(string: "$3\r\nbar\r\n"))
+                try await channel.writeInbound(RESPToken(.bulkString("bar")).base)
                 // push message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$7\r\nmessage\r\n$4\r\ntest\r\n$9\r\nTesting2!\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing2!")])).base)
                 // expect UNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$11\r\nUNSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
                 // push unsubscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$11\r\nunsubscribe\r\n$4\r\ntest\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(0)])).base)
             }
             try await group.waitForAll()
         }
@@ -610,7 +632,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -622,9 +645,10 @@ struct SubscriptionTests {
             group.addTask {
                 let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
                 // return error
-                try await channel.writeInbound(ByteBuffer(string: "!18\r\nSubscription error\r\n"))
+                try await channel.writeInbound(RESPToken(.blobError("Subscription error")).base)
+
             }
             try await group.waitForAll()
         }
@@ -638,7 +662,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -648,16 +673,16 @@ struct SubscriptionTests {
                 }
             }
             group.addTask {
-                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$9\r\nSUBSCRIBE\r\n$4\r\ntest\r\n")
+                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
                 // push subscribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$9\r\nsubscribe\r\n$4\r\ntest\r\n:1\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
                 // expect UNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$11\r\nUNSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
                 // return error
-                try await channel.writeInbound(ByteBuffer(string: "!18\r\nSubscription error\r\n"))
+                try await channel.writeInbound(RESPToken(.blobError("Subscription error")).base)
             }
             try await group.waitForAll()
         }
@@ -671,7 +696,8 @@ struct SubscriptionTests {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -681,18 +707,19 @@ struct SubscriptionTests {
                 }
             }
             group.addTask {
-                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 // expect SUBSCRIBE command
-                #expect(String(buffer: outbound) == "*2\r\n$10\r\nSSUBSCRIBE\r\n$4\r\ntest\r\n")
+                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SSUBSCRIBE", "test"])).base)
                 // push subscribe
+                try await channel.writeInbound(RESPToken(.push([.bulkString("ssubscribe"), .bulkString("test"), .number(1)])).base)
                 try await channel.writeInbound(ByteBuffer(string: ">3\r\n$10\r\nssubscribe\r\n$4\r\ntest\r\n:1\r\n"))
                 // push message
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$8\r\nsmessage\r\n$4\r\ntest\r\n$8\r\nTesting!\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("smessage"), .bulkString("test"), .bulkString("Testing!")])).base)
                 // expect SUNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(String(buffer: outbound) == "*2\r\n$12\r\nSUNSUBSCRIBE\r\n$4\r\ntest\r\n")
+                #expect(outbound == RESPToken(.command(["SUNSUBSCRIBE", "test"])).base)
                 // push unsubcribe
-                try await channel.writeInbound(ByteBuffer(string: ">3\r\n$12\r\nsunsubscribe\r\n$4\r\ntest\r\n:0\r\n"))
+                try await channel.writeInbound(RESPToken(.push([.bulkString("sunsubscribe"), .bulkString("test"), .number(1)])).base)
             }
             try await group.waitForAll()
         }

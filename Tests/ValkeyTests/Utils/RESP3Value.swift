@@ -33,27 +33,31 @@ enum RESP3Value: Hashable {
     case push([RESP3Value])
 
     static func bulkString(_ value: String) -> RESP3Value {
-        return .bulkString(ByteBuffer(string: value))
+        .bulkString(ByteBuffer(string: value))
     }
 
     static func simpleString(_ value: String) -> RESP3Value {
-        return .simpleString(ByteBuffer(string: value))
+        .simpleString(ByteBuffer(string: value))
     }
 
     static func simpleError(_ value: String) -> RESP3Value {
-        return .simpleError(ByteBuffer(string: value))
+        .simpleError(ByteBuffer(string: value))
     }
 
     static func verbatimString(_ value: String) -> RESP3Value {
-        return .verbatimString(ByteBuffer(string: value))
+        .verbatimString(ByteBuffer(string: value))
     }
 
     static func bigNumber(_ value: String) -> RESP3Value {
-        return .bigNumber(ByteBuffer(string: value))
+        .bigNumber(ByteBuffer(string: value))
     }
 
     static func blobError(_ value: String) -> RESP3Value {
-        return .blobError(ByteBuffer(string: value))
+        .blobError(ByteBuffer(string: value))
+    }
+
+    static func command(_ values: [String]) -> RESP3Value {
+        .array(values.map { .bulkString($0) })
     }
 
     fileprivate func writeTo(_ buffer: inout ByteBuffer) {
@@ -74,7 +78,10 @@ enum RESP3Value: Hashable {
         func writeMap(_ map: [RESP3Value: RESP3Value], into buffer: inout ByteBuffer) {
             buffer.writeBytes("\(map.count)".utf8)
             buffer.writeCRLF()
-            for (key, value) in map { key.writeTo(&buffer); value.writeTo(&buffer) }
+            for (key, value) in map {
+                key.writeTo(&buffer)
+                value.writeTo(&buffer)
+            }
         }
 
         switch self {

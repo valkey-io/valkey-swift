@@ -32,9 +32,9 @@ struct ConnectionTests {
         async let fooResult = connection.get(key: "foo")?.decode(as: String.self)
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(String(buffer: outbound) == "*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
+        #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
 
-        try await channel.writeInbound(ByteBuffer(string: "$3\r\nBar\r\n"))
+        try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
         #expect(try await fooResult == "Bar")
     }
 
@@ -45,7 +45,7 @@ struct ConnectionTests {
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
+        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
     }
 
     @Test
@@ -55,7 +55,7 @@ struct ConnectionTests {
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
+        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
         await #expect(throws: ValkeyClientError(.commandError, message: "Not supported")) {
             try await channel.writeInbound(RESPToken(.blobError("Not supported")).base)
         }
@@ -77,10 +77,7 @@ struct ConnectionTests {
         )
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(
-            outbound
-                == RESPToken(.array([.bulkString("HELLO"), .bulkString("3"), .bulkString("AUTH"), .bulkString("john"), .bulkString("smith")])).base
-        )
+        #expect(outbound == RESPToken(.command(["HELLO", "3", "AUTH", "john", "smith"])).base)
     }
 
     @Test
@@ -95,7 +92,7 @@ struct ConnectionTests {
         )
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.array([.bulkString("HELLO"), .bulkString("2"), .bulkString("SETNAME"), .bulkString("Testing")])).base)
+        #expect(outbound == RESPToken(.command(["HELLO", "2", "SETNAME", "Testing"])).base)
     }
 
     @Test
