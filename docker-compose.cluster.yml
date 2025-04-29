@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+
+  # Here we have six Valkey containers with Cluster mode enabled,
+  # three of them will work as master nodes and each one of
+  # will have a replica, so in case of failures, the replica becomes the master.
+  # They are configured by the `cluster_initiator` container.
+
+  # To make Docker compatible with Valkey Cluster, you need to use Docker's host
+  # networking mode. Please see the --net=host option in the Docker documentation
+  # for more information.
+  valkey_1:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    container_name: valkey_1
+    command: valkey-server --port 36001 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_2:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    container_name: valkey_2
+    command: valkey-server --port 36002 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_3:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    container_name: valkey_3
+    command: valkey-server --port 36003 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_4:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    container_name: valkey_4
+    command: valkey-server --port 36004 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_5:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    container_name: valkey_5
+    command: valkey-server --port 36005 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_6:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    container_name: valkey_6
+    command: valkey-server --port 36006 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  # Ephemeral container to create the valkey cluster connections.
+  # Once the setup is done, this container shuts down
+  # and the cluster can be used by the service app container
+  cluster_initiator:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    container_name: cluster_initiator
+    command: valkey-cli --cluster create localhost:36001 localhost:36002 localhost:36003 localhost:36004 localhost:36005 localhost:36006 --cluster-replicas 1 --cluster-yes
+    tty: true
+    depends_on:
+      - valkey_1
+      - valkey_2
+      - valkey_3
+      - valkey_4
+      - valkey_5
+      - valkey_6
