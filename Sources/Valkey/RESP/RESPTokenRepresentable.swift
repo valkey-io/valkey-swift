@@ -67,22 +67,22 @@ extension ByteBuffer: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer),
-             .bulkString(let buffer),
-             .verbatimString(let buffer),
-             .bigNumber(let buffer),
-             .simpleError(let buffer),
-             .blobError(let buffer):
+            .bulkString(let buffer),
+            .verbatimString(let buffer),
+            .bigNumber(let buffer),
+            .simpleError(let buffer),
+            .blobError(let buffer):
             self = buffer
 
         case .array,
-             .number,
-             .double,
-             .boolean,
-             .null,
-             .attribute,
-             .map,
-             .set,
-             .push:
+            .number,
+            .double,
+            .boolean,
+            .null,
+            .attribute,
+            .map,
+            .set,
+            .push:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
@@ -93,12 +93,11 @@ extension String: RESPTokenRepresentable {
     public init(from token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer),
-             .bulkString(let buffer),
-             .verbatimString(let buffer),
-             .bigNumber(let buffer),
-             .simpleError(let buffer),
-             .blobError(let buffer):
-            let buffer = try ByteBuffer(from: token)
+            .bulkString(let buffer),
+            .verbatimString(let buffer),
+            .bigNumber(let buffer),
+            .simpleError(let buffer),
+            .blobError(let buffer):
             self.init(buffer: buffer)
 
         case .double(let value):
@@ -111,11 +110,11 @@ extension String: RESPTokenRepresentable {
             self = "\(value)"
 
         case .array,
-             .null,
-             .attribute,
-             .map,
-             .set,
-             .push:
+            .null,
+            .attribute,
+            .map,
+            .set,
+            .push:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
@@ -128,19 +127,19 @@ extension Int64: RESPTokenRepresentable {
             self = value
 
         case .bulkString,
-             .simpleString,
-             .blobError,
-             .simpleError,
-             .verbatimString,
-             .double,
-             .boolean,
-             .array,
-             .attribute,
-             .bigNumber,
-             .push,
-             .set,
-             .null,
-             .map:
+            .simpleString,
+            .blobError,
+            .simpleError,
+            .verbatimString,
+            .double,
+            .boolean,
+            .array,
+            .attribute,
+            .bigNumber,
+            .push,
+            .set,
+            .null,
+            .map:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
@@ -157,19 +156,19 @@ extension Int: RESPTokenRepresentable {
             self = value
 
         case .bulkString,
-             .simpleString,
-             .blobError,
-             .simpleError,
-             .verbatimString,
-             .double,
-             .boolean,
-             .array,
-             .attribute,
-             .bigNumber,
-             .push,
-             .set,
-             .null,
-             .map:
+            .simpleString,
+            .blobError,
+            .simpleError,
+            .verbatimString,
+            .double,
+            .boolean,
+            .array,
+            .attribute,
+            .bigNumber,
+            .push,
+            .set,
+            .null,
+            .map:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
