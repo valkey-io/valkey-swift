@@ -14,22 +14,22 @@
 
 import NIOCore
 
-/// A RESP command that can be executed on a connection.
-public protocol RESPCommand: Sendable {
-    associatedtype Response: RESPTokenRepresentable = RESPToken
-    associatedtype Keys: Collection<RESPKey>
+/// A Valkey command that can be executed on a connection.
+public protocol ValkeyCommand: Sendable {
+    associatedtype Response: RESPTokenDecodable = RESPToken
+    associatedtype Keys: Collection<ValkeyKey>
 
     /// Keys affected by command. This is used in cluster mode to determine which
     /// shard to connect to.
     var keysAffected: Keys { get }
 
     ///
-    /// Encode RESP Command
-    /// - Parameter commandEncoder: RESPCommandEncoder
-    func encode(into commandEncoder: inout RESPCommandEncoder)
+    /// Encode Valkey Command into RESP
+    /// - Parameter commandEncoder: ValkeyCommandEncoder
+    func encode(into commandEncoder: inout ValkeyCommandEncoder)
 }
 
-extension RESPCommand {
+extension ValkeyCommand {
     /// Default to no keys affected
-    public var keysAffected: [RESPKey] { [] }
+    public var keysAffected: [ValkeyKey] { [] }
 }

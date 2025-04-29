@@ -105,10 +105,10 @@ public final class ValkeyConnection: Sendable {
     }
 
     /// Send RESP command to Valkey connection
-    /// - Parameter command: RESPCommand structure
-    /// - Returns: The command response as defined in the RESPCommand
+    /// - Parameter command: ValkeyCommand structure
+    /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
-    public func send<Command: RESPCommand>(command: Command) async throws -> Command.Response {
+    public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let result = try await withCheckedThrowingContinuation { continuation in
             if self.channel.eventLoop.inEventLoop {
                 self.channelHandler.value.write(command: command, continuation: continuation)
@@ -118,22 +118,22 @@ public final class ValkeyConnection: Sendable {
                 }
             }
         }
-        return try .init(from: result)
+        return try .init(fromRESP: result)
     }
 
     /// Pipeline a series of commands to Valkey connection
     ///
     /// This function will only return once it has the results of all the commands sent
-    /// - Parameter commands: Parameter pack of RESPCommands
+    /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the responses of all the commands
     @inlinable
-    public func pipeline<each Command: RESPCommand>(
+    public func pipeline<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> (repeat Result<(each Command).Response, Error>) {
-        func convert<Response: RESPTokenRepresentable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
+        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
             result.flatMap {
                 do {
-                    return try .success(Response(from: $0))
+                    return try .success(Response(fromRESP: $0))
                 } catch {
                     return .failure(error)
                 }
@@ -141,7 +141,7 @@ public final class ValkeyConnection: Sendable {
         }
         // this currently allocates a promise for every command. We could collpase this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
-        var encoder = RESPCommandEncoder()
+        var encoder = ValkeyCommandEncoder()
         for command in repeat each commands {
             command.encode(into: &encoder)
             mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))

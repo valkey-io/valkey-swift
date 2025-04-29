@@ -25,20 +25,20 @@ import Foundation
 /// A container for Valkey Cluster commands.
 public enum CLUSTER {
     /// Assigns new hash slots to a node.
-    public struct ADDSLOTS: RESPCommand {
+    public struct ADDSLOTS: ValkeyCommand {
         public var slot: [Int]
 
         @inlinable public init(slot: [Int]) {
             self.slot = slot
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "ADDSLOTS", slot)
         }
     }
 
     /// Assigns new hash slot ranges to a node.
-    public struct ADDSLOTSRANGE: RESPCommand {
+    public struct ADDSLOTSRANGE: ValkeyCommand {
         public struct Range: RESPRenderable, Sendable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
@@ -55,7 +55,7 @@ public enum CLUSTER {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 startSlot.encode(into: &commandEncoder)
                 endSlot.encode(into: &commandEncoder)
             }
@@ -66,23 +66,23 @@ public enum CLUSTER {
             self.range = range
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "ADDSLOTSRANGE", range)
         }
     }
 
     /// Advances the cluster config epoch.
-    public struct BUMPEPOCH: RESPCommand {
+    public struct BUMPEPOCH: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "BUMPEPOCH")
         }
     }
 
     /// Returns the number of active failure reports active for a node.
-    public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: RESPCommand {
+    public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
 
         public var nodeId: NodeId
@@ -91,13 +91,13 @@ public enum CLUSTER {
             self.nodeId = nodeId
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", RESPBulkString(nodeId))
         }
     }
 
     /// Returns the number of keys in a hash slot.
-    public struct COUNTKEYSINSLOT: RESPCommand {
+    public struct COUNTKEYSINSLOT: ValkeyCommand {
         public typealias Response = Int
 
         public var slot: Int
@@ -106,26 +106,26 @@ public enum CLUSTER {
             self.slot = slot
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "COUNTKEYSINSLOT", slot)
         }
     }
 
     /// Sets hash slots as unbound for a node.
-    public struct DELSLOTS: RESPCommand {
+    public struct DELSLOTS: ValkeyCommand {
         public var slot: [Int]
 
         @inlinable public init(slot: [Int]) {
             self.slot = slot
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "DELSLOTS", slot)
         }
     }
 
     /// Sets hash slot ranges as unbound for a node.
-    public struct DELSLOTSRANGE: RESPCommand {
+    public struct DELSLOTSRANGE: ValkeyCommand {
         public struct Range: RESPRenderable, Sendable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
@@ -142,7 +142,7 @@ public enum CLUSTER {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 startSlot.encode(into: &commandEncoder)
                 endSlot.encode(into: &commandEncoder)
             }
@@ -153,13 +153,13 @@ public enum CLUSTER {
             self.range = range
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "DELSLOTSRANGE", range)
         }
     }
 
     /// Forces a replica to perform a manual failover of its master.
-    public struct FAILOVER: RESPCommand {
+    public struct FAILOVER: ValkeyCommand {
         public enum Options: RESPRenderable, Sendable {
             case force
             case takeover
@@ -168,7 +168,7 @@ public enum CLUSTER {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .force: "FORCE".encode(into: &commandEncoder)
                 case .takeover: "TAKEOVER".encode(into: &commandEncoder)
@@ -181,36 +181,36 @@ public enum CLUSTER {
             self.options = options
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "FAILOVER", options)
         }
     }
 
     /// Deletes all slots information from a node.
-    public struct FLUSHSLOTS: RESPCommand {
+    public struct FLUSHSLOTS: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "FLUSHSLOTS")
         }
     }
 
     /// Removes a node from the nodes table.
-    public struct FORGET<NodeId: RESPStringRenderable>: RESPCommand {
+    public struct FORGET<NodeId: RESPStringRenderable>: ValkeyCommand {
         public var nodeId: NodeId
 
         @inlinable public init(nodeId: NodeId) {
             self.nodeId = nodeId
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "FORGET", RESPBulkString(nodeId))
         }
     }
 
     /// Returns the key names in a hash slot.
-    public struct GETKEYSINSLOT: RESPCommand {
+    public struct GETKEYSINSLOT: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var slot: Int
@@ -221,35 +221,35 @@ public enum CLUSTER {
             self.count = count
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "GETKEYSINSLOT", slot, count)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "HELP")
         }
     }
 
     /// Returns information about the state of a node.
-    public struct INFO: RESPCommand {
+    public struct INFO: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "INFO")
         }
     }
 
     /// Returns the hash slot for a key.
-    public struct KEYSLOT<Key: RESPStringRenderable>: RESPCommand {
+    public struct KEYSLOT<Key: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
 
         public var key: Key
@@ -258,25 +258,25 @@ public enum CLUSTER {
             self.key = key
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "KEYSLOT", RESPBulkString(key))
         }
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
-    public struct LINKS: RESPCommand {
+    public struct LINKS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "LINKS")
         }
     }
 
     /// Forces a node to handshake with another node.
-    public struct MEET<Ip: RESPStringRenderable>: RESPCommand {
+    public struct MEET<Ip: RESPStringRenderable>: ValkeyCommand {
         public var ip: Ip
         public var port: Int
         public var clusterBusPort: Int?
@@ -287,43 +287,43 @@ public enum CLUSTER {
             self.clusterBusPort = clusterBusPort
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "MEET", RESPBulkString(ip), port, clusterBusPort)
         }
     }
 
     /// Returns the ID of a node.
-    public struct MYID: RESPCommand {
+    public struct MYID: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "MYID")
         }
     }
 
     /// Returns the shard ID of a node.
-    public struct MYSHARDID: RESPCommand {
+    public struct MYSHARDID: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "MYSHARDID")
         }
     }
 
     /// Returns the cluster configuration for a node.
-    public struct NODES: RESPCommand {
+    public struct NODES: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "NODES")
         }
     }
 
     /// Lists the replica nodes of a master node.
-    public struct REPLICAS<NodeId: RESPStringRenderable>: RESPCommand {
+    public struct REPLICAS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var nodeId: NodeId
@@ -332,26 +332,26 @@ public enum CLUSTER {
             self.nodeId = nodeId
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "REPLICAS", RESPBulkString(nodeId))
         }
     }
 
     /// Configure a node as replica of a master node.
-    public struct REPLICATE<NodeId: RESPStringRenderable>: RESPCommand {
+    public struct REPLICATE<NodeId: RESPStringRenderable>: ValkeyCommand {
         public var nodeId: NodeId
 
         @inlinable public init(nodeId: NodeId) {
             self.nodeId = nodeId
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "REPLICATE", RESPBulkString(nodeId))
         }
     }
 
     /// Resets a node.
-    public struct RESET: RESPCommand {
+    public struct RESET: ValkeyCommand {
         public enum ResetType: RESPRenderable, Sendable {
             case hard
             case soft
@@ -360,7 +360,7 @@ public enum CLUSTER {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .hard: "HARD".encode(into: &commandEncoder)
                 case .soft: "SOFT".encode(into: &commandEncoder)
@@ -373,36 +373,36 @@ public enum CLUSTER {
             self.resetType = resetType
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "RESET", resetType)
         }
     }
 
     /// Forces a node to save the cluster configuration to disk.
-    public struct SAVECONFIG: RESPCommand {
+    public struct SAVECONFIG: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "SAVECONFIG")
         }
     }
 
     /// Sets the configuration epoch for a new node.
-    public struct SETCONFIGEPOCH: RESPCommand {
+    public struct SETCONFIGEPOCH: ValkeyCommand {
         public var configEpoch: Int
 
         @inlinable public init(configEpoch: Int) {
             self.configEpoch = configEpoch
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "SET-CONFIG-EPOCH", configEpoch)
         }
     }
 
     /// Binds a hash slot to a node.
-    public struct SETSLOT: RESPCommand {
+    public struct SETSLOT: ValkeyCommand {
         public enum Subcommand: RESPRenderable, Sendable {
             case importing(String)
             case migrating(String)
@@ -420,7 +420,7 @@ public enum CLUSTER {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .importing(let importing): RESPWithToken("IMPORTING", importing).encode(into: &commandEncoder)
                 case .migrating(let migrating): RESPWithToken("MIGRATING", migrating).encode(into: &commandEncoder)
@@ -437,24 +437,24 @@ public enum CLUSTER {
             self.subcommand = subcommand
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "SETSLOT", slot, subcommand)
         }
     }
 
     /// Returns the mapping of cluster slots to shards.
-    public struct SHARDS: RESPCommand {
+    public struct SHARDS: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "SHARDS")
         }
     }
 
     /// Lists the replica nodes of a master node.
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
-    public struct SLAVES<NodeId: RESPStringRenderable>: RESPCommand {
+    public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var nodeId: NodeId
@@ -463,20 +463,20 @@ public enum CLUSTER {
             self.nodeId = nodeId
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPBulkString(nodeId))
         }
     }
 
     /// Returns the mapping of cluster slots to nodes.
     @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
-    public struct SLOTS: RESPCommand {
+    public struct SLOTS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "SLOTS")
         }
     }
@@ -484,31 +484,31 @@ public enum CLUSTER {
 }
 
 /// Signals that a cluster client is following an -ASK redirect.
-public struct ASKING: RESPCommand {
+public struct ASKING: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ASKING")
     }
 }
 
 /// Enables read-only queries for a connection to a Valkey Cluster replica node.
-public struct READONLY: RESPCommand {
+public struct READONLY: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("READONLY")
     }
 }
 
 /// Enables read-write queries for a connection to a Reids Cluster replica node.
-public struct READWRITE: RESPCommand {
+public struct READWRITE: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("READWRITE")
     }
 }

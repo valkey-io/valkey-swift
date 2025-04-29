@@ -25,7 +25,7 @@ import Foundation
 /// A container for client connection commands.
 public enum CLIENT {
     /// Instructs the server whether to track the keys in the next request.
-    public struct CACHING: RESPCommand {
+    public struct CACHING: ValkeyCommand {
         public enum Mode: RESPRenderable, Sendable {
             case yes
             case no
@@ -34,7 +34,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .yes: "YES".encode(into: &commandEncoder)
                 case .no: "NO".encode(into: &commandEncoder)
@@ -47,71 +47,71 @@ public enum CLIENT {
             self.mode = mode
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "CACHING", mode)
         }
     }
 
     /// Returns the name of the connection.
-    public struct GETNAME: RESPCommand {
+    public struct GETNAME: ValkeyCommand {
         public typealias Response = RESPToken?
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "GETNAME")
         }
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
-    public struct GETREDIR: RESPCommand {
+    public struct GETREDIR: ValkeyCommand {
         public typealias Response = Int
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "GETREDIR")
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "HELP")
         }
     }
 
     /// Returns the unique client ID of the connection.
-    public struct ID: RESPCommand {
+    public struct ID: ValkeyCommand {
         public typealias Response = Int
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "ID")
         }
     }
 
     /// Returns information about the connection.
-    public struct INFO: RESPCommand {
+    public struct INFO: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "INFO")
         }
     }
 
     /// Terminates open connections.
-    public struct KILL: RESPCommand {
+    public struct KILL: ValkeyCommand {
         public enum FilterNewFormatClientType: RESPRenderable, Sendable {
             case normal
             case master
@@ -123,7 +123,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .normal: "NORMAL".encode(into: &commandEncoder)
                 case .master: "MASTER".encode(into: &commandEncoder)
@@ -141,7 +141,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .yes: "YES".encode(into: &commandEncoder)
                 case .no: "NO".encode(into: &commandEncoder)
@@ -169,7 +169,7 @@ public enum CLIENT {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .clientId(let clientId): RESPWithToken("ID", clientId).encode(into: &commandEncoder)
                 case .clientType(let clientType): RESPWithToken("TYPE", clientType).encode(into: &commandEncoder)
@@ -193,7 +193,7 @@ public enum CLIENT {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .oldFormat(let oldFormat): oldFormat.encode(into: &commandEncoder)
                 case .newFormat(let newFormat): newFormat.encode(into: &commandEncoder)
@@ -208,13 +208,13 @@ public enum CLIENT {
             self.filter = filter
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "KILL", filter)
         }
     }
 
     /// Lists open connections.
-    public struct LIST: RESPCommand {
+    public struct LIST: ValkeyCommand {
         public enum ClientType: RESPRenderable, Sendable {
             case normal
             case master
@@ -225,7 +225,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .normal: "NORMAL".encode(into: &commandEncoder)
                 case .master: "MASTER".encode(into: &commandEncoder)
@@ -242,13 +242,13 @@ public enum CLIENT {
             self.clientId = clientId
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
         }
     }
 
     /// Sets the client eviction mode of the connection.
-    public struct NOEVICT: RESPCommand {
+    public struct NOEVICT: ValkeyCommand {
         public enum Enabled: RESPRenderable, Sendable {
             case on
             case off
@@ -257,7 +257,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -270,13 +270,13 @@ public enum CLIENT {
             self.enabled = enabled
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "NO-EVICT", enabled)
         }
     }
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
-    public struct NOTOUCH: RESPCommand {
+    public struct NOTOUCH: ValkeyCommand {
         public enum Enabled: RESPRenderable, Sendable {
             case on
             case off
@@ -285,7 +285,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -298,13 +298,13 @@ public enum CLIENT {
             self.enabled = enabled
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "NO-TOUCH", enabled)
         }
     }
 
     /// Suspends commands processing.
-    public struct PAUSE: RESPCommand {
+    public struct PAUSE: ValkeyCommand {
         public enum Mode: RESPRenderable, Sendable {
             case write
             case all
@@ -313,7 +313,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .write: "WRITE".encode(into: &commandEncoder)
                 case .all: "ALL".encode(into: &commandEncoder)
@@ -328,13 +328,13 @@ public enum CLIENT {
             self.mode = mode
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "PAUSE", timeout, mode)
         }
     }
 
     /// Instructs the server whether to reply to commands.
-    public struct REPLY: RESPCommand {
+    public struct REPLY: ValkeyCommand {
         public enum Action: RESPRenderable, Sendable {
             case on
             case off
@@ -344,7 +344,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -358,13 +358,13 @@ public enum CLIENT {
             self.action = action
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "REPLY", action)
         }
     }
 
     /// Sets information specific to the client or connection.
-    public struct SETINFO: RESPCommand {
+    public struct SETINFO: ValkeyCommand {
         public enum Attr: RESPRenderable, Sendable {
             case libname(String)
             case libver(String)
@@ -378,7 +378,7 @@ public enum CLIENT {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .libname(let libname): RESPWithToken("LIB-NAME", libname).encode(into: &commandEncoder)
                 case .libver(let libver): RESPWithToken("LIB-VER", libver).encode(into: &commandEncoder)
@@ -391,26 +391,26 @@ public enum CLIENT {
             self.attr = attr
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "SETINFO", attr)
         }
     }
 
     /// Sets the connection name.
-    public struct SETNAME<ConnectionName: RESPStringRenderable>: RESPCommand {
+    public struct SETNAME<ConnectionName: RESPStringRenderable>: ValkeyCommand {
         public var connectionName: ConnectionName
 
         @inlinable public init(connectionName: ConnectionName) {
             self.connectionName = connectionName
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "SETNAME", RESPBulkString(connectionName))
         }
     }
 
     /// Controls server-assisted client-side caching for the connection.
-    public struct TRACKING: RESPCommand {
+    public struct TRACKING: ValkeyCommand {
         public enum Status: RESPRenderable, Sendable {
             case on
             case off
@@ -419,7 +419,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .on: "ON".encode(into: &commandEncoder)
                 case .off: "OFF".encode(into: &commandEncoder)
@@ -444,25 +444,25 @@ public enum CLIENT {
             self.noloop = noloop
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RESPPureToken("BCAST", bcast), RESPPureToken("OPTIN", optin), RESPPureToken("OPTOUT", optout), RESPPureToken("NOLOOP", noloop))
         }
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
-    public struct TRACKINGINFO: RESPCommand {
+    public struct TRACKINGINFO: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "TRACKINGINFO")
         }
     }
 
     /// Unblocks a client blocked by a blocking command from a different connection.
-    public struct UNBLOCK: RESPCommand {
+    public struct UNBLOCK: ValkeyCommand {
         public enum UnblockType: RESPRenderable, Sendable {
             case timeout
             case error
@@ -471,7 +471,7 @@ public enum CLIENT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .timeout: "TIMEOUT".encode(into: &commandEncoder)
                 case .error: "ERROR".encode(into: &commandEncoder)
@@ -488,17 +488,17 @@ public enum CLIENT {
             self.unblockType = unblockType
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "UNBLOCK", clientId, unblockType)
         }
     }
 
     /// Resumes processing commands from paused clients.
-    public struct UNPAUSE: RESPCommand {
+    public struct UNPAUSE: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLIENT", "UNPAUSE")
         }
     }
@@ -506,7 +506,7 @@ public enum CLIENT {
 }
 
 /// Authenticates the connection.
-public struct AUTH<Password: RESPStringRenderable>: RESPCommand {
+public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
     public var username: String?
     public var password: Password
 
@@ -515,26 +515,26 @@ public struct AUTH<Password: RESPStringRenderable>: RESPCommand {
         self.password = password
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("AUTH", username, RESPBulkString(password))
     }
 }
 
 /// Returns the given string.
-public struct ECHO<Message: RESPStringRenderable>: RESPCommand {
+public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     public var message: Message
 
     @inlinable public init(message: Message) {
         self.message = message
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ECHO", RESPBulkString(message))
     }
 }
 
 /// Handshakes with the Valkey server.
-public struct HELLO: RESPCommand {
+public struct HELLO: ValkeyCommand {
     public struct ArgumentsAuth: RESPRenderable, Sendable {
         @usableFromInline let username: String
         @usableFromInline let password: String
@@ -551,7 +551,7 @@ public struct HELLO: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             username.encode(into: &commandEncoder)
             password.encode(into: &commandEncoder)
         }
@@ -574,7 +574,7 @@ public struct HELLO: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             protover.encode(into: &commandEncoder)
             RESPWithToken("AUTH", auth).encode(into: &commandEncoder)
             RESPWithToken("SETNAME", clientname).encode(into: &commandEncoder)
@@ -588,56 +588,56 @@ public struct HELLO: RESPCommand {
         self.arguments = arguments
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HELLO", arguments)
     }
 }
 
 /// Returns the server's liveliness response.
-public struct PING: RESPCommand {
+public struct PING: ValkeyCommand {
     public var message: String?
 
     @inlinable public init(message: String? = nil) {
         self.message = message
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PING", message)
     }
 }
 
 /// Closes the connection.
 @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
-public struct QUIT: RESPCommand {
+public struct QUIT: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("QUIT")
     }
 }
 
 /// Resets the connection.
-public struct RESET: RESPCommand {
+public struct RESET: ValkeyCommand {
     public typealias Response = String
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("RESET")
     }
 }
 
 /// Changes the selected database.
-public struct SELECT: RESPCommand {
+public struct SELECT: ValkeyCommand {
     public var index: Int
 
     @inlinable public init(index: Int) {
         self.index = index
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SELECT", index)
     }
 }

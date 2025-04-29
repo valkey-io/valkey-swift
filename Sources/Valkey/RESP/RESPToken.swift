@@ -79,7 +79,7 @@ public struct RESPToken: Hashable, Sendable {
         case simpleString(ByteBuffer)
         case simpleError(ByteBuffer)
         case bulkString(ByteBuffer)
-        case blobError(ByteBuffer)
+        case bulkError(ByteBuffer)
         case verbatimString(ByteBuffer)
         case number(Int64)
         case double(Double)
@@ -121,7 +121,7 @@ public struct RESPToken: Hashable, Sendable {
             var lengthSlice = try! local.readCRLFTerminatedSlice2()!
             let lengthString = lengthSlice.readString(length: lengthSlice.readableBytes)!
             let length = Int(lengthString)!
-            return .blobError(local.readSlice(length: length)!)
+            return .bulkError(local.readSlice(length: length)!)
 
         case .simpleString:
             let slice = try! local.readCRLFTerminatedSlice2()!

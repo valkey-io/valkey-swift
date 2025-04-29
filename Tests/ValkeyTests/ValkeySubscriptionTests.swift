@@ -150,7 +150,7 @@ struct SubscriptionTests {
 
         async let subscribeResult: Void = connection.subscribe(to: "test") { _ in }
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        try await channel.writeInbound(RESPToken(.blobError("BulkError!")).base)
+        try await channel.writeInbound(RESPToken(.bulkError("BulkError!")).base)
         do {
             _ = try await subscribeResult
             Issue.record()
@@ -647,7 +647,7 @@ struct SubscriptionTests {
                 // expect SUBSCRIBE command
                 #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
                 // return error
-                try await channel.writeInbound(RESPToken(.blobError("Subscription error")).base)
+                try await channel.writeInbound(RESPToken(.bulkError("Subscription error")).base)
 
             }
             try await group.waitForAll()
@@ -682,7 +682,7 @@ struct SubscriptionTests {
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
                 // return error
-                try await channel.writeInbound(RESPToken(.blobError("Subscription error")).base)
+                try await channel.writeInbound(RESPToken(.bulkError("Subscription error")).base)
             }
             try await group.waitForAll()
         }

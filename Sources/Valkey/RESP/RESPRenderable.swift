@@ -18,7 +18,7 @@ import NIOCore
 public protocol RESPRenderable: Sendable {
     var respEntries: Int { get }
 
-    func encode(into commandEncoder: inout RESPCommandEncoder)
+    func encode(into commandEncoder: inout ValkeyCommandEncoder)
 }
 
 extension Optional: RESPRenderable where Wrapped: RESPRenderable {
@@ -34,7 +34,7 @@ extension Optional: RESPRenderable where Wrapped: RESPRenderable {
     }
 
     @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         switch self {
         case .some(let wrapped):
             return wrapped.encode(into: &commandEncoder)
@@ -45,10 +45,11 @@ extension Optional: RESPRenderable where Wrapped: RESPRenderable {
 }
 
 extension String: RESPRenderable {
+    @inlinable
     public var respEntries: Int { 1 }
 
     @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeBulkString(self)
     }
 }
@@ -60,7 +61,7 @@ extension Array: RESPRenderable where Element: RESPRenderable {
     }
 
     @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         for element in self {
             element.encode(into: &commandEncoder)
         }
@@ -73,7 +74,7 @@ extension Int: RESPRenderable {
     public var respEntries: Int { 1 }
 
     @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeBulkString(String(self))
     }
 }
@@ -84,7 +85,7 @@ extension Double: RESPRenderable {
     public var respEntries: Int { 1 }
 
     @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeBulkString(String(self))
     }
 }

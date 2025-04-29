@@ -14,8 +14,8 @@
 
 import NIOCore
 
-/// Type representing a RESPKey
-public struct RESPKey: RawRepresentable, Sendable {
+/// Type representing a Valkey Key
+public struct ValkeyKey: RawRepresentable, Sendable {
     public var rawValue: String
 
     public init(rawValue: String) {
@@ -23,8 +23,8 @@ public struct RESPKey: RawRepresentable, Sendable {
     }
 }
 
-extension RESPKey: RESPTokenRepresentable {
-    public init(from token: RESPToken) throws {
+extension ValkeyKey: RESPTokenDecodable {
+    public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .bulkString(let buffer):
             self.rawValue = String(buffer: buffer)
@@ -34,22 +34,22 @@ extension RESPKey: RESPTokenRepresentable {
     }
 }
 
-extension RESPKey: CustomStringConvertible {
+extension ValkeyKey: CustomStringConvertible {
     public var description: String { rawValue.description }
 }
 
-extension RESPKey: RESPRenderable {
+extension ValkeyKey: RESPRenderable {
 
     @inlinable
     public var respEntries: Int { 1 }
 
     @inlinable
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         self.rawValue.encode(into: &commandEncoder)
     }
 }
 
-extension RESPKey: ExpressibleByStringLiteral {
+extension ValkeyKey: ExpressibleByStringLiteral {
     @inlinable
     public init(stringLiteral string: String) {
         self.init(rawValue: string)

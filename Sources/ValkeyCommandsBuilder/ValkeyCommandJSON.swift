@@ -1,15 +1,15 @@
 import Foundation
 
 struct ValkeyCommands: Decodable {
-    let commands: [String: RESPCommand]
+    let commands: [String: ValkeyCommand]
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
-        self.commands = try container.decode([String: RESPCommand].self)
+        self.commands = try container.decode([String: ValkeyCommand].self)
     }
 }
 
-struct RESPCommand: Decodable {
+struct ValkeyCommand: Decodable {
     enum ArgumentType: String, Decodable {
         case integer
         case double
