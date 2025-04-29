@@ -227,6 +227,8 @@ public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
 
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
 public struct SPOP: ValkeyCommand {
+    public typealias Response = RESPToken?
+
     public var key: ValkeyKey
     public var count: Int?
 
@@ -485,7 +487,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): when called without the _count_ argument, the removed member.
     ///     * [Set](https:/valkey.io/topics/protocol/#sets): when called with the _count_ argument, the set of removed members.
     @inlinable
-    public func spop(key: ValkeyKey, count: Int? = nil) async throws -> SPOP.Response {
+    public func spop(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
         try await send(command: SPOP(key: key, count: count))
     }
 

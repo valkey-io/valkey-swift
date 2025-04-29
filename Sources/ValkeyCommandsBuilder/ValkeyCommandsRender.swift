@@ -188,7 +188,7 @@ extension String {
             }
         }
         // return type
-        var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(reply: reply) ?? "RESPToken"
+        var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(reply: reply)
         if returnType == "Void" {
             returnType = "RESPToken"
         }
@@ -236,15 +236,13 @@ extension String {
         //var converting: Bool = false
         var returnType: String = " -> \(name.commandTypeName).Response"
         var ignoreSendResponse = ""
-        let type = disableResponseCalculation ? nil : getResponseType(reply: reply)
-        if let type {
-            if type == "Void" {
-                returnType = ""
-                ignoreSendResponse = "_ = "
-            } else if type != "RESPToken" {
-                //converting = true
-                returnType = " -> \(type)"
-            }
+        let type = disableResponseCalculation ? "RESPToken" : getResponseType(reply: reply)
+        if type == "Void" {
+            returnType = ""
+            ignoreSendResponse = "_ = "
+        } else if type != "RESPToken" {
+            //converting = true
+            returnType = " -> \(type)"
         }
         func _appendFunction(isArray: Bool) {
             // Comment header
@@ -277,7 +275,8 @@ extension String {
 
 func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPReplies) -> String {
     let disableResponseCalculationCommands: Set<String> = [
-        "CLUSTER SHARDS"
+        "CLUSTER SHARDS",
+        "LPOS",
     ]
     var string = """
         //===----------------------------------------------------------------------===//
@@ -508,14 +507,14 @@ private func variableType(_ parameter: ValkeyCommand.Argument, names: [String], 
     return parameterString
 }
 
-private func getResponseType(reply replies: [String]) -> String? {
+private func getResponseType(reply replies: [String]) -> String {
     let replies = replies.filter { $0.hasPrefix("[") || $0.hasPrefix("* [") }
     if replies.count == 1 {
         let returnType = getReturnType(reply: replies[0].dropPrefix("* "))
-        return returnType
+        return returnType ?? "RESPToken"
     } else if replies.count > 1 {
         var returnType = getReturnType(reply: replies[0].dropPrefix("* "))
-        var `optional` = false
+        var `optional` = returnType == "Void"
         for value in replies.dropFirst(1) {
             if let returnType2 = getReturnType(reply: value.dropPrefix("* ")) {
                 if returnType == "Void" {
@@ -525,7 +524,11 @@ private func getResponseType(reply replies: [String]) -> String? {
                     if returnType2 == "Void" {
                         optional = true
                     } else {
-                        return nil
+                        if optional {
+                            return "RESPToken?"
+                        } else {
+                            return "RESPToken"
+                        }
                     }
                 }
             }
@@ -533,13 +536,13 @@ private func getResponseType(reply replies: [String]) -> String? {
         if returnType == "Void" {
             return "RESPToken"
         }
-        if returnType != "Void", optional {
+        if optional {
             return "\(returnType ?? "RESPToken")?"
         } else {
-            return returnType
+            return returnType ?? "RESPToken"
         }
     }
-    return nil
+    return "RESPToken"
 }
 private func getReturnType(reply: some StringProtocol) -> String? {
     if reply.hasPrefix("[") {
