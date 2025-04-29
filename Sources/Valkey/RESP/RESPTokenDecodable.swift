@@ -14,13 +14,13 @@
 
 import NIOCore
 
-/// Type that can decoded from a RESP3Token
+/// Type that can decoded from a RESPToken
 public protocol RESPTokenDecodable {
     init(fromRESP: RESPToken) throws
 }
 
 extension RESPToken: RESPTokenDecodable {
-    /// Convert RESP3Token to a value
+    /// Convert RESPToken to a value
     /// - Parameter type: Type to convert to
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Value
@@ -34,7 +34,7 @@ extension RESPToken: RESPTokenDecodable {
         self = token
     }
 
-    /// Convert RESP3Token Array to a tuple of values
+    /// Convert RESPToken Array to a tuple of values
     /// - Parameter as: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
@@ -52,7 +52,7 @@ extension RESPToken: RESPTokenDecodable {
 }
 
 extension Array where Element == RESPToken {
-    /// Convert RESP3Token Array to a value array
+    /// Convert RESPToken Array to a value array
     /// - Parameter type: Type to convert to
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Array of Value
@@ -281,7 +281,7 @@ extension RESPToken.Array: RESPTokenDecodable {
         }
     }
 
-    /// Convert RESP3Token Array to a value array
+    /// Convert RESPToken Array to a value array
     /// - Parameter type: Type to convert to
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: Array of Value
@@ -290,7 +290,7 @@ extension RESPToken.Array: RESPTokenDecodable {
         try self.map { try $0.decode() }
     }
 
-    /// Convert RESP3Token Array to a tuple of values
+    /// Convert RESPToken Array to a tuple of values
     /// - Parameter as: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
@@ -323,7 +323,7 @@ extension RESPToken.Map: RESPTokenDecodable {
         }
     }
 
-    /// Convert RESP3Token Map to a Dictionary with String keys
+    /// Convert RESPToken Map to a Dictionary with String keys
     /// - Parameter type: Type to convert to
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: String value dictionary
