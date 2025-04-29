@@ -50,7 +50,9 @@ struct ValkeySubscriptionCommandStack {
     }
 
     mutating func received(_ subscription: ValkeySubscriptionFilter) throws -> SubscribeCommand? {
-        if try commands[commands.startIndex].received(subscription) {
+        if commands.first != nil,
+            try commands[commands.startIndex].received(subscription)
+        {
             let command = commands.popFirst()
             return command
         } else {
