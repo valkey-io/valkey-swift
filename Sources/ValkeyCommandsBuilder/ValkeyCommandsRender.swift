@@ -292,8 +292,13 @@ extension String {
 
 func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands) -> String {
     let disableResponseCalculationCommands: Set<String> = [
-        "CLUSTER SHARDS"
-        //"LPOS",
+        "BZMPOP",
+        "BZPOPMAX",
+        "BZPOPMIN",
+        "CLUSTER SHARDS",
+        "ZMPOP",
+        "ZPOPMAX",
+        "ZPOPMIN",
     ]
     var string = """
         //===----------------------------------------------------------------------===//
