@@ -251,6 +251,8 @@ public struct HRANDFIELD: ValkeyCommand {
             "WITHVALUES".encode(into: &commandEncoder)
         }
     }
+    public typealias Response = RESPToken?
+
     public var key: ValkeyKey
     public var options: Options?
 
@@ -524,7 +526,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list containing `count` fields when the `count` option is used, or an empty array if the key does not exists.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list of fields and their values when `count` and `WITHVALUES` were both used.
     @inlinable
-    public func hrandfield(key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws -> HRANDFIELD.Response {
+    public func hrandfield(key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws -> RESPToken? {
         try await send(command: HRANDFIELD(key: key, options: options))
     }
 
