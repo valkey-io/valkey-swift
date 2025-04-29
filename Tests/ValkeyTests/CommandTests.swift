@@ -18,6 +18,9 @@ import NIOEmbedded
 import Testing
 import Valkey
 
+/// Test commands process their response correctly.
+///
+/// Generally the commands being tested here are ones we have written custom responses for
 struct CommandTests {
     struct StringCommands {
         @Test
