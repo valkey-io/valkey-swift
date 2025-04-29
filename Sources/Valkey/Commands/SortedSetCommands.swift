@@ -151,6 +151,8 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
             RESPBulkString(member).encode(into: &commandEncoder)
         }
     }
+    public typealias Response = RESPToken?
+
     public var key: ValkeyKey
     public var condition: Condition?
     public var comparison: Comparison?
@@ -746,6 +748,8 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
 
 /// Returns the index of a member in a sorted set ordered by ascending scores.
 public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = RESPToken?
+
     public var key: ValkeyKey
     public var member: Member
     public var withscore: Bool
@@ -963,6 +967,8 @@ public struct ZREVRANGEBYSCORE: ValkeyCommand {
 
 /// Returns the index of a member in a sorted set ordered by descending scores.
 public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = RESPToken?
+
     public var key: ValkeyKey
     public var member: Member
     public var withscore: Bool
@@ -1157,7 +1163,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the number of new or updated members when the _CH_ option is used.
     ///     * [Double](https:/valkey.io/topics/protocol/#doubles): the updated score of the member when the _INCR_ option is used.
     @inlinable
-    public func zadd<Member: RESPStringRenderable>(key: ValkeyKey, condition: ZADD<Member>.Condition? = nil, comparison: ZADD<Member>.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD<Member>.Data]) async throws -> ZADD.Response {
+    public func zadd<Member: RESPStringRenderable>(key: ValkeyKey, condition: ZADD<Member>.Condition? = nil, comparison: ZADD<Member>.Comparison? = nil, change: Bool = false, increment: Bool = false, data: [ZADD<Member>.Data]) async throws -> RESPToken? {
         try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 
@@ -1395,7 +1401,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrank<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, withscore: Bool = false) async throws -> ZRANK.Response {
+    public func zrank<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, withscore: Bool = false) async throws -> RESPToken? {
         try await send(command: ZRANK(key: key, member: member, withscore: withscore))
     }
 
@@ -1497,7 +1503,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): The rank of the member when _WITHSCORE_ is not used.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): The rank and score of the member when _WITHSCORE_ is used.
     @inlinable
-    public func zrevrank<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, withscore: Bool = false) async throws -> ZREVRANK.Response {
+    public func zrevrank<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, withscore: Bool = false) async throws -> RESPToken? {
         try await send(command: ZREVRANK(key: key, member: member, withscore: withscore))
     }
 
