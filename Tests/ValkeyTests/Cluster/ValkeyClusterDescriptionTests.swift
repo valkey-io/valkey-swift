@@ -55,7 +55,7 @@ struct ValkeyClusterDescriptionTests {
 
         let token = RESPToken(val)
 
-        let description = try ValkeyClusterDescription(from: token)
+        let description = try ValkeyClusterDescription(fromRESP: token)
 
         #expect(description == ValkeyClusterDescription([
             .init(

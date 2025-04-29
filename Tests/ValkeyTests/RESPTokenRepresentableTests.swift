@@ -26,7 +26,7 @@ struct RESPTokenRepresentableTests {
     func string(testValues: (String, String)) throws {
         var buffer = ByteBuffer(string: testValues.0)
         let token = try #require(try RESPToken(consuming: &buffer))
-        let string = try String(from: token)
+        let string = try String(fromRESP: token)
         #expect(string == testValues.1)
     }
 
@@ -37,7 +37,7 @@ struct RESPTokenRepresentableTests {
     func integer(testValues: (String, Int)) throws {
         var buffer = ByteBuffer(string: testValues.0)
         let token = try #require(try RESPToken(consuming: &buffer))
-        let value = try Int(from: token)
+        let value = try Int(fromRESP: token)
         #expect(value == testValues.1)
     }
 
@@ -48,7 +48,7 @@ struct RESPTokenRepresentableTests {
     func double(testValues: (String, Double)) throws {
         var buffer = ByteBuffer(string: testValues.0)
         let token = try #require(try RESPToken(consuming: &buffer))
-        let value = try Double(from: token)
+        let value = try Double(fromRESP: token)
         #expect(value == testValues.1)
     }
 
@@ -59,7 +59,7 @@ struct RESPTokenRepresentableTests {
     func boolean(testValues: (String, Bool)) throws {
         var buffer = ByteBuffer(string: testValues.0)
         let token = try #require(try RESPToken(consuming: &buffer))
-        let value = try Bool(from: token)
+        let value = try Bool(fromRESP: token)
         #expect(value == testValues.1)
     }
 
@@ -70,7 +70,7 @@ struct RESPTokenRepresentableTests {
     func optional(testValues: (String, String?)) throws {
         var buffer = ByteBuffer(string: testValues.0)
         let token = try #require(try RESPToken(consuming: &buffer))
-        let value = try String?(from: token)
+        let value = try String?(fromRESP: token)
         #expect(value == testValues.1)
     }
 
@@ -82,7 +82,7 @@ struct RESPTokenRepresentableTests {
     func array(testValues: (String, [String])) throws {
         var buffer = ByteBuffer(string: testValues.0)
         let token = try #require(try RESPToken(consuming: &buffer))
-        let value = try [String](from: token)
+        let value = try [String](fromRESP: token)
         #expect(value == testValues.1)
     }
 
@@ -93,7 +93,7 @@ struct RESPTokenRepresentableTests {
     func set(testValues: (String, Set<String>)) throws {
         var buffer = ByteBuffer(string: testValues.0)
         let token = try #require(try RESPToken(consuming: &buffer))
-        let value = try Set<String>(from: token)
+        let value = try Set<String>(fromRESP: token)
         #expect(value == testValues.1)
     }
 
@@ -104,7 +104,7 @@ struct RESPTokenRepresentableTests {
     func dictionary(testValues: (String, [String: Int])) throws {
         var buffer = ByteBuffer(string: testValues.0)
         let token = try #require(try RESPToken(consuming: &buffer))
-        let value = try [String: Int](from: token)
+        let value = try [String: Int](fromRESP: token)
         #expect(value == testValues.1)
     }
 
@@ -112,7 +112,7 @@ struct RESPTokenRepresentableTests {
     func closedRange() throws {
         var buffer = ByteBuffer(string: "*2\r\n:1\r\n:10\r\n")
         let token = try #require(try RESPToken(consuming: &buffer))
-        let value = try ClosedRange<Int>(from: token)
+        let value = try ClosedRange<Int>(fromRESP: token)
         #expect(value == 1...10)
     }
 

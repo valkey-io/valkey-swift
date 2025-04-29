@@ -19,7 +19,7 @@ extension CLUSTER.SHARDS {
 }
 
 package struct ValkeyClusterParseError: Error {
-    fileprivate enum Reason: Error{
+    fileprivate enum Reason: Error {
         case clusterDescriptionTokenIsNotAnArray
         case shardTokenIsNotAnArray
         case nodesTokenIsNotAnArray
@@ -35,7 +35,7 @@ package struct ValkeyClusterParseError: Error {
     package var token: RESPToken
 }
 
-public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenRepresentable {
+public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     /// Details for a node within a cluster shard
     public struct Node: Hashable, Sendable {
         /// Replication role of a given shard (master or replica)
@@ -150,7 +150,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenRepresentab
 
     public var shards: [Shard]
 
-    public init(from respToken: RESPToken) throws {
+    public init(fromRESP respToken: RESPToken) throws {
         do {
             self = try Self.makeClusterDescription(respToken: respToken)
         } catch {
@@ -179,7 +179,7 @@ extension ValkeyClusterDescription {
             var nodes: [ValkeyClusterDescription.Node] = []
 
             var keysAndValuesIterator = keysAndValues.makeIterator()
-            while let keyToken = keysAndValuesIterator.next(), let key = try? String(from: keyToken) {
+            while let keyToken = keysAndValuesIterator.next(), let key = try? String(fromRESP: keyToken) {
                 switch key {
                 case "slots":
                     slotRanges = try HashSlots(&keysAndValuesIterator)
@@ -215,10 +215,10 @@ extension HashSlots {
 
         var slotsIterator = array.makeIterator()
         while case .number(let rangeStart) = slotsIterator.next()?.value,
-              case .number(let rangeEnd) = slotsIterator.next()?.value,
-              let start = HashSlot(rawValue: rangeStart),
-              let end = HashSlot(rawValue: rangeEnd),
-              start <= end
+            case .number(let rangeEnd) = slotsIterator.next()?.value,
+            let start = HashSlot(rawValue: rangeStart),
+            let end = HashSlot(rawValue: rangeEnd),
+            start <= end
         {
             slotRanges.append(ClosedRange<HashSlot>(uncheckedBounds: (start, end)))
         }
@@ -256,30 +256,32 @@ extension ValkeyClusterDescription.Node {
         var health: ValkeyClusterDescription.Node.Health?
 
         var nodeIterator = array.makeIterator()
-        while let nodeKey = nodeIterator.next(), let key = try? String(from: nodeKey), let nodeVal = nodeIterator.next() {
+        while let nodeKey = nodeIterator.next(), let key = try? String(fromRESP: nodeKey), let nodeVal = nodeIterator.next() {
             switch key {
             case "id":
-                id = try? String(from: nodeVal)
+                id = try? String(fromRESP: nodeVal)
             case "port":
-                port = try? Int64(from: nodeVal)
+                port = try? Int64(fromRESP: nodeVal)
             case "tls-port":
-                tlsPort = try? Int64(from: nodeVal)
+                tlsPort = try? Int64(fromRESP: nodeVal)
             case "ip":
-                ip = try? String(from: nodeVal)
+                ip = try? String(fromRESP: nodeVal)
             case "hostname":
-                hostname = try? String(from: nodeVal)
+                hostname = try? String(fromRESP: nodeVal)
             case "endpoint":
-                endpoint = try? String(from: nodeVal)
+                endpoint = try? String(fromRESP: nodeVal)
             case "role":
-                guard let roleString = try? String(from: nodeVal), let roleValue = ValkeyClusterDescription.Node.Role(rawValue: roleString) else {
+                guard let roleString = try? String(fromRESP: nodeVal), let roleValue = ValkeyClusterDescription.Node.Role(rawValue: roleString) else {
                     throw .invalidNodeRole
                 }
                 role = roleValue
 
             case "replication-offset":
-                replicationOffset = try? Int64(from: nodeVal)
+                replicationOffset = try? Int64(fromRESP: nodeVal)
             case "health":
-                guard let healthString = try? String(from: nodeVal), let healthValue = ValkeyClusterDescription.Node.Health(rawValue: healthString) else {
+                guard let healthString = try? String(fromRESP: nodeVal),
+                    let healthValue = ValkeyClusterDescription.Node.Health(rawValue: healthString)
+                else {
                     throw .invalidNodeHealth
                 }
                 health = healthValue
