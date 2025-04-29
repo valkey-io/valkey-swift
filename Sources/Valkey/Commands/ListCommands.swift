@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
-public struct BLMOVE: RESPCommand {
+public struct BLMOVE: ValkeyCommand {
     public enum Wherefrom: RESPRenderable, Sendable {
         case left
         case right
@@ -32,7 +32,7 @@ public struct BLMOVE: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -47,7 +47,7 @@ public struct BLMOVE: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -56,13 +56,13 @@ public struct BLMOVE: RESPCommand {
     }
     public typealias Response = RESPToken?
 
-    public var source: RESPKey
-    public var destination: RESPKey
+    public var source: ValkeyKey
+    public var destination: ValkeyKey
     public var wherefrom: Wherefrom
     public var whereto: Whereto
     public var timeout: Double
 
-    @inlinable public init(source: RESPKey, destination: RESPKey, wherefrom: Wherefrom, whereto: Whereto, timeout: Double) {
+    @inlinable public init(source: ValkeyKey, destination: ValkeyKey, wherefrom: Wherefrom, whereto: Whereto, timeout: Double) {
         self.source = source
         self.destination = destination
         self.wherefrom = wherefrom
@@ -70,15 +70,15 @@ public struct BLMOVE: RESPCommand {
         self.timeout = timeout
     }
 
-    public var keysAffected: [RESPKey] { [source, destination] }
+    public var keysAffected: [ValkeyKey] { [source, destination] }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
 }
 
 /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BLMPOP: RESPCommand {
+public struct BLMPOP: ValkeyCommand {
     public enum Where: RESPRenderable, Sendable {
         case left
         case right
@@ -87,7 +87,7 @@ public struct BLMPOP: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -97,105 +97,105 @@ public struct BLMPOP: RESPCommand {
     public typealias Response = RESPToken.Array?
 
     public var timeout: Double
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var `where`: Where
     public var count: Int?
 
-    @inlinable public init(timeout: Double, key: [RESPKey], `where`: Where, count: Int? = nil) {
+    @inlinable public init(timeout: Double, key: [ValkeyKey], `where`: Where, count: Int? = nil) {
         self.timeout = timeout
         self.key = key
         self.`where` = `where`
         self.count = count
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
 /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BLPOP: RESPCommand {
+public struct BLPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var timeout: Double
 
-    @inlinable public init(key: [RESPKey], timeout: Double) {
+    @inlinable public init(key: [ValkeyKey], timeout: Double) {
         self.key = key
         self.timeout = timeout
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BLPOP", key, timeout)
     }
 }
 
 /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
-public struct BRPOP: RESPCommand {
+public struct BRPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var timeout: Double
 
-    @inlinable public init(key: [RESPKey], timeout: Double) {
+    @inlinable public init(key: [ValkeyKey], timeout: Double) {
         self.key = key
         self.timeout = timeout
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BRPOP", key, timeout)
     }
 }
 
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
-public struct BRPOPLPUSH: RESPCommand {
+public struct BRPOPLPUSH: ValkeyCommand {
     public typealias Response = RESPToken?
 
-    public var source: RESPKey
-    public var destination: RESPKey
+    public var source: ValkeyKey
+    public var destination: ValkeyKey
     public var timeout: Double
 
-    @inlinable public init(source: RESPKey, destination: RESPKey, timeout: Double) {
+    @inlinable public init(source: ValkeyKey, destination: ValkeyKey, timeout: Double) {
         self.source = source
         self.destination = destination
         self.timeout = timeout
     }
 
-    public var keysAffected: [RESPKey] { [source, destination] }
+    public var keysAffected: [ValkeyKey] { [source, destination] }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BRPOPLPUSH", source, destination, timeout)
     }
 }
 
 /// Returns an element from a list by its index.
-public struct LINDEX: RESPCommand {
+public struct LINDEX: ValkeyCommand {
     public typealias Response = RESPToken?
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var index: Int
 
-    @inlinable public init(key: RESPKey, index: Int) {
+    @inlinable public init(key: ValkeyKey, index: Int) {
         self.key = key
         self.index = index
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LINDEX", key, index)
     }
 }
 
 /// Inserts an element before or after another element in a list.
-public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable>: RESPCommand {
+public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable>: ValkeyCommand {
     public enum Where: RESPRenderable, Sendable {
         case before
         case after
@@ -204,7 +204,7 @@ public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .before: "BEFORE".encode(into: &commandEncoder)
             case .after: "AFTER".encode(into: &commandEncoder)
@@ -213,44 +213,44 @@ public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable
     }
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var `where`: Where
     public var pivot: Pivot
     public var element: Element
 
-    @inlinable public init(key: RESPKey, `where`: Where, pivot: Pivot, element: Element) {
+    @inlinable public init(key: ValkeyKey, `where`: Where, pivot: Pivot, element: Element) {
         self.key = key
         self.`where` = `where`
         self.pivot = pivot
         self.element = element
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LINSERT", key, `where`, RESPBulkString(pivot), RESPBulkString(element))
     }
 }
 
 /// Returns the length of a list.
-public struct LLEN: RESPCommand {
+public struct LLEN: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
 
-    @inlinable public init(key: RESPKey) {
+    @inlinable public init(key: ValkeyKey) {
         self.key = key
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LLEN", key)
     }
 }
 
 /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
-public struct LMOVE: RESPCommand {
+public struct LMOVE: ValkeyCommand {
     public enum Wherefrom: RESPRenderable, Sendable {
         case left
         case right
@@ -259,7 +259,7 @@ public struct LMOVE: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -274,34 +274,34 @@ public struct LMOVE: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
             }
         }
     }
-    public var source: RESPKey
-    public var destination: RESPKey
+    public var source: ValkeyKey
+    public var destination: ValkeyKey
     public var wherefrom: Wherefrom
     public var whereto: Whereto
 
-    @inlinable public init(source: RESPKey, destination: RESPKey, wherefrom: Wherefrom, whereto: Whereto) {
+    @inlinable public init(source: ValkeyKey, destination: ValkeyKey, wherefrom: Wherefrom, whereto: Whereto) {
         self.source = source
         self.destination = destination
         self.wherefrom = wherefrom
         self.whereto = whereto
     }
 
-    public var keysAffected: [RESPKey] { [source, destination] }
+    public var keysAffected: [ValkeyKey] { [source, destination] }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LMOVE", source, destination, wherefrom, whereto)
     }
 }
 
 /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
-public struct LMPOP: RESPCommand {
+public struct LMPOP: ValkeyCommand {
     public enum Where: RESPRenderable, Sendable {
         case left
         case right
@@ -310,7 +310,7 @@ public struct LMPOP: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .left: "LEFT".encode(into: &commandEncoder)
             case .right: "RIGHT".encode(into: &commandEncoder)
@@ -319,49 +319,49 @@ public struct LMPOP: RESPCommand {
     }
     public typealias Response = RESPToken.Array?
 
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var `where`: Where
     public var count: Int?
 
-    @inlinable public init(key: [RESPKey], `where`: Where, count: Int? = nil) {
+    @inlinable public init(key: [ValkeyKey], `where`: Where, count: Int? = nil) {
         self.key = key
         self.`where` = `where`
         self.count = count
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
 }
 
 /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
-public struct LPOP: RESPCommand {
-    public var key: RESPKey
+public struct LPOP: ValkeyCommand {
+    public var key: ValkeyKey
     public var count: Int?
 
-    @inlinable public init(key: RESPKey, count: Int? = nil) {
+    @inlinable public init(key: ValkeyKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LPOP", key, count)
     }
 }
 
 /// Returns the index of matching elements in a list.
-public struct LPOS<Element: RESPStringRenderable>: RESPCommand {
-    public var key: RESPKey
+public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
+    public var key: ValkeyKey
     public var element: Element
     public var rank: Int?
     public var numMatches: Int?
     public var len: Int?
 
-    @inlinable public init(key: RESPKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) {
+    @inlinable public init(key: ValkeyKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) {
         self.key = key
         self.element = element
         self.rank = rank
@@ -369,202 +369,202 @@ public struct LPOS<Element: RESPStringRenderable>: RESPCommand {
         self.len = len
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LPOS", key, RESPBulkString(element), RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 }
 
 /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
-public struct LPUSH<Element: RESPStringRenderable>: RESPCommand {
+public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var element: [Element]
 
-    @inlinable public init(key: RESPKey, element: [Element]) {
+    @inlinable public init(key: ValkeyKey, element: [Element]) {
         self.key = key
         self.element = element
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LPUSH", key, element.map { RESPBulkString($0) })
     }
 }
 
 /// Prepends one or more elements to a list only when the list exists.
-public struct LPUSHX<Element: RESPStringRenderable>: RESPCommand {
+public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var element: [Element]
 
-    @inlinable public init(key: RESPKey, element: [Element]) {
+    @inlinable public init(key: ValkeyKey, element: [Element]) {
         self.key = key
         self.element = element
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LPUSHX", key, element.map { RESPBulkString($0) })
     }
 }
 
 /// Returns a range of elements from a list.
-public struct LRANGE: RESPCommand {
+public struct LRANGE: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var start: Int
     public var stop: Int
 
-    @inlinable public init(key: RESPKey, start: Int, stop: Int) {
+    @inlinable public init(key: ValkeyKey, start: Int, stop: Int) {
         self.key = key
         self.start = start
         self.stop = stop
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LRANGE", key, start, stop)
     }
 }
 
 /// Removes elements from a list. Deletes the list if the last element was removed.
-public struct LREM<Element: RESPStringRenderable>: RESPCommand {
+public struct LREM<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var count: Int
     public var element: Element
 
-    @inlinable public init(key: RESPKey, count: Int, element: Element) {
+    @inlinable public init(key: ValkeyKey, count: Int, element: Element) {
         self.key = key
         self.count = count
         self.element = element
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LREM", key, count, RESPBulkString(element))
     }
 }
 
 /// Sets the value of an element in a list by its index.
-public struct LSET<Element: RESPStringRenderable>: RESPCommand {
-    public var key: RESPKey
+public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
+    public var key: ValkeyKey
     public var index: Int
     public var element: Element
 
-    @inlinable public init(key: RESPKey, index: Int, element: Element) {
+    @inlinable public init(key: ValkeyKey, index: Int, element: Element) {
         self.key = key
         self.index = index
         self.element = element
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LSET", key, index, RESPBulkString(element))
     }
 }
 
 /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
-public struct LTRIM: RESPCommand {
-    public var key: RESPKey
+public struct LTRIM: ValkeyCommand {
+    public var key: ValkeyKey
     public var start: Int
     public var stop: Int
 
-    @inlinable public init(key: RESPKey, start: Int, stop: Int) {
+    @inlinable public init(key: ValkeyKey, start: Int, stop: Int) {
         self.key = key
         self.start = start
         self.stop = stop
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LTRIM", key, start, stop)
     }
 }
 
 /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
-public struct RPOP: RESPCommand {
-    public var key: RESPKey
+public struct RPOP: ValkeyCommand {
+    public var key: ValkeyKey
     public var count: Int?
 
-    @inlinable public init(key: RESPKey, count: Int? = nil) {
+    @inlinable public init(key: ValkeyKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("RPOP", key, count)
     }
 }
 
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
 @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
-public struct RPOPLPUSH: RESPCommand {
+public struct RPOPLPUSH: ValkeyCommand {
     public typealias Response = RESPToken?
 
-    public var source: RESPKey
-    public var destination: RESPKey
+    public var source: ValkeyKey
+    public var destination: ValkeyKey
 
-    @inlinable public init(source: RESPKey, destination: RESPKey) {
+    @inlinable public init(source: ValkeyKey, destination: ValkeyKey) {
         self.source = source
         self.destination = destination
     }
 
-    public var keysAffected: [RESPKey] { [source, destination] }
+    public var keysAffected: [ValkeyKey] { [source, destination] }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("RPOPLPUSH", source, destination)
     }
 }
 
 /// Appends one or more elements to a list. Creates the key if it doesn't exist.
-public struct RPUSH<Element: RESPStringRenderable>: RESPCommand {
+public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var element: [Element]
 
-    @inlinable public init(key: RESPKey, element: [Element]) {
+    @inlinable public init(key: ValkeyKey, element: [Element]) {
         self.key = key
         self.element = element
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("RPUSH", key, element.map { RESPBulkString($0) })
     }
 }
 
 /// Appends an element to a list only when the list exists.
-public struct RPUSHX<Element: RESPStringRenderable>: RESPCommand {
+public struct RPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var element: [Element]
 
-    @inlinable public init(key: RESPKey, element: [Element]) {
+    @inlinable public init(key: ValkeyKey, element: [Element]) {
         self.key = key
         self.element = element
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("RPUSHX", key, element.map { RESPBulkString($0) })
     }
 }
@@ -580,7 +580,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the operation timed-out
     @inlinable
-    public func blmove(source: RESPKey, destination: RESPKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> RESPToken? {
+    public func blmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> RESPToken? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
@@ -594,7 +594,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ is reached.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
     @inlinable
-    public func blmpop(timeout: Double, key: [RESPKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
+    public func blmpop(timeout: Double, key: [ValkeyKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
         try await send(command: BLMPOP(timeout: timeout, key: key, where: `where`, count: count))
     }
 
@@ -608,7 +608,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): no element could be popped and the timeout expired
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the key from which the element was popped and the value of the popped element.
     @inlinable
-    public func blpop(key: [RESPKey], timeout: Double) async throws -> RESPToken.Array? {
+    public func blpop(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BLPOP(key: key, timeout: timeout))
     }
 
@@ -622,7 +622,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): no element could be popped and the timeout expired.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the key from which the element was popped and the value of the popped element
     @inlinable
-    public func brpop(key: [RESPKey], timeout: Double) async throws -> RESPToken.Array? {
+    public func brpop(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BRPOP(key: key, timeout: timeout))
     }
 
@@ -637,7 +637,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the timeout is reached.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
-    public func brpoplpush(source: RESPKey, destination: RESPKey, timeout: Double) async throws -> RESPToken? {
+    public func brpoplpush(source: ValkeyKey, destination: ValkeyKey, timeout: Double) async throws -> RESPToken? {
         try await send(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
 
@@ -651,7 +651,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when _index_ is out of range.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the requested element.
     @inlinable
-    public func lindex(key: RESPKey, index: Int) async throws -> RESPToken? {
+    public func lindex(key: ValkeyKey, index: Int) async throws -> RESPToken? {
         try await send(command: LINDEX(key: key, index: index))
     }
 
@@ -666,7 +666,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` when the key doesn't exist.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` when the pivot wasn't found.
     @inlinable
-    public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(key: RESPKey, `where`: LINSERT<Pivot, Element>.Where, pivot: Pivot, element: Element) async throws -> Int {
+    public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(key: ValkeyKey, `where`: LINSERT<Pivot, Element>.Where, pivot: Pivot, element: Element) async throws -> Int {
         try await send(command: LINSERT(key: key, where: `where`, pivot: pivot, element: element))
     }
 
@@ -678,7 +678,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list.
     @inlinable
-    public func llen(key: RESPKey) async throws -> Int {
+    public func llen(key: ValkeyKey) async throws -> Int {
         try await send(command: LLEN(key: key))
     }
 
@@ -690,7 +690,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped and pushed.
     @inlinable
-    public func lmove(source: RESPKey, destination: RESPKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> LMOVE.Response {
+    public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> LMOVE.Response {
         try await send(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
@@ -704,7 +704,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if no element could be popped.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
     @inlinable
-    public func lmpop(key: [RESPKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
+    public func lmpop(key: [ValkeyKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
         try await send(command: LMPOP(key: key, where: `where`, count: count))
     }
 
@@ -719,7 +719,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): when called without the _count_ argument, the value of the first element.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when called with the _count_ argument, a list of popped elements.
     @inlinable
-    public func lpop(key: RESPKey, count: Int? = nil) async throws -> LPOP.Response {
+    public func lpop(key: ValkeyKey, count: Int? = nil) async throws -> LPOP.Response {
         try await send(command: LPOP(key: key, count: count))
     }
 
@@ -734,7 +734,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): an integer representing the matching element.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): If the COUNT option is given, an array of integers representing the matching elements (or an empty array if there are no matches).
     @inlinable
-    public func lpos<Element: RESPStringRenderable>(key: RESPKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> LPOS.Response {
+    public func lpos<Element: RESPStringRenderable>(key: ValkeyKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> LPOS.Response {
         try await send(command: LPOS(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 
@@ -746,7 +746,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
     @inlinable
-    public func lpush<Element: RESPStringRenderable>(key: RESPKey, element: [Element]) async throws -> Int {
+    public func lpush<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: LPUSH(key: key, element: element))
     }
 
@@ -758,7 +758,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
     @inlinable
-    public func lpushx<Element: RESPStringRenderable>(key: RESPKey, element: [Element]) async throws -> Int {
+    public func lpushx<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: LPUSHX(key: key, element: element))
     }
 
@@ -770,7 +770,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @list, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of elements in the specified range, or an empty array if the key doesn't exist.
     @inlinable
-    public func lrange(key: RESPKey, start: Int, stop: Int) async throws -> RESPToken.Array {
+    public func lrange(key: ValkeyKey, start: Int, stop: Int) async throws -> RESPToken.Array {
         try await send(command: LRANGE(key: key, start: start, stop: stop))
     }
 
@@ -782,7 +782,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of removed elements.
     @inlinable
-    public func lrem<Element: RESPStringRenderable>(key: RESPKey, count: Int, element: Element) async throws -> Int {
+    public func lrem<Element: RESPStringRenderable>(key: ValkeyKey, count: Int, element: Element) async throws -> Int {
         try await send(command: LREM(key: key, count: count, element: element))
     }
 
@@ -794,7 +794,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func lset<Element: RESPStringRenderable>(key: RESPKey, index: Int, element: Element) async throws {
+    public func lset<Element: RESPStringRenderable>(key: ValkeyKey, index: Int, element: Element) async throws {
         _ = try await send(command: LSET(key: key, index: index, element: element))
     }
 
@@ -806,7 +806,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @slow
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func ltrim(key: RESPKey, start: Int, stop: Int) async throws {
+    public func ltrim(key: ValkeyKey, start: Int, stop: Int) async throws {
         _ = try await send(command: LTRIM(key: key, start: start, stop: stop))
     }
 
@@ -821,7 +821,7 @@ extension ValkeyConnection {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): when called without the _count_ argument, the value of the last element.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when called with the _count_ argument, a list of popped elements.
     @inlinable
-    public func rpop(key: RESPKey, count: Int? = nil) async throws -> RPOP.Response {
+    public func rpop(key: ValkeyKey, count: Int? = nil) async throws -> RPOP.Response {
         try await send(command: RPOP(key: key, count: count))
     }
 
@@ -836,7 +836,7 @@ extension ValkeyConnection {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the source list is empty.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
-    public func rpoplpush(source: RESPKey, destination: RESPKey) async throws -> RESPToken? {
+    public func rpoplpush(source: ValkeyKey, destination: ValkeyKey) async throws -> RESPToken? {
         try await send(command: RPOPLPUSH(source: source, destination: destination))
     }
 
@@ -848,7 +848,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
     @inlinable
-    public func rpush<Element: RESPStringRenderable>(key: RESPKey, element: [Element]) async throws -> Int {
+    public func rpush<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: RPUSH(key: key, element: element))
     }
 
@@ -860,7 +860,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @list, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
     @inlinable
-    public func rpushx<Element: RESPStringRenderable>(key: RESPKey, element: [Element]) async throws -> Int {
+    public func rpushx<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: RPUSHX(key: key, element: element))
     }
 

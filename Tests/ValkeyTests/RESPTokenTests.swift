@@ -271,7 +271,7 @@ struct RESPTokenTests {
         )
 
         #expect(respString.value == .bulkString(ByteBuffer(string: "aaaabbbbcccc")))
-        #expect(respError.value == .blobError(ByteBuffer(string: "SYNTAX invalid syntax")))
+        #expect(respError.value == .bulkError(ByteBuffer(string: "SYNTAX invalid syntax")))
         #expect(respVerbatim.value == .verbatimString(ByteBuffer(string: "txt:aaaabbbbcccc")))
     }
 

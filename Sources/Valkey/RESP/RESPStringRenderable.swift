@@ -22,19 +22,19 @@ import Foundation
 
 /// Type that can be rendered as a single bulk string
 public protocol RESPStringRenderable: Sendable {
-    func encode(into commandEncoder: inout RESPCommandEncoder)
+    func encode(into commandEncoder: inout ValkeyCommandEncoder)
 }
 
 extension String: RESPStringRenderable {}
 
 extension ByteBuffer: RESPStringRenderable {
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeBulkString(self.readableBytesView)
     }
 }
 
 extension RESPStringRenderable where Self: Collection<UInt8> {
-    public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeBulkString(self)
     }
 }
@@ -64,7 +64,7 @@ struct RESPBulkString<Value: RESPStringRenderable>: RESPRenderable {
     }
 
     @inlinable
-    func encode(into commandEncoder: inout RESPCommandEncoder) {
+    func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         self.value.encode(into: &commandEncoder)
     }
 }

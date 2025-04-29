@@ -23,58 +23,58 @@ import Foundation
 #endif
 
 /// Discards a transaction.
-public struct DISCARD: RESPCommand {
+public struct DISCARD: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("DISCARD")
     }
 }
 
 /// Executes all commands in a transaction.
-public struct EXEC: RESPCommand {
+public struct EXEC: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EXEC")
     }
 }
 
 /// Starts a transaction.
-public struct MULTI: RESPCommand {
+public struct MULTI: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MULTI")
     }
 }
 
 /// Forgets about watched keys of a transaction.
-public struct UNWATCH: RESPCommand {
+public struct UNWATCH: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("UNWATCH")
     }
 }
 
 /// Monitors changes to keys to determine the execution of a transaction.
-public struct WATCH: RESPCommand {
-    public var key: [RESPKey]
+public struct WATCH: ValkeyCommand {
+    public var key: [ValkeyKey]
 
-    @inlinable public init(key: [RESPKey]) {
+    @inlinable public init(key: [ValkeyKey]) {
         self.key = key
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("WATCH", key)
     }
 }
@@ -138,7 +138,7 @@ extension ValkeyConnection {
     /// - Categories: @fast, @transaction
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func watch(key: [RESPKey]) async throws {
+    public func watch(key: [ValkeyKey]) async throws {
         _ = try await send(command: WATCH(key: key))
     }
 

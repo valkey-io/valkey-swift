@@ -14,7 +14,7 @@
 
 import NIOCore
 
-public struct RESPCommandEncoder {
+public struct ValkeyCommandEncoder {
     @usableFromInline
     var buffer: ByteBuffer
 

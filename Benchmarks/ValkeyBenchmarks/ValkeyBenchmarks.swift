@@ -80,11 +80,11 @@ let benchmarks: @Sendable () -> Void = {
         try await server?.close().get()
     }
 
-    Benchmark("RESPCommandEncoder – Simple GET", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+    Benchmark("ValkeyCommandEncoder – Simple GET", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
         let command = GET(key: "foo")
         benchmark.startMeasurement()
 
-        var encoder = RESPCommandEncoder()
+        var encoder = ValkeyCommandEncoder()
         for _ in benchmark.scaledIterations {
             encoder.reset()
             command.encode(into: &encoder)
@@ -93,12 +93,12 @@ let benchmarks: @Sendable () -> Void = {
         benchmark.stopMeasurement()
     }
 
-    Benchmark("RESPCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let keys = (0..<15).map { RESPKey(rawValue: "foo-\($0)") }
+    Benchmark("ValkeyCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+        let keys = (0..<15).map { ValkeyKey(rawValue: "foo-\($0)") }
         let command = MGET(key: keys)
         benchmark.startMeasurement()
 
-        var encoder = RESPCommandEncoder()
+        var encoder = ValkeyCommandEncoder()
         for _ in benchmark.scaledIterations {
             encoder.reset()
             command.encode(into: &encoder)
@@ -107,7 +107,7 @@ let benchmarks: @Sendable () -> Void = {
         benchmark.stopMeasurement()
     }
 
-    Benchmark("RESPCommandEncoder – Command with 7 words", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+    Benchmark("ValkeyCommandEncoder – Command with 7 words", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
         let string = "string"
         let optionalString: String? = "optionalString"
         let array = ["array", "of", "strings"]
@@ -115,7 +115,7 @@ let benchmarks: @Sendable () -> Void = {
         let token = RESPPureToken("TOKEN", true)
         benchmark.startMeasurement()
 
-        var encoder = RESPCommandEncoder()
+        var encoder = ValkeyCommandEncoder()
         for _ in benchmark.scaledIterations {
             encoder.reset()
             encoder.encodeArray(string, optionalString, array, number, token)

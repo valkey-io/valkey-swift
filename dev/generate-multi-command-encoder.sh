@@ -48,7 +48,7 @@ echo
 
 echo "import NIOCore"
 echo ""
-echo "extension RESPCommandEncoder {"
+echo "extension ValkeyCommandEncoder {"
 
 # note:
 # - widening the inverval below (eg. going from {1..15} to {1..25}) is Semver minor
@@ -57,4 +57,6 @@ for n in {1..15}; do
     genWithoutContextParameter "$n"
 done
 echo "}"
-} > "$here/../Sources/Valkey/RESP/RESPCommandEncoder-multi-encode.swift"
+} > "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
+
+swift format format -i "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"

@@ -25,7 +25,7 @@ import Foundation
 /// A container for Access List Control commands.
 public enum ACL {
     /// Lists the ACL categories, or the commands inside a category.
-    public struct CAT: RESPCommand {
+    public struct CAT: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var category: String?
@@ -34,13 +34,13 @@ public enum ACL {
             self.category = category
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "CAT", category)
         }
     }
 
     /// Deletes ACL users, and terminates their connections.
-    public struct DELUSER<Username: RESPStringRenderable>: RESPCommand {
+    public struct DELUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
 
         public var username: [Username]
@@ -49,13 +49,13 @@ public enum ACL {
             self.username = username
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "DELUSER", username.map { RESPBulkString($0) })
         }
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
-    public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: RESPCommand {
+    public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken?
 
         public var username: Username
@@ -68,26 +68,26 @@ public enum ACL {
             self.arg = arg
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "DRYRUN", RESPBulkString(username), RESPBulkString(command), arg)
         }
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
-    public struct GENPASS: RESPCommand {
+    public struct GENPASS: ValkeyCommand {
         public var bits: Int?
 
         @inlinable public init(bits: Int? = nil) {
             self.bits = bits
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "GENPASS", bits)
         }
     }
 
     /// Lists the ACL rules of a user.
-    public struct GETUSER<Username: RESPStringRenderable>: RESPCommand {
+    public struct GETUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map?
 
         public var username: Username
@@ -96,47 +96,47 @@ public enum ACL {
             self.username = username
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "GETUSER", RESPBulkString(username))
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "HELP")
         }
     }
 
     /// Dumps the effective rules in ACL file format.
-    public struct LIST: RESPCommand {
+    public struct LIST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "LIST")
         }
     }
 
     /// Reloads the rules from the configured ACL file.
-    public struct LOAD: RESPCommand {
+    public struct LOAD: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "LOAD")
         }
     }
 
     /// Lists recent security events generated due to ACL rules.
-    public struct LOG: RESPCommand {
+    public struct LOG: ValkeyCommand {
         public enum Operation: RESPRenderable, Sendable {
             case count(Int)
             case reset
@@ -150,7 +150,7 @@ public enum ACL {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .count(let count): count.encode(into: &commandEncoder)
                 case .reset: "RESET".encode(into: &commandEncoder)
@@ -165,23 +165,23 @@ public enum ACL {
             self.operation = operation
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "LOG", operation)
         }
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
-    public struct SAVE: RESPCommand {
+    public struct SAVE: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "SAVE")
         }
     }
 
     /// Creates and modifies an ACL user and its rules.
-    public struct SETUSER<Username: RESPStringRenderable>: RESPCommand {
+    public struct SETUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public var username: Username
         public var rule: [String]
 
@@ -190,29 +190,29 @@ public enum ACL {
             self.rule = rule
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "SETUSER", RESPBulkString(username), rule)
         }
     }
 
     /// Lists all ACL users.
-    public struct USERS: RESPCommand {
+    public struct USERS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "USERS")
         }
     }
 
     /// Returns the authenticated username of the current connection.
-    public struct WHOAMI: RESPCommand {
+    public struct WHOAMI: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("ACL", "WHOAMI")
         }
     }
@@ -221,19 +221,19 @@ public enum ACL {
 
 extension COMMAND {
     /// Returns a count of commands.
-    public struct COUNT: RESPCommand {
+    public struct COUNT: ValkeyCommand {
         public typealias Response = Int
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "COUNT")
         }
     }
 
     /// Returns documentary information about one, multiple or all commands.
-    public struct DOCS: RESPCommand {
+    public struct DOCS: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
         public var commandName: [String]
@@ -242,13 +242,13 @@ extension COMMAND {
             self.commandName = commandName
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "DOCS", commandName)
         }
     }
 
     /// Extracts the key names from an arbitrary command.
-    public struct GETKEYS<Command: RESPStringRenderable>: RESPCommand {
+    public struct GETKEYS<Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var command: Command
@@ -259,13 +259,13 @@ extension COMMAND {
             self.arg = arg
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "GETKEYS", RESPBulkString(command), arg)
         }
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
-    public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: RESPCommand {
+    public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var command: Command
@@ -276,25 +276,25 @@ extension COMMAND {
             self.arg = arg
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", RESPBulkString(command), arg)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "HELP")
         }
     }
 
     /// Returns information about one, multiple or all commands.
-    public struct INFO: RESPCommand {
+    public struct INFO: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var commandName: [String]
@@ -303,13 +303,13 @@ extension COMMAND {
             self.commandName = commandName
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "INFO", commandName)
         }
     }
 
     /// Returns a list of command names.
-    public struct LIST: RESPCommand {
+    public struct LIST: ValkeyCommand {
         public enum Filterby: RESPRenderable, Sendable {
             case moduleName(String)
             case category(String)
@@ -325,7 +325,7 @@ extension COMMAND {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .moduleName(let moduleName): RESPWithToken("MODULE", moduleName).encode(into: &commandEncoder)
                 case .category(let category): RESPWithToken("ACLCAT", category).encode(into: &commandEncoder)
@@ -341,7 +341,7 @@ extension COMMAND {
             self.filterby = filterby
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("COMMAND", "LIST", RESPWithToken("FILTERBY", filterby))
         }
     }
@@ -351,7 +351,7 @@ extension COMMAND {
 /// A container for server configuration commands.
 public enum CONFIG {
     /// Returns the effective values of configuration parameters.
-    public struct GET<Parameter: RESPStringRenderable>: RESPCommand {
+    public struct GET<Parameter: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
         public var parameter: [Parameter]
@@ -360,45 +360,45 @@ public enum CONFIG {
             self.parameter = parameter
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "GET", parameter.map { RESPBulkString($0) })
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "HELP")
         }
     }
 
     /// Resets the server's statistics.
-    public struct RESETSTAT: RESPCommand {
+    public struct RESETSTAT: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "RESETSTAT")
         }
     }
 
     /// Persists the effective configuration to file.
-    public struct REWRITE: RESPCommand {
+    public struct REWRITE: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "REWRITE")
         }
     }
 
     /// Sets configuration parameters in-flight.
-    public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: RESPCommand {
+    public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable {
             @usableFromInline let parameter: Parameter
             @usableFromInline let value: Value
@@ -415,7 +415,7 @@ public enum CONFIG {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 RESPBulkString(parameter).encode(into: &commandEncoder)
                 RESPBulkString(value).encode(into: &commandEncoder)
             }
@@ -426,7 +426,7 @@ public enum CONFIG {
             self.data = data
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CONFIG", "SET", data)
         }
     }
@@ -436,44 +436,44 @@ public enum CONFIG {
 /// A container for latency diagnostics commands.
 public enum LATENCY {
     /// Returns a human-readable latency analysis report.
-    public struct DOCTOR: RESPCommand {
+    public struct DOCTOR: ValkeyCommand {
         public typealias Response = String
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "DOCTOR")
         }
     }
 
     /// Returns a latency graph for an event.
-    public struct GRAPH<Event: RESPStringRenderable>: RESPCommand {
+    public struct GRAPH<Event: RESPStringRenderable>: ValkeyCommand {
         public var event: Event
 
         @inlinable public init(event: Event) {
             self.event = event
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "GRAPH", RESPBulkString(event))
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "HELP")
         }
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
-    public struct HISTOGRAM: RESPCommand {
+    public struct HISTOGRAM: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
         public var command: [String]
@@ -482,13 +482,13 @@ public enum LATENCY {
             self.command = command
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "HISTOGRAM", command)
         }
     }
 
     /// Returns timestamp-latency samples for an event.
-    public struct HISTORY<Event: RESPStringRenderable>: RESPCommand {
+    public struct HISTORY<Event: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var event: Event
@@ -497,25 +497,25 @@ public enum LATENCY {
             self.event = event
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "HISTORY", RESPBulkString(event))
         }
     }
 
     /// Returns the latest latency samples for all events.
-    public struct LATEST: RESPCommand {
+    public struct LATEST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "LATEST")
         }
     }
 
     /// Resets the latency data for one or more events.
-    public struct RESET: RESPCommand {
+    public struct RESET: ValkeyCommand {
         public typealias Response = Int
 
         public var event: [String]
@@ -524,7 +524,7 @@ public enum LATENCY {
             self.event = event
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("LATENCY", "RESET", event)
         }
     }
@@ -534,76 +534,76 @@ public enum LATENCY {
 /// A container for memory diagnostics commands.
 public enum MEMORY {
     /// Outputs a memory problems report.
-    public struct DOCTOR: RESPCommand {
+    public struct DOCTOR: ValkeyCommand {
         public typealias Response = String
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "DOCTOR")
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "HELP")
         }
     }
 
     /// Returns the allocator statistics.
-    public struct MALLOCSTATS: RESPCommand {
+    public struct MALLOCSTATS: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "MALLOC-STATS")
         }
     }
 
     /// Asks the allocator to release memory.
-    public struct PURGE: RESPCommand {
+    public struct PURGE: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "PURGE")
         }
     }
 
     /// Returns details about memory usage.
-    public struct STATS: RESPCommand {
+    public struct STATS: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "STATS")
         }
     }
 
     /// Estimates the memory usage of a key.
-    public struct USAGE: RESPCommand {
+    public struct USAGE: ValkeyCommand {
         public typealias Response = Int?
 
-        public var key: RESPKey
+        public var key: ValkeyKey
         public var count: Int?
 
-        @inlinable public init(key: RESPKey, count: Int? = nil) {
+        @inlinable public init(key: ValkeyKey, count: Int? = nil) {
             self.key = key
             self.count = count
         }
 
-        public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+        public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
         }
     }
@@ -613,31 +613,31 @@ public enum MEMORY {
 /// A container for module commands.
 public enum MODULE {
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "HELP")
         }
     }
 
     /// Returns all loaded modules.
-    public struct LIST: RESPCommand {
+    public struct LIST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "LIST")
         }
     }
 
     /// Loads a module.
-    public struct LOAD<Path: RESPStringRenderable>: RESPCommand {
+    public struct LOAD<Path: RESPStringRenderable>: ValkeyCommand {
         public var path: Path
         public var arg: [String]
 
@@ -646,13 +646,13 @@ public enum MODULE {
             self.arg = arg
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "LOAD", RESPBulkString(path), arg)
         }
     }
 
     /// Loads a module using extended parameters.
-    public struct LOADEX<Path: RESPStringRenderable>: RESPCommand {
+    public struct LOADEX<Path: RESPStringRenderable>: ValkeyCommand {
         public struct Configs: RESPRenderable, Sendable {
             @usableFromInline let name: String
             @usableFromInline let value: String
@@ -669,7 +669,7 @@ public enum MODULE {
             }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 name.encode(into: &commandEncoder)
                 value.encode(into: &commandEncoder)
             }
@@ -684,20 +684,20 @@ public enum MODULE {
             self.args = args
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
         }
     }
 
     /// Unloads a module.
-    public struct UNLOAD<Name: RESPStringRenderable>: RESPCommand {
+    public struct UNLOAD<Name: RESPStringRenderable>: ValkeyCommand {
         public var name: Name
 
         @inlinable public init(name: Name) {
             self.name = name
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MODULE", "UNLOAD", RESPBulkString(name))
         }
     }
@@ -707,7 +707,7 @@ public enum MODULE {
 /// A container for slow log commands.
 public enum SLOWLOG {
     /// Returns the slow log's entries.
-    public struct GET: RESPCommand {
+    public struct GET: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var count: Int?
@@ -716,41 +716,41 @@ public enum SLOWLOG {
             self.count = count
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SLOWLOG", "GET", count)
         }
     }
 
     /// Show helpful text about the different subcommands
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SLOWLOG", "HELP")
         }
     }
 
     /// Returns the number of entries in the slow log.
-    public struct LEN: RESPCommand {
+    public struct LEN: ValkeyCommand {
         public typealias Response = Int
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SLOWLOG", "LEN")
         }
     }
 
     /// Clears all entries from the slow log.
-    public struct RESET: RESPCommand {
+    public struct RESET: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SLOWLOG", "RESET")
         }
     }
@@ -758,17 +758,17 @@ public enum SLOWLOG {
 }
 
 /// Asynchronously rewrites the append-only file to disk.
-public struct BGREWRITEAOF: RESPCommand {
+public struct BGREWRITEAOF: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BGREWRITEAOF")
     }
 }
 
 /// Asynchronously saves the database(s) to disk.
-public struct BGSAVE: RESPCommand {
+public struct BGSAVE: ValkeyCommand {
     public typealias Response = String
 
     public var schedule: Bool
@@ -777,37 +777,37 @@ public struct BGSAVE: RESPCommand {
         self.schedule = schedule
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BGSAVE", RESPPureToken("SCHEDULE", schedule))
     }
 }
 
 /// Returns detailed information about all commands.
-public struct COMMAND: RESPCommand {
+public struct COMMAND: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("COMMAND")
     }
 }
 
 /// Returns the number of keys in the database.
-public struct DBSIZE: RESPCommand {
+public struct DBSIZE: ValkeyCommand {
     public typealias Response = Int
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("DBSIZE")
     }
 }
 
 /// Starts a coordinated failover from a server to one of its replicas.
-public struct FAILOVER: RESPCommand {
+public struct FAILOVER: ValkeyCommand {
     public struct Target: RESPRenderable, Sendable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
@@ -826,7 +826,7 @@ public struct FAILOVER: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             host.encode(into: &commandEncoder)
             port.encode(into: &commandEncoder)
             "FORCE".encode(into: &commandEncoder)
@@ -842,13 +842,13 @@ public struct FAILOVER: RESPCommand {
         self.milliseconds = milliseconds
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("FAILOVER", RESPWithToken("TO", target), RESPPureToken("ABORT", abort), RESPWithToken("TIMEOUT", milliseconds))
     }
 }
 
 /// Removes all keys from all databases.
-public struct FLUSHALL: RESPCommand {
+public struct FLUSHALL: ValkeyCommand {
     public enum FlushType: RESPRenderable, Sendable {
         case async
         case sync
@@ -857,7 +857,7 @@ public struct FLUSHALL: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .async: "ASYNC".encode(into: &commandEncoder)
             case .sync: "SYNC".encode(into: &commandEncoder)
@@ -870,13 +870,13 @@ public struct FLUSHALL: RESPCommand {
         self.flushType = flushType
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("FLUSHALL", flushType)
     }
 }
 
 /// Remove all keys from the current database.
-public struct FLUSHDB: RESPCommand {
+public struct FLUSHDB: ValkeyCommand {
     public enum FlushType: RESPRenderable, Sendable {
         case async
         case sync
@@ -885,7 +885,7 @@ public struct FLUSHDB: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .async: "ASYNC".encode(into: &commandEncoder)
             case .sync: "SYNC".encode(into: &commandEncoder)
@@ -898,38 +898,38 @@ public struct FLUSHDB: RESPCommand {
         self.flushType = flushType
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("FLUSHDB", flushType)
     }
 }
 
 /// Returns information and statistics about the server.
-public struct INFO: RESPCommand {
+public struct INFO: ValkeyCommand {
     public var section: [String]
 
     @inlinable public init(section: [String] = []) {
         self.section = section
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("INFO", section)
     }
 }
 
 /// Returns the Unix timestamp of the last successful save to disk.
-public struct LASTSAVE: RESPCommand {
+public struct LASTSAVE: ValkeyCommand {
     public typealias Response = Int
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LASTSAVE")
     }
 }
 
 /// Displays computer art and the Valkey version
-public struct LOLWUT: RESPCommand {
+public struct LOLWUT: ValkeyCommand {
     public typealias Response = String
 
     public var version: Int?
@@ -938,23 +938,23 @@ public struct LOLWUT: RESPCommand {
         self.version = version
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LOLWUT", RESPWithToken("VERSION", version))
     }
 }
 
 /// Listens for all requests received by the server in real-time.
-public struct MONITOR: RESPCommand {
+public struct MONITOR: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MONITOR")
     }
 }
 
 /// An internal command used in replication.
-public struct PSYNC<Replicationid: RESPStringRenderable>: RESPCommand {
+public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
     public var replicationid: Replicationid
     public var offset: Int
 
@@ -963,23 +963,23 @@ public struct PSYNC<Replicationid: RESPStringRenderable>: RESPCommand {
         self.offset = offset
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PSYNC", RESPBulkString(replicationid), offset)
     }
 }
 
 /// An internal command for configuring the replication stream.
-public struct REPLCONF: RESPCommand {
+public struct REPLCONF: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("REPLCONF")
     }
 }
 
 /// Configures a server as replica of another, or promotes it to a master.
-public struct REPLICAOF: RESPCommand {
+public struct REPLICAOF: ValkeyCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
@@ -996,7 +996,7 @@ public struct REPLICAOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             host.encode(into: &commandEncoder)
             port.encode(into: &commandEncoder)
         }
@@ -1017,7 +1017,7 @@ public struct REPLICAOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             "NO".encode(into: &commandEncoder)
             "ONE".encode(into: &commandEncoder)
         }
@@ -1035,7 +1035,7 @@ public struct REPLICAOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
             case .noOne(let noOne): noOne.encode(into: &commandEncoder)
@@ -1048,14 +1048,14 @@ public struct REPLICAOF: RESPCommand {
         self.args = args
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("REPLICAOF", args)
     }
 }
 
 /// An internal command for migrating keys in a cluster.
-public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: RESPCommand {
-    public var key: RESPKey
+public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: ValkeyCommand {
+    public var key: ValkeyKey
     public var ttl: Int
     public var serializedValue: SerializedValue
     public var replace: Bool
@@ -1063,7 +1063,7 @@ public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: RESPCommand 
     public var seconds: Int?
     public var frequency: Int?
 
-    @inlinable public init(key: RESPKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
+    @inlinable public init(key: ValkeyKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
         self.key = key
         self.ttl = ttl
         self.serializedValue = serializedValue
@@ -1073,37 +1073,37 @@ public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: RESPCommand 
         self.frequency = frequency
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, RESPBulkString(serializedValue), RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 }
 
 /// Returns the replication role.
-public struct ROLE: RESPCommand {
+public struct ROLE: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ROLE")
     }
 }
 
 /// Synchronously saves the database(s) to disk.
-public struct SAVE: RESPCommand {
+public struct SAVE: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SAVE")
     }
 }
 
 /// Synchronously saves the database(s) to disk and shuts down the Valkey server.
-public struct SHUTDOWN: RESPCommand {
+public struct SHUTDOWN: ValkeyCommand {
     public enum SaveSelector: RESPRenderable, Sendable {
         case nosave
         case save
@@ -1112,7 +1112,7 @@ public struct SHUTDOWN: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .nosave: "NOSAVE".encode(into: &commandEncoder)
             case .save: "SAVE".encode(into: &commandEncoder)
@@ -1131,14 +1131,14 @@ public struct SHUTDOWN: RESPCommand {
         self.abort = abort
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SHUTDOWN", saveSelector, RESPPureToken("NOW", now), RESPPureToken("FORCE", force), RESPPureToken("ABORT", abort))
     }
 }
 
 /// Sets a Valkey server as a replica of another, or promotes it to being a master.
 @available(*, deprecated, message: "Since 5.0.0. Replaced by `REPLICAOF`.")
-public struct SLAVEOF: RESPCommand {
+public struct SLAVEOF: ValkeyCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
@@ -1155,7 +1155,7 @@ public struct SLAVEOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             host.encode(into: &commandEncoder)
             port.encode(into: &commandEncoder)
         }
@@ -1176,7 +1176,7 @@ public struct SLAVEOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             "NO".encode(into: &commandEncoder)
             "ONE".encode(into: &commandEncoder)
         }
@@ -1194,7 +1194,7 @@ public struct SLAVEOF: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
             case .noOne(let noOne): noOne.encode(into: &commandEncoder)
@@ -1207,13 +1207,13 @@ public struct SLAVEOF: RESPCommand {
         self.args = args
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SLAVEOF", args)
     }
 }
 
 /// Swaps two Valkey databases.
-public struct SWAPDB: RESPCommand {
+public struct SWAPDB: ValkeyCommand {
     public var index1: Int
     public var index2: Int
 
@@ -1222,29 +1222,29 @@ public struct SWAPDB: RESPCommand {
         self.index2 = index2
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SWAPDB", index1, index2)
     }
 }
 
 /// An internal command used in replication.
-public struct SYNC: RESPCommand {
+public struct SYNC: ValkeyCommand {
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SYNC")
     }
 }
 
 /// Returns the server time.
-public struct TIME: RESPCommand {
+public struct TIME: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     @inlinable public init() {
     }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("TIME")
     }
 }
@@ -1843,7 +1843,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the memory usage in bytes.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
     @inlinable
-    public func memoryUsage(key: RESPKey, count: Int? = nil) async throws -> Int? {
+    public func memoryUsage(key: ValkeyKey, count: Int? = nil) async throws -> Int? {
         try await send(command: MEMORY.USAGE(key: key, count: count))
     }
 
@@ -1963,7 +1963,7 @@ extension ValkeyConnection {
     /// - Categories: @keyspace, @write, @slow, @dangerous
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func restoreAsking<SerializedValue: RESPStringRenderable>(key: RESPKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
+    public func restoreAsking<SerializedValue: RESPStringRenderable>(key: ValkeyKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
         _ = try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 

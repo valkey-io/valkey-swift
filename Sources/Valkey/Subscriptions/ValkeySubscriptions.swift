@@ -36,7 +36,7 @@ struct ValkeySubscriptions {
     mutating func notify(_ token: RESPToken) throws -> Bool {
         let pushToken: PushToken
         do {
-            pushToken = try PushToken(from: token)
+            pushToken = try PushToken(fromRESP: token)
         } catch {
             // push error to all subscriptions on this channel. We're about to close
             // the channel we should tell them why

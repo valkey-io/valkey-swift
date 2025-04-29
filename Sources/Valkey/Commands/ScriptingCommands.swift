@@ -25,30 +25,30 @@ import Foundation
 /// A container for function commands.
 public enum FUNCTION {
     /// Deletes a library and its functions.
-    public struct DELETE<LibraryName: RESPStringRenderable>: RESPCommand {
+    public struct DELETE<LibraryName: RESPStringRenderable>: ValkeyCommand {
         public var libraryName: LibraryName
 
         @inlinable public init(libraryName: LibraryName) {
             self.libraryName = libraryName
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "DELETE", RESPBulkString(libraryName))
         }
     }
 
     /// Dumps all libraries into a serialized binary payload.
-    public struct DUMP: RESPCommand {
+    public struct DUMP: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "DUMP")
         }
     }
 
     /// Deletes all libraries and functions.
-    public struct FLUSH: RESPCommand {
+    public struct FLUSH: ValkeyCommand {
         public enum FlushType: RESPRenderable, Sendable {
             case async
             case sync
@@ -57,7 +57,7 @@ public enum FUNCTION {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .async: "ASYNC".encode(into: &commandEncoder)
                 case .sync: "SYNC".encode(into: &commandEncoder)
@@ -70,35 +70,35 @@ public enum FUNCTION {
             self.flushType = flushType
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "FLUSH", flushType)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "HELP")
         }
     }
 
     /// Terminates a function during execution.
-    public struct KILL: RESPCommand {
+    public struct KILL: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "KILL")
         }
     }
 
     /// Returns information about all libraries.
-    public struct LIST: RESPCommand {
+    public struct LIST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var libraryNamePattern: String?
@@ -109,13 +109,13 @@ public enum FUNCTION {
             self.withcode = withcode
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "LIST", RESPWithToken("LIBRARYNAME", libraryNamePattern), RESPPureToken("WITHCODE", withcode))
         }
     }
 
     /// Creates a library.
-    public struct LOAD<FunctionCode: RESPStringRenderable>: RESPCommand {
+    public struct LOAD<FunctionCode: RESPStringRenderable>: ValkeyCommand {
         public var replace: Bool
         public var functionCode: FunctionCode
 
@@ -124,13 +124,13 @@ public enum FUNCTION {
             self.functionCode = functionCode
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "LOAD", RESPPureToken("REPLACE", replace), RESPBulkString(functionCode))
         }
     }
 
     /// Restores all libraries from a payload.
-    public struct RESTORE<SerializedValue: RESPStringRenderable>: RESPCommand {
+    public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
         public enum Policy: RESPRenderable, Sendable {
             case flush
             case append
@@ -140,7 +140,7 @@ public enum FUNCTION {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .flush: "FLUSH".encode(into: &commandEncoder)
                 case .append: "APPEND".encode(into: &commandEncoder)
@@ -156,19 +156,19 @@ public enum FUNCTION {
             self.policy = policy
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "RESTORE", RESPBulkString(serializedValue), policy)
         }
     }
 
     /// Returns information about a function during execution.
-    public struct STATS: RESPCommand {
+    public struct STATS: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("FUNCTION", "STATS")
         }
     }
@@ -178,7 +178,7 @@ public enum FUNCTION {
 /// A container for Lua scripts management commands.
 public enum SCRIPT {
     /// Sets the debug mode of server-side Lua scripts.
-    public struct DEBUG: RESPCommand {
+    public struct DEBUG: ValkeyCommand {
         public enum Mode: RESPRenderable, Sendable {
             case yes
             case sync
@@ -188,7 +188,7 @@ public enum SCRIPT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .yes: "YES".encode(into: &commandEncoder)
                 case .sync: "SYNC".encode(into: &commandEncoder)
@@ -202,13 +202,13 @@ public enum SCRIPT {
             self.mode = mode
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "DEBUG", mode)
         }
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
-    public struct EXISTS<Sha1: RESPStringRenderable>: RESPCommand {
+    public struct EXISTS<Sha1: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         public var sha1: [Sha1]
@@ -217,13 +217,13 @@ public enum SCRIPT {
             self.sha1 = sha1
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "EXISTS", sha1.map { RESPBulkString($0) })
         }
     }
 
     /// Removes all server-side Lua scripts from the script cache.
-    public struct FLUSH: RESPCommand {
+    public struct FLUSH: ValkeyCommand {
         public enum FlushType: RESPRenderable, Sendable {
             case async
             case sync
@@ -232,7 +232,7 @@ public enum SCRIPT {
             public var respEntries: Int { 1 }
 
             @inlinable
-            public func encode(into commandEncoder: inout RESPCommandEncoder) {
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .async: "ASYNC".encode(into: &commandEncoder)
                 case .sync: "SYNC".encode(into: &commandEncoder)
@@ -245,42 +245,42 @@ public enum SCRIPT {
             self.flushType = flushType
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "FLUSH", flushType)
         }
     }
 
     /// Returns helpful text about the different subcommands.
-    public struct HELP: RESPCommand {
+    public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "HELP")
         }
     }
 
     /// Terminates a server-side Lua script during execution.
-    public struct KILL: RESPCommand {
+    public struct KILL: ValkeyCommand {
         @inlinable public init() {
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "KILL")
         }
     }
 
     /// Loads a server-side Lua script to the script cache.
-    public struct LOAD<Script: RESPStringRenderable>: RESPCommand {
+    public struct LOAD<Script: RESPStringRenderable>: ValkeyCommand {
         public var script: Script
 
         @inlinable public init(script: Script) {
             self.script = script
         }
 
-        @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SCRIPT", "LOAD", RESPBulkString(script))
         }
     }
@@ -288,115 +288,115 @@ public enum SCRIPT {
 }
 
 /// Executes a server-side Lua script.
-public struct EVAL<Script: RESPStringRenderable>: RESPCommand {
+public struct EVAL<Script: RESPStringRenderable>: ValkeyCommand {
     public var script: Script
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var arg: [String]
 
-    @inlinable public init(script: Script, key: [RESPKey] = [], arg: [String] = []) {
+    @inlinable public init(script: Script, key: [ValkeyKey] = [], arg: [String] = []) {
         self.script = script
         self.key = key
         self.arg = arg
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EVAL", RESPBulkString(script), RESPArrayWithCount(key), arg)
     }
 }
 
 /// Executes a server-side Lua script by SHA1 digest.
-public struct EVALSHA<Sha1: RESPStringRenderable>: RESPCommand {
+public struct EVALSHA<Sha1: RESPStringRenderable>: ValkeyCommand {
     public var sha1: Sha1
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var arg: [String]
 
-    @inlinable public init(sha1: Sha1, key: [RESPKey] = [], arg: [String] = []) {
+    @inlinable public init(sha1: Sha1, key: [ValkeyKey] = [], arg: [String] = []) {
         self.sha1 = sha1
         self.key = key
         self.arg = arg
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EVALSHA", RESPBulkString(sha1), RESPArrayWithCount(key), arg)
     }
 }
 
 /// Executes a read-only server-side Lua script by SHA1 digest.
-public struct EVALSHARO<Sha1: RESPStringRenderable>: RESPCommand {
+public struct EVALSHARO<Sha1: RESPStringRenderable>: ValkeyCommand {
     public var sha1: Sha1
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var arg: [String]
 
-    @inlinable public init(sha1: Sha1, key: [RESPKey] = [], arg: [String] = []) {
+    @inlinable public init(sha1: Sha1, key: [ValkeyKey] = [], arg: [String] = []) {
         self.sha1 = sha1
         self.key = key
         self.arg = arg
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EVALSHA_RO", RESPBulkString(sha1), RESPArrayWithCount(key), arg)
     }
 }
 
 /// Executes a read-only server-side Lua script.
-public struct EVALRO<Script: RESPStringRenderable>: RESPCommand {
+public struct EVALRO<Script: RESPStringRenderable>: ValkeyCommand {
     public var script: Script
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var arg: [String]
 
-    @inlinable public init(script: Script, key: [RESPKey] = [], arg: [String] = []) {
+    @inlinable public init(script: Script, key: [ValkeyKey] = [], arg: [String] = []) {
         self.script = script
         self.key = key
         self.arg = arg
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EVAL_RO", RESPBulkString(script), RESPArrayWithCount(key), arg)
     }
 }
 
 /// Invokes a function.
-public struct FCALL<Function: RESPStringRenderable>: RESPCommand {
+public struct FCALL<Function: RESPStringRenderable>: ValkeyCommand {
     public var function: Function
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var arg: [String]
 
-    @inlinable public init(function: Function, key: [RESPKey] = [], arg: [String] = []) {
+    @inlinable public init(function: Function, key: [ValkeyKey] = [], arg: [String] = []) {
         self.function = function
         self.key = key
         self.arg = arg
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("FCALL", RESPBulkString(function), RESPArrayWithCount(key), arg)
     }
 }
 
 /// Invokes a read-only function.
-public struct FCALLRO<Function: RESPStringRenderable>: RESPCommand {
+public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand {
     public var function: Function
-    public var key: [RESPKey]
+    public var key: [ValkeyKey]
     public var arg: [String]
 
-    @inlinable public init(function: Function, key: [RESPKey] = [], arg: [String] = []) {
+    @inlinable public init(function: Function, key: [ValkeyKey] = [], arg: [String] = []) {
         self.function = function
         self.key = key
         self.arg = arg
     }
 
-    public var keysAffected: [RESPKey] { key }
+    public var keysAffected: [ValkeyKey] { key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("FCALL_RO", RESPBulkString(function), RESPArrayWithCount(key), arg)
     }
 }
@@ -410,7 +410,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func eval<Script: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [String] = []) async throws -> EVAL.Response {
+    public func eval<Script: RESPStringRenderable>(script: Script, key: [ValkeyKey] = [], arg: [String] = []) async throws -> EVAL.Response {
         try await send(command: EVAL(script: script, key: key, arg: arg))
     }
 
@@ -422,7 +422,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALSHA.Response {
+    public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, key: [ValkeyKey] = [], arg: [String] = []) async throws -> EVALSHA.Response {
         try await send(command: EVALSHA(sha1: sha1, key: key, arg: arg))
     }
 
@@ -434,7 +434,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALSHARO.Response {
+    public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, key: [ValkeyKey] = [], arg: [String] = []) async throws -> EVALSHARO.Response {
         try await send(command: EVALSHARO(sha1: sha1, key: key, arg: arg))
     }
 
@@ -446,7 +446,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the script that was executed.
     @inlinable
-    public func evalRo<Script: RESPStringRenderable>(script: Script, key: [RESPKey] = [], arg: [String] = []) async throws -> EVALRO.Response {
+    public func evalRo<Script: RESPStringRenderable>(script: Script, key: [ValkeyKey] = [], arg: [String] = []) async throws -> EVALRO.Response {
         try await send(command: EVALRO(script: script, key: key, arg: arg))
     }
 
@@ -458,7 +458,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcall<Function: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [String] = []) async throws -> FCALL.Response {
+    public func fcall<Function: RESPStringRenderable>(function: Function, key: [ValkeyKey] = [], arg: [String] = []) async throws -> FCALL.Response {
         try await send(command: FCALL(function: function, key: key, arg: arg))
     }
 
@@ -470,7 +470,7 @@ extension ValkeyConnection {
     /// - Categories: @slow, @scripting
     /// - Returns: The return value depends on the function that was executed.
     @inlinable
-    public func fcallRo<Function: RESPStringRenderable>(function: Function, key: [RESPKey] = [], arg: [String] = []) async throws -> FCALLRO.Response {
+    public func fcallRo<Function: RESPStringRenderable>(function: Function, key: [ValkeyKey] = [], arg: [String] = []) async throws -> FCALLRO.Response {
         try await send(command: FCALLRO(function: function, key: key, arg: arg))
     }
 

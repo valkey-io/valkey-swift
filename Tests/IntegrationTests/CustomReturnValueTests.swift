@@ -20,8 +20,8 @@ import Testing
 
 struct CustomReturnValueTests {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
-    func withKey<Value>(connection: ValkeyConnection, _ operation: (RESPKey) async throws -> Value) async throws -> Value {
-        let key = RESPKey(rawValue: UUID().uuidString)
+    func withKey<Value>(connection: ValkeyConnection, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
+        let key = ValkeyKey(rawValue: UUID().uuidString)
         let value: Value
         do {
             value = try await operation(key)

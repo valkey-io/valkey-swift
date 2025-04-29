@@ -167,7 +167,7 @@ extension ValkeyConnection {
 
     @usableFromInline
     func subscribe(
-        command: some RESPCommand,
+        command: some ValkeyCommand,
         filters: [ValkeySubscriptionFilter],
         isolation: isolated (any Actor)? = #isolation
     ) async throws -> (Int, ValkeySubscriptionSequence) {

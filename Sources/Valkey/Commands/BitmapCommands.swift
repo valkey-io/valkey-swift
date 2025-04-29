@@ -23,7 +23,7 @@ import Foundation
 #endif
 
 /// Counts the number of set bits (population counting) in a string.
-public struct BITCOUNT: RESPCommand {
+public struct BITCOUNT: ValkeyCommand {
     public enum RangeUnit: RESPRenderable, Sendable {
         case byte
         case bit
@@ -32,7 +32,7 @@ public struct BITCOUNT: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .byte: "BYTE".encode(into: &commandEncoder)
             case .bit: "BIT".encode(into: &commandEncoder)
@@ -57,7 +57,7 @@ public struct BITCOUNT: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             start.encode(into: &commandEncoder)
             end.encode(into: &commandEncoder)
             unit.encode(into: &commandEncoder)
@@ -65,23 +65,23 @@ public struct BITCOUNT: RESPCommand {
     }
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var range: Range?
 
-    @inlinable public init(key: RESPKey, range: Range? = nil) {
+    @inlinable public init(key: ValkeyKey, range: Range? = nil) {
         self.key = key
         self.range = range
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITCOUNT", key, range)
     }
 }
 
 /// Performs arbitrary bitfield integer operations on strings.
-public struct BITFIELD: RESPCommand {
+public struct BITFIELD: ValkeyCommand {
     public struct OperationGetBlock: RESPRenderable, Sendable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
@@ -98,7 +98,7 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             encoding.encode(into: &commandEncoder)
             offset.encode(into: &commandEncoder)
         }
@@ -112,7 +112,7 @@ public struct BITFIELD: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .wrap: "WRAP".encode(into: &commandEncoder)
             case .sat: "SAT".encode(into: &commandEncoder)
@@ -138,7 +138,7 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             encoding.encode(into: &commandEncoder)
             offset.encode(into: &commandEncoder)
             value.encode(into: &commandEncoder)
@@ -162,7 +162,7 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             encoding.encode(into: &commandEncoder)
             offset.encode(into: &commandEncoder)
             increment.encode(into: &commandEncoder)
@@ -181,7 +181,7 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .setBlock(let setBlock): RESPWithToken("SET", setBlock).encode(into: &commandEncoder)
             case .incrbyBlock(let incrbyBlock): RESPWithToken("INCRBY", incrbyBlock).encode(into: &commandEncoder)
@@ -204,7 +204,7 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             RESPWithToken("OVERFLOW", overflowBlock).encode(into: &commandEncoder)
             writeOperation.encode(into: &commandEncoder)
         }
@@ -222,7 +222,7 @@ public struct BITFIELD: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .getBlock(let getBlock): RESPWithToken("GET", getBlock).encode(into: &commandEncoder)
             case .write(let write): write.encode(into: &commandEncoder)
@@ -231,23 +231,23 @@ public struct BITFIELD: RESPCommand {
     }
     public typealias Response = RESPToken.Array?
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var operation: [Operation]
 
-    @inlinable public init(key: RESPKey, operation: [Operation] = []) {
+    @inlinable public init(key: ValkeyKey, operation: [Operation] = []) {
         self.key = key
         self.operation = operation
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITFIELD", key, operation)
     }
 }
 
 /// Performs arbitrary read-only bitfield integer operations on strings.
-public struct BITFIELDRO: RESPCommand {
+public struct BITFIELDRO: ValkeyCommand {
     public struct GetBlock: RESPRenderable, Sendable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
@@ -264,30 +264,30 @@ public struct BITFIELDRO: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             encoding.encode(into: &commandEncoder)
             offset.encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken.Array
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var getBlock: [GetBlock]
 
-    @inlinable public init(key: RESPKey, getBlock: [GetBlock] = []) {
+    @inlinable public init(key: ValkeyKey, getBlock: [GetBlock] = []) {
         self.key = key
         self.getBlock = getBlock
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
     }
 }
 
 /// Performs bitwise operations on multiple strings, and stores the result.
-public struct BITOP: RESPCommand {
+public struct BITOP: ValkeyCommand {
     public enum Operation: RESPRenderable, Sendable {
         case and
         case or
@@ -298,7 +298,7 @@ public struct BITOP: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .and: "AND".encode(into: &commandEncoder)
             case .or: "OR".encode(into: &commandEncoder)
@@ -310,24 +310,24 @@ public struct BITOP: RESPCommand {
     public typealias Response = Int
 
     public var operation: Operation
-    public var destkey: RESPKey
-    public var key: [RESPKey]
+    public var destkey: ValkeyKey
+    public var key: [ValkeyKey]
 
-    @inlinable public init(operation: Operation, destkey: RESPKey, key: [RESPKey]) {
+    @inlinable public init(operation: Operation, destkey: ValkeyKey, key: [ValkeyKey]) {
         self.operation = operation
         self.destkey = destkey
         self.key = key
     }
 
-    public var keysAffected: [RESPKey] { [destkey] + key }
+    public var keysAffected: [ValkeyKey] { [destkey] + key }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITOP", operation, destkey, key)
     }
 }
 
 /// Finds the first set (1) or clear (0) bit in a string.
-public struct BITPOS: RESPCommand {
+public struct BITPOS: ValkeyCommand {
     public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable {
         case byte
         case bit
@@ -336,7 +336,7 @@ public struct BITPOS: RESPCommand {
         public var respEntries: Int { 1 }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .byte: "BYTE".encode(into: &commandEncoder)
             case .bit: "BIT".encode(into: &commandEncoder)
@@ -359,7 +359,7 @@ public struct BITPOS: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             end.encode(into: &commandEncoder)
             unit.encode(into: &commandEncoder)
         }
@@ -380,66 +380,66 @@ public struct BITPOS: RESPCommand {
         }
 
         @inlinable
-        public func encode(into commandEncoder: inout RESPCommandEncoder) {
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             start.encode(into: &commandEncoder)
             endUnitBlock.encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var bit: Int
     public var range: Range?
 
-    @inlinable public init(key: RESPKey, bit: Int, range: Range? = nil) {
+    @inlinable public init(key: ValkeyKey, bit: Int, range: Range? = nil) {
         self.key = key
         self.bit = bit
         self.range = range
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITPOS", key, bit, range)
     }
 }
 
 /// Returns a bit value by offset.
-public struct GETBIT: RESPCommand {
+public struct GETBIT: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var offset: Int
 
-    @inlinable public init(key: RESPKey, offset: Int) {
+    @inlinable public init(key: ValkeyKey, offset: Int) {
         self.key = key
         self.offset = offset
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GETBIT", key, offset)
     }
 }
 
 /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
-public struct SETBIT: RESPCommand {
+public struct SETBIT: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: RESPKey
+    public var key: ValkeyKey
     public var offset: Int
     public var value: Int
 
-    @inlinable public init(key: RESPKey, offset: Int, value: Int) {
+    @inlinable public init(key: ValkeyKey, offset: Int, value: Int) {
         self.key = key
         self.offset = offset
         self.value = value
     }
 
-    public var keysAffected: CollectionOfOne<RESPKey> { .init(key) }
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
-    @inlinable public func encode(into commandEncoder: inout RESPCommandEncoder) {
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SETBIT", key, offset, value)
     }
 }
@@ -453,7 +453,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @bitmap, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of bits set to 1.
     @inlinable
-    public func bitcount(key: RESPKey, range: BITCOUNT.Range? = nil) async throws -> Int {
+    public func bitcount(key: ValkeyKey, range: BITCOUNT.Range? = nil) async throws -> Int {
         try await send(command: BITCOUNT(key: key, range: range))
     }
 
@@ -467,7 +467,7 @@ extension ValkeyConnection {
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): each entry being the corresponding result of the sub-command given at the same position.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if OVERFLOW FAIL was given and overflows or underflows are detected.
     @inlinable
-    public func bitfield(key: RESPKey, operation: [BITFIELD.Operation] = []) async throws -> RESPToken.Array? {
+    public func bitfield(key: ValkeyKey, operation: [BITFIELD.Operation] = []) async throws -> RESPToken.Array? {
         try await send(command: BITFIELD(key: key, operation: operation))
     }
 
@@ -479,7 +479,7 @@ extension ValkeyConnection {
     /// - Categories: @read, @bitmap, @fast
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): each entry being the corresponding result of the sub-command given at the same position.
     @inlinable
-    public func bitfieldRo(key: RESPKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> RESPToken.Array {
+    public func bitfieldRo(key: ValkeyKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> RESPToken.Array {
         try await send(command: BITFIELDRO(key: key, getBlock: getBlock))
     }
 
@@ -491,7 +491,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @bitmap, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
     @inlinable
-    public func bitop(operation: BITOP.Operation, destkey: RESPKey, key: [RESPKey]) async throws -> Int {
+    public func bitop(operation: BITOP.Operation, destkey: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
         try await send(command: BITOP(operation: operation, destkey: destkey, key: key))
     }
 
@@ -514,7 +514,7 @@ extension ValkeyConnection {
     ///     However, this behavior changes if you are looking for clear bits and specify a range with both _start_ and _end_.
     ///     If a clear bit isn't found in the specified range, the function returns -1 as the user specified a clear range and there are no 0 bits in that range.
     @inlinable
-    public func bitpos(key: RESPKey, bit: Int, range: BITPOS.Range? = nil) async throws -> Int {
+    public func bitpos(key: ValkeyKey, bit: Int, range: BITPOS.Range? = nil) async throws -> Int {
         try await send(command: BITPOS(key: key, bit: bit, range: range))
     }
 
@@ -528,7 +528,7 @@ extension ValkeyConnection {
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0`.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1`.
     @inlinable
-    public func getbit(key: RESPKey, offset: Int) async throws -> Int {
+    public func getbit(key: ValkeyKey, offset: Int) async throws -> Int {
         try await send(command: GETBIT(key: key, offset: offset))
     }
 
@@ -540,7 +540,7 @@ extension ValkeyConnection {
     /// - Categories: @write, @bitmap, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the original bit value stored at _offset_.
     @inlinable
-    public func setbit(key: RESPKey, offset: Int, value: Int) async throws -> Int {
+    public func setbit(key: ValkeyKey, offset: Int, value: Int) async throws -> Int {
         try await send(command: SETBIT(key: key, offset: offset, value: value))
     }
 
