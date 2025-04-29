@@ -14,8 +14,8 @@
 
 /// Sorted set entry
 public struct SortedSetEntry: RESPTokenDecodable {
-    let value: RESPToken
-    let score: Double
+    public let value: RESPToken
+    public let score: Double
 
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
@@ -52,8 +52,8 @@ extension ZMPOP {
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
     public struct OptionalResponse: RESPTokenDecodable {
-        let key: ValkeyKey
-        let values: [SortedSetEntry]
+        public let key: ValkeyKey
+        public let values: [SortedSetEntry]
 
         public init(fromRESP token: RESPToken) throws {
             switch token.value {
