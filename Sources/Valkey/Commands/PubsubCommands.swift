@@ -43,7 +43,6 @@ public enum PUBSUB {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
-
         @inlinable public init() {
         }
 
@@ -55,7 +54,6 @@ public enum PUBSUB {
     /// Returns a count of unique pattern subscriptions.
     public struct NUMPAT: ValkeyCommand {
         public typealias Response = Int
-
 
         @inlinable public init() {
         }
@@ -223,7 +221,6 @@ public struct UNSUBSCRIBE: ValkeyCommand {
         commandEncoder.encodeArray("UNSUBSCRIBE", channel)
     }
 }
-
 
 extension ValkeyConnection {
     /// Posts a message to a channel.
