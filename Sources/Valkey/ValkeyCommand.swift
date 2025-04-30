@@ -33,3 +33,23 @@ extension ValkeyCommand {
     /// Default to no keys affected
     public var keysAffected: [ValkeyKey] { [] }
 }
+
+/// Wrapper for Valkey command that returns the response as a `RESPToken`
+@usableFromInline
+struct ValkeyCommandWrapper<Command: ValkeyCommand>: ValkeyCommand {
+    @usableFromInline
+    let command: Command
+
+    @inlinable
+    init(_ command: Command) {
+        self.command = command
+    }
+
+    @usableFromInline
+    var keysAffected: [ValkeyKey] { command.keysAffected }
+
+    @inlinable
+    func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        self.command.encode(into: &commandEncoder)
+    }
+}

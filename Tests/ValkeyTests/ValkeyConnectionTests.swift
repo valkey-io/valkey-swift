@@ -159,6 +159,7 @@ struct ConnectionTests {
         try await channel.closeFuture.get()
     }
 
+    @Test
     func testPipeline() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -168,9 +169,13 @@ struct ConnectionTests {
             SET(key: "foo", value: "bar"),
             GET(key: "foo")
         )
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(String(buffer: outbound) == "*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
-        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n$3\r\nbar\r\n"))
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let set = RESPToken(.command(["SET", "foo", "bar"])).base
+        #expect(outbound.readSlice(length: set.readableBytes) == set)
+        #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
+        try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+        try await channel.writeInbound(RESPToken(.bulkString("bar")).base)
+
         #expect(try await results.1.get()?.decode(as: String.self) == "bar")
     }
 
@@ -184,9 +189,13 @@ struct ConnectionTests {
             SET(key: "foo", value: "bar"),
             GET(key: "foo")
         )
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(String(buffer: outbound) == "*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n")
-        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n!10\r\nBulkError!\r\n"))
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let set = RESPToken(.command(["SET", "foo", "bar"])).base
+        #expect(outbound.readSlice(length: set.readableBytes) == set)
+        #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
+        try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+        try await channel.writeInbound(RESPToken(.bulkError("BulkError!")).base)
+
         let results = await asyncResults
         #expect(throws: ValkeyClientError(.commandError, message: "BulkError!")) { try results.1.get() }
     }
@@ -202,11 +211,17 @@ struct ConnectionTests {
             INCR(key: "foo")
         )
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(
-            String(buffer: outbound)
-                == "*1\r\n$5\r\nMULTI\r\n*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$2\r\n10\r\n*2\r\n$4\r\nINCR\r\n$3\r\nfoo\r\n*1\r\n$4\r\nEXEC\r\n"
-        )
-        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n+QUEUED\r\n+QUEUED\r\n*2\r\n+OK\r\n:11\r\n"))
+        var buffer = ByteBuffer()
+        buffer.writeImmutableBuffer(RESPToken(.command(["MULTI"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["SET", "foo", "10"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["INCR", "foo"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["EXEC"])).base)
+        #expect(outbound == buffer)
+        try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .number(11)])).base)
+
         #expect(try await results.1.get() == 11)
     }
 
@@ -221,11 +236,16 @@ struct ConnectionTests {
             INCR(key: "foo")
         )
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(
-            String(buffer: outbound)
-                == "*1\r\n$5\r\nMULTI\r\n*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n*2\r\n$4\r\nINCR\r\n$3\r\nfoo\r\n*1\r\n$4\r\nEXEC\r\n"
-        )
-        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n+QUEUED\r\n!5\r\nERROR\r\n!9\r\nEXECABORT\r\n"))
+        var buffer = ByteBuffer()
+        buffer.writeImmutableBuffer(RESPToken(.command(["MULTI"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["SET", "foo", "bar"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["INCR", "foo"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["EXEC"])).base)
+        #expect(outbound == buffer)
+        try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.simpleError("ERROR")).base)
+        try await channel.writeInbound(RESPToken(.simpleError("EXECABORT")).base)
         do {
             _ = try await asyncResults
             Issue.record("Transaction should throw error")
@@ -245,11 +265,16 @@ struct ConnectionTests {
             INCR(key: "foo")
         )
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(
-            String(buffer: outbound)
-                == "*1\r\n$5\r\nMULTI\r\n*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\nbar\r\n*2\r\n$4\r\nINCR\r\n$3\r\nfoo\r\n*1\r\n$4\r\nEXEC\r\n"
-        )
-        try await channel.writeInbound(ByteBuffer(string: "+OK\r\n+QUEUED\r\n+QUEUED\r\n*2\r\n+OK\r\n!5\r\nerror\r\n"))
+        var buffer = ByteBuffer()
+        buffer.writeImmutableBuffer(RESPToken(.command(["MULTI"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["SET", "foo", "bar"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["INCR", "foo"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["EXEC"])).base)
+        #expect(outbound == buffer)
+        try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .bulkError("error")])).base)
         let results = try await asyncResults
         #expect(throws: ValkeyClientError(.commandError, message: "error")) { try results.1.get() }
     }

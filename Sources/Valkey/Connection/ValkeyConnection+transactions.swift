@@ -3,53 +3,41 @@
 import NIOCore
 
 extension ValkeyConnection {
-    /// Generic command used to disable conversion to a command Response type
-    @usableFromInline
-    struct TransactionCommand<Command: RESPCommand>: RESPCommand {
-        @usableFromInline
-        let command: Command
-        @usableFromInline
-        init(_ command: Command) {
-            self.command = command
-        }
-        @usableFromInline
-        func encode(into commandEncoder: inout RESPCommandEncoder) {
-            self.command.encode(into: &commandEncoder)
-        }
-    }
 
     @inlinable
-    public func transaction<C0: RESPCommand>(_ c0: C0) async throws -> (Result<C0.Response, Error>) {
-        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), EXEC()).2.get() else {
+    public func transaction<C0: ValkeyCommand>(_ c0: C0) async throws -> (Result<C0.Response, Error>) {
+        guard let responses = try await self.pipeline(MULTI(), ValkeyCommandWrapper(c0), EXEC()).2.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
         return responses.decodeElementResults()
     }
 
     @inlinable
-    public func transaction<C0: RESPCommand, C1: RESPCommand>(
+    public func transaction<C0: ValkeyCommand, C1: ValkeyCommand>(
         _ c0: C0,
         _ c1: C1
     ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>) {
-        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), TransactionCommand(c1), EXEC()).3.get() else {
+        guard let responses = try await self.pipeline(MULTI(), ValkeyCommandWrapper(c0), ValkeyCommandWrapper(c1), EXEC()).3.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
         return responses.decodeElementResults()
     }
 
     @inlinable
-    public func transaction<C0: RESPCommand, C1: RESPCommand, C2: RESPCommand>(
+    public func transaction<C0: ValkeyCommand, C1: ValkeyCommand, C2: ValkeyCommand>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2
     ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>) {
-        guard let responses = try await self.pipeline(MULTI(), TransactionCommand(c0), TransactionCommand(c1), TransactionCommand(c2), EXEC()).4.get()
+        guard
+            let responses = try await self.pipeline(MULTI(), ValkeyCommandWrapper(c0), ValkeyCommandWrapper(c1), ValkeyCommandWrapper(c2), EXEC()).4
+                .get()
         else { throw ValkeyClientError(.transactionAborted) }
         return responses.decodeElementResults()
     }
 
     @inlinable
-    public func transaction<C0: RESPCommand, C1: RESPCommand, C2: RESPCommand, C3: RESPCommand>(
+    public func transaction<C0: ValkeyCommand, C1: ValkeyCommand, C2: ValkeyCommand, C3: ValkeyCommand>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -58,10 +46,10 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                TransactionCommand(c0),
-                TransactionCommand(c1),
-                TransactionCommand(c2),
-                TransactionCommand(c3),
+                ValkeyCommandWrapper(c0),
+                ValkeyCommandWrapper(c1),
+                ValkeyCommandWrapper(c2),
+                ValkeyCommandWrapper(c3),
                 EXEC()
             ).5.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -69,7 +57,7 @@ extension ValkeyConnection {
     }
 
     @inlinable
-    public func transaction<C0: RESPCommand, C1: RESPCommand, C2: RESPCommand, C3: RESPCommand, C4: RESPCommand>(
+    public func transaction<C0: ValkeyCommand, C1: ValkeyCommand, C2: ValkeyCommand, C3: ValkeyCommand, C4: ValkeyCommand>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -81,11 +69,11 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                TransactionCommand(c0),
-                TransactionCommand(c1),
-                TransactionCommand(c2),
-                TransactionCommand(c3),
-                TransactionCommand(c4),
+                ValkeyCommandWrapper(c0),
+                ValkeyCommandWrapper(c1),
+                ValkeyCommandWrapper(c2),
+                ValkeyCommandWrapper(c3),
+                ValkeyCommandWrapper(c4),
                 EXEC()
             ).6.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -93,7 +81,7 @@ extension ValkeyConnection {
     }
 
     @inlinable
-    public func transaction<C0: RESPCommand, C1: RESPCommand, C2: RESPCommand, C3: RESPCommand, C4: RESPCommand, C5: RESPCommand>(
+    public func transaction<C0: ValkeyCommand, C1: ValkeyCommand, C2: ValkeyCommand, C3: ValkeyCommand, C4: ValkeyCommand, C5: ValkeyCommand>(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -107,12 +95,12 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                TransactionCommand(c0),
-                TransactionCommand(c1),
-                TransactionCommand(c2),
-                TransactionCommand(c3),
-                TransactionCommand(c4),
-                TransactionCommand(c5),
+                ValkeyCommandWrapper(c0),
+                ValkeyCommandWrapper(c1),
+                ValkeyCommandWrapper(c2),
+                ValkeyCommandWrapper(c3),
+                ValkeyCommandWrapper(c4),
+                ValkeyCommandWrapper(c5),
                 EXEC()
             ).7.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -120,7 +108,15 @@ extension ValkeyConnection {
     }
 
     @inlinable
-    public func transaction<C0: RESPCommand, C1: RESPCommand, C2: RESPCommand, C3: RESPCommand, C4: RESPCommand, C5: RESPCommand, C6: RESPCommand>(
+    public func transaction<
+        C0: ValkeyCommand,
+        C1: ValkeyCommand,
+        C2: ValkeyCommand,
+        C3: ValkeyCommand,
+        C4: ValkeyCommand,
+        C5: ValkeyCommand,
+        C6: ValkeyCommand
+    >(
         _ c0: C0,
         _ c1: C1,
         _ c2: C2,
@@ -135,13 +131,13 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                TransactionCommand(c0),
-                TransactionCommand(c1),
-                TransactionCommand(c2),
-                TransactionCommand(c3),
-                TransactionCommand(c4),
-                TransactionCommand(c5),
-                TransactionCommand(c6),
+                ValkeyCommandWrapper(c0),
+                ValkeyCommandWrapper(c1),
+                ValkeyCommandWrapper(c2),
+                ValkeyCommandWrapper(c3),
+                ValkeyCommandWrapper(c4),
+                ValkeyCommandWrapper(c5),
+                ValkeyCommandWrapper(c6),
                 EXEC()
             ).8.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -150,14 +146,14 @@ extension ValkeyConnection {
 
     @inlinable
     public func transaction<
-        C0: RESPCommand,
-        C1: RESPCommand,
-        C2: RESPCommand,
-        C3: RESPCommand,
-        C4: RESPCommand,
-        C5: RESPCommand,
-        C6: RESPCommand,
-        C7: RESPCommand
+        C0: ValkeyCommand,
+        C1: ValkeyCommand,
+        C2: ValkeyCommand,
+        C3: ValkeyCommand,
+        C4: ValkeyCommand,
+        C5: ValkeyCommand,
+        C6: ValkeyCommand,
+        C7: ValkeyCommand
     >(
         _ c0: C0,
         _ c1: C1,
@@ -174,14 +170,14 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                TransactionCommand(c0),
-                TransactionCommand(c1),
-                TransactionCommand(c2),
-                TransactionCommand(c3),
-                TransactionCommand(c4),
-                TransactionCommand(c5),
-                TransactionCommand(c6),
-                TransactionCommand(c7),
+                ValkeyCommandWrapper(c0),
+                ValkeyCommandWrapper(c1),
+                ValkeyCommandWrapper(c2),
+                ValkeyCommandWrapper(c3),
+                ValkeyCommandWrapper(c4),
+                ValkeyCommandWrapper(c5),
+                ValkeyCommandWrapper(c6),
+                ValkeyCommandWrapper(c7),
                 EXEC()
             ).9.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -190,15 +186,15 @@ extension ValkeyConnection {
 
     @inlinable
     public func transaction<
-        C0: RESPCommand,
-        C1: RESPCommand,
-        C2: RESPCommand,
-        C3: RESPCommand,
-        C4: RESPCommand,
-        C5: RESPCommand,
-        C6: RESPCommand,
-        C7: RESPCommand,
-        C8: RESPCommand
+        C0: ValkeyCommand,
+        C1: ValkeyCommand,
+        C2: ValkeyCommand,
+        C3: ValkeyCommand,
+        C4: ValkeyCommand,
+        C5: ValkeyCommand,
+        C6: ValkeyCommand,
+        C7: ValkeyCommand,
+        C8: ValkeyCommand
     >(
         _ c0: C0,
         _ c1: C1,
@@ -216,15 +212,15 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                TransactionCommand(c0),
-                TransactionCommand(c1),
-                TransactionCommand(c2),
-                TransactionCommand(c3),
-                TransactionCommand(c4),
-                TransactionCommand(c5),
-                TransactionCommand(c6),
-                TransactionCommand(c7),
-                TransactionCommand(c8),
+                ValkeyCommandWrapper(c0),
+                ValkeyCommandWrapper(c1),
+                ValkeyCommandWrapper(c2),
+                ValkeyCommandWrapper(c3),
+                ValkeyCommandWrapper(c4),
+                ValkeyCommandWrapper(c5),
+                ValkeyCommandWrapper(c6),
+                ValkeyCommandWrapper(c7),
+                ValkeyCommandWrapper(c8),
                 EXEC()
             ).10.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -233,16 +229,16 @@ extension ValkeyConnection {
 
     @inlinable
     public func transaction<
-        C0: RESPCommand,
-        C1: RESPCommand,
-        C2: RESPCommand,
-        C3: RESPCommand,
-        C4: RESPCommand,
-        C5: RESPCommand,
-        C6: RESPCommand,
-        C7: RESPCommand,
-        C8: RESPCommand,
-        C9: RESPCommand
+        C0: ValkeyCommand,
+        C1: ValkeyCommand,
+        C2: ValkeyCommand,
+        C3: ValkeyCommand,
+        C4: ValkeyCommand,
+        C5: ValkeyCommand,
+        C6: ValkeyCommand,
+        C7: ValkeyCommand,
+        C8: ValkeyCommand,
+        C9: ValkeyCommand
     >(
         _ c0: C0,
         _ c1: C1,
@@ -261,16 +257,16 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                TransactionCommand(c0),
-                TransactionCommand(c1),
-                TransactionCommand(c2),
-                TransactionCommand(c3),
-                TransactionCommand(c4),
-                TransactionCommand(c5),
-                TransactionCommand(c6),
-                TransactionCommand(c7),
-                TransactionCommand(c8),
-                TransactionCommand(c9),
+                ValkeyCommandWrapper(c0),
+                ValkeyCommandWrapper(c1),
+                ValkeyCommandWrapper(c2),
+                ValkeyCommandWrapper(c3),
+                ValkeyCommandWrapper(c4),
+                ValkeyCommandWrapper(c5),
+                ValkeyCommandWrapper(c6),
+                ValkeyCommandWrapper(c7),
+                ValkeyCommandWrapper(c8),
+                ValkeyCommandWrapper(c9),
                 EXEC()
             ).11.get()
         else { throw ValkeyClientError(.transactionAborted) }
