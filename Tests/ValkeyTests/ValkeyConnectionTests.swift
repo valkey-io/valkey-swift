@@ -163,7 +163,8 @@ struct ConnectionTests {
     func testPipeline() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
 
         async let results = connection.pipeline(
             SET(key: "foo", value: "bar"),
@@ -183,7 +184,8 @@ struct ConnectionTests {
     func testPipelineError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
 
         async let asyncResults = connection.pipeline(
             SET(key: "foo", value: "bar"),
@@ -204,7 +206,8 @@ struct ConnectionTests {
     func testTransaction() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
 
         async let results = connection.transaction(
             SET(key: "foo", value: "10"),
@@ -229,7 +232,8 @@ struct ConnectionTests {
     func testTransactionError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
 
         async let asyncResults = connection.transaction(
             SET(key: "foo", value: "bar"),
@@ -258,7 +262,8 @@ struct ConnectionTests {
     func testTransactionCommandError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(respVersion: .v2), logger: logger)
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
 
         async let asyncResults = connection.transaction(
             SET(key: "foo", value: "bar"),

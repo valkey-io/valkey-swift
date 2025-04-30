@@ -26,7 +26,7 @@ function genWithoutContextParameter() {
     echo ") {"
     echo -n "        guard let responses = try await self.pipeline(MULTI(), "
     for ((n = 0; n<$how_many; n +=1)); do
-        echo -n "ValkeyCommandWrapper(c$(($n))), "
+        echo -n "ValkeyRawResponseCommand(c$(($n))), "
     done
     echo "EXEC()).$(($how_many+1)).get() else { throw ValkeyClientError(.transactionAborted) }"
     echo "        return responses.decodeElementResults()"

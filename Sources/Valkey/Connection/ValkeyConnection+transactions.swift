@@ -6,7 +6,7 @@ extension ValkeyConnection {
 
     @inlinable
     public func transaction<C0: ValkeyCommand>(_ c0: C0) async throws -> (Result<C0.Response, Error>) {
-        guard let responses = try await self.pipeline(MULTI(), ValkeyCommandWrapper(c0), EXEC()).2.get() else {
+        guard let responses = try await self.pipeline(MULTI(), ValkeyRawResponseCommand(c0), EXEC()).2.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
         return responses.decodeElementResults()
@@ -17,7 +17,7 @@ extension ValkeyConnection {
         _ c0: C0,
         _ c1: C1
     ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>) {
-        guard let responses = try await self.pipeline(MULTI(), ValkeyCommandWrapper(c0), ValkeyCommandWrapper(c1), EXEC()).3.get() else {
+        guard let responses = try await self.pipeline(MULTI(), ValkeyRawResponseCommand(c0), ValkeyRawResponseCommand(c1), EXEC()).3.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
         return responses.decodeElementResults()
@@ -30,8 +30,13 @@ extension ValkeyConnection {
         _ c2: C2
     ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>) {
         guard
-            let responses = try await self.pipeline(MULTI(), ValkeyCommandWrapper(c0), ValkeyCommandWrapper(c1), ValkeyCommandWrapper(c2), EXEC()).4
-                .get()
+            let responses = try await self.pipeline(
+                MULTI(),
+                ValkeyRawResponseCommand(c0),
+                ValkeyRawResponseCommand(c1),
+                ValkeyRawResponseCommand(c2),
+                EXEC()
+            ).4.get()
         else { throw ValkeyClientError(.transactionAborted) }
         return responses.decodeElementResults()
     }
@@ -46,10 +51,10 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                ValkeyCommandWrapper(c0),
-                ValkeyCommandWrapper(c1),
-                ValkeyCommandWrapper(c2),
-                ValkeyCommandWrapper(c3),
+                ValkeyRawResponseCommand(c0),
+                ValkeyRawResponseCommand(c1),
+                ValkeyRawResponseCommand(c2),
+                ValkeyRawResponseCommand(c3),
                 EXEC()
             ).5.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -69,11 +74,11 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                ValkeyCommandWrapper(c0),
-                ValkeyCommandWrapper(c1),
-                ValkeyCommandWrapper(c2),
-                ValkeyCommandWrapper(c3),
-                ValkeyCommandWrapper(c4),
+                ValkeyRawResponseCommand(c0),
+                ValkeyRawResponseCommand(c1),
+                ValkeyRawResponseCommand(c2),
+                ValkeyRawResponseCommand(c3),
+                ValkeyRawResponseCommand(c4),
                 EXEC()
             ).6.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -95,12 +100,12 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                ValkeyCommandWrapper(c0),
-                ValkeyCommandWrapper(c1),
-                ValkeyCommandWrapper(c2),
-                ValkeyCommandWrapper(c3),
-                ValkeyCommandWrapper(c4),
-                ValkeyCommandWrapper(c5),
+                ValkeyRawResponseCommand(c0),
+                ValkeyRawResponseCommand(c1),
+                ValkeyRawResponseCommand(c2),
+                ValkeyRawResponseCommand(c3),
+                ValkeyRawResponseCommand(c4),
+                ValkeyRawResponseCommand(c5),
                 EXEC()
             ).7.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -131,13 +136,13 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                ValkeyCommandWrapper(c0),
-                ValkeyCommandWrapper(c1),
-                ValkeyCommandWrapper(c2),
-                ValkeyCommandWrapper(c3),
-                ValkeyCommandWrapper(c4),
-                ValkeyCommandWrapper(c5),
-                ValkeyCommandWrapper(c6),
+                ValkeyRawResponseCommand(c0),
+                ValkeyRawResponseCommand(c1),
+                ValkeyRawResponseCommand(c2),
+                ValkeyRawResponseCommand(c3),
+                ValkeyRawResponseCommand(c4),
+                ValkeyRawResponseCommand(c5),
+                ValkeyRawResponseCommand(c6),
                 EXEC()
             ).8.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -170,14 +175,14 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                ValkeyCommandWrapper(c0),
-                ValkeyCommandWrapper(c1),
-                ValkeyCommandWrapper(c2),
-                ValkeyCommandWrapper(c3),
-                ValkeyCommandWrapper(c4),
-                ValkeyCommandWrapper(c5),
-                ValkeyCommandWrapper(c6),
-                ValkeyCommandWrapper(c7),
+                ValkeyRawResponseCommand(c0),
+                ValkeyRawResponseCommand(c1),
+                ValkeyRawResponseCommand(c2),
+                ValkeyRawResponseCommand(c3),
+                ValkeyRawResponseCommand(c4),
+                ValkeyRawResponseCommand(c5),
+                ValkeyRawResponseCommand(c6),
+                ValkeyRawResponseCommand(c7),
                 EXEC()
             ).9.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -212,15 +217,15 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                ValkeyCommandWrapper(c0),
-                ValkeyCommandWrapper(c1),
-                ValkeyCommandWrapper(c2),
-                ValkeyCommandWrapper(c3),
-                ValkeyCommandWrapper(c4),
-                ValkeyCommandWrapper(c5),
-                ValkeyCommandWrapper(c6),
-                ValkeyCommandWrapper(c7),
-                ValkeyCommandWrapper(c8),
+                ValkeyRawResponseCommand(c0),
+                ValkeyRawResponseCommand(c1),
+                ValkeyRawResponseCommand(c2),
+                ValkeyRawResponseCommand(c3),
+                ValkeyRawResponseCommand(c4),
+                ValkeyRawResponseCommand(c5),
+                ValkeyRawResponseCommand(c6),
+                ValkeyRawResponseCommand(c7),
+                ValkeyRawResponseCommand(c8),
                 EXEC()
             ).10.get()
         else { throw ValkeyClientError(.transactionAborted) }
@@ -257,16 +262,16 @@ extension ValkeyConnection {
         guard
             let responses = try await self.pipeline(
                 MULTI(),
-                ValkeyCommandWrapper(c0),
-                ValkeyCommandWrapper(c1),
-                ValkeyCommandWrapper(c2),
-                ValkeyCommandWrapper(c3),
-                ValkeyCommandWrapper(c4),
-                ValkeyCommandWrapper(c5),
-                ValkeyCommandWrapper(c6),
-                ValkeyCommandWrapper(c7),
-                ValkeyCommandWrapper(c8),
-                ValkeyCommandWrapper(c9),
+                ValkeyRawResponseCommand(c0),
+                ValkeyRawResponseCommand(c1),
+                ValkeyRawResponseCommand(c2),
+                ValkeyRawResponseCommand(c3),
+                ValkeyRawResponseCommand(c4),
+                ValkeyRawResponseCommand(c5),
+                ValkeyRawResponseCommand(c6),
+                ValkeyRawResponseCommand(c7),
+                ValkeyRawResponseCommand(c8),
+                ValkeyRawResponseCommand(c9),
                 EXEC()
             ).11.get()
         else { throw ValkeyClientError(.transactionAborted) }

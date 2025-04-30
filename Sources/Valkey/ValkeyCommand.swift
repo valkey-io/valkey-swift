@@ -36,7 +36,7 @@ extension ValkeyCommand {
 
 /// Wrapper for Valkey command that returns the response as a `RESPToken`
 @usableFromInline
-struct ValkeyCommandWrapper<Command: ValkeyCommand>: ValkeyCommand {
+struct ValkeyRawResponseCommand<Command: ValkeyCommand>: ValkeyCommand {
     @usableFromInline
     let command: Command
 
