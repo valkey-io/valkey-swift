@@ -30,6 +30,24 @@ struct ValkeyCommand: Decodable {
         let arguments: [Argument]?
         let keySpecIndex: Int?
 
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.name = try container.decode(String.self, forKey: .name)
+            self.type = try container.decode(ArgumentType.self, forKey: .type)
+            var multiple = false
+            do {
+                multiple = try container.decodeIfPresent(Bool.self, forKey: .multiple) ?? false
+            } catch {
+                let value = try container.decodeIfPresent(String.self, forKey: .multiple)
+                multiple = value == "true"
+            }
+            self.multiple = multiple
+            self.optional = try container.decodeIfPresent(Bool.self, forKey: .optional) ?? false
+            self.token = try container.decodeIfPresent(String.self, forKey: .token)
+            self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
+            self.keySpecIndex = try container.decodeIfPresent(Int.self, forKey: .keySpecIndex)
+        }
+
         private enum CodingKeys: String, CodingKey {
             case name
             case type
@@ -56,14 +74,26 @@ struct ValkeyCommand: Decodable {
             self.optional = argument.optional ?? false
             self.token = argument.token
             self.arguments = argument.arguments
-            self.combinedWithCount = keySpec?.findKeys.type == .keynum
+            self.combinedWithCount =
+                switch keySpec?.findKeys {
+                case .keynum: true
+                case .range, .unknown: false
+                case .none: false
+                }
         }
 
         init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.name = try container.decode(String.self, forKey: .name)
             self.type = try container.decode(ArgumentType.self, forKey: .type)
-            self.multiple = try container.decodeIfPresent(Bool.self, forKey: .multiple) ?? false
+            var multiple = false
+            do {
+                multiple = try container.decodeIfPresent(Bool.self, forKey: .multiple) ?? false
+            } catch {
+                let value = try container.decodeIfPresent(String.self, forKey: .multiple)
+                multiple = value == "true"
+            }
+            self.multiple = multiple
             self.optional = try container.decodeIfPresent(Bool.self, forKey: .optional) ?? false
             self.token = try container.decodeIfPresent(String.self, forKey: .token)
             self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
@@ -80,33 +110,78 @@ struct ValkeyCommand: Decodable {
         }
     }
     struct KeySpec: Decodable {
-        struct BeginSearch: Decodable {
-            enum SearchType: String, Decodable {
+        enum BeginSearch: Decodable {
+            struct Index: Decodable {
+                let pos: Int
+            }
+            struct KeyWord: Decodable {
+                let keyword: String
+                let startFrom: Int
+
+                private enum CodingKeys: String, CodingKey {
+                    case keyword
+                    case startFrom = "startfrom"
+                }
+            }
+            case index(Index)
+            case keyword(KeyWord)
+            case unknown
+
+            init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                if let index = try container.decodeIfPresent(Index.self, forKey: .index) {
+                    self = .index(index)
+                } else if let keyword = try container.decodeIfPresent(KeyWord.self, forKey: .keyword) {
+                    self = .keyword(keyword)
+                } else if try container.decodeNil(forKey: .unknown) {
+                    self = .unknown
+                } else {
+                    throw DecodingError.dataCorrupted(
+                        .init(codingPath: decoder.codingPath, debugDescription: "Cannot fine either keyword or index in \(container.allKeys)")
+                    )
+                }
+            }
+            private enum CodingKeys: String, CodingKey {
                 case index
                 case keyword
                 case unknown
             }
-            struct Spec: Decodable {
-                let index: Int?
-                let keyword: String?
-                let startFrom: Int?
-            }
-            let type: SearchType
-            let spec: Spec
         }
-        struct FindKeys: Decodable {
-            enum FindKeysType: String, Decodable {
+        enum FindKeys: Decodable {
+            struct KeyNum: Decodable {
+                let keynumidx: Int
+                let firstkey: Int
+                let step: Int
+            }
+            struct Range: Decodable {
+                let lastkey: Int
+                let step: Int
+                let limit: Int
+            }
+            case range(Range)
+            case keynum(KeyNum)
+            case unknown
+
+            init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                if let range = try container.decodeIfPresent(Range.self, forKey: .range) {
+                    self = .range(range)
+                } else if let keyNum = try container.decodeIfPresent(KeyNum.self, forKey: .keynum) {
+                    self = .keynum(keyNum)
+                } else if try container.decodeNil(forKey: .unknown) {
+                    self = .unknown
+                } else {
+                    throw DecodingError.dataCorrupted(
+                        .init(codingPath: decoder.codingPath, debugDescription: "Cannot fine range in \(container.allKeys)")
+                    )
+                }
+            }
+
+            private enum CodingKeys: String, CodingKey {
                 case range
                 case keynum
                 case unknown
             }
-            struct Spec: Decodable {
-                let keynumidx: Int?
-                let lastkey: Int
-                let keystep: Int
-                let limit: Int
-            }
-            let type: FindKeysType
         }
         let beginSearch: BeginSearch
         let findKeys: FindKeys
@@ -122,7 +197,7 @@ struct ValkeyCommand: Decodable {
     let complexity: String?
     let deprecatedSince: String?
     let replacedBy: String?
-    let aclCategories: [String]
+    let aclCategories: [String]?
     let arguments: [Argument]?
 
     init(from decoder: any Decoder) throws {
@@ -133,7 +208,7 @@ struct ValkeyCommand: Decodable {
         self.complexity = try container.decodeIfPresent(String.self, forKey: .complexity)
         self.deprecatedSince = try container.decodeIfPresent(String.self, forKey: .deprecatedSince)
         self.replacedBy = try container.decodeIfPresent(String.self, forKey: .replacedBy)
-        self.aclCategories = try container.decode([String].self, forKey: .aclCategories)
+        self.aclCategories = try container.decodeIfPresent([String].self, forKey: .aclCategories)
         if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
             if let keySpecs = try container.decodeIfPresent([KeySpec].self, forKey: .keySpecs) {
                 // combine argument and keyspec

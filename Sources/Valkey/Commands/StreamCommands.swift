@@ -50,20 +50,20 @@ public enum XGROUP {
         public var group: Group
         public var idSelector: IdSelector
         public var mkstream: Bool
-        public var entriesRead: Int?
+        public var entriesread: Int?
 
-        @inlinable public init(key: ValkeyKey, group: Group, idSelector: IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) {
+        @inlinable public init(key: ValkeyKey, group: Group, idSelector: IdSelector, mkstream: Bool = false, entriesread: Int? = nil) {
             self.key = key
             self.group = group
             self.idSelector = idSelector
             self.mkstream = mkstream
-            self.entriesRead = entriesRead
+            self.entriesread = entriesread
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "CREATE", key, RESPBulkString(group), idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesRead))
+            commandEncoder.encodeArray("XGROUP", "CREATE", key, RESPBulkString(group), idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesread))
         }
     }
 
@@ -826,7 +826,7 @@ extension ValkeyConnection {
     /// - Documentation: [XACK](https:/valkey.io/commands/xack)
     /// - Version: 5.0.0
     /// - Complexity: O(1) for each message ID processed.
-    /// - Categories: @write, @stream, @fast
+    /// - Categories: STREAM
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
     public func xack<Group: RESPStringRenderable, Id: RESPStringRenderable>(key: ValkeyKey, group: Group, id: [Id]) async throws -> Int {
@@ -838,7 +838,7 @@ extension ValkeyConnection {
     /// - Documentation: [XADD](https:/valkey.io/commands/xadd)
     /// - Version: 5.0.0
     /// - Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
-    /// - Categories: @write, @stream, @fast
+    /// - Categories: STREAM
     /// - Returns: One of the following:
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The ID of the added entry. The ID is the one automatically generated if an asterisk (`*`) is passed as the _id_ argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the NOMKSTREAM option is given and the key doesn't exist.
@@ -852,7 +852,7 @@ extension ValkeyConnection {
     /// - Documentation: [XAUTOCLAIM](https:/valkey.io/commands/xautoclaim)
     /// - Version: 6.2.0
     /// - Complexity: O(1) if COUNT is small.
-    /// - Categories: @write, @stream, @fast
+    /// - Categories: STREAM
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays), specifically, an array with three elements:
     ///     1. A stream ID to be used as the _start_ argument for the next call to XAUTOCLAIM.
     ///     2. An [Array](https:/valkey.io/topics/protocol/#arrays) containing all the successfully claimed messages in the same format as `XRANGE`.
@@ -867,7 +867,7 @@ extension ValkeyConnection {
     /// - Documentation: [XCLAIM](https:/valkey.io/commands/xclaim)
     /// - Version: 5.0.0
     /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
-    /// - Categories: @write, @stream, @fast
+    /// - Categories: STREAM
     /// - Returns: Any of the following:
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when the _JUSTID_ option is specified, an array of IDs of messages successfully claimed.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): an array of stream entries, each of which contains an array of two elements, the entry ID and the entry data itself.
@@ -881,7 +881,7 @@ extension ValkeyConnection {
     /// - Documentation: [XDEL](https:/valkey.io/commands/xdel)
     /// - Version: 5.0.0
     /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size.
-    /// - Categories: @write, @stream, @fast
+    /// - Categories: STREAM
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of entries that were deleted.
     @inlinable
     public func xdel<Id: RESPStringRenderable>(key: ValkeyKey, id: [Id]) async throws -> Int {
@@ -893,11 +893,11 @@ extension ValkeyConnection {
     /// - Documentation: [XGROUP CREATE](https:/valkey.io/commands/xgroup-create)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
-    public func xgroupCreate<Group: RESPStringRenderable>(key: ValkeyKey, group: Group, idSelector: XGROUP.CREATE<Group>.IdSelector, mkstream: Bool = false, entriesRead: Int? = nil) async throws {
-        _ = try await send(command: XGROUP.CREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesRead: entriesRead))
+    public func xgroupCreate<Group: RESPStringRenderable>(key: ValkeyKey, group: Group, idSelector: XGROUP.CREATE<Group>.IdSelector, mkstream: Bool = false, entriesread: Int? = nil) async throws {
+        _ = try await send(command: XGROUP.CREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesread: entriesread))
     }
 
     /// Creates a consumer in a consumer group.
@@ -905,7 +905,7 @@ extension ValkeyConnection {
     /// - Documentation: [XGROUP CREATECONSUMER](https:/valkey.io/commands/xgroup-createconsumer)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of created consumers, either 0 or 1.
     @inlinable
     public func xgroupCreateconsumer<Group: RESPStringRenderable, Consumer: RESPStringRenderable>(key: ValkeyKey, group: Group, consumer: Consumer) async throws -> Int {
@@ -917,7 +917,7 @@ extension ValkeyConnection {
     /// - Documentation: [XGROUP DELCONSUMER](https:/valkey.io/commands/xgroup-delconsumer)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of pending messages the consumer had before it was deleted.
     @inlinable
     public func xgroupDelconsumer<Group: RESPStringRenderable, Consumer: RESPStringRenderable>(key: ValkeyKey, group: Group, consumer: Consumer) async throws -> Int {
@@ -929,7 +929,7 @@ extension ValkeyConnection {
     /// - Documentation: [XGROUP DESTROY](https:/valkey.io/commands/xgroup-destroy)
     /// - Version: 5.0.0
     /// - Complexity: O(N) where N is the number of entries in the group's pending entries list (PEL).
-    /// - Categories: @write, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of destroyed consumer groups, either 0 or 1.
     @inlinable
     public func xgroupDestroy<Group: RESPStringRenderable>(key: ValkeyKey, group: Group) async throws -> Int {
@@ -941,7 +941,7 @@ extension ValkeyConnection {
     /// - Documentation: [XGROUP HELP](https:/valkey.io/commands/xgroup-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func xgroupHelp() async throws -> RESPToken.Array {
@@ -953,7 +953,7 @@ extension ValkeyConnection {
     /// - Documentation: [XGROUP SETID](https:/valkey.io/commands/xgroup-setid)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func xgroupSetid<Group: RESPStringRenderable>(key: ValkeyKey, group: Group, idSelector: XGROUP.SETID<Group>.IdSelector, entriesread: Int? = nil) async throws {
@@ -965,7 +965,7 @@ extension ValkeyConnection {
     /// - Documentation: [XINFO CONSUMERS](https:/valkey.io/commands/xinfo-consumers)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of consumers and their attributes.
     @inlinable
     public func xinfoConsumers<Group: RESPStringRenderable>(key: ValkeyKey, group: Group) async throws -> RESPToken.Array {
@@ -977,7 +977,7 @@ extension ValkeyConnection {
     /// - Documentation: [XINFO GROUPS](https:/valkey.io/commands/xinfo-groups)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of consumer groups.
     @inlinable
     public func xinfoGroups(key: ValkeyKey) async throws -> RESPToken.Array {
@@ -989,7 +989,7 @@ extension ValkeyConnection {
     /// - Documentation: [XINFO HELP](https:/valkey.io/commands/xinfo-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func xinfoHelp() async throws -> RESPToken.Array {
@@ -1001,7 +1001,7 @@ extension ValkeyConnection {
     /// - Documentation: [XINFO STREAM](https:/valkey.io/commands/xinfo-stream)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: One of the following:
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): when the _FULL_ argument was not given, a list of information about a stream in summary form.
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): when the _FULL_ argument was given, a list of information about a stream in extended form.
@@ -1015,7 +1015,7 @@ extension ValkeyConnection {
     /// - Documentation: [XLEN](https:/valkey.io/commands/xlen)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @stream, @fast
+    /// - Categories: STREAM
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of entries of the stream at _key_.
     @inlinable
     public func xlen(key: ValkeyKey) async throws -> Int {
@@ -1027,7 +1027,7 @@ extension ValkeyConnection {
     /// - Documentation: [XPENDING](https:/valkey.io/commands/xpending)
     /// - Version: 5.0.0
     /// - Complexity: O(N) with N being the number of elements returned, so asking for a small fixed number of entries per call is O(1). O(M), where M is the total number of entries scanned when used with the IDLE filter. When the command returns just the summary and the list of consumers is small, it runs in O(1) time; otherwise, an additional O(N) time for iterating every consumer.
-    /// - Categories: @read, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): different data depending on the way XPENDING is called, as explained on this page.
     @inlinable
     public func xpending<Group: RESPStringRenderable>(key: ValkeyKey, group: Group, filters: XPENDING<Group>.Filters? = nil) async throws -> RESPToken.Array {
@@ -1039,7 +1039,7 @@ extension ValkeyConnection {
     /// - Documentation: [XRANGE](https:/valkey.io/commands/xrange)
     /// - Version: 5.0.0
     /// - Complexity: O(N) with N being the number of elements being returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
-    /// - Categories: @read, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of stream entries with IDs matching the specified range.
     @inlinable
     public func xrange<Start: RESPStringRenderable, End: RESPStringRenderable>(key: ValkeyKey, start: Start, end: End, count: Int? = nil) async throws -> RESPToken.Array {
@@ -1050,7 +1050,7 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [XREAD](https:/valkey.io/commands/xread)
     /// - Version: 5.0.0
-    /// - Categories: @read, @stream, @slow, @blocking
+    /// - Categories: STREAM
     /// - Returns: One of the following:
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
@@ -1064,7 +1064,7 @@ extension ValkeyConnection {
     /// - Documentation: [XREADGROUP](https:/valkey.io/commands/xreadgroup)
     /// - Version: 5.0.0
     /// - Complexity: For each stream mentioned: O(M) with M being the number of elements returned. If M is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1). On the other side when XREADGROUP blocks, XADD will pay the O(N) time in order to serve the N clients blocked on the stream getting new data.
-    /// - Categories: @write, @stream, @slow, @blocking
+    /// - Categories: STREAM
     /// - Returns: One of the following:
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): A map of key-value elements where each element is composed of the key name and the entries reported for that key. The entries reported are full stream entries, having IDs and the list of all the fields and values. Field and values are guaranteed to be reported in the same order they were added by `XADD`.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the _BLOCK_ option is given and a timeout occurs, or if there is no stream that can be served.
@@ -1078,7 +1078,7 @@ extension ValkeyConnection {
     /// - Documentation: [XREVRANGE](https:/valkey.io/commands/xrevrange)
     /// - Version: 5.0.0
     /// - Complexity: O(N) with N being the number of elements returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
-    /// - Categories: @read, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): The command returns the entries with IDs matching the specified range. The returned entries are complete, which means that the ID and all the fields they are composed of are returned. Moreover, the entries are returned with their fields and values in the same order as `XADD` added them.
     @inlinable
     public func xrevrange<End: RESPStringRenderable, Start: RESPStringRenderable>(key: ValkeyKey, end: End, start: Start, count: Int? = nil) async throws -> RESPToken.Array {
@@ -1090,7 +1090,7 @@ extension ValkeyConnection {
     /// - Documentation: [XSETID](https:/valkey.io/commands/xsetid)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @stream, @fast
+    /// - Categories: STREAM
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func xsetid<LastId: RESPStringRenderable>(key: ValkeyKey, lastId: LastId, entriesAdded: Int? = nil, maxDeletedId: String? = nil) async throws {
@@ -1102,7 +1102,7 @@ extension ValkeyConnection {
     /// - Documentation: [XTRIM](https:/valkey.io/commands/xtrim)
     /// - Version: 5.0.0
     /// - Complexity: O(N), with N being the number of evicted entries. Constant times are very small however, since entries are organized in macro nodes containing multiple entries that can be released with a single deallocation.
-    /// - Categories: @write, @stream, @slow
+    /// - Categories: STREAM
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): The number of entries deleted from the stream.
     @inlinable
     public func xtrim<Threshold: RESPStringRenderable>(key: ValkeyKey, trim: XTRIM<Threshold>.Trim) async throws -> Int {

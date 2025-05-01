@@ -39,6 +39,10 @@ extension StringProtocol {
             .uppercased()
     }
 
+    var escaped: String {
+        self.replacingOccurrences(of: "\"", with: "\\\"")
+    }
+
     func camelCased(capitalize: Bool) -> String {
         let items = self.split(separator: "_")
         let firstWord = items.first!

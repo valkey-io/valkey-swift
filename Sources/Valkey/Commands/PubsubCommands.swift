@@ -228,7 +228,6 @@ extension ValkeyConnection {
     /// - Documentation: [PUBLISH](https:/valkey.io/commands/publish)
     /// - Version: 2.0.0
     /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
-    /// - Categories: @pubsub, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of clients that received the message. Note that in a Valkey Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     public func publish<Channel: RESPStringRenderable, Message: RESPStringRenderable>(channel: Channel, message: Message) async throws -> Int {
@@ -240,7 +239,6 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB CHANNELS](https:/valkey.io/commands/pubsub-channels)
     /// - Version: 2.8.0
     /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
-    /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubChannels(pattern: String? = nil) async throws -> RESPToken.Array {
@@ -252,7 +250,6 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB HELP](https:/valkey.io/commands/pubsub-help)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
     @inlinable
     public func pubsubHelp() async throws -> RESPToken.Array {
@@ -264,7 +261,6 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB NUMPAT](https:/valkey.io/commands/pubsub-numpat)
     /// - Version: 2.8.0
     /// - Complexity: O(1)
-    /// - Categories: @pubsub, @slow
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of patterns all the clients are subscribed to.
     @inlinable
     public func pubsubNumpat() async throws -> Int {
@@ -276,7 +272,6 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB NUMSUB](https:/valkey.io/commands/pubsub-numsub)
     /// - Version: 2.8.0
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
-    /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
     @inlinable
     public func pubsubNumsub(channel: [String] = []) async throws -> RESPToken.Array {
@@ -288,7 +283,6 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB SHARDCHANNELS](https:/valkey.io/commands/pubsub-shardchannels)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
-    /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubShardchannels(pattern: String? = nil) async throws -> RESPToken.Array {
@@ -300,7 +294,6 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB SHARDNUMSUB](https:/valkey.io/commands/pubsub-shardnumsub)
     /// - Version: 7.0.0
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
-    /// - Categories: @pubsub, @slow
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     public func pubsubShardnumsub(shardchannel: [String] = []) async throws -> RESPToken.Array {
@@ -312,7 +305,6 @@ extension ValkeyConnection {
     /// - Documentation: [SPUBLISH](https:/valkey.io/commands/spublish)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
-    /// - Categories: @pubsub, @fast
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of clients that received the message. Note that in a Valkey Cluster, only clients that are connected to the same node as the publishing client are included in the count
     @inlinable
     public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(shardchannel: Shardchannel, message: Message) async throws -> Int {

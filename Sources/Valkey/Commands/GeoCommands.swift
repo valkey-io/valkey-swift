@@ -98,10 +98,10 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -179,10 +179,10 @@ public struct GEORADIUS: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -290,10 +290,10 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -399,10 +399,10 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -486,10 +486,10 @@ public struct GEORADIUSRO: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -615,10 +615,10 @@ public struct GEOSEARCH: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -655,10 +655,10 @@ public struct GEOSEARCH: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -824,10 +824,10 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -864,10 +864,10 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
-            case .m: "M".encode(into: &commandEncoder)
-            case .km: "KM".encode(into: &commandEncoder)
-            case .ft: "FT".encode(into: &commandEncoder)
-            case .mi: "MI".encode(into: &commandEncoder)
+            case .m: "m".encode(into: &commandEncoder)
+            case .km: "km".encode(into: &commandEncoder)
+            case .ft: "ft".encode(into: &commandEncoder)
+            case .mi: "mi".encode(into: &commandEncoder)
             }
         }
     }
@@ -984,7 +984,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOADD](https:/valkey.io/commands/geoadd)
     /// - Version: 3.2.0
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
-    /// - Categories: @write, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
     public func geoadd<Member: RESPStringRenderable>(key: ValkeyKey, condition: GEOADD<Member>.Condition? = nil, change: Bool = false, data: [GEOADD<Member>.Data]) async throws -> Int {
@@ -996,7 +996,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEODIST](https:/valkey.io/commands/geodist)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: One of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): one or both of the elements are missing.
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): distance as a double (represented as a string) in the specified units.
@@ -1010,7 +1010,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOHASH](https:/valkey.io/commands/geohash)
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each member requested.
-    /// - Categories: @read, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is the Geohash corresponding to each member name passed as an argument to the command.
     @inlinable
     public func geohash(key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
@@ -1022,7 +1022,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOPOS](https:/valkey.io/commands/geopos)
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each member requested.
-    /// - Categories: @read, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/valkey.io/topics/protocol/#nulls) elements of the array.
     @inlinable
     public func geopos(key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
@@ -1034,7 +1034,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEORADIUS](https:/valkey.io/commands/georadius)
     /// - Version: 3.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Categories: @write, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: One of the following:
     ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
     ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
@@ -1056,7 +1056,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEORADIUSBYMEMBER](https:/valkey.io/commands/georadiusbymember)
     /// - Version: 3.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Categories: @write, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: One of the following:
     ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
     ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
@@ -1074,7 +1074,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEORADIUSBYMEMBER_RO](https:/valkey.io/commands/georadiusbymember_ro)
     /// - Version: 3.2.10
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Categories: @read, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: One of the following:
     ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
     ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
@@ -1092,7 +1092,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEORADIUS_RO](https:/valkey.io/commands/georadius_ro)
     /// - Version: 3.2.10
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Categories: @read, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: One of the following:
     ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
     ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
@@ -1110,7 +1110,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOSEARCH](https:/valkey.io/commands/geosearch)
     /// - Version: 6.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
-    /// - Categories: @read, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: One of the following:
     ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
     ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
@@ -1127,7 +1127,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOSEARCHSTORE](https:/valkey.io/commands/geosearchstore)
     /// - Version: 6.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
-    /// - Categories: @write, @geo, @slow
+    /// - Categories: GEO
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting set
     @inlinable
     public func geosearchstore(destination: ValkeyKey, source: ValkeyKey, from: GEOSEARCHSTORE.From, by: GEOSEARCHSTORE.By, order: GEOSEARCHSTORE.Order? = nil, countBlock: GEOSEARCHSTORE.CountBlock? = nil, storedist: Bool = false) async throws -> Int {

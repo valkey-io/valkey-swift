@@ -85,7 +85,7 @@ extension ValkeyConnection {
     /// - Documentation: [DISCARD](https:/valkey.io/commands/discard)
     /// - Version: 2.0.0
     /// - Complexity: O(N), when N is the number of queued commands
-    /// - Categories: @fast, @transaction
+    /// - Categories: TRANSACTION
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func discard() async throws {
@@ -97,7 +97,7 @@ extension ValkeyConnection {
     /// - Documentation: [EXEC](https:/valkey.io/commands/exec)
     /// - Version: 1.2.0
     /// - Complexity: Depends on commands in the transaction
-    /// - Categories: @slow, @transaction
+    /// - Categories: TRANSACTION
     /// - Returns: One of the following:
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): each element being the reply to each of the commands in the atomic transaction.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the transaction was aborted because a `WATCH`ed key was touched.
@@ -111,7 +111,7 @@ extension ValkeyConnection {
     /// - Documentation: [MULTI](https:/valkey.io/commands/multi)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @transaction
+    /// - Categories: TRANSACTION
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func multi() async throws {
@@ -123,7 +123,7 @@ extension ValkeyConnection {
     /// - Documentation: [UNWATCH](https:/valkey.io/commands/unwatch)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @transaction
+    /// - Categories: TRANSACTION
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func unwatch() async throws {
@@ -135,7 +135,7 @@ extension ValkeyConnection {
     /// - Documentation: [WATCH](https:/valkey.io/commands/watch)
     /// - Version: 2.2.0
     /// - Complexity: O(1) for every key.
-    /// - Categories: @fast, @transaction
+    /// - Categories: TRANSACTION
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func watch(key: [ValkeyKey]) async throws {

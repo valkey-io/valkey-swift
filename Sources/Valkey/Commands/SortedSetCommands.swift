@@ -994,18 +994,20 @@ public struct ZSCAN: ValkeyCommand {
     public var cursor: Int
     public var pattern: String?
     public var count: Int?
+    public var noscores: Bool
 
-    @inlinable public init(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
+    @inlinable public init(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, noscores: Bool = false) {
         self.key = key
         self.cursor = cursor
         self.pattern = pattern
         self.count = count
+        self.noscores = noscores
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPPureToken("NOSCORES", noscores))
     }
 }
 
@@ -1114,7 +1116,7 @@ extension ValkeyConnection {
     /// - Documentation: [BZMPOP](https:/valkey.io/commands/bzmpop)
     /// - Version: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
-    /// - Categories: @write, @sortedset, @slow, @blocking
+    /// - Categories: SORTEDSET
     /// - Returns: One of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
@@ -1128,7 +1130,7 @@ extension ValkeyConnection {
     /// - Documentation: [BZPOPMAX](https:/valkey.io/commands/bzpopmax)
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
-    /// - Categories: @write, @sortedset, @fast, @blocking
+    /// - Categories: SORTEDSET
     /// - Returns: One of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the keyname, popped member, and its score.
@@ -1142,7 +1144,7 @@ extension ValkeyConnection {
     /// - Documentation: [BZPOPMIN](https:/valkey.io/commands/bzpopmin)
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
-    /// - Categories: @write, @sortedset, @fast, @blocking
+    /// - Categories: SORTEDSET
     /// - Returns: One of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ expired.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the keyname, popped member, and its score.
@@ -1156,7 +1158,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZADD](https:/valkey.io/commands/zadd)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
-    /// - Categories: @write, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: Any of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the operation was aborted because of a conflict with one of the _XX/NX/LT/GT_ options.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the number of new members when the _CH_ option is not used.
@@ -1172,7 +1174,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZCARD](https:/valkey.io/commands/zcard)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the cardinality (number of members) of the sorted set, or 0 if the key doesn't exist.
     @inlinable
     public func zcard(key: ValkeyKey) async throws -> Int {
@@ -1184,7 +1186,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZCOUNT](https:/valkey.io/commands/zcount)
     /// - Version: 2.0.0
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
-    /// - Categories: @read, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the specified score range.
     @inlinable
     public func zcount(key: ValkeyKey, min: Double, max: Double) async throws -> Int {
@@ -1196,7 +1198,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZDIFF](https:/valkey.io/commands/zdiff)
     /// - Version: 6.2.0
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): the result of the difference including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
     public func zdiff(key: [ValkeyKey], withscores: Bool = false) async throws -> RESPToken.Array {
@@ -1208,7 +1210,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZDIFFSTORE](https:/valkey.io/commands/zdiffstore)
     /// - Version: 6.2.0
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
-    /// - Categories: @write, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the resulting sorted set at _destination_.
     @inlinable
     public func zdiffstore(destination: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
@@ -1220,7 +1222,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZINCRBY](https:/valkey.io/commands/zincrby)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)) where N is the number of elements in the sorted set.
-    /// - Categories: @write, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: [Double](https:/valkey.io/topics/protocol/#doubles): the new score of _member_.
     @inlinable
     public func zincrby<Member: RESPStringRenderable>(key: ValkeyKey, increment: Int, member: Member) async throws -> Double {
@@ -1232,7 +1234,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZINTER](https:/valkey.io/commands/zinter)
     /// - Version: 6.2.0
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): the result of the intersection including, optionally, scores when the _WITHSCORES_ option is used.
     @inlinable
     public func zinter(key: [ValkeyKey], weight: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
@@ -1244,7 +1246,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZINTERCARD](https:/valkey.io/commands/zintercard)
     /// - Version: 7.0.0
     /// - Complexity: O(N*K) worst case with N being the smallest input sorted set, K being the number of input sorted sets.
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the resulting intersection.
     @inlinable
     public func zintercard(key: [ValkeyKey], limit: Int? = nil) async throws -> Int {
@@ -1256,7 +1258,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZINTERSTORE](https:/valkey.io/commands/zinterstore)
     /// - Version: 2.0.0
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
-    /// - Categories: @write, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the resulting sorted set at the _destination_.
     @inlinable
     public func zinterstore(destination: ValkeyKey, key: [ValkeyKey], weight: [Int] = [], aggregate: ZINTERSTORE.Aggregate? = nil) async throws -> Int {
@@ -1268,7 +1270,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZLEXCOUNT](https:/valkey.io/commands/zlexcount)
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
-    /// - Categories: @read, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members in the specified score range.
     @inlinable
     public func zlexcount<Min: RESPStringRenderable, Max: RESPStringRenderable>(key: ValkeyKey, min: Min, max: Max) async throws -> Int {
@@ -1280,7 +1282,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZMPOP](https:/valkey.io/commands/zmpop)
     /// - Version: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
-    /// - Categories: @write, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: One of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
@@ -1294,7 +1296,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZMSCORE](https:/valkey.io/commands/zmscore)
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of members being requested.
-    /// - Categories: @read, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: One of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the member does not exist in the sorted set.
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list of [Double](https:/valkey.io/topics/protocol/#doubles) _member_ scores as double-precision floating point numbers.
@@ -1308,7 +1310,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZPOPMAX](https:/valkey.io/commands/zpopmax)
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
-    /// - Categories: @write, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of popped elements and scores.
     @inlinable
     public func zpopmax(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken.Array {
@@ -1320,7 +1322,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZPOPMIN](https:/valkey.io/commands/zpopmin)
     /// - Version: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
-    /// - Categories: @write, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of popped elements and scores.
     @inlinable
     public func zpopmin(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken.Array {
@@ -1332,7 +1334,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZRANDMEMBER](https:/valkey.io/commands/zrandmember)
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of members returned
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): without the additional _count_ argument, the command returns a randomly selected member, or [Null](https:/valkey.io/topics/protocol/#nulls) when _key_ doesn't exist.
     ///     [Array](https:/valkey.io/topics/protocol/#arrays): when the additional _count_ argument is passed, the command returns an array of members, or an empty array when _key_ doesn't exist. If the _WITHSCORES_ modifier is used, the reply is a list of members and their scores from the sorted set.
     @inlinable
@@ -1345,7 +1347,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZRANGE](https:/valkey.io/commands/zrange)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of members in the specified range with, optionally, their scores when the _WITHSCORES_ option is given.
     @inlinable
     public func zrange<Start: RESPStringRenderable, Stop: RESPStringRenderable>(key: ValkeyKey, start: Start, stop: Stop, sortby: ZRANGE<Start, Stop>.Sortby? = nil, rev: Bool = false, limit: ZRANGE<Start, Stop>.Limit? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
@@ -1357,7 +1359,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZRANGEBYLEX](https:/valkey.io/commands/zrangebylex)
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of elements in the specified score range.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.")
@@ -1370,7 +1372,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZRANGEBYSCORE](https:/valkey.io/commands/zrangebyscore)
     /// - Version: 1.0.5
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members with, optionally, their scores in the specified score range.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.")
@@ -1383,7 +1385,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZRANGESTORE](https:/valkey.io/commands/zrangestore)
     /// - Version: 6.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements stored into the destination key.
-    /// - Categories: @write, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting sorted set.
     @inlinable
     public func zrangestore<Min: RESPStringRenderable, Max: RESPStringRenderable>(dst: ValkeyKey, src: ValkeyKey, min: Min, max: Max, sortby: ZRANGESTORE<Min, Max>.Sortby? = nil, rev: Bool = false, limit: ZRANGESTORE<Min, Max>.Limit? = nil) async throws -> Int {
@@ -1395,7 +1397,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZRANK](https:/valkey.io/commands/zrank)
     /// - Version: 2.0.0
     /// - Complexity: O(log(N))
-    /// - Categories: @read, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: One of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist or the member does not exist in the sorted set.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the rank of the member when _WITHSCORE_ is not used.
@@ -1410,7 +1412,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZREM](https:/valkey.io/commands/zrem)
     /// - Version: 1.2.0
     /// - Complexity: O(M*log(N)) with N being the number of elements in the sorted set and M the number of elements to be removed.
-    /// - Categories: @write, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members removed from the sorted set, not including non-existing members.
     @inlinable
     public func zrem<Member: RESPStringRenderable>(key: ValkeyKey, member: [Member]) async throws -> Int {
@@ -1422,7 +1424,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZREMRANGEBYLEX](https:/valkey.io/commands/zremrangebylex)
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
-    /// - Categories: @write, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members removed.
     @inlinable
     public func zremrangebylex<Min: RESPStringRenderable, Max: RESPStringRenderable>(key: ValkeyKey, min: Min, max: Max) async throws -> Int {
@@ -1434,7 +1436,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZREMRANGEBYRANK](https:/valkey.io/commands/zremrangebyrank)
     /// - Version: 2.0.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
-    /// - Categories: @write, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members removed.
     @inlinable
     public func zremrangebyrank(key: ValkeyKey, start: Int, stop: Int) async throws -> Int {
@@ -1446,7 +1448,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZREMRANGEBYSCORE](https:/valkey.io/commands/zremrangebyscore)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
-    /// - Categories: @write, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of members removed.
     @inlinable
     public func zremrangebyscore(key: ValkeyKey, min: Double, max: Double) async throws -> Int {
@@ -1458,7 +1460,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZREVRANGE](https:/valkey.io/commands/zrevrange)
     /// - Version: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members in the specified range, optionally with their scores if _WITHSCORE_ was used.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
@@ -1471,7 +1473,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZREVRANGEBYLEX](https:/valkey.io/commands/zrevrangebylex)
     /// - Version: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members in the specified score range.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.")
@@ -1484,7 +1486,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZREVRANGEBYSCORE](https:/valkey.io/commands/zrevrangebyscore)
     /// - Version: 2.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of the members and, optionally, their scores in the specified score range.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.")
@@ -1497,7 +1499,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZREVRANK](https:/valkey.io/commands/zrevrank)
     /// - Version: 2.0.0
     /// - Complexity: O(log(N))
-    /// - Categories: @read, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: One of the following:
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist or the member does not exist in the sorted set.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): The rank of the member when _WITHSCORE_ is not used.
@@ -1512,13 +1514,13 @@ extension ValkeyConnection {
     /// - Documentation: [ZSCAN](https:/valkey.io/commands/zscan)
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array.
     ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
     ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) of member/score pairs that were scanned. When `NOSCORES` option is on, a list of members from the sorted set.
     @inlinable
-    public func zscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
-        try await send(command: ZSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
+    public func zscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, noscores: Bool = false) async throws -> RESPToken.Array {
+        try await send(command: ZSCAN(key: key, cursor: cursor, pattern: pattern, count: count, noscores: noscores))
     }
 
     /// Returns the score of a member in a sorted set.
@@ -1526,7 +1528,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZSCORE](https:/valkey.io/commands/zscore)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @sortedset, @fast
+    /// - Categories: SORTEDSET
     /// - Returns: One of the following:
     ///     * [Double](https:/valkey.io/topics/protocol/#doubles): the score of the member (a double-precision floating point number).
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if _member_ does not exist in the sorted set, or the key does not exist.
@@ -1540,7 +1542,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZUNION](https:/valkey.io/commands/zunion)
     /// - Version: 6.2.0
     /// - Complexity: O(N)+O(M*log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
-    /// - Categories: @read, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the result of the union with, optionally, their scores when _WITHSCORES_ is used.
     @inlinable
     public func zunion(key: [ValkeyKey], weight: [Int] = [], aggregate: ZUNION.Aggregate? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
@@ -1552,7 +1554,7 @@ extension ValkeyConnection {
     /// - Documentation: [ZUNIONSTORE](https:/valkey.io/commands/zunionstore)
     /// - Version: 2.0.0
     /// - Complexity: O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
-    /// - Categories: @write, @sortedset, @slow
+    /// - Categories: SORTEDSET
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting sorted set.
     @inlinable
     public func zunionstore(destination: ValkeyKey, key: [ValkeyKey], weight: [Int] = [], aggregate: ZUNIONSTORE.Aggregate? = nil) async throws -> Int {

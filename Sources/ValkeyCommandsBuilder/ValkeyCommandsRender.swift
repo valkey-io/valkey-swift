@@ -26,7 +26,10 @@ extension String {
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
         }
-        self.append("    /// - Categories: \(command.aclCategories.joined(separator: ", "))\n")
+        // don't output ACL categories as they arent correct
+        if let aclCategories = command.aclCategories {
+            self.append("    /// - Categories: \(aclCategories.joined(separator: ", "))\n")
+        }
         var reply = reply
         let firstReply = reply.removeFirst()
         self.append("    /// - Returns: \(firstReply.cleanupReplyComment)\n")
@@ -71,7 +74,7 @@ extension String {
             for arg in arguments {
                 if case .pureToken = arg.type {
                     self.append(
-                        "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!)\".respEntries\n"
+                        "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!.escaped)\".respEntries\n"
                     )
                 } else {
                     self.append(
@@ -88,7 +91,7 @@ extension String {
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append(
-                    "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!)\".encode(into: &commandEncoder)\n"
+                    "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!.escaped)\".encode(into: &commandEncoder)\n"
                 )
             } else {
                 self.append(

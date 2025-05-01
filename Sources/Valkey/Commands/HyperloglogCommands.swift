@@ -91,7 +91,7 @@ extension ValkeyConnection {
     /// - Documentation: [PFADD](https:/valkey.io/commands/pfadd)
     /// - Version: 2.8.9
     /// - Complexity: O(1) to add every element.
-    /// - Categories: @write, @hyperloglog, @fast
+    /// - Categories: HYPERLOGLOG
     /// - Returns: One of the following:
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if at least one HyperLogLog internal register was altered.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if no HyperLogLog internal registers were altered.
@@ -105,7 +105,7 @@ extension ValkeyConnection {
     /// - Documentation: [PFCOUNT](https:/valkey.io/commands/pfcount)
     /// - Version: 2.8.9
     /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
-    /// - Categories: @read, @hyperloglog, @slow
+    /// - Categories: HYPERLOGLOG
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the approximated number of unique elements observed via `PFADD`.
     @inlinable
     public func pfcount(key: [ValkeyKey]) async throws -> Int {
@@ -117,7 +117,7 @@ extension ValkeyConnection {
     /// - Documentation: [PFMERGE](https:/valkey.io/commands/pfmerge)
     /// - Version: 2.8.9
     /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
-    /// - Categories: @write, @hyperloglog, @slow
+    /// - Categories: HYPERLOGLOG
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func pfmerge(destkey: ValkeyKey, sourcekey: [ValkeyKey] = []) async throws {
@@ -129,7 +129,7 @@ extension ValkeyConnection {
     /// - Documentation: [PFSELFTEST](https:/valkey.io/commands/pfselftest)
     /// - Version: 2.8.9
     /// - Complexity: N/A
-    /// - Categories: @hyperloglog, @admin, @slow, @dangerous
+    /// - Categories: HYPERLOGLOG
     /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func pfselftest() async throws {

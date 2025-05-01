@@ -24,7 +24,7 @@ import Foundation
 
 /// Counts the number of set bits (population counting) in a string.
 public struct BITCOUNT: ValkeyCommand {
-    public enum RangeUnit: RESPRenderable, Sendable {
+    public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable {
         case byte
         case bit
 
@@ -39,28 +39,46 @@ public struct BITCOUNT: ValkeyCommand {
             }
         }
     }
-    public struct Range: RESPRenderable, Sendable {
-        @usableFromInline let start: Int
+    public struct RangeEndUnitBlock: RESPRenderable, Sendable {
         @usableFromInline let end: Int
-        @usableFromInline let unit: RangeUnit?
+        @usableFromInline let unit: RangeEndUnitBlockUnit?
 
 
-        @inlinable public init(start: Int, end: Int, unit: RangeUnit? = nil) {
-            self.start = start
+        @inlinable public init(end: Int, unit: RangeEndUnitBlockUnit? = nil) {
             self.end = end
             self.unit = unit
         }
 
         @inlinable
         public var respEntries: Int {
-            start.respEntries + end.respEntries + unit.respEntries
+            end.respEntries + unit.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            end.encode(into: &commandEncoder)
+            unit.encode(into: &commandEncoder)
+        }
+    }
+    public struct Range: RESPRenderable, Sendable {
+        @usableFromInline let start: Int
+        @usableFromInline let endUnitBlock: RangeEndUnitBlock?
+
+
+        @inlinable public init(start: Int, endUnitBlock: RangeEndUnitBlock? = nil) {
+            self.start = start
+            self.endUnitBlock = endUnitBlock
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            start.respEntries + endUnitBlock.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             start.encode(into: &commandEncoder)
-            end.encode(into: &commandEncoder)
-            unit.encode(into: &commandEncoder)
+            endUnitBlock.encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -450,7 +468,7 @@ extension ValkeyConnection {
     /// - Documentation: [BITCOUNT](https:/valkey.io/commands/bitcount)
     /// - Version: 2.6.0
     /// - Complexity: O(N)
-    /// - Categories: @read, @bitmap, @slow
+    /// - Categories: BITMAP
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of bits set to 1.
     @inlinable
     public func bitcount(key: ValkeyKey, range: BITCOUNT.Range? = nil) async throws -> Int {
@@ -462,7 +480,7 @@ extension ValkeyConnection {
     /// - Documentation: [BITFIELD](https:/valkey.io/commands/bitfield)
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each subcommand specified
-    /// - Categories: @write, @bitmap, @slow
+    /// - Categories: BITMAP
     /// - Returns: One of the following:
     ///     * [Array](https:/valkey.io/topics/protocol/#arrays): each entry being the corresponding result of the sub-command given at the same position.
     ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if OVERFLOW FAIL was given and overflows or underflows are detected.
@@ -476,7 +494,7 @@ extension ValkeyConnection {
     /// - Documentation: [BITFIELD_RO](https:/valkey.io/commands/bitfield_ro)
     /// - Version: 6.0.0
     /// - Complexity: O(1) for each subcommand specified
-    /// - Categories: @read, @bitmap, @fast
+    /// - Categories: BITMAP
     /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): each entry being the corresponding result of the sub-command given at the same position.
     @inlinable
     public func bitfieldRo(key: ValkeyKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> RESPToken.Array {
@@ -488,7 +506,7 @@ extension ValkeyConnection {
     /// - Documentation: [BITOP](https:/valkey.io/commands/bitop)
     /// - Version: 2.6.0
     /// - Complexity: O(N)
-    /// - Categories: @write, @bitmap, @slow
+    /// - Categories: BITMAP
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the size of the string stored in the destination key is equal to the size of the longest input string.
     @inlinable
     public func bitop(operation: BITOP.Operation, destkey: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
@@ -500,7 +518,7 @@ extension ValkeyConnection {
     /// - Documentation: [BITPOS](https:/valkey.io/commands/bitpos)
     /// - Version: 2.8.7
     /// - Complexity: O(N)
-    /// - Categories: @read, @bitmap, @slow
+    /// - Categories: BITMAP
     /// - Returns: One of the following:
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the position of the first bit set to 1 or 0 according to the request
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1`. In case the `bit` argument is 1 and the string is empty or composed of just zero bytes
@@ -523,7 +541,7 @@ extension ValkeyConnection {
     /// - Documentation: [GETBIT](https:/valkey.io/commands/getbit)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @bitmap, @fast
+    /// - Categories: BITMAP
     /// - Returns: The bit value stored at _offset_, one of the following:
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0`.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1`.
@@ -537,7 +555,7 @@ extension ValkeyConnection {
     /// - Documentation: [SETBIT](https:/valkey.io/commands/setbit)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @bitmap, @slow
+    /// - Categories: BITMAP
     /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the original bit value stored at _offset_.
     @inlinable
     public func setbit(key: ValkeyKey, offset: Int, value: Int) async throws -> Int {
