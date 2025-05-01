@@ -41,8 +41,6 @@ extension RESPStringRenderable where Self: Collection<UInt8> {
 
 extension [UInt8]: RESPStringRenderable {}
 extension ArraySlice<UInt8>: RESPStringRenderable {}
-extension ReversedCollection: RESPStringRenderable where Base.Element == UInt8 {}
-extension Slice: RESPStringRenderable where Base.Element == UInt8 {}
 extension Data: RESPStringRenderable {}
 
 /// Internal type used to render RESPStringRenderable conforming type.
