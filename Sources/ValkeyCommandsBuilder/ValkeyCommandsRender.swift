@@ -357,7 +357,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPRepl
     let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE", "UNSUBSCRIBE", "PUNSUBSCRIBE", "SUNSUBSCRIBE"]
     keys.removeAll { subscribeFunctions.contains($0) }
 
-    string.append("extension ValkeyConnection {\n")
+    string.append("extension ValkeyConnectionProtocol {\n")
     for key in keys {
         let command = commands[key]!
         // if there is no reply info assume command is a container command

@@ -85,7 +85,7 @@ public struct PFSELFTEST: ValkeyCommand {
     }
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [PFADD](https:/valkey.io/commands/pfadd)

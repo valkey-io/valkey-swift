@@ -401,7 +401,7 @@ public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Executes a server-side Lua script.
     ///
     /// - Documentation: [EVAL](https:/valkey.io/commands/eval)

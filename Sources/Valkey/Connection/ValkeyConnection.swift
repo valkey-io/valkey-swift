@@ -42,7 +42,7 @@ public struct ServerAddress: Sendable, Equatable {
 }
 
 /// Single connection to a Valkey database
-public final class ValkeyConnection: Sendable {
+public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// Logger used by Server
     let logger: Logger
     @usableFromInline
