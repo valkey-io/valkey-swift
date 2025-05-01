@@ -109,6 +109,82 @@ struct ValkeyCommand: Decodable {
             case arguments
         }
     }
+
+    enum ReplySchema: Decodable {
+        enum Const: Decodable {
+            case string(String)
+            case integer(Int)
+
+            init(from decoder: any Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                if let string = try? container.decode(String.self) {
+                    self = .string(string)
+                } else if let integer = try? container.decode(Int.self) {
+                    self = .integer(integer)
+                } else {
+                    throw DecodingError.typeMismatch(
+                        Const.self,
+                        .init(codingPath: decoder.codingPath, debugDescription: "Cannot decode as String or Int")
+                    )
+                }
+            }
+
+        }
+        struct Response: Decodable {
+            enum ResponseType: String, Decodable {
+                case number
+                case integer
+                case string
+                case array
+                case object
+                case null
+                case unknown
+            }
+            let description: String?
+            let type: ResponseType
+            let const: Const?
+
+            init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self.description = try container.decodeIfPresent(String.self, forKey: .description)
+                if let const = try container.decodeIfPresent(Const.self, forKey: .const) {
+                    switch const {
+                    case .string: self.type = .string
+                    case .integer: self.type = .integer
+                    }
+                    self.const = const
+                } else {
+                    self.type = try container.decodeIfPresent(ResponseType.self, forKey: .type) ?? .unknown
+                    self.const = nil
+                }
+            }
+            private enum CodingKeys: String, CodingKey {
+                case description
+                case type
+                case const
+            }
+        }
+        case oneOf([Response])
+        case response(Response)
+
+        init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            if let responses = try container.decodeIfPresent([Response].self, forKey: .oneOf) {
+                self = .oneOf(responses)
+            } else if let responses = try container.decodeIfPresent([Response].self, forKey: .anyOf) {
+                self = .oneOf(responses)
+            } else {
+                let singleValueContainer = try decoder.singleValueContainer()
+                self = .response(try singleValueContainer.decode(Response.self))
+            }
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case oneOf
+            case anyOf
+        }
+    }
+
     struct KeySpec: Decodable {
         enum BeginSearch: Decodable {
             struct Index: Decodable {
@@ -199,6 +275,7 @@ struct ValkeyCommand: Decodable {
     let replacedBy: String?
     let aclCategories: [String]?
     let arguments: [Argument]?
+    let replySchema: ReplySchema?
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -227,6 +304,7 @@ struct ValkeyCommand: Decodable {
         } else {
             self.arguments = nil
         }
+        self.replySchema = try container.decodeIfPresent(ReplySchema.self, forKey: .replySchema)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -238,6 +316,7 @@ struct ValkeyCommand: Decodable {
         case replacedBy = "replaced_by"
         case aclCategories = "acl_categories"
         case arguments
+        case replySchema = "reply_schema"
         case keySpecs = "key_specs"
     }
 }
