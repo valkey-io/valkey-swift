@@ -271,6 +271,7 @@ struct ValkeyCommand: Decodable {
     let since: String
     let group: String
     let complexity: String?
+    let function: String?
     let deprecatedSince: String?
     let replacedBy: String?
     let aclCategories: [String]?
@@ -283,6 +284,7 @@ struct ValkeyCommand: Decodable {
         self.since = try container.decode(String.self, forKey: .since)
         self.group = try container.decode(String.self, forKey: .group)
         self.complexity = try container.decodeIfPresent(String.self, forKey: .complexity)
+        self.function = try container.decodeIfPresent(String.self, forKey: .function)
         self.deprecatedSince = try container.decodeIfPresent(String.self, forKey: .deprecatedSince)
         self.replacedBy = try container.decodeIfPresent(String.self, forKey: .replacedBy)
         self.aclCategories = try container.decodeIfPresent([String].self, forKey: .aclCategories)
@@ -312,6 +314,7 @@ struct ValkeyCommand: Decodable {
         case since
         case group
         case complexity
+        case function
         case deprecatedSince = "deprecated_since"
         case replacedBy = "replaced_by"
         case aclCategories = "acl_categories"
