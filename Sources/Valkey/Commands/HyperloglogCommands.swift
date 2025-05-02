@@ -58,6 +58,23 @@ public struct PFCOUNT: ValkeyCommand {
     }
 }
 
+/// Internal commands for debugging HyperLogLog values.
+public struct PFDEBUG<Subcommand: RESPStringRenderable>: ValkeyCommand {
+    public var subcommand: Subcommand
+    public var key: ValkeyKey
+
+    @inlinable public init(subcommand: Subcommand, key: ValkeyKey) {
+        self.subcommand = subcommand
+        self.key = key
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("PFDEBUG", RESPBulkString(subcommand), key)
+    }
+}
+
 /// Merges one or more HyperLogLog values into a single key.
 public struct PFMERGE: ValkeyCommand {
     public var destkey: ValkeyKey
@@ -91,10 +108,9 @@ extension ValkeyConnection {
     /// - Documentation: [PFADD](https:/valkey.io/commands/pfadd)
     /// - Version: 2.8.9
     /// - Complexity: O(1) to add every element.
-    /// - Categories: @write, @hyperloglog, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if at least one HyperLogLog internal register was altered.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if no HyperLogLog internal registers were altered.
+    /// - Returns: One of the following
+    ///     * 1: If at least 1 HyperLogLog internal register was altered.
+    ///     * 0: If no HyperLogLog internal register were altered.
     @inlinable
     public func pfadd(key: ValkeyKey, element: [String] = []) async throws -> Int {
         try await send(command: PFADD(key: key, element: element))
@@ -105,8 +121,7 @@ extension ValkeyConnection {
     /// - Documentation: [PFCOUNT](https:/valkey.io/commands/pfcount)
     /// - Version: 2.8.9
     /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
-    /// - Categories: @read, @hyperloglog, @slow
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the approximated number of unique elements observed via `PFADD`.
+    /// - Returns: [Integer]: The approximated number of unique elements observed via PFADD
     @inlinable
     public func pfcount(key: [ValkeyKey]) async throws -> Int {
         try await send(command: PFCOUNT(key: key))
@@ -117,8 +132,6 @@ extension ValkeyConnection {
     /// - Documentation: [PFMERGE](https:/valkey.io/commands/pfmerge)
     /// - Version: 2.8.9
     /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
-    /// - Categories: @write, @hyperloglog, @slow
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func pfmerge(destkey: ValkeyKey, sourcekey: [ValkeyKey] = []) async throws {
         _ = try await send(command: PFMERGE(destkey: destkey, sourcekey: sourcekey))
@@ -129,8 +142,6 @@ extension ValkeyConnection {
     /// - Documentation: [PFSELFTEST](https:/valkey.io/commands/pfselftest)
     /// - Version: 2.8.9
     /// - Complexity: N/A
-    /// - Categories: @hyperloglog, @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func pfselftest() async throws {
         _ = try await send(command: PFSELFTEST())
