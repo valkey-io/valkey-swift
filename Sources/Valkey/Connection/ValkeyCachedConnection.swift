@@ -90,7 +90,7 @@ public final class ValkeyCachedConnection: ValkeyCommands, Sendable {
         if command.readOnly, let response = await self.cache.getCachedValue(for: command) {
             return try .init(fromRESP: response)
         }
-        let response = try await self.connection.send(command: WrappedValkeyCommand(command))
+        let response = try await self.connection.send(command: ValkeyRawResponseCommand(command))
         if command.readOnly {
             await self.cache.storeCachedValue(for: command, cachedResponse: response)
         }
