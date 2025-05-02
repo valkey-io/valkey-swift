@@ -28,29 +28,29 @@ public struct SortedSetEntry: RESPTokenDecodable {
 }
 
 extension BZMPOP {
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
+    /// - Returns: One of the following
+    ///     * [Null]: Timeout reached and no elements were popped.
+    ///     * [Array]: The keyname and the popped members.
     public typealias Response = ZMPOP.Response
 }
 extension BZPOPMAX {
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ expired.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the keyname, popped member, and its score.
+    /// - Returns: One of the following
+    ///     * [Null]: Timeout reached and no elements were popped.
+    ///     * [Array]: The keyname, popped member, and its score.
     public typealias Response = [SortedSetEntry]?
 }
 
 extension BZPOPMIN {
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ expired.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the keyname, popped member, and its score.
+    /// - Returns: One of the following
+    ///     * [Null]: Timeout reached and no elements were popped.
+    ///     * [Array]: The keyname, popped member, and its score.
     public typealias Response = [SortedSetEntry]?
 }
 
 extension ZMPOP {
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): A two-element array with the first element being the name of the key from which elements were popped, and the second element is an array of the popped elements. Every entry in the elements array is also an array that contains the member and its score.
+    /// - Returns: One of the following
+    ///     * [Null]: No element could be popped.
+    ///     * [Array]: Name of the key that elements were popped.
     public struct OptionalResponse: RESPTokenDecodable {
         public let key: ValkeyKey
         public let values: [SortedSetEntry]
@@ -68,11 +68,15 @@ extension ZMPOP {
 }
 
 extension ZPOPMAX {
-    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of popped elements and scores.
+    /// - Returns: One of the following
+    ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
+    ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     public typealias Response = [SortedSetEntry]
 }
 
 extension ZPOPMIN {
-    /// - Returns: * [Array](https:/valkey.io/topics/protocol/#arrays): a list of popped elements and scores.
+    /// - Returns: One of the following
+    ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
+    ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     public typealias Response = [SortedSetEntry]
 }
