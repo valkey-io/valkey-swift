@@ -579,10 +579,9 @@ extension ValkeyConnection {
     /// - Documentation: [BLMOVE](https:/valkey.io/commands/blmove)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped from the _source_ and pushed to the _destination_.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the operation timed-out
+    /// - Returns: One of the following
+    ///     * [String]: The popped element.
+    ///     * [Null]: Operation timed-out
     @inlinable
     public func blmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> RESPToken? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
@@ -593,10 +592,9 @@ extension ValkeyConnection {
     /// - Documentation: [BLMPOP](https:/valkey.io/commands/blmpop)
     /// - Version: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when no element could be popped and the _timeout_ is reached.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped, and the second element being an array of the popped elements.
+    /// - Returns: One of the following
+    ///     * [Null]: Operation timed-out
+    ///     * [Array]: The key from which elements were popped and the popped elements
     @inlinable
     public func blmpop(timeout: Double, key: [ValkeyKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
         try await send(command: BLMPOP(timeout: timeout, key: key, where: `where`, count: count))
@@ -607,10 +605,9 @@ extension ValkeyConnection {
     /// - Documentation: [BLPOP](https:/valkey.io/commands/blpop)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): no element could be popped and the timeout expired
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the key from which the element was popped and the value of the popped element.
+    /// - Returns: One of the following
+    ///     * [Null]: No element could be popped and timeout expired
+    ///     * [Array]: The key from which the element was popped and the value of the popped element
     @inlinable
     public func blpop(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BLPOP(key: key, timeout: timeout))
@@ -621,10 +618,9 @@ extension ValkeyConnection {
     /// - Documentation: [BRPOP](https:/valkey.io/commands/brpop)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of provided keys.
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): no element could be popped and the timeout expired.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): the key from which the element was popped and the value of the popped element
+    /// - Returns: One of the following
+    ///     * [Null]: No element could be popped and the timeout expired.
+    ///     * [Array]: The name of the key where an element was popped 
     @inlinable
     public func brpop(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BRPOP(key: key, timeout: timeout))
@@ -635,10 +631,9 @@ extension ValkeyConnection {
     /// - Documentation: [BRPOPLPUSH](https:/valkey.io/commands/brpoplpush)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped from _source_ and pushed to _destination_.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the timeout is reached.
+    /// - Returns: One of the following
+    ///     * [String]: The element being popped from source and pushed to destination.
+    ///     * [Null]: Timeout is reached.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
     public func brpoplpush(source: ValkeyKey, destination: ValkeyKey, timeout: Double) async throws -> RESPToken? {
@@ -650,10 +645,9 @@ extension ValkeyConnection {
     /// - Documentation: [LINDEX](https:/valkey.io/commands/lindex)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to traverse to get to the element at index. This makes asking for the first or the last element of the list O(1).
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when _index_ is out of range.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the requested element.
+    /// - Returns: One of the following
+    ///     * [Null]: Index is out of range
+    ///     * [String]: The requested element
     @inlinable
     public func lindex(key: ValkeyKey, index: Int) async throws -> RESPToken? {
         try await send(command: LINDEX(key: key, index: index))
@@ -664,11 +658,10 @@ extension ValkeyConnection {
     /// - Documentation: [LINSERT](https:/valkey.io/commands/linsert)
     /// - Version: 2.2.0
     /// - Complexity: O(N) where N is the number of elements to traverse before seeing the value pivot. This means that inserting somewhere on the left end on the list (head) can be considered O(1) and inserting somewhere on the right end (tail) is O(N).
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the list length after a successful insert operation.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` when the key doesn't exist.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` when the pivot wasn't found.
+    /// - Returns: One of the following
+    ///     * [Integer]: List length after a successful insert operation.
+    ///     * 0: In case key doesn't exist.
+    ///     * -1: When the pivot wasn't found.
     @inlinable
     public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(key: ValkeyKey, `where`: LINSERT<Pivot, Element>.Where, pivot: Pivot, element: Element) async throws -> Int {
         try await send(command: LINSERT(key: key, where: `where`, pivot: pivot, element: element))
@@ -679,8 +672,7 @@ extension ValkeyConnection {
     /// - Documentation: [LLEN](https:/valkey.io/commands/llen)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: LIST
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list.
+    /// - Returns: [Integer]: List length.
     @inlinable
     public func llen(key: ValkeyKey) async throws -> Int {
         try await send(command: LLEN(key: key))
@@ -691,8 +683,7 @@ extension ValkeyConnection {
     /// - Documentation: [LMOVE](https:/valkey.io/commands/lmove)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: LIST
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped and pushed.
+    /// - Returns: [String]: The element being popped and pushed.
     @inlinable
     public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> LMOVE.Response {
         try await send(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
@@ -703,10 +694,9 @@ extension ValkeyConnection {
     /// - Documentation: [LMPOP](https:/valkey.io/commands/lmpop)
     /// - Version: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if no element could be popped.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array with the first element being the name of the key from which elements were popped and the second element being an array of elements.
+    /// - Returns: One of the following
+    ///     * [Null]: If no element could be popped.
+    ///     * [Array]: List key from which elements were popped.
     @inlinable
     public func lmpop(key: [ValkeyKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
         try await send(command: LMPOP(key: key, where: `where`, count: count))
@@ -717,11 +707,10 @@ extension ValkeyConnection {
     /// - Documentation: [LPOP](https:/valkey.io/commands/lpop)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of elements returned
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): when called without the _count_ argument, the value of the first element.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when called with the _count_ argument, a list of popped elements.
+    /// - Returns: One of the following
+    ///     * [Null]: Key does not exist.
+    ///     * [String]: In case `count` argument was not given, the value of the first element.
+    ///     * [Array]: In case `count` argument was given, a list of popped elements
     @inlinable
     public func lpop(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
         try await send(command: LPOP(key: key, count: count))
@@ -732,11 +721,10 @@ extension ValkeyConnection {
     /// - Documentation: [LPOS](https:/valkey.io/commands/lpos)
     /// - Version: 6.0.6
     /// - Complexity: O(N) where N is the number of elements in the list, for the average case. When searching for elements near the head or the tail of the list, or when the MAXLEN option is provided, the command may run in constant time.
-    /// - Categories: LIST
-    /// - Returns: Any of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if there is no matching element.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): an integer representing the matching element.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): If the COUNT option is given, an array of integers representing the matching elements (or an empty array if there are no matches).
+    /// - Returns: One of the following
+    ///     * [Null]: In case there is no matching element
+    ///     * [Integer]: An integer representing the matching element
+    ///     * [Array]: If the COUNT option is given, an array of integers representing the matching elements (empty if there are no matches)
     @inlinable
     public func lpos<Element: RESPStringRenderable>(key: ValkeyKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> LPOS.Response {
         try await send(command: LPOS(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
@@ -747,8 +735,7 @@ extension ValkeyConnection {
     /// - Documentation: [LPUSH](https:/valkey.io/commands/lpush)
     /// - Version: 1.0.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: LIST
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
+    /// - Returns: [Integer]: Length of the list after the push operations.
     @inlinable
     public func lpush<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: LPUSH(key: key, element: element))
@@ -759,8 +746,7 @@ extension ValkeyConnection {
     /// - Documentation: [LPUSHX](https:/valkey.io/commands/lpushx)
     /// - Version: 2.2.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: LIST
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
+    /// - Returns: [Integer]: The length of the list after the push operation.
     @inlinable
     public func lpushx<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: LPUSHX(key: key, element: element))
@@ -771,8 +757,7 @@ extension ValkeyConnection {
     /// - Documentation: [LRANGE](https:/valkey.io/commands/lrange)
     /// - Version: 1.0.0
     /// - Complexity: O(S+N) where S is the distance of start offset from HEAD for small lists, from nearest end (HEAD or TAIL) for large lists; and N is the number of elements in the specified range.
-    /// - Categories: LIST
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of elements in the specified range, or an empty array if the key doesn't exist.
+    /// - Returns: [Array]: List of elements in the specified range
     @inlinable
     public func lrange(key: ValkeyKey, start: Int, stop: Int) async throws -> RESPToken.Array {
         try await send(command: LRANGE(key: key, start: start, stop: stop))
@@ -783,8 +768,7 @@ extension ValkeyConnection {
     /// - Documentation: [LREM](https:/valkey.io/commands/lrem)
     /// - Version: 1.0.0
     /// - Complexity: O(N+M) where N is the length of the list and M is the number of elements removed.
-    /// - Categories: LIST
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of removed elements.
+    /// - Returns: [Integer]: The number of removed elements.
     @inlinable
     public func lrem<Element: RESPStringRenderable>(key: ValkeyKey, count: Int, element: Element) async throws -> Int {
         try await send(command: LREM(key: key, count: count, element: element))
@@ -795,8 +779,6 @@ extension ValkeyConnection {
     /// - Documentation: [LSET](https:/valkey.io/commands/lset)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the length of the list. Setting either the first or the last element of the list is O(1).
-    /// - Categories: LIST
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func lset<Element: RESPStringRenderable>(key: ValkeyKey, index: Int, element: Element) async throws {
         _ = try await send(command: LSET(key: key, index: index, element: element))
@@ -807,8 +789,6 @@ extension ValkeyConnection {
     /// - Documentation: [LTRIM](https:/valkey.io/commands/ltrim)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to be removed by the operation.
-    /// - Categories: LIST
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func ltrim(key: ValkeyKey, start: Int, stop: Int) async throws {
         _ = try await send(command: LTRIM(key: key, start: start, stop: stop))
@@ -819,11 +799,10 @@ extension ValkeyConnection {
     /// - Documentation: [RPOP](https:/valkey.io/commands/rpop)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of elements returned
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): when called without the _count_ argument, the value of the last element.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): when called with the _count_ argument, a list of popped elements.
+    /// - Returns: One of the following
+    ///     * [Null]: Key does not exist.
+    ///     * [String]: When 'COUNT' was not given, the value of the last element.
+    ///     * [Array]: When 'COUNT' was given, list of popped elements.
     @inlinable
     public func rpop(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
         try await send(command: RPOP(key: key, count: count))
@@ -834,10 +813,9 @@ extension ValkeyConnection {
     /// - Documentation: [RPOPLPUSH](https:/valkey.io/commands/rpoplpush)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
-    /// - Categories: LIST
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the element being popped and pushed.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the source list is empty.
+    /// - Returns: One of the following
+    ///     * [String]: The element being popped and pushed.
+    ///     * [Null]: Source list is empty.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
     public func rpoplpush(source: ValkeyKey, destination: ValkeyKey) async throws -> RESPToken? {
@@ -849,8 +827,7 @@ extension ValkeyConnection {
     /// - Documentation: [RPUSH](https:/valkey.io/commands/rpush)
     /// - Version: 1.0.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: LIST
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
+    /// - Returns: [Integer]: Length of the list after the push operations.
     @inlinable
     public func rpush<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: RPUSH(key: key, element: element))
@@ -861,8 +838,7 @@ extension ValkeyConnection {
     /// - Documentation: [RPUSHX](https:/valkey.io/commands/rpushx)
     /// - Version: 2.2.0
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Categories: LIST
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the list after the push operation.
+    /// - Returns: [Integer]: Length of the list after the push operation.
     @inlinable
     public func rpushx<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: RPUSHX(key: key, element: element))

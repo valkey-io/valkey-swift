@@ -228,7 +228,7 @@ extension ValkeyConnection {
     /// - Documentation: [PUBLISH](https:/valkey.io/commands/publish)
     /// - Version: 2.0.0
     /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of clients that received the message. Note that in a Valkey Cluster, only clients that are connected to the same node as the publishing client are included in the count.
+    /// - Returns: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     public func publish<Channel: RESPStringRenderable, Message: RESPStringRenderable>(channel: Channel, message: Message) async throws -> Int {
         try await send(command: PUBLISH(channel: channel, message: message))
@@ -239,7 +239,7 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB CHANNELS](https:/valkey.io/commands/pubsub-channels)
     /// - Version: 2.8.0
     /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of active channels, optionally matching the specified pattern.
+    /// - Returns: [Array]: A list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubChannels(pattern: String? = nil) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.CHANNELS(pattern: pattern))
@@ -250,7 +250,7 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB HELP](https:/valkey.io/commands/pubsub-help)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
     public func pubsubHelp() async throws -> RESPToken.Array {
         try await send(command: PUBSUB.HELP())
@@ -261,7 +261,7 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB NUMPAT](https:/valkey.io/commands/pubsub-numpat)
     /// - Version: 2.8.0
     /// - Complexity: O(1)
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of patterns all the clients are subscribed to.
+    /// - Returns: [Integer]: The number of patterns all the clients are subscribed to.
     @inlinable
     public func pubsubNumpat() async throws -> Int {
         try await send(command: PUBSUB.NUMPAT())
@@ -272,7 +272,7 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB NUMSUB](https:/valkey.io/commands/pubsub-numsub)
     /// - Version: 2.8.0
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers
+    /// - Returns: [Array]: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     public func pubsubNumsub(channel: [String] = []) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.NUMSUB(channel: channel))
@@ -283,7 +283,7 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB SHARDCHANNELS](https:/valkey.io/commands/pubsub-shardchannels)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of active channels, optionally matching the specified pattern.
+    /// - Returns: [Array]: A list of active channels, optionally matching the specified pattern.
     @inlinable
     public func pubsubShardchannels(pattern: String? = nil) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.SHARDCHANNELS(pattern: pattern))
@@ -294,7 +294,7 @@ extension ValkeyConnection {
     /// - Documentation: [PUBSUB SHARDNUMSUB](https:/valkey.io/commands/pubsub-shardnumsub)
     /// - Version: 7.0.0
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): the number of subscribers per shard channel, each even element (including the 0th) is channel name, each odd element is the number of subscribers.
+    /// - Returns: [Array]: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
     public func pubsubShardnumsub(shardchannel: [String] = []) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.SHARDNUMSUB(shardchannel: shardchannel))
@@ -305,7 +305,7 @@ extension ValkeyConnection {
     /// - Documentation: [SPUBLISH](https:/valkey.io/commands/spublish)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of clients that received the message. Note that in a Valkey Cluster, only clients that are connected to the same node as the publishing client are included in the count
+    /// - Returns: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
     public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(shardchannel: Shardchannel, message: Message) async throws -> Int {
         try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))

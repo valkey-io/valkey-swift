@@ -420,8 +420,7 @@ extension ValkeyConnection {
     /// - Documentation: [EVAL](https:/valkey.io/commands/eval)
     /// - Version: 2.6.0
     /// - Complexity: Depends on the script that is executed.
-    /// - Categories: SCRIPTING
-    /// - Returns: The return value depends on the script that was executed.
+    /// - Returns: Return value depends on the script that is executed
     @inlinable
     public func eval<Script: RESPStringRenderable>(script: Script, key: [ValkeyKey] = [], arg: [String] = []) async throws -> EVAL.Response {
         try await send(command: EVAL(script: script, key: key, arg: arg))
@@ -432,8 +431,7 @@ extension ValkeyConnection {
     /// - Documentation: [EVALSHA](https:/valkey.io/commands/evalsha)
     /// - Version: 2.6.0
     /// - Complexity: Depends on the script that is executed.
-    /// - Categories: SCRIPTING
-    /// - Returns: The return value depends on the script that was executed.
+    /// - Returns: Return value depends on the script that is executed
     @inlinable
     public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, key: [ValkeyKey] = [], arg: [String] = []) async throws -> EVALSHA.Response {
         try await send(command: EVALSHA(sha1: sha1, key: key, arg: arg))
@@ -444,8 +442,7 @@ extension ValkeyConnection {
     /// - Documentation: [EVALSHA_RO](https:/valkey.io/commands/evalsha_ro)
     /// - Version: 7.0.0
     /// - Complexity: Depends on the script that is executed.
-    /// - Categories: SCRIPTING
-    /// - Returns: The return value depends on the script that was executed.
+    /// - Returns: Return value depends on the script that is executed
     @inlinable
     public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, key: [ValkeyKey] = [], arg: [String] = []) async throws -> EVALSHARO.Response {
         try await send(command: EVALSHARO(sha1: sha1, key: key, arg: arg))
@@ -456,8 +453,7 @@ extension ValkeyConnection {
     /// - Documentation: [EVAL_RO](https:/valkey.io/commands/eval_ro)
     /// - Version: 7.0.0
     /// - Complexity: Depends on the script that is executed.
-    /// - Categories: SCRIPTING
-    /// - Returns: The return value depends on the script that was executed.
+    /// - Returns: Return value depends on the script that is executed
     @inlinable
     public func evalRo<Script: RESPStringRenderable>(script: Script, key: [ValkeyKey] = [], arg: [String] = []) async throws -> EVALRO.Response {
         try await send(command: EVALRO(script: script, key: key, arg: arg))
@@ -468,8 +464,7 @@ extension ValkeyConnection {
     /// - Documentation: [FCALL](https:/valkey.io/commands/fcall)
     /// - Version: 7.0.0
     /// - Complexity: Depends on the function that is executed.
-    /// - Categories: SCRIPTING
-    /// - Returns: The return value depends on the function that was executed.
+    /// - Returns: Return value depends on the function that is executed
     @inlinable
     public func fcall<Function: RESPStringRenderable>(function: Function, key: [ValkeyKey] = [], arg: [String] = []) async throws -> FCALL.Response {
         try await send(command: FCALL(function: function, key: key, arg: arg))
@@ -480,8 +475,7 @@ extension ValkeyConnection {
     /// - Documentation: [FCALL_RO](https:/valkey.io/commands/fcall_ro)
     /// - Version: 7.0.0
     /// - Complexity: Depends on the function that is executed.
-    /// - Categories: SCRIPTING
-    /// - Returns: The return value depends on the function that was executed.
+    /// - Returns: Return value depends on the function that is executed
     @inlinable
     public func fcallRo<Function: RESPStringRenderable>(function: Function, key: [ValkeyKey] = [], arg: [String] = []) async throws -> FCALLRO.Response {
         try await send(command: FCALLRO(function: function, key: key, arg: arg))
@@ -492,8 +486,6 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION DELETE](https:/valkey.io/commands/function-delete)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
-    /// - Categories: SCRIPTING
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func functionDelete<LibraryName: RESPStringRenderable>(libraryName: LibraryName) async throws {
         _ = try await send(command: FUNCTION.DELETE(libraryName: libraryName))
@@ -504,8 +496,7 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION DUMP](https:/valkey.io/commands/function-dump)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
-    /// - Categories: SCRIPTING
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the serialized payload
+    /// - Returns: [String]: The serialized payload.
     @inlinable
     public func functionDump() async throws -> FUNCTION.DUMP.Response {
         try await send(command: FUNCTION.DUMP())
@@ -516,8 +507,6 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION FLUSH](https:/valkey.io/commands/function-flush)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions deleted
-    /// - Categories: SCRIPTING
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws {
         _ = try await send(command: FUNCTION.FLUSH(flushType: flushType))
@@ -528,8 +517,7 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION HELP](https:/valkey.io/commands/function-help)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
-    /// - Categories: SCRIPTING
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
     public func functionHelp() async throws -> RESPToken.Array {
         try await send(command: FUNCTION.HELP())
@@ -540,8 +528,6 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION KILL](https:/valkey.io/commands/function-kill)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
-    /// - Categories: SCRIPTING
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func functionKill() async throws {
         _ = try await send(command: FUNCTION.KILL())
@@ -552,8 +538,6 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION LIST](https:/valkey.io/commands/function-list)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
-    /// - Categories: SCRIPTING
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): information about functions and libraries.
     @inlinable
     public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
         try await send(command: FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
@@ -564,8 +548,7 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION LOAD](https:/valkey.io/commands/function-load)
     /// - Version: 7.0.0
     /// - Complexity: O(1) (considering compilation time is redundant)
-    /// - Categories: SCRIPTING
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the library name that was loaded.
+    /// - Returns: [String]: The library name that was loaded
     @inlinable
     public func functionLoad<FunctionCode: RESPStringRenderable>(replace: Bool = false, functionCode: FunctionCode) async throws -> FUNCTION.LOAD.Response {
         try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
@@ -576,8 +559,6 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION RESTORE](https:/valkey.io/commands/function-restore)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of functions on the payload
-    /// - Categories: SCRIPTING
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func functionRestore<SerializedValue: RESPStringRenderable>(serializedValue: SerializedValue, policy: FUNCTION.RESTORE<SerializedValue>.Policy? = nil) async throws {
         _ = try await send(command: FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
@@ -588,8 +569,6 @@ extension ValkeyConnection {
     /// - Documentation: [FUNCTION STATS](https:/valkey.io/commands/function-stats)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
-    /// - Categories: SCRIPTING
-    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): information about the function that's currently running and information about the available execution engines.
     @inlinable
     public func functionStats() async throws -> RESPToken.Map {
         try await send(command: FUNCTION.STATS())
@@ -600,8 +579,6 @@ extension ValkeyConnection {
     /// - Documentation: [SCRIPT DEBUG](https:/valkey.io/commands/script-debug)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
-    /// - Categories: SCRIPTING
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws {
         _ = try await send(command: SCRIPT.DEBUG(mode: mode))
@@ -612,8 +589,7 @@ extension ValkeyConnection {
     /// - Documentation: [SCRIPT EXISTS](https:/valkey.io/commands/script-exists)
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
-    /// - Categories: SCRIPTING
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array of integers that correspond to the specified SHA1 digest arguments.
+    /// - Returns: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     public func scriptExists<Sha1: RESPStringRenderable>(sha1: [Sha1]) async throws -> RESPToken.Array {
         try await send(command: SCRIPT.EXISTS(sha1: sha1))
@@ -624,8 +600,6 @@ extension ValkeyConnection {
     /// - Documentation: [SCRIPT FLUSH](https:/valkey.io/commands/script-flush)
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts in cache
-    /// - Categories: SCRIPTING
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws {
         _ = try await send(command: SCRIPT.FLUSH(flushType: flushType))
@@ -636,8 +610,7 @@ extension ValkeyConnection {
     /// - Documentation: [SCRIPT HELP](https:/valkey.io/commands/script-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: SCRIPTING
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
     public func scriptHelp() async throws -> RESPToken.Array {
         try await send(command: SCRIPT.HELP())
@@ -648,8 +621,6 @@ extension ValkeyConnection {
     /// - Documentation: [SCRIPT KILL](https:/valkey.io/commands/script-kill)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
-    /// - Categories: SCRIPTING
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func scriptKill() async throws {
         _ = try await send(command: SCRIPT.KILL())
@@ -660,8 +631,7 @@ extension ValkeyConnection {
     /// - Documentation: [SCRIPT LOAD](https:/valkey.io/commands/script-load)
     /// - Version: 2.6.0
     /// - Complexity: O(N) with N being the length in bytes of the script body.
-    /// - Categories: SCRIPTING
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the SHA1 digest of the script added into the script cache.
+    /// - Returns: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
     public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> SCRIPT.LOAD.Response {
         try await send(command: SCRIPT.LOAD(script: script))
@@ -672,8 +642,7 @@ extension ValkeyConnection {
     /// - Documentation: [SCRIPT SHOW](https:/valkey.io/commands/script-show)
     /// - Version: 8.0.0
     /// - Complexity: O(1).
-    /// - Categories: SCRIPTING
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): Lua script if sha1 hash exists in script cache.
+    /// - Returns: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
     public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> SCRIPT.SHOW.Response {
         try await send(command: SCRIPT.SHOW(sha1: sha1))

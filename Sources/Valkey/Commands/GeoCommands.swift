@@ -442,6 +442,8 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
+    public typealias Response = RESPToken.Array
+
     public var key: ValkeyKey
     public var member: Member
     public var radius: Double
@@ -529,6 +531,8 @@ public struct GEORADIUSRO: ValkeyCommand {
             }
         }
     }
+    public typealias Response = RESPToken.Array
+
     public var key: ValkeyKey
     public var longitude: Double
     public var latitude: Double
@@ -742,6 +746,8 @@ public struct GEOSEARCH: ValkeyCommand {
             "ANY".encode(into: &commandEncoder)
         }
     }
+    public typealias Response = RESPToken.Array
+
     public var key: ValkeyKey
     public var from: From
     public var by: By
@@ -984,8 +990,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOADD](https:/valkey.io/commands/geoadd)
     /// - Version: 3.2.0
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
-    /// - Categories: GEO
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
+    /// - Returns: [Integer]: When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
     public func geoadd<Member: RESPStringRenderable>(key: ValkeyKey, condition: GEOADD<Member>.Condition? = nil, change: Bool = false, data: [GEOADD<Member>.Data]) async throws -> Int {
         try await send(command: GEOADD(key: key, condition: condition, change: change, data: data))
@@ -996,10 +1001,9 @@ extension ValkeyConnection {
     /// - Documentation: [GEODIST](https:/valkey.io/commands/geodist)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
-    /// - Categories: GEO
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): one or both of the elements are missing.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): distance as a double (represented as a string) in the specified units.
+    /// - Returns: One of the following
+    ///     * [Null]: One or both of elements are missing.
+    ///     * [String]: Distance as a double (represented as a string) in the specified units.
     @inlinable
     public func geodist<Member1: RESPStringRenderable, Member2: RESPStringRenderable>(key: ValkeyKey, member1: Member1, member2: Member2, unit: GEODIST<Member1, Member2>.Unit? = nil) async throws -> RESPToken? {
         try await send(command: GEODIST(key: key, member1: member1, member2: member2, unit: unit))
@@ -1010,8 +1014,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOHASH](https:/valkey.io/commands/geohash)
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each member requested.
-    /// - Categories: GEO
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is the Geohash corresponding to each member name passed as an argument to the command.
+    /// - Returns: [Array]: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
     @inlinable
     public func geohash(key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
         try await send(command: GEOHASH(key: key, member: member))
@@ -1022,8 +1025,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOPOS](https:/valkey.io/commands/geopos)
     /// - Version: 3.2.0
     /// - Complexity: O(1) for each member requested.
-    /// - Categories: GEO
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command. Non-existing elements are reported as [Null](https:/valkey.io/topics/protocol/#nulls) elements of the array.
+    /// - Returns: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
     public func geopos(key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
         try await send(command: GEOPOS(key: key, member: member))
@@ -1034,17 +1036,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEORADIUS](https:/valkey.io/commands/georadius)
     /// - Version: 3.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Categories: GEO
-    /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
-    ///         1. The distance from the center as a floating point number, in the same unit specified in the radius.
-    ///         1. The Geohash integer.
-    ///         1. The coordinates as a two items x,y array (longitude,latitude).
-    ///     
-    ///     For example, the command `GEORADIUS Sicily 15 37 200 km WITHCOORD WITHDIST` will return each item in the following way:
-    ///     
-    ///     `["Palermo","190.4424",["13.361389338970184","38.115556395496299"]]`
+    /// - Returns: Array of matched members information.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.")
     public func georadius(key: ValkeyKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUS.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUS.CountBlock? = nil, order: GEORADIUS.Order? = nil, store: GEORADIUS.Store? = nil) async throws -> GEORADIUS.Response {
@@ -1056,13 +1048,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEORADIUSBYMEMBER](https:/valkey.io/commands/georadiusbymember)
     /// - Version: 3.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Categories: GEO
-    /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
-    ///         * The distance from the center as a floating point number, in the same unit specified in the radius.
-    ///         * The Geohash integer.
-    ///         * The coordinates as a two items x,y array (longitude,latitude).
+    /// - Returns: Array of matched members information.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
     public func georadiusbymember<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBER<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBER<Member>.Order? = nil, store: GEORADIUSBYMEMBER<Member>.Store? = nil) async throws -> GEORADIUSBYMEMBER.Response {
@@ -1074,16 +1060,10 @@ extension ValkeyConnection {
     /// - Documentation: [GEORADIUSBYMEMBER_RO](https:/valkey.io/commands/georadiusbymember_ro)
     /// - Version: 3.2.10
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Categories: GEO
-    /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
-    ///         * The distance from the center as a floating point number, in the same unit specified in the radius.
-    ///         * The Geohash integer.
-    ///         * The coordinates as a two items x,y array (longitude,latitude).
+    /// - Returns: Array of matched members information.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
-    public func georadiusbymemberRo<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBERRO<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBERRO<Member>.Order? = nil) async throws -> GEORADIUSBYMEMBERRO.Response {
+    public func georadiusbymemberRo<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBERRO<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBERRO<Member>.Order? = nil) async throws -> RESPToken.Array {
         try await send(command: GEORADIUSBYMEMBERRO(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
@@ -1092,16 +1072,10 @@ extension ValkeyConnection {
     /// - Documentation: [GEORADIUS_RO](https:/valkey.io/commands/georadius_ro)
     /// - Version: 3.2.10
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
-    /// - Categories: GEO
-    /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
-    ///         * The distance from the center as a floating point number, in the same unit specified in the radius.
-    ///         * The Geohash integer.
-    ///         * The coordinates as a two items x,y array (longitude,latitude).
+    /// - Returns: Array of matched members information.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.")
-    public func georadiusRo(key: ValkeyKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> GEORADIUSRO.Response {
+    public func georadiusRo(key: ValkeyKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> RESPToken.Array {
         try await send(command: GEORADIUSRO(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
 
@@ -1110,15 +1084,9 @@ extension ValkeyConnection {
     /// - Documentation: [GEOSEARCH](https:/valkey.io/commands/geosearch)
     /// - Version: 6.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
-    /// - Categories: GEO
-    /// - Returns: One of the following:
-    ///     * If no `WITH*` option is specified, an [Array](https:/valkey.io/topics/protocol/#arrays) of matched member names
-    ///     * If `WITHCOORD`, `WITHDIST`, or `WITHHASH` options are specified, the command returns an [Array](https:/valkey.io/topics/protocol/#arrays) of arrays, where each sub-array represents a single item:
-    ///         * The distance from the center as a floating point number, in the same unit specified in the radius.
-    ///         * The Geohash integer.
-    ///         * The coordinates as a two items x,y array (longitude,latitude).
+    /// - Returns: Array of matched members information.
     @inlinable
-    public func geosearch(key: ValkeyKey, from: GEOSEARCH.From, by: GEOSEARCH.By, order: GEOSEARCH.Order? = nil, countBlock: GEOSEARCH.CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> GEOSEARCH.Response {
+    public func geosearch(key: ValkeyKey, from: GEOSEARCH.From, by: GEOSEARCH.By, order: GEOSEARCH.Order? = nil, countBlock: GEOSEARCH.CountBlock? = nil, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false) async throws -> RESPToken.Array {
         try await send(command: GEOSEARCH(key: key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash))
     }
 
@@ -1127,8 +1095,7 @@ extension ValkeyConnection {
     /// - Documentation: [GEOSEARCHSTORE](https:/valkey.io/commands/geosearchstore)
     /// - Version: 6.2.0
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
-    /// - Categories: GEO
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of elements in the resulting set
+    /// - Returns: [Integer]: The number of elements in the resulting set.
     @inlinable
     public func geosearchstore(destination: ValkeyKey, source: ValkeyKey, from: GEOSEARCHSTORE.From, by: GEOSEARCHSTORE.By, order: GEOSEARCHSTORE.Order? = nil, countBlock: GEOSEARCHSTORE.CountBlock? = nil, storedist: Bool = false) async throws -> Int {
         try await send(command: GEOSEARCHSTORE(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist))

@@ -152,6 +152,37 @@ public enum SENTINEL {
         }
     }
 
+    /// Returns the port and address of a primary instance.
+    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.")
+    public struct GETMASTERADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        public var primaryName: PrimaryName
+
+        @inlinable public init(primaryName: PrimaryName) {
+            self.primaryName = primaryName
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "GET-MASTER-ADDR-BY-NAME", RESPBulkString(primaryName))
+        }
+    }
+
+    /// Returns the port and address of a primary instance.
+    public struct GETPRIMARYADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        public var primaryName: PrimaryName
+
+        @inlinable public init(primaryName: PrimaryName) {
+            self.primaryName = primaryName
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "GET-PRIMARY-ADDR-BY-NAME", RESPBulkString(primaryName))
+        }
+    }
+
     /// Returns helpful text about the different subcommands.
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
@@ -161,6 +192,93 @@ public enum SENTINEL {
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "HELP")
+        }
+    }
+
+    /// Returns the cached `INFO` replies from the deployment's instances.
+    public struct INFOCACHE<Nodename: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        public var nodename: [Nodename]
+
+        @inlinable public init(nodename: [Nodename]) {
+            self.nodename = nodename
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "INFO-CACHE", nodename.map { RESPBulkString($0) })
+        }
+    }
+
+    /// Determines whether a primary instance is down.
+    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL IS-PRIMARY-DOWN-BY-ADDR`.")
+    public struct ISMASTERDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        public var ip: Ip
+        public var port: Int
+        public var currentEpoch: Int
+        public var runid: Runid
+
+        @inlinable public init(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) {
+            self.ip = ip
+            self.port = port
+            self.currentEpoch = currentEpoch
+            self.runid = runid
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "IS-MASTER-DOWN-BY-ADDR", RESPBulkString(ip), port, currentEpoch, RESPBulkString(runid))
+        }
+    }
+
+    /// Determines whether a primary instance is down.
+    public struct ISPRIMARYDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        public var ip: Ip
+        public var port: Int
+        public var currentEpoch: Int
+        public var runid: Runid
+
+        @inlinable public init(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) {
+            self.ip = ip
+            self.port = port
+            self.currentEpoch = currentEpoch
+            self.runid = runid
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "IS-PRIMARY-DOWN-BY-ADDR", RESPBulkString(ip), port, currentEpoch, RESPBulkString(runid))
+        }
+    }
+
+    /// Returns the state of a primary instance.
+    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARY`.")
+    public struct MASTER<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = RESPToken.Map
+
+        public var primaryName: PrimaryName
+
+        @inlinable public init(primaryName: PrimaryName) {
+            self.primaryName = primaryName
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "MASTER", RESPBulkString(primaryName))
+        }
+    }
+
+    /// Returns a list of monitored primaries.
+    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARIES`.")
+    public struct MASTERS: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "MASTERS")
         }
     }
 
@@ -190,6 +308,18 @@ public enum SENTINEL {
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("SENTINEL", "MYID")
+        }
+    }
+
+    /// Returns information about pending scripts for Sentinel.
+    public struct PENDINGSCRIPTS: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "PENDING-SCRIPTS")
         }
     }
 
@@ -314,6 +444,38 @@ public enum SENTINEL {
         }
     }
 
+    /// Simulates failover scenarios.
+    public struct SIMULATEFAILURE: ValkeyCommand {
+        public enum Mode: RESPRenderable, Sendable {
+            case crashAfterElection
+            case crashAfterPromotion
+            case help
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .crashAfterElection: "crash-after-election".encode(into: &commandEncoder)
+                case .crashAfterPromotion: "crash-after-promotion".encode(into: &commandEncoder)
+                case .help: "help".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken.Array?
+
+        public var mode: [Mode]
+
+        @inlinable public init(mode: [Mode] = []) {
+            self.mode = mode
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("SENTINEL", "SIMULATE-FAILURE", mode)
+        }
+    }
+
     /// Returns a list of the monitored replicas.
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `SENTINEL REPLICAS`.")
     public struct SLAVES<PrimaryName: RESPStringRenderable>: ValkeyCommand {
@@ -337,7 +499,7 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [SENTINEL CKQUORUM](https:/valkey.io/commands/sentinel-ckquorum)
     /// - Version: 2.8.4
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
+    /// - Returns: [String]: Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
     @inlinable
     public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> SENTINEL.CKQUORUM.Response {
         try await send(command: SENTINEL.CKQUORUM(primaryName: primaryName))
@@ -348,9 +510,9 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL CONFIG](https:/valkey.io/commands/sentinel-config)
     /// - Version: 6.2.0
     /// - Complexity: O(N) when N is the number of configuration parameters provided
-    /// - Returns: One of the following:
-    ///     * [Map](https:/valkey.io/topics/protocol/#maps): When 'SENTINEL-CONFIG GET' is called, returns a map.
-    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`. When 'SENTINEL-CONFIG SET' is called, returns OK on success.
+    /// - Returns: One of the following
+    ///     * [Map]: When 'SENTINEL-CONFIG GET' is called, returns a map.
+    ///     * "OK": When 'SENTINEL-CONFIG SET' is called, returns OK on success.
     @inlinable
     public func sentinelConfig(action: SENTINEL.CONFIG.Action) async throws -> RESPToken.Map? {
         try await send(command: SENTINEL.CONFIG(action: action))
@@ -361,9 +523,9 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL DEBUG](https:/valkey.io/commands/sentinel-debug)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the number of configurable parameters
-    /// - Returns: One of the following:
-    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`. The configuration update was successful.
-    ///     * [Map](https:/valkey.io/topics/protocol/#maps): List of configurable time parameters and their values (milliseconds).
+    /// - Returns: One of the following
+    ///     * "OK": The configuration update was successful.
+    ///     * [Map]: List of configurable time parameters and their values (milliseconds).
     @inlinable
     public func sentinelDebug(data: [SENTINEL.DEBUG.Data] = []) async throws -> RESPToken.Map? {
         try await send(command: SENTINEL.DEBUG(data: data))
@@ -373,7 +535,7 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [SENTINEL FAILOVER](https:/valkey.io/commands/sentinel-failover)
     /// - Version: 2.8.4
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`. Force a fail over as if the primary was not reachable, and without asking for agreement to other Sentinels.
+    /// - Returns: "OK": Force a fail over as if the primary was not reachable, and without asking for agreement to other Sentinels.
     @inlinable
     public func sentinelFailover<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws {
         _ = try await send(command: SENTINEL.FAILOVER(primaryName: primaryName))
@@ -384,10 +546,33 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL FLUSHCONFIG](https:/valkey.io/commands/sentinel-flushconfig)
     /// - Version: 2.8.4
     /// - Complexity: O(1)
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`. Force Sentinel to rewrite its configuration on disk, including the current Sentinel state.
+    /// - Returns: "OK": Force Sentinel to rewrite its configuration on disk, including the current Sentinel state.
     @inlinable
     public func sentinelFlushconfig() async throws {
         _ = try await send(command: SENTINEL.FLUSHCONFIG())
+    }
+
+    /// Returns the port and address of a primary instance.
+    ///
+    /// - Documentation: [SENTINEL GET-MASTER-ADDR-BY-NAME](https:/valkey.io/commands/sentinel-get-master-addr-by-name)
+    /// - Version: 2.8.4
+    /// - Complexity: O(1)
+    /// - Returns: [Array]: IP addr or hostname.
+    @inlinable
+    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.")
+    public func sentinelGetMasterAddrByName<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
+        try await send(command: SENTINEL.GETMASTERADDRBYNAME(primaryName: primaryName))
+    }
+
+    /// Returns the port and address of a primary instance.
+    ///
+    /// - Documentation: [SENTINEL GET-PRIMARY-ADDR-BY-NAME](https:/valkey.io/commands/sentinel-get-primary-addr-by-name)
+    /// - Version: 8.0.0
+    /// - Complexity: O(1)
+    /// - Returns: [Array]: IP addr or hostname.
+    @inlinable
+    public func sentinelGetPrimaryAddrByName<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
+        try await send(command: SENTINEL.GETPRIMARYADDRBYNAME(primaryName: primaryName))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -395,10 +580,72 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL HELP](https:/valkey.io/commands/sentinel-help)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): Helpful text about subcommands.
+    /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
     public func sentinelHelp() async throws -> RESPToken.Array {
         try await send(command: SENTINEL.HELP())
+    }
+
+    /// Returns the cached `INFO` replies from the deployment's instances.
+    ///
+    /// - Documentation: [SENTINEL INFO-CACHE](https:/valkey.io/commands/sentinel-info-cache)
+    /// - Version: 3.2.0
+    /// - Complexity: O(N) where N is the number of instances
+    /// - Returns: [Array]: This is actually a map, the odd entries are a primary name, and the even entries are the last cached INFO output from that primary and all its replicas.
+    @inlinable
+    public func sentinelInfoCache<Nodename: RESPStringRenderable>(nodename: [Nodename]) async throws -> RESPToken.Array {
+        try await send(command: SENTINEL.INFOCACHE(nodename: nodename))
+    }
+
+    /// Determines whether a primary instance is down.
+    ///
+    /// - Documentation: [SENTINEL IS-MASTER-DOWN-BY-ADDR](https:/valkey.io/commands/sentinel-is-master-down-by-addr)
+    /// - Version: 2.8.4
+    /// - Complexity: O(1)
+    /// - Returns: One of the following
+    ///     * [Array]: Primary is up.
+    ///     * [Array]: Primary is down.
+    @inlinable
+    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL IS-PRIMARY-DOWN-BY-ADDR`.")
+    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
+        try await send(command: SENTINEL.ISMASTERDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
+    }
+
+    /// Determines whether a primary instance is down.
+    ///
+    /// - Documentation: [SENTINEL IS-PRIMARY-DOWN-BY-ADDR](https:/valkey.io/commands/sentinel-is-primary-down-by-addr)
+    /// - Version: 8.0.0
+    /// - Complexity: O(1)
+    /// - Returns: One of the following
+    ///     * [Array]: Primary is up.
+    ///     * [Array]: Primary is down.
+    @inlinable
+    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
+        try await send(command: SENTINEL.ISPRIMARYDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
+    }
+
+    /// Returns the state of a primary instance.
+    ///
+    /// - Documentation: [SENTINEL MASTER](https:/valkey.io/commands/sentinel-master)
+    /// - Version: 2.8.4
+    /// - Complexity: O(1)
+    /// - Returns: [Map]: The state and info of the specified primary.
+    @inlinable
+    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARY`.")
+    public func sentinelMaster<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Map {
+        try await send(command: SENTINEL.MASTER(primaryName: primaryName))
+    }
+
+    /// Returns a list of monitored primaries.
+    ///
+    /// - Documentation: [SENTINEL MASTERS](https:/valkey.io/commands/sentinel-masters)
+    /// - Version: 2.8.4
+    /// - Complexity: O(N) where N is the number of primaries
+    /// - Returns: [Array]: List of monitored primaries, and their states.
+    @inlinable
+    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARIES`.")
+    public func sentinelMasters() async throws -> RESPToken.Array {
+        try await send(command: SENTINEL.MASTERS())
     }
 
     /// Starts monitoring.
@@ -406,7 +653,6 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL MONITOR](https:/valkey.io/commands/sentinel-monitor)
     /// - Version: 2.8.4
     /// - Complexity: O(1)
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func sentinelMonitor<Name: RESPStringRenderable, Ip: RESPStringRenderable>(name: Name, ip: Ip, port: Int, quorum: Int) async throws {
         _ = try await send(command: SENTINEL.MONITOR(name: name, ip: ip, port: port, quorum: quorum))
@@ -417,10 +663,20 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL MYID](https:/valkey.io/commands/sentinel-myid)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): Node ID of the sentinel instance.
+    /// - Returns: [String]: Node ID of the sentinel instance.
     @inlinable
     public func sentinelMyid() async throws -> SENTINEL.MYID.Response {
         try await send(command: SENTINEL.MYID())
+    }
+
+    /// Returns information about pending scripts for Sentinel.
+    ///
+    /// - Documentation: [SENTINEL PENDING-SCRIPTS](https:/valkey.io/commands/sentinel-pending-scripts)
+    /// - Version: 2.8.4
+    /// - Returns: [Array]: List of pending scripts.
+    @inlinable
+    public func sentinelPendingScripts() async throws -> RESPToken.Array {
+        try await send(command: SENTINEL.PENDINGSCRIPTS())
     }
 
     /// Returns a list of monitored primaries.
@@ -428,7 +684,7 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL PRIMARIES](https:/valkey.io/commands/sentinel-primaries)
     /// - Version: 8.0.0
     /// - Complexity: O(N) where N is the number of primaries
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): List of monitored Valkey primaries, and their state.
+    /// - Returns: [Array]: List of monitored primaries, and their states.
     @inlinable
     public func sentinelPrimaries() async throws -> RESPToken.Array {
         try await send(command: SENTINEL.PRIMARIES())
@@ -439,7 +695,7 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL PRIMARY](https:/valkey.io/commands/sentinel-primary)
     /// - Version: 8.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): The state and info of the specified primary.
+    /// - Returns: [Map]: The state and info of the specified primary.
     @inlinable
     public func sentinelPrimary<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Map {
         try await send(command: SENTINEL.PRIMARY(primaryName: primaryName))
@@ -450,7 +706,6 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL REMOVE](https:/valkey.io/commands/sentinel-remove)
     /// - Version: 2.8.4
     /// - Complexity: O(1)
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func sentinelRemove<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws {
         _ = try await send(command: SENTINEL.REMOVE(primaryName: primaryName))
@@ -461,7 +716,7 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL REPLICAS](https:/valkey.io/commands/sentinel-replicas)
     /// - Version: 5.0.0
     /// - Complexity: O(N) where N is the number of replicas
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): List of replicas for this primary, and their state.
+    /// - Returns: [Array]: List of replicas for this primary, and their state.
     @inlinable
     public func sentinelReplicas<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.REPLICAS(primaryName: primaryName))
@@ -472,7 +727,7 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL RESET](https:/valkey.io/commands/sentinel-reset)
     /// - Version: 2.8.4
     /// - Complexity: O(N) where N is the number of monitored primaries
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): The number of primaries that were reset.
+    /// - Returns: [Integer]: The number of primaries that were reset.
     @inlinable
     public func sentinelReset(pattern: String) async throws -> Int {
         try await send(command: SENTINEL.RESET(pattern: pattern))
@@ -483,7 +738,7 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL SENTINELS](https:/valkey.io/commands/sentinel-sentinels)
     /// - Version: 2.8.4
     /// - Complexity: O(N) where N is the number of Sentinels
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): List of sentinel instances, and their state.
+    /// - Returns: [Array]: List of sentinel instances, and their state.
     @inlinable
     public func sentinelSentinels<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.SENTINELS(primaryName: primaryName))
@@ -494,10 +749,21 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL SET](https:/valkey.io/commands/sentinel-set)
     /// - Version: 2.8.4
     /// - Complexity: O(1)
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(primaryName: PrimaryName, data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]) async throws {
         _ = try await send(command: SENTINEL.SET(primaryName: primaryName, data: data))
+    }
+
+    /// Simulates failover scenarios.
+    ///
+    /// - Documentation: [SENTINEL SIMULATE-FAILURE](https:/valkey.io/commands/sentinel-simulate-failure)
+    /// - Version: 3.2.0
+    /// - Returns: One of the following
+    ///     * "OK": The simulated flag was set.
+    ///     * [Array]: Supported simulates flags. Returned in case `HELP` was used.
+    @inlinable
+    public func sentinelSimulateFailure(mode: [SENTINEL.SIMULATEFAILURE.Mode] = []) async throws -> RESPToken.Array? {
+        try await send(command: SENTINEL.SIMULATEFAILURE(mode: mode))
     }
 
     /// Returns a list of the monitored replicas.
@@ -505,7 +771,7 @@ extension ValkeyConnection {
     /// - Documentation: [SENTINEL SLAVES](https:/valkey.io/commands/sentinel-slaves)
     /// - Version: 2.8.0
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): List of monitored replicas, and their state.
+    /// - Returns: [Array]: List of monitored replicas, and their state.
     @inlinable
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `SENTINEL REPLICAS`.")
     public func sentinelSlaves<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {

@@ -1,6 +1,20 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the swift-valkey open source project
+//
+// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+
 import Foundation
 
-struct ValkeyCommands: Decodable {
+final class ValkeyCommands: Decodable {
     let commands: [String: ValkeyCommand]
 
     init(from decoder: any Decoder) throws {
@@ -143,6 +157,7 @@ struct ValkeyCommand: Decodable {
             let description: String?
             let type: ResponseType
             let const: Const?
+            let items: [ReplySchema]?
 
             init(from decoder: any Decoder) throws {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -153,8 +168,17 @@ struct ValkeyCommand: Decodable {
                     case .integer: self.type = .integer
                     }
                     self.const = const
+                    self.items = nil
                 } else {
                     self.type = try container.decodeIfPresent(ResponseType.self, forKey: .type) ?? .unknown
+                    self.items =
+                        if let items = try? container.decodeIfPresent([ReplySchema].self, forKey: .items) {
+                            items
+                        } else if let item = try container.decodeIfPresent(ReplySchema.self, forKey: .items) {
+                            [item]
+                        } else {
+                            nil
+                        }
                     self.const = nil
                 }
             }
@@ -162,17 +186,20 @@ struct ValkeyCommand: Decodable {
                 case description
                 case type
                 case const
+                case items
             }
         }
-        case oneOf([Response])
+        case oneOf(description: String?, responses: [Response])
         case response(Response)
 
         init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             if let responses = try container.decodeIfPresent([Response].self, forKey: .oneOf) {
-                self = .oneOf(responses)
+                let description = try container.decodeIfPresent(String.self, forKey: .description)
+                self = .oneOf(description: description, responses: responses)
             } else if let responses = try container.decodeIfPresent([Response].self, forKey: .anyOf) {
-                self = .oneOf(responses)
+                let description = try container.decodeIfPresent(String.self, forKey: .description)
+                self = .oneOf(description: description, responses: responses)
             } else {
                 let singleValueContainer = try decoder.singleValueContainer()
                 self = .response(try singleValueContainer.decode(Response.self))
@@ -182,6 +209,7 @@ struct ValkeyCommand: Decodable {
         private enum CodingKeys: String, CodingKey {
             case oneOf
             case anyOf
+            case description
         }
     }
 

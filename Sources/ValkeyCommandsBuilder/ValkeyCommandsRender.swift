@@ -1,3 +1,17 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the swift-valkey open source project
+//
+// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+
 extension String {
     var cleanupReplyComment: String {
         self
@@ -26,27 +40,17 @@ extension String {
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
         }
-        // don't output ACL categories as they arent correct
-        if let aclCategories = command.aclCategories {
-            self.append("    /// - Categories: \(aclCategories.joined(separator: ", "))\n")
-        }
-        switch command.replySchema {
-        case .response(let response):
-            self.append("    /// - Returns: \(response.description ?? "")\n")
-        case .oneOf(let responses):
-            self.append("    /// - Returns: One of\n")
-            for response in responses {
-                self.append("    ///     - \(response.description ?? "")\n")
+        if let replySchema = command.replySchema {
+            let responses = responseTypeComment(replySchema)
+            if responses.count == 1 {
+                self.append("    /// - Returns: \(responses[0])\n")
+            } else if responses.count > 1 {
+                self.append("    /// - Returns: One of the following\n")
+                for response in responses {
+                    self.append("    ///     * \(response)\n")
+                }
             }
-        case .none:
-            break
         }
-        //var reply = reply
-        //let firstReply = reply.removeFirst()
-        //self.append("    /// - Returns: \(firstReply.cleanupReplyComment)\n")
-        //for line in reply {
-        //    self.append("    ///     \(line.cleanupReplyComment)\n")
-        //}
     }
 
     mutating func appendOneOfEnum(argument: ValkeyCommand.Argument, names: [String], tab: String) {
@@ -201,10 +205,6 @@ extension String {
                 self.appendBlock(argument: arg, names: [], tab: tab, genericStrings: !arg.optional)
             }
         }
-        // return type
-        if name == "SET" {
-            print(name)
-        }
         var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(command: command)
         if returnType == "Void" {
             returnType = "RESPToken"
@@ -290,7 +290,7 @@ extension String {
     }
 }
 
-func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPReplies) -> String {
+func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands) -> String {
     let disableResponseCalculationCommands: Set<String> = [
         "CLUSTER SHARDS",
         "LPOS",
@@ -331,7 +331,8 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPRepl
         }
     )
     for namespace in namespaces.sorted() {
-        if commands[namespace] != nil, let reply = replies.commands[namespace], reply.count > 0 {
+        // if namespace exists as a command, extend that type instead of creating a new enum namespace
+        if let command = fullCommandList.commands[namespace], command.function != nil {
             string.append("extension \(namespace.commandTypeName) {\n")
         } else {
             if let summary = commands[namespace]?.summary {
@@ -385,6 +386,57 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPRepl
     }
     string.append("}\n")
     return string
+}
+
+private func responseTypeComment(_ replySchema: ValkeyCommand.ReplySchema) -> [String] {
+    switch replySchema {
+    case .response(let response):
+        return responseTypeComment(response)
+    case .oneOf(let description, let responses):
+        if let description {
+            return [description]
+        }
+        return responses.flatMap { responseTypeComment($0) }
+    }
+}
+
+private func responseTypeDescription(_ replySchema: ValkeyCommand.ReplySchema) -> [String] {
+    switch replySchema {
+    case .response(let response):
+        return response.description.map { [$0] } ?? []
+    case .oneOf(let description, let responses):
+        if let description {
+            return [description]
+        }
+        return responses.compactMap { $0.description }
+    }
+}
+
+private func responseTypeComment(_ response: ValkeyCommand.ReplySchema.Response) -> [String] {
+    let type =
+        switch response.const {
+        case .string(let string):
+            "\"\(string)\": "
+        case .integer(let integer):
+            "\(integer): "
+        case .none:
+            switch response.type {
+            case .string: "[String]: "
+            case .integer: "[Integer]: "
+            case .number: "[Double]: "
+            case .array: "[Array]: "
+            case .object: "[Map]: "
+            case .null: "[Null]: "
+            case .unknown: ""
+            }
+        }
+    if let description = response.description {
+        return ["\(type)\(description)"]
+    } else if let item = response.items?.first {
+        return responseTypeDescription(item).map { "\(type)\($0)" }
+    } else {
+        return []
+    }
 }
 
 private func constructKeysAffected(_ keyArguments: [ValkeyCommand.Argument]) -> (type: String, value: String) {
@@ -527,7 +579,7 @@ private func getResponseType(command: ValkeyCommand) -> String {
     case .response(let response):
         return getResponseType(response: response)
 
-    case .oneOf(let responses):
+    case .oneOf(_, let responses):
         var returnType = getResponseType(response: responses[0])
         var `optional` = returnType == "Void"
         for response in responses.dropFirst() {

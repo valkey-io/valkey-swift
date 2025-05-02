@@ -396,8 +396,7 @@ extension ValkeyConnection {
     /// - Documentation: [HDEL](https:/valkey.io/commands/hdel)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of fields to be removed.
-    /// - Categories: HASH
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of fields that were removed from the hash, excluding any specified but non-existing fields.
+    /// - Returns: [Integer]: The number of fields that were removed from the hash.
     @inlinable
     public func hdel<Field: RESPStringRenderable>(key: ValkeyKey, field: [Field]) async throws -> Int {
         try await send(command: HDEL(key: key, field: field))
@@ -408,10 +407,9 @@ extension ValkeyConnection {
     /// - Documentation: [HEXISTS](https:/valkey.io/commands/hexists)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
-    /// - Categories: HASH
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the hash does not contain the field, or the key does not exist.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the hash contains the field.
+    /// - Returns: One of the following
+    ///     * 0: The hash does not contain the field, or key does not exist.
+    ///     * 1: The hash contains the field.
     @inlinable
     public func hexists<Field: RESPStringRenderable>(key: ValkeyKey, field: Field) async throws -> Int {
         try await send(command: HEXISTS(key: key, field: field))
@@ -422,10 +420,9 @@ extension ValkeyConnection {
     /// - Documentation: [HGET](https:/valkey.io/commands/hget)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
-    /// - Categories: HASH
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The value associated with the field.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): If the field is not present in the hash or key does not exist.
+    /// - Returns: One of the following
+    ///     * [String]: The value associated with the field.
+    ///     * [Null]: If the field is not present in the hash or key does not exist.
     @inlinable
     public func hget<Field: RESPStringRenderable>(key: ValkeyKey, field: Field) async throws -> RESPToken? {
         try await send(command: HGET(key: key, field: field))
@@ -436,8 +433,7 @@ extension ValkeyConnection {
     /// - Documentation: [HGETALL](https:/valkey.io/commands/hgetall)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
-    /// - Categories: HASH
-    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a map of fields and their values stored in the hash, or an empty list when key does not exist.
+    /// - Returns: [Map]: Map of fields and their values stored in the hash, or an empty list when key does not exist. In RESP2 this is returned as a flat array.
     @inlinable
     public func hgetall(key: ValkeyKey) async throws -> RESPToken.Map {
         try await send(command: HGETALL(key: key))
@@ -448,8 +444,7 @@ extension ValkeyConnection {
     /// - Documentation: [HINCRBY](https:/valkey.io/commands/hincrby)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
-    /// - Categories: HASH
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the value of the field after the increment operation.
+    /// - Returns: [Integer]: The value of the field after the increment operation.
     @inlinable
     public func hincrby<Field: RESPStringRenderable>(key: ValkeyKey, field: Field, increment: Int) async throws -> Int {
         try await send(command: HINCRBY(key: key, field: field, increment: increment))
@@ -460,8 +455,7 @@ extension ValkeyConnection {
     /// - Documentation: [HINCRBYFLOAT](https:/valkey.io/commands/hincrbyfloat)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
-    /// - Categories: HASH
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the field after the increment operation.
+    /// - Returns: [String]: The value of the field after the increment operation.
     @inlinable
     public func hincrbyfloat<Field: RESPStringRenderable>(key: ValkeyKey, field: Field, increment: Double) async throws -> HINCRBYFLOAT.Response {
         try await send(command: HINCRBYFLOAT(key: key, field: field, increment: increment))
@@ -472,8 +466,7 @@ extension ValkeyConnection {
     /// - Documentation: [HKEYS](https:/valkey.io/commands/hkeys)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
-    /// - Categories: HASH
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of fields in the hash, or an empty list when the key does not exist.
+    /// - Returns: [Array]: List of fields in the hash, or an empty list when the key does not exist.
     @inlinable
     public func hkeys(key: ValkeyKey) async throws -> RESPToken.Array {
         try await send(command: HKEYS(key: key))
@@ -484,8 +477,7 @@ extension ValkeyConnection {
     /// - Documentation: [HLEN](https:/valkey.io/commands/hlen)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
-    /// - Categories: HASH
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of fields in the hash, or 0 when the key does not exist.
+    /// - Returns: [Integer]: Number of the fields in the hash, or 0 when the key does not exist.
     @inlinable
     public func hlen(key: ValkeyKey) async throws -> Int {
         try await send(command: HLEN(key: key))
@@ -496,8 +488,7 @@ extension ValkeyConnection {
     /// - Documentation: [HMGET](https:/valkey.io/commands/hmget)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of fields being requested.
-    /// - Categories: HASH
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of values associated with the given fields, in the same order as they are requested.
+    /// - Returns: [Array]: List of values associated with the given fields, in the same order as they are requested.
     @inlinable
     public func hmget<Field: RESPStringRenderable>(key: ValkeyKey, field: [Field]) async throws -> RESPToken.Array {
         try await send(command: HMGET(key: key, field: field))
@@ -508,8 +499,6 @@ extension ValkeyConnection {
     /// - Documentation: [HMSET](https:/valkey.io/commands/hmset)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the number of fields being set.
-    /// - Categories: HASH
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
     public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: ValkeyKey, data: [HMSET<Field, Value>.Data]) async throws {
@@ -521,12 +510,11 @@ extension ValkeyConnection {
     /// - Documentation: [HRANDFIELD](https:/valkey.io/commands/hrandfield)
     /// - Version: 6.2.0
     /// - Complexity: O(N) where N is the number of fields returned
-    /// - Categories: HASH
-    /// - Returns: Any of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key doesn't exist
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a single, randomly selected field when the `count` option is not used
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list containing `count` fields when the `count` option is used, or an empty array if the key does not exists.
-    ///     * [Array](https:/valkey.io/topics/protocol/#arrays): a list of fields and their values when `count` and `WITHVALUES` were both used.
+    /// - Returns: One of the following
+    ///     * [Null]: Key doesn't exist
+    ///     * [String]: A single random field. Returned in case `COUNT` was not used.
+    ///     * [Array]: A list of fields. Returned in case `COUNT` was used.
+    ///     * [Array]: Fields and their values. Returned in case `COUNT` and `WITHVALUES` were used. In RESP2 this is returned as a flat array.
     @inlinable
     public func hrandfield(key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws -> RESPToken? {
         try await send(command: HRANDFIELD(key: key, options: options))
@@ -537,10 +525,7 @@ extension ValkeyConnection {
     /// - Documentation: [HSCAN](https:/valkey.io/commands/hscan)
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Categories: HASH
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a two-element array.
-    ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
-    ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) of field/value pairs that were scanned. When `NOVALUES` option is on, a list of keys from the hash.
+    /// - Returns: [Array]: Cursor and scan response in array form.
     @inlinable
     public func hscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> RESPToken.Array {
         try await send(command: HSCAN(key: key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
@@ -551,8 +536,7 @@ extension ValkeyConnection {
     /// - Documentation: [HSET](https:/valkey.io/commands/hset)
     /// - Version: 2.0.0
     /// - Complexity: O(1) for each field/value pair added, so O(N) to add N field/value pairs when the command is called with multiple field/value pairs.
-    /// - Categories: HASH
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of fields that were added.
+    /// - Returns: [Integer]: The number of fields that were added
     @inlinable
     public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: ValkeyKey, data: [HSET<Field, Value>.Data]) async throws -> Int {
         try await send(command: HSET(key: key, data: data))
@@ -563,10 +547,9 @@ extension ValkeyConnection {
     /// - Documentation: [HSETNX](https:/valkey.io/commands/hsetnx)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
-    /// - Categories: HASH
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the field already exists in the hash and no operation was performed.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the field is a new field in the hash and the value was set.
+    /// - Returns: One of the following
+    ///     * 0: The field is a new field in the hash and value was set.
+    ///     * 1: The field already exists in the hash and no operation was performed.
     @inlinable
     public func hsetnx<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: ValkeyKey, field: Field, value: Value) async throws -> Int {
         try await send(command: HSETNX(key: key, field: field, value: value))
@@ -577,8 +560,7 @@ extension ValkeyConnection {
     /// - Documentation: [HSTRLEN](https:/valkey.io/commands/hstrlen)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
-    /// - Categories: HASH
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the string length of the value associated with the _field_, or zero when the _field_ isn't present in the hash or the _key_ doesn't exist at all.
+    /// - Returns: [Integer]: String length of the value associated with the field, or zero when the field is not present in the hash or key does not exist at all.
     @inlinable
     public func hstrlen<Field: RESPStringRenderable>(key: ValkeyKey, field: Field) async throws -> Int {
         try await send(command: HSTRLEN(key: key, field: field))
@@ -589,8 +571,7 @@ extension ValkeyConnection {
     /// - Documentation: [HVALS](https:/valkey.io/commands/hvals)
     /// - Version: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
-    /// - Categories: HASH
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of values in the hash, or an empty list when the key does not exist.
+    /// - Returns: [Array]: List of values in the hash, or an empty list when the key does not exist.
     @inlinable
     public func hvals(key: ValkeyKey) async throws -> RESPToken.Array {
         try await send(command: HVALS(key: key))
