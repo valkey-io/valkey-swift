@@ -357,6 +357,8 @@ public struct LPOP: ValkeyCommand {
 
 /// Returns the index of matching elements in a list.
 public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = [Int]?
+
     public var key: ValkeyKey
     public var element: Element
     public var rank: Int?
@@ -726,7 +728,7 @@ extension ValkeyConnection {
     ///     * [Integer]: An integer representing the matching element
     ///     * [Array]: If the COUNT option is given, an array of integers representing the matching elements (empty if there are no matches)
     @inlinable
-    public func lpos<Element: RESPStringRenderable>(key: ValkeyKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> LPOS.Response {
+    public func lpos<Element: RESPStringRenderable>(key: ValkeyKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> [Int]? {
         try await send(command: LPOS(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 

@@ -292,8 +292,8 @@ extension String {
 
 func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands) -> String {
     let disableResponseCalculationCommands: Set<String> = [
-        "CLUSTER SHARDS",
-        "LPOS",
+        "CLUSTER SHARDS"
+        //"LPOS",
     ]
     var string = """
         //===----------------------------------------------------------------------===//
@@ -590,6 +590,10 @@ private func getResponseType(command: ValkeyCommand) -> String {
             } else if returnType2 != returnType {
                 if returnType2 == "Void" {
                     optional = true
+                } else if returnType == "[\(returnType2)]" {
+                    // carry on
+                } else if returnType2 == "[\(returnType)]" {
+                    returnType = returnType2
                 } else {
                     if optional {
                         return "RESPToken?"
@@ -627,7 +631,15 @@ private func getResponseType(response: ValkeyCommand.ReplySchema.Response) -> St
     case .number:
         "Double"
     case .array:
-        "RESPToken.Array"
+        if let items = response.items, items.count == 1, case .response(let response) = items.first {
+            if response.type == .integer {
+                "[Int]"
+            } else {
+                "RESPToken.Array"
+            }
+        } else {
+            "RESPToken.Array"
+        }
     case .object:
         "RESPToken.Map"
     case .null:

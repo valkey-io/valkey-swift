@@ -287,7 +287,7 @@ public struct BITFIELDRO: ValkeyCommand {
             offset.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken.Array
+    public typealias Response = [Int]
 
     public var key: ValkeyKey
     public var getBlock: [GetBlock]
@@ -494,7 +494,7 @@ extension ValkeyConnection {
     /// - Complexity: O(1) for each subcommand specified
     /// - Returns: [Array]: The result of the subcommand at the same position
     @inlinable
-    public func bitfieldRo(key: ValkeyKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> RESPToken.Array {
+    public func bitfieldRo(key: ValkeyKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> [Int] {
         try await send(command: BITFIELDRO(key: key, getBlock: getBlock))
     }
 
