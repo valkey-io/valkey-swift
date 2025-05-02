@@ -22,7 +22,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-/// A container for Valkey Cluster commands.
+/// A container for Cluster commands.
 public enum CLUSTER {
     /// Assigns new hash slots to a node.
     public struct ADDSLOTS: ValkeyCommand {
@@ -158,7 +158,7 @@ public enum CLUSTER {
         }
     }
 
-    /// Forces a replica to perform a manual failover of its master.
+    /// Forces a replica to perform a manual failover of its primary.
     public struct FAILOVER: ValkeyCommand {
         public enum Options: RESPRenderable, Sendable {
             case force
@@ -322,7 +322,7 @@ public enum CLUSTER {
         }
     }
 
-    /// Lists the replica nodes of a master node.
+    /// Lists the replica nodes of a primary node.
     public struct REPLICAS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -337,7 +337,7 @@ public enum CLUSTER {
         }
     }
 
-    /// Configure a node as replica of a master node.
+    /// Configure a node as replica of a primary node.
     public struct REPLICATE<NodeId: RESPStringRenderable>: ValkeyCommand {
         public var nodeId: NodeId
 
@@ -431,14 +431,16 @@ public enum CLUSTER {
         }
         public var slot: Int
         public var subcommand: Subcommand
+        public var timeout: Int?
 
-        @inlinable public init(slot: Int, subcommand: Subcommand) {
+        @inlinable public init(slot: Int, subcommand: Subcommand, timeout: Int? = nil) {
             self.slot = slot
             self.subcommand = subcommand
+            self.timeout = timeout
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "SETSLOT", slot, subcommand)
+            commandEncoder.encodeArray("CLUSTER", "SETSLOT", slot, subcommand, RESPWithToken("TIMEOUT", timeout))
         }
     }
 
@@ -452,7 +454,7 @@ public enum CLUSTER {
         }
     }
 
-    /// Lists the replica nodes of a master node.
+    /// Lists the replica nodes of a primary node.
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
     public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
@@ -468,8 +470,102 @@ public enum CLUSTER {
         }
     }
 
+    /// Return an array of slot usage statistics for slots assigned to the current node.
+    public struct SLOTSTATS: ValkeyCommand {
+        public struct FilterSlotsrange: RESPRenderable, Sendable {
+            @usableFromInline let startSlot: Int
+            @usableFromInline let endSlot: Int
+
+
+            @inlinable public init(startSlot: Int, endSlot: Int) {
+                self.startSlot = startSlot
+                self.endSlot = endSlot
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                startSlot.respEntries + endSlot.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                startSlot.encode(into: &commandEncoder)
+                endSlot.encode(into: &commandEncoder)
+            }
+        }
+        public enum FilterOrderbyOrder: RESPRenderable, Sendable {
+            case asc
+            case desc
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .asc: "ASC".encode(into: &commandEncoder)
+                case .desc: "DESC".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public struct FilterOrderby: RESPRenderable, Sendable {
+            @usableFromInline let metric: String
+            @usableFromInline let limit: Int?
+            @usableFromInline let order: FilterOrderbyOrder?
+
+
+            @inlinable public init(metric: String, limit: Int? = nil, order: FilterOrderbyOrder? = nil) {
+                self.metric = metric
+                self.limit = limit
+                self.order = order
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                metric.respEntries + RESPWithToken("LIMIT", limit).respEntries + order.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                metric.encode(into: &commandEncoder)
+                RESPWithToken("LIMIT", limit).encode(into: &commandEncoder)
+                order.encode(into: &commandEncoder)
+            }
+        }
+        public enum Filter: RESPRenderable, Sendable {
+            case slotsrange(FilterSlotsrange)
+            case orderby(FilterOrderby)
+
+            @inlinable
+            public var respEntries: Int {
+                switch self {
+                case .slotsrange(let slotsrange): RESPWithToken("SLOTSRANGE", slotsrange).respEntries
+                case .orderby(let orderby): RESPWithToken("ORDERBY", orderby).respEntries
+                }
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .slotsrange(let slotsrange): RESPWithToken("SLOTSRANGE", slotsrange).encode(into: &commandEncoder)
+                case .orderby(let orderby): RESPWithToken("ORDERBY", orderby).encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken.Array
+
+        public var filter: Filter
+
+        @inlinable public init(filter: Filter) {
+            self.filter = filter
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "SLOT-STATS", filter)
+        }
+    }
+
     /// Returns the mapping of cluster slots to nodes.
-    @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
     public struct SLOTS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -493,7 +589,7 @@ public struct ASKING: ValkeyCommand {
     }
 }
 
-/// Enables read-only queries for a connection to a Valkey Cluster replica node.
+/// Enables read-only queries for a connection to a Valkey replica node.
 public struct READONLY: ValkeyCommand {
     @inlinable public init() {
     }
@@ -503,7 +599,7 @@ public struct READONLY: ValkeyCommand {
     }
 }
 
-/// Enables read-write queries for a connection to a Reids Cluster replica node.
+/// Enables read-write queries for a connection to a Valkey replica node.
 public struct READWRITE: ValkeyCommand {
     @inlinable public init() {
     }
@@ -519,8 +615,6 @@ extension ValkeyConnection {
     /// - Documentation: [ASKING](https:/valkey.io/commands/asking)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func asking() async throws {
         _ = try await send(command: ASKING())
@@ -531,8 +625,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER ADDSLOTS](https:/valkey.io/commands/cluster-addslots)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the total number of hash slot arguments
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterAddslots(slot: [Int]) async throws {
         _ = try await send(command: CLUSTER.ADDSLOTS(slot: slot))
@@ -543,8 +635,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER ADDSLOTSRANGE](https:/valkey.io/commands/cluster-addslotsrange)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterAddslotsrange(range: [CLUSTER.ADDSLOTSRANGE.Range]) async throws {
         _ = try await send(command: CLUSTER.ADDSLOTSRANGE(range: range))
@@ -555,10 +645,9 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER BUMPEPOCH](https:/valkey.io/commands/cluster-bumpepoch)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): `BUMPED` if the epoch was incremented.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): `STILL` if the node already has the greatest configured epoch in the cluster.
+    /// - Returns: One of the following
+    ///     * [String]: If the epoch was incremented.
+    ///     * [String]: If the node already has the greatest config epoch in the cluster.
     @inlinable
     public func clusterBumpepoch() async throws -> CLUSTER.BUMPEPOCH.Response {
         try await send(command: CLUSTER.BUMPEPOCH())
@@ -569,8 +658,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER COUNT-FAILURE-REPORTS](https:/valkey.io/commands/cluster-count-failure-reports)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of failure reports
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of active failure reports for the node.
+    /// - Returns: [Integer]: The number of active failure reports for the node.
     @inlinable
     public func clusterCountFailureReports<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> Int {
         try await send(command: CLUSTER.COUNTFAILUREREPORTS(nodeId: nodeId))
@@ -581,8 +669,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER COUNTKEYSINSLOT](https:/valkey.io/commands/cluster-countkeysinslot)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): The number of keys in the specified hash slot, or an error if the hash slot is invalid.
+    /// - Returns: [Integer]: The number of keys in the specified hash slot.
     @inlinable
     public func clusterCountkeysinslot(slot: Int) async throws -> Int {
         try await send(command: CLUSTER.COUNTKEYSINSLOT(slot: slot))
@@ -593,8 +680,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER DELSLOTS](https:/valkey.io/commands/cluster-delslots)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the total number of hash slot arguments
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterDelslots(slot: [Int]) async throws {
         _ = try await send(command: CLUSTER.DELSLOTS(slot: slot))
@@ -605,20 +690,16 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER DELSLOTSRANGE](https:/valkey.io/commands/cluster-delslotsrange)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterDelslotsrange(range: [CLUSTER.DELSLOTSRANGE.Range]) async throws {
         _ = try await send(command: CLUSTER.DELSLOTSRANGE(range: range))
     }
 
-    /// Forces a replica to perform a manual failover of its master.
+    /// Forces a replica to perform a manual failover of its primary.
     ///
     /// - Documentation: [CLUSTER FAILOVER](https:/valkey.io/commands/cluster-failover)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was accepted and a manual failover is going to be attempted. An error if the operation cannot be executed, for example if the client is connected to a node that is already a primary.
     @inlinable
     public func clusterFailover(options: CLUSTER.FAILOVER.Options? = nil) async throws {
         _ = try await send(command: CLUSTER.FAILOVER(options: options))
@@ -629,8 +710,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER FLUSHSLOTS](https:/valkey.io/commands/cluster-flushslots)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func clusterFlushslots() async throws {
         _ = try await send(command: CLUSTER.FLUSHSLOTS())
@@ -641,8 +720,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER FORGET](https:/valkey.io/commands/cluster-forget)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was executed successfully. Otherwise an error is returned.
     @inlinable
     public func clusterForget<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws {
         _ = try await send(command: CLUSTER.FORGET(nodeId: nodeId))
@@ -653,8 +730,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER GETKEYSINSLOT](https:/valkey.io/commands/cluster-getkeysinslot)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of requested keys
-    /// - Categories: @slow
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array with up to count elements.
+    /// - Returns: [Array]: An array with up to count elements.
     @inlinable
     public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
@@ -665,8 +741,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER HELP](https:/valkey.io/commands/cluster-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
+    /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
     public func clusterHelp() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.HELP())
@@ -677,8 +752,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER INFO](https:/valkey.io/commands/cluster-info)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): A map between named fields and values in the form of `<field>:<value>` lines separated by newlines composed by the two bytes `CRLF`.
+    /// - Returns: [String]: A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF
     @inlinable
     public func clusterInfo() async throws -> CLUSTER.INFO.Response {
         try await send(command: CLUSTER.INFO())
@@ -689,8 +763,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER KEYSLOT](https:/valkey.io/commands/cluster-keyslot)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of bytes in the key
-    /// - Categories: @slow
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): The hash slot number for the specified key
+    /// - Returns: [Integer]: The hash slot number for the specified key
     @inlinable
     public func clusterKeyslot<Key: RESPStringRenderable>(key: Key) async throws -> Int {
         try await send(command: CLUSTER.KEYSLOT(key: key))
@@ -701,8 +774,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER LINKS](https:/valkey.io/commands/cluster-links)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
-    /// - Categories: @slow
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): an array of [Map](https:/valkey.io/topics/protocol/#maps) where each map contains various attributes and their values of a cluster link.
+    /// - Returns: [Array]: An array of cluster links and their attributes.
     @inlinable
     public func clusterLinks() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.LINKS())
@@ -713,8 +785,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER MEET](https:/valkey.io/commands/cluster-meet)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. If the port or cluster bus port number is out of range, or if an invalid address is specified, an error is returned.
     @inlinable
     public func clusterMeet<Ip: RESPStringRenderable>(ip: Ip, port: Int, clusterBusPort: Int? = nil) async throws {
         _ = try await send(command: CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
@@ -725,8 +795,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER MYID](https:/valkey.io/commands/cluster-myid)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the node ID.
+    /// - Returns: [String]: The node id.
     @inlinable
     public func clusterMyid() async throws -> CLUSTER.MYID.Response {
         try await send(command: CLUSTER.MYID())
@@ -737,8 +806,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER MYSHARDID](https:/valkey.io/commands/cluster-myshardid)
     /// - Version: 7.2.0
     /// - Complexity: O(1)
-    /// - Categories: @slow
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the node's shard ID.
+    /// - Returns: [String]: The node's shard id.
     @inlinable
     public func clusterMyshardid() async throws -> CLUSTER.MYSHARDID.Response {
         try await send(command: CLUSTER.MYSHARDID())
@@ -749,32 +817,28 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER NODES](https:/valkey.io/commands/cluster-nodes)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
-    /// - Categories: @slow
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the serialized cluster configuration.
+    /// - Returns: [String]: The serialized cluster configuration.
     @inlinable
     public func clusterNodes() async throws -> CLUSTER.NODES.Response {
         try await send(command: CLUSTER.NODES())
     }
 
-    /// Lists the replica nodes of a master node.
+    /// Lists the replica nodes of a primary node.
     ///
     /// - Documentation: [CLUSTER REPLICAS](https:/valkey.io/commands/cluster-replicas)
     /// - Version: 5.0.0
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
+    /// - Returns: [Array]: A list of replica nodes replicating from the specified primary node provided in the same format used by CLUSTER NODES.
     @inlinable
     public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
-    /// Configure a node as replica of a master node.
+    /// Configure a node as replica of a primary node.
     ///
     /// - Documentation: [CLUSTER REPLICATE](https:/valkey.io/commands/cluster-replicate)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterReplicate<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws {
         _ = try await send(command: CLUSTER.REPLICATE(nodeId: nodeId))
@@ -785,8 +849,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER RESET](https:/valkey.io/commands/cluster-reset)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of known nodes. The command may execute a FLUSHALL as a side effect.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterReset(resetType: CLUSTER.RESET.ResetType? = nil) async throws {
         _ = try await send(command: CLUSTER.RESET(resetType: resetType))
@@ -797,8 +859,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER SAVECONFIG](https:/valkey.io/commands/cluster-saveconfig)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterSaveconfig() async throws {
         _ = try await send(command: CLUSTER.SAVECONFIG())
@@ -809,8 +869,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER SET-CONFIG-EPOCH](https:/valkey.io/commands/cluster-set-config-epoch)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
     public func clusterSetConfigEpoch(configEpoch: Int) async throws {
         _ = try await send(command: CLUSTER.SETCONFIGEPOCH(configEpoch: configEpoch))
@@ -821,11 +879,9 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER SETSLOT](https:/valkey.io/commands/cluster-setslot)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): all the sub-commands return `OK` if the command was successful. Otherwise an error is returned.
     @inlinable
-    public func clusterSetslot(slot: Int, subcommand: CLUSTER.SETSLOT.Subcommand) async throws {
-        _ = try await send(command: CLUSTER.SETSLOT(slot: slot, subcommand: subcommand))
+    public func clusterSetslot(slot: Int, subcommand: CLUSTER.SETSLOT.Subcommand, timeout: Int? = nil) async throws {
+        _ = try await send(command: CLUSTER.SETSLOT(slot: slot, subcommand: subcommand, timeout: timeout))
     }
 
     /// Returns the mapping of cluster slots to shards.
@@ -833,24 +889,33 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER SHARDS](https:/valkey.io/commands/cluster-shards)
     /// - Version: 7.0.0
     /// - Complexity: O(N) where N is the total number of cluster nodes
-    /// - Categories: @slow
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a nested list of [Map](https:/valkey.io/topics/protocol/#maps) of hash ranges and shard nodes describing individual shards.
+    /// - Returns: [Array]: A nested list of a map of hash ranges and shard nodes describing individual shards.
     @inlinable
     public func clusterShards() async throws -> CLUSTER.SHARDS.Response {
         try await send(command: CLUSTER.SHARDS())
     }
 
-    /// Lists the replica nodes of a master node.
+    /// Lists the replica nodes of a primary node.
     ///
     /// - Documentation: [CLUSTER SLAVES](https:/valkey.io/commands/cluster-slaves)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the number of replicas.
-    /// - Categories: @admin, @slow, @dangerous
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of replica nodes replicating from the specified primary node provided in the same format used by `CLUSTER NODES`.
+    /// - Returns: [Array]: A list of replica nodes replicating from the specified primary node provided in the same format used by CLUSTER NODES.
     @inlinable
     @available(*, deprecated, message: "Since 5.0.0. Replaced by `CLUSTER REPLICAS`.")
     public func clusterSlaves<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLAVES(nodeId: nodeId))
+    }
+
+    /// Return an array of slot usage statistics for slots assigned to the current node.
+    ///
+    /// - Documentation: [CLUSTER SLOT-STATS](https:/valkey.io/commands/cluster-slot-stats)
+    /// - Version: 8.0.0
+    /// - Complexity: O(N) where N is the total number of slots based on arguments. O(N*log(N)) with ORDERBY subcommand.
+    /// - Returns: [Array]: Array of nested arrays, where the inner array element represents a slot and its respective usage statistics.
+    @inlinable
+    public func clusterSlotStats(filter: CLUSTER.SLOTSTATS.Filter) async throws -> RESPToken.Array {
+        try await send(command: CLUSTER.SLOTSTATS(filter: filter))
     }
 
     /// Returns the mapping of cluster slots to nodes.
@@ -858,33 +923,27 @@ extension ValkeyConnection {
     /// - Documentation: [CLUSTER SLOTS](https:/valkey.io/commands/cluster-slots)
     /// - Version: 3.0.0
     /// - Complexity: O(N) where N is the total number of Cluster nodes
-    /// - Categories: @slow
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): nested list of slot ranges with networking information.
+    /// - Returns: [Array]: Nested list of slot ranges with networking information.
     @inlinable
-    @available(*, deprecated, message: "Since 7.0.0. Replaced by `CLUSTER SHARDS`.")
     public func clusterSlots() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLOTS())
     }
 
-    /// Enables read-only queries for a connection to a Valkey Cluster replica node.
+    /// Enables read-only queries for a connection to a Valkey replica node.
     ///
     /// - Documentation: [READONLY](https:/valkey.io/commands/readonly)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func readonly() async throws {
         _ = try await send(command: READONLY())
     }
 
-    /// Enables read-write queries for a connection to a Reids Cluster replica node.
+    /// Enables read-write queries for a connection to a Valkey replica node.
     ///
     /// - Documentation: [READWRITE](https:/valkey.io/commands/readwrite)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func readwrite() async throws {
         _ = try await send(command: READWRITE())

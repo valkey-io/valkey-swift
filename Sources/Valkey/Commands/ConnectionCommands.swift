@@ -52,6 +52,19 @@ public enum CLIENT {
         }
     }
 
+    /// A client claims its capability.
+    public struct CAPA<Capability: RESPStringRenderable>: ValkeyCommand {
+        public var capability: [Capability]
+
+        @inlinable public init(capability: [Capability]) {
+            self.capability = capability
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLIENT", "CAPA", capability.map { RESPBulkString($0) })
+        }
+    }
+
     /// Returns the name of the connection.
     public struct GETNAME: ValkeyCommand {
         public typealias Response = RESPToken?
@@ -115,6 +128,7 @@ public enum CLIENT {
         public enum FilterNewFormatClientType: RESPRenderable, Sendable {
             case normal
             case master
+            case primary
             case slave
             case replica
             case pubsub
@@ -125,11 +139,12 @@ public enum CLIENT {
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .normal: "NORMAL".encode(into: &commandEncoder)
-                case .master: "MASTER".encode(into: &commandEncoder)
-                case .slave: "SLAVE".encode(into: &commandEncoder)
-                case .replica: "REPLICA".encode(into: &commandEncoder)
-                case .pubsub: "PUBSUB".encode(into: &commandEncoder)
+                case .normal: "normal".encode(into: &commandEncoder)
+                case .master: "master".encode(into: &commandEncoder)
+                case .primary: "primary".encode(into: &commandEncoder)
+                case .slave: "slave".encode(into: &commandEncoder)
+                case .replica: "replica".encode(into: &commandEncoder)
+                case .pubsub: "pubsub".encode(into: &commandEncoder)
                 }
             }
         }
@@ -155,6 +170,7 @@ public enum CLIENT {
             case addr(String?)
             case laddr(String?)
             case skipme(FilterNewFormatSkipme?)
+            case maxage(Int?)
 
             @inlinable
             public var respEntries: Int {
@@ -165,6 +181,7 @@ public enum CLIENT {
                 case .addr(let addr): RESPWithToken("ADDR", addr).respEntries
                 case .laddr(let laddr): RESPWithToken("LADDR", laddr).respEntries
                 case .skipme(let skipme): RESPWithToken("SKIPME", skipme).respEntries
+                case .maxage(let maxage): RESPWithToken("MAXAGE", maxage).respEntries
                 }
             }
 
@@ -177,6 +194,7 @@ public enum CLIENT {
                 case .addr(let addr): RESPWithToken("ADDR", addr).encode(into: &commandEncoder)
                 case .laddr(let laddr): RESPWithToken("LADDR", laddr).encode(into: &commandEncoder)
                 case .skipme(let skipme): RESPWithToken("SKIPME", skipme).encode(into: &commandEncoder)
+                case .maxage(let maxage): RESPWithToken("MAXAGE", maxage).encode(into: &commandEncoder)
                 }
             }
         }
@@ -227,10 +245,10 @@ public enum CLIENT {
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .normal: "NORMAL".encode(into: &commandEncoder)
-                case .master: "MASTER".encode(into: &commandEncoder)
-                case .replica: "REPLICA".encode(into: &commandEncoder)
-                case .pubsub: "PUBSUB".encode(into: &commandEncoder)
+                case .normal: "normal".encode(into: &commandEncoder)
+                case .master: "master".encode(into: &commandEncoder)
+                case .replica: "replica".encode(into: &commandEncoder)
+                case .pubsub: "pubsub".encode(into: &commandEncoder)
                 }
             }
         }
@@ -372,16 +390,16 @@ public enum CLIENT {
             @inlinable
             public var respEntries: Int {
                 switch self {
-                case .libname(let libname): RESPWithToken("LIB-NAME", libname).respEntries
-                case .libver(let libver): RESPWithToken("LIB-VER", libver).respEntries
+                case .libname(let libname): RESPWithToken("lib-name", libname).respEntries
+                case .libver(let libver): RESPWithToken("lib-ver", libver).respEntries
                 }
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .libname(let libname): RESPWithToken("LIB-NAME", libname).encode(into: &commandEncoder)
-                case .libver(let libver): RESPWithToken("LIB-VER", libver).encode(into: &commandEncoder)
+                case .libname(let libname): RESPWithToken("lib-name", libname).encode(into: &commandEncoder)
+                case .libver(let libver): RESPWithToken("lib-ver", libver).encode(into: &commandEncoder)
                 }
             }
         }
@@ -533,7 +551,7 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Handshakes with the Valkey server.
+/// Handshakes with the server.
 public struct HELLO: ValkeyCommand {
     public struct ArgumentsAuth: RESPRenderable, Sendable {
         @usableFromInline let username: String
@@ -648,8 +666,6 @@ extension ValkeyConnection {
     /// - Documentation: [AUTH](https:/valkey.io/commands/auth)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of passwords defined for the user
-    /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`, or an error if the password, or username/password pair, is invalid.
     @inlinable
     public func auth<Password: RESPStringRenderable>(username: String? = nil, password: Password) async throws {
         _ = try await send(command: AUTH(username: username, password: password))
@@ -660,11 +676,19 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT CACHING](https:/valkey.io/commands/client-caching)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` or an error if the argument is not "yes" or "no".
     @inlinable
     public func clientCaching(mode: CLIENT.CACHING.Mode) async throws {
         _ = try await send(command: CLIENT.CACHING(mode: mode))
+    }
+
+    /// A client claims its capability.
+    ///
+    /// - Documentation: [CLIENT CAPA](https:/valkey.io/commands/client-capa)
+    /// - Version: 8.0.0
+    /// - Complexity: O(1)
+    @inlinable
+    public func clientCapa<Capability: RESPStringRenderable>(capability: [Capability]) async throws {
+        _ = try await send(command: CLIENT.CAPA(capability: capability))
     }
 
     /// Returns the name of the connection.
@@ -672,10 +696,9 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT GETNAME](https:/valkey.io/commands/client-getname)
     /// - Version: 2.6.9
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the connection name of the current connection.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the connection name was not set.
+    /// - Returns: One of the following
+    ///     * [String]: The connection name of the current connection
+    ///     * [Null]: Connection name was not set
     @inlinable
     public func clientGetname() async throws -> RESPToken? {
         try await send(command: CLIENT.GETNAME())
@@ -686,11 +709,10 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT GETREDIR](https:/valkey.io/commands/client-getredir)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` when not redirecting notifications to any client.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` if client tracking is not enabled.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the ID of the client to which notification are being redirected.
+    /// - Returns: One of the following
+    ///     * 0: Not redirecting notifications to any client.
+    ///     * -1: Client tracking is not enabled.
+    ///     * [Integer]: ID of the client we are redirecting the notifications to.
     @inlinable
     public func clientGetredir() async throws -> Int {
         try await send(command: CLIENT.GETREDIR())
@@ -701,8 +723,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT HELP](https:/valkey.io/commands/client-help)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of subcommands and their descriptions.
+    /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
     public func clientHelp() async throws -> RESPToken.Array {
         try await send(command: CLIENT.HELP())
@@ -713,8 +734,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT ID](https:/valkey.io/commands/client-id)
     /// - Version: 5.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the ID of the client.
+    /// - Returns: [Integer]: The id of the client
     @inlinable
     public func clientId() async throws -> Int {
         try await send(command: CLIENT.ID())
@@ -725,8 +745,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT INFO](https:/valkey.io/commands/client-info)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a unique string for the current client, as described at the `CLIENT LIST` page.
+    /// - Returns: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
     public func clientInfo() async throws -> CLIENT.INFO.Response {
         try await send(command: CLIENT.INFO())
@@ -737,10 +756,9 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT KILL](https:/valkey.io/commands/client-kill)
     /// - Version: 2.4.0
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: One of the following:
-    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when called in 3 argument format and the connection has been closed.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): when called in filter/value format, the number of clients killed.
+    /// - Returns: One of the following
+    ///     * "OK": When called in 3 argument format.
+    ///     * [Integer]: When called in filter/value format, the number of clients killed.
     @inlinable
     public func clientKill(filter: CLIENT.KILL.Filter) async throws -> Int? {
         try await send(command: CLIENT.KILL(filter: filter))
@@ -751,8 +769,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT LIST](https:/valkey.io/commands/client-list)
     /// - Version: 2.4.0
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): information and statistics about client connections.
+    /// - Returns: [String]: Information and statistics about client connections
     @inlinable
     public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = []) async throws -> CLIENT.LIST.Response {
         try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId))
@@ -763,8 +780,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT NO-EVICT](https:/valkey.io/commands/client-no-evict)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func clientNoEvict(enabled: CLIENT.NOEVICT.Enabled) async throws {
         _ = try await send(command: CLIENT.NOEVICT(enabled: enabled))
@@ -775,8 +790,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT NO-TOUCH](https:/valkey.io/commands/client-no-touch)
     /// - Version: 7.2.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func clientNoTouch(enabled: CLIENT.NOTOUCH.Enabled) async throws {
         _ = try await send(command: CLIENT.NOTOUCH(enabled: enabled))
@@ -787,8 +800,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT PAUSE](https:/valkey.io/commands/client-pause)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` or an error if the timeout is invalid.
     @inlinable
     public func clientPause(timeout: Int, mode: CLIENT.PAUSE.Mode? = nil) async throws {
         _ = try await send(command: CLIENT.PAUSE(timeout: timeout, mode: mode))
@@ -799,8 +810,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT REPLY](https:/valkey.io/commands/client-reply)
     /// - Version: 3.2.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` when called with `ON`. When called with either `OFF` or `SKIP` sub-commands, no reply is made.
+    /// - Returns: "OK": When called with either OFF or SKIP subcommands, no reply is made. When called with ON, reply is OK.
     @inlinable
     public func clientReply(action: CLIENT.REPLY.Action) async throws {
         _ = try await send(command: CLIENT.REPLY(action: action))
@@ -811,8 +821,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT SETINFO](https:/valkey.io/commands/client-setinfo)
     /// - Version: 7.2.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the attribute name was successfully set.
     @inlinable
     public func clientSetinfo(attr: CLIENT.SETINFO.Attr) async throws {
         _ = try await send(command: CLIENT.SETINFO(attr: attr))
@@ -823,8 +831,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT SETNAME](https:/valkey.io/commands/client-setname)
     /// - Version: 2.6.9
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection name was successfully set.
     @inlinable
     public func clientSetname<ConnectionName: RESPStringRenderable>(connectionName: ConnectionName) async throws {
         _ = try await send(command: CLIENT.SETNAME(connectionName: connectionName))
@@ -835,8 +841,7 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT TRACKING](https:/valkey.io/commands/client-tracking)
     /// - Version: 6.0.0
     /// - Complexity: O(1). Some options may introduce additional complexity.
-    /// - Categories: @slow, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` if the connection was successfully put in tracking mode or if the tracking mode was successfully disabled. Otherwise, an error is returned.
+    /// - Returns: "OK": If the client was successfully put into or taken out of tracking mode.
     @inlinable
     public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
         _ = try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
@@ -847,8 +852,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT TRACKINGINFO](https:/valkey.io/commands/client-trackinginfo)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of tracking information sections and their respective values.
     @inlinable
     public func clientTrackinginfo() async throws -> RESPToken.Map {
         try await send(command: CLIENT.TRACKINGINFO())
@@ -859,10 +862,9 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT UNBLOCK](https:/valkey.io/commands/client-unblock)
     /// - Version: 5.0.0
     /// - Complexity: O(log N) where N is the number of client connections
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the client was unblocked successfully.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the client wasn't unblocked.
+    /// - Returns: One of the following
+    ///     * 0: If the client was unblocked successfully.
+    ///     * 1: If the client wasn't unblocked.
     @inlinable
     public func clientUnblock(clientId: Int, unblockType: CLIENT.UNBLOCK.UnblockType? = nil) async throws -> Int {
         try await send(command: CLIENT.UNBLOCK(clientId: clientId, unblockType: unblockType))
@@ -873,8 +875,6 @@ extension ValkeyConnection {
     /// - Documentation: [CLIENT UNPAUSE](https:/valkey.io/commands/client-unpause)
     /// - Version: 6.2.0
     /// - Complexity: O(N) Where N is the number of paused clients
-    /// - Categories: @admin, @slow, @dangerous, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func clientUnpause() async throws {
         _ = try await send(command: CLIENT.UNPAUSE())
@@ -885,21 +885,17 @@ extension ValkeyConnection {
     /// - Documentation: [ECHO](https:/valkey.io/commands/echo)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the given string.
+    /// - Returns: [String]: The given string
     @inlinable
     public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ECHO.Response {
         try await send(command: ECHO(message: message))
     }
 
-    /// Handshakes with the Valkey server.
+    /// Handshakes with the server.
     ///
     /// - Documentation: [HELLO](https:/valkey.io/commands/hello)
     /// - Version: 6.0.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: [Map](https:/valkey.io/topics/protocol/#maps): a list of server properties.
-    ///     [Simple error](https:/valkey.io/topics/protocol/#simple-errors): if the `protover` requested does not exist.
     @inlinable
     public func hello(arguments: HELLO.Arguments? = nil) async throws -> RESPToken.Map {
         try await send(command: HELLO(arguments: arguments))
@@ -910,10 +906,9 @@ extension ValkeyConnection {
     /// - Documentation: [PING](https:/valkey.io/commands/ping)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: Any of the following:
-    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `PONG` when no argument is provided.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the provided argument.
+    /// - Returns: One of the following
+    ///     * "PONG": Default reply.
+    ///     * [String]: Relay of given `message`.
     @inlinable
     public func ping(message: String? = nil) async throws -> PING.Response {
         try await send(command: PING(message: message))
@@ -924,8 +919,6 @@ extension ValkeyConnection {
     /// - Documentation: [QUIT](https:/valkey.io/commands/quit)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
     public func quit() async throws {
@@ -937,8 +930,6 @@ extension ValkeyConnection {
     /// - Documentation: [RESET](https:/valkey.io/commands/reset)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `RESET`.
     @inlinable
     public func reset() async throws -> String {
         try await send(command: RESET())
@@ -949,8 +940,6 @@ extension ValkeyConnection {
     /// - Documentation: [SELECT](https:/valkey.io/commands/select)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @fast, @connection
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func select(index: Int) async throws {
         _ = try await send(command: SELECT(index: index))

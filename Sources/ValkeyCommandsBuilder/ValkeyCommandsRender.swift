@@ -1,3 +1,17 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the swift-valkey open source project
+//
+// Copyright (c) 2025 the swift-valkey project authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+
 extension String {
     var cleanupReplyComment: String {
         self
@@ -13,11 +27,11 @@ extension String {
         }
         self.append(".\")\n")
     }
-    mutating func appendCommandCommentHeader(command: ValkeyCommand, name: String, reply: [String], tab: String) {
+    mutating func appendCommandCommentHeader(command: ValkeyCommand, name: String, tab: String) {
         self.append("\(tab)/// \(command.summary)\n")
     }
 
-    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String, reply: [String]) {
+    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String) {
         let linkName = name.replacing(" ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
@@ -26,12 +40,16 @@ extension String {
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
         }
-        self.append("    /// - Categories: \(command.aclCategories.joined(separator: ", "))\n")
-        var reply = reply
-        let firstReply = reply.removeFirst()
-        self.append("    /// - Returns: \(firstReply.cleanupReplyComment)\n")
-        for line in reply {
-            self.append("    ///     \(line.cleanupReplyComment)\n")
+        if let replySchema = command.replySchema {
+            let responses = responseTypeComment(replySchema)
+            if responses.count == 1 {
+                self.append("    /// - Returns: \(responses[0])\n")
+            } else if responses.count > 1 {
+                self.append("    /// - Returns: One of the following\n")
+                for response in responses {
+                    self.append("    ///     * \(response)\n")
+                }
+            }
         }
     }
 
@@ -71,7 +89,7 @@ extension String {
             for arg in arguments {
                 if case .pureToken = arg.type {
                     self.append(
-                        "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!)\".respEntries\n"
+                        "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".respEntries\n"
                     )
                 } else {
                     self.append(
@@ -88,7 +106,7 @@ extension String {
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append(
-                    "\(tab)            case .\(arg.swiftArgument): \"\(arg.token!)\".encode(into: &commandEncoder)\n"
+                    "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".encode(into: &commandEncoder)\n"
                 )
             } else {
                 self.append(
@@ -158,7 +176,7 @@ extension String {
         self.append("\(tab)    }\n")
     }
 
-    mutating func appendCommand(command: ValkeyCommand, reply: [String], name: String, tab: String, disableResponseCalculation: Bool) {
+    mutating func appendCommand(command: ValkeyCommand, name: String, tab: String, disableResponseCalculation: Bool) {
         var commandName = name
         var subCommand: String? = nil
         let typeName: String
@@ -174,7 +192,7 @@ extension String {
         let conformance = "ValkeyCommand"
         let genericTypeParameters = genericTypeParameters(command.arguments)
         // Comment header
-        self.appendCommandCommentHeader(command: command, name: name, reply: reply, tab: tab)
+        self.appendCommandCommentHeader(command: command, name: name, tab: tab)
         self.appendDeprecatedMessage(command: command, name: name, tab: tab)
         self.append("\(tab)public struct \(typeName)\(genericTypeParameters): \(conformance) {\n")
 
@@ -187,8 +205,7 @@ extension String {
                 self.appendBlock(argument: arg, names: [], tab: tab, genericStrings: !arg.optional)
             }
         }
-        // return type
-        var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(reply: reply)
+        var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(command: command)
         if returnType == "Void" {
             returnType = "RESPToken"
         }
@@ -231,12 +248,12 @@ extension String {
         self.append("\(tab)}\n\n")
     }
 
-    mutating func appendFunction(command: ValkeyCommand, reply: [String], name: String, disableResponseCalculation: Bool) {
+    mutating func appendFunction(command: ValkeyCommand, name: String, disableResponseCalculation: Bool) {
         let arguments = (command.arguments ?? [])
         //var converting: Bool = false
         var returnType: String = " -> \(name.commandTypeName).Response"
         var ignoreSendResponse = ""
-        let type = disableResponseCalculation ? "RESPToken" : getResponseType(reply: reply)
+        let type = disableResponseCalculation ? "RESPToken" : getResponseType(command: command)
         if type == "Void" {
             returnType = ""
             ignoreSendResponse = "_ = "
@@ -246,7 +263,7 @@ extension String {
         }
         func _appendFunction(isArray: Bool) {
             // Comment header
-            self.appendFunctionCommentHeader(command: command, name: name, reply: reply)
+            self.appendFunctionCommentHeader(command: command, name: name)
             // Operation function
             let genericTypeParameters = genericTypeParameters(command.arguments)
             let genericParameters = genericParameters(command.arguments)
@@ -273,10 +290,10 @@ extension String {
     }
 }
 
-func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPReplies) -> String {
+func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands) -> String {
     let disableResponseCalculationCommands: Set<String> = [
-        "CLUSTER SHARDS",
-        "LPOS",
+        "CLUSTER SHARDS"
+        //"LPOS",
     ]
     var string = """
         //===----------------------------------------------------------------------===//
@@ -314,7 +331,8 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPRepl
         }
     )
     for namespace in namespaces.sorted() {
-        if commands[namespace] != nil, let reply = replies.commands[namespace], reply.count > 0 {
+        // if namespace exists as a command, extend that type instead of creating a new enum namespace
+        if let command = fullCommandList.commands[namespace], command.function != nil {
             string.append("extension \(namespace.commandTypeName) {\n")
         } else {
             if let summary = commands[namespace]?.summary {
@@ -326,11 +344,10 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPRepl
             let (container, subCommand) = subCommand(key)
             if container == namespace, subCommand != nil {
                 let command = commands[key]!
-                // if there is no reply info assume command is a container command
-                guard let reply = replies.commands[key], reply.count > 0 else { continue }
+                // if there is no function assume command is a container command
+                guard command.function != nil else { continue }
                 string.appendCommand(
                     command: command,
-                    reply: reply,
                     name: key,
                     tab: "    ",
                     disableResponseCalculation: disableResponseCalculationCommands.contains(key)
@@ -342,11 +359,10 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPRepl
     for key in keys {
         guard subCommand(key).1 == nil else { continue }
         let command = commands[key]!
-        // if there is no reply info assume command is a container command
-        guard let reply = replies.commands[key], reply.count > 0 else { continue }
+        // if there is no function assume command is a container command
+        guard command.function != nil else { continue }
         string.appendCommand(
             command: command,
-            reply: reply,
             name: key,
             tab: "",
             disableResponseCalculation: disableResponseCalculationCommands.contains(key)
@@ -360,17 +376,67 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], replies: RESPRepl
     string.append("extension ValkeyConnection {\n")
     for key in keys {
         let command = commands[key]!
-        // if there is no reply info assume command is a container command
-        guard let reply = replies.commands[key], reply.count > 0 else { continue }
+        // if there is no function assume command is a container command
+        guard command.replySchema != nil else { continue }
         string.appendFunction(
             command: command,
-            reply: reply,
             name: key,
             disableResponseCalculation: disableResponseCalculationCommands.contains(key)
         )
     }
     string.append("}\n")
     return string
+}
+
+private func responseTypeComment(_ replySchema: ValkeyCommand.ReplySchema) -> [String] {
+    switch replySchema {
+    case .response(let response):
+        return responseTypeComment(response)
+    case .oneOf(let description, let responses):
+        if let description {
+            return [description]
+        }
+        return responses.flatMap { responseTypeComment($0) }
+    }
+}
+
+private func responseTypeDescription(_ replySchema: ValkeyCommand.ReplySchema) -> [String] {
+    switch replySchema {
+    case .response(let response):
+        return response.description.map { [$0] } ?? []
+    case .oneOf(let description, let responses):
+        if let description {
+            return [description]
+        }
+        return responses.compactMap { $0.description }
+    }
+}
+
+private func responseTypeComment(_ response: ValkeyCommand.ReplySchema.Response) -> [String] {
+    let type =
+        switch response.const {
+        case .string(let string):
+            "\"\(string)\": "
+        case .integer(let integer):
+            "\(integer): "
+        case .none:
+            switch response.type {
+            case .string: "[String]: "
+            case .integer: "[Integer]: "
+            case .number: "[Double]: "
+            case .array: "[Array]: "
+            case .object: "[Map]: "
+            case .null: "[Null]: "
+            case .unknown: ""
+            }
+        }
+    if let description = response.description {
+        return ["\(type)\(description)"]
+    } else if let item = response.items?.first {
+        return responseTypeDescription(item).map { "\(type)\($0)" }
+    } else {
+        return []
+    }
 }
 
 private func constructKeysAffected(_ keyArguments: [ValkeyCommand.Argument]) -> (type: String, value: String) {
@@ -507,28 +573,32 @@ private func variableType(_ parameter: ValkeyCommand.Argument, names: [String], 
     return parameterString
 }
 
-private func getResponseType(reply replies: [String]) -> String {
-    let replies = replies.filter { $0.hasPrefix("[") || $0.hasPrefix("* [") }
-    if replies.count == 1 {
-        let returnType = getReturnType(reply: replies[0].dropPrefix("* "))
-        return returnType ?? "RESPToken"
-    } else if replies.count > 1 {
-        var returnType = getReturnType(reply: replies[0].dropPrefix("* "))
+private func getResponseType(command: ValkeyCommand) -> String {
+    guard let replySchema = command.replySchema else { return "RESPToken" }
+    switch replySchema {
+    case .response(let response):
+        return getResponseType(response: response)
+
+    case .oneOf(_, let responses):
+        var returnType = getResponseType(response: responses[0])
         var `optional` = returnType == "Void"
-        for value in replies.dropFirst(1) {
-            if let returnType2 = getReturnType(reply: value.dropPrefix("* ")) {
-                if returnType == "Void" {
-                    returnType = returnType2
+        for response in responses.dropFirst() {
+            let returnType2 = getResponseType(response: response)
+            if returnType == "Void" {
+                returnType = returnType2
+                optional = true
+            } else if returnType2 != returnType {
+                if returnType2 == "Void" {
                     optional = true
-                } else if returnType2 != returnType {
-                    if returnType2 == "Void" {
-                        optional = true
+                } else if returnType == "[\(returnType2)]" {
+                    // carry on
+                } else if returnType2 == "[\(returnType)]" {
+                    returnType = returnType2
+                } else {
+                    if optional {
+                        return "RESPToken?"
                     } else {
-                        if optional {
-                            return "RESPToken?"
-                        } else {
-                            return "RESPToken"
-                        }
+                        return "RESPToken"
                     }
                 }
             }
@@ -537,41 +607,46 @@ private func getResponseType(reply replies: [String]) -> String {
             return "RESPToken"
         }
         if optional {
-            return "\(returnType ?? "RESPToken")?"
+            return "\(returnType)?"
         } else {
-            return returnType ?? "RESPToken"
+            return returnType
         }
     }
-    return "RESPToken"
 }
-private func getReturnType(reply: some StringProtocol) -> String? {
-    if reply.hasPrefix("[") {
-        if reply.hasPrefix("[Integer") {
-            return "Int"
-        } else if reply.hasPrefix("[Double") {
-            return "Double"
-        } else if reply.hasPrefix("[Bulk string") {
-            return "RESPToken"
-        } else if reply.hasPrefix("[Verbatim string") {
-            return "String"
-        } else if reply.hasPrefix("[Simple string") {
-            if reply.contains("`OK`") {
-                return "Void"
+
+private func getResponseType(response: ValkeyCommand.ReplySchema.Response) -> String {
+    switch response.type {
+    case .string:
+        if case .string(let string) = response.const {
+            if string == "OK" {
+                "Void"
             } else {
-                return "String"
+                "String"
             }
-        } else if reply.hasPrefix("[Array") || reply.hasPrefix("[Set") {
-            return "RESPToken.Array"
-        } else if reply.hasPrefix("[Map") {
-            return "RESPToken.Map"
-        } else if reply.hasPrefix("[Null") || reply.hasPrefix("[Nil") {
-            return "Void"
-        } else if reply.hasPrefix("[Simple error") {
-            return nil
+        } else {
+            "RESPToken"
         }
-        return "RESPToken"
+    case .integer:
+        "Int"
+    case .number:
+        "Double"
+    case .array:
+        if let items = response.items, items.count == 1, case .response(let response) = items.first {
+            if response.type == .integer {
+                "[Int]"
+            } else {
+                "RESPToken.Array"
+            }
+        } else {
+            "RESPToken.Array"
+        }
+    case .object:
+        "RESPToken.Map"
+    case .null:
+        "Void"
+    case .unknown:
+        "RESPToken"
     }
-    return nil
 }
 
 extension ValkeyCommand.ArgumentType {

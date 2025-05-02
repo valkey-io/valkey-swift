@@ -555,9 +555,8 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [APPEND](https:/valkey.io/commands/append)
     /// - Version: 2.0.0
-    /// - Complexity: O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by Valkey will double the free space available on every reallocation.
-    /// - Categories: @write, @string, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the string after the append operation.
+    /// - Complexity: O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by the server will double the free space available on every reallocation.
+    /// - Returns: [Integer]: The length of the string after the append operation.
     @inlinable
     public func append<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> Int {
         try await send(command: APPEND(key: key, value: value))
@@ -568,8 +567,7 @@ extension ValkeyConnection {
     /// - Documentation: [DECR](https:/valkey.io/commands/decr)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the value of the key after decrementing it.
+    /// - Returns: [Integer]: The value of the key after decrementing it.
     @inlinable
     public func decr(key: ValkeyKey) async throws -> Int {
         try await send(command: DECR(key: key))
@@ -580,8 +578,7 @@ extension ValkeyConnection {
     /// - Documentation: [DECRBY](https:/valkey.io/commands/decrby)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the value of the key after decrementing it.
+    /// - Returns: [Integer]: The value of the key after decrementing it.
     @inlinable
     public func decrby(key: ValkeyKey, decrement: Int) async throws -> Int {
         try await send(command: DECRBY(key: key, decrement: decrement))
@@ -592,10 +589,9 @@ extension ValkeyConnection {
     /// - Documentation: [GET](https:/valkey.io/commands/get)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @string, @fast
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the key.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
+    /// - Returns: One of the following
+    ///     * [String]: The value of the key.
+    ///     * [Null]: Key does not exist.
     @inlinable
     public func get(key: ValkeyKey) async throws -> RESPToken? {
         try await send(command: GET(key: key))
@@ -606,10 +602,9 @@ extension ValkeyConnection {
     /// - Documentation: [GETDEL](https:/valkey.io/commands/getdel)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the key.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist or if the key's value type is not a string.
+    /// - Returns: One of the following
+    ///     * [String]: The value of the key.
+    ///     * [Null]: The key does not exist.
     @inlinable
     public func getdel(key: ValkeyKey) async throws -> RESPToken? {
         try await send(command: GETDEL(key: key))
@@ -620,9 +615,9 @@ extension ValkeyConnection {
     /// - Documentation: [GETEX](https:/valkey.io/commands/getex)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of `key`
-    ///     [Null](https:/valkey.io/topics/protocol/#nulls): if `key` does not exist.
+    /// - Returns: One of the following
+    ///     * [String]: The value of the key.
+    ///     * [Null]: Key does not exist.
     @inlinable
     public func getex(key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> RESPToken? {
         try await send(command: GETEX(key: key, expiration: expiration))
@@ -633,8 +628,7 @@ extension ValkeyConnection {
     /// - Documentation: [GETRANGE](https:/valkey.io/commands/getrange)
     /// - Version: 2.4.0
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
-    /// - Categories: @read, @string, @slow
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
+    /// - Returns: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     public func getrange(key: ValkeyKey, start: Int, end: Int) async throws -> GETRANGE.Response {
         try await send(command: GETRANGE(key: key, start: start, end: end))
@@ -645,10 +639,9 @@ extension ValkeyConnection {
     /// - Documentation: [GETSET](https:/valkey.io/commands/getset)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the old value stored at the key.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key does not exist.
+    /// - Returns: One of the following
+    ///     * [String]: The old value stored at the key.
+    ///     * [Null]: The key does not exist.
     @inlinable
     @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
     public func getset<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken? {
@@ -660,8 +653,7 @@ extension ValkeyConnection {
     /// - Documentation: [INCR](https:/valkey.io/commands/incr)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the value of the key after the increment.
+    /// - Returns: [Integer]: The value of key after the increment
     @inlinable
     public func incr(key: ValkeyKey) async throws -> Int {
         try await send(command: INCR(key: key))
@@ -672,8 +664,7 @@ extension ValkeyConnection {
     /// - Documentation: [INCRBY](https:/valkey.io/commands/incrby)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the value of the key after the increment.
+    /// - Returns: [Integer]: The value of the key after incrementing it.
     @inlinable
     public func incrby(key: ValkeyKey, increment: Int) async throws -> Int {
         try await send(command: INCRBY(key: key, increment: increment))
@@ -684,8 +675,7 @@ extension ValkeyConnection {
     /// - Documentation: [INCRBYFLOAT](https:/valkey.io/commands/incrbyfloat)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the value of the key after the increment.
+    /// - Returns: [String]: The value of the key after incrementing it.
     @inlinable
     public func incrbyfloat(key: ValkeyKey, increment: Double) async throws -> INCRBYFLOAT.Response {
         try await send(command: INCRBYFLOAT(key: key, increment: increment))
@@ -696,11 +686,10 @@ extension ValkeyConnection {
     /// - Documentation: [LCS](https:/valkey.io/commands/lcs)
     /// - Version: 7.0.0
     /// - Complexity: O(N*M) where N and M are the lengths of s1 and s2, respectively
-    /// - Categories: @read, @string, @slow
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the longest common subsequence.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the length of the longest common subsequence when _LEN_ is given.
-    ///     * [Map](https:/valkey.io/topics/protocol/#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
+    /// - Returns: One of the following
+    ///     * [String]: The longest common subsequence.
+    ///     * [Integer]: The length of the longest common subsequence when 'LEN' is given.
+    ///     * [Map]: Array with the LCS length and all the ranges in both the strings when 'IDX' is given. In RESP2 this is returned as a flat array
     @inlinable
     public func lcs(key1: ValkeyKey, key2: ValkeyKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> LCS.Response {
         try await send(command: LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
@@ -711,8 +700,7 @@ extension ValkeyConnection {
     /// - Documentation: [MGET](https:/valkey.io/commands/mget)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of keys to retrieve.
-    /// - Categories: @read, @string, @fast
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of values at the specified keys.
+    /// - Returns: [Array]: List of values at the specified keys.
     @inlinable
     public func mget(key: [ValkeyKey]) async throws -> RESPToken.Array {
         try await send(command: MGET(key: key))
@@ -723,8 +711,6 @@ extension ValkeyConnection {
     /// - Documentation: [MSET](https:/valkey.io/commands/mset)
     /// - Version: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
-    /// - Categories: @write, @string, @slow
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): always `OK` because `MSET` can't fail.
     @inlinable
     public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws {
         _ = try await send(command: MSET(data: data))
@@ -735,10 +721,9 @@ extension ValkeyConnection {
     /// - Documentation: [MSETNX](https:/valkey.io/commands/msetnx)
     /// - Version: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
-    /// - Categories: @write, @string, @slow
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if no key was set (at least one key already existed).
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if all the keys were set.
+    /// - Returns: One of the following
+    ///     * 0: No key was set (at least one key already existed).
+    ///     * 1: All the keys were set.
     @inlinable
     public func msetnx<Value: RESPStringRenderable>(data: [MSETNX<Value>.Data]) async throws -> Int {
         try await send(command: MSETNX(data: data))
@@ -749,8 +734,6 @@ extension ValkeyConnection {
     /// - Documentation: [PSETEX](https:/valkey.io/commands/psetex)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @slow
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
     public func psetex<Value: RESPStringRenderable>(key: ValkeyKey, milliseconds: Int, value: Value) async throws {
@@ -762,17 +745,11 @@ extension ValkeyConnection {
     /// - Documentation: [SET](https:/valkey.io/commands/set)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @slow
-    /// - Returns: If `GET` not given, any of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): Operation was aborted (conflict with one of the `XX`/`NX` options).
-    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`: The key was set.
-    ///     If `GET` given, any of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): The key didn't exist before the `SET`.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): The previous value of the key.
-    ///     Note that when using `GET` together with `XX`/`NX`/`IFEQ`, the reply indirectly indicates whether the key was set:
-    ///     * `GET` and `XX` given: Non-[Null](https:/valkey.io/topics/protocol/#nulls) indicates the key was set.
-    ///     * `GET` and `NX` given: [Null](https:/valkey.io/topics/protocol/#nulls) indicates the key was set.
-    ///     * `GET` and `IFEQ` given: The key was set if the reply is equal to `comparison-value`.
+    /// - Returns: One of the following
+    ///     * [Null]: `GET` not given: Operation was aborted (conflict with one of the `XX`/`NX` options).
+    ///     * "OK": `GET` not given: The key was set.
+    ///     * [Null]: `GET` given: The key didn't exist before the `SET`
+    ///     * [String]: `GET` given: The previous value of the key
     @inlinable
     public func set<Value: RESPStringRenderable>(key: ValkeyKey, value: Value, condition: SET<Value>.Condition? = nil, get: Bool = false, expiration: SET<Value>.Expiration? = nil) async throws -> RESPToken? {
         try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
@@ -783,8 +760,6 @@ extension ValkeyConnection {
     /// - Documentation: [SETEX](https:/valkey.io/commands/setex)
     /// - Version: 2.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @slow
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
     public func setex<Value: RESPStringRenderable>(key: ValkeyKey, seconds: Int, value: Value) async throws {
@@ -796,10 +771,9 @@ extension ValkeyConnection {
     /// - Documentation: [SETNX](https:/valkey.io/commands/setnx)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @write, @string, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the key was not set.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the key was set.
+    /// - Returns: One of the following
+    ///     * 0: The key was set.
+    ///     * 1: The key was not set.
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
     public func setnx<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> Int {
@@ -811,8 +785,7 @@ extension ValkeyConnection {
     /// - Documentation: [SETRANGE](https:/valkey.io/commands/setrange)
     /// - Version: 2.2.0
     /// - Complexity: O(1), not counting the time taken to copy the new string in place. Usually, this string is very small so the amortized complexity is O(1). Otherwise, complexity is O(M) with M being the length of the value argument.
-    /// - Categories: @write, @string, @slow
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the string after it was modified by the command.
+    /// - Returns: [Integer]: Length of the string after it was modified by the command.
     @inlinable
     public func setrange<Value: RESPStringRenderable>(key: ValkeyKey, offset: Int, value: Value) async throws -> Int {
         try await send(command: SETRANGE(key: key, offset: offset, value: value))
@@ -823,8 +796,7 @@ extension ValkeyConnection {
     /// - Documentation: [STRLEN](https:/valkey.io/commands/strlen)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
-    /// - Categories: @read, @string, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the length of the string stored at key, or 0 when the key does not exist.
+    /// - Returns: [Integer]: The length of the string value stored at key, or 0 when key does not exist.
     @inlinable
     public func strlen(key: ValkeyKey) async throws -> Int {
         try await send(command: STRLEN(key: key))
@@ -835,8 +807,7 @@ extension ValkeyConnection {
     /// - Documentation: [SUBSTR](https:/valkey.io/commands/substr)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
-    /// - Categories: @read, @string, @slow
-    /// - Returns: [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
+    /// - Returns: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
     public func substr(key: ValkeyKey, start: Int, end: Int) async throws -> SUBSTR.Response {

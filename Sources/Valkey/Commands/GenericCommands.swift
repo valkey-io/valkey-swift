@@ -24,7 +24,7 @@ import Foundation
 
 /// A container for object introspection commands.
 public enum OBJECT {
-    /// Returns the internal encoding of a Valkey object.
+    /// Returns the internal encoding of an object.
     public struct ENCODING: ValkeyCommand {
         public typealias Response = RESPToken?
 
@@ -41,9 +41,9 @@ public enum OBJECT {
         }
     }
 
-    /// Returns the logarithmic access frequency counter of a Valkey object.
+    /// Returns the logarithmic access frequency counter of an object.
     public struct FREQ: ValkeyCommand {
-        public typealias Response = Int?
+        public typealias Response = Int
 
         public var key: ValkeyKey
 
@@ -70,9 +70,9 @@ public enum OBJECT {
         }
     }
 
-    /// Returns the time since the last access to a Valkey object.
+    /// Returns the time since the last access to an object.
     public struct IDLETIME: ValkeyCommand {
-        public typealias Response = Int?
+        public typealias Response = Int
 
         public var key: ValkeyKey
 
@@ -89,7 +89,7 @@ public enum OBJECT {
 
     /// Returns the reference count of a value of a key.
     public struct REFCOUNT: ValkeyCommand {
-        public typealias Response = Int?
+        public typealias Response = Int
 
         public var key: ValkeyKey
 
@@ -292,7 +292,7 @@ public struct KEYS: ValkeyCommand {
     }
 }
 
-/// Atomically transfers a key from one Valkey instance to another.
+/// Atomically transfers a key from one instance to another.
 public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
     public enum KeySelector: RESPRenderable, Sendable {
         case key(ValkeyKey)
@@ -302,7 +302,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         public var respEntries: Int {
             switch self {
             case .key(let key): key.respEntries
-            case .emptyString: "".respEntries
+            case .emptyString: "\"\"".respEntries
             }
         }
 
@@ -310,7 +310,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .key(let key): key.encode(into: &commandEncoder)
-            case .emptyString: "".encode(into: &commandEncoder)
+            case .emptyString: "\"\"".encode(into: &commandEncoder)
             }
         }
     }
@@ -794,7 +794,7 @@ public struct TTL: ValkeyCommand {
 
 /// Determines the type of value stored at a key.
 public struct TYPE: ValkeyCommand {
-    public typealias Response = String
+    public typealias Response = RESPToken?
 
     public var key: ValkeyKey
 
@@ -843,7 +843,7 @@ public struct WAIT: ValkeyCommand {
     }
 }
 
-/// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
+/// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the primary and/or replicas.
 public struct WAITAOF: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -868,10 +868,9 @@ extension ValkeyConnection {
     /// - Documentation: [COPY](https:/valkey.io/commands/copy)
     /// - Version: 6.2.0
     /// - Complexity: O(N) worst case for collections, where N is the number of nested items. O(1) for string values.
-    /// - Categories: @keyspace, @write, @slow
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if _source_ was copied.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if _source_ was not copied when the destination key already exists.
+    /// - Returns: One of the following
+    ///     * 1: Source was copied.
+    ///     * 0: Source was not copied.
     @inlinable
     public func copy(source: ValkeyKey, destination: ValkeyKey, destinationDb: Int? = nil, replace: Bool = false) async throws -> Int {
         try await send(command: COPY(source: source, destination: destination, destinationDb: destinationDb, replace: replace))
@@ -882,8 +881,7 @@ extension ValkeyConnection {
     /// - Documentation: [DEL](https:/valkey.io/commands/del)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
-    /// - Categories: @keyspace, @write, @slow
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of keys that were removed.
+    /// - Returns: [Integer]: The number of keys that were removed.
     @inlinable
     public func del(key: [ValkeyKey]) async throws -> Int {
         try await send(command: DEL(key: key))
@@ -893,11 +891,10 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [DUMP](https:/valkey.io/commands/dump)
     /// - Version: 2.6.0
-    /// - Complexity: O(1) to access the key and additional O(N*M) to serialize it, where N is the number of Valkey objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).
-    /// - Categories: @keyspace, @read, @slow
-    /// - Returns: One of the following:
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the serialized value of the key.
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): the key does not exist.
+    /// - Complexity: O(1) to access the key and additional O(N*M) to serialize it, where N is the number of objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).
+    /// - Returns: One of the following
+    ///     * [String]: The serialized value.
+    ///     * [Null]: Key does not exist.
     @inlinable
     public func dump(key: ValkeyKey) async throws -> RESPToken? {
         try await send(command: DUMP(key: key))
@@ -908,8 +905,7 @@ extension ValkeyConnection {
     /// - Documentation: [EXISTS](https:/valkey.io/commands/exists)
     /// - Version: 1.0.0
     /// - Complexity: O(N) where N is the number of keys to check.
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of keys that exist from those specified as arguments.
+    /// - Returns: [Integer]: Number of keys that exist from those specified as arguments.
     @inlinable
     public func exists(key: [ValkeyKey]) async throws -> Int {
         try await send(command: EXISTS(key: key))
@@ -920,10 +916,9 @@ extension ValkeyConnection {
     /// - Documentation: [EXPIRE](https:/valkey.io/commands/expire)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the timeout was not set; for example, the key doesn't exist, or the operation was skipped because of the provided arguments.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the timeout was set.
+    /// - Returns: One of the following
+    ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
+    ///     * 1: The timeout was set.
     @inlinable
     public func expire(key: ValkeyKey, seconds: Int, condition: EXPIRE.Condition? = nil) async throws -> Int {
         try await send(command: EXPIRE(key: key, seconds: seconds, condition: condition))
@@ -934,10 +929,9 @@ extension ValkeyConnection {
     /// - Documentation: [EXPIREAT](https:/valkey.io/commands/expireat)
     /// - Version: 1.2.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the timeout was not set; for example, the key doesn't exist, or the operation was skipped because of the provided arguments.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the timeout was set.
+    /// - Returns: One of the following
+    ///     * 1: The timeout was set.
+    ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     @inlinable
     public func expireat(key: ValkeyKey, unixTimeSeconds: Date, condition: EXPIREAT.Condition? = nil) async throws -> Int {
         try await send(command: EXPIREAT(key: key, unixTimeSeconds: unixTimeSeconds, condition: condition))
@@ -948,11 +942,10 @@ extension ValkeyConnection {
     /// - Documentation: [EXPIRETIME](https:/valkey.io/commands/expiretime)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the expiration Unix timestamp in seconds.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` if the key exists but has no associated expiration time.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-2` if the key does not exist.
+    /// - Returns: One of the following
+    ///     * [Integer]: Expiration Unix timestamp in seconds.
+    ///     * -1: The key exists but has no associated expiration time.
+    ///     * -2: The key does not exist.
     @inlinable
     public func expiretime(key: ValkeyKey) async throws -> Int {
         try await send(command: EXPIRETIME(key: key))
@@ -963,22 +956,20 @@ extension ValkeyConnection {
     /// - Documentation: [KEYS](https:/valkey.io/commands/keys)
     /// - Version: 1.0.0
     /// - Complexity: O(N) with N being the number of keys in the database, under the assumption that the key names in the database and the given pattern have limited length.
-    /// - Categories: @keyspace, @read, @slow, @dangerous
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of keys matching _pattern_.
+    /// - Returns: [Array]: List of keys matching pattern.
     @inlinable
     public func keys(pattern: String) async throws -> RESPToken.Array {
         try await send(command: KEYS(pattern: pattern))
     }
 
-    /// Atomically transfers a key from one Valkey instance to another.
+    /// Atomically transfers a key from one instance to another.
     ///
     /// - Documentation: [MIGRATE](https:/valkey.io/commands/migrate)
     /// - Version: 2.6.0
     /// - Complexity: This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Returns: One of the following:
-    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK` on success.
-    ///     * [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `NOKEY` when no keys were found in the source instance.
+    /// - Returns: One of the following
+    ///     * "OK": Success.
+    ///     * "NOKEY": No keys were found in the source instance.
     @inlinable
     public func migrate<Host: RESPStringRenderable>(host: Host, port: Int, keySelector: MIGRATE<Host>.KeySelector, destinationDb: Int, timeout: Int, copy: Bool = false, replace: Bool = false, authentication: MIGRATE<Host>.Authentication? = nil, keys: [ValkeyKey] = []) async throws -> String? {
         try await send(command: MIGRATE(host: host, port: port, keySelector: keySelector, destinationDb: destinationDb, timeout: timeout, copy: copy, replace: replace, authentication: authentication, keys: keys))
@@ -989,40 +980,35 @@ extension ValkeyConnection {
     /// - Documentation: [MOVE](https:/valkey.io/commands/move)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if _key_ was moved.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if _key_ already exists in the destination database, or it does not exist in the source database.
+    /// - Returns: One of the following
+    ///     * 1: Key was moved.
+    ///     * 0: Key wasn't moved.
     @inlinable
     public func move(key: ValkeyKey, db: Int) async throws -> Int {
         try await send(command: MOVE(key: key, db: db))
     }
 
-    /// Returns the internal encoding of a Valkey object.
+    /// Returns the internal encoding of an object.
     ///
     /// - Documentation: [OBJECT ENCODING](https:/valkey.io/commands/object-encoding)
     /// - Version: 2.2.3
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): if the key doesn't exist.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the encoding of the object.
+    /// - Returns: One of the following
+    ///     * [Null]: Key doesn't exist.
+    ///     * [String]: Encoding of the object.
     @inlinable
     public func objectEncoding(key: ValkeyKey) async throws -> RESPToken? {
         try await send(command: OBJECT.ENCODING(key: key))
     }
 
-    /// Returns the logarithmic access frequency counter of a Valkey object.
+    /// Returns the logarithmic access frequency counter of an object.
     ///
     /// - Documentation: [OBJECT FREQ](https:/valkey.io/commands/object-freq)
     /// - Version: 4.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Returns: One of the following:
-    ///     [Integer](https:/valkey.io/topics/protocol/#integers): the counter's value.
-    ///     [Null](https:/valkey.io/topics/protocol/#nulls): if _key_ doesn't exist.
+    /// - Returns: [Integer]: The counter's value.
     @inlinable
-    public func objectFreq(key: ValkeyKey) async throws -> Int? {
+    public func objectFreq(key: ValkeyKey) async throws -> Int {
         try await send(command: OBJECT.FREQ(key: key))
     }
 
@@ -1031,24 +1017,20 @@ extension ValkeyConnection {
     /// - Documentation: [OBJECT HELP](https:/valkey.io/commands/object-help)
     /// - Version: 6.2.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @slow
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sub-commands and their descriptions.
+    /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
     public func objectHelp() async throws -> RESPToken.Array {
         try await send(command: OBJECT.HELP())
     }
 
-    /// Returns the time since the last access to a Valkey object.
+    /// Returns the time since the last access to an object.
     ///
     /// - Documentation: [OBJECT IDLETIME](https:/valkey.io/commands/object-idletime)
     /// - Version: 2.2.3
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Returns: One of the following:
-    ///     [Integer](https:/valkey.io/topics/protocol/#integers): the idle time in seconds.
-    ///     [Null](https:/valkey.io/topics/protocol/#nulls): if _key_ doesn't exist.
+    /// - Returns: [Integer]: The idle time in seconds.
     @inlinable
-    public func objectIdletime(key: ValkeyKey) async throws -> Int? {
+    public func objectIdletime(key: ValkeyKey) async throws -> Int {
         try await send(command: OBJECT.IDLETIME(key: key))
     }
 
@@ -1057,12 +1039,9 @@ extension ValkeyConnection {
     /// - Documentation: [OBJECT REFCOUNT](https:/valkey.io/commands/object-refcount)
     /// - Version: 2.2.3
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Returns: One of the following:
-    ///     [Integer](https:/valkey.io/topics/protocol/#integers): the number of references.
-    ///     [Null](https:/valkey.io/topics/protocol/#nulls): if _key_ doesn't exist.
+    /// - Returns: [Integer]: The number of references.
     @inlinable
-    public func objectRefcount(key: ValkeyKey) async throws -> Int? {
+    public func objectRefcount(key: ValkeyKey) async throws -> Int {
         try await send(command: OBJECT.REFCOUNT(key: key))
     }
 
@@ -1071,10 +1050,9 @@ extension ValkeyConnection {
     /// - Documentation: [PERSIST](https:/valkey.io/commands/persist)
     /// - Version: 2.2.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if _key_ does not exist or does not have an associated timeout.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the timeout has been removed.
+    /// - Returns: One of the following
+    ///     * 0: Key does not exist or does not have an associated timeout.
+    ///     * 1: The timeout has been removed.
     @inlinable
     public func persist(key: ValkeyKey) async throws -> Int {
         try await send(command: PERSIST(key: key))
@@ -1085,10 +1063,9 @@ extension ValkeyConnection {
     /// - Documentation: [PEXPIRE](https:/valkey.io/commands/pexpire)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0`if the timeout was not set. For example, if the key doesn't exist, or the operation skipped because of the provided arguments.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the timeout was set.
+    /// - Returns: One of the following
+    ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
+    ///     * 1: The timeout was set.
     @inlinable
     public func pexpire(key: ValkeyKey, milliseconds: Int, condition: PEXPIRE.Condition? = nil) async throws -> Int {
         try await send(command: PEXPIRE(key: key, milliseconds: milliseconds, condition: condition))
@@ -1099,10 +1076,9 @@ extension ValkeyConnection {
     /// - Documentation: [PEXPIREAT](https:/valkey.io/commands/pexpireat)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if the timeout was set.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if the timeout was not set. For example, if the key doesn't exist, or the operation was skipped due to the provided arguments.
+    /// - Returns: One of the following
+    ///     * 1: The timeout was set.
+    ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     @inlinable
     public func pexpireat(key: ValkeyKey, unixTimeMilliseconds: Date, condition: PEXPIREAT.Condition? = nil) async throws -> Int {
         try await send(command: PEXPIREAT(key: key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition))
@@ -1113,11 +1089,10 @@ extension ValkeyConnection {
     /// - Documentation: [PEXPIRETIME](https:/valkey.io/commands/pexpiretime)
     /// - Version: 7.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): Expiration Unix timestamp in milliseconds.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` if the key exists but has no associated expiration time.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-2` if the key does not exist.
+    /// - Returns: One of the following
+    ///     * [Integer]: Expiration Unix timestamp in milliseconds.
+    ///     * -1: The key exists but has no associated expiration time.
+    ///     * -2: The key does not exist.
     @inlinable
     public func pexpiretime(key: ValkeyKey) async throws -> Int {
         try await send(command: PEXPIRETIME(key: key))
@@ -1128,11 +1103,10 @@ extension ValkeyConnection {
     /// - Documentation: [PTTL](https:/valkey.io/commands/pttl)
     /// - Version: 2.6.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): TTL in milliseconds.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` if the key exists but has no associated expiration.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-2` if the key does not exist.
+    /// - Returns: One of the following
+    ///     * [Integer]: TTL in milliseconds.
+    ///     * -1: The key exists but has no associated expire.
+    ///     * -2: The key does not exist.
     @inlinable
     public func pttl(key: ValkeyKey) async throws -> Int {
         try await send(command: PTTL(key: key))
@@ -1143,10 +1117,9 @@ extension ValkeyConnection {
     /// - Documentation: [RANDOMKEY](https:/valkey.io/commands/randomkey)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @slow
-    /// - Returns: One of the following:
-    ///     * [Null](https:/valkey.io/topics/protocol/#nulls): when the database is empty.
-    ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): a random key in the database.
+    /// - Returns: One of the following
+    ///     * [Null]: When the database is empty.
+    ///     * [String]: Random key in db.
     @inlinable
     public func randomkey() async throws -> RESPToken? {
         try await send(command: RANDOMKEY())
@@ -1157,8 +1130,6 @@ extension ValkeyConnection {
     /// - Documentation: [RENAME](https:/valkey.io/commands/rename)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @slow
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
     @inlinable
     public func rename(key: ValkeyKey, newkey: ValkeyKey) async throws {
         _ = try await send(command: RENAME(key: key, newkey: newkey))
@@ -1169,10 +1140,9 @@ extension ValkeyConnection {
     /// - Documentation: [RENAMENX](https:/valkey.io/commands/renamenx)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `1` if _key_ was renamed to _newkey_.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `0` if _newkey_ already exists.
+    /// - Returns: One of the following
+    ///     * 1: Key was renamed to newkey.
+    ///     * 0: New key already exists.
     @inlinable
     public func renamenx(key: ValkeyKey, newkey: ValkeyKey) async throws -> Int {
         try await send(command: RENAMENX(key: key, newkey: newkey))
@@ -1182,9 +1152,7 @@ extension ValkeyConnection {
     ///
     /// - Documentation: [RESTORE](https:/valkey.io/commands/restore)
     /// - Version: 2.6.0
-    /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of Valkey objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
-    /// - Categories: @keyspace, @write, @slow, @dangerous
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): `OK`.
+    /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     @inlinable
     public func restore<SerializedValue: RESPStringRenderable>(key: ValkeyKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
         _ = try await send(command: RESTORE(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
@@ -1195,10 +1163,7 @@ extension ValkeyConnection {
     /// - Documentation: [SCAN](https:/valkey.io/commands/scan)
     /// - Version: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Categories: @keyspace, @read, @slow
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): specifically, an array with two elements.
-    ///     * The first element is a [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings) that represents an unsigned 64-bit number, the cursor.
-    ///     * The second element is an [Array](https:/valkey.io/topics/protocol/#arrays) with the names of scanned keys.
+    /// - Returns: [Array]: Cursor and scan response in array form.
     @inlinable
     public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> RESPToken.Array {
         try await send(command: SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
@@ -1209,9 +1174,9 @@ extension ValkeyConnection {
     /// - Documentation: [SORT](https:/valkey.io/commands/sort)
     /// - Version: 1.0.0
     /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
-    /// - Categories: @write, @set, @sortedset, @list, @slow, @dangerous
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): without passing the _STORE_ option, the command returns a list of sorted elements.
-    ///     [Integer](https:/valkey.io/topics/protocol/#integers): when the _STORE_ option is specified, the command returns the number of sorted elements in the destination list.
+    /// - Returns: One of the following
+    ///     * [Integer]: When the store option is specified the command returns the number of sorted elements in the destination list.
+    ///     * [Array]: When not passing the store option the command returns a list of sorted elements.
     @inlinable
     public func sort(key: ValkeyKey, byPattern: String? = nil, limit: SORT.Limit? = nil, getPattern: [String] = [], order: SORT.Order? = nil, sorting: Bool = false, destination: ValkeyKey? = nil) async throws -> SORT.Response {
         try await send(command: SORT(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting, destination: destination))
@@ -1222,8 +1187,7 @@ extension ValkeyConnection {
     /// - Documentation: [SORT_RO](https:/valkey.io/commands/sort_ro)
     /// - Version: 7.0.0
     /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
-    /// - Categories: @read, @set, @sortedset, @list, @slow, @dangerous
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): a list of sorted elements.
+    /// - Returns: [Array]: A list of sorted elements.
     @inlinable
     public func sortRo(key: ValkeyKey, byPattern: String? = nil, limit: SORTRO.Limit? = nil, getPattern: [String] = [], order: SORTRO.Order? = nil, sorting: Bool = false) async throws -> RESPToken.Array {
         try await send(command: SORTRO(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
@@ -1234,8 +1198,7 @@ extension ValkeyConnection {
     /// - Documentation: [TOUCH](https:/valkey.io/commands/touch)
     /// - Version: 3.2.1
     /// - Complexity: O(N) where N is the number of keys that will be touched.
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of touched keys.
+    /// - Returns: [Integer]: The number of touched keys.
     @inlinable
     public func touch(key: [ValkeyKey]) async throws -> Int {
         try await send(command: TOUCH(key: key))
@@ -1246,11 +1209,10 @@ extension ValkeyConnection {
     /// - Documentation: [TTL](https:/valkey.io/commands/ttl)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: One of the following:
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): TTL in seconds.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-1` if the key exists but has no associated expiration.
-    ///     * [Integer](https:/valkey.io/topics/protocol/#integers): `-2` if the key does not exist.
+    /// - Returns: One of the following
+    ///     * [Integer]: TTL in seconds.
+    ///     * -1: The key exists but has no associated expire.
+    ///     * -2: The key does not exist.
     @inlinable
     public func ttl(key: ValkeyKey) async throws -> Int {
         try await send(command: TTL(key: key))
@@ -1261,10 +1223,11 @@ extension ValkeyConnection {
     /// - Documentation: [TYPE](https:/valkey.io/commands/type)
     /// - Version: 1.0.0
     /// - Complexity: O(1)
-    /// - Categories: @keyspace, @read, @fast
-    /// - Returns: [Simple string](https:/valkey.io/topics/protocol/#simple-strings): the type of _key_, or `none` when _key_ doesn't exist.
+    /// - Returns: One of the following
+    ///     * [Null]: Key doesn't exist
+    ///     * [String]: Type of the key
     @inlinable
-    public func type(key: ValkeyKey) async throws -> String {
+    public func type(key: ValkeyKey) async throws -> RESPToken? {
         try await send(command: TYPE(key: key))
     }
 
@@ -1273,8 +1236,7 @@ extension ValkeyConnection {
     /// - Documentation: [UNLINK](https:/valkey.io/commands/unlink)
     /// - Version: 4.0.0
     /// - Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
-    /// - Categories: @keyspace, @write, @fast
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of keys that were unlinked.
+    /// - Returns: [Integer]: The number of keys that were unlinked.
     @inlinable
     public func unlink(key: [ValkeyKey]) async throws -> Int {
         try await send(command: UNLINK(key: key))
@@ -1285,22 +1247,18 @@ extension ValkeyConnection {
     /// - Documentation: [WAIT](https:/valkey.io/commands/wait)
     /// - Version: 3.0.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Integer](https:/valkey.io/topics/protocol/#integers): the number of replicas reached by all the writes performed in the context of the current connection.
+    /// - Returns: [Integer]: The number of replicas reached by all the writes performed in the context of the current connection.
     @inlinable
     public func wait(numreplicas: Int, timeout: Int) async throws -> Int {
         try await send(command: WAIT(numreplicas: numreplicas, timeout: timeout))
     }
 
-    /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the master and/or replicas.
+    /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the primary and/or replicas.
     ///
     /// - Documentation: [WAITAOF](https:/valkey.io/commands/waitaof)
     /// - Version: 7.2.0
     /// - Complexity: O(1)
-    /// - Categories: @slow, @connection
-    /// - Returns: [Array](https:/valkey.io/topics/protocol/#arrays): The command returns an array of two integers:
-    ///     1. The first is the number of local Valkey nodes (0 or 1) that have fsynced to AOF all writes performed in the context of the current connection
-    ///     2. The second is the number of replicas that have acknowledged doing the same.
+    /// - Returns: [Array]: Number of local and remote AOF files in sync.
     @inlinable
     public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> RESPToken.Array {
         try await send(command: WAITAOF(numlocal: numlocal, numreplicas: numreplicas, timeout: timeout))
