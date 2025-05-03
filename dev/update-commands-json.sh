@@ -35,6 +35,8 @@ cleanup()
 COMMANDS_LOCATION=${1:-"https://github.com/valkey-io/valkey.git"}
 COMMANDS_FOLDER=${2:-"src/commands/"}
 
+FILENAME=$(basename "$COMMANDS_LOCATION" .git)
+
 if [[ "$COMMANDS_LOCATION" == http* ]]; then
     TEMP_DIR=$(mktemp -d)
     trap cleanup EXIT $?
@@ -49,4 +51,4 @@ jq -s 'reduce .[] as $item (
         ($item | flatten | first | map_values(.))
     }
 )' \
-"$COMMANDS_LOCATION/$COMMANDS_FOLDER"*.json > Sources/ValkeyCommandsBuilder/Resources/commands.json
+"$COMMANDS_LOCATION/$COMMANDS_FOLDER"*.json > Sources/ValkeyCommandsBuilder/Resources/"$FILENAME"-commands.json
