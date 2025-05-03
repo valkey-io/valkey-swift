@@ -579,7 +579,7 @@ extension ValkeyConnection {
     /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
     ///
     /// - Documentation: [BLMOVE](https:/valkey.io/commands/blmove)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The popped element.
@@ -592,7 +592,7 @@ extension ValkeyConnection {
     /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [BLMPOP](https:/valkey.io/commands/blmpop)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
     /// - Returns: One of the following
     ///     * [Null]: Operation timed-out
@@ -605,7 +605,9 @@ extension ValkeyConnection {
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [BLPOP](https:/valkey.io/commands/blpop)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
+    /// - History:
+    ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(N) where N is the number of provided keys.
     /// - Returns: One of the following
     ///     * [Null]: No element could be popped and timeout expired
@@ -618,7 +620,9 @@ extension ValkeyConnection {
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [BRPOP](https:/valkey.io/commands/brpop)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
+    /// - History:
+    ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(N) where N is the number of provided keys.
     /// - Returns: One of the following
     ///     * [Null]: No element could be popped and the timeout expired.
@@ -631,7 +635,9 @@ extension ValkeyConnection {
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [BRPOPLPUSH](https:/valkey.io/commands/brpoplpush)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
+    /// - History:
+    ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The element being popped from source and pushed to destination.
@@ -645,7 +651,7 @@ extension ValkeyConnection {
     /// Returns an element from a list by its index.
     ///
     /// - Documentation: [LINDEX](https:/valkey.io/commands/lindex)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to traverse to get to the element at index. This makes asking for the first or the last element of the list O(1).
     /// - Returns: One of the following
     ///     * [Null]: Index is out of range
@@ -658,7 +664,7 @@ extension ValkeyConnection {
     /// Inserts an element before or after another element in a list.
     ///
     /// - Documentation: [LINSERT](https:/valkey.io/commands/linsert)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
     /// - Complexity: O(N) where N is the number of elements to traverse before seeing the value pivot. This means that inserting somewhere on the left end on the list (head) can be considered O(1) and inserting somewhere on the right end (tail) is O(N).
     /// - Returns: One of the following
     ///     * [Integer]: List length after a successful insert operation.
@@ -672,7 +678,7 @@ extension ValkeyConnection {
     /// Returns the length of a list.
     ///
     /// - Documentation: [LLEN](https:/valkey.io/commands/llen)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: List length.
     @inlinable
@@ -683,7 +689,7 @@ extension ValkeyConnection {
     /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
     ///
     /// - Documentation: [LMOVE](https:/valkey.io/commands/lmove)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     /// - Returns: [String]: The element being popped and pushed.
     @inlinable
@@ -694,7 +700,7 @@ extension ValkeyConnection {
     /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [LMPOP](https:/valkey.io/commands/lmpop)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N+M) where N is the number of provided keys and M is the number of elements returned.
     /// - Returns: One of the following
     ///     * [Null]: If no element could be popped.
@@ -707,7 +713,9 @@ extension ValkeyConnection {
     /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [LPOP](https:/valkey.io/commands/lpop)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 6.2.0: Added the `count` argument.
     /// - Complexity: O(N) where N is the number of elements returned
     /// - Returns: One of the following
     ///     * [Null]: Key does not exist.
@@ -721,7 +729,7 @@ extension ValkeyConnection {
     /// Returns the index of matching elements in a list.
     ///
     /// - Documentation: [LPOS](https:/valkey.io/commands/lpos)
-    /// - Version: 6.0.6
+    /// - Available: 6.0.6
     /// - Complexity: O(N) where N is the number of elements in the list, for the average case. When searching for elements near the head or the tail of the list, or when the MAXLEN option is provided, the command may run in constant time.
     /// - Returns: One of the following
     ///     * [Null]: In case there is no matching element
@@ -735,7 +743,9 @@ extension ValkeyConnection {
     /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [LPUSH](https:/valkey.io/commands/lpush)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 2.4.0: Accepts multiple `element` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Returns: [Integer]: Length of the list after the push operations.
     @inlinable
@@ -746,7 +756,9 @@ extension ValkeyConnection {
     /// Prepends one or more elements to a list only when the list exists.
     ///
     /// - Documentation: [LPUSHX](https:/valkey.io/commands/lpushx)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
+    /// - History:
+    ///     * 4.0.0: Accepts multiple `element` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Returns: [Integer]: The length of the list after the push operation.
     @inlinable
@@ -757,7 +769,7 @@ extension ValkeyConnection {
     /// Returns a range of elements from a list.
     ///
     /// - Documentation: [LRANGE](https:/valkey.io/commands/lrange)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(S+N) where S is the distance of start offset from HEAD for small lists, from nearest end (HEAD or TAIL) for large lists; and N is the number of elements in the specified range.
     /// - Returns: [Array]: List of elements in the specified range
     @inlinable
@@ -768,7 +780,7 @@ extension ValkeyConnection {
     /// Removes elements from a list. Deletes the list if the last element was removed.
     ///
     /// - Documentation: [LREM](https:/valkey.io/commands/lrem)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N+M) where N is the length of the list and M is the number of elements removed.
     /// - Returns: [Integer]: The number of removed elements.
     @inlinable
@@ -779,7 +791,7 @@ extension ValkeyConnection {
     /// Sets the value of an element in a list by its index.
     ///
     /// - Documentation: [LSET](https:/valkey.io/commands/lset)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the length of the list. Setting either the first or the last element of the list is O(1).
     @inlinable
     public func lset<Element: RESPStringRenderable>(key: ValkeyKey, index: Int, element: Element) async throws {
@@ -789,7 +801,7 @@ extension ValkeyConnection {
     /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
     ///
     /// - Documentation: [LTRIM](https:/valkey.io/commands/ltrim)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to be removed by the operation.
     @inlinable
     public func ltrim(key: ValkeyKey, start: Int, stop: Int) async throws {
@@ -799,7 +811,9 @@ extension ValkeyConnection {
     /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [RPOP](https:/valkey.io/commands/rpop)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 6.2.0: Added the `count` argument.
     /// - Complexity: O(N) where N is the number of elements returned
     /// - Returns: One of the following
     ///     * [Null]: Key does not exist.
@@ -813,7 +827,7 @@ extension ValkeyConnection {
     /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [RPOPLPUSH](https:/valkey.io/commands/rpoplpush)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The element being popped and pushed.
@@ -827,7 +841,9 @@ extension ValkeyConnection {
     /// Appends one or more elements to a list. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [RPUSH](https:/valkey.io/commands/rpush)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 2.4.0: Accepts multiple `element` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Returns: [Integer]: Length of the list after the push operations.
     @inlinable
@@ -838,7 +854,9 @@ extension ValkeyConnection {
     /// Appends an element to a list only when the list exists.
     ///
     /// - Documentation: [RPUSHX](https:/valkey.io/commands/rpushx)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
+    /// - History:
+    ///     * 4.0.0: Accepts multiple `element` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Returns: [Integer]: Length of the list after the push operation.
     @inlinable

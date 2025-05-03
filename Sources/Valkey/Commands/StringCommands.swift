@@ -554,7 +554,7 @@ extension ValkeyConnection {
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [APPEND](https:/valkey.io/commands/append)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by the server will double the free space available on every reallocation.
     /// - Returns: [Integer]: The length of the string after the append operation.
     @inlinable
@@ -565,7 +565,7 @@ extension ValkeyConnection {
     /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
     ///
     /// - Documentation: [DECR](https:/valkey.io/commands/decr)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The value of the key after decrementing it.
     @inlinable
@@ -576,7 +576,7 @@ extension ValkeyConnection {
     /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
     ///
     /// - Documentation: [DECRBY](https:/valkey.io/commands/decrby)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The value of the key after decrementing it.
     @inlinable
@@ -587,7 +587,7 @@ extension ValkeyConnection {
     /// Returns the string value of a key.
     ///
     /// - Documentation: [GET](https:/valkey.io/commands/get)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The value of the key.
@@ -600,7 +600,7 @@ extension ValkeyConnection {
     /// Returns the string value of a key after deleting the key.
     ///
     /// - Documentation: [GETDEL](https:/valkey.io/commands/getdel)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The value of the key.
@@ -613,7 +613,7 @@ extension ValkeyConnection {
     /// Returns the string value of a key after setting its expiration time.
     ///
     /// - Documentation: [GETEX](https:/valkey.io/commands/getex)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The value of the key.
@@ -626,7 +626,7 @@ extension ValkeyConnection {
     /// Returns a substring of the string stored at a key.
     ///
     /// - Documentation: [GETRANGE](https:/valkey.io/commands/getrange)
-    /// - Version: 2.4.0
+    /// - Available: 2.4.0
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Returns: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
@@ -637,7 +637,7 @@ extension ValkeyConnection {
     /// Returns the previous string value of a key after setting it to a new value.
     ///
     /// - Documentation: [GETSET](https:/valkey.io/commands/getset)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The old value stored at the key.
@@ -651,7 +651,7 @@ extension ValkeyConnection {
     /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
     ///
     /// - Documentation: [INCR](https:/valkey.io/commands/incr)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The value of key after the increment
     @inlinable
@@ -662,7 +662,7 @@ extension ValkeyConnection {
     /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
     ///
     /// - Documentation: [INCRBY](https:/valkey.io/commands/incrby)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The value of the key after incrementing it.
     @inlinable
@@ -673,7 +673,7 @@ extension ValkeyConnection {
     /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
     ///
     /// - Documentation: [INCRBYFLOAT](https:/valkey.io/commands/incrbyfloat)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: O(1)
     /// - Returns: [String]: The value of the key after incrementing it.
     @inlinable
@@ -684,7 +684,7 @@ extension ValkeyConnection {
     /// Finds the longest common substring.
     ///
     /// - Documentation: [LCS](https:/valkey.io/commands/lcs)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N*M) where N and M are the lengths of s1 and s2, respectively
     /// - Returns: One of the following
     ///     * [String]: The longest common subsequence.
@@ -698,7 +698,7 @@ extension ValkeyConnection {
     /// Atomically returns the string values of one or more keys.
     ///
     /// - Documentation: [MGET](https:/valkey.io/commands/mget)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the number of keys to retrieve.
     /// - Returns: [Array]: List of values at the specified keys.
     @inlinable
@@ -709,7 +709,7 @@ extension ValkeyConnection {
     /// Atomically creates or modifies the string values of one or more keys.
     ///
     /// - Documentation: [MSET](https:/valkey.io/commands/mset)
-    /// - Version: 1.0.1
+    /// - Available: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
     @inlinable
     public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws {
@@ -719,7 +719,7 @@ extension ValkeyConnection {
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
     ///
     /// - Documentation: [MSETNX](https:/valkey.io/commands/msetnx)
-    /// - Version: 1.0.1
+    /// - Available: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
     /// - Returns: One of the following
     ///     * 0: No key was set (at least one key already existed).
@@ -732,7 +732,7 @@ extension ValkeyConnection {
     /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
     ///
     /// - Documentation: [PSETEX](https:/valkey.io/commands/psetex)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: O(1)
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
@@ -743,7 +743,12 @@ extension ValkeyConnection {
     /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
     ///
     /// - Documentation: [SET](https:/valkey.io/commands/set)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 2.6.12: Added the `EX`, `PX`, `NX` and `XX` options.
+    ///     * 6.0.0: Added the `KEEPTTL` option.
+    ///     * 6.2.0: Added the `GET`, `EXAT` and `PXAT` option.
+    ///     * 7.0.0: Allowed the `NX` and `GET` options to be used together.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Null]: `GET` not given: Operation was aborted (conflict with one of the `XX`/`NX` options).
@@ -758,7 +763,7 @@ extension ValkeyConnection {
     /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [SETEX](https:/valkey.io/commands/setex)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(1)
     @inlinable
     @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
@@ -769,7 +774,7 @@ extension ValkeyConnection {
     /// Set the string value of a key only when the key doesn't exist.
     ///
     /// - Documentation: [SETNX](https:/valkey.io/commands/setnx)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: The key was set.
@@ -783,7 +788,7 @@ extension ValkeyConnection {
     /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [SETRANGE](https:/valkey.io/commands/setrange)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
     /// - Complexity: O(1), not counting the time taken to copy the new string in place. Usually, this string is very small so the amortized complexity is O(1). Otherwise, complexity is O(M) with M being the length of the value argument.
     /// - Returns: [Integer]: Length of the string after it was modified by the command.
     @inlinable
@@ -794,7 +799,7 @@ extension ValkeyConnection {
     /// Returns the length of a string value.
     ///
     /// - Documentation: [STRLEN](https:/valkey.io/commands/strlen)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The length of the string value stored at key, or 0 when key does not exist.
     @inlinable
@@ -805,7 +810,7 @@ extension ValkeyConnection {
     /// Returns a substring from a string value.
     ///
     /// - Documentation: [SUBSTR](https:/valkey.io/commands/substr)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Returns: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
