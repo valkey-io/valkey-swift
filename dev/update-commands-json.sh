@@ -2,11 +2,13 @@
 
 get_valkey()
 {
-    DESTIONATION_FOLDER=$1
-    # clone valkey into folder
-    git clone --depth 1 https://github.com/valkey-io/valkey.git "$DESTIONATION_FOLDER"
+    DESTINATION_FOLDER=$1
+    COMMANDS_ADDRESS=$2
 
-    pushd "$DESTIONATION_FOLDER"
+    # clone valkey into folder
+    git clone --depth 1 "$COMMANDS_ADDRESS" "$DESTINATION_FOLDER"
+
+    pushd "$DESTINATION_FOLDER"
 
     git fetch --tags
     RELEASE_REVISION=$(git rev-list --tags --max-count=1)
@@ -30,14 +32,15 @@ cleanup()
     fi
 }
 
-VALKEY_LOCATION=${1:-""}
+COMMANDS_LOCATION=${1:-"https://github.com/valkey-io/valkey.git"}
+COMMANDS_FOLDER=${2:-"src/commands/"}
 
-if [ -z "$VALKEY_LOCATION" ]; then
+if [[ "$COMMANDS_LOCATION" == http* ]]; then
     TEMP_DIR=$(mktemp -d)
     trap cleanup EXIT $?
 
-    get_valkey $TEMP_DIR
-    VALKEY_LOCATION=$TEMP_DIR
+    get_valkey $TEMP_DIR $COMMANDS_LOCATION
+    COMMANDS_LOCATION=$TEMP_DIR
 fi
 
 jq -s 'reduce .[] as $item (
@@ -46,4 +49,4 @@ jq -s 'reduce .[] as $item (
         ($item | flatten | first | map_values(.))
     }
 )' \
-"$VALKEY_LOCATION"/src/commands/*.json > Sources/ValkeyCommandsBuilder/Resources/commands.json
+"$COMMANDS_LOCATION/$COMMANDS_FOLDER"*.json > Sources/ValkeyCommandsBuilder/Resources/commands.json
