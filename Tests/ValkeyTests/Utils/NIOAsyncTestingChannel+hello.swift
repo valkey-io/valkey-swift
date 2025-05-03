@@ -19,9 +19,9 @@ import Testing
 @testable import Valkey
 
 extension NIOAsyncTestingChannel {
-    func processHello(version: ValkeyClientConfiguration.RESPVersion = .v3) async throws {
+    func processHello() async throws {
         let hello = try await self.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(hello == RESPToken(.array([.bulkString("HELLO"), .bulkString("\(version.rawValue)")])).base)
+        #expect(hello == RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
         try await self.writeInbound(
             RESPToken(
                 .map([
