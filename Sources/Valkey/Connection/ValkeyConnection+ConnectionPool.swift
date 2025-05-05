@@ -16,6 +16,7 @@ import Logging
 import Synchronization
 import _ConnectionPoolModule
 
+/// Extend ValkeyConnection so we can use it with the connection pool
 extension ValkeyConnection: PooledConnection {
     // connection id
     public typealias ID = Int
@@ -25,6 +26,7 @@ extension ValkeyConnection: PooledConnection {
     }
 }
 
+/// Keep alive behavior for Valkey connection
 struct ValkeyKeepAliveBehavor: ConnectionKeepAliveBehavior {
     let behavior: ValkeyClientConfiguration.KeepAliveBehavior?
 
@@ -49,6 +51,7 @@ struct ValkeyKeepAliveBehavor: ConnectionKeepAliveBehavior {
     }
 }
 
+/// Connection id generator for Valkey connection pool
 public final class ConnectionIDGenerator: ConnectionIDGeneratorProtocol {
     static let globalGenerator = ConnectionIDGenerator()
 
@@ -63,6 +66,7 @@ public final class ConnectionIDGenerator: ConnectionIDGeneratorProtocol {
     }
 }
 
+/// Valkey client connection pool metrics
 final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
     typealias ConnectionID = ValkeyConnection.ID
 

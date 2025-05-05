@@ -43,6 +43,7 @@ public struct ServerAddress: Sendable, Equatable {
 
 /// Single connection to a Valkey database
 public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
+    /// Connection ID, used by connection pool
     public let id: ID
     /// Logger used by Server
     let logger: Logger
