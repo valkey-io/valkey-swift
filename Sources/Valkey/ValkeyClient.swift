@@ -94,7 +94,7 @@ public final class ValkeyClient: Sendable {
 extension ValkeyClient {
     func run() async throws {
         let atomicOp = self.runningAtomic.compareExchange(expected: false, desired: true, ordering: .relaxed)
-        precondition(!atomicOp.original, "PostgresClient.run() should just be called once!")
+        precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         await self.connectionPool.run()
     }
     /// Create connection and run operation using connection
@@ -116,7 +116,7 @@ extension ValkeyClient {
 
     private func leaseConnection() async throws -> ValkeyConnection {
         if !self.runningAtomic.load(ordering: .relaxed) {
-            self.logger.warning("Trying to lease connection from `PostgresClient`, but `PostgresClient.run()` hasn't been called yet.")
+            self.logger.warning("Trying to lease connection from `ValkeyClient`, but `ValkeyClient.run()` hasn't been called yet.")
         }
         return try await self.connectionPool.leaseConnection()
     }
