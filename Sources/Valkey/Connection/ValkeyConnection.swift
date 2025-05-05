@@ -43,6 +43,8 @@ public struct ServerAddress: Sendable, Equatable {
 
 /// Single connection to a Valkey database
 public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
+    static let idGenerator = Atomic(0)
+    public let id: ID
     /// Logger used by Server
     let logger: Logger
     @usableFromInline
@@ -55,6 +57,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// Initialize connection
     private init(
         channel: Channel,
+        connectionID: ID,
         channelHandler: ValkeyChannelHandler,
         configuration: ValkeyClientConfiguration,
         logger: Logger
@@ -62,6 +65,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         self.channel = channel
         self.channelHandler = .init(channelHandler, eventLoop: channel.eventLoop)
         self.configuration = configuration
+        self.id = connectionID
         self.logger = logger
         self.isClosed = .init(false)
     }
@@ -96,12 +100,11 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
 
     /// Close connection
     /// - Returns: EventLoopFuture that is completed on connection closure
-    public func close() -> EventLoopFuture<Void> {
+    public func close() {
         guard self.isClosed.compareExchange(expected: false, desired: true, successOrdering: .relaxed, failureOrdering: .relaxed).exchanged else {
-            return channel.eventLoop.makeSucceededVoidFuture()
+            return
         }
         self.channel.close(mode: .all, promise: nil)
-        return self.channel.closeFuture
     }
 
     /// Send RESP command to Valkey connection
@@ -213,7 +216,13 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
 
         return future.flatMapThrowing { channel in
             let handler = try channel.pipeline.syncOperations.handler(type: ValkeyChannelHandler.self)
-            return ValkeyConnection(channel: channel, channelHandler: handler, configuration: configuration, logger: logger)
+            return ValkeyConnection(
+                channel: channel,
+                connectionID: self.idGenerator.wrappingAdd(1, ordering: .relaxed).newValue,
+                channelHandler: handler,
+                configuration: configuration,
+                logger: logger
+            )
         }
     }
 
@@ -241,6 +250,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             let handler = try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
             let connection = ValkeyConnection(
                 channel: channel,
+                connectionID: self.idGenerator.wrappingAdd(1, ordering: .relaxed).newValue,
                 channelHandler: handler,
                 configuration: configuration,
                 logger: logger

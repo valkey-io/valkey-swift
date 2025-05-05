@@ -76,10 +76,12 @@ extension ValkeyClient {
         do {
             value = try await operation(valkeyConnection)
         } catch {
-            try? await valkeyConnection.close().get()
+            valkeyConnection.close()
+            try? await valkeyConnection.channel.closeFuture.get()
             throw error
         }
-        try await valkeyConnection.close().get()
+        valkeyConnection.close()
+        try await valkeyConnection.channel.closeFuture.get()
         return value
     }
 }
