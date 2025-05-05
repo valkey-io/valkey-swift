@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import NIOSSL
+import _ConnectionPoolModule
 
 /// Configuration for the Valkey client
 public struct ValkeyClientConfiguration: Sendable {
@@ -40,8 +41,28 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
+    /// A keep-alive behavior for Valkey connections. The ``frequency`` defines after which time an idle
+    /// connection shall run a keep-alive ``PING``.
+    public struct KeepAliveBehavior: Sendable {
+        /// The amount of time that shall pass before an idle connection runs a keep-alive ``query``.
+        public var frequency: Duration
+
+        /// Create a new `KeepAliveBehavior`.
+        /// - Parameters:
+        ///   - frequency: The amount of time that shall pass before an idle connection runs a keep-alive `query`.
+        ///                Defaults to `30` seconds.
+        public init(frequency: Duration = .seconds(30)) {
+            self.frequency = frequency
+        }
+    }
+
     /// authentication details
     public var authentication: Authentication?
+    /// connection pool configuration
+    public var connectionPool: ConnectionPoolConfiguration
+    /// keep alive behavior
+    public var keepAliveBehavior: KeepAliveBehavior
+
     /// TLS setup
     public var tls: TLS
 
@@ -51,9 +72,13 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - tlsConfiguration: TLS configuration
     public init(
         authentication: Authentication? = nil,
+        connectionPool: ConnectionPoolConfiguration = .init(),
+        keepAliveBehavior: KeepAliveBehavior = .init(),
         tls: TLS = .disable
     ) {
         self.authentication = authentication
+        self.connectionPool = connectionPool
+        self.keepAliveBehavior = keepAliveBehavior
         self.tls = tls
     }
 }

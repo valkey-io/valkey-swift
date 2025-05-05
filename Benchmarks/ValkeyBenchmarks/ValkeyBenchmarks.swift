@@ -41,22 +41,30 @@ let benchmarks: @Sendable () -> Void = {
         let logger = Logger(label: "test")
         let client = ValkeyClient(.hostname("127.0.0.1", port: port), logger: logger)
 
-        try await client.withConnection(logger: logger) { connection in
-            benchmark.startMeasurement()
-
-            for _ in benchmark.scaledIterations {
-                let foo = try await connection.get(key: "foo")?.decode(as: String.self)
-                precondition(foo == "Bar")
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                try await client.run()
             }
+            await Task.yield()
+            try await client.withConnection { connection in
+                benchmark.startMeasurement()
 
-            benchmark.stopMeasurement()
+                for _ in benchmark.scaledIterations {
+                    let foo = try await connection.get(key: "foo")?.decode(as: String.self)
+                    precondition(foo == "Bar")
+                }
+
+                benchmark.stopMeasurement()
+            }
+            group.cancelAll()
         }
     } setup: {
         struct GetHandler: BenchmarkCommandHandler {
+            static let expectedCommand = RESPToken.Value.bulkString(ByteBuffer(string: "GET"))
             static let response = ByteBuffer(string: "$3\r\nBar\r\n")
             func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
                 switch command {
-                case .bulkString(ByteBuffer(string: "GET")):
+                case Self.expectedCommand:
                     write(Self.response)
                 default:
                     fatalError()
@@ -139,10 +147,12 @@ protocol BenchmarkCommandHandler {
 }
 
 final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: ChannelInboundHandler {
+
     typealias InboundIn = ByteBuffer
     typealias OutboundOut = ByteBuffer
 
     private var decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
+    private let helloCommand = RESPToken.Value.bulkString(ByteBuffer(string: "HELLO"))
     private let helloResponse = ByteBuffer(string: "%1\r\n+server\r\n+fake\r\n")
     private let commandHandler: Handler
 
@@ -165,7 +175,7 @@ final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: Channe
             fatalError()
         }
         switch command {
-        case .bulkString(ByteBuffer(string: "HELLO")):
+        case helloCommand:
             context.writeAndFlush(self.wrapOutboundOut(helloResponse), promise: nil)
 
         default:
