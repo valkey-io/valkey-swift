@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "Valkey", targets: ["Valkey"])
     ],
     dependencies: [
+        .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.79.0"),
@@ -22,6 +23,7 @@ let package = Package(
         .target(
             name: "Valkey",
             dependencies: [
+                .byName(name: "_ConnectionPoolModule"),
                 .product(name: "DequeModule", package: "swift-collections"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
@@ -29,6 +31,14 @@ let package = Package(
                 .product(name: "NIOSSL", package: "swift-nio-ssl"),
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
             ]
+        ),
+        .target(
+            name: "_ConnectionPoolModule",
+            dependencies: [
+                .product(name: "Atomics", package: "swift-atomics"),
+                .product(name: "DequeModule", package: "swift-collections"),
+            ],
+            path: "Sources/ConnectionPoolModule"
         ),
         .executableTarget(
             name: "ValkeyCommandsBuilder",
@@ -45,13 +55,13 @@ let package = Package(
             ],
             path: "Benchmarks/ValkeyBenchmarks",
             plugins: [
-                .plugin(name: "BenchmarkPlugin", package: "package-benchmark"),
+                .plugin(name: "BenchmarkPlugin", package: "package-benchmark")
             ]
         ),
         .testTarget(
             name: "IntegrationTests",
             dependencies: [
-                "Valkey",
+                "Valkey"
             ]
         ),
         .testTarget(

@@ -1,8 +1,8 @@
 
-The RediStack Project
+The Swift-Valkey Project
 ====================
 
-Please visit the RediStack web site for more information:
+Please visit the Swift-Valkey web site for more information:
 
 * https://github.com/adam-fowler/swift-valkey
 
@@ -69,3 +69,12 @@ to Redis coding style by Salvatore Sanfilippo.
      */
   * HOMEPAGE:
     * https://redis.io/docs/reference/cluster-spec/#appendix-a-crc16-reference-implementation-in-ansi-c
+
+---
+
+This product contains a version of the ConnectionPoolModule from postgres-nio
+
+  * LICENSE (MIT)
+    * https://github.com/vapor/postgres-nio/blob/main/LICENSE
+  * HOMEPAGE:
+    * https://github.com/vapor/postgres-nio
