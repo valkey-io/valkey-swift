@@ -118,18 +118,24 @@ extension ValkeyClient {
     ) async throws -> Value {
         try await withConnection { connection in
             // start tracking
-            _ = try await connection.clientTracking(status: .on)
+            try await connection.clientTracking(status: .on)
             let cachedConnection = ValkeyCachedConnection(connection: connection)
 
-            return try await withThrowingTaskGroup(of: Void.self) { group in
-                group.addTask {
-                    try await cachedConnection.run()
+            do {
+                let value = try await withThrowingTaskGroup(of: Void.self) { group in
+                    group.addTask {
+                        try await cachedConnection.run()
+                    }
+                    let value = try await operation(cachedConnection)
+                    group.cancelAll()
+                    return value
                 }
-                let value = try await operation(cachedConnection)
-                group.cancelAll()
+                try await connection.clientTracking(status: .off)
                 return value
+            } catch {
+                try await connection.clientTracking(status: .off)
+                throw error
             }
         }
     }
-
 }
