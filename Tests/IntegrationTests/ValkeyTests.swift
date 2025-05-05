@@ -22,7 +22,7 @@ import Valkey
 
 struct GeneratedCommands {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
-    func withKey<Value>(connection: some ValkeyCommands, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
+    func withKey<Value>(connection: some ValkeyConnectionProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
         let key = ValkeyKey(rawValue: UUID().uuidString)
         let value: Value
         do {
@@ -649,18 +649,20 @@ struct GeneratedCommands {
     func testCachedConnection() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
-        try await ValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger).withCachedConnection(logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                _ = try await connection.set(key: key, value: "Hello")
-                var value = try await connection.get(key: key)
-                try #expect(value?.decode(as: String.self) == "Hello")
-                value = try await connection.get(key: key)
-                try #expect(value?.decode(as: String.self) == "Hello")
-                _ = try await connection.set(key: key, value: "Goodbye")
-                // wait for invalidate message to come through
-                try await Task.sleep(for: .milliseconds(10))
-                let value2 = try await connection.get(key: key)
-                try #expect(value2?.decode(as: String.self) == "Goodbye")
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { valkeyClient in
+            try await valkeyClient.withCachedConnection { connection in
+                try await withKey(connection: connection) { key in
+                    _ = try await connection.set(key: key, value: "Hello")
+                    var value = try await connection.get(key: key)
+                    try #expect(value?.decode(as: String.self) == "Hello")
+                    value = try await connection.get(key: key)
+                    try #expect(value?.decode(as: String.self) == "Hello")
+                    _ = try await connection.set(key: key, value: "Goodbye")
+                    // wait for invalidate message to come through
+                    try await Task.sleep(for: .milliseconds(10))
+                    let value2 = try await connection.get(key: key)
+                    try #expect(value2?.decode(as: String.self) == "Goodbye")
+                }
             }
         }
     }

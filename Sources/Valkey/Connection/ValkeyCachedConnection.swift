@@ -63,7 +63,7 @@ actor ValkeyCache {
 }
 
 /// Connection to Valkey database backed by a cache
-public final class ValkeyCachedConnection: ValkeyCommands, Sendable {
+public final class ValkeyCachedConnection: ValkeyConnectionProtocol, Sendable {
     /// invalidation subscription channel
     static let invalidateChannel = "__redis__:invalidate"
     @usableFromInline
@@ -77,8 +77,7 @@ public final class ValkeyCachedConnection: ValkeyCommands, Sendable {
     }
 
     /// Close connection
-    /// - Returns: EventLoopFuture that is completed on connection closure
-    public func close() -> EventLoopFuture<Void> {
+    public func close() {
         self.connection.close()
     }
 
@@ -115,10 +114,9 @@ extension ValkeyClient {
     ///   - logger: Logger
     ///   - operation: Closure handling Valkey connection
     public func withCachedConnection<Value: Sendable>(
-        logger: Logger,
         operation: (ValkeyCachedConnection) async throws -> Value
     ) async throws -> Value {
-        try await withConnection(logger: logger) { connection in
+        try await withConnection { connection in
             // start tracking
             _ = try await connection.clientTracking(status: .on)
             let cachedConnection = ValkeyCachedConnection(connection: connection)
