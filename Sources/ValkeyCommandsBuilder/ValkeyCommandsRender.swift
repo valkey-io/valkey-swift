@@ -36,7 +36,13 @@ extension String {
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
         self.append("    /// - Documentation: [\(name)](https:/valkey.io/commands/\(linkName))\n")
-        self.append("    /// - Version: \(command.since)\n")
+        self.append("    /// - Available: \(command.since)\n")
+        if let history = command.history {
+            self.append("    /// - History:\n")
+            for line in history {
+                self.append("    ///     * \(line[0]): \(line[1])\n")
+            }
+        }
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
         }

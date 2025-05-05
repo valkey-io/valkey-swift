@@ -988,7 +988,9 @@ extension ValkeyConnection {
     /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
     ///
     /// - Documentation: [GEOADD](https:/valkey.io/commands/geoadd)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
+    /// - History:
+    ///     * 6.2.0: Added the `CH`, `NX` and `XX` options.
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// - Returns: [Integer]: When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
@@ -999,7 +1001,7 @@ extension ValkeyConnection {
     /// Returns the distance between two members of a geospatial index.
     ///
     /// - Documentation: [GEODIST](https:/valkey.io/commands/geodist)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Null]: One or both of elements are missing.
@@ -1012,7 +1014,7 @@ extension ValkeyConnection {
     /// Returns members from a geospatial index as geohash strings.
     ///
     /// - Documentation: [GEOHASH](https:/valkey.io/commands/geohash)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
     /// - Complexity: O(1) for each member requested.
     /// - Returns: [Array]: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
     @inlinable
@@ -1023,7 +1025,7 @@ extension ValkeyConnection {
     /// Returns the longitude and latitude of members from a geospatial index.
     ///
     /// - Documentation: [GEOPOS](https:/valkey.io/commands/geopos)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
     /// - Complexity: O(1) for each member requested.
     /// - Returns: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
@@ -1034,7 +1036,10 @@ extension ValkeyConnection {
     /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
     ///
     /// - Documentation: [GEORADIUS](https:/valkey.io/commands/georadius)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
+    /// - History:
+    ///     * 6.2.0: Added the `ANY` option for `COUNT`.
+    ///     * 7.0.0: Added support for uppercase unit names.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
@@ -1046,7 +1051,10 @@ extension ValkeyConnection {
     /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
     ///
     /// - Documentation: [GEORADIUSBYMEMBER](https:/valkey.io/commands/georadiusbymember)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
+    /// - History:
+    ///     * 6.2.0: Added the `ANY` option for `COUNT`.
+    ///     * 7.0.0: Added support for uppercase unit names.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
@@ -1058,7 +1066,10 @@ extension ValkeyConnection {
     /// Returns members from a geospatial index that are within a distance from a member.
     ///
     /// - Documentation: [GEORADIUSBYMEMBER_RO](https:/valkey.io/commands/georadiusbymember_ro)
-    /// - Version: 3.2.10
+    /// - Available: 3.2.10
+    /// - History:
+    ///     * 6.2.0: Added the `ANY` option for `COUNT`.
+    ///     * 7.0.0: Added support for uppercase unit names.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
@@ -1070,7 +1081,10 @@ extension ValkeyConnection {
     /// Returns members from a geospatial index that are within a distance from a coordinate.
     ///
     /// - Documentation: [GEORADIUS_RO](https:/valkey.io/commands/georadius_ro)
-    /// - Version: 3.2.10
+    /// - Available: 3.2.10
+    /// - History:
+    ///     * 6.2.0: Added the `ANY` option for `COUNT`.
+    ///     * 7.0.0: Added support for uppercase unit names.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
@@ -1082,7 +1096,9 @@ extension ValkeyConnection {
     /// Queries a geospatial index for members inside an area of a box or a circle.
     ///
     /// - Documentation: [GEOSEARCH](https:/valkey.io/commands/geosearch)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
+    /// - History:
+    ///     * 7.0.0: Added support for uppercase unit names.
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Returns: Array of matched members information.
     @inlinable
@@ -1093,7 +1109,9 @@ extension ValkeyConnection {
     /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
     ///
     /// - Documentation: [GEOSEARCHSTORE](https:/valkey.io/commands/geosearchstore)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
+    /// - History:
+    ///     * 7.0.0: Added support for uppercase unit names.
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Returns: [Integer]: The number of elements in the resulting set.
     @inlinable

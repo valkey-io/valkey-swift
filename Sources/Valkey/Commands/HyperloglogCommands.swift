@@ -106,7 +106,7 @@ extension ValkeyConnection {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [PFADD](https:/valkey.io/commands/pfadd)
-    /// - Version: 2.8.9
+    /// - Available: 2.8.9
     /// - Complexity: O(1) to add every element.
     /// - Returns: One of the following
     ///     * 1: If at least 1 HyperLogLog internal register was altered.
@@ -119,7 +119,7 @@ extension ValkeyConnection {
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
     ///
     /// - Documentation: [PFCOUNT](https:/valkey.io/commands/pfcount)
-    /// - Version: 2.8.9
+    /// - Available: 2.8.9
     /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
     /// - Returns: [Integer]: The approximated number of unique elements observed via PFADD
     @inlinable
@@ -130,7 +130,7 @@ extension ValkeyConnection {
     /// Merges one or more HyperLogLog values into a single key.
     ///
     /// - Documentation: [PFMERGE](https:/valkey.io/commands/pfmerge)
-    /// - Version: 2.8.9
+    /// - Available: 2.8.9
     /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
     @inlinable
     public func pfmerge(destkey: ValkeyKey, sourcekey: [ValkeyKey] = []) async throws {
@@ -140,7 +140,7 @@ extension ValkeyConnection {
     /// An internal command for testing HyperLogLog values.
     ///
     /// - Documentation: [PFSELFTEST](https:/valkey.io/commands/pfselftest)
-    /// - Version: 2.8.9
+    /// - Available: 2.8.9
     /// - Complexity: N/A
     @inlinable
     public func pfselftest() async throws {

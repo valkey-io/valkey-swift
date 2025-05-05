@@ -83,7 +83,7 @@ extension ValkeyConnection {
     /// Discards a transaction.
     ///
     /// - Documentation: [DISCARD](https:/valkey.io/commands/discard)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N), when N is the number of queued commands
     @inlinable
     public func discard() async throws {
@@ -93,7 +93,7 @@ extension ValkeyConnection {
     /// Executes all commands in a transaction.
     ///
     /// - Documentation: [EXEC](https:/valkey.io/commands/exec)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
     /// - Complexity: Depends on commands in the transaction
     /// - Returns: One of the following
     ///     * [Array]: Each element being the reply to each of the commands in the atomic transaction.
@@ -106,7 +106,7 @@ extension ValkeyConnection {
     /// Starts a transaction.
     ///
     /// - Documentation: [MULTI](https:/valkey.io/commands/multi)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
     /// - Complexity: O(1)
     @inlinable
     public func multi() async throws {
@@ -116,7 +116,7 @@ extension ValkeyConnection {
     /// Forgets about watched keys of a transaction.
     ///
     /// - Documentation: [UNWATCH](https:/valkey.io/commands/unwatch)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
     /// - Complexity: O(1)
     @inlinable
     public func unwatch() async throws {
@@ -126,7 +126,7 @@ extension ValkeyConnection {
     /// Monitors changes to keys to determine the execution of a transaction.
     ///
     /// - Documentation: [WATCH](https:/valkey.io/commands/watch)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
     /// - Complexity: O(1) for every key.
     @inlinable
     public func watch(key: [ValkeyKey]) async throws {

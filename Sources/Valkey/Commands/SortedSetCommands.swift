@@ -1116,7 +1116,7 @@ extension ValkeyConnection {
     /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
     ///
     /// - Documentation: [BZMPOP](https:/valkey.io/commands/bzmpop)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Returns: One of the following
     ///     * [Null]: Timeout reached and no elements were popped.
@@ -1129,7 +1129,9 @@ extension ValkeyConnection {
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
     ///
     /// - Documentation: [BZPOPMAX](https:/valkey.io/commands/bzpopmax)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
+    /// - History:
+    ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Returns: One of the following
     ///     * [Null]: Timeout reached and no elements were popped.
@@ -1142,7 +1144,9 @@ extension ValkeyConnection {
     /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
     ///
     /// - Documentation: [BZPOPMIN](https:/valkey.io/commands/bzpopmin)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
+    /// - History:
+    ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Returns: One of the following
     ///     * [Null]: Timeout reached and no elements were popped.
@@ -1155,7 +1159,11 @@ extension ValkeyConnection {
     /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [ZADD](https:/valkey.io/commands/zadd)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
+    /// - History:
+    ///     * 2.4.0: Accepts multiple elements.
+    ///     * 3.0.2: Added the `XX`, `NX`, `CH` and `INCR` options.
+    ///     * 6.2.0: Added the `GT` and `LT` options.
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// - Returns: One of the following
     ///     * [Null]: Operation was aborted (conflict with one of the `XX`/`NX`/`LT`/`GT` options).
@@ -1170,7 +1178,7 @@ extension ValkeyConnection {
     /// Returns the number of members in a sorted set.
     ///
     /// - Documentation: [ZCARD](https:/valkey.io/commands/zcard)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The cardinality (number of elements) of the sorted set, or 0 if key does not exist
     @inlinable
@@ -1181,7 +1189,7 @@ extension ValkeyConnection {
     /// Returns the count of members in a sorted set that have scores within a range.
     ///
     /// - Documentation: [ZCOUNT](https:/valkey.io/commands/zcount)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Returns: [Integer]: The number of elements in the specified score range
     @inlinable
@@ -1192,7 +1200,7 @@ extension ValkeyConnection {
     /// Returns the difference between multiple sorted sets.
     ///
     /// - Documentation: [ZDIFF](https:/valkey.io/commands/zdiff)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
     /// - Returns: One of the following
     ///     * [Array]: A list of members. Returned in case `WITHSCORES` was not used.
@@ -1205,7 +1213,7 @@ extension ValkeyConnection {
     /// Stores the difference of multiple sorted sets in a key.
     ///
     /// - Documentation: [ZDIFFSTORE](https:/valkey.io/commands/zdiffstore)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
     /// - Returns: [Integer]: Number of elements in the resulting sorted set at `destination`
     @inlinable
@@ -1216,7 +1224,7 @@ extension ValkeyConnection {
     /// Increments the score of a member in a sorted set.
     ///
     /// - Documentation: [ZINCRBY](https:/valkey.io/commands/zincrby)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
     /// - Complexity: O(log(N)) where N is the number of elements in the sorted set.
     /// - Returns: [Double]: The new score of `member`
     @inlinable
@@ -1227,7 +1235,7 @@ extension ValkeyConnection {
     /// Returns the intersect of multiple sorted sets.
     ///
     /// - Documentation: [ZINTER](https:/valkey.io/commands/zinter)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// - Returns: One of the following
     ///     * [Array]: Result of intersection, containing only the member names. Returned in case `WITHSCORES` was not used.
@@ -1240,7 +1248,7 @@ extension ValkeyConnection {
     /// Returns the number of members of the intersect of multiple sorted sets.
     ///
     /// - Documentation: [ZINTERCARD](https:/valkey.io/commands/zintercard)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N*K) worst case with N being the smallest input sorted set, K being the number of input sorted sets.
     /// - Returns: [Integer]: Number of elements in the resulting intersection.
     @inlinable
@@ -1251,7 +1259,7 @@ extension ValkeyConnection {
     /// Stores the intersect of multiple sorted sets in a key.
     ///
     /// - Documentation: [ZINTERSTORE](https:/valkey.io/commands/zinterstore)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// - Returns: [Integer]: Number of elements in the resulting sorted set.
     @inlinable
@@ -1262,7 +1270,7 @@ extension ValkeyConnection {
     /// Returns the number of members in a sorted set within a lexicographical range.
     ///
     /// - Documentation: [ZLEXCOUNT](https:/valkey.io/commands/zlexcount)
-    /// - Version: 2.8.9
+    /// - Available: 2.8.9
     /// - Complexity: O(log(N)) with N being the number of elements in the sorted set.
     /// - Returns: [Integer]: Number of elements in the specified score range.
     @inlinable
@@ -1273,7 +1281,7 @@ extension ValkeyConnection {
     /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
     ///
     /// - Documentation: [ZMPOP](https:/valkey.io/commands/zmpop)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(K) + O(M*log(N)) where K is the number of provided keys, N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Returns: One of the following
     ///     * [Null]: No element could be popped.
@@ -1286,7 +1294,7 @@ extension ValkeyConnection {
     /// Returns the score of one or more members in a sorted set.
     ///
     /// - Documentation: [ZMSCORE](https:/valkey.io/commands/zmscore)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of members being requested.
     /// - Returns: One of the following
     ///     * [Array]: The score of the member (a double precision floating point number). In RESP2, this is returned as string.
@@ -1299,7 +1307,7 @@ extension ValkeyConnection {
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
     ///
     /// - Documentation: [ZPOPMAX](https:/valkey.io/commands/zpopmax)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Returns: One of the following
     ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
@@ -1312,7 +1320,7 @@ extension ValkeyConnection {
     /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
     ///
     /// - Documentation: [ZPOPMIN](https:/valkey.io/commands/zpopmin)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(log(N)*M) with N being the number of elements in the sorted set, and M being the number of elements popped.
     /// - Returns: One of the following
     ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
@@ -1325,7 +1333,7 @@ extension ValkeyConnection {
     /// Returns one or more random members from a sorted set.
     ///
     /// - Documentation: [ZRANDMEMBER](https:/valkey.io/commands/zrandmember)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of members returned
     /// - Returns: One of the following
     ///     * [Null]: Key does not exist.
@@ -1340,7 +1348,9 @@ extension ValkeyConnection {
     /// Returns members in a sorted set within a range of indexes.
     ///
     /// - Documentation: [ZRANGE](https:/valkey.io/commands/zrange)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
+    /// - History:
+    ///     * 6.2.0: Added the `REV`, `BYSCORE`, `BYLEX` and `LIMIT` options.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// - Returns: One of the following
     ///     * [Array]: A list of member elements
@@ -1353,7 +1363,7 @@ extension ValkeyConnection {
     /// Returns members in a sorted set within a lexicographical range.
     ///
     /// - Documentation: [ZRANGEBYLEX](https:/valkey.io/commands/zrangebylex)
-    /// - Version: 2.8.9
+    /// - Available: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: [Array]: List of elements in the specified score range.
     @inlinable
@@ -1365,7 +1375,9 @@ extension ValkeyConnection {
     /// Returns members in a sorted set within a range of scores.
     ///
     /// - Documentation: [ZRANGEBYSCORE](https:/valkey.io/commands/zrangebyscore)
-    /// - Version: 1.0.5
+    /// - Available: 1.0.5
+    /// - History:
+    ///     * 2.0.0: Added the `WITHSCORES` modifier.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: One of the following
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
@@ -1379,7 +1391,7 @@ extension ValkeyConnection {
     /// Stores a range of members from sorted set in a key.
     ///
     /// - Documentation: [ZRANGESTORE](https:/valkey.io/commands/zrangestore)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements stored into the destination key.
     /// - Returns: [Integer]: Number of elements in the resulting sorted set.
     @inlinable
@@ -1390,7 +1402,9 @@ extension ValkeyConnection {
     /// Returns the index of a member in a sorted set ordered by ascending scores.
     ///
     /// - Documentation: [ZRANK](https:/valkey.io/commands/zrank)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
+    /// - History:
+    ///     * 7.2.0: Added the optional `WITHSCORE` argument.
     /// - Complexity: O(log(N))
     /// - Returns: One of the following
     ///     * [Null]: Key does not exist or the member does not exist in the sorted set.
@@ -1404,7 +1418,9 @@ extension ValkeyConnection {
     /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
     ///
     /// - Documentation: [ZREM](https:/valkey.io/commands/zrem)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
+    /// - History:
+    ///     * 2.4.0: Accepts multiple elements.
     /// - Complexity: O(M*log(N)) with N being the number of elements in the sorted set and M the number of elements to be removed.
     /// - Returns: [Integer]: The number of members removed from the sorted set, not including non existing members.
     @inlinable
@@ -1415,7 +1431,7 @@ extension ValkeyConnection {
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
     ///
     /// - Documentation: [ZREMRANGEBYLEX](https:/valkey.io/commands/zremrangebylex)
-    /// - Version: 2.8.9
+    /// - Available: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Returns: [Integer]: Number of elements removed.
     @inlinable
@@ -1426,7 +1442,7 @@ extension ValkeyConnection {
     /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
     ///
     /// - Documentation: [ZREMRANGEBYRANK](https:/valkey.io/commands/zremrangebyrank)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Returns: [Integer]: Number of elements removed.
     @inlinable
@@ -1437,7 +1453,7 @@ extension ValkeyConnection {
     /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
     ///
     /// - Documentation: [ZREMRANGEBYSCORE](https:/valkey.io/commands/zremrangebyscore)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Returns: [Integer]: Number of elements removed.
     @inlinable
@@ -1448,7 +1464,7 @@ extension ValkeyConnection {
     /// Returns members in a sorted set within a range of indexes in reverse order.
     ///
     /// - Documentation: [ZREVRANGE](https:/valkey.io/commands/zrevrange)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// - Returns: One of the following
     ///     * [Array]: List of member elements.
@@ -1462,7 +1478,7 @@ extension ValkeyConnection {
     /// Returns members in a sorted set within a lexicographical range in reverse order.
     ///
     /// - Documentation: [ZREVRANGEBYLEX](https:/valkey.io/commands/zrevrangebylex)
-    /// - Version: 2.8.9
+    /// - Available: 2.8.9
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: [Array]: List of the elements in the specified score range.
     @inlinable
@@ -1474,7 +1490,9 @@ extension ValkeyConnection {
     /// Returns members in a sorted set within a range of scores in reverse order.
     ///
     /// - Documentation: [ZREVRANGEBYSCORE](https:/valkey.io/commands/zrevrangebyscore)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
+    /// - History:
+    ///     * 2.1.6: `min` and `max` can be exclusive.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: One of the following
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
@@ -1488,7 +1506,9 @@ extension ValkeyConnection {
     /// Returns the index of a member in a sorted set ordered by descending scores.
     ///
     /// - Documentation: [ZREVRANK](https:/valkey.io/commands/zrevrank)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
+    /// - History:
+    ///     * 7.2.0: Added the optional `WITHSCORE` argument.
     /// - Complexity: O(log(N))
     /// - Returns: One of the following
     ///     * [Null]: Key does not exist or the member does not exist in the sorted set.
@@ -1502,7 +1522,9 @@ extension ValkeyConnection {
     /// Iterates over members and scores of a sorted set.
     ///
     /// - Documentation: [ZSCAN](https:/valkey.io/commands/zscan)
-    /// - Version: 2.8.0
+    /// - Available: 2.8.0
+    /// - History:
+    ///     * 8.0.0: Added noscores option.
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Returns: [Array]: Cursor and scan response in array form.
     @inlinable
@@ -1513,7 +1535,7 @@ extension ValkeyConnection {
     /// Returns the score of a member in a sorted set.
     ///
     /// - Documentation: [ZSCORE](https:/valkey.io/commands/zscore)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Double]: The score of the member (a double precision floating point number). In RESP2, this is returned as string.
@@ -1526,7 +1548,7 @@ extension ValkeyConnection {
     /// Returns the union of multiple sorted sets.
     ///
     /// - Documentation: [ZUNION](https:/valkey.io/commands/zunion)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(N)+O(M*log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// - Returns: One of the following
     ///     * [Array]: The result of union when 'WITHSCORES' is not used.
@@ -1539,7 +1561,7 @@ extension ValkeyConnection {
     /// Stores the union of multiple sorted sets in a key.
     ///
     /// - Documentation: [ZUNIONSTORE](https:/valkey.io/commands/zunionstore)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// - Returns: [Integer]: The number of elements in the resulting sorted set.
     @inlinable

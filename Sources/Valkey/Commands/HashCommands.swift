@@ -394,7 +394,9 @@ extension ValkeyConnection {
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
     ///
     /// - Documentation: [HDEL](https:/valkey.io/commands/hdel)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
+    /// - History:
+    ///     * 2.4.0: Accepts multiple `field` arguments.
     /// - Complexity: O(N) where N is the number of fields to be removed.
     /// - Returns: [Integer]: The number of fields that were removed from the hash.
     @inlinable
@@ -405,7 +407,7 @@ extension ValkeyConnection {
     /// Determines whether a field exists in a hash.
     ///
     /// - Documentation: [HEXISTS](https:/valkey.io/commands/hexists)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: The hash does not contain the field, or key does not exist.
@@ -418,7 +420,7 @@ extension ValkeyConnection {
     /// Returns the value of a field in a hash.
     ///
     /// - Documentation: [HGET](https:/valkey.io/commands/hget)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The value associated with the field.
@@ -431,7 +433,7 @@ extension ValkeyConnection {
     /// Returns all fields and values in a hash.
     ///
     /// - Documentation: [HGETALL](https:/valkey.io/commands/hgetall)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Returns: [Map]: Map of fields and their values stored in the hash, or an empty list when key does not exist. In RESP2 this is returned as a flat array.
     @inlinable
@@ -442,7 +444,7 @@ extension ValkeyConnection {
     /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
     ///
     /// - Documentation: [HINCRBY](https:/valkey.io/commands/hincrby)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The value of the field after the increment operation.
     @inlinable
@@ -453,7 +455,7 @@ extension ValkeyConnection {
     /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
     ///
     /// - Documentation: [HINCRBYFLOAT](https:/valkey.io/commands/hincrbyfloat)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: O(1)
     /// - Returns: [String]: The value of the field after the increment operation.
     @inlinable
@@ -464,7 +466,7 @@ extension ValkeyConnection {
     /// Returns all fields in a hash.
     ///
     /// - Documentation: [HKEYS](https:/valkey.io/commands/hkeys)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Returns: [Array]: List of fields in the hash, or an empty list when the key does not exist.
     @inlinable
@@ -475,7 +477,7 @@ extension ValkeyConnection {
     /// Returns the number of fields in a hash.
     ///
     /// - Documentation: [HLEN](https:/valkey.io/commands/hlen)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: Number of the fields in the hash, or 0 when the key does not exist.
     @inlinable
@@ -486,7 +488,7 @@ extension ValkeyConnection {
     /// Returns the values of all fields in a hash.
     ///
     /// - Documentation: [HMGET](https:/valkey.io/commands/hmget)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N) where N is the number of fields being requested.
     /// - Returns: [Array]: List of values associated with the given fields, in the same order as they are requested.
     @inlinable
@@ -497,7 +499,7 @@ extension ValkeyConnection {
     /// Sets the values of multiple fields.
     ///
     /// - Documentation: [HMSET](https:/valkey.io/commands/hmset)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N) where N is the number of fields being set.
     @inlinable
     @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
@@ -508,7 +510,7 @@ extension ValkeyConnection {
     /// Returns one or more random fields from a hash.
     ///
     /// - Documentation: [HRANDFIELD](https:/valkey.io/commands/hrandfield)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of fields returned
     /// - Returns: One of the following
     ///     * [Null]: Key doesn't exist
@@ -523,7 +525,7 @@ extension ValkeyConnection {
     /// Iterates over fields and values of a hash.
     ///
     /// - Documentation: [HSCAN](https:/valkey.io/commands/hscan)
-    /// - Version: 2.8.0
+    /// - Available: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Returns: [Array]: Cursor and scan response in array form.
     @inlinable
@@ -534,7 +536,9 @@ extension ValkeyConnection {
     /// Creates or modifies the value of a field in a hash.
     ///
     /// - Documentation: [HSET](https:/valkey.io/commands/hset)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
+    /// - History:
+    ///     * 4.0.0: Accepts multiple `field` and `value` arguments.
     /// - Complexity: O(1) for each field/value pair added, so O(N) to add N field/value pairs when the command is called with multiple field/value pairs.
     /// - Returns: [Integer]: The number of fields that were added
     @inlinable
@@ -545,7 +549,7 @@ extension ValkeyConnection {
     /// Sets the value of a field in a hash only when the field doesn't exist.
     ///
     /// - Documentation: [HSETNX](https:/valkey.io/commands/hsetnx)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: The field is a new field in the hash and value was set.
@@ -558,7 +562,7 @@ extension ValkeyConnection {
     /// Returns the length of the value of a field.
     ///
     /// - Documentation: [HSTRLEN](https:/valkey.io/commands/hstrlen)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: String length of the value associated with the field, or zero when the field is not present in the hash or key does not exist at all.
     @inlinable
@@ -569,7 +573,7 @@ extension ValkeyConnection {
     /// Returns all values in a hash.
     ///
     /// - Documentation: [HVALS](https:/valkey.io/commands/hvals)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N) where N is the size of the hash.
     /// - Returns: [Array]: List of values in the hash, or an empty list when the key does not exist.
     @inlinable

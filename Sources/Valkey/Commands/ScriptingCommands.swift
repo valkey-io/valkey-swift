@@ -418,7 +418,7 @@ extension ValkeyConnection {
     /// Executes a server-side Lua script.
     ///
     /// - Documentation: [EVAL](https:/valkey.io/commands/eval)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: Depends on the script that is executed.
     /// - Returns: Return value depends on the script that is executed
     @inlinable
@@ -429,7 +429,7 @@ extension ValkeyConnection {
     /// Executes a server-side Lua script by SHA1 digest.
     ///
     /// - Documentation: [EVALSHA](https:/valkey.io/commands/evalsha)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: Depends on the script that is executed.
     /// - Returns: Return value depends on the script that is executed
     @inlinable
@@ -440,7 +440,7 @@ extension ValkeyConnection {
     /// Executes a read-only server-side Lua script by SHA1 digest.
     ///
     /// - Documentation: [EVALSHA_RO](https:/valkey.io/commands/evalsha_ro)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: Depends on the script that is executed.
     /// - Returns: Return value depends on the script that is executed
     @inlinable
@@ -451,7 +451,7 @@ extension ValkeyConnection {
     /// Executes a read-only server-side Lua script.
     ///
     /// - Documentation: [EVAL_RO](https:/valkey.io/commands/eval_ro)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: Depends on the script that is executed.
     /// - Returns: Return value depends on the script that is executed
     @inlinable
@@ -462,7 +462,7 @@ extension ValkeyConnection {
     /// Invokes a function.
     ///
     /// - Documentation: [FCALL](https:/valkey.io/commands/fcall)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: Depends on the function that is executed.
     /// - Returns: Return value depends on the function that is executed
     @inlinable
@@ -473,7 +473,7 @@ extension ValkeyConnection {
     /// Invokes a read-only function.
     ///
     /// - Documentation: [FCALL_RO](https:/valkey.io/commands/fcall_ro)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: Depends on the function that is executed.
     /// - Returns: Return value depends on the function that is executed
     @inlinable
@@ -484,7 +484,7 @@ extension ValkeyConnection {
     /// Deletes a library and its functions.
     ///
     /// - Documentation: [FUNCTION DELETE](https:/valkey.io/commands/function-delete)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
     public func functionDelete<LibraryName: RESPStringRenderable>(libraryName: LibraryName) async throws {
@@ -494,7 +494,7 @@ extension ValkeyConnection {
     /// Dumps all libraries into a serialized binary payload.
     ///
     /// - Documentation: [FUNCTION DUMP](https:/valkey.io/commands/function-dump)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
     /// - Returns: [String]: The serialized payload.
     @inlinable
@@ -505,7 +505,7 @@ extension ValkeyConnection {
     /// Deletes all libraries and functions.
     ///
     /// - Documentation: [FUNCTION FLUSH](https:/valkey.io/commands/function-flush)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions deleted
     @inlinable
     public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws {
@@ -515,7 +515,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [FUNCTION HELP](https:/valkey.io/commands/function-help)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -526,7 +526,7 @@ extension ValkeyConnection {
     /// Terminates a function during execution.
     ///
     /// - Documentation: [FUNCTION KILL](https:/valkey.io/commands/function-kill)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
     public func functionKill() async throws {
@@ -536,7 +536,7 @@ extension ValkeyConnection {
     /// Returns information about all libraries.
     ///
     /// - Documentation: [FUNCTION LIST](https:/valkey.io/commands/function-list)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
     @inlinable
     public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
@@ -546,7 +546,7 @@ extension ValkeyConnection {
     /// Creates a library.
     ///
     /// - Documentation: [FUNCTION LOAD](https:/valkey.io/commands/function-load)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1) (considering compilation time is redundant)
     /// - Returns: [String]: The library name that was loaded
     @inlinable
@@ -557,7 +557,7 @@ extension ValkeyConnection {
     /// Restores all libraries from a payload.
     ///
     /// - Documentation: [FUNCTION RESTORE](https:/valkey.io/commands/function-restore)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions on the payload
     @inlinable
     public func functionRestore<SerializedValue: RESPStringRenderable>(serializedValue: SerializedValue, policy: FUNCTION.RESTORE<SerializedValue>.Policy? = nil) async throws {
@@ -567,7 +567,7 @@ extension ValkeyConnection {
     /// Returns information about a function during execution.
     ///
     /// - Documentation: [FUNCTION STATS](https:/valkey.io/commands/function-stats)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
     public func functionStats() async throws -> RESPToken.Map {
@@ -577,7 +577,7 @@ extension ValkeyConnection {
     /// Sets the debug mode of server-side Lua scripts.
     ///
     /// - Documentation: [SCRIPT DEBUG](https:/valkey.io/commands/script-debug)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
     /// - Complexity: O(1)
     @inlinable
     public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws {
@@ -587,7 +587,7 @@ extension ValkeyConnection {
     /// Determines whether server-side Lua scripts exist in the script cache.
     ///
     /// - Documentation: [SCRIPT EXISTS](https:/valkey.io/commands/script-exists)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
     /// - Returns: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
@@ -598,7 +598,9 @@ extension ValkeyConnection {
     /// Removes all server-side Lua scripts from the script cache.
     ///
     /// - Documentation: [SCRIPT FLUSH](https:/valkey.io/commands/script-flush)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
+    /// - History:
+    ///     * 6.2.0: Added the `ASYNC` and `SYNC` flushing mode modifiers.
     /// - Complexity: O(N) with N being the number of scripts in cache
     @inlinable
     public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws {
@@ -608,7 +610,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [SCRIPT HELP](https:/valkey.io/commands/script-help)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -619,7 +621,7 @@ extension ValkeyConnection {
     /// Terminates a server-side Lua script during execution.
     ///
     /// - Documentation: [SCRIPT KILL](https:/valkey.io/commands/script-kill)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: O(1)
     @inlinable
     public func scriptKill() async throws {
@@ -629,7 +631,7 @@ extension ValkeyConnection {
     /// Loads a server-side Lua script to the script cache.
     ///
     /// - Documentation: [SCRIPT LOAD](https:/valkey.io/commands/script-load)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: O(N) with N being the length in bytes of the script body.
     /// - Returns: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
@@ -640,7 +642,7 @@ extension ValkeyConnection {
     /// Show server-side Lua script in the script cache.
     ///
     /// - Documentation: [SCRIPT SHOW](https:/valkey.io/commands/script-show)
-    /// - Version: 8.0.0
+    /// - Available: 8.0.0
     /// - Complexity: O(1).
     /// - Returns: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
