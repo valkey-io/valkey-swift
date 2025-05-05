@@ -38,7 +38,7 @@ let package = Package(
                 .product(name: "Atomics", package: "swift-atomics"),
                 .product(name: "DequeModule", package: "swift-collections"),
             ],
-            path: "Sources/ConnectionPoolModule",
+            path: "Sources/ConnectionPoolModule"
         ),
         .executableTarget(
             name: "ValkeyCommandsBuilder",
