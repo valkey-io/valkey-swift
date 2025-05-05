@@ -219,7 +219,7 @@ public final class ValkeyConnection: Sendable {
 
     package static func setupChannelAndConnect(
         _ channel: any Channel,
-        configuration: ValkeyClientConfiguration,
+        configuration: ValkeyClientConfiguration = .init(),
         clientName: String? = nil,
         logger: Logger
     ) async throws -> ValkeyConnection {
@@ -269,7 +269,7 @@ public final class ValkeyConnection: Sendable {
             break
         }
         let valkeyChannelHandler = ValkeyChannelHandler(
-            configuration: .init(respVersion: configuration.respVersion, authentication: configuration.authentication, clientName: clientName),
+            configuration: .init(authentication: configuration.authentication, clientName: clientName),
             eventLoop: channel.eventLoop,
             logger: logger
         )

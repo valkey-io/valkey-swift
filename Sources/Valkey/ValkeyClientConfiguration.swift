@@ -16,13 +16,6 @@ import NIOSSL
 
 /// Configuration for the Valkey client
 public struct ValkeyClientConfiguration: Sendable {
-    public struct RESPVersion: Sendable, Equatable {
-        let rawValue: Int
-
-        public static var v2: Self { .init(rawValue: 2) }
-        public static var v3: Self { .init(rawValue: 3) }
-    }
-
     public struct TLS: Sendable {
         enum Base {
             case disable
@@ -47,8 +40,6 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
-    /// Version of RESP protocol
-    public var respVersion: RESPVersion
     /// authentication details
     public var authentication: Authentication?
     /// TLS setup
@@ -56,15 +47,12 @@ public struct ValkeyClientConfiguration: Sendable {
 
     ///  Initialize ValkeyClientConfiguration
     /// - Parameters
-    ///   - respVersion: RESP protocol version to use
     ///   - authentication: Authentication details
     ///   - tlsConfiguration: TLS configuration
     public init(
-        respVersion: RESPVersion = .v3,
         authentication: Authentication? = nil,
         tls: TLS = .disable
     ) {
-        self.respVersion = respVersion
         self.authentication = authentication
         self.tls = tls
     }
