@@ -17,6 +17,7 @@ import NIOCore
 import NIOPosix
 import NIOSSL
 import NIOTransportServices
+import ServiceLifecycle
 import Synchronization
 import _ConnectionPoolModule
 
@@ -91,11 +92,13 @@ public final class ValkeyClient: Sendable {
     }
 }
 
-extension ValkeyClient {
-    public func run() async throws {
+extension ValkeyClient: Service {
+    public func run() async {
         let atomicOp = self.runningAtomic.compareExchange(expected: false, desired: true, ordering: .relaxed)
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
-        await self.connectionPool.run()
+        await cancelWhenGracefulShutdown {
+            await self.connectionPool.run()
+        }
     }
     /// Create connection and run operation using connection
     ///
