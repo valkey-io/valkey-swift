@@ -1289,7 +1289,7 @@ public struct TIME: ValkeyCommand {
     }
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Lists the ACL categories, or the commands inside a category.
     ///
     /// - Documentation: [ACL CAT](https:/valkey.io/commands/acl-cat)

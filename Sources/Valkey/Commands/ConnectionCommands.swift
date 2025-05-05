@@ -660,7 +660,7 @@ public struct SELECT: ValkeyCommand {
     }
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Authenticates the connection.
     ///
     /// - Documentation: [AUTH](https:/valkey.io/commands/auth)

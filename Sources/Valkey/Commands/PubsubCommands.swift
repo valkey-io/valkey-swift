@@ -222,7 +222,7 @@ public struct UNSUBSCRIBE: ValkeyCommand {
     }
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Posts a message to a channel.
     ///
     /// - Documentation: [PUBLISH](https:/valkey.io/commands/publish)

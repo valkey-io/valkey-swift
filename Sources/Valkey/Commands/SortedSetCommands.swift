@@ -1112,7 +1112,7 @@ public struct ZUNIONSTORE: ValkeyCommand {
     }
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Removes and returns a member by score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
     ///
     /// - Documentation: [BZMPOP](https:/valkey.io/commands/bzmpop)

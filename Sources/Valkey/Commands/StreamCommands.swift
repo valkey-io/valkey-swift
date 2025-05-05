@@ -820,7 +820,7 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
     ///
     /// - Documentation: [XACK](https:/valkey.io/commands/xack)
