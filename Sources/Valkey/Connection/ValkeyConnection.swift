@@ -43,7 +43,6 @@ public struct ServerAddress: Sendable, Equatable {
 
 /// Single connection to a Valkey database
 public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
-    static let idGenerator = Atomic(0)
     public let id: ID
     /// Logger used by Server
     let logger: Logger
@@ -81,6 +80,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// - Returns: ValkeyConnection
     public static func connect(
         address: ServerAddress,
+        connectionID: ID,
         name: String? = nil,
         configuration: ValkeyClientConfiguration,
         eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
@@ -88,10 +88,24 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     ) async throws -> ValkeyConnection {
         let future =
             if eventLoop.inEventLoop {
-                self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, clientName: name, logger: logger)
+                self._makeClient(
+                    address: address,
+                    connectionID: connectionID,
+                    eventLoop: eventLoop,
+                    configuration: configuration,
+                    clientName: name,
+                    logger: logger
+                )
             } else {
                 eventLoop.flatSubmit {
-                    self._makeClient(address: address, eventLoop: eventLoop, configuration: configuration, clientName: name, logger: logger)
+                    self._makeClient(
+                        address: address,
+                        connectionID: connectionID,
+                        eventLoop: eventLoop,
+                        configuration: configuration,
+                        clientName: name,
+                        logger: logger
+                    )
                 }
             }
         let connection = try await future.get()
@@ -168,6 +182,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
     private static func _makeClient(
         address: ServerAddress,
+        connectionID: ID,
         eventLoop: EventLoop,
         configuration: ValkeyClientConfiguration,
         clientName: String?,
@@ -218,7 +233,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             let handler = try channel.pipeline.syncOperations.handler(type: ValkeyChannelHandler.self)
             return ValkeyConnection(
                 channel: channel,
-                connectionID: self.idGenerator.wrappingAdd(1, ordering: .relaxed).newValue,
+                connectionID: connectionID,
                 channelHandler: handler,
                 configuration: configuration,
                 logger: logger
@@ -250,7 +265,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             let handler = try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
             let connection = ValkeyConnection(
                 channel: channel,
-                connectionID: self.idGenerator.wrappingAdd(1, ordering: .relaxed).newValue,
+                connectionID: 0,
                 channelHandler: handler,
                 configuration: configuration,
                 logger: logger

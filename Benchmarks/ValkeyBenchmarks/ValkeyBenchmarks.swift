@@ -41,7 +41,7 @@ let benchmarks: @Sendable () -> Void = {
         let logger = Logger(label: "test")
         let client = ValkeyClient(.hostname("127.0.0.1", port: port), logger: logger)
 
-        try await client.withConnection(logger: logger) { connection in
+        try await client.withConnection { connection in
             benchmark.startMeasurement()
 
             for _ in benchmark.scaledIterations {

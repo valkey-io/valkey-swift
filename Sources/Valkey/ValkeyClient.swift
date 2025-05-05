@@ -17,21 +17,37 @@ import NIOCore
 import NIOPosix
 import NIOSSL
 import NIOTransportServices
+import Synchronization
+import _ConnectionPoolModule
 
 /// Valkey client
 ///
 /// Connect to Valkey server.
 ///
 /// Supports TLS via both NIOSSL and Network framework.
-public struct ValkeyClient {
+public final class ValkeyClient: Sendable {
+    typealias Pool = ConnectionPool<
+        ValkeyConnection,
+        ValkeyConnection.ID,
+        ConnectionIDGenerator,
+        ConnectionRequest<ValkeyConnection>,
+        ConnectionRequest.ID,
+        ValkeyKeepAliveBehavor,
+        ValkeyClientMetrics,
+        ContinuousClock
+    >
     /// Server address
     let serverAddress: ServerAddress
+    /// Connection pool
+    let connectionPool: Pool
     /// configuration
     let configuration: ValkeyClientConfiguration
     /// EventLoopGroup to use
     let eventLoopGroup: EventLoopGroup
     /// Logger
     let logger: Logger
+    /// running atomic
+    let runningAtomic: Atomic<Bool>
 
     /// Initialize Valkey client
     ///
@@ -48,13 +64,39 @@ public struct ValkeyClient {
         logger: Logger
     ) {
         self.serverAddress = address
+        self.connectionPool = .init(
+            configuration: configuration.connectionPool,
+            idGenerator: ConnectionIDGenerator(),
+            requestType: ConnectionRequest<ValkeyConnection>.self,
+            keepAliveBehavior: .init(configuration.keepAliveBehavior),
+            observabilityDelegate: ValkeyClientMetrics(logger: logger),
+            clock: .continuous
+        ) { (connectionID, pool) in
+            var logger = logger
+            logger[metadataKey: "valkey_connection_id"] = "\(connectionID)"
+
+            let connection = try await ValkeyConnection.connect(
+                address: address,
+                connectionID: connectionID,
+                configuration: configuration,
+                eventLoop: eventLoopGroup.any(),
+                logger: logger
+            )
+            return ConnectionAndMetadata(connection: connection, maximalStreamsOnConnection: 16)
+        }
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
+        self.runningAtomic = .init(false)
     }
 }
 
 extension ValkeyClient {
+    func run() async throws {
+        let atomicOp = self.runningAtomic.compareExchange(expected: false, desired: true, ordering: .relaxed)
+        precondition(!atomicOp.original, "PostgresClient.run() should just be called once!")
+        await self.connectionPool.run()
+    }
     /// Create connection and run operation using connection
     ///
     /// - Parameters:
@@ -62,26 +104,21 @@ extension ValkeyClient {
     ///   - operation: Closure handling Valkey connection
     public func withConnection<Value: Sendable>(
         name: String? = nil,
-        logger: Logger,
+        isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
-        let valkeyConnection = try await ValkeyConnection.connect(
-            address: self.serverAddress,
-            name: name,
-            configuration: self.configuration,
-            eventLoop: self.eventLoopGroup.any(),
-            logger: logger
-        )
-        let value: Value
-        do {
-            value = try await operation(valkeyConnection)
-        } catch {
-            valkeyConnection.close()
-            try? await valkeyConnection.channel.closeFuture.get()
-            throw error
-        }
-        valkeyConnection.close()
-        try await valkeyConnection.channel.closeFuture.get()
-        return value
+        let connection = try await self.leaseConnection()
+
+        defer { self.connectionPool.releaseConnection(connection) }
+
+        return try await operation(connection)
     }
+
+    private func leaseConnection() async throws -> ValkeyConnection {
+        if !self.runningAtomic.load(ordering: .relaxed) {
+            self.logger.warning("Trying to lease connection from `PostgresClient`, but `PostgresClient.run()` hasn't been called yet.")
+        }
+        return try await self.connectionPool.leaseConnection()
+    }
+
 }
