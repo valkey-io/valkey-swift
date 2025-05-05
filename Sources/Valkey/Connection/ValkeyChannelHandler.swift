@@ -49,7 +49,6 @@ enum ValkeyRequest: Sendable {
 @usableFromInline
 final class ValkeyChannelHandler: ChannelInboundHandler {
     struct Configuration {
-        let respVersion: ValkeyClientConfiguration.RESPVersion
         let authentication: ValkeyClientConfiguration.Authentication?
         let clientName: String?
     }
@@ -218,23 +217,21 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func hello(context: ChannelHandlerContext) {
         // send hello with protocol, authentication and client name details
-        if configuration.respVersion == .v3 || configuration.authentication != nil || configuration.clientName != nil {
-            self._send(
-                command: HELLO(
-                    arguments: .init(
-                        protover: configuration.respVersion.rawValue,
-                        auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
-                        clientname: configuration.clientName
-                    )
+        self._send(
+            command: HELLO(
+                arguments: .init(
+                    protover: 3,
+                    auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                    clientname: configuration.clientName
                 )
-            ).assumeIsolated().whenComplete { result in
-                switch result {
-                case .failure(let error):
-                    context.fireErrorCaught(error)
-                    context.close(promise: nil)
-                case .success:
-                    break
-                }
+            )
+        ).assumeIsolated().whenComplete { result in
+            switch result {
+            case .failure(let error):
+                context.fireErrorCaught(error)
+                context.close(promise: nil)
+            case .success:
+                break
             }
         }
     }

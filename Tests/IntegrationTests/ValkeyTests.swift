@@ -502,7 +502,6 @@ struct GeneratedCommands {
             group.addTask {
                 try await ValkeyClient(
                     .hostname(valkeyHostname, port: 6379),
-                    configuration: .init(respVersion: .v3),
                     logger: logger
                 ).withConnection(logger: logger) { connection in
                     try await connection.subscribe(to: "testSubscriptions") { subscription in

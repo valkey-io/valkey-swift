@@ -70,7 +70,6 @@ struct ConnectionTests {
         _ = try await ValkeyConnection.setupChannelAndConnect(
             channel,
             configuration: .init(
-                respVersion: .v3,
                 authentication: .init(username: "john", password: "smith")
             ),
             logger: logger
@@ -86,13 +85,12 @@ struct ConnectionTests {
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(
             channel,
-            configuration: .init(respVersion: .v2),
             clientName: "Testing",
             logger: logger
         )
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "2", "SETNAME", "Testing"])).base)
+        #expect(outbound == RESPToken(.command(["HELLO", "3", "SETNAME", "Testing"])).base)
     }
 
     @Test
