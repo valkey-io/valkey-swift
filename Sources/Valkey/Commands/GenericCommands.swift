@@ -862,7 +862,7 @@ public struct WAITAOF: ValkeyCommand {
     }
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Copies the value of a key to a new key.
     ///
     /// - Documentation: [COPY](https:/valkey.io/commands/copy)
