@@ -556,6 +556,42 @@ struct GeneratedCommands {
         }
     }
 
+    /// Test subscriptions and sending command on same connection works
+    @Test
+    func testLoadsOfConnections() async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let key = ValkeyKey("TestLoadsOfConnections")
+            var logger = Logger(label: "testLoadsOfConnections")
+            logger.logLevel = .trace
+            let valkeyClient = ValkeyClient(
+                .hostname(valkeyHostname, port: 6379),
+                logger: logger
+            )
+            group.addTask {
+                try await valkeyClient.run()
+            }
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                _ = try await valkeyClient.withConnection { connection in
+                    try await connection.set(key: key, value: "0")
+                }
+                for _ in 0..<1000 {
+                    group.addTask {
+                        try await valkeyClient.withConnection { connection in
+                            _ = try await connection.incr(key: key)
+                        }
+                    }
+                }
+                try await group.waitForAll()
+                try await valkeyClient.withConnection { connection in
+                    let value = try await connection.get(key: key)?.decode(as: String.self)
+                    #expect(value == "1000")
+                    _ = try await connection.del(key: [key])
+                }
+            }
+            group.cancelAll()
+        }
+    }
+
     @Test
     func testKeyspaceSubscription() async throws {
         var logger = Logger(label: "Valkey")

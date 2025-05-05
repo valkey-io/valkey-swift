@@ -82,7 +82,7 @@ public final class ValkeyClient: Sendable {
                 eventLoop: eventLoopGroup.any(),
                 logger: logger
             )
-            return ConnectionAndMetadata(connection: connection, maximalStreamsOnConnection: 16)
+            return ConnectionAndMetadata(connection: connection, maximalStreamsOnConnection: 1)
         }
         self.configuration = configuration
         self.eventLoopGroup = eventLoopGroup
