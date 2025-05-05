@@ -42,23 +42,17 @@ public struct ValkeyClientConfiguration: Sendable {
     }
 
     /// A keep-alive behavior for Valkey connections. The ``frequency`` defines after which time an idle
-    /// connection shall run a keep-alive ``query``.
+    /// connection shall run a keep-alive ``PING``.
     public struct KeepAliveBehavior: Sendable {
         /// The amount of time that shall pass before an idle connection runs a keep-alive ``query``.
         public var frequency: Duration
-
-        /// The ``command`` that is run on an idle connection after it has been idle for ``frequency``.
-        public var command: [String]
 
         /// Create a new `KeepAliveBehavior`.
         /// - Parameters:
         ///   - frequency: The amount of time that shall pass before an idle connection runs a keep-alive `query`.
         ///                Defaults to `30` seconds.
-        ///   - query: The `command` that is run on an idle connection after it has been idle for `frequency`.
-        ///            Defaults to `SELECT 1;`.
-        public init(frequency: Duration = .seconds(30), command: [String] = ["PING"]) {
+        public init(frequency: Duration = .seconds(30)) {
             self.frequency = frequency
-            self.command = command
         }
     }
 

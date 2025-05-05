@@ -39,15 +39,7 @@ struct ValkeyKeepAliveBehavor: ConnectionKeepAliveBehavior {
     }
 
     func runKeepAlive(for connection: ValkeyConnection) async throws {
-        struct Command: ValkeyCommand {
-            func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-                commandEncoder.encodeArray(strings)
-            }
-            let strings: [String]
-        }
-        if let behavior {
-            _ = try await connection.send(command: Command(strings: behavior.command))
-        }
+        _ = try await connection.ping()
     }
 }
 
