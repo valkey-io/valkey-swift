@@ -226,7 +226,7 @@ extension ValkeyConnection {
     /// Posts a message to a channel.
     ///
     /// - Documentation: [PUBLISH](https:/valkey.io/commands/publish)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
     /// - Returns: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
@@ -237,7 +237,7 @@ extension ValkeyConnection {
     /// Returns the active channels.
     ///
     /// - Documentation: [PUBSUB CHANNELS](https:/valkey.io/commands/pubsub-channels)
-    /// - Version: 2.8.0
+    /// - Available: 2.8.0
     /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
     /// - Returns: [Array]: A list of active channels, optionally matching the specified pattern.
     @inlinable
@@ -248,7 +248,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [PUBSUB HELP](https:/valkey.io/commands/pubsub-help)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -259,7 +259,7 @@ extension ValkeyConnection {
     /// Returns a count of unique pattern subscriptions.
     ///
     /// - Documentation: [PUBSUB NUMPAT](https:/valkey.io/commands/pubsub-numpat)
-    /// - Version: 2.8.0
+    /// - Available: 2.8.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The number of patterns all the clients are subscribed to.
     @inlinable
@@ -270,7 +270,7 @@ extension ValkeyConnection {
     /// Returns a count of subscribers to channels.
     ///
     /// - Documentation: [PUBSUB NUMSUB](https:/valkey.io/commands/pubsub-numsub)
-    /// - Version: 2.8.0
+    /// - Available: 2.8.0
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
     /// - Returns: [Array]: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
@@ -281,7 +281,7 @@ extension ValkeyConnection {
     /// Returns the active shard channels.
     ///
     /// - Documentation: [PUBSUB SHARDCHANNELS](https:/valkey.io/commands/pubsub-shardchannels)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
     /// - Returns: [Array]: A list of active channels, optionally matching the specified pattern.
     @inlinable
@@ -292,7 +292,7 @@ extension ValkeyConnection {
     /// Returns the count of subscribers of shard channels.
     ///
     /// - Documentation: [PUBSUB SHARDNUMSUB](https:/valkey.io/commands/pubsub-shardnumsub)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
     /// - Returns: [Array]: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
@@ -303,7 +303,7 @@ extension ValkeyConnection {
     /// Post a message to a shard channel
     ///
     /// - Documentation: [SPUBLISH](https:/valkey.io/commands/spublish)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
     /// - Returns: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable

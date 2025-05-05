@@ -1293,7 +1293,7 @@ extension ValkeyConnection {
     /// Lists the ACL categories, or the commands inside a category.
     ///
     /// - Documentation: [ACL CAT](https:/valkey.io/commands/acl-cat)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(1) since the categories and commands are a fixed set.
     /// - Returns: One of the following
     ///     * [Array]: In case `category` was not given, a list of existing ACL categories
@@ -1306,7 +1306,7 @@ extension ValkeyConnection {
     /// Deletes ACL users, and terminates their connections.
     ///
     /// - Documentation: [ACL DELUSER](https:/valkey.io/commands/acl-deluser)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(1) amortized time considering the typical user.
     /// - Returns: [Integer]: The number of users that were deleted.
     @inlinable
@@ -1317,7 +1317,7 @@ extension ValkeyConnection {
     /// Simulates the execution of a command by a user, without executing the command.
     ///
     /// - Documentation: [ACL DRYRUN](https:/valkey.io/commands/acl-dryrun)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1).
     /// - Returns: One of the following
     ///     * "OK": The given user may successfully execute the given command.
@@ -1330,7 +1330,7 @@ extension ValkeyConnection {
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     ///
     /// - Documentation: [ACL GENPASS](https:/valkey.io/commands/acl-genpass)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(1)
     /// - Returns: [String]: Pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
@@ -1341,7 +1341,10 @@ extension ValkeyConnection {
     /// Lists the ACL rules of a user.
     ///
     /// - Documentation: [ACL GETUSER](https:/valkey.io/commands/acl-getuser)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
+    /// - History:
+    ///     * 6.2.0: Added Pub/Sub channel patterns.
+    ///     * 7.0.0: Added selectors and changed the format of key and channel patterns from a list to their rule representation.
     /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
     /// - Returns: One of the following
     ///     * [Map]: A set of ACL rule definitions for the user.
@@ -1354,7 +1357,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [ACL HELP](https:/valkey.io/commands/acl-help)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: A list of subcommands and their description.
     @inlinable
@@ -1365,7 +1368,7 @@ extension ValkeyConnection {
     /// Dumps the effective rules in ACL file format.
     ///
     /// - Documentation: [ACL LIST](https:/valkey.io/commands/acl-list)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Returns: [Array]: A list of currently active ACL rules.
     @inlinable
@@ -1376,7 +1379,7 @@ extension ValkeyConnection {
     /// Reloads the rules from the configured ACL file.
     ///
     /// - Documentation: [ACL LOAD](https:/valkey.io/commands/acl-load)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     @inlinable
     public func aclLoad() async throws {
@@ -1386,7 +1389,9 @@ extension ValkeyConnection {
     /// Lists recent security events generated due to ACL rules.
     ///
     /// - Documentation: [ACL LOG](https:/valkey.io/commands/acl-log)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
+    /// - History:
+    ///     * 7.2.0: Added entry ID, timestamp created, and timestamp last updated.
     /// - Complexity: O(N) with N being the number of entries shown.
     /// - Returns: One of the following
     ///     * [Array]: In case `RESET` was not given, a list of recent ACL security events.
@@ -1399,7 +1404,7 @@ extension ValkeyConnection {
     /// Saves the effective ACL rules in the configured ACL file.
     ///
     /// - Documentation: [ACL SAVE](https:/valkey.io/commands/acl-save)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     @inlinable
     public func aclSave() async throws {
@@ -1409,7 +1414,10 @@ extension ValkeyConnection {
     /// Creates and modifies an ACL user and its rules.
     ///
     /// - Documentation: [ACL SETUSER](https:/valkey.io/commands/acl-setuser)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
+    /// - History:
+    ///     * 6.2.0: Added Pub/Sub channel patterns.
+    ///     * 7.0.0: Added selectors and key based permissions.
     /// - Complexity: O(N). Where N is the number of rules provided.
     @inlinable
     public func aclSetuser<Username: RESPStringRenderable>(username: Username, rule: [String] = []) async throws {
@@ -1419,7 +1427,7 @@ extension ValkeyConnection {
     /// Lists all ACL users.
     ///
     /// - Documentation: [ACL USERS](https:/valkey.io/commands/acl-users)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Returns: [Array]: List of existing ACL users.
     @inlinable
@@ -1430,7 +1438,7 @@ extension ValkeyConnection {
     /// Returns the authenticated username of the current connection.
     ///
     /// - Documentation: [ACL WHOAMI](https:/valkey.io/commands/acl-whoami)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(1)
     /// - Returns: [String]: The username of the current connection.
     @inlinable
@@ -1441,7 +1449,7 @@ extension ValkeyConnection {
     /// Asynchronously rewrites the append-only file to disk.
     ///
     /// - Documentation: [BGREWRITEAOF](https:/valkey.io/commands/bgrewriteaof)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [String]: A simple string reply indicating that the rewriting started or is about to start ASAP
     @inlinable
@@ -1452,7 +1460,9 @@ extension ValkeyConnection {
     /// Asynchronously saves the database(s) to disk.
     ///
     /// - Documentation: [BGSAVE](https:/valkey.io/commands/bgsave)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 3.2.2: Added the `SCHEDULE` option.
     /// - Complexity: O(1)
     @inlinable
     public func bgsave(schedule: Bool = false) async throws -> String {
@@ -1462,7 +1472,7 @@ extension ValkeyConnection {
     /// Returns a count of commands.
     ///
     /// - Documentation: [COMMAND COUNT](https:/valkey.io/commands/command-count)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
     /// - Complexity: O(1)
     /// - Returns: [Integer]: Number of total commands in this server.
     @inlinable
@@ -1473,7 +1483,7 @@ extension ValkeyConnection {
     /// Returns documentary information about one, multiple or all commands.
     ///
     /// - Documentation: [COMMAND DOCS](https:/valkey.io/commands/command-docs)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of commands to look up
     /// - Returns: [Map]: A map where each key is a command name, and each value is the documentary information
     @inlinable
@@ -1484,7 +1494,7 @@ extension ValkeyConnection {
     /// Extracts the key names from an arbitrary command.
     ///
     /// - Documentation: [COMMAND GETKEYS](https:/valkey.io/commands/command-getkeys)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Returns: [Array]: List of keys from the given command.
     @inlinable
@@ -1495,7 +1505,7 @@ extension ValkeyConnection {
     /// Extracts the key names and access flags for an arbitrary command.
     ///
     /// - Documentation: [COMMAND GETKEYSANDFLAGS](https:/valkey.io/commands/command-getkeysandflags)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Returns: [Array]: List of keys from the given command and their usage flags.
     @inlinable
@@ -1506,7 +1516,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [COMMAND HELP](https:/valkey.io/commands/command-help)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -1517,7 +1527,9 @@ extension ValkeyConnection {
     /// Returns information about one, multiple or all commands.
     ///
     /// - Documentation: [COMMAND INFO](https:/valkey.io/commands/command-info)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
+    /// - History:
+    ///     * 7.0.0: Allowed to be called with no argument to get info on all commands.
     /// - Complexity: O(N) where N is the number of commands to look up
     /// - Returns: One of the following
     ///     * [Array]: Command does not exist.
@@ -1530,7 +1542,7 @@ extension ValkeyConnection {
     /// Returns a list of command names.
     ///
     /// - Documentation: [COMMAND LIST](https:/valkey.io/commands/command-list)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the total number of commands
     /// - Returns: [Array]: Command name.
     @inlinable
@@ -1541,7 +1553,9 @@ extension ValkeyConnection {
     /// Returns the effective values of configuration parameters.
     ///
     /// - Documentation: [CONFIG GET](https:/valkey.io/commands/config-get)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
+    /// - History:
+    ///     * 7.0.0: Added the ability to pass multiple pattern parameters in one call
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     @inlinable
     public func configGet<Parameter: RESPStringRenderable>(parameter: [Parameter]) async throws -> RESPToken.Map {
@@ -1551,7 +1565,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [CONFIG HELP](https:/valkey.io/commands/config-help)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -1562,7 +1576,7 @@ extension ValkeyConnection {
     /// Resets the server's statistics.
     ///
     /// - Documentation: [CONFIG RESETSTAT](https:/valkey.io/commands/config-resetstat)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
     /// - Complexity: O(1)
     @inlinable
     public func configResetstat() async throws {
@@ -1572,7 +1586,7 @@ extension ValkeyConnection {
     /// Persists the effective configuration to file.
     ///
     /// - Documentation: [CONFIG REWRITE](https:/valkey.io/commands/config-rewrite)
-    /// - Version: 2.8.0
+    /// - Available: 2.8.0
     /// - Complexity: O(1)
     @inlinable
     public func configRewrite() async throws {
@@ -1582,7 +1596,9 @@ extension ValkeyConnection {
     /// Sets configuration parameters in-flight.
     ///
     /// - Documentation: [CONFIG SET](https:/valkey.io/commands/config-set)
-    /// - Version: 2.0.0
+    /// - Available: 2.0.0
+    /// - History:
+    ///     * 7.0.0: Added the ability to set multiple parameters in one call.
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     @inlinable
     public func configSet<Parameter: RESPStringRenderable, Value: RESPStringRenderable>(data: [CONFIG.SET<Parameter, Value>.Data]) async throws {
@@ -1592,7 +1608,7 @@ extension ValkeyConnection {
     /// Returns the number of keys in the database.
     ///
     /// - Documentation: [DBSIZE](https:/valkey.io/commands/dbsize)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The number of keys in the currently-selected database.
     @inlinable
@@ -1603,7 +1619,7 @@ extension ValkeyConnection {
     /// Starts a coordinated failover from a server to one of its replicas.
     ///
     /// - Documentation: [FAILOVER](https:/valkey.io/commands/failover)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     @inlinable
     public func failover(target: FAILOVER.Target? = nil, abort: Bool = false, milliseconds: Int? = nil) async throws {
@@ -1613,7 +1629,10 @@ extension ValkeyConnection {
     /// Removes all keys from all databases.
     ///
     /// - Documentation: [FLUSHALL](https:/valkey.io/commands/flushall)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 4.0.0: Added the `ASYNC` flushing mode modifier.
+    ///     * 6.2.0: Added the `SYNC` flushing mode modifier.
     /// - Complexity: O(N) where N is the total number of keys in all databases
     @inlinable
     public func flushall(flushType: FLUSHALL.FlushType? = nil) async throws {
@@ -1623,7 +1642,10 @@ extension ValkeyConnection {
     /// Remove all keys from the current database.
     ///
     /// - Documentation: [FLUSHDB](https:/valkey.io/commands/flushdb)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 4.0.0: Added the `ASYNC` flushing mode modifier.
+    ///     * 6.2.0: Added the `SYNC` flushing mode modifier.
     /// - Complexity: O(N) where N is the number of keys in the selected database
     @inlinable
     public func flushdb(flushType: FLUSHDB.FlushType? = nil) async throws {
@@ -1633,7 +1655,9 @@ extension ValkeyConnection {
     /// Returns information and statistics about the server.
     ///
     /// - Documentation: [INFO](https:/valkey.io/commands/info)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 7.0.0: Added support for taking multiple section arguments.
     /// - Complexity: O(1)
     /// - Returns: [String]: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
     @inlinable
@@ -1644,7 +1668,7 @@ extension ValkeyConnection {
     /// Returns the Unix timestamp of the last successful save to disk.
     ///
     /// - Documentation: [LASTSAVE](https:/valkey.io/commands/lastsave)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: UNIX TIME of the last DB save executed with success.
     @inlinable
@@ -1655,7 +1679,7 @@ extension ValkeyConnection {
     /// Returns a human-readable latency analysis report.
     ///
     /// - Documentation: [LATENCY DOCTOR](https:/valkey.io/commands/latency-doctor)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
     /// - Complexity: O(1)
     /// - Returns: [String]: A human readable latency analysis report.
     @inlinable
@@ -1666,7 +1690,7 @@ extension ValkeyConnection {
     /// Returns a latency graph for an event.
     ///
     /// - Documentation: [LATENCY GRAPH](https:/valkey.io/commands/latency-graph)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
     /// - Complexity: O(1)
     /// - Returns: [String]: Latency graph
     @inlinable
@@ -1677,7 +1701,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [LATENCY HELP](https:/valkey.io/commands/latency-help)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -1688,7 +1712,7 @@ extension ValkeyConnection {
     /// Returns the cumulative distribution of latencies of a subset or all commands.
     ///
     /// - Documentation: [LATENCY HISTOGRAM](https:/valkey.io/commands/latency-histogram)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
     /// - Returns: [Map]: A map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
@@ -1699,7 +1723,7 @@ extension ValkeyConnection {
     /// Returns timestamp-latency samples for an event.
     ///
     /// - Documentation: [LATENCY HISTORY](https:/valkey.io/commands/latency-history)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
     /// - Complexity: O(1)
     /// - Returns: [Array]: An array where each element is a two elements array representing the timestamp and the latency of the event.
     @inlinable
@@ -1710,7 +1734,7 @@ extension ValkeyConnection {
     /// Returns the latest latency samples for all events.
     ///
     /// - Documentation: [LATENCY LATEST](https:/valkey.io/commands/latency-latest)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
     /// - Complexity: O(1)
     /// - Returns: [Array]: An array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.
     @inlinable
@@ -1721,7 +1745,7 @@ extension ValkeyConnection {
     /// Resets the latency data for one or more events.
     ///
     /// - Documentation: [LATENCY RESET](https:/valkey.io/commands/latency-reset)
-    /// - Version: 2.8.13
+    /// - Available: 2.8.13
     /// - Complexity: O(1)
     /// - Returns: [Integer]: Number of event time series that were reset.
     @inlinable
@@ -1732,7 +1756,7 @@ extension ValkeyConnection {
     /// Displays computer art and the server version
     ///
     /// - Documentation: [LOLWUT](https:/valkey.io/commands/lolwut)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Returns: [String]: String containing the generative computer art, and a text with the server version.
     @inlinable
     public func lolwut(version: Int? = nil) async throws -> LOLWUT.Response {
@@ -1742,7 +1766,7 @@ extension ValkeyConnection {
     /// Outputs a memory problems report.
     ///
     /// - Documentation: [MEMORY DOCTOR](https:/valkey.io/commands/memory-doctor)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(1)
     /// - Returns: [String]: Memory problems report.
     @inlinable
@@ -1753,7 +1777,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [MEMORY HELP](https:/valkey.io/commands/memory-help)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -1764,7 +1788,7 @@ extension ValkeyConnection {
     /// Returns the allocator statistics.
     ///
     /// - Documentation: [MEMORY MALLOC-STATS](https:/valkey.io/commands/memory-malloc-stats)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: Depends on how much memory is allocated, could be slow
     /// - Returns: [String]: The memory allocator's internal statistics report.
     @inlinable
@@ -1775,7 +1799,7 @@ extension ValkeyConnection {
     /// Asks the allocator to release memory.
     ///
     /// - Documentation: [MEMORY PURGE](https:/valkey.io/commands/memory-purge)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: Depends on how much memory is allocated, could be slow
     @inlinable
     public func memoryPurge() async throws {
@@ -1785,7 +1809,7 @@ extension ValkeyConnection {
     /// Returns details about memory usage.
     ///
     /// - Documentation: [MEMORY STATS](https:/valkey.io/commands/memory-stats)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(1)
     /// - Returns: [Map]: Memory usage details.
     @inlinable
@@ -1796,7 +1820,7 @@ extension ValkeyConnection {
     /// Estimates the memory usage of a key.
     ///
     /// - Documentation: [MEMORY USAGE](https:/valkey.io/commands/memory-usage)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(N) where N is the number of samples.
     /// - Returns: One of the following
     ///     * [Integer]: Number of bytes that a key and its value require to be stored in RAM.
@@ -1809,7 +1833,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [MODULE HELP](https:/valkey.io/commands/module-help)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -1820,7 +1844,7 @@ extension ValkeyConnection {
     /// Returns all loaded modules.
     ///
     /// - Documentation: [MODULE LIST](https:/valkey.io/commands/module-list)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(N) where N is the number of loaded modules.
     /// - Returns: [Array]: Returns information about the modules loaded to the server.
     @inlinable
@@ -1831,7 +1855,7 @@ extension ValkeyConnection {
     /// Loads a module.
     ///
     /// - Documentation: [MODULE LOAD](https:/valkey.io/commands/module-load)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(1)
     @inlinable
     public func moduleLoad<Path: RESPStringRenderable>(path: Path, arg: [String] = []) async throws {
@@ -1841,7 +1865,7 @@ extension ValkeyConnection {
     /// Loads a module using extended parameters.
     ///
     /// - Documentation: [MODULE LOADEX](https:/valkey.io/commands/module-loadex)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
     public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configs: [MODULE.LOADEX<Path>.Configs] = [], args: [String] = []) async throws {
@@ -1851,7 +1875,7 @@ extension ValkeyConnection {
     /// Unloads a module.
     ///
     /// - Documentation: [MODULE UNLOAD](https:/valkey.io/commands/module-unload)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(1)
     @inlinable
     public func moduleUnload<Name: RESPStringRenderable>(name: Name) async throws {
@@ -1861,7 +1885,7 @@ extension ValkeyConnection {
     /// An internal command for configuring the replication stream.
     ///
     /// - Documentation: [REPLCONF](https:/valkey.io/commands/replconf)
-    /// - Version: 3.0.0
+    /// - Available: 3.0.0
     /// - Complexity: O(1)
     @inlinable
     public func replconf() async throws {
@@ -1871,7 +1895,7 @@ extension ValkeyConnection {
     /// Configures a server as replica of another, or promotes it to a primary.
     ///
     /// - Documentation: [REPLICAOF](https:/valkey.io/commands/replicaof)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(1)
     /// - Returns: [String]: ReplicaOf status.
     @inlinable
@@ -1882,7 +1906,11 @@ extension ValkeyConnection {
     /// An internal command for migrating keys in a cluster.
     ///
     /// - Documentation: [RESTORE-ASKING](https:/valkey.io/commands/restore-asking)
-    /// - Version: 3.0.0
+    /// - Available: 3.0.0
+    /// - History:
+    ///     * 3.0.0: Added the `REPLACE` modifier.
+    ///     * 5.0.0: Added the `ABSTTL` modifier.
+    ///     * 5.0.0: Added the `IDLETIME` and `FREQ` options.
     /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     @inlinable
     public func restoreAsking<SerializedValue: RESPStringRenderable>(key: ValkeyKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
@@ -1892,7 +1920,7 @@ extension ValkeyConnection {
     /// Returns the replication role.
     ///
     /// - Documentation: [ROLE](https:/valkey.io/commands/role)
-    /// - Version: 2.8.12
+    /// - Available: 2.8.12
     /// - Complexity: O(1)
     @inlinable
     public func role() async throws -> RESPToken.Array {
@@ -1902,7 +1930,7 @@ extension ValkeyConnection {
     /// Synchronously saves the database(s) to disk.
     ///
     /// - Documentation: [SAVE](https:/valkey.io/commands/save)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the total number of keys in all databases
     @inlinable
     public func save() async throws {
@@ -1912,7 +1940,9 @@ extension ValkeyConnection {
     /// Synchronously saves the database(s) to disk and shuts down the server.
     ///
     /// - Documentation: [SHUTDOWN](https:/valkey.io/commands/shutdown)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 7.0.0: Added the `NOW`, `FORCE` and `ABORT` modifiers.
     /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
     /// - Returns: "OK": OK if ABORT was specified and shutdown was aborted. On successful shutdown, nothing is returned since the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
@@ -1923,7 +1953,7 @@ extension ValkeyConnection {
     /// Sets a server as a replica of another, or promotes it to being a primary.
     ///
     /// - Documentation: [SLAVEOF](https:/valkey.io/commands/slaveof)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [String]: SlaveOf status.
     @inlinable
@@ -1935,7 +1965,9 @@ extension ValkeyConnection {
     /// Returns the slow log's entries.
     ///
     /// - Documentation: [SLOWLOG GET](https:/valkey.io/commands/slowlog-get)
-    /// - Version: 2.2.12
+    /// - Available: 2.2.12
+    /// - History:
+    ///     * 4.0.0: Added client IP address, port and name to the reply.
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Returns: [Array]: Entries from the slow log in chronological order.
     @inlinable
@@ -1946,7 +1978,7 @@ extension ValkeyConnection {
     /// Show helpful text about the different subcommands
     ///
     /// - Documentation: [SLOWLOG HELP](https:/valkey.io/commands/slowlog-help)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -1957,7 +1989,7 @@ extension ValkeyConnection {
     /// Returns the number of entries in the slow log.
     ///
     /// - Documentation: [SLOWLOG LEN](https:/valkey.io/commands/slowlog-len)
-    /// - Version: 2.2.12
+    /// - Available: 2.2.12
     /// - Complexity: O(1)
     /// - Returns: [Integer]: Number of entries in the slow log.
     @inlinable
@@ -1968,7 +2000,7 @@ extension ValkeyConnection {
     /// Clears all entries from the slow log.
     ///
     /// - Documentation: [SLOWLOG RESET](https:/valkey.io/commands/slowlog-reset)
-    /// - Version: 2.2.12
+    /// - Available: 2.2.12
     /// - Complexity: O(N) where N is the number of entries in the slowlog
     @inlinable
     public func slowlogReset() async throws {
@@ -1978,7 +2010,7 @@ extension ValkeyConnection {
     /// Swaps two databases.
     ///
     /// - Documentation: [SWAPDB](https:/valkey.io/commands/swapdb)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(N) where N is the count of clients watching or blocking on keys from both databases.
     @inlinable
     public func swapdb(index1: Int, index2: Int) async throws {
@@ -1988,7 +2020,7 @@ extension ValkeyConnection {
     /// Returns the server time.
     ///
     /// - Documentation: [TIME](https:/valkey.io/commands/time)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Array containing two elements: Unix time in seconds and microseconds.
     @inlinable

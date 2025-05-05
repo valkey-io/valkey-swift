@@ -866,7 +866,7 @@ extension ValkeyConnection {
     /// Copies the value of a key to a new key.
     ///
     /// - Documentation: [COPY](https:/valkey.io/commands/copy)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(N) worst case for collections, where N is the number of nested items. O(1) for string values.
     /// - Returns: One of the following
     ///     * 1: Source was copied.
@@ -879,7 +879,7 @@ extension ValkeyConnection {
     /// Deletes one or more keys.
     ///
     /// - Documentation: [DEL](https:/valkey.io/commands/del)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
     /// - Returns: [Integer]: The number of keys that were removed.
     @inlinable
@@ -890,7 +890,7 @@ extension ValkeyConnection {
     /// Returns a serialized representation of the value stored at a key.
     ///
     /// - Documentation: [DUMP](https:/valkey.io/commands/dump)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
     /// - Complexity: O(1) to access the key and additional O(N*M) to serialize it, where N is the number of objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1).
     /// - Returns: One of the following
     ///     * [String]: The serialized value.
@@ -903,7 +903,9 @@ extension ValkeyConnection {
     /// Determines whether one or more keys exist.
     ///
     /// - Documentation: [EXISTS](https:/valkey.io/commands/exists)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 3.0.3: Accepts multiple `key` arguments.
     /// - Complexity: O(N) where N is the number of keys to check.
     /// - Returns: [Integer]: Number of keys that exist from those specified as arguments.
     @inlinable
@@ -914,7 +916,9 @@ extension ValkeyConnection {
     /// Sets the expiration time of a key in seconds.
     ///
     /// - Documentation: [EXPIRE](https:/valkey.io/commands/expire)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 7.0.0: Added options: `NX`, `XX`, `GT` and `LT`.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
@@ -927,7 +931,9 @@ extension ValkeyConnection {
     /// Sets the expiration time of a key to a Unix timestamp.
     ///
     /// - Documentation: [EXPIREAT](https:/valkey.io/commands/expireat)
-    /// - Version: 1.2.0
+    /// - Available: 1.2.0
+    /// - History:
+    ///     * 7.0.0: Added options: `NX`, `XX`, `GT` and `LT`.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 1: The timeout was set.
@@ -940,7 +946,7 @@ extension ValkeyConnection {
     /// Returns the expiration time of a key as a Unix timestamp.
     ///
     /// - Documentation: [EXPIRETIME](https:/valkey.io/commands/expiretime)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Integer]: Expiration Unix timestamp in seconds.
@@ -954,7 +960,7 @@ extension ValkeyConnection {
     /// Returns all key names that match a pattern.
     ///
     /// - Documentation: [KEYS](https:/valkey.io/commands/keys)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N) with N being the number of keys in the database, under the assumption that the key names in the database and the given pattern have limited length.
     /// - Returns: [Array]: List of keys matching pattern.
     @inlinable
@@ -965,7 +971,12 @@ extension ValkeyConnection {
     /// Atomically transfers a key from one instance to another.
     ///
     /// - Documentation: [MIGRATE](https:/valkey.io/commands/migrate)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
+    /// - History:
+    ///     * 3.0.0: Added the `COPY` and `REPLACE` options.
+    ///     * 3.0.6: Added the `KEYS` option.
+    ///     * 4.0.7: Added the `AUTH` option.
+    ///     * 6.0.0: Added the `AUTH2` option.
     /// - Complexity: This command actually executes a DUMP+DEL in the source instance, and a RESTORE in the target instance. See the pages of these commands for time complexity. Also an O(N) data transfer between the two instances is performed.
     /// - Returns: One of the following
     ///     * "OK": Success.
@@ -978,7 +989,7 @@ extension ValkeyConnection {
     /// Moves a key to another database.
     ///
     /// - Documentation: [MOVE](https:/valkey.io/commands/move)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 1: Key was moved.
@@ -991,7 +1002,7 @@ extension ValkeyConnection {
     /// Returns the internal encoding of an object.
     ///
     /// - Documentation: [OBJECT ENCODING](https:/valkey.io/commands/object-encoding)
-    /// - Version: 2.2.3
+    /// - Available: 2.2.3
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Null]: Key doesn't exist.
@@ -1004,7 +1015,7 @@ extension ValkeyConnection {
     /// Returns the logarithmic access frequency counter of an object.
     ///
     /// - Documentation: [OBJECT FREQ](https:/valkey.io/commands/object-freq)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The counter's value.
     @inlinable
@@ -1015,7 +1026,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [OBJECT HELP](https:/valkey.io/commands/object-help)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -1026,7 +1037,7 @@ extension ValkeyConnection {
     /// Returns the time since the last access to an object.
     ///
     /// - Documentation: [OBJECT IDLETIME](https:/valkey.io/commands/object-idletime)
-    /// - Version: 2.2.3
+    /// - Available: 2.2.3
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The idle time in seconds.
     @inlinable
@@ -1037,7 +1048,7 @@ extension ValkeyConnection {
     /// Returns the reference count of a value of a key.
     ///
     /// - Documentation: [OBJECT REFCOUNT](https:/valkey.io/commands/object-refcount)
-    /// - Version: 2.2.3
+    /// - Available: 2.2.3
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The number of references.
     @inlinable
@@ -1048,7 +1059,7 @@ extension ValkeyConnection {
     /// Removes the expiration time of a key.
     ///
     /// - Documentation: [PERSIST](https:/valkey.io/commands/persist)
-    /// - Version: 2.2.0
+    /// - Available: 2.2.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: Key does not exist or does not have an associated timeout.
@@ -1061,7 +1072,9 @@ extension ValkeyConnection {
     /// Sets the expiration time of a key in milliseconds.
     ///
     /// - Documentation: [PEXPIRE](https:/valkey.io/commands/pexpire)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
+    /// - History:
+    ///     * 7.0.0: Added options: `NX`, `XX`, `GT` and `LT`.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
@@ -1074,7 +1087,9 @@ extension ValkeyConnection {
     /// Sets the expiration time of a key to a Unix milliseconds timestamp.
     ///
     /// - Documentation: [PEXPIREAT](https:/valkey.io/commands/pexpireat)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
+    /// - History:
+    ///     * 7.0.0: Added options: `NX`, `XX`, `GT` and `LT`.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 1: The timeout was set.
@@ -1087,7 +1102,7 @@ extension ValkeyConnection {
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
     ///
     /// - Documentation: [PEXPIRETIME](https:/valkey.io/commands/pexpiretime)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Integer]: Expiration Unix timestamp in milliseconds.
@@ -1101,7 +1116,9 @@ extension ValkeyConnection {
     /// Returns the expiration time in milliseconds of a key.
     ///
     /// - Documentation: [PTTL](https:/valkey.io/commands/pttl)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
+    /// - History:
+    ///     * 2.8.0: Added the -2 reply.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Integer]: TTL in milliseconds.
@@ -1115,7 +1132,7 @@ extension ValkeyConnection {
     /// Returns a random key name from the database.
     ///
     /// - Documentation: [RANDOMKEY](https:/valkey.io/commands/randomkey)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Null]: When the database is empty.
@@ -1128,7 +1145,7 @@ extension ValkeyConnection {
     /// Renames a key and overwrites the destination.
     ///
     /// - Documentation: [RENAME](https:/valkey.io/commands/rename)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     @inlinable
     public func rename(key: ValkeyKey, newkey: ValkeyKey) async throws {
@@ -1138,7 +1155,9 @@ extension ValkeyConnection {
     /// Renames a key only when the target key name doesn't exist.
     ///
     /// - Documentation: [RENAMENX](https:/valkey.io/commands/renamenx)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 3.2.0: The command no longer returns an error when source and destination names are the same.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 1: Key was renamed to newkey.
@@ -1151,7 +1170,11 @@ extension ValkeyConnection {
     /// Creates a key from the serialized representation of a value.
     ///
     /// - Documentation: [RESTORE](https:/valkey.io/commands/restore)
-    /// - Version: 2.6.0
+    /// - Available: 2.6.0
+    /// - History:
+    ///     * 3.0.0: Added the `REPLACE` modifier.
+    ///     * 5.0.0: Added the `ABSTTL` modifier.
+    ///     * 5.0.0: Added the `IDLETIME` and `FREQ` options.
     /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     @inlinable
     public func restore<SerializedValue: RESPStringRenderable>(key: ValkeyKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
@@ -1161,7 +1184,9 @@ extension ValkeyConnection {
     /// Iterates over the key names in the database.
     ///
     /// - Documentation: [SCAN](https:/valkey.io/commands/scan)
-    /// - Version: 2.8.0
+    /// - Available: 2.8.0
+    /// - History:
+    ///     * 6.0.0: Added the `TYPE` subcommand.
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Returns: [Array]: Cursor and scan response in array form.
     @inlinable
@@ -1172,7 +1197,7 @@ extension ValkeyConnection {
     /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
     ///
     /// - Documentation: [SORT](https:/valkey.io/commands/sort)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
     /// - Returns: One of the following
     ///     * [Integer]: When the store option is specified the command returns the number of sorted elements in the destination list.
@@ -1185,7 +1210,7 @@ extension ValkeyConnection {
     /// Returns the sorted elements of a list, a set, or a sorted set.
     ///
     /// - Documentation: [SORT_RO](https:/valkey.io/commands/sort_ro)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(N+M*log(M)) where N is the number of elements in the list or set to sort, and M the number of returned elements. When the elements are not sorted, complexity is O(N).
     /// - Returns: [Array]: A list of sorted elements.
     @inlinable
@@ -1196,7 +1221,7 @@ extension ValkeyConnection {
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
     ///
     /// - Documentation: [TOUCH](https:/valkey.io/commands/touch)
-    /// - Version: 3.2.1
+    /// - Available: 3.2.1
     /// - Complexity: O(N) where N is the number of keys that will be touched.
     /// - Returns: [Integer]: The number of touched keys.
     @inlinable
@@ -1207,7 +1232,9 @@ extension ValkeyConnection {
     /// Returns the expiration time in seconds of a key.
     ///
     /// - Documentation: [TTL](https:/valkey.io/commands/ttl)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 2.8.0: Added the -2 reply.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Integer]: TTL in seconds.
@@ -1221,7 +1248,7 @@ extension ValkeyConnection {
     /// Determines the type of value stored at a key.
     ///
     /// - Documentation: [TYPE](https:/valkey.io/commands/type)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Null]: Key doesn't exist
@@ -1234,7 +1261,7 @@ extension ValkeyConnection {
     /// Asynchronously deletes one or more keys.
     ///
     /// - Documentation: [UNLINK](https:/valkey.io/commands/unlink)
-    /// - Version: 4.0.0
+    /// - Available: 4.0.0
     /// - Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
     /// - Returns: [Integer]: The number of keys that were unlinked.
     @inlinable
@@ -1245,7 +1272,7 @@ extension ValkeyConnection {
     /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
     ///
     /// - Documentation: [WAIT](https:/valkey.io/commands/wait)
-    /// - Version: 3.0.0
+    /// - Available: 3.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The number of replicas reached by all the writes performed in the context of the current connection.
     @inlinable
@@ -1256,7 +1283,7 @@ extension ValkeyConnection {
     /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the primary and/or replicas.
     ///
     /// - Documentation: [WAITAOF](https:/valkey.io/commands/waitaof)
-    /// - Version: 7.2.0
+    /// - Available: 7.2.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Number of local and remote AOF files in sync.
     @inlinable

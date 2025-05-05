@@ -23,7 +23,7 @@ struct App {
 
     func run() async throws {
         let resourceFolder = Bundle.module.resourceURL!
-        let commands = try load(fileURL: resourceFolder.appending(path: "commands.json"), as: ValkeyCommands.self)
+        let commands = try load(fileURL: resourceFolder.appending(path: "valkey-commands.json"), as: ValkeyCommands.self)
         try writeValkeyCommands(toFolder: "Sources/Valkey/Commands/", commands: commands)
     }
 

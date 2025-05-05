@@ -664,7 +664,9 @@ extension ValkeyConnection {
     /// Authenticates the connection.
     ///
     /// - Documentation: [AUTH](https:/valkey.io/commands/auth)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
+    /// - History:
+    ///     * 6.0.0: Added ACL style (username and password).
     /// - Complexity: O(N) where N is the number of passwords defined for the user
     @inlinable
     public func auth<Password: RESPStringRenderable>(username: String? = nil, password: Password) async throws {
@@ -674,7 +676,7 @@ extension ValkeyConnection {
     /// Instructs the server whether to track the keys in the next request.
     ///
     /// - Documentation: [CLIENT CACHING](https:/valkey.io/commands/client-caching)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(1)
     @inlinable
     public func clientCaching(mode: CLIENT.CACHING.Mode) async throws {
@@ -684,7 +686,7 @@ extension ValkeyConnection {
     /// A client claims its capability.
     ///
     /// - Documentation: [CLIENT CAPA](https:/valkey.io/commands/client-capa)
-    /// - Version: 8.0.0
+    /// - Available: 8.0.0
     /// - Complexity: O(1)
     @inlinable
     public func clientCapa<Capability: RESPStringRenderable>(capability: [Capability]) async throws {
@@ -694,7 +696,7 @@ extension ValkeyConnection {
     /// Returns the name of the connection.
     ///
     /// - Documentation: [CLIENT GETNAME](https:/valkey.io/commands/client-getname)
-    /// - Version: 2.6.9
+    /// - Available: 2.6.9
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The connection name of the current connection
@@ -707,7 +709,7 @@ extension ValkeyConnection {
     /// Returns the client ID to which the connection's tracking notifications are redirected.
     ///
     /// - Documentation: [CLIENT GETREDIR](https:/valkey.io/commands/client-getredir)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: Not redirecting notifications to any client.
@@ -721,7 +723,7 @@ extension ValkeyConnection {
     /// Returns helpful text about the different subcommands.
     ///
     /// - Documentation: [CLIENT HELP](https:/valkey.io/commands/client-help)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
@@ -732,7 +734,7 @@ extension ValkeyConnection {
     /// Returns the unique client ID of the connection.
     ///
     /// - Documentation: [CLIENT ID](https:/valkey.io/commands/client-id)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(1)
     /// - Returns: [Integer]: The id of the client
     @inlinable
@@ -743,7 +745,7 @@ extension ValkeyConnection {
     /// Returns information about the connection.
     ///
     /// - Documentation: [CLIENT INFO](https:/valkey.io/commands/client-info)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     /// - Returns: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
@@ -754,7 +756,15 @@ extension ValkeyConnection {
     /// Terminates open connections.
     ///
     /// - Documentation: [CLIENT KILL](https:/valkey.io/commands/client-kill)
-    /// - Version: 2.4.0
+    /// - Available: 2.4.0
+    /// - History:
+    ///     * 2.8.12: Added new filter format.
+    ///     * 2.8.12: `ID` option.
+    ///     * 3.2.0: Added `master` type in for `TYPE` option.
+    ///     * 5.0.0: Replaced `slave` `TYPE` with `replica`. `slave` still supported for backward compatibility.
+    ///     * 6.2.0: `LADDR` option.
+    ///     * 8.0.0: `MAXAGE` option.
+    ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: One of the following
     ///     * "OK": When called in 3 argument format.
@@ -767,7 +777,15 @@ extension ValkeyConnection {
     /// Lists open connections.
     ///
     /// - Documentation: [CLIENT LIST](https:/valkey.io/commands/client-list)
-    /// - Version: 2.4.0
+    /// - Available: 2.4.0
+    /// - History:
+    ///     * 2.8.12: Added unique client `id` field.
+    ///     * 5.0.0: Added optional `TYPE` filter.
+    ///     * 6.0.0: Added `user` field.
+    ///     * 6.2.0: Added `argv-mem`, `tot-mem`, `laddr` and `redir` fields and the optional `ID` filter.
+    ///     * 7.0.0: Added `resp`, `multi-mem`, `rbs` and `rbp` fields.
+    ///     * 7.0.3: Added `ssub` field.
+    ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: [String]: Information and statistics about client connections
     @inlinable
@@ -778,7 +796,7 @@ extension ValkeyConnection {
     /// Sets the client eviction mode of the connection.
     ///
     /// - Documentation: [CLIENT NO-EVICT](https:/valkey.io/commands/client-no-evict)
-    /// - Version: 7.0.0
+    /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
     public func clientNoEvict(enabled: CLIENT.NOEVICT.Enabled) async throws {
@@ -788,7 +806,7 @@ extension ValkeyConnection {
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
     ///
     /// - Documentation: [CLIENT NO-TOUCH](https:/valkey.io/commands/client-no-touch)
-    /// - Version: 7.2.0
+    /// - Available: 7.2.0
     /// - Complexity: O(1)
     @inlinable
     public func clientNoTouch(enabled: CLIENT.NOTOUCH.Enabled) async throws {
@@ -798,7 +816,9 @@ extension ValkeyConnection {
     /// Suspends commands processing.
     ///
     /// - Documentation: [CLIENT PAUSE](https:/valkey.io/commands/client-pause)
-    /// - Version: 3.0.0
+    /// - Available: 3.0.0
+    /// - History:
+    ///     * 6.2.0: `CLIENT PAUSE WRITE` mode added along with the `mode` option.
     /// - Complexity: O(1)
     @inlinable
     public func clientPause(timeout: Int, mode: CLIENT.PAUSE.Mode? = nil) async throws {
@@ -808,7 +828,7 @@ extension ValkeyConnection {
     /// Instructs the server whether to reply to commands.
     ///
     /// - Documentation: [CLIENT REPLY](https:/valkey.io/commands/client-reply)
-    /// - Version: 3.2.0
+    /// - Available: 3.2.0
     /// - Complexity: O(1)
     /// - Returns: "OK": When called with either OFF or SKIP subcommands, no reply is made. When called with ON, reply is OK.
     @inlinable
@@ -819,7 +839,7 @@ extension ValkeyConnection {
     /// Sets information specific to the client or connection.
     ///
     /// - Documentation: [CLIENT SETINFO](https:/valkey.io/commands/client-setinfo)
-    /// - Version: 7.2.0
+    /// - Available: 7.2.0
     /// - Complexity: O(1)
     @inlinable
     public func clientSetinfo(attr: CLIENT.SETINFO.Attr) async throws {
@@ -829,7 +849,7 @@ extension ValkeyConnection {
     /// Sets the connection name.
     ///
     /// - Documentation: [CLIENT SETNAME](https:/valkey.io/commands/client-setname)
-    /// - Version: 2.6.9
+    /// - Available: 2.6.9
     /// - Complexity: O(1)
     @inlinable
     public func clientSetname<ConnectionName: RESPStringRenderable>(connectionName: ConnectionName) async throws {
@@ -839,7 +859,7 @@ extension ValkeyConnection {
     /// Controls server-assisted client-side caching for the connection.
     ///
     /// - Documentation: [CLIENT TRACKING](https:/valkey.io/commands/client-tracking)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
     /// - Complexity: O(1). Some options may introduce additional complexity.
     /// - Returns: "OK": If the client was successfully put into or taken out of tracking mode.
     @inlinable
@@ -850,7 +870,7 @@ extension ValkeyConnection {
     /// Returns information about server-assisted client-side caching for the connection.
     ///
     /// - Documentation: [CLIENT TRACKINGINFO](https:/valkey.io/commands/client-trackinginfo)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     @inlinable
     public func clientTrackinginfo() async throws -> RESPToken.Map {
@@ -860,7 +880,7 @@ extension ValkeyConnection {
     /// Unblocks a client blocked by a blocking command from a different connection.
     ///
     /// - Documentation: [CLIENT UNBLOCK](https:/valkey.io/commands/client-unblock)
-    /// - Version: 5.0.0
+    /// - Available: 5.0.0
     /// - Complexity: O(log N) where N is the number of client connections
     /// - Returns: One of the following
     ///     * 0: If the client was unblocked successfully.
@@ -873,7 +893,7 @@ extension ValkeyConnection {
     /// Resumes processing commands from paused clients.
     ///
     /// - Documentation: [CLIENT UNPAUSE](https:/valkey.io/commands/client-unpause)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(N) Where N is the number of paused clients
     @inlinable
     public func clientUnpause() async throws {
@@ -883,7 +903,7 @@ extension ValkeyConnection {
     /// Returns the given string.
     ///
     /// - Documentation: [ECHO](https:/valkey.io/commands/echo)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: [String]: The given string
     @inlinable
@@ -894,7 +914,9 @@ extension ValkeyConnection {
     /// Handshakes with the server.
     ///
     /// - Documentation: [HELLO](https:/valkey.io/commands/hello)
-    /// - Version: 6.0.0
+    /// - Available: 6.0.0
+    /// - History:
+    ///     * 6.2.0: `protover` made optional; when called without arguments the command reports the current connection's context.
     /// - Complexity: O(1)
     @inlinable
     public func hello(arguments: HELLO.Arguments? = nil) async throws -> RESPToken.Map {
@@ -904,7 +926,7 @@ extension ValkeyConnection {
     /// Returns the server's liveliness response.
     ///
     /// - Documentation: [PING](https:/valkey.io/commands/ping)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * "PONG": Default reply.
@@ -917,7 +939,7 @@ extension ValkeyConnection {
     /// Closes the connection.
     ///
     /// - Documentation: [QUIT](https:/valkey.io/commands/quit)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     @inlinable
     @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
@@ -928,7 +950,7 @@ extension ValkeyConnection {
     /// Resets the connection.
     ///
     /// - Documentation: [RESET](https:/valkey.io/commands/reset)
-    /// - Version: 6.2.0
+    /// - Available: 6.2.0
     /// - Complexity: O(1)
     @inlinable
     public func reset() async throws -> String {
@@ -938,7 +960,7 @@ extension ValkeyConnection {
     /// Changes the selected database.
     ///
     /// - Documentation: [SELECT](https:/valkey.io/commands/select)
-    /// - Version: 1.0.0
+    /// - Available: 1.0.0
     /// - Complexity: O(1)
     @inlinable
     public func select(index: Int) async throws {
