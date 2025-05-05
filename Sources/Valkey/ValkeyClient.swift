@@ -92,7 +92,7 @@ public final class ValkeyClient: Sendable {
 }
 
 extension ValkeyClient {
-    func run() async throws {
+    public func run() async throws {
         let atomicOp = self.runningAtomic.compareExchange(expected: false, desired: true, ordering: .relaxed)
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         await self.connectionPool.run()
