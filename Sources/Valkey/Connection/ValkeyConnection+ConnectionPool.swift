@@ -27,7 +27,7 @@ extension ValkeyConnection: PooledConnection {
 }
 
 /// Keep alive behavior for Valkey connection
-struct ValkeyKeepAliveBehavor: ConnectionKeepAliveBehavior {
+struct ValkeyKeepAliveBehavior: ConnectionKeepAliveBehavior {
     let behavior: ValkeyClientConfiguration.KeepAliveBehavior?
 
     init(_ behavior: ValkeyClientConfiguration.KeepAliveBehavior?) {

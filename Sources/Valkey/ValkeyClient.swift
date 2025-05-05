@@ -32,7 +32,7 @@ public final class ValkeyClient: Sendable {
         ConnectionIDGenerator,
         ConnectionRequest<ValkeyConnection>,
         ConnectionRequest.ID,
-        ValkeyKeepAliveBehavor,
+        ValkeyKeepAliveBehavior,
         ValkeyClientMetrics,
         ContinuousClock
     >
