@@ -10,8 +10,8 @@ let package = Package(
         .library(name: "Valkey", targets: ["Valkey"])
     ],
     traits: [
-        .trait(name: "ServiceLifecycle"),
-        .default(enabledTraits: ["ServiceLifecycle"]),
+        .trait(name: "ServiceLifecycleSupport"),
+        .default(enabledTraits: ["ServiceLifecycleSupport"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
@@ -35,7 +35,7 @@ let package = Package(
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "NIOSSL", package: "swift-nio-ssl"),
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
-                .product(name: "ServiceLifecycle", package: "swift-service-lifecycle", condition: .when(traits: ["ServiceLifecycle"])),
+                .product(name: "ServiceLifecycle", package: "swift-service-lifecycle", condition: .when(traits: ["ServiceLifecycleSupport"])),
             ]
         ),
         .target(

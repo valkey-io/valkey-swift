@@ -20,7 +20,7 @@ import NIOTransportServices
 import Synchronization
 import _ConnectionPoolModule
 
-#if ServiceLifecycle
+#if ServiceLifecycleSupport
 import ServiceLifecycle
 #endif
 
@@ -99,7 +99,7 @@ extension ValkeyClient {
     public func run() async {
         let atomicOp = self.runningAtomic.compareExchange(expected: false, desired: true, ordering: .relaxed)
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
-        #if ServiceLifecycle
+        #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
             await self.connectionPool.run()
         }
@@ -134,6 +134,6 @@ extension ValkeyClient {
 
 }
 
-#if ServiceLifecycle
+#if ServiceLifecycleSupport
 extension ValkeyClient: Service {}
 #endif  // ServiceLifecycle
