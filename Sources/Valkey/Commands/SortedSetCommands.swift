@@ -39,8 +39,6 @@ public struct BZMPOP: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken.Array?
-
     public var timeout: Double
     public var key: [ValkeyKey]
     public var `where`: Where
@@ -62,8 +60,6 @@ public struct BZMPOP: ValkeyCommand {
 
 /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
 public struct BZPOPMAX: ValkeyCommand {
-    public typealias Response = RESPToken.Array?
-
     public var key: [ValkeyKey]
     public var timeout: Double
 
@@ -81,8 +77,6 @@ public struct BZPOPMAX: ValkeyCommand {
 
 /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
 public struct BZPOPMIN: ValkeyCommand {
-    public typealias Response = RESPToken.Array?
-
     public var key: [ValkeyKey]
     public var timeout: Double
 
@@ -410,8 +404,6 @@ public struct ZMPOP: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken.Array?
-
     public var key: [ValkeyKey]
     public var `where`: Where
     public var count: Int?
@@ -450,8 +442,6 @@ public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand {
 
 /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
 public struct ZPOPMAX: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var count: Int?
 
@@ -469,8 +459,6 @@ public struct ZPOPMAX: ValkeyCommand {
 
 /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
 public struct ZPOPMIN: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var count: Int?
 
@@ -1122,7 +1110,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Timeout reached and no elements were popped.
     ///     * [Array]: The keyname and the popped members.
     @inlinable
-    public func bzmpop(timeout: Double, key: [ValkeyKey], `where`: BZMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
+    public func bzmpop(timeout: Double, key: [ValkeyKey], `where`: BZMPOP.Where, count: Int? = nil) async throws -> BZMPOP.Response {
         try await send(command: BZMPOP(timeout: timeout, key: key, where: `where`, count: count))
     }
 
@@ -1137,7 +1125,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Timeout reached and no elements were popped.
     ///     * [Array]: The keyname, popped member, and its score.
     @inlinable
-    public func bzpopmax(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
+    public func bzpopmax(key: [ValkeyKey], timeout: Double) async throws -> BZPOPMAX.Response {
         try await send(command: BZPOPMAX(key: key, timeout: timeout))
     }
 
@@ -1152,7 +1140,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Timeout reached and no elements were popped.
     ///     * [Array]: The keyname, popped member, and its score.
     @inlinable
-    public func bzpopmin(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
+    public func bzpopmin(key: [ValkeyKey], timeout: Double) async throws -> BZPOPMIN.Response {
         try await send(command: BZPOPMIN(key: key, timeout: timeout))
     }
 
@@ -1287,7 +1275,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: No element could be popped.
     ///     * [Array]: Name of the key that elements were popped.
     @inlinable
-    public func zmpop(key: [ValkeyKey], `where`: ZMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
+    public func zmpop(key: [ValkeyKey], `where`: ZMPOP.Where, count: Int? = nil) async throws -> ZMPOP.Response {
         try await send(command: ZMPOP(key: key, where: `where`, count: count))
     }
 
@@ -1313,7 +1301,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
     ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     @inlinable
-    public func zpopmax(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken.Array {
+    public func zpopmax(key: ValkeyKey, count: Int? = nil) async throws -> ZPOPMAX.Response {
         try await send(command: ZPOPMAX(key: key, count: count))
     }
 
@@ -1326,7 +1314,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
     ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     @inlinable
-    public func zpopmin(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken.Array {
+    public func zpopmin(key: ValkeyKey, count: Int? = nil) async throws -> ZPOPMIN.Response {
         try await send(command: ZPOPMIN(key: key, count: count))
     }
 

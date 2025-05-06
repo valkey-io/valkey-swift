@@ -235,12 +235,19 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let respArray), .push(let respArray):
-            var array: [Element] = []
-            for respElement in respArray {
-                let element = try Element(fromRESP: respElement)
-                array.append(element)
+            do {
+                var array: [Element] = []
+                for respElement in respArray {
+                    let element = try Element(fromRESP: respElement)
+                    array.append(element)
+                }
+                self = array
+            } catch let error as RESPParsingError where error.code == .unexpectedType {
+                // if decoding array failed it is possible `Element` is represented by an array and we have a single array
+                // that represents one element of `Element` instead of Array<Element>. We should attempt to decode this as a single element
+                let value = try Element(fromRESP: token)
+                self = [value]
             }
-            self = array
         default:
             let value = try Element(fromRESP: token)
             self = [value]
