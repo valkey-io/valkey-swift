@@ -10,7 +10,8 @@ let package = Package(
         .library(name: "Valkey", targets: ["Valkey"])
     ],
     traits: [
-        .trait(name: "ServiceLifecycle")
+        .trait(name: "ServiceLifecycle"),
+        .default(enabledTraits: ["ServiceLifecycle"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
