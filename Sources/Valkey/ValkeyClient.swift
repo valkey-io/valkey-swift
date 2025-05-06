@@ -135,8 +135,5 @@ extension ValkeyClient {
 }
 
 #if ServiceLifecycle
-import ServiceLifecycle
-
 extension ValkeyClient: Service {}
-
 #endif  // ServiceLifecycle
