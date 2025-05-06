@@ -1,34 +1,47 @@
 # swift-valkey
 
-Valkey client. 
-
-This is currently in an unfinished state. It has no connection manager so there is no support for connection reuse.
+Valkey client 
 
 ## Usage
 
-To create a connection to Valkey database you use `ValkeyClient.withConnection()`.
+The swift-valkey project uses a connection pool, which requires a background process to manage it. You can either run it using a Task group
 
 ```swift
-try await ValkeyClient.withConnection(.hostname("localhost", port: 6379), logger: logger) { connection, logger in
+let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
+try await withThrowingTaskgroup(of: Void.self) { group in
+    group.addTask {
+        // run connection pool in the background
+        try await valkeyClient.run()
+    }
+    // use valkey client
+}
+```
+
+Or you can use ValkeyClient with [swift-service-lifecycle](https://github.com/swift-server/swift-service-lifecycle).
+
+Once you have a valkey client setup and running you can create connections to your Valkey database using `ValkeyClient.withConnection()`.
+
+```swift
+try await valkeyClient.withConnection { connection in
     try await doValkeyStuff()
 }
 ```
 
-All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files Valkey supplies in [valkey-doc](https://github.com/valkey-io/valkey-doc). In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible a `RESPToken` is returned and you'll need to convert the return type manually.
+All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files Valkey supplies in [valkey](https://github.com/valkey-io/valkey/src/commands). In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible (or we are returning a String) a `RESPToken` is returned and you'll need to convert it manually.
 
 ```swift
-try await connection.set("MyKey", "TestString")
-let value = try await connection.get(key)
+try await connection.set(key: "MyKey", value: "TestString")
+let value = try await connection.get(key: "MyKey").decode(as: String.self)
 ```
 
 ### Pipelining commands
 
-In some cases it desirable to send multiple commands at one time, without waiting for each response after each command. This is called pipelining. You can do this using the function `pipeline(_:)`. This takes a parameter pack of commands and returns a parameter pack with the responses once all the commands have executed.
+In some cases it is desirable to send multiple commands at one time, without waiting for the response after each command. This is called pipelining. You can do this using the function `pipeline(_:)`. This takes a parameter pack of commands and returns a parameter pack with the responses once all the commands have executed.
 
 ```swift
 let (setResponse, getResponse) = try await connection.pipeline(
-    SET("MyKey", "TestString"),
-    GET("MyKey")
+    SET(key: "MyKey", value: "TestString"),
+    GET(key: "MyKey")
 )
 ```
 
