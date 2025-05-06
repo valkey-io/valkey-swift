@@ -15,7 +15,7 @@
 import NIOCore
 
 /// Type representing a Valkey Key
-public struct ValkeyKey: RawRepresentable, Sendable {
+public struct ValkeyKey: RawRepresentable, Sendable, Equatable {
     public var rawValue: String
 
     public init(rawValue: String) {

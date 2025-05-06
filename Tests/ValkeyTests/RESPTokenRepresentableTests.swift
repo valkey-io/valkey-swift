@@ -126,4 +126,15 @@ struct RESPTokenRepresentableTests {
         #expect(value.2 == "BulkString")
         #expect(value.3 == [true, false])
     }
+
+    @Test(arguments: [
+        ("*2\r\n:1\r\n:45\r\n", [1...45]),
+        ("*2\r\n*2\r\n:1\r\n:6\r\n*2\r\n:8\r\n:34\r\n", [1...6, 8...34]),
+    ])
+    func arrayOfArrays(testValues: (String, [ClosedRange<Int>])) throws {
+        var buffer = ByteBuffer(string: testValues.0)
+        let token = try #require(try RESPToken(consuming: &buffer))
+        let value = try [ClosedRange<Int>](fromRESP: token)
+        #expect(value == testValues.1)
+    }
 }
