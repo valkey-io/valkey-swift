@@ -20,6 +20,10 @@ import NIOTransportServices
 import Synchronization
 import _ConnectionPoolModule
 
+#if ServiceLifecycleSupport
+import ServiceLifecycle
+#endif
+
 /// Valkey client
 ///
 /// Connect to Valkey server.
@@ -92,11 +96,18 @@ public final class ValkeyClient: Sendable {
 }
 
 extension ValkeyClient {
-    public func run() async throws {
+    public func run() async {
         let atomicOp = self.runningAtomic.compareExchange(expected: false, desired: true, ordering: .relaxed)
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
+        #if ServiceLifecycleSupport
+        await cancelWhenGracefulShutdown {
+            await self.connectionPool.run()
+        }
+        #else
         await self.connectionPool.run()
+        #endif
     }
+
     /// Create connection and run operation using connection
     ///
     /// - Parameters:
@@ -122,3 +133,7 @@ extension ValkeyClient {
     }
 
 }
+
+#if ServiceLifecycleSupport
+extension ValkeyClient: Service {}
+#endif  // ServiceLifecycle

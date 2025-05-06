@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -8,10 +8,6 @@ let package = Package(
     platforms: [.macOS(.v15)],
     products: [
         .library(name: "Valkey", targets: ["Valkey"])
-    ],
-    traits: [
-        .trait(name: "ServiceLifecycleSupport"),
-        .default(enabledTraits: ["ServiceLifecycleSupport"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
@@ -35,7 +31,10 @@ let package = Package(
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "NIOSSL", package: "swift-nio-ssl"),
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
-                .product(name: "ServiceLifecycle", package: "swift-service-lifecycle", condition: .when(traits: ["ServiceLifecycleSupport"])),
+                .product(name: "ServiceLifecycle", package: "swift-service-lifecycle"),
+            ],
+            swiftSettings: [
+                .define("ServiceLifecycleSupport")
             ]
         ),
         .target(
