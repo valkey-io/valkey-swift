@@ -44,7 +44,7 @@ struct GeneratedCommands {
         try await withThrowingTaskGroup(of: Void.self) { group in
             let client = ValkeyClient(address, configuration: configuration, logger: logger)
             group.addTask {
-                try await client.run()
+                await client.run()
             }
             group.addTask {
                 try await operation(client)

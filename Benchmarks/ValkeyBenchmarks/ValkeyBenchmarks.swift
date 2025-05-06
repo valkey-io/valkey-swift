@@ -43,7 +43,7 @@ let benchmarks: @Sendable () -> Void = {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                try await client.run()
+                await client.run()
             }
             await Task.yield()
             try await client.withConnection { connection in
