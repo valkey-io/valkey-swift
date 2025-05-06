@@ -96,6 +96,7 @@ public final class ValkeyClient: Sendable {
 }
 
 extension ValkeyClient {
+    /// Run ValkeyClient connection pool
     public func run() async {
         let atomicOp = self.runningAtomic.compareExchange(expected: false, desired: true, ordering: .relaxed)
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
@@ -108,13 +109,11 @@ extension ValkeyClient {
         #endif
     }
 
-    /// Create connection and run operation using connection
+    /// Get connection from connection pool and run operation using connection
     ///
     /// - Parameters:
-    ///   - logger: Logger
-    ///   - operation: Closure handling Valkey connection
+    ///   - operation: Closure using Valkey connection
     public func withConnection<Value: Sendable>(
-        name: String? = nil,
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
