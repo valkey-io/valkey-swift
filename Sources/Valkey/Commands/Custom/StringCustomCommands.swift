@@ -17,8 +17,8 @@ extension LCS {
     ///     * [Bulk string](https:/valkey.io/topics/protocol/#bulk-strings): the longest common subsequence.
     ///     * [Integer](https:/valkey.io/topics/protocol/#integers): the length of the longest common subsequence when _LEN_ is given.
     ///     * [Map](https:/valkey.io/topics/protocol/#maps): a map with the LCS length and all the ranges in both the strings when _IDX_ is given.
-    public enum Response: RESPTokenDecodable, Equatable {
-        public struct Match: RESPTokenDecodable, Equatable {
+    public enum Response: RESPTokenDecodable, Equatable, Sendable {
+        public struct Match: RESPTokenDecodable, Equatable, Sendable {
             public let first: ClosedRange<Int>
             public let second: ClosedRange<Int>
 

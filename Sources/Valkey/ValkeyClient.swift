@@ -133,6 +133,15 @@ extension ValkeyClient {
 
 }
 
+/// Extend ValkeyClient so we can call commands directly from it
+extension ValkeyClient: ValkeyConnectionProtocol {
+    public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
+        try await self.withConnection {
+            try await $0.send(command: command)
+        }
+    }
+}
+
 #if ServiceLifecycleSupport
 extension ValkeyClient: Service {}
 #endif  // ServiceLifecycle
