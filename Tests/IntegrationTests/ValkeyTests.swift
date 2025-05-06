@@ -15,7 +15,6 @@
 import Foundation
 import Logging
 import NIOCore
-import ServiceLifecycle
 import Testing
 import Valkey
 
@@ -44,15 +43,14 @@ struct GeneratedCommands {
     ) async throws {
         try await withThrowingTaskGroup(of: Void.self) { group in
             let client = ValkeyClient(address, configuration: configuration, logger: logger)
-            let serviceGroup = ServiceGroup(configuration: .init(services: [client], logger: logger))
             group.addTask {
-                try await serviceGroup.run()
+                await client.run()
             }
             group.addTask {
                 try await operation(client)
             }
             try await group.next()
-            await serviceGroup.triggerGracefulShutdown()
+            group.cancelAll()
         }
     }
 
