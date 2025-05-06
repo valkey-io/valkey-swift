@@ -153,6 +153,22 @@ struct GeneratedCommands {
     }
 
     @Test
+    func testTransactionSetIncrGet() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                let responses = try await connection.transaction(
+                    SET(key: key, value: "100"),
+                    INCR(key: key),
+                    GET(key: key)
+                )
+                #expect(try responses.2.get()?.decode(as: String.self) == "101")
+            }
+        }
+    }
+
+    @Test
     func testSingleElementArray() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
