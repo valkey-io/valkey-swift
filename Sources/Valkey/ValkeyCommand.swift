@@ -16,7 +16,7 @@ import NIOCore
 
 /// A Valkey command that can be executed on a connection.
 public protocol ValkeyCommand: Sendable {
-    associatedtype Response: RESPTokenDecodable & Sendable = RESPToken
+    associatedtype Response: RESPTokenDecodable = RESPToken
     associatedtype Keys: Collection<ValkeyKey>
 
     /// Keys affected by command. This is used in cluster mode to determine which

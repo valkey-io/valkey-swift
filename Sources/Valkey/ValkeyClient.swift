@@ -112,10 +112,11 @@ extension ValkeyClient {
     /// Get connection from connection pool and run operation using connection
     ///
     /// - Parameters:
-    ///   - operation: Closure using Valkey connection
-    public func withConnection<Value: Sendable>(
+    ///   - operation: Closure handling Valkey connection
+    public func withConnection<Value>(
+        name: String? = nil,
         isolation: isolated (any Actor)? = #isolation,
-        operation: (ValkeyConnection) async throws -> Value
+        operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         let connection = try await self.leaseConnection()
 
