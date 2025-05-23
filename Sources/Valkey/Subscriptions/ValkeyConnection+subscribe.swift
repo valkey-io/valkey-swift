@@ -27,10 +27,10 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public func subscribe<Value: Sendable>(
+    public func subscribe<Value>(
         to channels: String...,
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscriptionSequence) async throws -> Value
+        process: (ValkeySubscriptionSequence) async throws -> sending Value
     ) async throws -> Value {
         try await self.subscribe(to: channels, process: process)
     }
@@ -47,10 +47,10 @@ extension ValkeyConnection {
     ///   - channels: list of channels to subscribe to
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
-    public func subscribe<Value: Sendable>(
+    public func subscribe<Value>(
         to channels: [String],
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscriptionSequence) async throws -> Value
+        process: (ValkeySubscriptionSequence) async throws -> sending Value
     ) async throws -> Value {
         let command = SUBSCRIBE(channel: channels)
         let (id, stream) = try await subscribe(command: command, filters: channels.map { .channel($0) })
@@ -77,10 +77,10 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public func psubscribe<Value: Sendable>(
+    public func psubscribe<Value>(
         to patterns: String...,
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscriptionSequence) async throws -> Value
+        process: (ValkeySubscriptionSequence) async throws -> sending Value
     ) async throws -> Value {
         try await self.psubscribe(to: patterns, process: process)
     }
@@ -97,10 +97,10 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public func psubscribe<Value: Sendable>(
+    public func psubscribe<Value>(
         to patterns: [String],
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscriptionSequence) async throws -> Value
+        process: (ValkeySubscriptionSequence) async throws -> sending Value
     ) async throws -> Value {
         let command = PSUBSCRIBE(pattern: patterns)
         let (id, stream) = try await subscribe(command: command, filters: patterns.map { .pattern($0) })
@@ -127,10 +127,10 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public func ssubscribe<Value: Sendable>(
+    public func ssubscribe<Value>(
         to shardchannel: String...,
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscriptionSequence) async throws -> Value
+        process: (ValkeySubscriptionSequence) async throws -> sending Value
     ) async throws -> Value {
         try await self.ssubscribe(to: shardchannel, process: process)
     }
@@ -147,10 +147,10 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public func ssubscribe<Value: Sendable>(
+    public func ssubscribe<Value>(
         to shardchannel: [String],
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscriptionSequence) async throws -> Value
+        process: (ValkeySubscriptionSequence) async throws -> sending Value
     ) async throws -> Value {
         let command = SSUBSCRIBE(shardchannel: shardchannel)
         let (id, stream) = try await subscribe(command: command, filters: shardchannel.map { .shardChannel($0) })
