@@ -56,7 +56,14 @@ extension ValkeyConnection {
         let (id, stream) = try await subscribe(command: command, filters: channels.map { .channel($0) })
         let value: Value
         do {
-            value = try await process(stream)
+            value = try await withTaskCancellationHandler {
+                try await process(stream)
+            } onCancel: {
+                Task {
+                    await self.cancel()
+                }
+            }
+            try Task.checkCancellation()
         } catch {
             _ = try? await unsubscribe(id: id)
             throw error
@@ -106,7 +113,14 @@ extension ValkeyConnection {
         let (id, stream) = try await subscribe(command: command, filters: patterns.map { .pattern($0) })
         let value: Value
         do {
-            value = try await process(stream)
+            value = try await withTaskCancellationHandler {
+                try await process(stream)
+            } onCancel: {
+                Task {
+                    await self.cancel()
+                }
+            }
+            try Task.checkCancellation()
         } catch {
             _ = try? await unsubscribe(id: id)
             throw error
@@ -156,7 +170,14 @@ extension ValkeyConnection {
         let (id, stream) = try await subscribe(command: command, filters: shardchannel.map { .shardChannel($0) })
         let value: Value
         do {
-            value = try await process(stream)
+            value = try await withTaskCancellationHandler {
+                try await process(stream)
+            } onCancel: {
+                Task {
+                    await self.cancel()
+                }
+            }
+            try Task.checkCancellation()
         } catch {
             _ = try? await unsubscribe(id: id)
             throw error
@@ -171,21 +192,33 @@ extension ValkeyConnection {
         filters: [ValkeySubscriptionFilter]
     ) async throws -> (Int, ValkeySubscription) {
         let (stream, streamContinuation) = ValkeySubscription.makeStream()
-        let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
-            self.channelHandler.subscribe(
-                command: command,
-                streamContinuation: streamContinuation,
-                filters: filters,
-                promise: .swift(continuation)
-            )
+        return try await withTaskCancellationHandler {
+            let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
+                self.channelHandler.subscribe(
+                    command: command,
+                    streamContinuation: streamContinuation,
+                    filters: filters,
+                    promise: .swift(continuation)
+                )
+            }
+            return (subscriptionID, stream)
+        } onCancel: {
+            Task {
+                await self.cancel()
+            }
         }
-        return (subscriptionID, stream)
     }
 
     @usableFromInline
     func unsubscribe(id: Int) async throws {
-        try await withCheckedThrowingContinuation { continuation in
-            self.channelHandler.unsubscribe(id: id, promise: .swift(continuation))
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                self.channelHandler.unsubscribe(id: id, promise: .swift(continuation))
+            }
+        } onCancel: {
+            Task {
+                await self.cancel()
+            }
         }
     }
 

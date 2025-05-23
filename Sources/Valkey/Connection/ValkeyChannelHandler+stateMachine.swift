@@ -75,7 +75,7 @@ extension ValkeyChannelHandler {
 
         @usableFromInline
         enum CancelAction {
-            case cancelPendingCommands
+            case closeAndCancelPendingCommands(Context)
             case doNothing
         }
 
@@ -85,10 +85,12 @@ extension ValkeyChannelHandler {
             switch self.state {
             case .initializing:
                 preconditionFailure("Cannot cancel when initializing")
-            case .active:
-                return .cancelPendingCommands
-            case .closing:
-                return .cancelPendingCommands
+            case .active(let state):
+                self.state = .closed
+                return .closeAndCancelPendingCommands(state.context)
+            case .closing(let state):
+                self.state = .closed
+                return .closeAndCancelPendingCommands(state.context)
             case .closed:
                 return .doNothing
             }

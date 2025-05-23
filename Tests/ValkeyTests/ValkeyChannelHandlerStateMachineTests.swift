@@ -90,19 +90,30 @@ struct ValkeyChannelHandlerStateMachineTests {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancel")
         switch stateMachine.cancel() {
-        case .cancelPendingCommands:
+        case .closeAndCancelPendingCommands(let context):
+            #expect(context == "testCancel")
+        default:
+            Issue.record("Invalid cancel action")
+        }
+        switch stateMachine.cancel() {
+        case .doNothing:
             break
         default:
             Issue.record("Invalid cancel action")
         }
+    }
+
+    @Test
+    func testCancelGracefulShutdown() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
+        stateMachine.setActive(context: "testCancel")
         _ = stateMachine.gracefulShutdown()
         switch stateMachine.cancel() {
-        case .cancelPendingCommands:
-            break
+        case .closeAndCancelPendingCommands(let context):
+            #expect(context == "testCancel")
         default:
             Issue.record("Invalid cancel action")
         }
-        _ = stateMachine.setClosed()
         switch stateMachine.cancel() {
         case .doNothing:
             break

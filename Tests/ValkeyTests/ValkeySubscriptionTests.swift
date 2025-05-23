@@ -390,47 +390,6 @@ struct SubscriptionTests {
     }
 
     @Test
-    func testRemoveSubscriptionOnCancellation() async throws {
-        let channel = NIOAsyncTestingChannel()
-        var logger = Logger(label: "test")
-        logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
-
-        try await withThrowingTaskGroup(of: Void.self) { group in
-            group.addTask {
-                try await connection.subscribe(to: "test") { subscription in
-                    for try await message in subscription {
-                        #expect(message == .init(channel: "test", message: "Testing!"))
-                    }
-                }
-            }
-            group.addTask {
-                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                // expect SUBSCRIBE command
-                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
-                // push SUBSCRIBE channel
-                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
-                // push SUBSCRIBE message
-                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!")])).base)
-            }
-            try await group.next()
-
-            group.cancelAll()
-
-            // add task that won't get cancelled
-            try await Task {
-                // expect UNSUBSCRIBE command
-                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
-                // push UNSUBSCRIBE message
-                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(0)])).base)
-            }.value
-        }
-        #expect(await connection.isSubscriptionsEmpty())
-    }
-
-    @Test
     func testPSubscribe() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -697,4 +656,100 @@ struct SubscriptionTests {
         }
         #expect(await connection.isSubscriptionsEmpty())
     }
+
+    @Test
+    func testCancelSubscribe() async throws {
+        let channel = NIOAsyncTestingChannel()
+        var logger = Logger(label: "test")
+        logger.logLevel = .trace
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await #expect(throws: CancellationError.self) {
+                    try await connection.subscribe(to: "test") { _ in }
+                }
+            }
+            group.addTask {
+                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                // expect SUBSCRIBE command
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
+            }
+            try await group.next()
+            group.cancelAll()
+        }
+        try await connection.channel.eventLoop.submit {
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
+        }.get()
+    }
+
+    @Test
+    func testCancelSubscribeStream() async throws {
+        let channel = NIOAsyncTestingChannel()
+        var logger = Logger(label: "test")
+        logger.logLevel = .trace
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await #expect(throws: CancellationError.self) {
+                    try await connection.subscribe(to: "test") { subscription in
+                        for try await _ in subscription {}
+                    }
+                }
+            }
+            group.addTask {
+                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                // expect SUBSCRIBE command
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
+                // push subscribe
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
+                // push message
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!")])).base)
+            }
+            try await group.next()
+            group.cancelAll()
+        }
+        try await connection.channel.eventLoop.submit {
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
+        }.get()
+    }
+
+    @Test
+    func testCancelUnsubscribe() async throws {
+        let channel = NIOAsyncTestingChannel()
+        var logger = Logger(label: "test")
+        logger.logLevel = .trace
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                try await connection.subscribe(to: "test") { subscription in
+                    let message = try await subscription.first { _ in true }
+                    #expect(message == .init(channel: "test", message: "Testing!"))
+                }
+            }
+            group.addTask {
+                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                // expect SUBSCRIBE command
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
+                // push subscribe
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
+                // push message
+                try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!")])).base)
+                // expect UNSUBSCRIBE command
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
+            }
+            try await group.next()
+            group.cancelAll()
+        }
+        try await connection.channel.eventLoop.submit {
+            #expect(connection.channelHandler.value.subscriptions.isEmpty)
+        }.get()
+    }
+
 }

@@ -287,8 +287,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func cancel() {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.cancel() {
-        case .cancelPendingCommands:
+        case .closeAndCancelPendingCommands(let context):
             self.failPendingCommandsAndSubscriptions(CancellationError())
+            context.close(promise: nil)
         case .doNothing:
             break
         }
