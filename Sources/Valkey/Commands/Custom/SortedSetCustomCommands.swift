@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 /// Sorted set entry
-public struct SortedSetEntry: RESPTokenDecodable {
+public struct SortedSetEntry: RESPTokenDecodable, Sendable {
     public let value: RESPToken
     public let score: Double
 
@@ -51,7 +51,7 @@ extension ZMPOP {
     /// - Returns: One of the following
     ///     * [Null]: No element could be popped.
     ///     * [Array]: Name of the key that elements were popped.
-    public struct OptionalResponse: RESPTokenDecodable {
+    public struct OptionalResponse: RESPTokenDecodable, Sendable {
         public let key: ValkeyKey
         public let values: [SortedSetEntry]
 

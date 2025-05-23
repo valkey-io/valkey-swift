@@ -108,6 +108,19 @@ struct GeneratedCommands {
     }
 
     @Test
+    func testClientSetGet() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { valkeyClient in
+            _ = try await valkeyClient.set(key: "sdf", value: "Hello")
+            let response = try await valkeyClient.get(key: "sdf")?.decode(as: String.self)
+            #expect(response == "Hello")
+            let response2 = try await valkeyClient.get(key: "sdf65fsdf")?.decode(as: String.self)
+            #expect(response2 == nil)
+        }
+    }
+
+    @Test
     func testBinarySetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
