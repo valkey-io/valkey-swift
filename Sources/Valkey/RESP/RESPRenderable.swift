@@ -15,7 +15,7 @@
 import NIOCore
 
 /// Type that can be rendered into a RESP buffer
-public protocol RESPRenderable: Sendable {
+public protocol RESPRenderable {
     var respEntries: Int { get }
 
     func encode(into commandEncoder: inout ValkeyCommandEncoder)
