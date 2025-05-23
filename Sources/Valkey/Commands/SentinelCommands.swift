@@ -494,7 +494,7 @@ public enum SENTINEL {
 
 }
 
-extension ValkeyConnection {
+extension ValkeyConnectionProtocol {
     /// Checks for a Sentinel quorum.
     ///
     /// - Documentation: [SENTINEL CKQUORUM](https:/valkey.io/commands/sentinel-ckquorum)

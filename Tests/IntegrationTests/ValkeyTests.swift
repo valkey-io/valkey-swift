@@ -181,6 +181,38 @@ struct GeneratedCommands {
         }
     }
 
+    @Test func testWatch() async throws {
+        let logger = {
+            var logger = Logger(label: "Valkey")
+            logger.logLevel = .trace
+            return logger
+        }()
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        let (stream2, cont2) = AsyncStream.makeStream(of: Void.self)
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection2 in
+                try await withThrowingTaskGroup(of: Void.self) { group in
+                    group.addTask {
+                        try await connection.watch(key: ["testWatch"])
+                        cont2.yield()
+                        await stream.first { _ in true }
+                        await #expect(throws: ValkeyClientError(.transactionAborted)) {
+                            try await connection.transaction(
+                                SET(key: "testWatch", value: "value2")
+                            )
+                        }
+                    }
+                    group.addTask {
+                        await stream2.first { _ in true }
+                        _ = try await connection2.set(key: "testWatch", value: "value1")
+                        cont.yield()
+                    }
+                    try await group.waitForAll()
+                }
+            }
+        }
+    }
+
     @Test
     func testSingleElementArray() async throws {
         var logger = Logger(label: "Valkey")

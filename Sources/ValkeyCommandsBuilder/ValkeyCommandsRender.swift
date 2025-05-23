@@ -384,7 +384,12 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
     let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE", "UNSUBSCRIBE", "PUNSUBSCRIBE", "SUNSUBSCRIBE"]
     keys.removeAll { subscribeFunctions.contains($0) }
 
-    string.append("extension ValkeyConnectionProtocol {\n")
+    // transaction commands should be added to ValkeyConnection as they require a single connection.
+    if commands.first?.value.group == "transactions" {
+        string.append("extension ValkeyConnection {\n")
+    } else {
+        string.append("extension ValkeyConnectionProtocol {\n")
+    }
     for key in keys {
         let command = commands[key]!
         // if there is no function assume command is a container command

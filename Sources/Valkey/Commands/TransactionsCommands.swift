@@ -79,7 +79,7 @@ public struct WATCH: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyConnection {
     /// Discards a transaction.
     ///
     /// - Documentation: [DISCARD](https:/valkey.io/commands/discard)
