@@ -283,4 +283,49 @@ struct ConnectionTests {
         let results = try await asyncResults
         #expect(throws: ValkeyClientError(.commandError, message: "error")) { try results.1.get() }
     }
+
+    @Test
+    func testCancellation() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await #expect(throws: CancellationError.self) {
+                    _ = try await connection.get(key: "foo")?.decode(as: String.self)
+                }
+            }
+            _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            group.cancelAll()
+        }
+    }
+
+    @Test
+    func testPipelineCancellation() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                let results = await connection.pipeline(
+                    SET(key: "foo", value: "bar"),
+                    GET(key: "foo")
+                )
+                #expect(throws: CancellationError.self) {
+                    _ = try results.1.get()
+                }
+            }
+            // Read SET and respond to it
+            var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            let set = RESPToken(.command(["SET", "foo", "bar"])).base
+            #expect(outbound.readSlice(length: set.readableBytes) == set)
+            try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+
+            group.cancelAll()
+        }
+    }
 }

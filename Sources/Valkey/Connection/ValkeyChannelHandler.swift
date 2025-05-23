@@ -283,6 +283,17 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
     }
 
+    @usableFromInline
+    func cancel() {
+        self.eventLoop.assertInEventLoop()
+        switch self.stateMachine.cancel() {
+        case .cancelPendingCommands:
+            self.failPendingCommandsAndSubscriptions(CancellationError())
+        case .doNothing:
+            break
+        }
+    }
+
     func handleToken(context: ChannelHandlerContext, token: RESPToken) {
         switch token.identifier {
         case .simpleError, .bulkError:

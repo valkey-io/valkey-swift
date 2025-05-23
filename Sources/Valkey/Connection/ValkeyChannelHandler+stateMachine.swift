@@ -74,6 +74,27 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
+        enum CancelAction {
+            case cancelPendingCommands
+            case doNothing
+        }
+
+        /// handler wants to send a command
+        @usableFromInline
+        mutating func cancel() -> CancelAction {
+            switch self.state {
+            case .initializing:
+                preconditionFailure("Cannot cancel when initializing")
+            case .active:
+                return .cancelPendingCommands
+            case .closing:
+                return .cancelPendingCommands
+            case .closed:
+                return .doNothing
+            }
+        }
+
+        @usableFromInline
         enum GracefulShutdownAction {
             case waitForPendingCommands(Context)
             case doNothing
