@@ -65,7 +65,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     /*private*/ var encoder = ValkeyCommandEncoder()
     @usableFromInline
-    /*private*/ var context: ChannelHandlerContext?
+    /*private*/ var stateMachine: StateMachine<ChannelHandlerContext>
     @usableFromInline
     /*private*/ var subscriptions: ValkeySubscriptions
 
@@ -80,7 +80,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.commands = .init()
         self.subscriptions = .init(logger: logger)
         self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
-        self.context = nil
+        self.stateMachine = .init()
         self.logger = logger
     }
 
@@ -91,49 +91,47 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>) {
         self.eventLoop.assertInEventLoop()
-        guard let context = self.context else {
-            preconditionFailure("Trying to use valkey connection before it is setup")
+        switch self.stateMachine.sendCommand() {
+        case .sendCommand(let context):
+            self.encoder.reset()
+            command.encode(into: &self.encoder)
+            let buffer = self.encoder.buffer
+
+            self.commands.append(.swift(continuation))
+            context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+
+        case .throwError(let error):
+            continuation.resume(throwing: error)
         }
-
-        self.encoder.reset()
-        command.encode(into: &self.encoder)
-        let buffer = self.encoder.buffer
-
-        self.commands.append(.swift(continuation))
-        context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
     }
 
     @usableFromInline
     func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
-        if self.isClosed {
+        switch self.stateMachine.sendCommand() {
+        case .sendCommand(let context):
             switch request {
-            case .single(_, let promise):
-                promise.fail(ValkeyClientError.init(.connectionClosed))
-            case .multiple(_, let promises):
-                for promise in promises {
-                    promise.fail(ValkeyClientError.init(.connectionClosed))
+            case .single(let buffer, let tokenPromise):
+                self.commands.append(tokenPromise)
+                context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+
+            case .multiple(let buffer, let tokenPromises):
+                for tokenPromise in tokenPromises {
+                    self.commands.append(tokenPromise)
+                }
+                context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+            }
+
+        case .throwError(let error):
+            switch request {
+            case .single(_, let tokenPromise):
+                tokenPromise.fail(error)
+
+            case .multiple(_, let tokenPromises):
+                for promise in tokenPromises {
+                    promise.fail(error)
                 }
             }
-            return
-        }
-        guard let context = self.context else {
-            preconditionFailure("Trying to use valkey connection before it is setup")
-        }
-        switch request {
-        case .single(let buffer, let tokenPromise):
-            self.logger.trace(
-                "Send command",
-                metadata: ["command": "\((try? [String](fromRESP: RESPToken(validated: buffer))).map { $0.joined(separator: " ") } ?? "")"]
-            )
-            self.commands.append(tokenPromise)
-            context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
-
-        case .multiple(let buffer, let tokenPromises):
-            for tokenPromise in tokenPromises {
-                self.commands.append(tokenPromise)
-            }
-            context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
         }
     }
 
@@ -238,7 +236,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     @usableFromInline
     func handlerAdded(context: ChannelHandlerContext) {
-        self.context = context
+        self.stateMachine.setActive(context: context)
         if context.channel.isActive {
             hello(context: context)
         }
@@ -246,9 +244,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     @usableFromInline
     func handlerRemoved(context: ChannelHandlerContext) {
-        self.context = nil
-        self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed))
-        self.isClosed = true
+        self.setClosed()
     }
 
     @usableFromInline
@@ -267,8 +263,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         } catch {
             preconditionFailure("Expected to only get RESPParsingError from the RESPTokenDecoder.")
         }
-        self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed))
-        self.isClosed = true
+        self.setClosed()
+
         self.logger.trace("Channel inactive.")
     }
 
@@ -371,5 +367,15 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let promise = eventLoop.makePromise(of: RESPToken.self)
         self.write(request: ValkeyRequest.single(buffer: buffer, promise: .nio(promise)))
         return promise.futureResult
+    }
+
+    private func setClosed() {
+        switch self.stateMachine.setClosed() {
+        case .failPendingCommands:
+            self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed))
+
+        case .doNothing:
+            break
+        }
     }
 }
