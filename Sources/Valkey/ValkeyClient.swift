@@ -114,7 +114,6 @@ extension ValkeyClient {
     /// - Parameters:
     ///   - operation: Closure handling Valkey connection
     public func withConnection<Value>(
-        name: String? = nil,
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
