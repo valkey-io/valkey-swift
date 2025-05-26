@@ -7,7 +7,9 @@ let package = Package(
     name: "swift-valkey",
     platforms: [.macOS(.v15)],
     products: [
-        .library(name: "Valkey", targets: ["Valkey"])
+        .library(name: "Valkey", targets: ["Valkey"]),
+        .library(name: "ValkeyBloom", targets: ["ValkeyBloom"]),
+        .library(name: "ValkeyJSON", targets: ["ValkeyJSON"]),
     ],
     traits: [
         .trait(name: "ServiceLifecycleSupport"),
@@ -39,6 +41,14 @@ let package = Package(
             ]
         ),
         .target(
+            name: "ValkeyBloom",
+            dependencies: ["Valkey"]
+        ),
+        .target(
+            name: "ValkeyJSON",
+            dependencies: ["Valkey"]
+        ),
+        .target(
             name: "_ConnectionPoolModule",
             dependencies: [
                 .product(name: "Atomics", package: "swift-atomics"),
@@ -48,6 +58,7 @@ let package = Package(
         ),
         .executableTarget(
             name: "ValkeyCommandsBuilder",
+            path: "Sources/_ValkeyCommandsBuilder",
             resources: [.process("Resources")]
         ),
         .executableTarget(
