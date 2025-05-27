@@ -58,23 +58,6 @@ public struct PFCOUNT: ValkeyCommand {
     }
 }
 
-/// Internal commands for debugging HyperLogLog values.
-public struct PFDEBUG<Subcommand: RESPStringRenderable>: ValkeyCommand {
-    public var subcommand: Subcommand
-    public var key: ValkeyKey
-
-    @inlinable public init(subcommand: Subcommand, key: ValkeyKey) {
-        self.subcommand = subcommand
-        self.key = key
-    }
-
-    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
-
-    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PFDEBUG", RESPBulkString(subcommand), key)
-    }
-}
-
 /// Merges one or more HyperLogLog values into a single key.
 public struct PFMERGE: ValkeyCommand {
     public var destkey: ValkeyKey
@@ -89,16 +72,6 @@ public struct PFMERGE: ValkeyCommand {
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)
-    }
-}
-
-/// An internal command for testing HyperLogLog values.
-public struct PFSELFTEST: ValkeyCommand {
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PFSELFTEST")
     }
 }
 
@@ -135,16 +108,6 @@ extension ValkeyConnectionProtocol {
     @inlinable
     public func pfmerge(destkey: ValkeyKey, sourcekey: [ValkeyKey] = []) async throws {
         _ = try await send(command: PFMERGE(destkey: destkey, sourcekey: sourcekey))
-    }
-
-    /// An internal command for testing HyperLogLog values.
-    ///
-    /// - Documentation: [PFSELFTEST](https:/valkey.io/commands/pfselftest)
-    /// - Available: 2.8.9
-    /// - Complexity: N/A
-    @inlinable
-    public func pfselftest() async throws {
-        _ = try await send(command: PFSELFTEST())
     }
 
 }

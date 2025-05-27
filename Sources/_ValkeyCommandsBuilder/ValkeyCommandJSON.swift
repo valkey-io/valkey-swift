@@ -26,6 +26,7 @@ final class ValkeyCommands: Decodable {
 struct ValkeyCommand: Decodable {
     enum ArgumentType: String, Decodable {
         case integer
+        case float
         case double
         case string
         case key
@@ -296,13 +297,14 @@ struct ValkeyCommand: Decodable {
         }
     }
     let summary: String
-    let since: String
+    let since: String?
     let group: String
     let complexity: String?
     let function: String?
     let history: [[String]]?
     let deprecatedSince: String?
     let replacedBy: String?
+    let docFlags: [String]?
     let aclCategories: [String]?
     let arguments: [Argument]?
     let replySchema: ReplySchema?
@@ -310,13 +312,14 @@ struct ValkeyCommand: Decodable {
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.summary = try container.decode(String.self, forKey: .summary)
-        self.since = try container.decode(String.self, forKey: .since)
+        self.since = try container.decodeIfPresent(String.self, forKey: .since)
         self.group = try container.decode(String.self, forKey: .group)
         self.complexity = try container.decodeIfPresent(String.self, forKey: .complexity)
         self.function = try container.decodeIfPresent(String.self, forKey: .function)
         self.history = try container.decodeIfPresent([[String]].self, forKey: .history)
         self.deprecatedSince = try container.decodeIfPresent(String.self, forKey: .deprecatedSince)
         self.replacedBy = try container.decodeIfPresent(String.self, forKey: .replacedBy)
+        self.docFlags = try container.decodeIfPresent([String].self, forKey: .docFlags)
         self.aclCategories = try container.decodeIfPresent([String].self, forKey: .aclCategories)
         if let arguments = try container.decodeIfPresent([InternalArgument].self, forKey: .arguments) {
             if let keySpecs = try container.decodeIfPresent([KeySpec].self, forKey: .keySpecs) {
@@ -348,6 +351,7 @@ struct ValkeyCommand: Decodable {
         case history
         case deprecatedSince = "deprecated_since"
         case replacedBy = "replaced_by"
+        case docFlags = "doc_flags"
         case aclCategories = "acl_categories"
         case arguments
         case replySchema = "reply_schema"

@@ -1,0 +1,311 @@
+{
+  "BF.ADD": {
+    "summary": "Add a single item to a bloom filter. The bloom filter is created if it doesn't exist",
+    "complexity": "O(N), where N is the number of hash functions used by the bloom filter.",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": 3,
+    "acl_categories": [
+      "FAST",
+      "WRITE",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "value",
+        "type": "string"
+      }
+    ]
+  },
+  "BF.CARD": {
+    "summary": "Returns the cardinality of a bloom filter",
+    "complexity": "O(1)",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      }
+    ]
+  },
+  "BF.EXISTS": {
+    "summary": "Determines if the bloom filter contains the specified item",
+    "complexity": "O(N), where N is the number of hash functions used by the bloom filter.",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": 3,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "value",
+        "type": "string"
+      }
+    ]
+  },
+  "BF.INFO": {
+    "summary": "Returns usage information and properties of a specific bloom filter",
+    "complexity": "O(1)",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": -2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "sortby",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "capacity",
+            "type": "pure-token",
+            "token": "CAPACITY"
+          },
+          {
+            "name": "size",
+            "type": "pure-token",
+            "token": "SIZE"
+          },
+          {
+            "name": "filters",
+            "type": "pure-token",
+            "token": "FILTERS"
+          },
+          {
+            "name": "expansion",
+            "type": "pure-token",
+            "token": "EXPANSION"
+          },
+          {
+            "name": "error",
+            "type": "pure-token",
+            "token": "ERROR"
+          },
+          {
+            "name": "tightening",
+            "type": "pure-token",
+            "token": "TIGHTENTING"
+          },
+          {
+            "name": "maxscaledcapacity",
+            "type": "pure-token",
+            "token": "MAXSCALEDCAPACITY"
+          }
+        ]
+      }
+    ]
+  },
+  "BF.INSERT": {
+    "summary": "Creates a bloom filter with 0 or more items or adds items to an existing bloom filter",
+    "complexity": "O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": -2,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "token": "CAPACITY",
+        "name": "capacity",
+        "type": "integer",
+        "optional": true
+      },
+      {
+        "token": "ERROR",
+        "name": "error",
+        "type": "float",
+        "optional": true
+      },
+      {
+        "token": "EXPANSION",
+        "name": "expansion",
+        "type": "integer",
+        "optional": true
+      },
+      {
+        "token": "SEED",
+        "name": "seed",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "token": "TIGHTENING",
+        "name": "tightening",
+        "type": "float",
+        "optional": true
+      },
+      {
+        "token": "VALIDATESCALETO",
+        "name": "validatescaleto",
+        "type": "integer",
+        "optional": true
+      },
+      {
+        "token": "NONSCALING",
+        "name": "nonscaling",
+        "type": "pure-token",
+        "optional": true
+      },
+      {
+        "token": "NOCREATE",
+        "name": "nocreate",
+        "type": "pure-token",
+        "optional": true
+      },
+      {
+        "token": "ITEMS",
+        "name": "value",
+        "type": "string",
+        "multiple": true,
+        "optional": true
+      }
+    ]
+  },
+  "BF.LOAD": {
+    "summary": "Restores a bloom filter in a single operation. The command is only generated during AOF Rewrite of bloom filters",
+    "complexity": "O(N), where N is the capacity",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": 3,
+    "acl_categories": [
+      "WRITE",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "dump",
+        "type": "string"
+      }
+    ]
+  },
+  "BF.MADD": {
+    "summary": "Adds one or more items to a bloom filter. The bloom filter is created if it doesn't exist",
+    "complexity": "O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": 3,
+    "acl_categories": [
+      "FAST",
+      "WRITE",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "multiple": true
+      }
+    ]
+  },
+  "BF.MEXISTS": {
+    "summary": "Determines if the bloom filter contains one or more items",
+    "complexity": "O(K * N), where N is the number of hash functions used by the bloom filter and K is the number of items",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": 3,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "multiple": true
+      }
+    ]
+  },
+  "BF.RESERVE": {
+    "summary": "Creates an empty bloom filter with the specified properties",
+    "complexity": "O(1)",
+    "group": "bloom",
+    "module_since": "1.0.0",
+    "arity": -4,
+    "acl_categories": [
+      "FAST",
+      "WRITE",
+      "BLOOM"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "error_rate",
+        "type": "float"
+      },
+      {
+        "name": "capacity",
+        "type": "integer"
+      },
+      {
+        "token": "EXPANSION",
+        "name": "expansion",
+        "type": "integer",
+        "optional": true
+      },
+      {
+        "token": "NONSCALING",
+        "name": "nonscaling",
+        "type": "pure-token",
+        "optional": true
+      }
+    ]
+  }
+}

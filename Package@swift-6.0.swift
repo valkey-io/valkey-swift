@@ -38,6 +38,14 @@ let package = Package(
             ]
         ),
         .target(
+            name: "ValkeyBloom",
+            dependencies: ["Valkey"]
+        ),
+        .target(
+            name: "ValkeyJSON",
+            dependencies: ["Valkey"]
+        ),
+        .target(
             name: "_ConnectionPoolModule",
             dependencies: [
                 .product(name: "Atomics", package: "swift-atomics"),
@@ -47,6 +55,7 @@ let package = Package(
         ),
         .executableTarget(
             name: "ValkeyCommandsBuilder",
+            path: "Sources/_ValkeyCommandsBuilder",
             resources: [.process("Resources")]
         ),
         .executableTarget(

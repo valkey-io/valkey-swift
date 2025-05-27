@@ -51,4 +51,4 @@ jq -s 'reduce .[] as $item (
         ($item | flatten | first | map_values(.))
     }
 )' \
-"$COMMANDS_LOCATION/$COMMANDS_FOLDER"*.json > Sources/ValkeyCommandsBuilder/Resources/"$FILENAME"-commands.json
+"$COMMANDS_LOCATION/$COMMANDS_FOLDER"*.json > Sources/_ValkeyCommandsBuilder/Resources/"$FILENAME"-commands.json

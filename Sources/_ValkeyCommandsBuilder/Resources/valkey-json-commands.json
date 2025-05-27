@@ -1,0 +1,604 @@
+{
+  "JSON.ARRAPPEND": {
+    "summary": "Append one or more values to the array values at the path.",
+    "complexity": "O(N) where N is the number of vaules",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": -4,
+    "acl_categories": [
+      "JSON",
+      "WRITE",
+      "FAST"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "json",
+        "type": "string",
+        "multiple": true
+      }
+    ]
+  },
+  "JSON.ARRINDEX": {
+    "summary": "Search for the first occurrence of a scalar JSON value in arrays located at the specified path. Indices out of range are adjusted.",
+    "complexity": "O(N), where N is the length of the array.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 4,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "json-scalar",
+        "type": "string"
+      },
+      {
+        "name": "start",
+        "type": "integer",
+        "optional": true
+      },
+      {
+        "name": "end",
+        "type": "integer",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.ARRINSERT": {
+    "summary": "Insert one or more values into an array at the given path before the specified index.",
+    "complexity": "O(N) where N is the length of the array.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": -5,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "index",
+        "type": "integer"
+      },
+      {
+        "name": "json",
+        "type": "string",
+        "multiple": true
+      }
+    ]
+  },
+  "JSON.ARRLEN": {
+    "summary": "Get length of the array at the path.",
+    "complexity": "O(N) where N is the number of json arrays matched at the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.ARRPOP": {
+    "summary": "Remove and returns the element at the given index. Popping an empty array returns null.",
+    "complexity": "O(N) where N is the number of jsons arrays matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "name": "index",
+        "type": "integer",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.ARRTRIM": {
+    "summary": "Trim the array at the path so that it becomes subarray [start, end], both inclusive.",
+    "complexity": "O(N) where N is the number of json arrays matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 5,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "start",
+        "type": "integer"
+      },
+      {
+        "name": "end",
+        "type": "integer"
+      }
+    ]
+  },
+  "JSON.CLEAR": {
+    "summary": "Clear the arrays or an object at the specified path.",
+    "complexity": "O(N) where N is the number of json arrays/objects matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.DEBUG": {
+    "summary": "Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP",
+    "complexity": "O(1)",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "SLOW",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "subcommand & arguments",
+        "type": "string"
+      }
+    ]
+  },
+  "JSON.DEL": {
+    "summary": "Delete the JSON values at the specified path in a document key.",
+    "complexity": "O(N) where N is the number of json values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.FORGET": {
+    "summary": "An alias of JSON.DEL.",
+    "group": "json"
+  },
+  "JSON.GET": {
+    "summary": "Get the serialized JSON at one or multiple paths.",
+    "complexity": "O(N) where N is the number of paths",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "INDENT/NEWLINE/SPACE",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "name": "NOESCAPE",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "multiple": true,
+        "optional": true
+      }
+    ]
+  },
+  "JSON.MGET": {
+    "summary": "Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.",
+    "complexity": "O(N) where N is the number of keys",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": -3,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "multiple": true,
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      }
+    ]
+  },
+  "JSON.MSET": {
+    "summary": "Set multiple JSON values at the path to multiple keys.",
+    "complexity": "O(N) where N is the number of keys",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": -4,
+    "acl_categories": [
+      "WRITE",
+      "SLOW",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "data",
+        "type": "block",
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "key",
+            "type": "key",
+            "key_spec_index": 0
+          },
+          {
+            "name": "path",
+            "type": "string"
+          },
+          {
+            "name": "json",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  },
+  "JSON.NUMINCRBY": {
+    "summary": "Increment the number values at the path by a given number.",
+    "complexity": "O(N) where N is the number of json values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 4,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "number",
+        "type": "integer"
+      }
+    ]
+  },
+  "JSON.NUMMULTBY": {
+    "summary": "Multiply the numeric values at the path by a given number.",
+    "complexity": "O(N) where N is the number of json values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 4,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "number",
+        "type": "integer"
+      }
+    ]
+  },
+  "JSON.OBJKEYS": {
+    "summary": "Retrieve the key names from the objects at the specified path.",
+    "complexity": "O(N) where N is the number of json objects matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.OBJLEN": {
+    "summary": "Get the number of keys in the object at the specified path.",
+    "complexity": "O(N) where N is the number of json objects matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.RESP": {
+    "summary": "Return the JSON value at the given path in Redis Serialization Protocol (RESP).",
+    "complexity": "O(N) where N is the number of json values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.SET": {
+    "summary": "Set JSON values at the specified path.",
+    "complexity": "O(N) where N is the number of json values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 4,
+    "acl_categories": [
+      "WRITE",
+      "SLOW",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string"
+      },
+      {
+        "name": "json",
+        "type": "string"
+      },
+      {
+        "name": "options",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.STRAPPEND": {
+    "summary": "Append a string to the JSON strings at the specified path.",
+    "complexity": "O(N) where N is the number of string values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 3,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "name": "json_string",
+        "type": "string"
+      }
+    ]
+  },
+  "JSON.STRLEN": {
+    "summary": "Get the length of the JSON string values at the specified path.",
+    "complexity": "O(N) where N is the number of string values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.TOGGLE": {
+    "summary": "Toggle boolean values between true and false at the specified path.",
+    "complexity": "O(N) where N is the number of json boolean values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "WRITE",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  },
+  "JSON.TYPE": {
+    "summary": "Report the type of the values at the given path.",
+    "complexity": "O(N) where N is the number of json values matched by the path.",
+    "group": "json",
+    "module_since": "1.0.0",
+    "arity": 2,
+    "acl_categories": [
+      "READ",
+      "FAST",
+      "JSON"
+    ],
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "path",
+        "type": "string",
+        "optional": true
+      }
+    ]
+  }
+}

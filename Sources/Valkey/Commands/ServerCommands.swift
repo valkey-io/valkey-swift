@@ -800,16 +800,6 @@ public struct DBSIZE: ValkeyCommand {
     }
 }
 
-/// A container for debugging commands.
-public struct DEBUG: ValkeyCommand {
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("DEBUG")
-    }
-}
-
 /// Starts a coordinated failover from a server to one of its replicas.
 public struct FAILOVER: ValkeyCommand {
     public struct Target: RESPRenderable, Sendable {
@@ -970,16 +960,6 @@ public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// An internal command for configuring the replication stream.
-public struct REPLCONF: ValkeyCommand {
-    @inlinable public init() {
-    }
-
-    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("REPLCONF")
-    }
-}
-
 /// Configures a server as replica of another, or promotes it to a primary.
 public struct REPLICAOF: ValkeyCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable {
@@ -1052,33 +1032,6 @@ public struct REPLICAOF: ValkeyCommand {
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("REPLICAOF", args)
-    }
-}
-
-/// An internal command for migrating keys in a cluster.
-public struct RESTOREASKING<SerializedValue: RESPStringRenderable>: ValkeyCommand {
-    public var key: ValkeyKey
-    public var ttl: Int
-    public var serializedValue: SerializedValue
-    public var replace: Bool
-    public var absttl: Bool
-    public var seconds: Int?
-    public var frequency: Int?
-
-    @inlinable public init(key: ValkeyKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) {
-        self.key = key
-        self.ttl = ttl
-        self.serializedValue = serializedValue
-        self.replace = replace
-        self.absttl = absttl
-        self.seconds = seconds
-        self.frequency = frequency
-    }
-
-    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
-
-    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("RESTORE-ASKING", key, ttl, RESPBulkString(serializedValue), RESPPureToken("REPLACE", replace), RESPPureToken("ABSTTL", absttl), RESPWithToken("IDLETIME", seconds), RESPWithToken("FREQ", frequency))
     }
 }
 
@@ -1467,6 +1420,16 @@ extension ValkeyConnectionProtocol {
     @inlinable
     public func bgsave(schedule: Bool = false) async throws -> String {
         try await send(command: BGSAVE(schedule: schedule))
+    }
+
+    /// Returns detailed information about all commands.
+    ///
+    /// - Documentation: [COMMAND](https:/valkey.io/commands/command)
+    /// - Available: 2.8.13
+    /// - Complexity: O(N) where N is the total number of commands
+    @inlinable
+    public func command() async throws -> COMMAND.Response {
+        try await send(command: COMMAND())
     }
 
     /// Returns a count of commands.
@@ -1882,14 +1845,22 @@ extension ValkeyConnectionProtocol {
         _ = try await send(command: MODULE.UNLOAD(name: name))
     }
 
-    /// An internal command for configuring the replication stream.
+    /// Listens for all requests received by the server in real-time.
     ///
-    /// - Documentation: [REPLCONF](https:/valkey.io/commands/replconf)
-    /// - Available: 3.0.0
-    /// - Complexity: O(1)
+    /// - Documentation: [MONITOR](https:/valkey.io/commands/monitor)
+    /// - Available: 1.0.0
     @inlinable
-    public func replconf() async throws {
-        _ = try await send(command: REPLCONF())
+    public func monitor() async throws -> MONITOR.Response {
+        try await send(command: MONITOR())
+    }
+
+    /// An internal command used in replication.
+    ///
+    /// - Documentation: [PSYNC](https:/valkey.io/commands/psync)
+    /// - Available: 2.8.0
+    @inlinable
+    public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> PSYNC.Response {
+        try await send(command: PSYNC(replicationid: replicationid, offset: offset))
     }
 
     /// Configures a server as replica of another, or promotes it to a primary.
@@ -1901,20 +1872,6 @@ extension ValkeyConnectionProtocol {
     @inlinable
     public func replicaof(args: REPLICAOF.Args) async throws -> REPLICAOF.Response {
         try await send(command: REPLICAOF(args: args))
-    }
-
-    /// An internal command for migrating keys in a cluster.
-    ///
-    /// - Documentation: [RESTORE-ASKING](https:/valkey.io/commands/restore-asking)
-    /// - Available: 3.0.0
-    /// - History:
-    ///     * 3.0.0: Added the `REPLACE` modifier.
-    ///     * 5.0.0: Added the `ABSTTL` modifier.
-    ///     * 5.0.0: Added the `IDLETIME` and `FREQ` options.
-    /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
-    @inlinable
-    public func restoreAsking<SerializedValue: RESPStringRenderable>(key: ValkeyKey, ttl: Int, serializedValue: SerializedValue, replace: Bool = false, absttl: Bool = false, seconds: Int? = nil, frequency: Int? = nil) async throws {
-        _ = try await send(command: RESTOREASKING(key: key, ttl: ttl, serializedValue: serializedValue, replace: replace, absttl: absttl, seconds: seconds, frequency: frequency))
     }
 
     /// Returns the replication role.
@@ -2015,6 +1972,15 @@ extension ValkeyConnectionProtocol {
     @inlinable
     public func swapdb(index1: Int, index2: Int) async throws {
         _ = try await send(command: SWAPDB(index1: index1, index2: index2))
+    }
+
+    /// An internal command used in replication.
+    ///
+    /// - Documentation: [SYNC](https:/valkey.io/commands/sync)
+    /// - Available: 1.0.0
+    @inlinable
+    public func sync() async throws -> SYNC.Response {
+        try await send(command: SYNC())
     }
 
     /// Returns the server time.

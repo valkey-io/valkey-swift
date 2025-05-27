@@ -24,10 +24,14 @@ struct App {
     func run() async throws {
         let resourceFolder = Bundle.module.resourceURL!
         let commands = try load(fileURL: resourceFolder.appending(path: "valkey-commands.json"), as: ValkeyCommands.self)
-        try writeValkeyCommands(toFolder: "Sources/Valkey/Commands/", commands: commands)
+        try writeValkeyCommands(toFolder: "Sources/Valkey/Commands/", commands: commands, module: false)
+        let bloomCommands = try load(fileURL: resourceFolder.appending(path: "valkey-bloom-commands.json"), as: ValkeyCommands.self)
+        try writeValkeyCommands(toFolder: "Sources/ValkeyBloom/", commands: bloomCommands, module: true)
+        let jsonCommands = try load(fileURL: resourceFolder.appending(path: "valkey-json-commands.json"), as: ValkeyCommands.self)
+        try writeValkeyCommands(toFolder: "Sources/ValkeyJSON/", commands: jsonCommands, module: true)
     }
 
-    func writeValkeyCommands(toFolder: String, commands: ValkeyCommands) throws {
+    func writeValkeyCommands(toFolder: String, commands: ValkeyCommands, module: Bool) throws {
         // get list of groups
         var groups: Set<String> = .init()
         for command in commands.commands.values {
@@ -35,7 +39,7 @@ struct App {
         }
         for group in groups {
             let groupCommands = commands.commands.filter { $0.value.group == group }
-            let output = renderValkeyCommands(groupCommands, fullCommandList: commands)
+            let output = renderValkeyCommands(groupCommands, fullCommandList: commands, module: module)
             let filename = "\(toFolder)\(group.swiftTypename)Commands.swift"
             try output.write(toFile: filename, atomically: true, encoding: .utf8)
         }

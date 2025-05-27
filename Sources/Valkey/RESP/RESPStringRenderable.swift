@@ -49,20 +49,20 @@ extension Data: RESPStringRenderable {}
 /// Collections to conform to RESPStringRenderable, as there is already a conformance
 /// to Collection when all the elements conform to RESPRenderable.
 @usableFromInline
-struct RESPBulkString<Value: RESPStringRenderable>: RESPRenderable {
+package struct RESPBulkString<Value: RESPStringRenderable>: RESPRenderable {
     @usableFromInline
-    var respEntries: Int { 1 }
+    package var respEntries: Int { 1 }
 
     @usableFromInline
     let value: Value
 
     @inlinable
-    init(_ value: Value) {
+    package init(_ value: Value) {
         self.value = value
     }
 
     @inlinable
-    func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+    package func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         self.value.encode(into: &commandEncoder)
     }
 }
