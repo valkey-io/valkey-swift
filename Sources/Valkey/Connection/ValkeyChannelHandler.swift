@@ -74,6 +74,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     /*private*/ var commands: Deque<PendingCommand>
     @usableFromInline
+    /*private*/ var cancelledRequests: [Int]
+    @usableFromInline
     /*private*/ var encoder = ValkeyCommandEncoder()
     @usableFromInline
     /*private*/ var stateMachine: StateMachine<ChannelHandlerContext>
@@ -89,6 +91,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.configuration = configuration
         self.eventLoop = eventLoop
         self.commands = .init()
+        self.cancelledRequests = .init()
         self.subscriptions = .init(logger: logger)
         self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
         self.stateMachine = .init()
@@ -104,6 +107,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.sendCommand() {
         case .sendCommand(let context):
+            if let index = self.cancelledRequests.firstIndex(of: requestID) {
+                self.cancelledRequests.remove(at: index)
+                continuation.resume(throwing: CancellationError())
+                return
+            }
             self.encoder.reset()
             command.encode(into: &self.encoder)
             let buffer = self.encoder.buffer
@@ -123,10 +131,22 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         case .sendCommand(let context):
             switch request {
             case .single(let buffer, let tokenPromise, let id):
+                if let index = self.cancelledRequests.firstIndex(of: id) {
+                    self.cancelledRequests.remove(at: index)
+                    tokenPromise.fail(CancellationError())
+                    return
+                }
                 self.commands.append(.init(promise: tokenPromise, requestID: id))
                 context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
 
             case .multiple(let buffer, let tokenPromises, let id):
+                if let index = self.cancelledRequests.firstIndex(of: id) {
+                    self.cancelledRequests.remove(at: index)
+                    for tokenPromise in tokenPromises {
+                        tokenPromise.fail(CancellationError())
+                    }
+                    return
+                }
                 for tokenPromise in tokenPromises {
                     self.commands.append(.init(promise: tokenPromise, requestID: id))
                 }
@@ -305,12 +325,20 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func cancel(requestID: Int) {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.cancel() {
-        case .closeAndCancelPendingCommands(_):
+        case .cancelPendingCommand:
+            var found = false
             for index in self.commands.indices {
                 if commands[index].requestID == requestID {
                     commands[index].promise?.fail(CancellationError())
                     commands[index].promise = nil
+                    found = true
                 }
+            }
+            // if we didnt find a pending command then we assume the cancellation reached the 
+            // channel handler before the command. Add the request id to a list of cancelled 
+            // commands which will be checked when the command is written.
+            if !found {
+                self.cancelledRequests.append(requestID)
             }
         case .doNothing:
             break
