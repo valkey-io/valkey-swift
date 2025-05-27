@@ -18,12 +18,15 @@ extension StringProtocol {
             .lowercased()
             .replacingOccurrences(of: "-", with: "_")
             .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: ".", with: "_")
             .camelCased(capitalize: false)
     }
 
     var swiftArgument: String {
         self
             .lowercased()
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "&", with: "_")
             .replacingOccurrences(of: "-", with: "_")
             .replacingOccurrences(of: " ", with: "_")
             .camelCased(capitalize: false)
@@ -32,6 +35,8 @@ extension StringProtocol {
     var swiftVariable: String {
         self
             .lowercased()
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "&", with: "_")
             .replacingOccurrences(of: "-", with: "_")
             .replacingOccurrences(of: " ", with: "_")
             .camelCased(capitalize: false)
@@ -40,6 +45,8 @@ extension StringProtocol {
     var swiftTypename: String {
         self
             .lowercased()
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "&", with: "_")
             .replacingOccurrences(of: "-", with: "_")
             .replacingOccurrences(of: " ", with: "_")
             .camelCased(capitalize: false)
