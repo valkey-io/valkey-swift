@@ -112,14 +112,15 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
-        try await withTaskCancellationHandler {
+        let requestID = IDGenerator.shared.next()
+        return try await withTaskCancellationHandler {
             let result = try await withCheckedThrowingContinuation { continuation in
-                self.channelHandler.write(command: command, continuation: continuation)
+                self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
             }
             return try .init(fromRESP: result)
         } onCancel: {
             Task {
-                await self.cancel()
+                await self.cancel(requestID: requestID)
             }
         }
     }
@@ -142,6 +143,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 }
             }
         }
+        let requestID = IDGenerator.shared.next()
         // this currently allocates a promise for every command. We could collpase this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
@@ -153,21 +155,21 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         let promises = mpromises
         return await withTaskCancellationHandler {
             // write directly to channel handler
-            self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }))
+            self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
 
             // get response from channel handler
             var index = AutoIncrementingInteger()
             return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
         } onCancel: {
             Task {
-                await self.cancel()
+                await self.cancel(requestID: requestID)
             }
         }
     }
 
     @usableFromInline
-    func cancel() {
-        self.channelHandler.cancel()
+    func cancel(requestID: Int) {
+        self.channelHandler.cancel(requestID: requestID)
     }
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler

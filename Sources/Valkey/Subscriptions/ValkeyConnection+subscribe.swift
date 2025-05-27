@@ -56,13 +56,7 @@ extension ValkeyConnection {
         let (id, stream) = try await subscribe(command: command, filters: channels.map { .channel($0) })
         let value: Value
         do {
-            value = try await withTaskCancellationHandler {
-                try await process(stream)
-            } onCancel: {
-                Task {
-                    await self.cancel()
-                }
-            }
+            value = try await process(stream)
             try Task.checkCancellation()
         } catch {
             _ = try? await unsubscribe(id: id)
@@ -113,13 +107,7 @@ extension ValkeyConnection {
         let (id, stream) = try await subscribe(command: command, filters: patterns.map { .pattern($0) })
         let value: Value
         do {
-            value = try await withTaskCancellationHandler {
-                try await process(stream)
-            } onCancel: {
-                Task {
-                    await self.cancel()
-                }
-            }
+            value = try await process(stream)
             try Task.checkCancellation()
         } catch {
             _ = try? await unsubscribe(id: id)
@@ -170,13 +158,7 @@ extension ValkeyConnection {
         let (id, stream) = try await subscribe(command: command, filters: shardchannel.map { .shardChannel($0) })
         let value: Value
         do {
-            value = try await withTaskCancellationHandler {
-                try await process(stream)
-            } onCancel: {
-                Task {
-                    await self.cancel()
-                }
-            }
+            value = try await process(stream)
             try Task.checkCancellation()
         } catch {
             _ = try? await unsubscribe(id: id)
@@ -191,6 +173,7 @@ extension ValkeyConnection {
         command: some ValkeyCommand,
         filters: [ValkeySubscriptionFilter]
     ) async throws -> (Int, ValkeySubscription) {
+        let requestID = IDGenerator.shared.next()
         let (stream, streamContinuation) = ValkeySubscription.makeStream()
         return try await withTaskCancellationHandler {
             let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
@@ -204,20 +187,21 @@ extension ValkeyConnection {
             return (subscriptionID, stream)
         } onCancel: {
             Task {
-                await self.cancel()
+                await self.cancel(requestID: requestID)
             }
         }
     }
 
     @usableFromInline
     func unsubscribe(id: Int) async throws {
+        let requestID = IDGenerator.shared.next()
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
                 self.channelHandler.unsubscribe(id: id, promise: .swift(continuation))
             }
         } onCancel: {
             Task {
-                await self.cancel()
+                await self.cancel(requestID: requestID)
             }
         }
     }

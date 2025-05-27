@@ -680,7 +680,7 @@ struct SubscriptionTests {
             group.cancelAll()
         }
         try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
+            #expect(connection.channelHandler.subscriptions.isEmpty)
         }.get()
     }
 
