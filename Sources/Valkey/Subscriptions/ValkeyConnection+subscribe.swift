@@ -181,7 +181,8 @@ extension ValkeyConnection {
                     command: command,
                     streamContinuation: streamContinuation,
                     filters: filters,
-                    promise: .swift(continuation)
+                    promise: .swift(continuation),
+                    requestID: requestID
                 )
             }
             return (subscriptionID, stream)
@@ -197,7 +198,7 @@ extension ValkeyConnection {
         let requestID = IDGenerator.shared.next()
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
-                self.channelHandler.unsubscribe(id: id, promise: .swift(continuation))
+                self.channelHandler.unsubscribe(id: id, promise: .swift(continuation), requestID: requestID)
             }
         } onCancel: {
             Task {

@@ -679,9 +679,7 @@ struct SubscriptionTests {
             try await group.next()
             group.cancelAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -712,9 +710,7 @@ struct SubscriptionTests {
             try await group.next()
             group.cancelAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -747,9 +743,7 @@ struct SubscriptionTests {
             try await group.next()
             group.cancelAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
 }

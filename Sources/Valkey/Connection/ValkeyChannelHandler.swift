@@ -60,7 +60,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             self.requestID = requestID
         }
 
-        let promise: ValkeyPromise<RESPToken>?
+        var promise: ValkeyPromise<RESPToken>?
         let requestID: Int
     }
     @usableFromInline
@@ -151,7 +151,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         command: some ValkeyCommand,
         streamContinuation: ValkeySubscription.Continuation,
         filters: [ValkeySubscriptionFilter],
-        promise: ValkeyPromise<Int>
+        promise: ValkeyPromise<Int>,
+        requestID: Int
     ) {
         self.eventLoop.assertInEventLoop()
         switch self.subscriptions.addSubscription(continuation: streamContinuation, filters: filters) {
@@ -160,7 +161,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             //   But it would be cool to build the subscribe command based on what filters we aren't subscribed to
             self.subscriptions.pushCommand(filters: subscription.filters)
             let subscriptionID = subscription.id
-            return self._send(command: command).assumeIsolated().whenComplete { result in
+            return self._send(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
                 switch result {
                 case .success:
                     promise.succeed(subscriptionID)
@@ -179,7 +180,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     /// Remove subscription and if required call UNSUBSCRIBE command
     func unsubscribe(
         id: Int,
-        promise: ValkeyPromise<Void>
+        promise: ValkeyPromise<Void>,
+        requestID: Int
     ) {
         self.eventLoop.assertInEventLoop()
         switch self.subscriptions.unsubscribe(id: id) {
@@ -187,19 +189,22 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             self.performUnsubscribe(
                 command: UNSUBSCRIBE(channel: channels),
                 filters: channels.map { .channel($0) },
-                promise: promise
+                promise: promise,
+                requestID: requestID
             )
         case .punsubscribe(let patterns):
             self.performUnsubscribe(
                 command: PUNSUBSCRIBE(pattern: patterns),
                 filters: patterns.map { .pattern($0) },
-                promise: promise
+                promise: promise,
+                requestID: requestID
             )
         case .sunsubscribe(let shardChannels):
             self.performUnsubscribe(
                 command: SUNSUBSCRIBE(shardchannel: shardChannels),
                 filters: shardChannels.map { .shardChannel($0) },
-                promise: promise
+                promise: promise,
+                requestID: requestID
             )
         case .doNothing:
             promise.succeed(())
@@ -209,10 +214,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func performUnsubscribe(
         command: some ValkeyCommand,
         filters: [ValkeySubscriptionFilter],
-        promise: ValkeyPromise<Void>
+        promise: ValkeyPromise<Void>,
+        requestID: Int
     ) {
         self.subscriptions.pushCommand(filters: filters)
-        self._send(command: command).assumeIsolated().whenComplete { result in
+        self._send(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
             switch result {
             case .success:
                 promise.succeed(())
@@ -225,6 +231,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     @usableFromInline
     func hello(context: ChannelHandlerContext) {
+        let requestID = IDGenerator.shared.next()
         // send hello with protocol, authentication and client name details
         self._send(
             command: HELLO(
@@ -233,7 +240,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                     auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
                     clientname: configuration.clientName
                 )
-            )
+            ),
+            requestID: requestID
         ).assumeIsolated().whenComplete { result in
             switch result {
             case .failure(let error):
@@ -298,9 +306,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func cancel(requestID: Int) {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.cancel() {
-        case .closeAndCancelPendingCommands(let context):
-            self.failPendingCommandsAndSubscriptions(CancellationError())
-            context.close(promise: nil)
+        case .closeAndCancelPendingCommands(_):
+            for index in self.commands.indices {
+                if commands[index].requestID == requestID {
+                    commands[index].promise?.fail(CancellationError())
+                    commands[index].promise = nil
+                }
+            }
         case .doNothing:
             break
         }
@@ -391,8 +403,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     // Function used internally by subscribe
-    func _send<Command: ValkeyCommand>(command: Command) -> EventLoopFuture<RESPToken> {
-        let requestID = IDGenerator.shared.next()
+    func _send<Command: ValkeyCommand>(command: Command, requestID: Int) -> EventLoopFuture<RESPToken> {
         self.eventLoop.assertInEventLoop()
         self.encoder.reset()
         command.encode(into: &self.encoder)
