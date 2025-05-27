@@ -16,9 +16,6 @@ import Synchronization
 
 @usableFromInline
 struct IDGenerator: ~Copyable, Sendable {
-    @usableFromInline
-    static let shared = IDGenerator()
-
     private let atomic: Atomic<Int>
 
     public init() {

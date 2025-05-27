@@ -231,7 +231,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     @usableFromInline
     func hello(context: ChannelHandlerContext) {
-        let requestID = IDGenerator.shared.next()
         // send hello with protocol, authentication and client name details
         self._send(
             command: HELLO(
@@ -241,7 +240,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                     clientname: configuration.clientName
                 )
             ),
-            requestID: requestID
+            requestID: 0
         ).assumeIsolated().whenComplete { result in
             switch result {
             case .failure(let error):

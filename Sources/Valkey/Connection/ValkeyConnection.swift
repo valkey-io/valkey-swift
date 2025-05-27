@@ -27,6 +27,9 @@ import NIOTransportServices
 public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     nonisolated public let unownedExecutor: UnownedSerialExecutor
 
+    /// Request ID generator
+    @usableFromInline
+    static let requestIDGenerator: IDGenerator = .init()
     /// Connection ID, used by connection pool
     public let id: ID
     /// Logger used by Server
@@ -112,7 +115,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
-        let requestID = IDGenerator.shared.next()
+        let requestID = Self.requestIDGenerator.next()
         return try await withTaskCancellationHandler {
             let result = try await withCheckedThrowingContinuation { continuation in
                 self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
@@ -143,7 +146,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 }
             }
         }
-        let requestID = IDGenerator.shared.next()
+        let requestID = Self.requestIDGenerator.next()
         // this currently allocates a promise for every command. We could collpase this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
