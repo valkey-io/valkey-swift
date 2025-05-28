@@ -41,7 +41,7 @@ public protocol ValkeyNodeDiscovery: Sendable {
 /// Example:
 /// ```swift
 /// // Using ExpressibleByArrayLiteral conformance for more concise initialization
-/// let literalDiscovery: ValkeyStaticNodeDiscovery = [
+/// let discovery: ValkeyStaticNodeDiscovery = [
 ///     .init(host: "replica1.valkey.io", port: 10600, useTLS: false),
 ///     .init(ip: "192.168.12.1", port: 10600, useTLS: true)
 /// ]
