@@ -18,8 +18,8 @@ extension CLUSTER.SHARDS {
     public typealias Response = ValkeyClusterDescription
 }
 
-package struct ValkeyClusterParseError: Error {
-    fileprivate enum Reason: Error {
+package struct ValkeyClusterParseError: Error, Equatable {
+    package enum Reason: Error {
         case clusterDescriptionTokenIsNotAnArray
         case shardTokenIsNotAnArray
         case nodesTokenIsNotAnArray
@@ -31,8 +31,13 @@ package struct ValkeyClusterParseError: Error {
         case shardIsMissingNode
     }
 
-    fileprivate var reason: Reason
+    package var reason: Reason
     package var token: RESPToken
+
+    package init(reason: Reason, token: RESPToken) {
+        self.reason = reason
+        self.token = token
+    }
 }
 
 public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
