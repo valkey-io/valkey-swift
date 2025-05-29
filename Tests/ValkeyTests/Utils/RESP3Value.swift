@@ -159,13 +159,11 @@ enum RESP3Value: Hashable {
 }
 
 extension RESPToken {
-
     init(_ value: RESP3Value) {
         var buffer = ByteBuffer()
         value.writeTo(&buffer)
         try! self.init(consuming: &buffer)!
     }
-
 }
 
 extension ByteBuffer {
