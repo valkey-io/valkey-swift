@@ -29,19 +29,28 @@
 //
 //===----------------------------------------------------------------------===//
 
+/// A collection of hash slot ranges that represent portions of the hash slot space.
+///
+/// Used to map ranges of hash slots to specific nodes in a Valkey cluster.
+/// Each element in the array is a closed range (`a...b`) representing a continuous section of the hash slot space.
 public typealias HashSlots = [ClosedRange<HashSlot>]
 
-/// A wrapper around UInt16 that represents a Valkey HashSlot. A HashSlot determines which
-/// Shard to connect to in a Valkey Cluster.
+/// A wrapper around UInt16 that represents a Valkey hash slot.
+///
+/// In a Valkey cluster, hash slots determine which shard a key belongs to. The hash slot
+/// space is divided into 16,384 slots (0-16,383), and each slot is assigned to a specific node.
+/// Keys are mapped to slots using the CRC16 algorithm.
 public struct HashSlot: Hashable, Sendable {
-    /// An unknown `HashSlot` value
+    /// An unknown or invalid hash slot value.
     public static let unknown = HashSlot(.max)
 
-    /// The max valid `HashSlot` value
+    /// The maximum valid hash slot value (16,383).
     public static let max = HashSlot(.hashSlotMax)
-    /// The min valid `HashSlot` value
+    
+    /// The minimum valid hash slot value (0).
     public static let min = HashSlot(.hashSlotMin)
-    /// The number of all hash slots
+    
+    /// The total number of hash slots in a Valkey cluster (16,384).
     public static let count: Int = 16384
 
     private var _raw: UInt16
@@ -114,16 +123,35 @@ extension HashSlot: CustomStringConvertible {
 }
 
 extension HashSlot {
-    /// Creates a slot for a given `key`. A `HashSlot` is used to determine which shard to connect to.
+    /// Creates a hash slot for a given key using the Valkey hash slot algorithm.
+    ///
+    /// The algorithm calculates the CRC16 of either the entire key or a specific part of the key
+    /// enclosed in curly braces (`{...}`), then performs modulo 16384 to get the slot number.
+    ///
     /// - Parameter key: The key used in a Valkey command
+    /// - Returns: A HashSlot representing where this key would be stored in the cluster
     public init(key: String) {
         // Banging is safe because the modulo ensures we are in range
         self.init(rawValue: UInt16(HashSlot.crc16(HashSlot.hashTag(forKey: key)) % 16384))!
     }
 
-    /// Computes the range of the key that is used to compute the slot for a given key
+    /// Creates a hash slot for a Valkey key.
+    ///
+    /// - Parameter key: The Valkey key for which to calculate the hash slot
+    /// - Returns: A HashSlot representing where this key would be stored in the cluster
+    public init(key: ValkeyKey) {
+        self.init(key: key.rawValue)
+    }
+
+    /// Computes the portion of the key that should be used for hash slot calculation.
+    ///
+    /// Follows the Valkey hash tag specification:
+    /// - If the key contains a pattern like "{...}", only the content between the braces is used for hashing
+    /// - If the pattern is empty "{}", or doesn't exist, the entire key is used
+    /// - Only the first occurrence of "{...}" is considered
+    ///
     /// - Parameter key: The key for your operation
-    /// - Returns: A substring utf8 view that shall be used in the crc16 computation
+    /// - Returns: A substring UTF8 view that will be used in the CRC16 computation
     package static func hashTag(forKey key: String) -> Substring.UTF8View {
         let utf8View = key.utf8
 
@@ -235,6 +263,12 @@ private let crc16tab: [UInt16] = [
 ]
 
 extension HashSlot {
+    /// Calculates the CRC16 checksum for a sequence of bytes using the XMODEM algorithm.
+    ///
+    /// This is the specific CRC16 implementation used by Valkey/Redis for hash slot calculation.
+    /// 
+    /// - Parameter bytes: A sequence of bytes to compute the CRC16 value for
+    /// - Returns: The computed CRC16 value
     package static func crc16<Bytes: Sequence>(_ bytes: Bytes) -> UInt16 where Bytes.Element == UInt8 {
         var crc: UInt16 = 0
         for byte in bytes {
