@@ -18,21 +18,27 @@ extension CLUSTER.SHARDS {
     public typealias Response = ValkeyClusterDescription
 }
 
-package struct ValkeyClusterParseError: Error {
-    fileprivate enum Reason: Error {
+package struct ValkeyClusterParseError: Error, Equatable {
+    package enum Reason: Error {
         case clusterDescriptionTokenIsNotAnArray
-        case shardTokenIsNotAnArray
+        case shardTokenIsNotAnArrayOrMap
         case nodesTokenIsNotAnArray
-        case nodeTokenIsNotAnArray
+        case nodeTokenIsNotAnArrayOrMap
         case slotsTokenIsNotAnArray
         case invalidNodeRole
         case invalidNodeHealth
         case missingRequiredValueForNode
+        case shardIsMissingHashSlots
         case shardIsMissingNode
     }
 
-    fileprivate var reason: Reason
+    package var reason: Reason
     package var token: RESPToken
+
+    package init(reason: Reason, token: RESPToken) {
+        self.reason = reason
+        self.token = token
+    }
 }
 
 public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
@@ -168,45 +174,23 @@ extension ValkeyClusterDescription {
         guard case .array(let shardsToken) = respToken.value else {
             throw .clusterDescriptionTokenIsNotAnArray
         }
-
         let shards = try shardsToken.map { shardToken throws(ValkeyClusterParseError.Reason) in
-
-            guard case .array(let keysAndValues) = shardToken.value else {
-                throw .shardTokenIsNotAnArray
-            }
-
-            var slotRanges: HashSlots = []
-            var nodes: [ValkeyClusterDescription.Node] = []
-
-            var keysAndValuesIterator = keysAndValues.makeIterator()
-            while let keyToken = keysAndValuesIterator.next(), let key = try? String(fromRESP: keyToken) {
-                switch key {
-                case "slots":
-                    slotRanges = try HashSlots(&keysAndValuesIterator)
-
-                case "nodes":
-                    nodes = try [ValkeyClusterDescription.Node](&keysAndValuesIterator)
-
-                default:
-                    continue
-                }
-            }
-
-            // nodes must not be empty
-            if nodes.isEmpty {
-                throw .shardIsMissingNode
-            }
-
-            return ValkeyClusterDescription.Shard(slots: slotRanges, nodes: nodes)
+            try ValkeyClusterDescription.Shard(shardToken)
         }
-
         return ValkeyClusterDescription(shards)
     }
 }
 
 extension HashSlots {
     fileprivate init(_ iterator: inout RESPToken.Array.Iterator) throws(ValkeyClusterParseError.Reason) {
-        guard case .array(let array) = iterator.next()?.value else {
+        guard let token = iterator.next() else {
+            throw .slotsTokenIsNotAnArray
+        }
+        self = try HashSlots(token)
+    }
+
+    fileprivate init(_ token: RESPToken) throws(ValkeyClusterParseError.Reason) {
+        guard case .array(let array) = token.value else {
             throw .slotsTokenIsNotAnArray
         }
 
@@ -229,7 +213,14 @@ extension HashSlots {
 
 extension [ValkeyClusterDescription.Node] {
     fileprivate init(_ iterator: inout RESPToken.Array.Iterator) throws(ValkeyClusterParseError.Reason) {
-        guard case .array(let array) = iterator.next()?.value else {
+        guard let token = iterator.next() else {
+            throw .nodesTokenIsNotAnArray
+        }
+        self = try Self(token)
+    }
+
+    fileprivate init(_ token: RESPToken) throws(ValkeyClusterParseError.Reason) {
+        guard case .array(let array) = token.value else {
             throw .nodesTokenIsNotAnArray
         }
 
@@ -239,12 +230,77 @@ extension [ValkeyClusterDescription.Node] {
     }
 }
 
-extension ValkeyClusterDescription.Node {
+extension ValkeyClusterDescription.Shard {
     fileprivate init(_ token: RESPToken) throws(ValkeyClusterParseError.Reason) {
-        guard case .array(let array) = token.value else {
-            throw .nodeTokenIsNotAnArray
+        switch token.value {
+        case .array(let array):
+            self = try Self.makeFromTokenSequence(MapStyleArray(underlying: array))
+
+        case .map(let map):
+            let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
+                if let key = try? String(fromRESP: keyNode) {
+                    return (key, value)
+                } else {
+                    return nil
+                }
+            }
+            self = try Self.makeFromTokenSequence(mapped)
+
+        default:
+            throw ValkeyClusterParseError.Reason.shardTokenIsNotAnArrayOrMap
+        }
+    }
+
+    fileprivate static func makeFromTokenSequence<TokenSequence: Sequence>(
+        _ sequence: TokenSequence
+    ) throws(ValkeyClusterParseError.Reason) -> Self where TokenSequence.Element == (String, RESPToken) {
+        var slotRanges = HashSlots()
+        var nodes: [ValkeyClusterDescription.Node] = []
+
+        for (keyToken, value) in sequence {
+            switch keyToken {
+            case "slots":
+                slotRanges = try HashSlots(value)
+
+            case "nodes":
+                nodes = try [ValkeyClusterDescription.Node](value)
+
+            default:
+                continue
+            }
         }
 
+        if nodes.isEmpty { throw .shardIsMissingNode }
+        if slotRanges.isEmpty { throw .shardIsMissingHashSlots }
+
+        return .init(slots: slotRanges, nodes: nodes)
+    }
+}
+
+extension ValkeyClusterDescription.Node {
+    fileprivate init(_ token: RESPToken) throws(ValkeyClusterParseError.Reason) {
+        switch token.value {
+        case .array(let array):
+            self = try Self.makeFromTokenSequence(MapStyleArray(underlying: array))
+
+        case .map(let map):
+            let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
+                if let key = try? String(fromRESP: keyNode) {
+                    return (key, value)
+                } else {
+                    return nil
+                }
+            }
+            self = try Self.makeFromTokenSequence(mapped)
+
+        default:
+            throw .nodeTokenIsNotAnArrayOrMap
+        }
+    }
+
+    fileprivate static func makeFromTokenSequence<TokenSequence: Sequence>(
+        _ sequence: TokenSequence
+    ) throws(ValkeyClusterParseError.Reason) -> Self where TokenSequence.Element == (String, RESPToken) {
         var id: String?
         var port: Int64?
         var tlsPort: Int64?
@@ -255,8 +311,8 @@ extension ValkeyClusterDescription.Node {
         var replicationOffset: Int64?
         var health: ValkeyClusterDescription.Node.Health?
 
-        var nodeIterator = array.makeIterator()
-        while let nodeKey = nodeIterator.next(), let key = try? String(fromRESP: nodeKey), let nodeVal = nodeIterator.next() {
+        var nodeIterator = sequence.makeIterator()
+        while let (key, nodeVal) = nodeIterator.next() {
             switch key {
             case "id":
                 id = try? String(fromRESP: nodeVal)
@@ -297,7 +353,12 @@ extension ValkeyClusterDescription.Node {
             throw .missingRequiredValueForNode
         }
 
-        self = ValkeyClusterDescription.Node(
+        // we need at least port or tlsport
+        if port == nil && tlsPort == nil {
+            throw .missingRequiredValueForNode
+        }
+
+        return ValkeyClusterDescription.Node(
             id: id,
             port: port.flatMap { Int($0) },
             tlsPort: tlsPort.flatMap { Int($0) },
@@ -308,5 +369,27 @@ extension ValkeyClusterDescription.Node {
             replicationOffset: Int(replicationOffset),
             health: health
         )
+    }
+}
+
+struct MapStyleArray: Sequence {
+    var underlying: RESPToken.Array
+
+    func makeIterator() -> Iterator {
+        Iterator(underlying: self.underlying.makeIterator())
+    }
+
+    struct Iterator: IteratorProtocol {
+        var underlying: RESPToken.Array.Iterator
+
+        mutating func next() -> (String, RESPToken)? {
+            guard let nodeKey = self.underlying.next(),
+                    let key = try? String(fromRESP: nodeKey),
+                    let nodeVal = self.underlying.next() else {
+                return nil
+            }
+
+            return (key, nodeVal)
+        }
     }
 }
