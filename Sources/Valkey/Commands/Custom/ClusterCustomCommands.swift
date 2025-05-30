@@ -21,13 +21,14 @@ extension CLUSTER.SHARDS {
 package struct ValkeyClusterParseError: Error, Equatable {
     package enum Reason: Error {
         case clusterDescriptionTokenIsNotAnArray
-        case shardTokenIsNotAnArray
+        case shardTokenIsNotAnArrayOrMap
         case nodesTokenIsNotAnArray
-        case nodeTokenIsNotAnArray
+        case nodeTokenIsNotAnArrayOrMap
         case slotsTokenIsNotAnArray
         case invalidNodeRole
         case invalidNodeHealth
         case missingRequiredValueForNode
+        case shardIsMissingHashSlots
         case shardIsMissingNode
     }
 
@@ -173,53 +174,9 @@ extension ValkeyClusterDescription {
         guard case .array(let shardsToken) = respToken.value else {
             throw .clusterDescriptionTokenIsNotAnArray
         }
-
         let shards = try shardsToken.map { shardToken throws(ValkeyClusterParseError.Reason) in
-
-            var slotRanges: HashSlots = []
-            var nodes: [ValkeyClusterDescription.Node] = []
-
-            switch shardToken.value {
-            case .array(let keysAndValues):
-                var keysAndValuesIterator = keysAndValues.makeIterator()
-                while let keyToken = keysAndValuesIterator.next(), let key = try? String(fromRESP: keyToken) {
-                    switch key {
-                    case "slots":
-                        slotRanges = try HashSlots(&keysAndValuesIterator)
-
-                    case "nodes":
-                        nodes = try [ValkeyClusterDescription.Node](&keysAndValuesIterator)
-
-                    default:
-                        continue
-                    }
-                }
-
-            case .map(let keysAndValues):
-                for (keyToken, value) in keysAndValues {
-                    switch try? String(fromRESP: keyToken) {
-                    case "slots":
-                        slotRanges = try HashSlots(value)
-
-                    case "nodes":
-                        nodes = try [ValkeyClusterDescription.Node](value)
-
-                    default:
-                        continue
-                    }
-                }
-            default:
-                throw ValkeyClusterParseError.Reason.shardTokenIsNotAnArray
-            }
-
-            // nodes must not be empty
-            if nodes.isEmpty {
-                throw .shardIsMissingNode
-            }
-
-            return ValkeyClusterDescription.Shard(slots: slotRanges, nodes: nodes)
+            try ValkeyClusterDescription.Shard(shardToken)
         }
-
         return ValkeyClusterDescription(shards)
     }
 }
@@ -273,6 +230,53 @@ extension [ValkeyClusterDescription.Node] {
     }
 }
 
+extension ValkeyClusterDescription.Shard {
+    fileprivate init(_ token: RESPToken) throws(ValkeyClusterParseError.Reason) {
+        switch token.value {
+        case .array(let array):
+            self = try Self.makeFromTokenSequence(MapStyleArray(underlying: array))
+
+        case .map(let map):
+            let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
+                if let key = try? String(fromRESP: keyNode) {
+                    return (key, value)
+                } else {
+                    return nil
+                }
+            }
+            self = try Self.makeFromTokenSequence(mapped)
+
+        default:
+            throw ValkeyClusterParseError.Reason.shardTokenIsNotAnArrayOrMap
+        }
+    }
+
+    fileprivate static func makeFromTokenSequence<TokenSequence: Sequence>(
+        _ sequence: TokenSequence
+    ) throws(ValkeyClusterParseError.Reason) -> Self where TokenSequence.Element == (String, RESPToken) {
+        var slotRanges = HashSlots()
+        var nodes: [ValkeyClusterDescription.Node] = []
+
+        for (keyToken, value) in sequence {
+            switch keyToken {
+            case "slots":
+                slotRanges = try HashSlots(value)
+
+            case "nodes":
+                nodes = try [ValkeyClusterDescription.Node](value)
+
+            default:
+                continue
+            }
+        }
+
+        if nodes.isEmpty { throw .shardIsMissingNode }
+        if slotRanges.isEmpty { throw .shardIsMissingHashSlots }
+
+        return .init(slots: slotRanges, nodes: nodes)
+    }
+}
+
 extension ValkeyClusterDescription.Node {
     fileprivate init(_ token: RESPToken) throws(ValkeyClusterParseError.Reason) {
         switch token.value {
@@ -290,7 +294,7 @@ extension ValkeyClusterDescription.Node {
             self = try Self.makeFromTokenSequence(mapped)
 
         default:
-            throw .nodeTokenIsNotAnArray
+            throw .nodeTokenIsNotAnArrayOrMap
         }
     }
 
