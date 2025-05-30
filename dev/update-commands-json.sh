@@ -1,25 +1,30 @@
 #!/bin/bash
+set -eux
 
 get_valkey()
 {
     DESTINATION_FOLDER=$1
     COMMANDS_ADDRESS=$2
+    COMMANDS_VERSION=${3:-""}
 
     # clone valkey into folder
     git clone --depth 1 "$COMMANDS_ADDRESS" "$DESTINATION_FOLDER"
 
     pushd "$DESTINATION_FOLDER"
 
-    git fetch --tags
-    RELEASE_REVISION=$(git rev-list --tags --max-count=1)
-    if [ -n "$RELEASE_REVISION" ]; then
-        echo "Describe $RELEASE_REVISION"
-        BRANCH_NAME=$(git describe --tags "$RELEASE_REVISION")
-    else
-        BRANCH_NAME=$(git rev-parse HEAD)
+    git fetch --tags --depth 1
+
+    if [ -z "$COMMANDS_VERSION" ]; then
+        RELEASE_REVISION=$(git rev-list --tags --max-count=1)
+        if [ -n "$RELEASE_REVISION" ]; then
+            echo "Describe $RELEASE_REVISION"
+            COMMANDS_VERSION=$(git describe --tags "$RELEASE_REVISION")
+        else
+            COMMANDS_VERSION=$(git rev-parse HEAD)
+        fi
     fi
-    echo "Get version $BRANCH_NAME"
-    git checkout "$BRANCH_NAME"
+    echo "Get version $COMMANDS_VERSION"
+    git checkout "$COMMANDS_VERSION"
 
     popd
 }
@@ -33,7 +38,23 @@ cleanup()
 }
 
 COMMANDS_LOCATION=${1:-"https://github.com/valkey-io/valkey.git"}
-COMMANDS_FOLDER=${2:-"src/commands/"}
+
+while getopts ':f:v:' option
+do
+    case $option in
+        v) 
+            COMMANDS_VERSION=$OPTARG ;;
+        f) 
+            COMMANDS_FOLDER=$OPTARG ;;
+        ?) 
+            echo "Usage: update-commands-json.sh [-v VERSION] [-f FOLDER] LOCATION"
+            exit 1 ;;
+    esac
+done
+shift "$(($OPTIND -1))"
+COMMANDS_LOCATION=${1:-"https://github.com/valkey-io/valkey.git"}
+COMMANDS_VERSION=${COMMANDS_VERSION:-""}
+COMMANDS_FOLDER=${COMMANDS_FOLDER:-"src/commands/"}
 
 FILENAME=$(basename "$COMMANDS_LOCATION" .git)
 
@@ -41,7 +62,7 @@ if [[ "$COMMANDS_LOCATION" == http* ]]; then
     TEMP_DIR=$(mktemp -d)
     trap cleanup EXIT $?
 
-    get_valkey $TEMP_DIR $COMMANDS_LOCATION
+    get_valkey $TEMP_DIR $COMMANDS_LOCATION $COMMANDS_VERSION
     COMMANDS_LOCATION=$TEMP_DIR
 fi
 
