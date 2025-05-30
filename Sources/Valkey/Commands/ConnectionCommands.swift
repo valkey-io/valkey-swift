@@ -22,8 +22,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-/// A container for client connection commands.
-public enum CLIENT {
+extension CLIENT {
     /// Instructs the server whether to track the keys in the next request.
     public struct CACHING: ValkeyCommand {
         public enum Mode: RESPRenderable, Sendable {
@@ -113,6 +112,34 @@ public enum CLIENT {
         }
     }
 
+    /// Mark this client as an import source when server is in import mode.
+    public struct IMPORTSOURCE: ValkeyCommand {
+        public enum Enabled: RESPRenderable, Sendable {
+            case on
+            case off
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .on: "ON".encode(into: &commandEncoder)
+                case .off: "OFF".encode(into: &commandEncoder)
+                }
+            }
+        }
+        public var enabled: Enabled
+
+        @inlinable public init(enabled: Enabled) {
+            self.enabled = enabled
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLIENT", "IMPORT-SOURCE", enabled)
+        }
+    }
+
     /// Returns information about the connection.
     public struct INFO: ValkeyCommand {
         @inlinable public init() {
@@ -164,7 +191,7 @@ public enum CLIENT {
             }
         }
         public enum FilterNewFormat: RESPRenderable, Sendable {
-            case clientId(Int?)
+            case clientId([Int])
             case clientType(FilterNewFormatClientType?)
             case username(String?)
             case addr(String?)
@@ -252,16 +279,41 @@ public enum CLIENT {
                 }
             }
         }
+        public enum Skipme: RESPRenderable, Sendable {
+            case yes
+            case no
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .yes: "YES".encode(into: &commandEncoder)
+                case .no: "NO".encode(into: &commandEncoder)
+                }
+            }
+        }
         public var clientType: ClientType?
         public var clientId: [Int]
+        public var username: String?
+        public var addr: String?
+        public var laddr: String?
+        public var skipme: Skipme?
+        public var maxage: Int?
 
-        @inlinable public init(clientType: ClientType? = nil, clientId: [Int] = []) {
+        @inlinable public init(clientType: ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: Skipme? = nil, maxage: Int? = nil) {
             self.clientType = clientType
             self.clientId = clientId
+            self.username = username
+            self.addr = addr
+            self.laddr = laddr
+            self.skipme = skipme
+            self.maxage = maxage
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId))
+            commandEncoder.encodeArray("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId), RESPWithToken("USER", username), RESPWithToken("ADDR", addr), RESPWithToken("LADDR", laddr), RESPWithToken("SKIPME", skipme), RESPWithToken("MAXAGE", maxage))
         }
     }
 
@@ -538,6 +590,16 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
+/// A container for client connection commands.
+public struct CLIENT: ValkeyCommand {
+    @inlinable public init() {
+    }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("CLIENT")
+    }
+}
+
 /// Returns the given string.
 public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     public var message: Message
@@ -673,6 +735,16 @@ extension ValkeyConnectionProtocol {
         _ = try await send(command: AUTH(username: username, password: password))
     }
 
+    /// A container for client connection commands.
+    ///
+    /// - Documentation: [CLIENT](https:/valkey.io/commands/client)
+    /// - Available: 2.4.0
+    /// - Complexity: Depends on subcommand.
+    @inlinable
+    public func client() async throws -> CLIENT.Response {
+        try await send(command: CLIENT())
+    }
+
     /// Instructs the server whether to track the keys in the next request.
     ///
     /// - Documentation: [CLIENT CACHING](https:/valkey.io/commands/client-caching)
@@ -742,6 +814,16 @@ extension ValkeyConnectionProtocol {
         try await send(command: CLIENT.ID())
     }
 
+    /// Mark this client as an import source when server is in import mode.
+    ///
+    /// - Documentation: [CLIENT IMPORT-SOURCE](https:/valkey.io/commands/client-import-source)
+    /// - Available: 8.1.0
+    /// - Complexity: O(1)
+    @inlinable
+    public func clientImportSource(enabled: CLIENT.IMPORTSOURCE.Enabled) async throws {
+        _ = try await send(command: CLIENT.IMPORTSOURCE(enabled: enabled))
+    }
+
     /// Returns information about the connection.
     ///
     /// - Documentation: [CLIENT INFO](https:/valkey.io/commands/client-info)
@@ -765,6 +847,7 @@ extension ValkeyConnectionProtocol {
     ///     * 6.2.0: `LADDR` option.
     ///     * 8.0.0: `MAXAGE` option.
     ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
+    ///     * 8.1.0: `ID` option accepts multiple IDs.
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: One of the following
     ///     * "OK": When called in 3 argument format.
@@ -786,11 +869,12 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added `resp`, `multi-mem`, `rbs` and `rbp` fields.
     ///     * 7.0.3: Added `ssub` field.
     ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
+    ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: [String]: Information and statistics about client connections
     @inlinable
-    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = []) async throws -> CLIENT.LIST.Response {
-        try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId))
+    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: CLIENT.LIST.Skipme? = nil, maxage: Int? = nil) async throws -> CLIENT.LIST.Response {
+        try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId, username: username, addr: addr, laddr: laddr, skipme: skipme, maxage: maxage))
     }
 
     /// Sets the client eviction mode of the connection.
@@ -916,6 +1000,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [HELLO](https:/valkey.io/commands/hello)
     /// - Available: 6.0.0
     /// - History:
+    ///     * 8.1.0: A new `availability_zone` field is added to the response if the `availability-zone` config is set.
     ///     * 6.2.0: `protover` made optional; when called without arguments the command reports the current connection's context.
     /// - Complexity: O(1)
     @inlinable

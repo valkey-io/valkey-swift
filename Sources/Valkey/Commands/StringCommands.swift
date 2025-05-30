@@ -388,15 +388,23 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable {
         case nx
         case xx
+        case comparisonValue(String)
 
         @inlinable
-        public var respEntries: Int { 1 }
+        public var respEntries: Int {
+            switch self {
+            case .nx: "NX".respEntries
+            case .xx: "XX".respEntries
+            case .comparisonValue(let comparisonValue): RESPWithToken("IFEQ", comparisonValue).respEntries
+            }
+        }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .nx: "NX".encode(into: &commandEncoder)
             case .xx: "XX".encode(into: &commandEncoder)
+            case .comparisonValue(let comparisonValue): RESPWithToken("IFEQ", comparisonValue).encode(into: &commandEncoder)
             }
         }
     }
@@ -749,6 +757,7 @@ extension ValkeyConnectionProtocol {
     ///     * 6.0.0: Added the `KEEPTTL` option.
     ///     * 6.2.0: Added the `GET`, `EXAT` and `PXAT` option.
     ///     * 7.0.0: Allowed the `NX` and `GET` options to be used together.
+    ///     * 8.1.0: Added the `IFEQ` option.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Null]: `GET` not given: Operation was aborted (conflict with one of the `XX`/`NX` options).
