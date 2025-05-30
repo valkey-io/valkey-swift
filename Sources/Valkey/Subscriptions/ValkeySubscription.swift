@@ -24,7 +24,7 @@ public struct ValkeySubscriptionMessage: Sendable, Equatable {
 }
 
 /// Sequence of messages from Valkey subscription
-public struct ValkeySubscriptionSequence: AsyncSequence, Sendable {
+public struct ValkeySubscription: AsyncSequence, Sendable {
     public typealias Element = ValkeySubscriptionMessage
 
     typealias BaseAsyncSequence = AsyncThrowingStream<ValkeySubscriptionMessage, Error>

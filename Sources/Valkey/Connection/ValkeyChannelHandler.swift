@@ -138,7 +138,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     /// Add subscription, and call SUBSCRIBE command if required
     func subscribe(
         command: some ValkeyCommand,
-        streamContinuation: ValkeySubscriptionSequence.Continuation,
+        streamContinuation: ValkeySubscription.Continuation,
         filters: [ValkeySubscriptionFilter],
         promise: ValkeyPromise<Int>
     ) {
