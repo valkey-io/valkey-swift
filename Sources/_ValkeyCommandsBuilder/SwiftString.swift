@@ -51,6 +51,7 @@ extension StringProtocol {
             .replacingOccurrences(of: " ", with: "_")
             .camelCased(capitalize: false)
             .upperFirst()
+            .reservedwordEscaped()
     }
     var commandTypeName: String {
         self
@@ -58,6 +59,7 @@ extension StringProtocol {
             .replacingOccurrences(of: " ", with: ".")
             .camelCased(capitalize: false)
             .uppercased()
+            .reservedwordEscaped()
     }
 
     var escaped: String {
@@ -136,13 +138,18 @@ extension StringProtocol {
 
 extension String {
     func reservedwordEscaped() -> String {
-        if self == "self" {
-            return "_self"
+        switch self {
+        case "self":
+            "_self"
+        case "Type":
+            "_Type"
+        default:
+            if swiftReservedWords.contains(self) {
+                "`\(self)`"
+            } else {
+                self
+            }
         }
-        if swiftReservedWords.contains(self) {
-            return "`\(self)`"
-        }
-        return self
     }
 }
 
@@ -156,4 +163,5 @@ extension Character {
 private let swiftReservedWords: Set<String> = [
     "where",
     "operator",
+    "Type",
 ]
