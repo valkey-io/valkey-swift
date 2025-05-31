@@ -179,7 +179,6 @@ public struct GETRANGE: ValkeyCommand {
 }
 
 /// Returns the previous string value of a key after setting it to a new value.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
 public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -364,7 +363,6 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
-@available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
 public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var milliseconds: Int
@@ -461,7 +459,6 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
-@available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
 public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var seconds: Int
@@ -481,7 +478,6 @@ public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Set the string value of a key only when the key doesn't exist.
-@available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
 public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -539,7 +535,6 @@ public struct STRLEN: ValkeyCommand {
 }
 
 /// Returns a substring from a string value.
-@available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
 public struct SUBSTR: ValkeyCommand {
     public var key: ValkeyKey
     public var start: Int
@@ -646,12 +641,12 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [GETSET](https:/valkey.io/commands/getset)
     /// - Available: 1.0.0
+    /// - Deprecated since: 6.2.0. Replaced by `SET` with the `!GET` argument.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The old value stored at the key.
     ///     * [Null]: The key does not exist.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `SET` with the `!GET` argument.")
     public func getset<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken? {
         try await send(command: GETSET(key: key, value: value))
     }
@@ -741,9 +736,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [PSETEX](https:/valkey.io/commands/psetex)
     /// - Available: 2.6.0
+    /// - Deprecated since: 2.6.12. Replaced by `SET` with the `PX` argument.
     /// - Complexity: O(1)
     @inlinable
-    @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `PX` argument.")
     public func psetex<Value: RESPStringRenderable>(key: ValkeyKey, milliseconds: Int, value: Value) async throws {
         _ = try await send(command: PSETEX(key: key, milliseconds: milliseconds, value: value))
     }
@@ -773,9 +768,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SETEX](https:/valkey.io/commands/setex)
     /// - Available: 2.0.0
+    /// - Deprecated since: 2.6.12. Replaced by `SET` with the `EX` argument.
     /// - Complexity: O(1)
     @inlinable
-    @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `EX` argument.")
     public func setex<Value: RESPStringRenderable>(key: ValkeyKey, seconds: Int, value: Value) async throws {
         _ = try await send(command: SETEX(key: key, seconds: seconds, value: value))
     }
@@ -784,12 +779,12 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SETNX](https:/valkey.io/commands/setnx)
     /// - Available: 1.0.0
+    /// - Deprecated since: 2.6.12. Replaced by `SET` with the `NX` argument.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 0: The key was set.
     ///     * 1: The key was not set.
     @inlinable
-    @available(*, deprecated, message: "Since 2.6.12. Replaced by `SET` with the `NX` argument.")
     public func setnx<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> Int {
         try await send(command: SETNX(key: key, value: value))
     }
@@ -820,10 +815,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SUBSTR](https:/valkey.io/commands/substr)
     /// - Available: 1.0.0
+    /// - Deprecated since: 2.0.0. Replaced by `GETRANGE`.
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Returns: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    @available(*, deprecated, message: "Since 2.0.0. Replaced by `GETRANGE`.")
     public func substr(key: ValkeyKey, start: Int, end: Int) async throws -> SUBSTR.Response {
         try await send(command: SUBSTR(key: key, start: start, end: end))
     }

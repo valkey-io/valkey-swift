@@ -833,7 +833,6 @@ public enum MODULE {
 /// A container for slow log commands.
 public enum SLOWLOG {
     /// Returns the slow log's entries.
-    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.")
     public struct GET: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -849,7 +848,6 @@ public enum SLOWLOG {
     }
 
     /// Show helpful text about the different subcommands
-    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG HELP`.")
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -862,7 +860,6 @@ public enum SLOWLOG {
     }
 
     /// Returns the number of entries in the slow log.
-    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG LEN SLOW`.")
     public struct LEN: ValkeyCommand {
         public typealias Response = Int
 
@@ -875,7 +872,6 @@ public enum SLOWLOG {
     }
 
     /// Clears all entries from the slow log.
-    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG RESET SLOW`.")
     public struct RESET: ValkeyCommand {
         @inlinable public init() {
         }
@@ -1279,7 +1275,6 @@ public struct SHUTDOWN: ValkeyCommand {
 }
 
 /// Sets a server as a replica of another, or promotes it to being a primary.
-@available(*, deprecated, message: "Since 5.0.0. Replaced by `REPLICAOF`.")
 public struct SLAVEOF: ValkeyCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable {
         @usableFromInline let host: String
@@ -2104,10 +2099,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SLAVEOF](https:/valkey.io/commands/slaveof)
     /// - Available: 1.0.0
+    /// - Deprecated since: 5.0.0. Replaced by `REPLICAOF`.
     /// - Complexity: O(1)
     /// - Returns: [String]: SlaveOf status.
     @inlinable
-    @available(*, deprecated, message: "Since 5.0.0. Replaced by `REPLICAOF`.")
     public func slaveof(args: SLAVEOF.Args) async throws -> SLAVEOF.Response {
         try await send(command: SLAVEOF(args: args))
     }
@@ -2116,12 +2111,12 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SLOWLOG GET](https:/valkey.io/commands/slowlog-get)
     /// - Available: 2.2.12
+    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.
     /// - History:
     ///     * 4.0.0: Added client IP address, port and name to the reply.
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Returns: [Array]: Entries from the slow log in chronological order.
     @inlinable
-    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.")
     public func slowlogGet(count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.GET(count: count))
     }
@@ -2130,10 +2125,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SLOWLOG HELP](https:/valkey.io/commands/slowlog-help)
     /// - Available: 6.2.0
+    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG HELP`.
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
-    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG HELP`.")
     public func slowlogHelp() async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.HELP())
     }
@@ -2142,10 +2137,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SLOWLOG LEN](https:/valkey.io/commands/slowlog-len)
     /// - Available: 2.2.12
+    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG LEN SLOW`.
     /// - Complexity: O(1)
     /// - Returns: [Integer]: Number of entries in the slow log.
     @inlinable
-    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG LEN SLOW`.")
     public func slowlogLen() async throws -> Int {
         try await send(command: SLOWLOG.LEN())
     }
@@ -2154,9 +2149,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SLOWLOG RESET](https:/valkey.io/commands/slowlog-reset)
     /// - Available: 2.2.12
+    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG RESET SLOW`.
     /// - Complexity: O(N) where N is the number of entries in the slowlog
     @inlinable
-    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG RESET SLOW`.")
     public func slowlogReset() async throws {
         _ = try await send(command: SLOWLOG.RESET())
     }
