@@ -870,7 +870,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) worst case for collections, where N is the number of nested items. O(1) for string values.
     /// - Returns: One of the following
     ///     * 1: Source was copied.
-    ///     * 0: Source was not copied.
+    ///     * 0: Source was not copied when the destination key already exists
     @inlinable
     public func copy(source: ValkeyKey, destination: ValkeyKey, destinationDb: Int? = nil, replace: Bool = false) async throws -> Int {
         try await send(command: COPY(source: source, destination: destination, destinationDb: destinationDb, replace: replace))
@@ -993,7 +993,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * 1: Key was moved.
-    ///     * 0: Key wasn't moved.
+    ///     * 0: Key wasn't moved. When key already exists in the destination database, or it does not exist in the source database
     @inlinable
     public func move(key: ValkeyKey, db: Int) async throws -> Int {
         try await send(command: MOVE(key: key, db: db))

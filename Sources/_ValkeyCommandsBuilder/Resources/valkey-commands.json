@@ -637,6 +637,10 @@
       [
         "3.2.2",
         "Added the `SCHEDULE` option."
+      ],
+      [
+        "8.1.0",
+        "Added the `CANCEL` option."
       ]
     ],
     "command_flags": [
@@ -646,11 +650,23 @@
     ],
     "arguments": [
       {
-        "name": "schedule",
-        "token": "SCHEDULE",
-        "type": "pure-token",
+        "name": "operation",
+        "type": "oneof",
         "optional": true,
-        "since": "3.2.2"
+        "arguments": [
+          {
+            "name": "schedule",
+            "token": "SCHEDULE",
+            "type": "pure-token",
+            "since": "3.2.2"
+          },
+          {
+            "name": "cancel",
+            "token": "CANCEL",
+            "type": "pure-token",
+            "since": "8.1.0"
+          }
+        ]
       }
     ],
     "reply_schema": {
@@ -660,6 +676,12 @@
         },
         {
           "const": "Background saving scheduled"
+        },
+        {
+          "const": "Background saving cancelled"
+        },
+        {
+          "const": "Scheduled background saving cancelled"
         }
       ]
     }
@@ -1940,7 +1962,7 @@
     "since": "6.0.0",
     "arity": 3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientCachingCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -1979,7 +2001,7 @@
     "since": "8.0.0",
     "arity": -3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientCapaCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2006,7 +2028,7 @@
     "since": "2.6.9",
     "arity": 2,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientGetNameCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2036,7 +2058,7 @@
     "since": "6.0.0",
     "arity": 2,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientGetredirCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2071,7 +2093,7 @@
     "since": "5.0.0",
     "arity": 2,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientHelpCommand",
     "command_flags": [
       "LOADING",
       "STALE",
@@ -2095,7 +2117,7 @@
     "since": "5.0.0",
     "arity": 2,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientIDCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2110,6 +2132,44 @@
       "description": "The id of the client"
     }
   },
+  "CLIENT IMPORT-SOURCE": {
+    "summary": "Mark this client as an import source when server is in import mode.",
+    "complexity": "O(1)",
+    "group": "connection",
+    "since": "8.1.0",
+    "arity": 3,
+    "container": "CLIENT",
+    "function": "clientImportSourceCommand",
+    "command_flags": [
+      "NOSCRIPT",
+      "LOADING",
+      "STALE"
+    ],
+    "acl_categories": [
+      "CONNECTION"
+    ],
+    "reply_schema": {
+      "const": "OK"
+    },
+    "arguments": [
+      {
+        "name": "enabled",
+        "type": "oneof",
+        "arguments": [
+          {
+            "name": "on",
+            "type": "pure-token",
+            "token": "ON"
+          },
+          {
+            "name": "off",
+            "type": "pure-token",
+            "token": "OFF"
+          }
+        ]
+      }
+    ]
+  },
   "CLIENT INFO": {
     "summary": "Returns information about the connection.",
     "complexity": "O(1)",
@@ -2117,7 +2177,7 @@
     "since": "6.2.0",
     "arity": 2,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientInfoCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2142,7 +2202,7 @@
     "since": "2.4.0",
     "arity": -3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientKillCommand",
     "history": [
       [
         "2.8.12",
@@ -2171,6 +2231,10 @@
       [
         "8.0.0",
         "Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility."
+      ],
+      [
+        "8.1.0",
+        "`ID` option accepts multiple IDs."
       ]
     ],
     "command_flags": [
@@ -2204,6 +2268,7 @@
                 "name": "client-id",
                 "type": "integer",
                 "optional": true,
+                "multiple": true,
                 "since": "2.8.12"
               },
               {
@@ -2320,7 +2385,7 @@
     "since": "2.4.0",
     "arity": -2,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientListCommand",
     "history": [
       [
         "2.8.12",
@@ -2349,6 +2414,10 @@
       [
         "8.0.0",
         "Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility."
+      ],
+      [
+        "8.1.0",
+        "Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE"
       ]
     ],
     "command_flags": [
@@ -2405,6 +2474,55 @@
         "optional": true,
         "multiple": true,
         "since": "6.2.0"
+      },
+      {
+        "token": "USER",
+        "name": "username",
+        "type": "string",
+        "optional": true,
+        "since": "8.1.0"
+      },
+      {
+        "token": "ADDR",
+        "name": "addr",
+        "display": "ip:port",
+        "type": "string",
+        "optional": true,
+        "since": "8.1.0"
+      },
+      {
+        "token": "LADDR",
+        "name": "laddr",
+        "display": "ip:port",
+        "type": "string",
+        "optional": true,
+        "since": "8.1.0"
+      },
+      {
+        "token": "SKIPME",
+        "name": "skipme",
+        "type": "oneof",
+        "optional": true,
+        "since": "8.1.0",
+        "arguments": [
+          {
+            "name": "yes",
+            "type": "pure-token",
+            "token": "YES"
+          },
+          {
+            "name": "no",
+            "type": "pure-token",
+            "token": "NO"
+          }
+        ]
+      },
+      {
+        "token": "MAXAGE",
+        "name": "maxage",
+        "type": "integer",
+        "optional": true,
+        "since": "8.1.0"
       }
     ]
   },
@@ -2415,7 +2533,7 @@
     "since": "7.0.0",
     "arity": 3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientNoEvictCommand",
     "command_flags": [
       "ADMIN",
       "NOSCRIPT",
@@ -2455,7 +2573,7 @@
     "since": "7.2.0",
     "arity": 3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientNoTouchCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2493,7 +2611,7 @@
     "since": "3.0.0",
     "arity": -3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientPauseCommand",
     "history": [
       [
         "6.2.0",
@@ -2545,7 +2663,7 @@
     "since": "3.2.0",
     "arity": 3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientReplyCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2633,7 +2751,7 @@
     "since": "2.6.9",
     "arity": 3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientSetNameCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2664,7 +2782,7 @@
     "since": "6.0.0",
     "arity": -3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientTrackingCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2742,7 +2860,7 @@
     "since": "6.2.0",
     "arity": 2,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientTrackingInfoCommand",
     "command_flags": [
       "NOSCRIPT",
       "LOADING",
@@ -2820,7 +2938,7 @@
     "since": "5.0.0",
     "arity": -3,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientUnblockCommand",
     "command_flags": [
       "ADMIN",
       "NOSCRIPT",
@@ -2874,7 +2992,7 @@
     "since": "6.2.0",
     "arity": 2,
     "container": "CLIENT",
-    "function": "clientCommand",
+    "function": "clientUnpauseCommand",
     "command_flags": [
       "ADMIN",
       "NOSCRIPT",
@@ -2894,6 +3012,7 @@
     "complexity": "Depends on subcommand.",
     "group": "connection",
     "since": "2.4.0",
+    "function": "clientCommand",
     "arity": -2,
     "command_flags": [
       "SENTINEL"
@@ -4612,6 +4731,201 @@
       "NONDETERMINISTIC_OUTPUT_ORDER"
     ]
   },
+  "COMMANDLOG GET": {
+    "summary": "Returns the specified command log's entries.",
+    "complexity": "O(N) where N is the number of entries returned",
+    "group": "server",
+    "since": "8.1.0",
+    "arity": 4,
+    "container": "COMMANDLOG",
+    "function": "commandlogCommand",
+    "command_flags": [
+      "ADMIN",
+      "LOADING",
+      "STALE"
+    ],
+    "command_tips": [
+      "REQUEST_POLICY:ALL_NODES",
+      "NONDETERMINISTIC_OUTPUT"
+    ],
+    "reply_schema": {
+      "type": "array",
+      "description": "Entries from the command log in chronological order.",
+      "uniqueItems": true,
+      "items": {
+        "type": "array",
+        "minItems": 6,
+        "maxItems": 6,
+        "items": [
+          {
+            "type": "integer",
+            "description": "Command log entry ID."
+          },
+          {
+            "type": "integer",
+            "description": "The unix timestamp at which the logged command was processed.",
+            "minimum": 0
+          },
+          {
+            "type": "integer",
+            "description": "Determined by the type parameter.",
+            "minimum": 0
+          },
+          {
+            "type": "array",
+            "description": "The arguments of the command.",
+            "items": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "string",
+            "description": "Client IP address and port."
+          },
+          {
+            "type": "string",
+            "description": "Client name if set via the CLIENT SETNAME command."
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "count",
+        "type": "integer"
+      },
+      {
+        "name": "type",
+        "type": "oneof",
+        "arguments": [
+          {
+            "name": "slow",
+            "type": "string"
+          },
+          {
+            "name": "large-request",
+            "type": "string"
+          },
+          {
+            "name": "large-reply",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  },
+  "COMMANDLOG HELP": {
+    "summary": "Show helpful text about the different subcommands",
+    "complexity": "O(1)",
+    "group": "server",
+    "since": "8.1.0",
+    "arity": 2,
+    "container": "COMMANDLOG",
+    "function": "commandlogCommand",
+    "command_flags": [
+      "LOADING",
+      "STALE"
+    ],
+    "reply_schema": {
+      "type": "array",
+      "description": "Helpful text about subcommands.",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "COMMANDLOG LEN": {
+    "summary": "Returns the number of entries in the specified type of command log.",
+    "complexity": "O(1)",
+    "group": "server",
+    "since": "8.1.0",
+    "arity": 3,
+    "container": "COMMANDLOG",
+    "function": "commandlogCommand",
+    "command_flags": [
+      "ADMIN",
+      "LOADING",
+      "STALE"
+    ],
+    "command_tips": [
+      "REQUEST_POLICY:ALL_NODES",
+      "RESPONSE_POLICY:AGG_SUM",
+      "NONDETERMINISTIC_OUTPUT"
+    ],
+    "reply_schema": {
+      "type": "integer",
+      "description": "Number of entries in the command log.",
+      "minimum": 0
+    },
+    "arguments": [
+      {
+        "name": "type",
+        "type": "oneof",
+        "arguments": [
+          {
+            "name": "slow",
+            "type": "string"
+          },
+          {
+            "name": "large-request",
+            "type": "string"
+          },
+          {
+            "name": "large-reply",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  },
+  "COMMANDLOG RESET": {
+    "summary": "Clears all entries from the specified type of command log.",
+    "complexity": "O(N) where N is the number of entries in the commandlog",
+    "group": "server",
+    "since": "8.1.0",
+    "arity": 3,
+    "container": "COMMANDLOG",
+    "function": "commandlogCommand",
+    "command_flags": [
+      "ADMIN",
+      "LOADING",
+      "STALE"
+    ],
+    "command_tips": [
+      "REQUEST_POLICY:ALL_NODES",
+      "RESPONSE_POLICY:ALL_SUCCEEDED"
+    ],
+    "reply_schema": {
+      "const": "OK"
+    },
+    "arguments": [
+      {
+        "name": "type",
+        "type": "oneof",
+        "arguments": [
+          {
+            "name": "slow",
+            "type": "string"
+          },
+          {
+            "name": "large-request",
+            "type": "string"
+          },
+          {
+            "name": "large-reply",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  },
+  "COMMANDLOG": {
+    "summary": "A container for command log commands.",
+    "complexity": "Depends on subcommand.",
+    "group": "server",
+    "since": "8.1.0",
+    "arity": -2
+  },
   "CONFIG GET": {
     "summary": "Returns the effective values of configuration parameters.",
     "complexity": "O(N) when N is the number of configuration parameters provided",
@@ -4845,7 +5159,7 @@
           "const": 1
         },
         {
-          "description": "Source was not copied.",
+          "description": "Source was not copied when the destination key already exists",
           "const": 0
         }
       ]
@@ -5421,7 +5735,7 @@
       "NOSCRIPT",
       "LOADING",
       "STALE",
-      "SKIP_SLOWLOG"
+      "SKIP_COMMANDLOG"
     ],
     "acl_categories": [
       "TRANSACTION"
@@ -8599,6 +8913,10 @@
     "function": "helloCommand",
     "history": [
       [
+        "8.1.0",
+        "A new `availability_zone` field is added to the response if the `availability-zone` config is set."
+      ],
+      [
         "6.2.0",
         "`protover` made optional; when called without arguments the command reports the current connection's context."
       ]
@@ -10059,11 +10377,11 @@
     ],
     "reply_schema": {
       "type": "array",
-      "description": "An array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.",
+      "description": "An array where each element is an array representing the event name, timestamp, latest and all-time latency measurements.",
       "items": {
         "type": "array",
-        "minItems": 4,
-        "maxItems": 4,
+        "minItems": 6,
+        "maxItems": 6,
         "items": [
           {
             "type": "string",
@@ -10080,6 +10398,14 @@
           {
             "type": "integer",
             "description": "Max latency in milliseconds."
+          },
+          {
+            "type": "integer",
+            "description": "Sum of the latencies recorded in the time series for this event."
+          },
+          {
+            "type": "integer",
+            "description": "The number of latency spikes recorded in the time series for this event."
           }
         ]
       }
@@ -11197,6 +11523,9 @@
       "REQUEST_POLICY:ALL_SHARDS",
       "RESPONSE_POLICY:SPECIAL"
     ],
+    "command_flags": [
+      "LOADING"
+    ],
     "reply_schema": {
       "type": "string",
       "description": "The memory allocator's internal statistics report."
@@ -11213,6 +11542,9 @@
     "command_tips": [
       "REQUEST_POLICY:ALL_SHARDS",
       "RESPONSE_POLICY:ALL_SUCCEEDED"
+    ],
+    "command_flags": [
+      "LOADING"
     ],
     "reply_schema": {
       "const": "OK"
@@ -11890,7 +12222,7 @@
           "const": 1
         },
         {
-          "description": "Key wasn't moved.",
+          "description": "Key wasn't moved. When key already exists in the destination database, or it does not exist in the source database",
           "const": 0
         }
       ]
@@ -15766,6 +16098,10 @@
       [
         "7.0.0",
         "Allowed the `NX` and `GET` options to be used together."
+      ],
+      [
+        "8.1.0",
+        "Added the `IFEQ` option."
       ]
     ],
     "command_flags": [
@@ -15832,17 +16168,25 @@
         "name": "condition",
         "type": "oneof",
         "optional": true,
-        "since": "2.6.12",
         "arguments": [
           {
             "name": "nx",
             "type": "pure-token",
-            "token": "NX"
+            "token": "NX",
+            "since": "2.6.12"
           },
           {
             "name": "xx",
             "type": "pure-token",
-            "token": "XX"
+            "token": "XX",
+            "since": "2.6.12"
+          },
+          {
+            "name": "comparison-value",
+            "type": "string",
+            "token": "IFEQ",
+            "since": "8.1.0",
+            "summary": "Sets the key's value only if the current value matches the specified comparison value."
           }
         ]
       },
@@ -16519,6 +16863,11 @@
     "arity": -2,
     "container": "SLOWLOG",
     "function": "slowlogCommand",
+    "deprecated_since": "8.1.0",
+    "replaced_by": "`COMMANDLOG GET <count> SLOW`",
+    "doc_flags": [
+      "DEPRECATED"
+    ],
     "history": [
       [
         "4.0.0",
@@ -16591,6 +16940,11 @@
     "arity": 2,
     "container": "SLOWLOG",
     "function": "slowlogCommand",
+    "deprecated_since": "8.1.0",
+    "replaced_by": "`COMMANDLOG HELP`",
+    "doc_flags": [
+      "DEPRECATED"
+    ],
     "command_flags": [
       "LOADING",
       "STALE"
@@ -16611,6 +16965,11 @@
     "arity": 2,
     "container": "SLOWLOG",
     "function": "slowlogCommand",
+    "deprecated_since": "8.1.0",
+    "replaced_by": "`COMMANDLOG LEN SLOW`",
+    "doc_flags": [
+      "DEPRECATED"
+    ],
     "command_flags": [
       "ADMIN",
       "LOADING",
@@ -16635,6 +16994,11 @@
     "arity": 2,
     "container": "SLOWLOG",
     "function": "slowlogCommand",
+    "deprecated_since": "8.1.0",
+    "replaced_by": "`COMMANDLOG RESET SLOW`",
+    "doc_flags": [
+      "DEPRECATED"
+    ],
     "command_flags": [
       "ADMIN",
       "LOADING",
@@ -16653,7 +17017,12 @@
     "complexity": "Depends on subcommand.",
     "group": "server",
     "since": "2.2.12",
-    "arity": -2
+    "arity": -2,
+    "deprecated_since": "8.1.0",
+    "replaced_by": "`COMMANDLOG`",
+    "doc_flags": [
+      "DEPRECATED"
+    ]
   },
   "SMEMBERS": {
     "summary": "Returns all members of a set.",

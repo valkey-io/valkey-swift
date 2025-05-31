@@ -348,6 +348,136 @@ extension COMMAND {
 
 }
 
+/// A container for command log commands.
+public enum COMMANDLOG {
+    /// Returns the specified command log's entries.
+    public struct GET: ValkeyCommand {
+        public enum _Type: RESPRenderable, Sendable {
+            case slow(String)
+            case largeRequest(String)
+            case largeReply(String)
+
+            @inlinable
+            public var respEntries: Int {
+                switch self {
+                case .slow(let slow): slow.respEntries
+                case .largeRequest(let largeRequest): largeRequest.respEntries
+                case .largeReply(let largeReply): largeReply.respEntries
+                }
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .slow(let slow): slow.encode(into: &commandEncoder)
+                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
+                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = RESPToken.Array
+
+        public var count: Int
+        public var type: _Type
+
+        @inlinable public init(count: Int, type: _Type) {
+            self.count = count
+            self.type = type
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("COMMANDLOG", "GET", count, type)
+        }
+    }
+
+    /// Show helpful text about the different subcommands
+    public struct HELP: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("COMMANDLOG", "HELP")
+        }
+    }
+
+    /// Returns the number of entries in the specified type of command log.
+    public struct LEN: ValkeyCommand {
+        public enum _Type: RESPRenderable, Sendable {
+            case slow(String)
+            case largeRequest(String)
+            case largeReply(String)
+
+            @inlinable
+            public var respEntries: Int {
+                switch self {
+                case .slow(let slow): slow.respEntries
+                case .largeRequest(let largeRequest): largeRequest.respEntries
+                case .largeReply(let largeReply): largeReply.respEntries
+                }
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .slow(let slow): slow.encode(into: &commandEncoder)
+                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
+                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                }
+            }
+        }
+        public typealias Response = Int
+
+        public var type: _Type
+
+        @inlinable public init(type: _Type) {
+            self.type = type
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("COMMANDLOG", "LEN", type)
+        }
+    }
+
+    /// Clears all entries from the specified type of command log.
+    public struct RESET: ValkeyCommand {
+        public enum _Type: RESPRenderable, Sendable {
+            case slow(String)
+            case largeRequest(String)
+            case largeReply(String)
+
+            @inlinable
+            public var respEntries: Int {
+                switch self {
+                case .slow(let slow): slow.respEntries
+                case .largeRequest(let largeRequest): largeRequest.respEntries
+                case .largeReply(let largeReply): largeReply.respEntries
+                }
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .slow(let slow): slow.encode(into: &commandEncoder)
+                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
+                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                }
+            }
+        }
+        public var type: _Type
+
+        @inlinable public init(type: _Type) {
+            self.type = type
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("COMMANDLOG", "RESET", type)
+        }
+    }
+
+}
+
 /// A container for server configuration commands.
 public enum CONFIG {
     /// Returns the effective values of configuration parameters.
@@ -703,6 +833,7 @@ public enum MODULE {
 /// A container for slow log commands.
 public enum SLOWLOG {
     /// Returns the slow log's entries.
+    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.")
     public struct GET: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -718,6 +849,7 @@ public enum SLOWLOG {
     }
 
     /// Show helpful text about the different subcommands
+    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG HELP`.")
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -730,6 +862,7 @@ public enum SLOWLOG {
     }
 
     /// Returns the number of entries in the slow log.
+    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG LEN SLOW`.")
     public struct LEN: ValkeyCommand {
         public typealias Response = Int
 
@@ -742,6 +875,7 @@ public enum SLOWLOG {
     }
 
     /// Clears all entries from the slow log.
+    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG RESET SLOW`.")
     public struct RESET: ValkeyCommand {
         @inlinable public init() {
         }
@@ -765,16 +899,31 @@ public struct BGREWRITEAOF: ValkeyCommand {
 
 /// Asynchronously saves the database(s) to disk.
 public struct BGSAVE: ValkeyCommand {
+    public enum Operation: RESPRenderable, Sendable {
+        case schedule
+        case cancel
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .schedule: "SCHEDULE".encode(into: &commandEncoder)
+            case .cancel: "CANCEL".encode(into: &commandEncoder)
+            }
+        }
+    }
     public typealias Response = String
 
-    public var schedule: Bool
+    public var operation: Operation?
 
-    @inlinable public init(schedule: Bool = false) {
-        self.schedule = schedule
+    @inlinable public init(operation: Operation? = nil) {
+        self.operation = operation
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("BGSAVE", RESPPureToken("SCHEDULE", schedule))
+        commandEncoder.encodeArray("BGSAVE", operation)
     }
 }
 
@@ -1416,10 +1565,11 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.0
     /// - History:
     ///     * 3.2.2: Added the `SCHEDULE` option.
+    ///     * 8.1.0: Added the `CANCEL` option.
     /// - Complexity: O(1)
     @inlinable
-    public func bgsave(schedule: Bool = false) async throws -> String {
-        try await send(command: BGSAVE(schedule: schedule))
+    public func bgsave(operation: BGSAVE.Operation? = nil) async throws -> String {
+        try await send(command: BGSAVE(operation: operation))
     }
 
     /// Returns detailed information about all commands.
@@ -1511,6 +1661,49 @@ extension ValkeyConnectionProtocol {
     @inlinable
     public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> RESPToken.Array {
         try await send(command: COMMAND.LIST(filterby: filterby))
+    }
+
+    /// Returns the specified command log's entries.
+    ///
+    /// - Documentation: [COMMANDLOG GET](https:/valkey.io/commands/commandlog-get)
+    /// - Available: 8.1.0
+    /// - Complexity: O(N) where N is the number of entries returned
+    /// - Returns: [Array]: Entries from the command log in chronological order.
+    @inlinable
+    public func commandlogGet(count: Int, type: COMMANDLOG.GET._Type) async throws -> RESPToken.Array {
+        try await send(command: COMMANDLOG.GET(count: count, type: type))
+    }
+
+    /// Show helpful text about the different subcommands
+    ///
+    /// - Documentation: [COMMANDLOG HELP](https:/valkey.io/commands/commandlog-help)
+    /// - Available: 8.1.0
+    /// - Complexity: O(1)
+    /// - Returns: [Array]: Helpful text about subcommands.
+    @inlinable
+    public func commandlogHelp() async throws -> RESPToken.Array {
+        try await send(command: COMMANDLOG.HELP())
+    }
+
+    /// Returns the number of entries in the specified type of command log.
+    ///
+    /// - Documentation: [COMMANDLOG LEN](https:/valkey.io/commands/commandlog-len)
+    /// - Available: 8.1.0
+    /// - Complexity: O(1)
+    /// - Returns: [Integer]: Number of entries in the command log.
+    @inlinable
+    public func commandlogLen(type: COMMANDLOG.LEN._Type) async throws -> Int {
+        try await send(command: COMMANDLOG.LEN(type: type))
+    }
+
+    /// Clears all entries from the specified type of command log.
+    ///
+    /// - Documentation: [COMMANDLOG RESET](https:/valkey.io/commands/commandlog-reset)
+    /// - Available: 8.1.0
+    /// - Complexity: O(N) where N is the number of entries in the commandlog
+    @inlinable
+    public func commandlogReset(type: COMMANDLOG.RESET._Type) async throws {
+        _ = try await send(command: COMMANDLOG.RESET(type: type))
     }
 
     /// Returns the effective values of configuration parameters.
@@ -1699,7 +1892,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [LATENCY LATEST](https:/valkey.io/commands/latency-latest)
     /// - Available: 2.8.13
     /// - Complexity: O(1)
-    /// - Returns: [Array]: An array where each element is a four elements array representing the event's name, timestamp, latest and all-time latency measurements.
+    /// - Returns: [Array]: An array where each element is an array representing the event name, timestamp, latest and all-time latency measurements.
     @inlinable
     public func latencyLatest() async throws -> RESPToken.Array {
         try await send(command: LATENCY.LATEST())
@@ -1928,6 +2121,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Returns: [Array]: Entries from the slow log in chronological order.
     @inlinable
+    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.")
     public func slowlogGet(count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.GET(count: count))
     }
@@ -1939,6 +2133,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [Array]: Helpful text about subcommands.
     @inlinable
+    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG HELP`.")
     public func slowlogHelp() async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.HELP())
     }
@@ -1950,6 +2145,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [Integer]: Number of entries in the slow log.
     @inlinable
+    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG LEN SLOW`.")
     public func slowlogLen() async throws -> Int {
         try await send(command: SLOWLOG.LEN())
     }
@@ -1960,6 +2156,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.2.12
     /// - Complexity: O(N) where N is the number of entries in the slowlog
     @inlinable
+    @available(*, deprecated, message: "Since 8.1.0. Replaced by `COMMANDLOG RESET SLOW`.")
     public func slowlogReset() async throws {
         _ = try await send(command: SLOWLOG.RESET())
     }
