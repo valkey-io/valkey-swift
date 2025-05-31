@@ -18,9 +18,9 @@ import Synchronization
 /// Container for all subscriptions on one connection
 @usableFromInline
 struct ValkeySubscriptions {
-    var subscriptionIDMap: [Int: ValkeySubscription]
+    var subscriptionIDMap: [Int: SubscriptionRef]
     private var commandStack: ValkeySubscriptionCommandStack
-    private var subscriptionMap: [ValkeySubscriptionFilter: ValkeyChannelStateMachine<ValkeySubscription>]
+    private var subscriptionMap: [ValkeySubscriptionFilter: ValkeyChannelStateMachine<SubscriptionRef>]
     let logger: Logger
 
     static let globalSubscriptionID = Atomic<Int>(0)
@@ -95,7 +95,7 @@ struct ValkeySubscriptions {
 
     enum SubscribeAction {
         case doNothing(Int)
-        case subscribe(ValkeySubscription, [ValkeySubscriptionFilter])
+        case subscribe(SubscriptionRef, [ValkeySubscriptionFilter])
     }
 
     /// Add subscription to channel.
@@ -103,11 +103,11 @@ struct ValkeySubscriptions {
     /// This subscription is not considered active until is has received all the associated
     /// subscribe/psubscribe/ssubscribe push messages
     mutating func addSubscription(
-        continuation: ValkeySubscriptionSequence.Continuation,
+        continuation: ValkeySubscription.Continuation,
         filters: [ValkeySubscriptionFilter]
     ) -> SubscribeAction {
         let id = Self.getSubscriptionID()
-        let subscription = ValkeySubscription(id: id, continuation: continuation, filters: filters, logger: self.logger)
+        let subscription = SubscriptionRef(id: id, continuation: continuation, filters: filters, logger: self.logger)
         subscriptionIDMap[id] = subscription
         var action = SubscribeAction.doNothing(id)
         for filter in filters {
@@ -205,13 +205,13 @@ struct ValkeySubscriptions {
 }
 
 /// Individual subscription associated with one subscribe command
-final class ValkeySubscription: Identifiable {
+final class SubscriptionRef: Identifiable {
     let id: Int
     let filters: [ValkeySubscriptionFilter]
-    let continuation: ValkeySubscriptionSequence.Continuation
+    let continuation: ValkeySubscription.Continuation
     let logger: Logger
 
-    init(id: Int, continuation: ValkeySubscriptionSequence.Continuation, filters: [ValkeySubscriptionFilter], logger: Logger) {
+    init(id: Int, continuation: ValkeySubscription.Continuation, filters: [ValkeySubscriptionFilter], logger: Logger) {
         self.id = id
         self.filters = filters
         self.continuation = continuation
@@ -219,14 +219,14 @@ final class ValkeySubscription: Identifiable {
     }
 
     func sendMessage(_ message: ValkeySubscriptionMessage) {
-        continuation.yield(message)
+        self.continuation.yield(message)
     }
 
     func sendError(_ error: Error) {
-        continuation.finish(throwing: error)
+        self.continuation.finish(throwing: error)
     }
 
     func finish() {
-        continuation.finish()
+        self.continuation.finish()
     }
 }
