@@ -1033,10 +1033,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [GEORADIUS](https:/valkey.io/commands/georadius)
     /// - Available: 3.2.0
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
+    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
@@ -1048,10 +1048,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [GEORADIUSBYMEMBER](https:/valkey.io/commands/georadiusbymember)
     /// - Available: 3.2.0
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
+    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
@@ -1063,10 +1063,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [GEORADIUSBYMEMBER_RO](https:/valkey.io/commands/georadiusbymember_ro)
     /// - Available: 3.2.10
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
+    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
@@ -1078,10 +1078,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [GEORADIUS_RO](https:/valkey.io/commands/georadius_ro)
     /// - Available: 3.2.10
-    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
+    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable

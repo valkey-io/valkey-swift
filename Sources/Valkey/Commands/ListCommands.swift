@@ -634,9 +634,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [BRPOPLPUSH](https:/valkey.io/commands/brpoplpush)
     /// - Available: 2.2.0
-    /// - Deprecated since: 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
+    /// - Deprecated since: 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The element being popped from source and pushed to destination.

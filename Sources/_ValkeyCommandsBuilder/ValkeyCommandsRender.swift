@@ -39,18 +39,18 @@ extension String {
         if let since = command.since {
             self.append("    /// - Available: \(since)\n")
         }
+        if let history = command.history {
+            self.append("    /// - History:\n")
+            for line in history {
+                self.append("    ///     * \(line[0]): \(line[1])\n")
+            }
+        }
         if let deprecatedSince = command.deprecatedSince {
             self.append("    /// - Deprecated since: \(deprecatedSince)")
             if let replacedBy = command.replacedBy {
                 self.append(". Replaced by \(replacedBy)")
             }
             self.append(".\n")
-        }
-        if let history = command.history {
-            self.append("    /// - History:\n")
-            for line in history {
-                self.append("    ///     * \(line[0]): \(line[1])\n")
-            }
         }
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")

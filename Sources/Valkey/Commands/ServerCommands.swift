@@ -2111,9 +2111,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SLOWLOG GET](https:/valkey.io/commands/slowlog-get)
     /// - Available: 2.2.12
-    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.
     /// - History:
     ///     * 4.0.0: Added client IP address, port and name to the reply.
+    /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Returns: [Array]: Entries from the slow log in chronological order.
     @inlinable

@@ -1359,9 +1359,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [ZRANGEBYSCORE](https:/valkey.io/commands/zrangebyscore)
     /// - Available: 1.0.5
-    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.
     /// - History:
     ///     * 2.0.0: Added the `WITHSCORES` modifier.
+    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: One of the following
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
@@ -1474,9 +1474,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [ZREVRANGEBYSCORE](https:/valkey.io/commands/zrevrangebyscore)
     /// - Available: 2.2.0
-    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.
     /// - History:
     ///     * 2.1.6: `min` and `max` can be exclusive.
+    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: One of the following
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
