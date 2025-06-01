@@ -165,7 +165,6 @@ public struct GEOPOS: ValkeyCommand {
 }
 
 /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.")
 public struct GEORADIUS: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
@@ -276,7 +275,6 @@ public struct GEORADIUS: ValkeyCommand {
 }
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
 public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
@@ -385,7 +383,6 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns members from a geospatial index that are within a distance from a member.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
 public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
@@ -474,7 +471,6 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns members from a geospatial index that are within a distance from a coordinate.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.")
 public struct GEORADIUSRO: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable {
         case m
@@ -1040,10 +1036,10 @@ extension ValkeyConnectionProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
+    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` argument.")
     public func georadius(key: ValkeyKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUS.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUS.CountBlock? = nil, order: GEORADIUS.Order? = nil, store: GEORADIUS.Store? = nil) async throws -> GEORADIUS.Response {
         try await send(command: GEORADIUS(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
@@ -1055,10 +1051,10 @@ extension ValkeyConnectionProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
+    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` and `GEOSEARCHSTORE` with the `BYRADIUS` and `FROMMEMBER` arguments.")
     public func georadiusbymember<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBER<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBER<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBER<Member>.Order? = nil, store: GEORADIUSBYMEMBER<Member>.Store? = nil) async throws -> GEORADIUSBYMEMBER.Response {
         try await send(command: GEORADIUSBYMEMBER(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order, store: store))
     }
@@ -1070,10 +1066,10 @@ extension ValkeyConnectionProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
+    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` and `FROMMEMBER` arguments.")
     public func georadiusbymemberRo<Member: RESPStringRenderable>(key: ValkeyKey, member: Member, radius: Double, unit: GEORADIUSBYMEMBERRO<Member>.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSBYMEMBERRO<Member>.CountBlock? = nil, order: GEORADIUSBYMEMBERRO<Member>.Order? = nil) async throws -> RESPToken.Array {
         try await send(command: GEORADIUSBYMEMBERRO(key: key, member: member, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }
@@ -1085,10 +1081,10 @@ extension ValkeyConnectionProtocol {
     /// - History:
     ///     * 6.2.0: Added the `ANY` option for `COUNT`.
     ///     * 7.0.0: Added support for uppercase unit names.
+    /// - Deprecated since: 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Returns: Array of matched members information.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `GEOSEARCH` with the `BYRADIUS` argument.")
     public func georadiusRo(key: ValkeyKey, longitude: Double, latitude: Double, radius: Double, unit: GEORADIUSRO.Unit, withcoord: Bool = false, withdist: Bool = false, withhash: Bool = false, countBlock: GEORADIUSRO.CountBlock? = nil, order: GEORADIUSRO.Order? = nil) async throws -> RESPToken.Array {
         try await send(command: GEORADIUSRO(key: key, longitude: longitude, latitude: latitude, radius: radius, unit: unit, withcoord: withcoord, withdist: withdist, withhash: withhash, countBlock: countBlock, order: order))
     }

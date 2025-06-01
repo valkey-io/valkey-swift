@@ -153,7 +153,6 @@ public enum SENTINEL {
     }
 
     /// Returns the port and address of a primary instance.
-    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.")
     public struct GETMASTERADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -211,7 +210,6 @@ public enum SENTINEL {
     }
 
     /// Determines whether a primary instance is down.
-    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL IS-PRIMARY-DOWN-BY-ADDR`.")
     public struct ISMASTERDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -254,7 +252,6 @@ public enum SENTINEL {
     }
 
     /// Returns the state of a primary instance.
-    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARY`.")
     public struct MASTER<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
@@ -270,7 +267,6 @@ public enum SENTINEL {
     }
 
     /// Returns a list of monitored primaries.
-    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARIES`.")
     public struct MASTERS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -477,7 +473,6 @@ public enum SENTINEL {
     }
 
     /// Returns a list of the monitored replicas.
-    @available(*, deprecated, message: "Since 5.0.0. Replaced by `SENTINEL REPLICAS`.")
     public struct SLAVES<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -558,10 +553,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SENTINEL GET-MASTER-ADDR-BY-NAME](https:/valkey.io/commands/sentinel-get-master-addr-by-name)
     /// - Available: 2.8.4
+    /// - Deprecated since: 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.
     /// - Complexity: O(1)
     /// - Returns: [Array]: IP addr or hostname.
     @inlinable
-    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL GET-PRIMARY-ADDR-BY-NAME`.")
     public func sentinelGetMasterAddrByName<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.GETMASTERADDRBYNAME(primaryName: primaryName))
     }
@@ -603,12 +598,12 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SENTINEL IS-MASTER-DOWN-BY-ADDR](https:/valkey.io/commands/sentinel-is-master-down-by-addr)
     /// - Available: 2.8.4
+    /// - Deprecated since: 8.0.0. Replaced by `SENTINEL IS-PRIMARY-DOWN-BY-ADDR`.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL IS-PRIMARY-DOWN-BY-ADDR`.")
     public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISMASTERDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
@@ -630,10 +625,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SENTINEL MASTER](https:/valkey.io/commands/sentinel-master)
     /// - Available: 2.8.4
+    /// - Deprecated since: 8.0.0. Replaced by `SENTINEL PRIMARY`.
     /// - Complexity: O(1)
     /// - Returns: [Map]: The state and info of the specified primary.
     @inlinable
-    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARY`.")
     public func sentinelMaster<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Map {
         try await send(command: SENTINEL.MASTER(primaryName: primaryName))
     }
@@ -642,10 +637,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SENTINEL MASTERS](https:/valkey.io/commands/sentinel-masters)
     /// - Available: 2.8.4
+    /// - Deprecated since: 8.0.0. Replaced by `SENTINEL PRIMARIES`.
     /// - Complexity: O(N) where N is the number of primaries
     /// - Returns: [Array]: List of monitored primaries, and their states.
     @inlinable
-    @available(*, deprecated, message: "Since 8.0.0. Replaced by `SENTINEL PRIMARIES`.")
     public func sentinelMasters() async throws -> RESPToken.Array {
         try await send(command: SENTINEL.MASTERS())
     }
@@ -772,10 +767,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [SENTINEL SLAVES](https:/valkey.io/commands/sentinel-slaves)
     /// - Available: 2.8.0
+    /// - Deprecated since: 5.0.0. Replaced by `SENTINEL REPLICAS`.
     /// - Complexity: O(N) where N is the number of replicas.
     /// - Returns: [Array]: List of monitored replicas, and their state.
     @inlinable
-    @available(*, deprecated, message: "Since 5.0.0. Replaced by `SENTINEL REPLICAS`.")
     public func sentinelSlaves<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.SLAVES(primaryName: primaryName))
     }

@@ -45,6 +45,13 @@ extension String {
                 self.append("    ///     * \(line[0]): \(line[1])\n")
             }
         }
+        if let deprecatedSince = command.deprecatedSince {
+            self.append("    /// - Deprecated since: \(deprecatedSince)")
+            if let replacedBy = command.replacedBy {
+                self.append(". Replaced by \(replacedBy)")
+            }
+            self.append(".\n")
+        }
         if let complexity = command.complexity {
             self.append("    /// - Complexity: \(complexity)\n")
         }
@@ -204,7 +211,6 @@ extension String {
         let genericTypeParameters = genericTypeParameters(command.arguments)
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, tab: tab)
-        self.appendDeprecatedMessage(command: command, name: name, tab: tab)
         self.append("\(tab)public struct \(typeName)\(genericTypeParameters): \(conformance) {\n")
 
         let arguments = (command.arguments ?? [])
@@ -285,7 +291,6 @@ extension String {
                 }
                 .joined(separator: ", ")
             self.append("    @inlinable\n")
-            self.appendDeprecatedMessage(command: command, name: name, tab: "    ")
             self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
             let commandArguments = arguments.map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
             let argumentsString = commandArguments.joined(separator: ", ")

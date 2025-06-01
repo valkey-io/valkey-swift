@@ -580,7 +580,6 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
 }
 
 /// Returns members in a sorted set within a lexicographical range.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.")
 public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
@@ -625,7 +624,6 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
 }
 
 /// Returns members in a sorted set within a range of scores.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.")
 public struct ZRANGEBYSCORE: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
@@ -840,7 +838,6 @@ public struct ZREMRANGEBYSCORE: ValkeyCommand {
 }
 
 /// Returns members in a sorted set within a range of indexes in reverse order.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
 public struct ZREVRANGE: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -864,7 +861,6 @@ public struct ZREVRANGE: ValkeyCommand {
 }
 
 /// Returns members in a sorted set within a lexicographical range in reverse order.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.")
 public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderable>: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
@@ -909,7 +905,6 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
 }
 
 /// Returns members in a sorted set within a range of scores in reverse order.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.")
 public struct ZREVRANGEBYSCORE: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable {
         @usableFromInline let offset: Int
@@ -1352,10 +1347,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [ZRANGEBYLEX](https:/valkey.io/commands/zrangebylex)
     /// - Available: 2.8.9
+    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: [Array]: List of elements in the specified score range.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYLEX` argument.")
     public func zrangebylex<Min: RESPStringRenderable, Max: RESPStringRenderable>(key: ValkeyKey, min: Min, max: Max, limit: ZRANGEBYLEX<Min, Max>.Limit? = nil) async throws -> RESPToken.Array {
         try await send(command: ZRANGEBYLEX(key: key, min: min, max: max, limit: limit))
     }
@@ -1366,12 +1361,12 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.5
     /// - History:
     ///     * 2.0.0: Added the `WITHSCORES` modifier.
+    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: One of the following
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
     ///     * [Array]: List of the elements and their scores in the specified score range, as WITHSCORES used.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `BYSCORE` argument.")
     public func zrangebyscore(key: ValkeyKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> RESPToken.Array {
         try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
     }
@@ -1453,12 +1448,12 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [ZREVRANGE](https:/valkey.io/commands/zrevrange)
     /// - Available: 1.2.0
+    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `REV` argument.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements returned.
     /// - Returns: One of the following
     ///     * [Array]: List of member elements.
     ///     * [Array]: List of the members and their scores. Returned in case `WITHSCORES` was used.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` argument.")
     public func zrevrange(key: ValkeyKey, start: Int, stop: Int, withscores: Bool = false) async throws -> RESPToken.Array {
         try await send(command: ZREVRANGE(key: key, start: start, stop: stop, withscores: withscores))
     }
@@ -1467,10 +1462,10 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [ZREVRANGEBYLEX](https:/valkey.io/commands/zrevrangebylex)
     /// - Available: 2.8.9
+    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: [Array]: List of the elements in the specified score range.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYLEX` arguments.")
     public func zrevrangebylex<Max: RESPStringRenderable, Min: RESPStringRenderable>(key: ValkeyKey, max: Max, min: Min, limit: ZREVRANGEBYLEX<Max, Min>.Limit? = nil) async throws -> RESPToken.Array {
         try await send(command: ZREVRANGEBYLEX(key: key, max: max, min: min, limit: limit))
     }
@@ -1481,12 +1476,12 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.2.0
     /// - History:
     ///     * 2.1.6: `min` and `max` can be exclusive.
+    /// - Deprecated since: 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Returns: One of the following
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
     ///     * [Array]: List of the elements and their scores in the specified score range, as WITHSCORES used.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `ZRANGE` with the `REV` and `BYSCORE` arguments.")
     public func zrevrangebyscore(key: ValkeyKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> RESPToken.Array {
         try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
     }
