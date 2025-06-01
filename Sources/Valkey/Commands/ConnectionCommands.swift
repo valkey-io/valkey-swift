@@ -687,7 +687,6 @@ public struct PING: ValkeyCommand {
 }
 
 /// Closes the connection.
-@available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
 public struct QUIT: ValkeyCommand {
     @inlinable public init() {
     }
@@ -1025,9 +1024,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [QUIT](https:/valkey.io/commands/quit)
     /// - Available: 1.0.0
+    /// - Deprecated since: 7.2.0. Replaced by just closing the connection.
     /// - Complexity: O(1)
     @inlinable
-    @available(*, deprecated, message: "Since 7.2.0. Replaced by just closing the connection.")
     public func quit() async throws {
         _ = try await send(command: QUIT())
     }

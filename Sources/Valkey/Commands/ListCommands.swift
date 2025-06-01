@@ -154,7 +154,6 @@ public struct BRPOP: ValkeyCommand {
 }
 
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
 public struct BRPOPLPUSH: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -518,7 +517,6 @@ public struct RPOP: ValkeyCommand {
 }
 
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
-@available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
 public struct RPOPLPUSH: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -638,12 +636,12 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.2.0
     /// - History:
     ///     * 6.0.0: `timeout` is interpreted as a double instead of an integer.
+    /// - Deprecated since: 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The element being popped from source and pushed to destination.
     ///     * [Null]: Timeout is reached.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `BLMOVE` with the `RIGHT` and `LEFT` arguments.")
     public func brpoplpush(source: ValkeyKey, destination: ValkeyKey, timeout: Double) async throws -> RESPToken? {
         try await send(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
@@ -828,12 +826,12 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [RPOPLPUSH](https:/valkey.io/commands/rpoplpush)
     /// - Available: 1.2.0
+    /// - Deprecated since: 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.
     /// - Complexity: O(1)
     /// - Returns: One of the following
     ///     * [String]: The element being popped and pushed.
     ///     * [Null]: Source list is empty.
     @inlinable
-    @available(*, deprecated, message: "Since 6.2.0. Replaced by `LMOVE` with the `RIGHT` and `LEFT` arguments.")
     public func rpoplpush(source: ValkeyKey, destination: ValkeyKey) async throws -> RESPToken? {
         try await send(command: RPOPLPUSH(source: source, destination: destination))
     }

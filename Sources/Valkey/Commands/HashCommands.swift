@@ -190,7 +190,6 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets the values of multiple fields.
-@available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
 public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let field: Field
@@ -500,9 +499,9 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [HMSET](https:/valkey.io/commands/hmset)
     /// - Available: 2.0.0
+    /// - Deprecated since: 4.0.0. Replaced by `HSET` with multiple field-value pairs.
     /// - Complexity: O(N) where N is the number of fields being set.
     @inlinable
-    @available(*, deprecated, message: "Since 4.0.0. Replaced by `HSET` with multiple field-value pairs.")
     public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: ValkeyKey, data: [HMSET<Field, Value>.Data]) async throws {
         _ = try await send(command: HMSET(key: key, data: data))
     }
