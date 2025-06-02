@@ -102,7 +102,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        switch self.stateMachine.sendCommand(requestID) {
+        switch self.stateMachine.sendCommand() {
         case .sendCommand(let context):
             self.encoder.reset()
             command.encode(into: &self.encoder)
@@ -121,7 +121,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.eventLoop.assertInEventLoop()
         switch request {
         case .single(let buffer, let tokenPromise, let requestID):
-            switch self.stateMachine.sendCommand(requestID) {
+            switch self.stateMachine.sendCommand() {
             case .sendCommand(let context):
                 self.pendingCommands.append(.init(promise: tokenPromise, requestID: requestID))
                 context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
@@ -130,7 +130,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             }
 
         case .multiple(let buffer, let tokenPromises, let requestID):
-            switch self.stateMachine.sendCommand(requestID) {
+            switch self.stateMachine.sendCommand() {
             case .sendCommand(let context):
                 for tokenPromise in tokenPromises {
                     self.pendingCommands.append(.init(promise: tokenPromise, requestID: requestID))
@@ -302,19 +302,24 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func cancel(requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        switch self.stateMachine.cancel(requestID) {
-        case .cancelAndCloseConnection(let context):
-            while let command = self.pendingCommands.popFirst() {
-                if command.requestID == requestID {
-                    command.promise.fail(ValkeyClientError(.cancelled))
-                } else {
-                    command.promise.fail(ValkeyClientError(.connectionClosedDueToCancellation))
+        // if pending commands include request then we are still waiting for its result.
+        // We should cancel that command, cancel all the other pending commands with error
+        // code `.connectionClosedDueToCancellation` and close the connection
+        if self.pendingCommands.contains(where: { $0.requestID == requestID }) {
+            switch self.stateMachine.cancel() {
+            case .cancelAndCloseConnection(let context):
+                while let command = self.pendingCommands.popFirst() {
+                    if command.requestID == requestID {
+                        command.promise.fail(ValkeyClientError(.cancelled))
+                    } else {
+                        command.promise.fail(ValkeyClientError(.connectionClosedDueToCancellation))
+                    }
                 }
-            }
-            context.close(promise: nil)
+                context.close(promise: nil)
 
-        case .doNothing:
-            break
+            case .doNothing:
+                break
+            }
         }
     }
 

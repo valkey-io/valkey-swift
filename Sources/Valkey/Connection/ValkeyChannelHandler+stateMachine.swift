@@ -22,7 +22,7 @@ extension ValkeyChannelHandler {
             case initializing
             case active(ActiveState)
             case closing(ClosingState)
-            case closed(ClosedState)
+            case closed
         }
         @usableFromInline
         var state: State
@@ -35,11 +35,6 @@ extension ValkeyChannelHandler {
         @usableFromInline
         struct ClosingState {
             let context: Context
-        }
-
-        @usableFromInline
-        struct ClosedState {
-            var cancelledRequests: [Int]
         }
 
         init() {
@@ -65,7 +60,7 @@ extension ValkeyChannelHandler {
 
         /// handler wants to send a command
         @usableFromInline
-        func sendCommand(_ requestID: Int) -> SendCommandAction {
+        func sendCommand() -> SendCommandAction {
             switch self.state {
             case .initializing:
                 preconditionFailure("Cannot send command when initializing")
@@ -73,10 +68,7 @@ extension ValkeyChannelHandler {
                 return .sendCommand(state.context)
             case .closing:
                 return .throwError(ValkeyClientError(.connectionClosing))
-            case .closed(let state):
-                if state.cancelledRequests.contains(requestID) {
-                    return .throwError(ValkeyClientError(.cancelled))
-                }
+            case .closed:
                 return .throwError(ValkeyClientError(.connectionClosed))
             }
         }
@@ -89,19 +81,17 @@ extension ValkeyChannelHandler {
 
         /// handler wants to send a command
         @usableFromInline
-        mutating func cancel(_ requestID: Int) -> CancelAction {
+        mutating func cancel() -> CancelAction {
             switch self.state {
             case .initializing:
                 preconditionFailure("Cannot cancel when initializing")
             case .active(let state):
-                self.state = .closed(.init(cancelledRequests: [requestID]))
+                self.state = .closed
                 return .cancelAndCloseConnection(state.context)
             case .closing(let state):
-                self.state = .closed(.init(cancelledRequests: [requestID]))
+                self.state = .closed
                 return .cancelAndCloseConnection(state.context)
-            case .closed(var state):
-                state.cancelledRequests.append(requestID)
-                self.state = .closed(state)
+            case .closed:
                 return .doNothing
             }
         }
@@ -116,7 +106,7 @@ extension ValkeyChannelHandler {
         mutating func gracefulShutdown() -> GracefulShutdownAction {
             switch self.state {
             case .initializing:
-                self.state = .closed(.init(cancelledRequests: []))
+                self.state = .closed
                 return .doNothing
             case .active(let state):
                 self.state = .closing(ClosingState(context: state.context))
@@ -136,13 +126,13 @@ extension ValkeyChannelHandler {
         mutating func close() -> CloseAction {
             switch self.state {
             case .initializing:
-                self.state = .closed(.init(cancelledRequests: []))
+                self.state = .closed
                 return .doNothing
             case .active(let state):
-                self.state = .closed(.init(cancelledRequests: []))
+                self.state = .closed
                 return .close(state.context)
             case .closing(let state):
-                self.state = .closed(.init(cancelledRequests: []))
+                self.state = .closed
                 return .close(state.context)
             case .closed:
                 return .doNothing
@@ -160,10 +150,10 @@ extension ValkeyChannelHandler {
         mutating func setClosed() -> SetClosedAction {
             switch self.state {
             case .initializing:
-                self.state = .closed(.init(cancelledRequests: []))
+                self.state = .closed
                 return .doNothing
             case .active, .closing:
-                self.state = .closed(.init(cancelledRequests: []))
+                self.state = .closed
                 return .failPendingCommands
             case .closed:
                 return .doNothing

@@ -117,14 +117,15 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let requestID = Self.requestIDGenerator.next()
         return try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                throw ValkeyClientError(.cancelled)
+            }
             let result = try await withCheckedThrowingContinuation { continuation in
                 self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
             }
             return try .init(fromRESP: result)
         } onCancel: {
-            Task {
-                await self.cancel(requestID: requestID)
-            }
+            self.cancel(requestID: requestID)
         }
     }
 
@@ -136,7 +137,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     @inlinable
     public func pipeline<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, Error>) {
+    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
             result.flatMap {
                 do {
@@ -156,7 +157,10 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         }
         let outBuffer = encoder.buffer
         let promises = mpromises
-        return await withTaskCancellationHandler {
+        return try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                throw ValkeyClientError(.cancelled)
+            }
             // write directly to channel handler
             self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
 
@@ -164,15 +168,17 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             var index = AutoIncrementingInteger()
             return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
         } onCancel: {
-            Task {
-                await self.cancel(requestID: requestID)
-            }
+            self.cancel(requestID: requestID)
         }
     }
 
     @usableFromInline
-    func cancel(requestID: Int) {
-        self.channelHandler.cancel(requestID: requestID)
+    nonisolated func cancel(requestID: Int) {
+        self.channel.eventLoop.execute {
+            self.assumeIsolated { this in
+                this.channelHandler.cancel(requestID: requestID)
+            }
+        }
     }
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler

@@ -176,6 +176,9 @@ extension ValkeyConnection {
         let requestID = Self.requestIDGenerator.next()
         let (stream, streamContinuation) = ValkeySubscription.makeStream()
         return try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                throw ValkeyClientError(.cancelled)
+            }
             let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
                 self.channelHandler.subscribe(
                     command: command,
@@ -187,9 +190,7 @@ extension ValkeyConnection {
             }
             return (subscriptionID, stream)
         } onCancel: {
-            Task {
-                await self.cancel(requestID: requestID)
-            }
+            self.cancel(requestID: requestID)
         }
     }
 
@@ -197,13 +198,14 @@ extension ValkeyConnection {
     func unsubscribe(id: Int) async throws {
         let requestID = Self.requestIDGenerator.next()
         try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                throw ValkeyClientError(.cancelled)
+            }
             try await withCheckedThrowingContinuation { continuation in
                 self.channelHandler.unsubscribe(id: id, promise: .swift(continuation), requestID: requestID)
             }
         } onCancel: {
-            Task {
-                await self.cancel(requestID: requestID)
-            }
+            self.cancel(requestID: requestID)
         }
     }
 

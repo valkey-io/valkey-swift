@@ -198,7 +198,7 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
         try await channel.writeInbound(RESPToken(.bulkError("BulkError!")).base)
 
-        let results = await asyncResults
+        let results = try await asyncResults
         #expect(throws: ValkeyClientError(.commandError, message: "BulkError!")) { try results.1.get() }
     }
 
@@ -303,6 +303,33 @@ struct ConnectionTests {
     }
 
     @Test
+    func testConnectionCloseDueToCancellation() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await #expect(throws: ValkeyClientError(.connectionClosedDueToCancellation)) {
+                    _ = try await connection.get(key: "foo")?.decode(as: String.self)
+                }
+            }
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    await #expect(throws: ValkeyClientError(.cancelled)) {
+                        _ = try await connection.get(key: "foo")?.decode(as: String.self)
+                    }
+                }
+                // wait for outbound write from both tasks
+                _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                group.cancelAll()
+            }
+        }
+    }
+
+    @Test
     func testPipelineCancellation() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -311,7 +338,7 @@ struct ConnectionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                let results = await connection.pipeline(
+                let results = try await connection.pipeline(
                     SET(key: "foo", value: "bar"),
                     GET(key: "foo")
                 )
