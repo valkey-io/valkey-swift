@@ -293,7 +293,7 @@ struct ConnectionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                await #expect(throws: CancellationError.self) {
+                await #expect(throws: ValkeyClientError(.cancelled)) {
                     _ = try await connection.get(key: "foo")?.decode(as: String.self)
                 }
             }
@@ -315,7 +315,7 @@ struct ConnectionTests {
                     SET(key: "foo", value: "bar"),
                     GET(key: "foo")
                 )
-                #expect(throws: CancellationError.self) {
+                #expect(throws: ValkeyClientError(.cancelled)) {
                     _ = try results.1.get()
                 }
             }

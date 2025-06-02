@@ -667,7 +667,7 @@ struct SubscriptionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                await #expect(throws: CancellationError.self) {
+                await #expect(throws: ValkeyClientError(.cancelled)) {
                     try await connection.subscribe(to: "test") { _ in }
                 }
             }

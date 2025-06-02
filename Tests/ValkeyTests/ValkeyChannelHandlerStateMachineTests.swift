@@ -29,7 +29,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        #expect(stateMachine.state == .closed)
+        #expect(stateMachine.state == .closed(.init(cancelledRequests: [])))
     }
 
     @Test
@@ -42,7 +42,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        #expect(stateMachine.state == .closed)
+        #expect(stateMachine.state == .closed(.init(cancelledRequests: [])))
     }
 
     @Test
@@ -62,7 +62,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        #expect(stateMachine.state == .closed)
+        #expect(stateMachine.state == .closed(.init(cancelledRequests: [])))
     }
 
     @Test
@@ -82,44 +82,35 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        #expect(stateMachine.state == .closed)
+        #expect(stateMachine.state == .closed(.init(cancelledRequests: [])))
     }
 
     @Test
     func testCancel() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancel")
-        switch stateMachine.cancel() {
-        case .cancelPendingCommand:
+        switch stateMachine.cancel(0) {
+        case .cancelAndCloseConnection(let context):
+            #expect(context == "testCancel")
             break
         default:
             Issue.record("Invalid cancel action")
         }
-        switch stateMachine.close() {
-        case .close:
-            break
-        default:
-            Issue.record("Invalid cancel action")
-        }
+        #expect(stateMachine.state == .closed(.init(cancelledRequests: [0])))
     }
 
     @Test
     func testCancelGracefulShutdown() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
-        stateMachine.setActive(context: "testCancel")
+        stateMachine.setActive(context: "testCancelGracefulShutdown")
         _ = stateMachine.gracefulShutdown()
-        switch stateMachine.cancel() {
-        case .cancelPendingCommand:
-            break
+        switch stateMachine.cancel(32) {
+        case .cancelAndCloseConnection(let context):
+            #expect(context == "testCancelGracefulShutdown")
         default:
             Issue.record("Invalid cancel action")
         }
-        switch stateMachine.close() {
-        case .close:
-            break
-        default:
-            Issue.record("Invalid cancel action")
-        }
+        #expect(stateMachine.state == .closed(.init(cancelledRequests: [32])))
     }
 }
 
@@ -132,8 +123,8 @@ extension ValkeyChannelHandler.StateMachine<String>.State: Equatable {
             return lhs.context == rhs.context
         case (.closing(let lhs), .closing(let rhs)):
             return lhs.context == rhs.context
-        case (.closed, .closed):
-            return true
+        case (.closed(let lhs), .closed(let rhs)):
+            return lhs.cancelledRequests == rhs.cancelledRequests
         default:
             return false
         }
