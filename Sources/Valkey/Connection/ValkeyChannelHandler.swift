@@ -74,8 +74,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     /*private*/ var pendingCommands: Deque<PendingCommand>
     @usableFromInline
-    /*private*/ var cancelledRequests: [Int]
-    @usableFromInline
     /*private*/ var encoder = ValkeyCommandEncoder()
     @usableFromInline
     /*private*/ var stateMachine: StateMachine<ChannelHandlerContext>
@@ -91,7 +89,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.configuration = configuration
         self.eventLoop = eventLoop
         self.pendingCommands = .init()
-        self.cancelledRequests = .init()
         self.subscriptions = .init(logger: logger)
         self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
         self.stateMachine = .init()
@@ -105,11 +102,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        if let index = self.cancelledRequests.firstIndex(of: requestID) {
-            self.cancelledRequests.remove(at: index)
-            continuation.resume(throwing: ValkeyClientError(.cancelled))
-            return
-        }
         switch self.stateMachine.sendCommand(requestID) {
         case .sendCommand(let context):
             self.encoder.reset()
@@ -312,20 +304,12 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.cancel(requestID) {
         case .cancelAndCloseConnection(let context):
-            var found = false
             while let command = self.pendingCommands.popFirst() {
                 if command.requestID == requestID {
                     command.promise.fail(ValkeyClientError(.cancelled))
-                    found = true
                 } else {
                     command.promise.fail(ValkeyClientError(.connectionClosedDueToCancellation))
                 }
-            }
-            // if we didnt find a pending command then we assume the cancellation reached the
-            // channel handler before the command. Add the request id to a list of cancelled
-            // commands which will be checked when the command is written.
-            if !found {
-                self.cancelledRequests.append(requestID)
             }
             context.close(promise: nil)
 
