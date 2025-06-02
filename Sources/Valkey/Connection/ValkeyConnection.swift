@@ -42,7 +42,9 @@ public struct ServerAddress: Sendable, Equatable {
 }
 
 /// Single connection to a Valkey database
-public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
+public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
+    nonisolated public let unownedExecutor: UnownedSerialExecutor
+
     /// Connection ID, used by connection pool
     public let id: ID
     /// Logger used by Server
@@ -50,7 +52,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     @usableFromInline
     let channel: Channel
     @usableFromInline
-    let channelHandler: NIOLoopBound<ValkeyChannelHandler>
+    let channelHandler: ValkeyChannelHandler
     let configuration: ValkeyClientConfiguration
     let isClosed: Atomic<Bool>
 
@@ -62,8 +64,9 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         configuration: ValkeyClientConfiguration,
         logger: Logger
     ) {
+        self.unownedExecutor = channel.eventLoop.executor.asUnownedSerialExecutor()
         self.channel = channel
-        self.channelHandler = .init(channelHandler, eventLoop: channel.eventLoop)
+        self.channelHandler = channelHandler
         self.configuration = configuration
         self.id = connectionID
         self.logger = logger
@@ -115,7 +118,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
 
     /// Close connection
     /// - Returns: EventLoopFuture that is completed on connection closure
-    public func close() {
+    public nonisolated func close() {
         guard self.isClosed.compareExchange(expected: false, desired: true, successOrdering: .relaxed, failureOrdering: .relaxed).exchanged else {
             return
         }
@@ -128,13 +131,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let result = try await withCheckedThrowingContinuation { continuation in
-            if self.channel.eventLoop.inEventLoop {
-                self.channelHandler.value.write(command: command, continuation: continuation)
-            } else {
-                self.channel.eventLoop.execute {
-                    self.channelHandler.value.write(command: command, continuation: continuation)
-                }
-            }
+            self.channelHandler.write(command: command, continuation: continuation)
         }
         return try .init(fromRESP: result)
     }
@@ -167,13 +164,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         let outBuffer = encoder.buffer
         let promises = mpromises
         // write directly to channel handler
-        if self.channel.eventLoop.inEventLoop {
-            self.channelHandler.value.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }))
-        } else {
-            self.channel.eventLoop.execute {
-                self.channelHandler.value.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }))
-            }
-        }
+        self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }))
 
         // get response from channel handler
         var index = AutoIncrementingInteger()
