@@ -23,7 +23,6 @@ public protocol ValkeyCommand: Sendable {
     /// shard to connect to.
     var keysAffected: Keys { get }
 
-    ///
     /// Encode Valkey Command into RESP
     /// - Parameter commandEncoder: ValkeyCommandEncoder
     func encode(into commandEncoder: inout ValkeyCommandEncoder)
