@@ -41,13 +41,13 @@ public final class ValkeyClient: Sendable {
         ContinuousClock
     >
     /// Server address
-    let serverAddress: ServerAddress
+    let serverAddress: ValkeyServerAddress
     /// Connection pool
     let connectionPool: Pool
     /// configuration
     let configuration: ValkeyClientConfiguration
     /// EventLoopGroup to use
-    let eventLoopGroup: EventLoopGroup
+    let eventLoopGroup: any EventLoopGroup
     /// Logger
     let logger: Logger
     /// running atomic
@@ -55,22 +55,38 @@ public final class ValkeyClient: Sendable {
 
     /// Initialize Valkey client
     ///
-    /// - Parametes:
+    /// - Parameters:
     ///   - address: Valkey database address
     ///   - configuration: Valkey client configuration
     ///   - tlsConfiguration: Valkey TLS connection configuration
     ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
     ///   - logger: Logger
-    public init(
-        _ address: ServerAddress,
+    public convenience init(
+        _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        logger: Logger
+    ) {
+        self.init(
+            address,
+            configuration: configuration,
+            connectionIDGenerator: ConnectionIDGenerator(),
+            eventLoopGroup: eventLoopGroup,
+            logger: logger
+        )
+    }
+
+    init(
+        _ address: ValkeyServerAddress,
+        configuration: ValkeyClientConfiguration,
+        connectionIDGenerator: ConnectionIDGenerator,
+        eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
         self.serverAddress = address
         self.connectionPool = .init(
             configuration: configuration.connectionPool,
-            idGenerator: ConnectionIDGenerator(),
+            idGenerator: connectionIDGenerator,
             requestType: ConnectionRequest<ValkeyConnection>.self,
             keepAliveBehavior: .init(configuration.keepAliveBehavior),
             observabilityDelegate: ValkeyClientMetrics(logger: logger),
@@ -107,6 +123,10 @@ extension ValkeyClient {
         #else
         await self.connectionPool.run()
         #endif
+    }
+
+    func triggerForceShutdown() {
+        self.connectionPool.triggerForceShutdown()
     }
 
     /// Get connection from connection pool and run operation using connection
