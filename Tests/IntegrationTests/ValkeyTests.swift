@@ -36,7 +36,7 @@ struct GeneratedCommands {
     }
 
     func withValkeyClient(
-        _ address: ServerAddress,
+        _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
         logger: Logger,
         operation: @escaping @Sendable (ValkeyClient) async throws -> Void
@@ -55,7 +55,7 @@ struct GeneratedCommands {
     }
 
     func withValkeyConnection(
-        _ address: ServerAddress,
+        _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
         logger: Logger,
         operation: @escaping @Sendable (ValkeyConnection) async throws -> Void
