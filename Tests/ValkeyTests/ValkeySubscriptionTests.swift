@@ -136,9 +136,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -165,9 +163,7 @@ struct SubscriptionTests {
         try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
         #expect(try await fooResult?.decode() == "Bar")
 
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -199,9 +195,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     /// Test a single subscription can subscribe to multiple channels
@@ -244,9 +238,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     /// Test you can have multiple subscriptions running on one connection
@@ -311,9 +303,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     /// Test we can unsubscribe from one subscription while the other still continues to receive messages
@@ -361,9 +351,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -398,9 +386,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -441,9 +427,7 @@ struct SubscriptionTests {
                 try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(0)])).base)
             }.value
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -487,9 +471,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -541,9 +523,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -576,9 +556,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -622,9 +600,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -652,9 +628,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -686,9 +660,7 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 
     @Test
@@ -723,8 +695,6 @@ struct SubscriptionTests {
             }
             try await group.waitForAll()
         }
-        try await connection.channel.eventLoop.submit {
-            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-        }.get()
+        #expect(await connection.isSubscriptionsEmpty())
     }
 }

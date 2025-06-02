@@ -379,9 +379,7 @@ struct GeneratedCommands {
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "hello" }
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }
                         }
-                        try await connection.channel.eventLoop.submit {
-                            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-                        }.get()
+                        #expect(await connection.isSubscriptionsEmpty())
                     }
                 }
                 try await client.withConnection { connection in
@@ -419,9 +417,7 @@ struct GeneratedCommands {
                             cont.yield()
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "!" }
                         }
-                        try await connection.channel.eventLoop.submit {
-                            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-                        }.get()
+                        #expect(await connection.isSubscriptionsEmpty())
                     }
                 }
                 try await client.withConnection { connection in
@@ -454,9 +450,7 @@ struct GeneratedCommands {
                                 await #expect(throws: Never.self) { try await iterator2.next()?.message == "goodbye" }
                             }
                         }
-                        try await connection.channel.eventLoop.submit {
-                            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-                        }.get()
+                        #expect(await connection.isSubscriptionsEmpty())
                     }
                 }
                 try await client.withConnection { connection in
@@ -486,9 +480,7 @@ struct GeneratedCommands {
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "2" }
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "3" }
                         }
-                        try await connection.channel.eventLoop.submit {
-                            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-                        }.get()
+                        #expect(await connection.isSubscriptionsEmpty())
                     }
                 }
                 try await client.withConnection { connection in
@@ -518,9 +510,7 @@ struct GeneratedCommands {
                             try #expect(await iterator.next() == .init(channel: "pattern.1", message: "hello"))
                             try #expect(await iterator.next() == .init(channel: "pattern.abc", message: "goodbye"))
                         }
-                        try await connection.channel.eventLoop.submit {
-                            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-                        }.get()
+                        #expect(await connection.isSubscriptionsEmpty())
                     }
                 }
                 try await client.withConnection { connection in
@@ -553,9 +543,7 @@ struct GeneratedCommands {
                                 try #expect(await iterator2.next() == .init(channel: "PatternChannelSubscriptions2", message: "goodbye"))
                             }
                         }
-                        try await connection.channel.eventLoop.submit {
-                            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-                        }.get()
+                        #expect(await connection.isSubscriptionsEmpty())
                     }
                 }
                 try await client.withConnection { connection in
@@ -583,9 +571,7 @@ struct GeneratedCommands {
                             try #expect(await iterator.next() == .init(channel: "shard", message: "hello"))
                             try #expect(await iterator.next() == .init(channel: "shard", message: "goodbye"))
                         }
-                        try await connection.channel.eventLoop.submit {
-                            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-                        }.get()
+                        #expect(await connection.isSubscriptionsEmpty())
                     }
                 }
                 try await client.withConnection { connection in
@@ -621,9 +607,7 @@ struct GeneratedCommands {
 
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }
                         }
-                        try await connection.channel.eventLoop.submit {
-                            #expect(connection.channelHandler.value.subscriptions.isEmpty)
-                        }.get()
+                        #expect(await connection.isSubscriptionsEmpty())
                     }
                 }
                 try await valkeyClient.withConnection { connection in

@@ -168,45 +168,29 @@ extension ValkeyConnection {
     @usableFromInline
     func subscribe(
         command: some ValkeyCommand,
-        filters: [ValkeySubscriptionFilter],
-        isolation: isolated (any Actor)? = #isolation
+        filters: [ValkeySubscriptionFilter]
     ) async throws -> (Int, ValkeySubscription) {
         let (stream, streamContinuation) = ValkeySubscription.makeStream()
         let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
-            if self.channel.eventLoop.inEventLoop {
-                self.channelHandler.value.subscribe(
-                    command: command,
-                    streamContinuation: streamContinuation,
-                    filters: filters,
-                    promise: .swift(continuation)
-                )
-            } else {
-                self.channel.eventLoop.execute {
-                    self.channelHandler.value.subscribe(
-                        command: command,
-                        streamContinuation: streamContinuation,
-                        filters: filters,
-                        promise: .swift(continuation)
-                    )
-                }
-            }
+            self.channelHandler.subscribe(
+                command: command,
+                streamContinuation: streamContinuation,
+                filters: filters,
+                promise: .swift(continuation)
+            )
         }
         return (subscriptionID, stream)
     }
 
     @usableFromInline
-    func unsubscribe(
-        id: Int,
-        isolation: isolated (any Actor)? = #isolation
-    ) async throws {
+    func unsubscribe(id: Int) async throws {
         try await withCheckedThrowingContinuation { continuation in
-            if self.channel.eventLoop.inEventLoop {
-                self.channelHandler.value.unsubscribe(id: id, promise: .swift(continuation))
-            } else {
-                self.channel.eventLoop.execute {
-                    self.channelHandler.value.unsubscribe(id: id, promise: .swift(continuation))
-                }
-            }
+            self.channelHandler.unsubscribe(id: id, promise: .swift(continuation))
         }
+    }
+
+    /// DEBUG function to check if the internal subscription state machine is empty
+    package func isSubscriptionsEmpty() -> Bool {
+        self.channelHandler.subscriptions.isEmpty
     }
 }
