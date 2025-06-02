@@ -285,12 +285,15 @@ where
                 await self.run(in: &taskGroup)
             }
         } onCancel: {
-            let actions = self.stateBox.withLockedValue { state in
-                state.stateMachine.triggerForceShutdown()
-            }
-
-            self.runStateMachineActions(actions)
+            self.triggerForceShutdown()
         }
+    }
+
+    public func triggerForceShutdown() {
+        let actions = self.stateBox.withLockedValue { state in
+            state.stateMachine.triggerForceShutdown()
+        }
+        self.runStateMachineActions(actions)
     }
 
     // MARK: - Private Methods -

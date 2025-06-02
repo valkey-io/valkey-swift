@@ -23,24 +23,6 @@ import Network
 import NIOTransportServices
 #endif
 
-/// Server address to connect to
-public struct ServerAddress: Sendable, Equatable {
-    enum _Internal: Equatable {
-        case hostname(_ host: String, port: Int)
-        case unixDomainSocket(path: String)
-    }
-
-    let value: _Internal
-    init(_ value: _Internal) {
-        self.value = value
-    }
-
-    // Address define by host and port
-    public static func hostname(_ host: String, port: Int = 6379) -> Self { .init(.hostname(host, port: port)) }
-    // Address defined by unxi domain socket
-    public static func unixDomainSocket(path: String) -> Self { .init(.unixDomainSocket(path: path)) }
-}
-
 /// Single connection to a Valkey database
 public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// Connection ID, used by connection pool
@@ -80,7 +62,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     ///   - logger: Logger for connection
     /// - Returns: ValkeyConnection
     public static func connect(
-        address: ServerAddress,
+        address: ValkeyServerAddress,
         connectionID: ID,
         name: String? = nil,
         configuration: ValkeyClientConfiguration,
@@ -182,7 +164,7 @@ public final class ValkeyConnection: ValkeyConnectionProtocol, Sendable {
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
     private static func _makeClient(
-        address: ServerAddress,
+        address: ValkeyServerAddress,
         connectionID: ID,
         eventLoop: EventLoop,
         configuration: ValkeyClientConfiguration,
