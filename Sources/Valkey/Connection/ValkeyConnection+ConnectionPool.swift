@@ -21,7 +21,7 @@ extension ValkeyConnection: PooledConnection {
     // connection id
     public typealias ID = Int
     // on close
-    public func onClose(_ closure: @escaping @Sendable ((any Error)?) -> Void) {
+    public nonisolated func onClose(_ closure: @escaping @Sendable ((any Error)?) -> Void) {
         self.channel.closeFuture.whenComplete { _ in closure(nil) }
     }
 }

@@ -144,7 +144,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     @inlinable
     public func pipeline<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> (repeat Result<(each Command).Response, Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, Error>) {
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
             result.flatMap {
                 do {
