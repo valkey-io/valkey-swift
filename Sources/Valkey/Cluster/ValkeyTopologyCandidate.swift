@@ -1,0 +1,93 @@
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the swift-valkey project
+//
+// Copyright (c) 2025 the swift-valkey authors
+// Licensed under Apache License v2.0
+//
+// See LICENSE.txt for license information
+// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+//===----------------------------------------------------------------------===//
+
+/// A simplified representation of a Valkey cluster topology.
+///
+/// `ValkeyTopologyCandidate` provides a stripped-down version of `ValkeyClusterDescription`
+/// designed specifically for efficient comparison during cluster updates. It preserves
+/// only the essential properties needed to determine if a topology has changed, while
+/// maintaining consistent ordering of elements to ensure reliable equality checks.
+struct ValkeyTopologyCandidate: Hashable {
+    /// Represents a shard (hash slot range) within a Valkey cluster topology.
+    ///
+    /// A shard consists of a set of hash slots assigned to a master node and optional replica nodes.
+    struct Shard: Hashable {
+        /// The hash slots assigned to this shard.
+        var slots: HashSlots
+
+        /// The master node responsible for this shard.
+        var master: Node
+        
+        /// The replica nodes for this shard, sorted by endpoint, port, and TLS status for consistent equality checking.
+        var replicas: [Node]
+    }
+
+    /// Represents a node (either master or replica) in the Valkey cluster topology.
+    ///
+    /// Contains only the essential connection properties needed to identify and connect to a node.
+    struct Node: Hashable {
+        /// The endpoint (hostname or IP address) of the node.
+        var endpoint: String
+        
+        /// The port to connect to (either standard port or TLS port).
+        var port: Int
+        
+        /// Whether TLS should be used for connecting to this node.
+        var useTLS: Bool
+
+        /// Creates a simplified node representation from a `ValkeyClusterDescription.Node`.
+        ///
+        /// - Parameter node: The source node from a cluster description.
+        init(_ node: ValkeyClusterDescription.Node) {
+            self.endpoint = node.endpoint
+            self.port = node.tlsPort ?? node.port ?? 6379
+            self.useTLS = node.tlsPort != nil
+        }
+    }
+
+    /// Shards in the cluster topology, sorted by starting hash slot for consistent equality checking.
+    var shards: [Shard]
+
+    /// Creates a topology candidate from a cluster description.
+    ///
+    /// This initializer:
+    /// - Filters out non-essential details from the cluster description
+    /// - Sorts replicas within each shard for consistent equality checking
+    /// - Sorts shards by their starting hash slot for consistent equality checking
+    ///
+    /// - Parameter description: The cluster description to create a topology candidate from.
+    init(_ description: ValkeyClusterDescription) {
+
+        self.shards = description.shards.map({ shard in
+            Shard(
+                slots: shard.slots,
+                master: Node(shard.master!),
+                replicas: shard.replicas.map { Node($0) }.sorted(by: { lhs, rhs in
+                    if lhs.endpoint != rhs.endpoint {
+                        return lhs.endpoint < rhs.endpoint
+                    }
+                    if lhs.port != rhs.port {
+                        return lhs.port < rhs.port
+                    }
+                    if lhs.useTLS != rhs.useTLS {
+                        return !lhs.useTLS
+                    }
+                    return true
+                })
+            )
+        })
+        // Sort shards by starting hash slot
+        self.shards = self.shards.sorted(by: { (lhs, rhs) in (lhs.slots.first?.startIndex ?? .pastEnd) < (rhs.slots.first?.startIndex ?? .pastEnd) })
+    }
+}
