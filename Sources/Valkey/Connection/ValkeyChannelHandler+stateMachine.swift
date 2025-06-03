@@ -24,6 +24,7 @@ extension ValkeyChannelHandler {
             case active(ActiveState)
             case closing(ActiveState)
             case closed
+            case processing
         }
         @usableFromInline
         var state: State
@@ -69,6 +70,8 @@ extension ValkeyChannelHandler {
                 self.state = .active(.init(context: context, pendingCommands: []))
             case .active, .closing, .closed:
                 preconditionFailure("Cannot set active state when state is \(self.state)")
+            case .processing:
+                preconditionFailure("State should never be left as processing")
             }
         }
 
@@ -85,6 +88,7 @@ extension ValkeyChannelHandler {
             case .initializing:
                 preconditionFailure("Cannot send command when initializing")
             case .active(var state):
+                self.state = .processing
                 state.pendingCommands.append(pendingCommand)
                 self.state = .active(state)
                 return .sendCommand(state.context)
@@ -92,6 +96,8 @@ extension ValkeyChannelHandler {
                 return .throwError(ValkeyClientError(.connectionClosing))
             case .closed:
                 return .throwError(ValkeyClientError(.connectionClosed))
+            case .processing:
+                preconditionFailure("State should never be left as processing")
             }
         }
 
@@ -102,6 +108,7 @@ extension ValkeyChannelHandler {
             case .initializing:
                 preconditionFailure("Cannot send command when initializing")
             case .active(var state):
+                self.state = .processing
                 state.pendingCommands.append(contentsOf: pendingCommands)
                 self.state = .active(state)
                 return .sendCommand(state.context)
@@ -109,6 +116,8 @@ extension ValkeyChannelHandler {
                 return .throwError(ValkeyClientError(.connectionClosing))
             case .closed:
                 return .throwError(ValkeyClientError(.connectionClosed))
+            case .processing:
+                preconditionFailure("State should never be left as processing")
             }
         }
 
@@ -125,6 +134,7 @@ extension ValkeyChannelHandler {
             case .initializing:
                 preconditionFailure("Cannot send command when initializing")
             case .active(var state):
+                self.state = .processing
                 guard let command = state.pendingCommands.popFirst() else {
                     self.state = .closed
                     return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
@@ -132,6 +142,7 @@ extension ValkeyChannelHandler {
                 self.state = .active(state)
                 return .respond(command)
             case .closing(var state):
+                self.state = .processing
                 guard let command = state.pendingCommands.popFirst() else {
                     self.state = .closed
                     return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
@@ -140,6 +151,8 @@ extension ValkeyChannelHandler {
                 return .respond(command)
             case .closed:
                 preconditionFailure("Cannot receive command on closed connection")
+            case .processing:
+                preconditionFailure("State should never be left as processing")
             }
         }
 
@@ -164,27 +177,8 @@ extension ValkeyChannelHandler {
                 }
             case .closed:
                 return .doNothing
-            }
-        }
-
-        @usableFromInline
-        enum FailPendingCommandsAction {
-            case closeConnection(Context)
-            case doNothing
-        }
-
-        /// fail pending commands
-        @usableFromInline
-        mutating func failPendingCommands(_ error: Error) -> FailPendingCommandsAction {
-            switch self.state {
-            case .initializing:
-                preconditionFailure("Cannot cancel when initializing")
-            case .active(var state), .closing(var state):
-                state.failPendingCommands(error)
-                self.state = .closed
-                return .closeConnection(state.context)
-            case .closed:
-                return .doNothing
+            case .processing:
+                preconditionFailure("State should never be left as processing")
             }
         }
 
@@ -205,6 +199,8 @@ extension ValkeyChannelHandler {
                 return .waitForPendingCommands(state.context)
             case .closed, .closing:
                 return .doNothing
+            case .processing:
+                preconditionFailure("State should never be left as processing")
             }
         }
 
@@ -221,11 +217,14 @@ extension ValkeyChannelHandler {
                 self.state = .closed
                 return .doNothing
             case .active(var state), .closing(var state):
+                self.state = .processing
                 state.failPendingCommands(error)
                 self.state = .closed
                 return .close(state.context)
             case .closed:
                 return .doNothing
+            case .processing:
+                preconditionFailure("State should never be left as processing")
             }
         }
 
@@ -243,11 +242,14 @@ extension ValkeyChannelHandler {
                 self.state = .closed
                 return .doNothing
             case .active(var state), .closing(var state):
+                self.state = .processing
                 state.failPendingCommands(error)
                 self.state = .closed
                 return .failSubscriptions
             case .closed:
                 return .doNothing
+            case .processing:
+                preconditionFailure("State should never be left as processing")
             }
         }
     }
