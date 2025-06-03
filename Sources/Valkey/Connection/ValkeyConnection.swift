@@ -27,6 +27,9 @@ import NIOTransportServices
 public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     nonisolated public let unownedExecutor: UnownedSerialExecutor
 
+    /// Request ID generator
+    @usableFromInline
+    static let requestIDGenerator: IDGenerator = .init()
     /// Connection ID, used by connection pool
     public let id: ID
     /// Logger used by Server
@@ -112,10 +115,18 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
-        let result = try await withCheckedThrowingContinuation { continuation in
-            self.channelHandler.write(command: command, continuation: continuation)
+        let requestID = Self.requestIDGenerator.next()
+        return try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                throw ValkeyClientError(.cancelled)
+            }
+            let result = try await withCheckedThrowingContinuation { continuation in
+                self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
+            }
+            return try .init(fromRESP: result)
+        } onCancel: {
+            self.cancel(requestID: requestID)
         }
-        return try .init(fromRESP: result)
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -136,6 +147,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 }
             }
         }
+        let requestID = Self.requestIDGenerator.next()
         // this currently allocates a promise for every command. We could collpase this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
@@ -145,12 +157,30 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         }
         let outBuffer = encoder.buffer
         let promises = mpromises
-        // write directly to channel handler
-        self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }))
+        return await withTaskCancellationHandler {
+            if Task.isCancelled {
+                for promise in mpromises {
+                    promise.fail(ValkeyClientError(.cancelled))
+                }
+            } else {
+                // write directly to channel handler
+                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
+            }
+            // get response from channel handler
+            var index = AutoIncrementingInteger()
+            return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
+        } onCancel: {
+            self.cancel(requestID: requestID)
+        }
+    }
 
-        // get response from channel handler
-        var index = AutoIncrementingInteger()
-        return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
+    @usableFromInline
+    nonisolated func cancel(requestID: Int) {
+        self.channel.eventLoop.execute {
+            self.assumeIsolated { this in
+                this.channelHandler.cancel(requestID: requestID)
+            }
+        }
     }
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
