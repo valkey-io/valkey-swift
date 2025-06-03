@@ -300,6 +300,27 @@ struct ConnectionTests {
             _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
             group.cancelAll()
         }
+        // verify connection has been closed
+        #expect(channel.isActive == false)
+    }
+
+    @Test
+    func testAlreadyCancelled() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        await withThrowingTaskGroup(of: Void.self) { group in
+            group.cancelAll()
+            group.addTask {
+                await #expect(throws: ValkeyClientError(.cancelled)) {
+                    _ = try await connection.get(key: "foo")?.decode(as: String.self)
+                }
+            }
+        }
+        // verify connection hasnt been closed
+        #expect(channel.isActive == true)
     }
 
     @Test
