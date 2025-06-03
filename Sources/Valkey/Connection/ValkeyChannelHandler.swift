@@ -354,14 +354,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     func handleError(context: ChannelHandlerContext, error: Error) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
-        switch self.stateMachine.receivedResponse() {
-        case .respond(let command):
-            command.promise.fail(error)
-        case .closeWithError(let error):
-            context.fireErrorCaught(error)
-            context.close(promise: nil)
+        context.fireErrorCaught(error)
+        switch self.stateMachine.close(withError: error) {
+        case .close(let context):
+            self.closeSubscriptionsAndConnection(context: context, error: error)
+        case .doNothing:
+            break
         }
-        self.closeSubscriptionsAndConnection(context: context, error: error)
     }
 
     private func closeSubscriptionsAndConnection(context: ChannelHandlerContext, error: (any Error)? = nil) {
