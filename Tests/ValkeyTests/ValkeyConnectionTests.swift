@@ -140,7 +140,7 @@ struct ConnectionTests {
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
         try await channel.processHello()
 
-        await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command")) {
+        await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
             try await channel.writeInbound(RESPToken(.simpleError("Error!")).base)
         }
         try await channel.closeFuture.get()

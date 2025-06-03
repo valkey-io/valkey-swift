@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import NIOCore
+import NIOEmbedded
 import Testing
 
 @testable import Valkey
@@ -22,7 +23,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testClose() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClose")
-        #expect(stateMachine.state == .active(.init(context: "testClose")))
+        #expect(stateMachine.state == .active(.init(context: "testClose", pendingCommands: [])))
         switch stateMachine.close() {
         case .close(let context):
             #expect(context == "testClose")
@@ -36,8 +37,8 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testClosed() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClosed")
-        switch stateMachine.setClosed() {
-        case .failPendingCommands:
+        switch stateMachine.setClosed(withError: ValkeyClientError(.connectionClosed)) {
+        case .failSubscriptions:
             break
         default:
             Issue.record("Invalid close action")
@@ -55,7 +56,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid waitForPendingCommands action")
         }
-        #expect(stateMachine.state == .closing(.init(context: "testGracefulShutdown")))
+        #expect(stateMachine.state == .closing(.init(context: "testGracefulShutdown", pendingCommands: [])))
         switch stateMachine.close() {
         case .close(let context):
             #expect(context == "testGracefulShutdown")
@@ -75,9 +76,9 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid waitForPendingCommands action")
         }
-        #expect(stateMachine.state == .closing(.init(context: "testClosedClosingState")))
-        switch stateMachine.setClosed() {
-        case .failPendingCommands:
+        #expect(stateMachine.state == .closing(.init(context: "testClosedClosingState", pendingCommands: [])))
+        switch stateMachine.setClosed(withError: ValkeyClientError(.connectionClosed)) {
+        case .failSubscriptions:
             break
         default:
             Issue.record("Invalid close action")
@@ -86,31 +87,98 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    func testReceivedResponse() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
+        stateMachine.setActive(context: "testReceivedResponse")
+        let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 2344)) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
+        switch stateMachine.receivedResponse() {
+        case .respond(let command):
+            #expect(command.requestID == 2344)
+            command.promise.succeed(RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
+        case .closeWithError:
+            Issue.record("Invalid receivedResponse action")
+        }
+        await #expect(try promise.futureResult.get() == RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
+    }
+
+    @Test
+    func testReceivedResponseWithoutCommand() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
+        stateMachine.setActive(context: "testReceivedResponse")
+        switch stateMachine.receivedResponse() {
+        case .respond:
+            Issue.record("Invalid receivedResponse action")
+        case .closeWithError(let error):
+            let valkeyError = try #require(error as? ValkeyClientError)
+            #expect(valkeyError.errorCode == .unsolicitedToken)
+        }
+    }
+
+    @Test
     func testCancel() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancel")
-        switch stateMachine.cancel() {
-        case .cancelAndCloseConnection(let context):
+        let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 23)) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
+        switch stateMachine.cancel(requestID: 23) {
+        case .closeConnection(let context):
             #expect(context == "testCancel")
             break
         default:
             Issue.record("Invalid cancel action")
         }
         #expect(stateMachine.state == .closed)
+        await #expect(throws: ValkeyClientError(.cancelled)) {
+            try await promise.futureResult.get()
+        }
+    }
+
+    @Test
+    func testCancelOfNotPendingCommand() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
+        stateMachine.setActive(context: "testCancel")
+        switch stateMachine.cancel(requestID: 23) {
+        case .closeConnection:
+            Issue.record("Invalid cancel action")
+        case .doNothing:
+            break
+        }
+        #expect(stateMachine.state != .closed)
     }
 
     @Test
     func testCancelGracefulShutdown() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancelGracefulShutdown")
+        let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 23)) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
         _ = stateMachine.gracefulShutdown()
-        switch stateMachine.cancel() {
-        case .cancelAndCloseConnection(let context):
+        switch stateMachine.cancel(requestID: 23) {
+        case .closeConnection(let context):
             #expect(context == "testCancelGracefulShutdown")
         default:
             Issue.record("Invalid cancel action")
         }
         #expect(stateMachine.state == .closed)
+        await #expect(throws: ValkeyClientError(.cancelled)) {
+            try await promise.futureResult.get()
+        }
     }
 }
 
