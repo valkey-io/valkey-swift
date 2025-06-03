@@ -84,6 +84,34 @@ struct ValkeyChannelHandlerStateMachineTests {
         }
         #expect(stateMachine.state == .closed)
     }
+
+    @Test
+    func testCancel() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
+        stateMachine.setActive(context: "testCancel")
+        switch stateMachine.cancel() {
+        case .cancelAndCloseConnection(let context):
+            #expect(context == "testCancel")
+            break
+        default:
+            Issue.record("Invalid cancel action")
+        }
+        #expect(stateMachine.state == .closed)
+    }
+
+    @Test
+    func testCancelGracefulShutdown() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
+        stateMachine.setActive(context: "testCancelGracefulShutdown")
+        _ = stateMachine.gracefulShutdown()
+        switch stateMachine.cancel() {
+        case .cancelAndCloseConnection(let context):
+            #expect(context == "testCancelGracefulShutdown")
+        default:
+            Issue.record("Invalid cancel action")
+        }
+        #expect(stateMachine.state == .closed)
+    }
 }
 
 extension ValkeyChannelHandler.StateMachine<String>.State: Equatable {

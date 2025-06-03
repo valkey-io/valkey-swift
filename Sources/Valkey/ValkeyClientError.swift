@@ -23,6 +23,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case unsolicitedToken
             case transactionAborted
             case tokenDoesNotExist
+            case cancelled
+            case connectionClosedDueToCancellation
         }
 
         fileprivate let value: _Internal
@@ -44,6 +46,10 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var transactionAborted: Self { .init(.transactionAborted) }
         /// Expected token to exist. Throw when iterating an array of tokens that is too short
         public static var tokenDoesNotExist: Self { .init(.tokenDoesNotExist) }
+        /// Task was cancelled
+        public static var cancelled: Self { .init(.cancelled) }
+        /// Connection was closed because another command was cancelled
+        public static var connectionClosedDueToCancellation: Self { .init(.connectionClosedDueToCancellation) }
     }
 
     public let errorCode: ErrorCode
@@ -62,6 +68,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         case .unsolicitedToken: self.message ?? "Received unsolicited token from Valkey server"
         case .transactionAborted: self.message ?? "Transaction was aborted because a watched key was touched"
         case .tokenDoesNotExist: self.message ?? "Expected token does not exist."
+        case .cancelled: self.message ?? "Task was cancelled."
+        case .connectionClosedDueToCancellation: self.message ?? "Connection was closed because another command was cancelled."
         }
     }
 }
