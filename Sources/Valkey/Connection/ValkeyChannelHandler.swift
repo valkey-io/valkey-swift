@@ -297,7 +297,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.cancel(requestID: requestID) {
         case .closeConnection(let context):
-            self.closeSubscriptionsAndConnection(ValkeyClientError(.cancelled), context: context)
+            self.closeSubscriptionsAndConnection(context: context, error: ValkeyClientError(.cancelled))
 
         case .doNothing:
             break
@@ -312,7 +312,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             case .respond(let command):
                 command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
             case .closeWithError(let error):
-                self.closeSubscriptionsAndConnection(error, context: context)
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             }
 
         case .push:
@@ -324,11 +324,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                     case .respond(let command):
                         command.promise.succeed(Self.simpleOk)
                     case .closeWithError(let error):
-                        self.closeSubscriptionsAndConnection(error, context: context)
+                        self.closeSubscriptionsAndConnection(context: context, error: error)
                     }
                 }
             } catch {
-                self.closeSubscriptionsAndConnection(error, context: context)
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             }
 
         case .simpleString,
@@ -347,7 +347,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             case .respond(let command):
                 command.promise.succeed(token)
             case .closeWithError(let error):
-                self.closeSubscriptionsAndConnection(error, context: context)
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             }
         }
     }
@@ -361,13 +361,16 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             context.fireErrorCaught(error)
             context.close(promise: nil)
         }
+        self.closeSubscriptionsAndConnection(context: context, error: error)
     }
 
-    private func closeSubscriptionsAndConnection(_ error: (any Error)? = nil, context: ChannelHandlerContext) {
+    private func closeSubscriptionsAndConnection(context: ChannelHandlerContext, error: (any Error)? = nil) {
         if let error {
             context.fireErrorCaught(error)
+            self.subscriptions.close(error: error)
+        } else {
+            self.subscriptions.close(error: ValkeyClientError(.connectionClosed))
         }
-        self.subscriptions.close(error: error ?? ValkeyClientError(.connectionClosed))
         context.close(promise: nil)
     }
 
