@@ -137,7 +137,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     @inlinable
     public func pipeline<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, Error>) {
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
             result.flatMap {
                 do {
@@ -157,13 +157,15 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         }
         let outBuffer = encoder.buffer
         let promises = mpromises
-        return try await withTaskCancellationHandler {
+        return await withTaskCancellationHandler {
             if Task.isCancelled {
-                throw ValkeyClientError(.cancelled)
+                for promise in mpromises {
+                    promise.fail(ValkeyClientError(.cancelled))
+                }
+            } else {
+                // write directly to channel handler
+                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
             }
-            // write directly to channel handler
-            self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
-
             // get response from channel handler
             var index = AutoIncrementingInteger()
             return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))

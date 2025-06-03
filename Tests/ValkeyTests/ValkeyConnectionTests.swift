@@ -198,7 +198,7 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
         try await channel.writeInbound(RESPToken(.bulkError("BulkError!")).base)
 
-        let results = try await asyncResults
+        let results = await asyncResults
         #expect(throws: ValkeyClientError(.commandError, message: "BulkError!")) { try results.1.get() }
     }
 
@@ -359,7 +359,7 @@ struct ConnectionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                let results = try await connection.pipeline(
+                let results = await connection.pipeline(
                     SET(key: "foo", value: "bar"),
                     GET(key: "foo")
                 )
@@ -375,5 +375,31 @@ struct ConnectionTests {
 
             group.cancelAll()
         }
+    }
+
+    @Test
+    func testAlreadyCancelledPipeline() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        await withThrowingTaskGroup(of: Void.self) { group in
+            group.cancelAll()
+            group.addTask {
+                let results = await connection.pipeline(
+                    SET(key: "foo", value: "bar"),
+                    GET(key: "foo")
+                )
+                #expect(throws: ValkeyClientError(.cancelled)) {
+                    _ = try results.0.get()
+                }
+                #expect(throws: ValkeyClientError(.cancelled)) {
+                    _ = try results.1.get()
+                }
+            }
+        }
+        // verify connection hasnt been closed
+        #expect(channel.isActive == true)
     }
 }
