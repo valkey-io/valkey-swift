@@ -155,9 +155,16 @@ extension ValkeyClient {
 
 /// Extend ValkeyClient so we can call commands directly from it
 extension ValkeyClient: ValkeyConnectionProtocol {
+    @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
-        try await self.withConnection {
-            try await $0.send(command: command)
+        let token = try await self._send(command)
+        return try Command.Response(fromRESP: token)
+    }
+
+    @inlinable
+    func _send<Command: ValkeyCommand>(_ command: Command) async throws -> RESPToken {
+        try await self.withConnection { connection in
+            try await connection._send(command: command)
         }
     }
 }
