@@ -104,6 +104,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .closeWithError:
             Issue.record("Invalid receivedResponse action")
         }
+        #expect(stateMachine.state == .active(.init(context: "testReceivedResponse", pendingCommands: [])))
         await #expect(try promise.futureResult.get() == RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
     }
 
@@ -118,6 +119,7 @@ struct ValkeyChannelHandlerStateMachineTests {
             let valkeyError = try #require(error as? ValkeyClientError)
             #expect(valkeyError.errorCode == .unsolicitedToken)
         }
+        #expect(stateMachine.state == .closed)
     }
 
     @Test
