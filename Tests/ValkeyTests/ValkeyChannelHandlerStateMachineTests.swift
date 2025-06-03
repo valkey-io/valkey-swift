@@ -19,18 +19,23 @@ import Testing
 @testable import Valkey
 
 struct ValkeyChannelHandlerStateMachineTests {
+    // Function required as the #expect macro does not work with non-copyable types
+    func expect(_ value: Bool, fileID: String = #fileID, filePath: String = #filePath, line: Int = #line) {
+        #expect(value, sourceLocation: .init(fileID: fileID, filePath: filePath, line: line, column: 1))
+    }
+
     @Test
     func testClose() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClose")
-        #expect(stateMachine.state == .active(.init(context: "testClose", pendingCommands: [])))
+        expect(stateMachine.state == .active(.init(context: "testClose", pendingCommands: [])))
         switch stateMachine.close() {
         case .close(let context):
             #expect(context == "testClose")
         default:
             Issue.record("Invalid close action")
         }
-        #expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed)
     }
 
     @Test
@@ -43,7 +48,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        #expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed)
     }
 
     @Test
@@ -56,14 +61,14 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid waitForPendingCommands action")
         }
-        #expect(stateMachine.state == .closing(.init(context: "testGracefulShutdown", pendingCommands: [])))
+        expect(stateMachine.state == .closing(.init(context: "testGracefulShutdown", pendingCommands: [])))
         switch stateMachine.close() {
         case .close(let context):
             #expect(context == "testGracefulShutdown")
         default:
             Issue.record("Invalid close action")
         }
-        #expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed)
     }
 
     @Test
@@ -76,14 +81,14 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid waitForPendingCommands action")
         }
-        #expect(stateMachine.state == .closing(.init(context: "testClosedClosingState", pendingCommands: [])))
+        expect(stateMachine.state == .closing(.init(context: "testClosedClosingState", pendingCommands: [])))
         switch stateMachine.setClosed(withError: ValkeyClientError(.connectionClosed)) {
         case .failSubscriptions:
             break
         default:
             Issue.record("Invalid close action")
         }
-        #expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed)
     }
 
     @Test
@@ -104,7 +109,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .closeWithError:
             Issue.record("Invalid receivedResponse action")
         }
-        #expect(stateMachine.state == .active(.init(context: "testReceivedResponse", pendingCommands: [])))
+        expect(stateMachine.state == .active(.init(context: "testReceivedResponse", pendingCommands: [])))
         await #expect(try promise.futureResult.get() == RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
     }
 
@@ -119,7 +124,7 @@ struct ValkeyChannelHandlerStateMachineTests {
             let valkeyError = try #require(error as? ValkeyClientError)
             #expect(valkeyError.errorCode == .unsolicitedToken)
         }
-        #expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed)
     }
 
     @Test
@@ -140,7 +145,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
-        #expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed)
         await #expect(throws: ValkeyClientError(.cancelled)) {
             try await promise.futureResult.get()
         }
@@ -156,7 +161,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .doNothing:
             break
         }
-        #expect(stateMachine.state != .closed)
+        expect(stateMachine.state != .closed)
     }
 
     @Test
@@ -177,26 +182,48 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
-        #expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed)
         await #expect(throws: ValkeyClientError(.cancelled)) {
             try await promise.futureResult.get()
         }
     }
 }
 
-extension ValkeyChannelHandler.StateMachine<String>.State: Equatable {
-    public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
-        switch (lhs, rhs) {
-        case (.initializing, .initializing):
-            return true
-        case (.active(let lhs), .active(let rhs)):
-            return lhs.context == rhs.context
-        case (.closing(let lhs), .closing(let rhs)):
-            return lhs.context == rhs.context
-        case (.closed, .closed):
-            return true
-        default:
-            return false
+extension ValkeyChannelHandler.StateMachine<String>.State {
+    public static func == (_ lhs: borrowing Self, _ rhs: borrowing Self) -> Bool {
+        switch lhs {
+        case .initializing:
+            switch rhs {
+            case .initializing:
+                return true
+            default:
+                return false
+            }
+        case .active(let lhs):
+            switch rhs {
+            case .active(let rhs):
+                return lhs.context == rhs.context
+            default:
+                return false
+            }
+        case .closing(let lhs):
+            switch rhs {
+            case .closing(let rhs):
+                return lhs.context == rhs.context
+            default:
+                return false
+            }
+        case .closed:
+            switch rhs {
+            case .closed:
+                return true
+            default:
+                return false
+            }
         }
+    }
+
+    public static func != (_ lhs: borrowing Self, _ rhs: borrowing Self) -> Bool {
+        !(lhs == rhs)
     }
 }
