@@ -12,17 +12,30 @@
 //
 //===----------------------------------------------------------------------===//
 
+import DequeModule
 import NIOCore
 
 extension ValkeyChannelHandler {
     @usableFromInline
-    struct StateMachine<Context> {
+    struct StateMachine<Context>: ~Copyable {
         @usableFromInline
-        enum State {
+        enum State: ~Copyable {
             case initializing
             case active(ActiveState)
-            case closing(ClosingState)
+            case closing(ActiveState)
             case closed
+
+            @usableFromInline
+            var description: String {
+                borrowing get {
+                    switch self {
+                    case .initializing: "initializing"
+                    case .active: "active"
+                    case .closing: "closing"
+                    case .closed: "closed"
+                    }
+                }
+            }
         }
         @usableFromInline
         var state: State
@@ -30,25 +43,42 @@ extension ValkeyChannelHandler {
         @usableFromInline
         struct ActiveState {
             let context: Context
-        }
+            var pendingCommands: Deque<PendingCommand>
 
-        @usableFromInline
-        struct ClosingState {
-            let context: Context
+            func cancel(requestID: Int) -> (cancel: [PendingCommand], connectionClosedDueToCancellation: [PendingCommand]) {
+                var withRequestID = [PendingCommand]()
+                var withoutRequestID = [PendingCommand]()
+                for command in pendingCommands {
+                    if command.requestID == requestID {
+                        withRequestID.append(command)
+                    } else {
+                        withoutRequestID.append(command)
+                    }
+                }
+                return (withRequestID, withoutRequestID)
+            }
         }
 
         init() {
             self.state = .initializing
         }
 
+        private init(_ state: consuming State) {
+            self.state = state
+        }
+
         /// handler has become active
         @usableFromInline
         mutating func setActive(context: Context) {
-            switch self.state {
+            switch consume self.state {
             case .initializing:
-                self.state = .active(.init(context: context))
-            case .active, .closing, .closed:
-                preconditionFailure("Cannot set active state when state is \(self.state)")
+                self = .active(.init(context: context, pendingCommands: []))
+            case .active:
+                preconditionFailure("Cannot set active state when state is active")
+            case .closing:
+                preconditionFailure("Cannot set active state when state is closing")
+            case .closed:
+                preconditionFailure("Cannot set active state when state is closed")
             }
         }
 
@@ -60,38 +90,106 @@ extension ValkeyChannelHandler {
 
         /// handler wants to send a command
         @usableFromInline
-        func sendCommand() -> SendCommandAction {
-            switch self.state {
+        mutating func sendCommand(_ pendingCommand: PendingCommand) -> SendCommandAction {
+            self.sendCommands(CollectionOfOne(pendingCommand))
+        }
+
+        /// handler wants to send pipelined commands
+        @usableFromInline
+        mutating func sendCommands(_ pendingCommands: some Collection<PendingCommand>) -> SendCommandAction {
+            switch consume self.state {
             case .initializing:
                 preconditionFailure("Cannot send command when initializing")
-            case .active(let state):
+            case .active(var state):
+                state.pendingCommands.append(contentsOf: pendingCommands)
+                self = .active(state)
                 return .sendCommand(state.context)
-            case .closing:
+            case .closing(let state):
+                self = .closing(state)
                 return .throwError(ValkeyClientError(.connectionClosing))
             case .closed:
+                self = .closed
                 return .throwError(ValkeyClientError(.connectionClosed))
             }
         }
 
         @usableFromInline
+        enum ReceivedResponseAction {
+            case respond(PendingCommand)
+            case respondAndClose(PendingCommand)
+            case closeWithError(Error)
+        }
+
+        /// handler wants to send a command
+        @usableFromInline
+        mutating func receivedResponse() -> ReceivedResponseAction {
+            switch consume self.state {
+            case .initializing:
+                preconditionFailure("Cannot send command when initializing")
+            case .active(var state):
+                guard let command = state.pendingCommands.popFirst() else {
+                    self = .closed
+                    return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
+                }
+                self = .active(state)
+                return .respond(command)
+            case .closing(var state):
+                guard let command = state.pendingCommands.popFirst() else {
+                    self = .closed
+                    return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
+                }
+                if state.pendingCommands.count == 0 {
+                    self = .closed
+                    return .respondAndClose(command)
+                } else {
+                    self = .closing(state)
+                    return .respond(command)
+                }
+            case .closed:
+                preconditionFailure("Cannot receive command on closed connection")
+            }
+        }
+
+        @usableFromInline
         enum CancelAction {
-            case cancelAndCloseConnection(Context)
+            case failPendingCommandsAndClose(Context, cancel: [PendingCommand], closeConnectionDueToCancel: [PendingCommand])
             case doNothing
         }
 
         /// handler wants to send a command
         @usableFromInline
-        mutating func cancel() -> CancelAction {
-            switch self.state {
+        mutating func cancel(requestID: Int) -> CancelAction {
+            switch consume self.state {
             case .initializing:
                 preconditionFailure("Cannot cancel when initializing")
             case .active(let state):
-                self.state = .closed
-                return .cancelAndCloseConnection(state.context)
+                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
+                if cancel.count > 0 {
+                    self = .closed
+                    return .failPendingCommandsAndClose(
+                        state.context,
+                        cancel: cancel,
+                        closeConnectionDueToCancel: closeConnectionDueToCancel
+                    )
+                } else {
+                    self = .active(state)
+                    return .doNothing
+                }
             case .closing(let state):
-                self.state = .closed
-                return .cancelAndCloseConnection(state.context)
+                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
+                if cancel.count > 0 {
+                    self = .closed
+                    return .failPendingCommandsAndClose(
+                        state.context,
+                        cancel: cancel,
+                        closeConnectionDueToCancel: closeConnectionDueToCancel
+                    )
+                } else {
+                    self = .closing(state)
+                    return .doNothing
+                }
             case .closed:
+                self = .closed
                 return .doNothing
             }
         }
@@ -99,65 +197,96 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum GracefulShutdownAction {
             case waitForPendingCommands(Context)
+            case closeConnection(Context)
             case doNothing
         }
         /// Want to gracefully shutdown the handler
         @usableFromInline
         mutating func gracefulShutdown() -> GracefulShutdownAction {
-            switch self.state {
+            switch consume self.state {
             case .initializing:
-                self.state = .closed
+                self = .closed
                 return .doNothing
             case .active(let state):
-                self.state = .closing(ClosingState(context: state.context))
-                return .waitForPendingCommands(state.context)
-            case .closed, .closing:
+                if state.pendingCommands.count > 0 {
+                    self = .closing(.init(context: state.context, pendingCommands: state.pendingCommands))
+                    return .waitForPendingCommands(state.context)
+                } else {
+                    self = .closed
+                    return .closeConnection(state.context)
+                }
+            case .closing(let state):
+                self = .closing(state)
+                return .doNothing
+            case .closed:
+                self = .closed
                 return .doNothing
             }
         }
 
         @usableFromInline
         enum CloseAction {
-            case close(Context)
+            case failPendingCommandsAndClose(Context, Deque<PendingCommand>)
             case doNothing
         }
         /// Want to close the connection
         @usableFromInline
         mutating func close() -> CloseAction {
-            switch self.state {
+            switch consume self.state {
             case .initializing:
-                self.state = .closed
+                self = .closed
                 return .doNothing
             case .active(let state):
-                self.state = .closed
-                return .close(state.context)
+                self = .closed
+                return .failPendingCommandsAndClose(state.context, state.pendingCommands)
             case .closing(let state):
-                self.state = .closed
-                return .close(state.context)
+                self = .closed
+                return .failPendingCommandsAndClose(state.context, state.pendingCommands)
             case .closed:
+                self = .closed
                 return .doNothing
             }
         }
 
         @usableFromInline
         enum SetClosedAction {
-            case failPendingCommands
+            case failPendingCommandsAndSubscriptions(Deque<PendingCommand>)
             case doNothing
         }
 
         /// The connection has been closed
         @usableFromInline
         mutating func setClosed() -> SetClosedAction {
-            switch self.state {
+            switch consume self.state {
             case .initializing:
-                self.state = .closed
+                self = .closed
                 return .doNothing
-            case .active, .closing:
-                self.state = .closed
-                return .failPendingCommands
+            case .active(let state):
+                self = .closed
+                return .failPendingCommandsAndSubscriptions(state.pendingCommands)
+            case .closing(let state):
+                self = .closed
+                return .failPendingCommandsAndSubscriptions(state.pendingCommands)
             case .closed:
+                self = .closed
                 return .doNothing
             }
+        }
+
+        private static var initializing: Self {
+            StateMachine(.initializing)
+        }
+
+        private static func active(_ state: ActiveState) -> Self {
+            StateMachine(.active(state))
+        }
+
+        private static func closing(_ state: ActiveState) -> Self {
+            StateMachine(.closing(state))
+        }
+
+        private static var closed: Self {
+            StateMachine(.closed)
         }
     }
 }

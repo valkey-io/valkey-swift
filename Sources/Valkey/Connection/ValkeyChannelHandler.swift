@@ -72,8 +72,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     /*private*/ let eventLoop: EventLoop
     @usableFromInline
-    /*private*/ var pendingCommands: Deque<PendingCommand>
-    @usableFromInline
     /*private*/ var encoder = ValkeyCommandEncoder()
     @usableFromInline
     /*private*/ var stateMachine: StateMachine<ChannelHandlerContext>
@@ -88,7 +86,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     init(configuration: Configuration, eventLoop: EventLoop, logger: Logger) {
         self.configuration = configuration
         self.eventLoop = eventLoop
-        self.pendingCommands = .init()
         self.subscriptions = .init(logger: logger)
         self.decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
         self.stateMachine = .init()
@@ -102,13 +99,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        switch self.stateMachine.sendCommand() {
+        switch self.stateMachine.sendCommand(PendingCommand(promise: .swift(continuation), requestID: requestID)) {
         case .sendCommand(let context):
             self.encoder.reset()
             command.encode(into: &self.encoder)
             let buffer = self.encoder.buffer
-
-            self.pendingCommands.append(.init(promise: .swift(continuation), requestID: requestID))
             context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
 
         case .throwError(let error):
@@ -121,20 +116,18 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.eventLoop.assertInEventLoop()
         switch request {
         case .single(let buffer, let tokenPromise, let requestID):
-            switch self.stateMachine.sendCommand() {
+            let pendingCommand = PendingCommand(promise: tokenPromise, requestID: requestID)
+            switch self.stateMachine.sendCommand(pendingCommand) {
             case .sendCommand(let context):
-                self.pendingCommands.append(.init(promise: tokenPromise, requestID: requestID))
                 context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
             case .throwError(let error):
                 tokenPromise.fail(error)
             }
 
         case .multiple(let buffer, let tokenPromises, let requestID):
-            switch self.stateMachine.sendCommand() {
+            let pendingCommands = tokenPromises.map { PendingCommand(promise: $0, requestID: requestID) }
+            switch self.stateMachine.sendCommands(pendingCommands) {
             case .sendCommand(let context):
-                for tokenPromise in tokenPromises {
-                    self.pendingCommands.append(.init(promise: tokenPromise, requestID: requestID))
-                }
                 context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
             case .throwError(let error):
                 for promise in tokenPromises {
@@ -302,51 +295,52 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func cancel(requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        // if pending commands include request then we are still waiting for its result.
-        // We should cancel that command, cancel all the other pending commands with error
-        // code `.connectionClosedDueToCancellation` and close the connection
-        if self.pendingCommands.contains(where: { $0.requestID == requestID }) {
-            switch self.stateMachine.cancel() {
-            case .cancelAndCloseConnection(let context):
-                while let command = self.pendingCommands.popFirst() {
-                    if command.requestID == requestID {
-                        command.promise.fail(ValkeyClientError(.cancelled))
-                    } else {
-                        command.promise.fail(ValkeyClientError(.connectionClosedDueToCancellation))
-                    }
-                }
-                context.close(promise: nil)
-
-            case .doNothing:
-                break
+        switch self.stateMachine.cancel(requestID: requestID) {
+        case .failPendingCommandsAndClose(let context, let cancelled, let closeConnectionDueToCancel):
+            for command in cancelled {
+                command.promise.fail(ValkeyClientError.init(.cancelled))
             }
+            for command in closeConnectionDueToCancel {
+                command.promise.fail(ValkeyClientError.init(.connectionClosedDueToCancellation))
+            }
+            self.closeSubscriptionsAndConnection(context: context, error: ValkeyClientError(.cancelled))
+
+        case .doNothing:
+            break
         }
+
     }
 
     func handleToken(context: ChannelHandlerContext, token: RESPToken) {
         switch token.identifier {
         case .simpleError, .bulkError:
-            guard let command = pendingCommands.popFirst() else {
-                self.failPendingCommandsAndSubscriptionsAndCloseConnection(
-                    ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command"),
-                    context: context
-                )
-                return
+            switch self.stateMachine.receivedResponse() {
+            case .respond(let command):
+                command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
+            case .respondAndClose(let command):
+                command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
+                self.closeSubscriptionsAndConnection(context: context)
+            case .closeWithError(let error):
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             }
-            command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
 
         case .push:
             // If subscription notify throws an error then assume something has gone wrong
             // and close the channel with the error
             do {
                 if try self.subscriptions.notify(token) == true {
-                    guard let command = pendingCommands.popFirst() else {
-                        preconditionFailure("Unexpected response")
+                    switch self.stateMachine.receivedResponse() {
+                    case .respond(let command):
+                        command.promise.succeed(Self.simpleOk)
+                    case .respondAndClose(let command):
+                        command.promise.succeed(Self.simpleOk)
+                        self.closeSubscriptionsAndConnection(context: context)
+                    case .closeWithError(let error):
+                        self.closeSubscriptionsAndConnection(context: context, error: error)
                     }
-                    command.promise.succeed(Self.simpleOk)
                 }
             } catch {
-                context.close(mode: .all, promise: nil)
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             }
 
         case .simpleString,
@@ -361,39 +355,40 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             .map,
             .set,
             .attribute:
-            guard let command = pendingCommands.popFirst() else {
-                self.failPendingCommandsAndSubscriptionsAndCloseConnection(
-                    ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"),
-                    context: context
-                )
-                return
+            switch self.stateMachine.receivedResponse() {
+            case .respond(let command):
+                command.promise.succeed(token)
+            case .respondAndClose(let command):
+                command.promise.succeed(token)
+                self.closeSubscriptionsAndConnection(context: context)
+            case .closeWithError(let error):
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             }
-            command.promise.succeed(token)
         }
     }
 
     func handleError(context: ChannelHandlerContext, error: Error) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
-        guard let command = pendingCommands.popFirst() else {
-            self.failPendingCommandsAndSubscriptionsAndCloseConnection(
-                ValkeyClientError(.unsolicitedToken, message: "Received an error decoding a token without having sent a command"),
-                context: context
-            )
-            return
+        switch self.stateMachine.close() {
+        case .failPendingCommandsAndClose(let context, let commands):
+            for command in commands {
+                command.promise.fail(error)
+            }
+            self.closeSubscriptionsAndConnection(context: context, error: error)
+        case .doNothing:
+            // only call fireErrorCaught here as it is called from `closeSubscriptionsAndConnection`
+            context.fireErrorCaught(error)
+            break
         }
-        command.promise.fail(error)
     }
 
-    private func failPendingCommandsAndSubscriptions(_ error: any Error) {
-        while let command = self.pendingCommands.popFirst() {
-            command.promise.fail(error)
+    private func closeSubscriptionsAndConnection(context: ChannelHandlerContext, error: (any Error)? = nil) {
+        if let error {
+            context.fireErrorCaught(error)
+            self.subscriptions.close(error: error)
+        } else {
+            self.subscriptions.close(error: ValkeyClientError(.connectionClosed))
         }
-        self.subscriptions.close(error: error)
-    }
-
-    private func failPendingCommandsAndSubscriptionsAndCloseConnection(_ error: any Error, context: ChannelHandlerContext) {
-        self.failPendingCommandsAndSubscriptions(error)
-        context.fireErrorCaught(error)
         context.close(promise: nil)
     }
 
@@ -411,9 +406,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     private func setClosed() {
         switch self.stateMachine.setClosed() {
-        case .failPendingCommands:
-            self.failPendingCommandsAndSubscriptions(ValkeyClientError.init(.connectionClosed))
-
+        case .failPendingCommandsAndSubscriptions(let commands):
+            for command in commands {
+                command.promise.fail(ValkeyClientError.init(.connectionClosed))
+            }
+            self.subscriptions.close(error: ValkeyClientError.init(.connectionClosed))
         case .doNothing:
             break
         }
