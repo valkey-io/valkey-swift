@@ -53,6 +53,8 @@ public struct BZMPOP: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var isBlocking: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BZMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
@@ -70,6 +72,8 @@ public struct BZPOPMAX: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var isBlocking: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BZPOPMAX", key, timeout)
     }
@@ -86,6 +90,8 @@ public struct BZPOPMIN: ValkeyCommand {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BZPOPMIN", key, timeout)

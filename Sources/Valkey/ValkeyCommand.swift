@@ -23,6 +23,9 @@ public protocol ValkeyCommand: Sendable {
     /// shard to connect to.
     var keysAffected: Keys { get }
 
+    /// Does this command block the connection
+    var isBlocking: Bool { get }
+
     /// Encode Valkey Command into RESP
     /// - Parameter commandEncoder: ValkeyCommandEncoder
     func encode(into commandEncoder: inout ValkeyCommandEncoder)
@@ -31,6 +34,8 @@ public protocol ValkeyCommand: Sendable {
 extension ValkeyCommand {
     /// Default to no keys affected
     public var keysAffected: [ValkeyKey] { [] }
+    /// Default is not blocking
+    public var isBlocking: Bool { false }
 }
 
 /// Wrapper for Valkey command that returns the response as a `RESPToken`
