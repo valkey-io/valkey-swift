@@ -838,6 +838,8 @@ public struct WAIT: ValkeyCommand {
         self.timeout = timeout
     }
 
+    public var isBlocking: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("WAIT", numreplicas, timeout)
     }
@@ -856,6 +858,8 @@ public struct WAITAOF: ValkeyCommand {
         self.numreplicas = numreplicas
         self.timeout = timeout
     }
+
+    public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("WAITAOF", numlocal, numreplicas, timeout)

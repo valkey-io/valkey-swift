@@ -630,6 +630,8 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
         self.streams = streams
     }
 
+    public var isBlocking: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("XREAD", RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPWithToken("STREAMS", streams))
     }
@@ -694,6 +696,8 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
         self.noack = noack
         self.streams = streams
     }
+
+    public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))

@@ -258,7 +258,9 @@ extension String {
             let (keysAffectedType, keysAffected) = constructKeysAffected(keyArguments)
             self.append("\(tab)    public var keysAffected: \(keysAffectedType) { \(keysAffected) }\n\n")
         }
-
+        if command.commandFlags?.contains("BLOCKING") == true {
+            self.append("\(tab)    public var isBlocking: Bool { true }\n\n")
+        }
         self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
         self.append("\(tab)        commandEncoder.encodeArray(\(commandArgumentsString))\n")
         self.append("\(tab)    }\n")
