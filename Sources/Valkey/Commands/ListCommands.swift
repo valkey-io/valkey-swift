@@ -72,6 +72,8 @@ public struct BLMOVE: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { [source, destination] }
 
+    public var isBlocking: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BLMOVE", source, destination, wherefrom, whereto, timeout)
     }
@@ -110,6 +112,8 @@ public struct BLMPOP: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var isBlocking: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
     }
@@ -129,6 +133,8 @@ public struct BLPOP: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var isBlocking: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BLPOP", key, timeout)
     }
@@ -147,6 +153,8 @@ public struct BRPOP: ValkeyCommand {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BRPOP", key, timeout)
@@ -168,6 +176,8 @@ public struct BRPOPLPUSH: ValkeyCommand {
     }
 
     public var keysAffected: [ValkeyKey] { [source, destination] }
+
+    public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BRPOPLPUSH", source, destination, timeout)
