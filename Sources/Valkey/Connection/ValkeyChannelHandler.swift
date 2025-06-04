@@ -317,6 +317,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             switch self.stateMachine.receivedResponse() {
             case .respond(let command):
                 command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
+            case .respondAndClose(let command):
+                command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
+                self.closeSubscriptionsAndConnection(context: context)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
             }
@@ -329,6 +332,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                     switch self.stateMachine.receivedResponse() {
                     case .respond(let command):
                         command.promise.succeed(Self.simpleOk)
+                    case .respondAndClose(let command):
+                        command.promise.succeed(Self.simpleOk)
+                        self.closeSubscriptionsAndConnection(context: context)
                     case .closeWithError(let error):
                         self.closeSubscriptionsAndConnection(context: context, error: error)
                     }
@@ -352,6 +358,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             switch self.stateMachine.receivedResponse() {
             case .respond(let command):
                 command.promise.succeed(token)
+            case .respondAndClose(let command):
+                command.promise.succeed(token)
+                self.closeSubscriptionsAndConnection(context: context)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
             }

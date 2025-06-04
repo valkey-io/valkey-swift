@@ -116,6 +116,7 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum ReceivedResponseAction {
             case respond(PendingCommand)
+            case respondAndClose(PendingCommand)
             case closeWithError(Error)
         }
 
@@ -137,8 +138,13 @@ extension ValkeyChannelHandler {
                     self = .closed
                     return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
                 }
-                self = .closing(state)
-                return .respond(command)
+                if state.pendingCommands.count == 0 {
+                    self = .closed
+                    return .respondAndClose(command)
+                } else {
+                    self = .closing(state)
+                    return .respond(command)
+                }
             case .closed:
                 preconditionFailure("Cannot receive command on closed connection")
             }

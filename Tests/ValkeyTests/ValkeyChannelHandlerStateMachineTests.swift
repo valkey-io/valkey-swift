@@ -85,12 +85,11 @@ struct ValkeyChannelHandlerStateMachineTests {
         expect(
             stateMachine.state == .closing(.init(context: "testGracefulShutdown", pendingCommands: [.init(promise: .nio(promise), requestID: 23)]))
         )
-        switch stateMachine.close() {
-        case .failPendingCommandsAndClose(let context, let commands):
-            #expect(context == "testGracefulShutdown")
-            #expect(commands.map { $0.requestID } == [23])
-        default:
-            Issue.record("Invalid close action")
+        switch stateMachine.receivedResponse() {
+        case .respondAndClose(let command):
+            #expect(command.requestID == 23)
+        case .respond, .closeWithError:
+            Issue.record("Invalid receivedResponse action")
         }
         expect(stateMachine.state == .closed)
         promise.fail(CancellationError())
@@ -141,7 +140,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .respond(let command):
             #expect(command.requestID == 2344)
             command.promise.succeed(RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
-        case .closeWithError:
+        case .closeWithError, .respondAndClose:
             Issue.record("Invalid receivedResponse action")
         }
         expect(stateMachine.state == .active(.init(context: "testReceivedResponse", pendingCommands: [])))
@@ -153,7 +152,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testReceivedResponse")
         switch stateMachine.receivedResponse() {
-        case .respond:
+        case .respond, .respondAndClose:
             Issue.record("Invalid receivedResponse action")
         case .closeWithError(let error):
             let valkeyError = try #require(error as? ValkeyClientError)
