@@ -57,40 +57,73 @@ struct ValkeyChannelHandlerStateMachineTests {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testGracefulShutdown")
         switch stateMachine.gracefulShutdown() {
-        case .waitForPendingCommands(let context):
+        case .closeConnection(let context):
             #expect(context == "testGracefulShutdown")
         default:
             Issue.record("Invalid waitForPendingCommands action")
-        }
-        expect(stateMachine.state == .closing(.init(context: "testGracefulShutdown", pendingCommands: [])))
-        switch stateMachine.close() {
-        case .failPendingCommandsAndClose(let context, let commands):
-            #expect(context == "testGracefulShutdown")
-            #expect(commands.count == 0)
-        default:
-            Issue.record("Invalid close action")
         }
         expect(stateMachine.state == .closed)
     }
 
     @Test
+    func testGracefulShutdownWithPendingCommands() async throws {
+        let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()
+        stateMachine.setActive(context: "testGracefulShutdown")
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 23)) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
+        switch stateMachine.gracefulShutdown() {
+        case .waitForPendingCommands(let context):
+            #expect(context == "testGracefulShutdown")
+        default:
+            Issue.record("Invalid waitForPendingCommands action")
+        }
+        expect(
+            stateMachine.state == .closing(.init(context: "testGracefulShutdown", pendingCommands: [.init(promise: .nio(promise), requestID: 23)]))
+        )
+        switch stateMachine.close() {
+        case .failPendingCommandsAndClose(let context, let commands):
+            #expect(context == "testGracefulShutdown")
+            #expect(commands.map { $0.requestID } == [23])
+        default:
+            Issue.record("Invalid close action")
+        }
+        expect(stateMachine.state == .closed)
+        promise.fail(CancellationError())
+    }
+
+    @Test
     func testClosedClosingState() async throws {
+        let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClosedClosingState")
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 17)) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
         switch stateMachine.gracefulShutdown() {
         case .waitForPendingCommands(let context):
             #expect(context == "testClosedClosingState")
         default:
             Issue.record("Invalid waitForPendingCommands action")
         }
-        expect(stateMachine.state == .closing(.init(context: "testClosedClosingState", pendingCommands: [])))
+        expect(
+            stateMachine.state == .closing(.init(context: "testClosedClosingState", pendingCommands: [.init(promise: .nio(promise), requestID: 17)]))
+        )
         switch stateMachine.setClosed() {
         case .failPendingCommandsAndSubscriptions(let commands):
-            #expect(commands.count == 0)
+            #expect(commands.map { $0.requestID } == [17])
         default:
             Issue.record("Invalid close action")
         }
         expect(stateMachine.state == .closed)
+        promise.fail(CancellationError())
     }
 
     @Test
@@ -210,14 +243,14 @@ extension ValkeyChannelHandler.StateMachine<String>.State {
         case .active(let lhs):
             switch rhs {
             case .active(let rhs):
-                return lhs.context == rhs.context
+                return lhs.context == rhs.context && lhs.pendingCommands.map { $0.requestID } == rhs.pendingCommands.map { $0.requestID }
             default:
                 return false
             }
         case .closing(let lhs):
             switch rhs {
             case .closing(let rhs):
-                return lhs.context == rhs.context
+                return lhs.context == rhs.context && lhs.pendingCommands.map { $0.requestID } == rhs.pendingCommands.map { $0.requestID }
             default:
                 return false
             }
