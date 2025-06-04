@@ -126,10 +126,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
+        let deadline: NIODeadline = command.isBlocking ? .distantFuture : .now() + self.configuration.connectionTimeout
         let pendingCommand = PendingCommand(
             promise: .swift(continuation),
             requestID: requestID,
-            deadline: .now() + self.configuration.connectionTimeout
+            deadline: deadline
         )
         switch self.stateMachine.sendCommand(pendingCommand) {
         case .sendCommand(let context):
