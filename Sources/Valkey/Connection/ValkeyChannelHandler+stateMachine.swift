@@ -191,6 +191,7 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum GracefulShutdownAction {
             case waitForPendingCommands(Context)
+            case closeConnection(Context)
             case doNothing
         }
         /// Want to gracefully shutdown the handler
@@ -201,8 +202,13 @@ extension ValkeyChannelHandler {
                 self = .closed
                 return .doNothing
             case .active(let state):
-                self = .closing(.init(context: state.context, pendingCommands: state.pendingCommands))
-                return .waitForPendingCommands(state.context)
+                if state.pendingCommands.count > 0 {
+                    self = .closing(.init(context: state.context, pendingCommands: state.pendingCommands))
+                    return .waitForPendingCommands(state.context)
+                } else {
+                    self = .closed
+                    return .closeConnection(state.context)
+                }
             case .closing(let state):
                 self = .closing(state)
                 return .doNothing
