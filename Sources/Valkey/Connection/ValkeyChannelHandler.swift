@@ -296,7 +296,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func cancel(requestID: Int) {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.cancel(requestID: requestID) {
-        case .closeConnection(let context):
+        case .failPendingCommandsAndClose(let context, let cancelled, let closeConnectionDueToCancel):
+            for command in cancelled {
+                command.promise.fail(ValkeyClientError.init(.cancelled))
+            }
+            for command in closeConnectionDueToCancel {
+                command.promise.fail(ValkeyClientError.init(.connectionClosedDueToCancellation))
+            }
             self.closeSubscriptionsAndConnection(context: context, error: ValkeyClientError(.cancelled))
 
         case .doNothing:
@@ -354,11 +360,14 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     func handleError(context: ChannelHandlerContext, error: Error) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
-        context.fireErrorCaught(error)
-        switch self.stateMachine.close(withError: error) {
-        case .close(let context):
+        switch self.stateMachine.close() {
+        case .failPendingCommandsAndClose(let context, let commands):
+            for command in commands {
+                command.promise.fail(error)
+            }
             self.closeSubscriptionsAndConnection(context: context, error: error)
         case .doNothing:
+            context.fireErrorCaught(error)
             break
         }
     }
@@ -386,8 +395,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     private func setClosed() {
-        switch self.stateMachine.setClosed(withError: ValkeyClientError.init(.connectionClosed)) {
-        case .failSubscriptions:
+        switch self.stateMachine.setClosed() {
+        case .failPendingCommandsAndSubscriptions(let commands):
+            for command in commands {
+                command.promise.fail(ValkeyClientError.init(.connectionClosed))
+            }
             self.subscriptions.close(error: ValkeyClientError.init(.connectionClosed))
         case .doNothing:
             break
