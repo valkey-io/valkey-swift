@@ -151,6 +151,49 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
+        enum HitDeadlineAction {
+            case failPendingCommandsAndClose(Context, Deque<PendingCommand>)
+            case reschedule(NIODeadline)
+            case doNothing
+        }
+        @usableFromInline
+        mutating func hitDeadline(now: NIODeadline) -> HitDeadlineAction {
+            switch consume self.state {
+            case .initializing:
+                preconditionFailure("Cannot cancel when initializing")
+            case .active(let state):
+                if let firstCommand = state.pendingCommands.first {
+                    if firstCommand.deadline < now {
+                        self = .closed
+                        return .failPendingCommandsAndClose(state.context, state.pendingCommands)
+                    } else {
+                        self = .active(state)
+                        return .reschedule(firstCommand.deadline)
+                    }
+                } else {
+                    self = .active(state)
+                    return .doNothing
+                }
+            case .closing(let state):
+                if let firstCommand = state.pendingCommands.first {
+                    if firstCommand.deadline < now {
+                        self = .closed
+                        return .failPendingCommandsAndClose(state.context, state.pendingCommands)
+                    } else {
+                        self = .closing(state)
+                        return .reschedule(firstCommand.deadline)
+                    }
+                } else {
+                    self = .closing(state)
+                    return .doNothing
+                }
+            case .closed:
+                self = .closed
+                return .doNothing
+            }
+        }
+
+        @usableFromInline
         enum CancelAction {
             case failPendingCommandsAndClose(Context, cancel: [PendingCommand], closeConnectionDueToCancel: [PendingCommand])
             case doNothing

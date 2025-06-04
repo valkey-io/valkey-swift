@@ -62,6 +62,8 @@ public struct ValkeyClientConfiguration: Sendable {
     public var connectionPool: ConnectionPoolConfiguration
     /// keep alive behavior
     public var keepAliveBehavior: KeepAliveBehavior
+    /// dead connection timeout
+    public var connectionTimeout: Duration
 
     /// TLS setup
     public var tls: TLS
@@ -74,11 +76,13 @@ public struct ValkeyClientConfiguration: Sendable {
         authentication: Authentication? = nil,
         connectionPool: ConnectionPoolConfiguration = .init(),
         keepAliveBehavior: KeepAliveBehavior = .init(),
+        connectionTimeout: Duration = .seconds(30),
         tls: TLS = .disable
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
         self.keepAliveBehavior = keepAliveBehavior
+        self.connectionTimeout = connectionTimeout
         self.tls = tls
     }
 }

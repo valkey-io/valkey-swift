@@ -303,7 +303,11 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             break
         }
         let valkeyChannelHandler = ValkeyChannelHandler(
-            configuration: .init(authentication: configuration.authentication, clientName: clientName),
+            configuration: .init(
+                authentication: configuration.authentication,
+                connectionTimeout: .init(configuration.connectionTimeout),
+                clientName: clientName
+            ),
             eventLoop: channel.eventLoop,
             logger: logger
         )
