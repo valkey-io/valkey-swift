@@ -94,6 +94,28 @@ struct ConnectionTests {
     }
 
     @Test
+    func testParseError() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        async let fooResult = connection.get(key: "foo")
+        _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+
+        await #expect(throws: RESPParsingError.self) {
+            try await channel.writeInbound(ByteBuffer(string: "invalid resp token"))
+        }
+        do {
+            _ = try await fooResult
+            Issue.record()
+        } catch let error as RESPParsingError {
+            #expect(error.code == .invalidLeadingByte)
+        }
+        #expect(channel.isActive == false)
+    }
+
+    @Test
     func testSimpleError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -140,7 +162,7 @@ struct ConnectionTests {
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
         try await channel.processHello()
 
-        await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received an error token without having sent a command")) {
+        await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
             try await channel.writeInbound(RESPToken(.simpleError("Error!")).base)
         }
         try await channel.closeFuture.get()
