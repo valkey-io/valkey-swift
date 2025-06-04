@@ -367,6 +367,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             }
             self.closeSubscriptionsAndConnection(context: context, error: error)
         case .doNothing:
+            // only call fireErrorCaught here as it is called from `closeSubscriptionsAndConnection`
             context.fireErrorCaught(error)
             break
         }
