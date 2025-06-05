@@ -15,11 +15,15 @@
 @usableFromInline
 package enum ValkeyClusterError: Error {
     case clusterIsMissingSlotAssignment
+    case clusterIsMissingMovedErrorNode
+    case shardIsMissingMasterNode
+    case shardHasMultipleMasterNodes
     case noNodeToTalkTo
     case serverDiscoveryFailedNoKnownNode
     case keysInCommandRequireMultipleNodes
-    case noConsensusReached
+    case clusterIsUnavailable
     case noConsensusReachedCircuitBreakerOpen
     case clusterHasNoNodes
+    case clusterClientIsShutDown
 }
 
