@@ -135,8 +135,7 @@ extension ValkeyChannelHandler {
                 return .respond(command)
             case .closing(var state):
                 guard let command = state.pendingCommands.popFirst() else {
-                    self = .closed
-                    return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
+                    preconditionFailure("Cannot be in closing state with no pending commands")
                 }
                 if state.pendingCommands.count == 0 {
                     self = .closed
@@ -163,7 +162,7 @@ extension ValkeyChannelHandler {
                 preconditionFailure("Cannot cancel when initializing")
             case .active(let state):
                 if let firstCommand = state.pendingCommands.first {
-                    if firstCommand.deadline < now {
+                    if firstCommand.deadline <= now {
                         self = .closed
                         return .failPendingCommandsAndClose(state.context, state.pendingCommands)
                     } else {
@@ -175,17 +174,15 @@ extension ValkeyChannelHandler {
                     return .doNothing
                 }
             case .closing(let state):
-                if let firstCommand = state.pendingCommands.first {
-                    if firstCommand.deadline < now {
-                        self = .closed
-                        return .failPendingCommandsAndClose(state.context, state.pendingCommands)
-                    } else {
-                        self = .closing(state)
-                        return .reschedule(firstCommand.deadline)
-                    }
+                guard let firstCommand = state.pendingCommands.first else {
+                    preconditionFailure("Cannot be in closing state with no pending commands")
+                }
+                if firstCommand.deadline <= now {
+                    self = .closed
+                    return .failPendingCommandsAndClose(state.context, state.pendingCommands)
                 } else {
                     self = .closing(state)
-                    return .doNothing
+                    return .reschedule(firstCommand.deadline)
                 }
             case .closed:
                 self = .closed
