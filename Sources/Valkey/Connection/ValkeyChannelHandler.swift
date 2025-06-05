@@ -463,6 +463,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 command.promise.fail(ValkeyClientError.init(.connectionClosed))
             }
             self.subscriptions.close(error: ValkeyClientError.init(.connectionClosed))
+            self.deadlineCallback?.cancel()
         case .doNothing:
             break
         }
