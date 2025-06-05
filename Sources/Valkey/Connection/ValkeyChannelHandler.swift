@@ -80,7 +80,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 channelHandler.closeSubscriptionsAndConnection(context: context, error: ValkeyClientError(.timeout))
             case .reschedule(let deadline):
                 channelHandler.scheduleDeadlineCallback(deadline: deadline)
-            case .doNothing:
+            case .clearCallback:
                 channelHandler.deadlineCallback = nil
                 break
             }
