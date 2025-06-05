@@ -153,7 +153,7 @@ extension ValkeyChannelHandler {
         enum HitDeadlineAction {
             case failPendingCommandsAndClose(Context, Deque<PendingCommand>)
             case reschedule(NIODeadline)
-            case doNothing
+            case clearCallback
         }
         @usableFromInline
         mutating func hitDeadline(now: NIODeadline) -> HitDeadlineAction {
@@ -171,7 +171,7 @@ extension ValkeyChannelHandler {
                     }
                 } else {
                     self = .active(state)
-                    return .doNothing
+                    return .clearCallback
                 }
             case .closing(let state):
                 guard let firstCommand = state.pendingCommands.first else {
@@ -186,7 +186,7 @@ extension ValkeyChannelHandler {
                 }
             case .closed:
                 self = .closed
-                return .doNothing
+                return .clearCallback
             }
         }
 
