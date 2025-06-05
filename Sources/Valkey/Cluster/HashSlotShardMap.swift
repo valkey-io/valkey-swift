@@ -51,7 +51,7 @@ extension ValkeyShardNodeIDs: ExpressibleByArrayLiteral {
 
 /// This object allows us to efficiently look up the Valkey shard given a hash slot.
 ///
-/// The `HashSlotShardMap` maintains an internal array where each element corresponds to one hash slot (0-16383).
+/// The ``HashSlotShardMap`` maintains an internal array where each element corresponds to one hash slot (0-16383).
 /// This makes looking up the shard as efficient as a simple array access operation.
 ///
 /// Hash slots are assigned to shards in a Valkey cluster, and each key is mapped to a specific slot
@@ -168,7 +168,7 @@ package struct HashSlotShardMap: Sendable {
     }
 
     @usableFromInline
-    package enum UpdateSlotsResult {
+    package enum UpdateSlotsResult: Equatable {
         case updatedSlotToExistingNode
         case updatedSlotToUnknownNode
     }
@@ -203,7 +203,7 @@ package struct HashSlotShardMap: Sendable {
                 // lets promote the replica to be the primary and remove the old primary for now
                 shard.master = movedError.nodeID
                 shard.replicas.removeAll { $0 == movedError.nodeID }
-                self.shardIDToShard[shardIndex]
+                self.shardIDToShard[shardIndex] = shard
                 return .updatedSlotToExistingNode
             }
         }
