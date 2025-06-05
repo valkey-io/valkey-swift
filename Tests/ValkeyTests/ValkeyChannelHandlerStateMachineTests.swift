@@ -239,7 +239,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         let now = NIODeadline.now()
         switch stateMachine.hitDeadline(now: now) {
-        case .doNothing:
+        case .clearCallback:
             break
         case .reschedule, .failPendingCommandsAndClose:
             Issue.record("Invalid hitDeadline action")
@@ -253,7 +253,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         switch stateMachine.hitDeadline(now: now + .milliseconds(500)) {
         case .reschedule(let deadline):
             #expect(deadline == now + .seconds(1))
-        case .doNothing, .failPendingCommandsAndClose:
+        case .clearCallback, .failPendingCommandsAndClose:
             Issue.record("Invalid hitDeadline action")
         }
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 2345, deadline: now + .seconds(2))) {
@@ -271,14 +271,14 @@ struct ValkeyChannelHandlerStateMachineTests {
         switch stateMachine.hitDeadline(now: now + .seconds(1)) {
         case .reschedule(let deadline):
             #expect(deadline == now + .seconds(2))
-        case .doNothing, .failPendingCommandsAndClose:
+        case .clearCallback, .failPendingCommandsAndClose:
             Issue.record("Invalid hitDeadline action")
         }
         switch stateMachine.hitDeadline(now: now + .seconds(3)) {
         case .failPendingCommandsAndClose(let context, let commands):
             #expect(context == "testTimeout")
             #expect(commands.map { $0.requestID } == [2345])
-        case .doNothing, .reschedule:
+        case .clearCallback, .reschedule:
             Issue.record("Invalid hitDeadline action")
         }
         expect(stateMachine.state == .closed)
