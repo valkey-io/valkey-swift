@@ -25,6 +25,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case tokenDoesNotExist
             case cancelled
             case connectionClosedDueToCancellation
+            case timeout
         }
 
         fileprivate let value: _Internal
@@ -50,6 +51,8 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var cancelled: Self { .init(.cancelled) }
         /// Connection was closed because another command was cancelled
         public static var connectionClosedDueToCancellation: Self { .init(.connectionClosedDueToCancellation) }
+        /// Connection was closed because it timed out
+        public static var timeout: Self { .init(.timeout) }
     }
 
     public let errorCode: ErrorCode
@@ -70,6 +73,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         case .tokenDoesNotExist: self.message ?? "Expected token does not exist."
         case .cancelled: self.message ?? "Task was cancelled."
         case .connectionClosedDueToCancellation: self.message ?? "Connection was closed because another command was cancelled."
+        case .timeout: self.message ?? "Connection was closed because it timed out."
         }
     }
 }

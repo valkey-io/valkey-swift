@@ -22,7 +22,7 @@ import Valkey
 
 struct GeneratedCommands {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
-    func withKey<Value>(connection: ValkeyConnection, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
+    func withKey<Value>(connection: some ValkeyConnectionProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
         let key = ValkeyKey(rawValue: UUID().uuidString)
         let value: Value
         do {
@@ -670,6 +670,21 @@ struct GeneratedCommands {
                     #expect(value?.channel == "__keyspace@0__:\(key)")
                     #expect(value?.message == "incrby")
                 }
+            }
+        }
+    }
+
+    @Test
+    func testBlockingCommandTimeout() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyConnection(
+            .hostname(valkeyHostname, port: 6379),
+            configuration: .init(blockingCommandTimeout: .milliseconds(500)),
+            logger: logger
+        ) { connection in
+            await #expect(throws: ValkeyClientError(.timeout)) {
+                _ = try await connection.brpop(key: ["testBlockingCommandTimeout"], timeout: 10000)
             }
         }
     }
