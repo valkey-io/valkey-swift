@@ -32,6 +32,11 @@ struct ValkeyMovedError: Hashable, Sendable {
     
     /// The port number of the node that owns the requested hash slot.
     var port: Int
+
+    @usableFromInline
+    var nodeID: ValkeyNodeID {
+        ValkeyNodeID(endpoint: self.endpoint, port: self.port)
+    }
 }
 
 extension RESPToken {

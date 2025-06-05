@@ -65,7 +65,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
                 case replica
             }
 
-            private var base: Base
+            private(set) var base: Base
 
             init(base: Base) {
                 self.base = base

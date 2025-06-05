@@ -133,13 +133,27 @@ package struct HashSlotShardMap: Sendable {
 
         var shardID = 0
         for shard in shards {
-            guard let master = shard.master else {
+            var master: ValkeyNodeID?
+            var replicas = [ValkeyNodeID]()
+            replicas.reserveCapacity(shard.nodes.count - 1)
+
+            for node in shard.nodes {
+                switch node.role.base {
+                case .master:
+                    master = node.nodeID
+
+                case .replica:
+                    replicas.append(node.nodeID)
+                }
+            }
+
+            guard let master else {
                 continue
             }
 
             let nodeIDs = ValkeyShardNodeIDs(
-                master: master.nodeID,
-                replicas: shard.replicas.map(\.nodeID)
+                master: master,
+                replicas: replicas
             )
 
             defer { shardID += 1 }
