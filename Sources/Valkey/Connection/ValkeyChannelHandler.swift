@@ -48,15 +48,17 @@ enum ValkeyRequest: Sendable {
 
 @usableFromInline
 final class ValkeyChannelHandler: ChannelInboundHandler {
+    @usableFromInline
     struct Configuration {
         let authentication: ValkeyClientConfiguration.Authentication?
+        @usableFromInline
         let connectionTimeout: TimeAmount
         let clientName: String?
     }
     @usableFromInline
     struct PendingCommand {
         @usableFromInline
-        internal init(promise: ValkeyPromise<RESPToken>, requestID: Int, deadline: NIODeadline) {
+        internal init(promise: ValkeyPromise<RESPToken>, requestID: Int, deadline: NIODeadline?) {
             self.promise = promise
             self.requestID = requestID
             self.deadline = deadline
@@ -64,7 +66,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
         var promise: ValkeyPromise<RESPToken>
         let requestID: Int
-        let deadline: NIODeadline
+        let deadline: NIODeadline?
     }
 
     struct ValkeyDeadlineSchedule: NIOScheduledCallbackHandler {
@@ -102,12 +104,14 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     /*private*/ var subscriptions: ValkeySubscriptions
 
-    var deadlineCallback: NIOScheduledCallback?
+    @usableFromInline
+    private(set) var deadlineCallback: NIOScheduledCallback?
 
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private let logger: Logger
     private var isClosed = false
-    private let configuration: Configuration
+    @usableFromInline
+    /* private*/ let configuration: Configuration
 
     /// Initialize a ValkeyChannelHandler
     init(configuration: Configuration, eventLoop: EventLoop, logger: Logger) {
@@ -123,10 +127,10 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     /// - Parameters:
     ///   - request: Valkey command request
     ///   - promise: Promise to fulfill when command is complete
-    @usableFromInline
+    @inlinable
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        let deadline: NIODeadline = command.isBlocking ? .distantFuture : .now() + self.configuration.connectionTimeout
+        let deadline: NIODeadline? = command.isBlocking ? nil : .now() + self.configuration.connectionTimeout
         let pendingCommand = PendingCommand(
             promise: .swift(continuation),
             requestID: requestID,
@@ -138,8 +142,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             command.encode(into: &self.encoder)
             let buffer = self.encoder.buffer
             context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
-            if self.deadlineCallback == nil {
-                scheduleDeadlineCallback(deadline: pendingCommand.deadline)
+            if self.deadlineCallback == nil, let deadline {
+                scheduleDeadlineCallback(deadline: deadline)
             }
 
         case .throwError(let error):
@@ -150,14 +154,15 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
+        let deadline = .now() + self.configuration.connectionTimeout
         switch request {
         case .single(let buffer, let tokenPromise, let requestID):
-            let pendingCommand = PendingCommand(promise: tokenPromise, requestID: requestID, deadline: .now() + self.configuration.connectionTimeout)
+            let pendingCommand = PendingCommand(promise: tokenPromise, requestID: requestID, deadline: deadline)
             switch self.stateMachine.sendCommand(pendingCommand) {
             case .sendCommand(let context):
                 context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
                 if self.deadlineCallback == nil {
-                    scheduleDeadlineCallback(deadline: pendingCommand.deadline)
+                    scheduleDeadlineCallback(deadline: deadline)
                 }
             case .throwError(let error):
                 tokenPromise.fail(error)
@@ -165,14 +170,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
         case .multiple(let buffer, let tokenPromises, let requestID):
             let pendingCommands = tokenPromises.map {
-                PendingCommand(promise: $0, requestID: requestID, deadline: .now() + self.configuration.connectionTimeout)
+                PendingCommand(promise: $0, requestID: requestID, deadline: deadline)
             }
-            guard let firstCommand = pendingCommands.first else { return }
             switch self.stateMachine.sendCommands(pendingCommands) {
             case .sendCommand(let context):
                 context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
                 if self.deadlineCallback == nil {
-                    scheduleDeadlineCallback(deadline: firstCommand.deadline)
+                    scheduleDeadlineCallback(deadline: deadline)
                 }
             case .throwError(let error):
                 for promise in tokenPromises {
@@ -182,6 +186,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
     }
 
+    @usableFromInline
     func scheduleDeadlineCallback(deadline: NIODeadline) {
         self.deadlineCallback = try? self.eventLoop.scheduleCallback(
             at: deadline,

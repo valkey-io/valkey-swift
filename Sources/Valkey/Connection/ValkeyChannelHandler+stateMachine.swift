@@ -161,13 +161,13 @@ extension ValkeyChannelHandler {
             case .initializing:
                 preconditionFailure("Cannot cancel when initializing")
             case .active(let state):
-                if let firstCommand = state.pendingCommands.first {
-                    if firstCommand.deadline <= now {
+                if let firstCommand = state.pendingCommands.first, let deadline = firstCommand.deadline {
+                    if deadline < now {
                         self = .closed
                         return .failPendingCommandsAndClose(state.context, state.pendingCommands)
                     } else {
                         self = .active(state)
-                        return .reschedule(firstCommand.deadline)
+                        return .reschedule(deadline)
                     }
                 } else {
                     self = .active(state)
@@ -177,12 +177,17 @@ extension ValkeyChannelHandler {
                 guard let firstCommand = state.pendingCommands.first else {
                     preconditionFailure("Cannot be in closing state with no pending commands")
                 }
-                if firstCommand.deadline <= now {
-                    self = .closed
-                    return .failPendingCommandsAndClose(state.context, state.pendingCommands)
+                if let deadline = firstCommand.deadline {
+                    if deadline <= now {
+                        self = .closed
+                        return .failPendingCommandsAndClose(state.context, state.pendingCommands)
+                    } else {
+                        self = .closing(state)
+                        return .reschedule(deadline)
+                    }
                 } else {
                     self = .closing(state)
-                    return .reschedule(firstCommand.deadline)
+                    return .clearCallback
                 }
             case .closed:
                 self = .closed
