@@ -306,6 +306,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             configuration: .init(
                 authentication: configuration.authentication,
                 connectionTimeout: .init(configuration.connectionTimeout),
+                blockingCommandTimeout: .init(configuration.blockingCommandTimeout),
                 clientName: clientName
             ),
             eventLoop: channel.eventLoop,

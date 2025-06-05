@@ -64,6 +64,8 @@ public struct ValkeyClientConfiguration: Sendable {
     public var keepAliveBehavior: KeepAliveBehavior
     /// dead connection timeout
     public var connectionTimeout: Duration
+    /// global timeout for blocking commands
+    public var blockingCommandTimeout: Duration
 
     /// TLS setup
     public var tls: TLS
@@ -71,18 +73,24 @@ public struct ValkeyClientConfiguration: Sendable {
     ///  Initialize ValkeyClientConfiguration
     /// - Parameters
     ///   - authentication: Authentication details
+    ///   - connectionPool: Connection pool configuration
+    ///   - keepAliveBehavior: Connection keep alive behavior
+    ///   - connectionTimeout: Timeout for connection response
+    ///   - blockingCommandTimeout: Blocking command response timeout
     ///   - tlsConfiguration: TLS configuration
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPoolConfiguration = .init(),
         keepAliveBehavior: KeepAliveBehavior = .init(),
         connectionTimeout: Duration = .seconds(30),
+        blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
         self.keepAliveBehavior = keepAliveBehavior
         self.connectionTimeout = connectionTimeout
+        self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
     }
 }

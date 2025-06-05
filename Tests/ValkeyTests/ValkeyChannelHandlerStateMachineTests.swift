@@ -141,8 +141,9 @@ struct ValkeyChannelHandlerStateMachineTests {
             Issue.record("Invalid sendCommand action")
         }
         switch stateMachine.receivedResponse() {
-        case .respond(let command):
+        case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
+            #expect(deadlineAction == .cancel)
             command.promise.succeed(RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
         case .closeWithError, .respondAndClose:
             Issue.record("Invalid receivedResponse action")
@@ -263,8 +264,9 @@ struct ValkeyChannelHandlerStateMachineTests {
             Issue.record("Invalid sendCommand action")
         }
         switch stateMachine.receivedResponse() {
-        case .respond(let command):
+        case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
+            #expect(deadlineAction == .doNothing)
         case .closeWithError, .respondAndClose:
             Issue.record("Invalid receivedResponse action")
         }
@@ -275,6 +277,48 @@ struct ValkeyChannelHandlerStateMachineTests {
             Issue.record("Invalid hitDeadline action")
         }
         switch stateMachine.hitDeadline(now: now + .seconds(3)) {
+        case .failPendingCommandsAndClose(let context, let commands):
+            #expect(context == "testTimeout")
+            #expect(commands.map { $0.requestID } == [2345])
+        case .clearCallback, .reschedule:
+            Issue.record("Invalid hitDeadline action")
+        }
+        expect(stateMachine.state == .closed)
+        promise.fail(CancellationError())
+    }
+
+    @Test
+    func testTimeoutWithDeadlineInversion() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
+        stateMachine.setActive(context: "testTimeout")
+        let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
+        let now = NIODeadline.now()
+        switch stateMachine.hitDeadline(now: now) {
+        case .clearCallback:
+            break
+        case .reschedule, .failPendingCommandsAndClose:
+            Issue.record("Invalid hitDeadline action")
+        }
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 2344, deadline: now + .seconds(3))) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
+        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 2345, deadline: now + .seconds(2))) {
+        case .sendCommand:
+            break
+        case .throwError:
+            Issue.record("Invalid sendCommand action")
+        }
+        switch stateMachine.receivedResponse() {
+        case .respond(let command, let deadlineAction):
+            #expect(command.requestID == 2344)
+            #expect(deadlineAction == .reschedule(now + .seconds(2)))
+        case .closeWithError, .respondAndClose:
+            Issue.record("Invalid receivedResponse action")
+        }
+        switch stateMachine.hitDeadline(now: now + .seconds(2)) {
         case .failPendingCommandsAndClose(let context, let commands):
             #expect(context == "testTimeout")
             #expect(commands.map { $0.requestID } == [2345])
@@ -322,5 +366,20 @@ extension ValkeyChannelHandler.StateMachine<String>.State {
 
     public static func != (_ lhs: borrowing Self, _ rhs: borrowing Self) -> Bool {
         !(lhs == rhs)
+    }
+}
+
+extension ValkeyChannelHandler.StateMachine.DeadlineCallbackAction: Equatable {
+    public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.doNothing, .doNothing):
+            true
+        case (.cancel, .cancel):
+            true
+        case (.reschedule(let lhs), .reschedule(let rhs)):
+            lhs == rhs
+        default:
+            false
+        }
     }
 }

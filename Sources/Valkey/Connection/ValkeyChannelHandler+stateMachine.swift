@@ -114,8 +114,15 @@ extension ValkeyChannelHandler {
         }
 
         @usableFromInline
+        enum DeadlineCallbackAction {
+            case cancel
+            case reschedule(NIODeadline)
+            case doNothing
+        }
+
+        @usableFromInline
         enum ReceivedResponseAction {
-            case respond(PendingCommand)
+            case respond(PendingCommand, DeadlineCallbackAction)
             case respondAndClose(PendingCommand)
             case closeWithError(Error)
         }
@@ -132,17 +139,38 @@ extension ValkeyChannelHandler {
                     return .closeWithError(ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command"))
                 }
                 self = .active(state)
-                return .respond(command)
+                let deadlineCallback: DeadlineCallbackAction =
+                    if let nextCommand = state.pendingCommands.first {
+                        if nextCommand.deadline < command.deadline {
+                            // if the next command has an earlier deadline than the current then reschedule the callback
+                            .reschedule(nextCommand.deadline)
+                        } else {
+                            // otherwise do nothing
+                            .doNothing
+                        }
+                    } else {
+                        // if there are no more commands cancel the callback
+                        .cancel
+                    }
+                return .respond(command, deadlineCallback)
             case .closing(var state):
                 guard let command = state.pendingCommands.popFirst() else {
                     preconditionFailure("Cannot be in closing state with no pending commands")
                 }
-                if state.pendingCommands.count == 0 {
+                if let nextCommand = state.pendingCommands.first {
+                    self = .closing(state)
+                    let deadlineCallback: DeadlineCallbackAction =
+                        if nextCommand.deadline < command.deadline {
+                            // if the next command has an earlier deadline than the current then reschedule the callback
+                            .reschedule(nextCommand.deadline)
+                        } else {
+                            // otherwise do nothing
+                            .doNothing
+                        }
+                    return .respond(command, deadlineCallback)
+                } else {
                     self = .closed
                     return .respondAndClose(command)
-                } else {
-                    self = .closing(state)
-                    return .respond(command)
                 }
             case .closed:
                 preconditionFailure("Cannot receive command on closed connection")
@@ -155,19 +183,20 @@ extension ValkeyChannelHandler {
             case reschedule(NIODeadline)
             case clearCallback
         }
+
         @usableFromInline
         mutating func hitDeadline(now: NIODeadline) -> HitDeadlineAction {
             switch consume self.state {
             case .initializing:
                 preconditionFailure("Cannot cancel when initializing")
             case .active(let state):
-                if let firstCommand = state.pendingCommands.first, let deadline = firstCommand.deadline {
-                    if deadline < now {
+                if let firstCommand = state.pendingCommands.first {
+                    if firstCommand.deadline <= now {
                         self = .closed
                         return .failPendingCommandsAndClose(state.context, state.pendingCommands)
                     } else {
                         self = .active(state)
-                        return .reschedule(deadline)
+                        return .reschedule(firstCommand.deadline)
                     }
                 } else {
                     self = .active(state)
@@ -177,17 +206,12 @@ extension ValkeyChannelHandler {
                 guard let firstCommand = state.pendingCommands.first else {
                     preconditionFailure("Cannot be in closing state with no pending commands")
                 }
-                if let deadline = firstCommand.deadline {
-                    if deadline <= now {
-                        self = .closed
-                        return .failPendingCommandsAndClose(state.context, state.pendingCommands)
-                    } else {
-                        self = .closing(state)
-                        return .reschedule(deadline)
-                    }
+                if firstCommand.deadline <= now {
+                    self = .closed
+                    return .failPendingCommandsAndClose(state.context, state.pendingCommands)
                 } else {
                     self = .closing(state)
-                    return .clearCallback
+                    return .reschedule(firstCommand.deadline)
                 }
             case .closed:
                 self = .closed
