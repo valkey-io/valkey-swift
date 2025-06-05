@@ -48,21 +48,49 @@ enum ValkeyRequest: Sendable {
 
 @usableFromInline
 final class ValkeyChannelHandler: ChannelInboundHandler {
+    @usableFromInline
     struct Configuration {
         let authentication: ValkeyClientConfiguration.Authentication?
+        @usableFromInline
+        let connectionTimeout: TimeAmount
+        @usableFromInline
+        let blockingCommandTimeout: TimeAmount
         let clientName: String?
     }
     @usableFromInline
     struct PendingCommand {
         @usableFromInline
-        internal init(promise: ValkeyPromise<RESPToken>, requestID: Int) {
+        internal init(promise: ValkeyPromise<RESPToken>, requestID: Int, deadline: NIODeadline) {
             self.promise = promise
             self.requestID = requestID
+            self.deadline = deadline
         }
 
         var promise: ValkeyPromise<RESPToken>
         let requestID: Int
+        let deadline: NIODeadline
     }
+
+    struct ValkeyDeadlineSchedule: NIOScheduledCallbackHandler {
+        let channelHandler: NIOLoopBound<ValkeyChannelHandler>
+
+        func handleScheduledCallback(eventLoop: some NIOCore.EventLoop) {
+            let channelHandler = self.channelHandler.value
+            switch channelHandler.stateMachine.hitDeadline(now: .now()) {
+            case .failPendingCommandsAndClose(let context, let commands):
+                for command in commands {
+                    command.promise.fail(ValkeyClientError(.timeout))
+                }
+                channelHandler.closeSubscriptionsAndConnection(context: context, error: ValkeyClientError(.timeout))
+            case .reschedule(let deadline):
+                channelHandler.scheduleDeadlineCallback(deadline: deadline)
+            case .clearCallback:
+                channelHandler.deadlineCallback = nil
+                break
+            }
+        }
+    }
+
     @usableFromInline
     typealias OutboundOut = ByteBuffer
     @usableFromInline
@@ -78,11 +106,16 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     /*private*/ var subscriptions: ValkeySubscriptions
 
+    @usableFromInline
+    private(set) var deadlineCallback: NIOScheduledCallback?
+
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private let logger: Logger
     private var isClosed = false
-    private let configuration: Configuration
+    @usableFromInline
+    /* private*/ let configuration: Configuration
 
+    /// Initialize a ValkeyChannelHandler
     init(configuration: Configuration, eventLoop: EventLoop, logger: Logger) {
         self.configuration = configuration
         self.eventLoop = eventLoop
@@ -99,12 +132,22 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        switch self.stateMachine.sendCommand(PendingCommand(promise: .swift(continuation), requestID: requestID)) {
+        let deadline: NIODeadline =
+            command.isBlocking ? .now() + self.configuration.blockingCommandTimeout : .now() + self.configuration.connectionTimeout
+        let pendingCommand = PendingCommand(
+            promise: .swift(continuation),
+            requestID: requestID,
+            deadline: deadline
+        )
+        switch self.stateMachine.sendCommand(pendingCommand) {
         case .sendCommand(let context):
             self.encoder.reset()
             command.encode(into: &self.encoder)
             let buffer = self.encoder.buffer
             context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+            if self.deadlineCallback == nil {
+                self.scheduleDeadlineCallback(deadline: deadline)
+            }
 
         case .throwError(let error):
             continuation.resume(throwing: error)
@@ -114,21 +157,30 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
+        let deadline = .now() + self.configuration.connectionTimeout
         switch request {
         case .single(let buffer, let tokenPromise, let requestID):
-            let pendingCommand = PendingCommand(promise: tokenPromise, requestID: requestID)
+            let pendingCommand = PendingCommand(promise: tokenPromise, requestID: requestID, deadline: deadline)
             switch self.stateMachine.sendCommand(pendingCommand) {
             case .sendCommand(let context):
                 context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+                if self.deadlineCallback == nil {
+                    scheduleDeadlineCallback(deadline: deadline)
+                }
             case .throwError(let error):
                 tokenPromise.fail(error)
             }
 
         case .multiple(let buffer, let tokenPromises, let requestID):
-            let pendingCommands = tokenPromises.map { PendingCommand(promise: $0, requestID: requestID) }
+            let pendingCommands = tokenPromises.map {
+                PendingCommand(promise: $0, requestID: requestID, deadline: deadline)
+            }
             switch self.stateMachine.sendCommands(pendingCommands) {
             case .sendCommand(let context):
                 context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+                if self.deadlineCallback == nil {
+                    scheduleDeadlineCallback(deadline: deadline)
+                }
             case .throwError(let error):
                 for promise in tokenPromises {
                     promise.fail(error)
@@ -315,7 +367,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         switch token.identifier {
         case .simpleError, .bulkError:
             switch self.stateMachine.receivedResponse() {
-            case .respond(let command):
+            case .respond(let command, let deadlineAction):
+                self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
             case .respondAndClose(let command):
                 command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
@@ -330,7 +383,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             do {
                 if try self.subscriptions.notify(token) == true {
                     switch self.stateMachine.receivedResponse() {
-                    case .respond(let command):
+                    case .respond(let command, let deadlineAction):
+                        self.processDeadlineCallbackAction(action: deadlineAction)
                         command.promise.succeed(Self.simpleOk)
                     case .respondAndClose(let command):
                         command.promise.succeed(Self.simpleOk)
@@ -356,7 +410,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             .set,
             .attribute:
             switch self.stateMachine.receivedResponse() {
-            case .respond(let command):
+            case .respond(let command, let deadlineAction):
+                self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.succeed(token)
             case .respondAndClose(let command):
                 command.promise.succeed(token)
@@ -378,6 +433,26 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         case .doNothing:
             // only call fireErrorCaught here as it is called from `closeSubscriptionsAndConnection`
             context.fireErrorCaught(error)
+            break
+        }
+    }
+
+    @usableFromInline
+    func scheduleDeadlineCallback(deadline: NIODeadline) {
+        self.deadlineCallback = try? self.eventLoop.scheduleCallback(
+            at: deadline,
+            handler: ValkeyDeadlineSchedule(channelHandler: .init(self, eventLoop: self.eventLoop))
+        )
+    }
+
+    func processDeadlineCallbackAction(action: StateMachine<ChannelHandlerContext>.DeadlineCallbackAction) {
+        switch action {
+        case .cancel:
+            self.deadlineCallback?.cancel()
+            self.deadlineCallback = nil
+        case .reschedule(let deadline):
+            self.scheduleDeadlineCallback(deadline: deadline)
+        case .doNothing:
             break
         }
     }
@@ -411,6 +486,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 command.promise.fail(ValkeyClientError.init(.connectionClosed))
             }
             self.subscriptions.close(error: ValkeyClientError.init(.connectionClosed))
+            self.deadlineCallback?.cancel()
         case .doNothing:
             break
         }
