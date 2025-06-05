@@ -146,7 +146,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             let buffer = self.encoder.buffer
             context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
             if self.deadlineCallback == nil {
-                scheduleDeadlineCallback(deadline: deadline)
+                self.scheduleDeadlineCallback(deadline: deadline)
             }
 
         case .throwError(let error):
