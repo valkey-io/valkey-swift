@@ -43,7 +43,7 @@ jobs:
       - name: Convert coverage files
         run: |
           llvm-cov export -format="lcov" \
-            .build/debug/swift-valkeyPackageTests.xctest \
+            .build/debug/valkey-swiftPackageTests.xctest \
             -ignore-filename-regex="\/Tests\/" \
             -instr-profile .build/debug/codecov/default.profdata > info.lcov
       - name: Upload to codecov.io

@@ -1,10 +1,10 @@
-# swift-valkey
+# valkey-swift
 
 Valkey client 
 
 ## Usage
 
-The swift-valkey project uses a connection pool, which requires a background process to manage it. You can either run it using a Task group
+The valkey-swift project uses a connection pool, which requires a background process to manage it. You can either run it using a Task group
 
 ```swift
 let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
@@ -47,4 +47,4 @@ let (setResponse, getResponse) = try await connection.pipeline(
 
 ## Redis compatibilty
 
-As Valkey is a fork of Redis v7.2.4, swift-valkey is compatible with Redis databases up to v7.2.4. There is a chance the v7.2.4 features will still be compatible in later versions of Redis, but these are now considered two different projects and they will diverge. Swift-valkey uses the RESP3 protocol.
+As Valkey is a fork of Redis v7.2.4, valkey-swift is compatible with Redis databases up to v7.2.4. There is a chance the v7.2.4 features will still be compatible in later versions of Redis, but these are now considered two different projects and they will diverge. valkey-swift uses the RESP3 protocol.

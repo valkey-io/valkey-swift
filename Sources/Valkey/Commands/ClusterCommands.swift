@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey open source project
+// This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
+// Copyright (c) 2025 Apple Inc. and the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+// See CONTRIBUTORS.txt for the list of valkey-swift project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -42,7 +42,6 @@ public enum CLUSTER {
         public struct Range: RESPRenderable, Sendable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
-
 
             @inlinable public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
@@ -129,7 +128,6 @@ public enum CLUSTER {
         public struct Range: RESPRenderable, Sendable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
-
 
             @inlinable public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
@@ -475,7 +473,6 @@ public enum CLUSTER {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
-
             @inlinable public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
                 self.endSlot = endSlot
@@ -511,7 +508,6 @@ public enum CLUSTER {
             @usableFromInline let metric: String
             @usableFromInline let limit: Int?
             @usableFromInline let order: FilterOrderbyOrder?
-
 
             @inlinable public init(metric: String, limit: Int? = nil, order: FilterOrderbyOrder? = nil) {
                 self.metric = metric
