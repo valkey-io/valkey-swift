@@ -78,3 +78,13 @@ This product contains a version of the ConnectionPoolModule from postgres-nio
     * https://github.com/vapor/postgres-nio/blob/main/LICENSE
   * HOMEPAGE:
     * https://github.com/vapor/postgres-nio
+
+---
+
+This product was influenced by valkey-glide.
+  - It adapted valkey-glide's hashslot update logic after a MOVED error. 
+
+  * LICENSE (Apache License 2.0)
+    * https://github.com/valkey-io/valkey-glide/blob/main/LICENSE
+  * HOMEPAGE:
+    * https://github.com/valkey-io/valkey-glide

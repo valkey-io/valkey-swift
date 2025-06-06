@@ -667,4 +667,172 @@ struct HashSlotShardMapTests {
         #expect(shardNodes.replicas.contains(expectedReplica1))
         #expect(shardNodes.replicas.contains(expectedReplica2))
     }
+
+    func makeExampleCusterWithNShardsAndMReplicasPerShard(shards: Int, replicas: Int) -> ValkeyClusterDescription {
+        let defaultRangeSize = Int(HashSlot.max.rawValue + 1) / shards
+        var range: ClosedRange<HashSlot> = 0...0
+
+        var result = [ValkeyClusterDescription.Shard]()
+        var nodeIndex = 1
+
+        for i in 0..<shards {
+            if i == 0 {
+                if shards == 1 {
+                    range = HashSlot.min...HashSlot.max
+                } else {
+                    range = HashSlot.min...(range.upperBound.advanced(by: defaultRangeSize - 1))
+                }
+            } else if i == shards - 1 {
+                range = (range.upperBound.advanced(by: 1))...HashSlot.max
+            } else {
+                range = (range.upperBound.advanced(by: 1))...(range.upperBound.advanced(by: defaultRangeSize - 1))
+            }
+
+            var shard = ValkeyClusterDescription.Shard(slots: [range], nodes: [])
+            for _ in 0..<(replicas + 1) {
+                defer { nodeIndex += 1 }
+                shard.nodes.append(
+                    .init(
+                        id: "node-\(nodeIndex)",
+                        port: nil,
+                        tlsPort: 6379,
+                        ip: "192.168.64.\(nodeIndex)",
+                        hostname: "node-\(nodeIndex).valkey.io",
+                        endpoint: "node-\(nodeIndex).valkey.io",
+                        role: .replica,
+                        replicationOffset: 14,
+                        health: .online
+                    )
+                )
+            }
+            let primaryIndex = shard.nodes.indices.randomElement()!
+            shard.nodes[primaryIndex].role = .master
+
+            result.append(shard)
+        }
+
+        return ValkeyClusterDescription(result)
+    }
+
+    @Test("Case 1: MovedError specifies the already exisiting shard primary node")
+    func movedErrorSpecifiesTheAlreadyExisitingShardPrimaryNode() throws {
+        let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 1)
+
+        var map = HashSlotShardMap()
+        map.updateCluster(clusterDescription.shards)
+
+        let ogShard = try map.nodeID(for: CollectionOfOne(2))
+        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: ogShard.master.endpoint, port: ogShard.master.port))
+        #expect(update == .updatedSlotToExistingNode)
+        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        #expect(updatedShard == ogShard)
+    }
+
+    @Test("Case 2: MovedError specifies a previous shard replica node")
+    func movedErrorSpecifiesAPreviousShardReplicaNode() throws {
+        let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 3)
+
+        var map = HashSlotShardMap()
+        map.updateCluster(clusterDescription.shards)
+
+        let ogShard = try map.nodeID(for: CollectionOfOne(2))
+        let luckyReplica = ogShard.replicas.randomElement()!
+
+        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: luckyReplica.endpoint, port: luckyReplica.port))
+        #expect(update == .updatedSlotToExistingNode)
+        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        #expect(updatedShard.master == luckyReplica)
+        #expect(updatedShard != ogShard)
+
+        // test neighboring hashes have seen an update as well
+        let updatedShard1 = try map.nodeID(for: CollectionOfOne(1))
+        let updatedShard3 = try map.nodeID(for: CollectionOfOne(3))
+
+        #expect(updatedShard == updatedShard1)
+        #expect(updatedShard == updatedShard3)
+    }
+
+    @Test("Case 3: MovedError specifies another shards primary node")
+    func movedErrorSpecifiesOtherShardPrimaryNode() throws {
+        let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 3)
+
+        var map = HashSlotShardMap()
+        map.updateCluster(clusterDescription.shards)
+
+        let ogShard = try map.nodeID(for: CollectionOfOne(2))
+        let otherShard = try map.nodeID(for: CollectionOfOne(.max))
+        let newPrimary = otherShard.master
+
+        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
+        #expect(update == .updatedSlotToExistingNode)
+        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        #expect(updatedShard == otherShard)
+
+        // test neighboring hashes have not been updated
+        let updatedShard1 = try map.nodeID(for: CollectionOfOne(1))
+        let updatedShard3 = try map.nodeID(for: CollectionOfOne(3))
+
+        #expect(ogShard == updatedShard1)
+        #expect(ogShard == updatedShard3)
+    }
+
+    @Test("Case 4: MovedError specifies another shards replica node")
+    func movedErrorSpecifiesOtherShardReplicaNode() throws {
+        let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 3)
+
+        var map = HashSlotShardMap()
+        map.updateCluster(clusterDescription.shards)
+
+        let ogShard = try map.nodeID(for: CollectionOfOne(2))
+        let otherShard = try map.nodeID(for: CollectionOfOne(.max))
+        let newPrimary = otherShard.replicas.randomElement()!
+
+        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
+        #expect(update == .updatedSlotToExistingNode)
+        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        #expect(updatedShard.master == newPrimary)
+        #expect(updatedShard.replicas.isEmpty)
+        #expect(updatedShard != ogShard)
+
+        // test neighboring hashes have not been updated
+        let updatedShard1 = try map.nodeID(for: CollectionOfOne(1))
+        let updatedShard3 = try map.nodeID(for: CollectionOfOne(3))
+
+        #expect(ogShard == updatedShard1)
+        #expect(ogShard == updatedShard3)
+
+        // test other shard has been updated and new primary replica has been removed there
+        let otherShardUpdated = try map.nodeID(for: CollectionOfOne(.max))
+        #expect(!otherShardUpdated.replicas.contains(newPrimary))
+    }
+
+    @Test("Case 5: MovedError specifies previously unknown node")
+    func movedErrorSpecifiesPreviouslyUnknownNode() throws {
+        let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 3)
+
+        var map = HashSlotShardMap()
+        map.updateCluster(clusterDescription.shards)
+
+        let ogShard = try map.nodeID(for: CollectionOfOne(2))
+        let otherShard = try map.nodeID(for: CollectionOfOne(.max))
+        let newPrimary = ValkeyNodeID(endpoint: "new.valkey.io", port: 6379)
+
+        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
+        #expect(update == .updatedSlotToUnknownNode)
+        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        #expect(updatedShard.master == newPrimary)
+        #expect(updatedShard.replicas.isEmpty)
+        #expect(updatedShard != ogShard)
+
+        // test neighboring hashes have not been updated
+        let updatedShard1 = try map.nodeID(for: CollectionOfOne(1))
+        let updatedShard3 = try map.nodeID(for: CollectionOfOne(3))
+
+        #expect(ogShard == updatedShard1)
+        #expect(ogShard == updatedShard3)
+
+        // test other shard has been updated and new primary replica has been removed there
+        let otherShardUpdated = try map.nodeID(for: CollectionOfOne(.max))
+        #expect(!otherShardUpdated.replicas.contains(newPrimary))
+    }
 }

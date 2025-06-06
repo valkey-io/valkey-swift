@@ -51,7 +51,7 @@ extension ValkeyShardNodeIDs: ExpressibleByArrayLiteral {
 
 /// This object allows us to efficiently look up the Valkey shard given a hash slot.
 ///
-/// The `HashSlotShardMap` maintains an internal array where each element corresponds to one hash slot (0-16383).
+/// The ``HashSlotShardMap`` maintains an internal array where each element corresponds to one hash slot (0-16383).
 /// This makes looking up the shard as efficient as a simple array access operation.
 ///
 /// Hash slots are assigned to shards in a Valkey cluster, and each key is mapped to a specific slot
@@ -165,6 +165,71 @@ package struct HashSlotShardMap: Sendable {
                 }
             }
         }
+    }
+
+    @usableFromInline
+    package enum UpdateSlotsResult: Equatable {
+        case updatedSlotToExistingNode
+        case updatedSlotToUnknownNode
+    }
+
+    /// Handles MOVED errors by updating the client's slot and node mappings based on the new primary's role:
+    ///
+    /// 1. **No Change**: If the new primary is already the current slot owner, no updates are needed.
+    /// 2. **Failover**: If the new primary is a replica within the same shard (indicating a failover),
+    ///    the slot ownership is updated by promoting the replica to the primary in the existing shard addresses.
+    /// 3. **Slot Migration**: If the new primary is an existing primary in another shard, this indicates a slot migration,
+    ///    and the slot mapping is updated to point to the new shard addresses.
+    /// 4. **Replica Moved to a Different Shard**: If the new primary is a replica in a different shard, it can be due to:
+    ///    - The replica became the primary of its shard after a failover, with new slots migrated to it.
+    ///    - The replica has moved to a different shard as the primary.
+    ///      Since further information is unknown, the replica is removed from its original shard and added as the primary of a new shard.
+    /// 5. **New Node**: If the new primary is unknown, it is added as a new node in a new shard, possibly indicating scale-out.
+    ///
+    /// This logic was first implemented in `valkey-glide` (see `Notice.txt`) and adopted for Swift here.
+    @usableFromInline
+    package mutating func updateSlots(with movedError: ValkeyMovedError) -> UpdateSlotsResult {
+        if let shardIndex = self.slotToShardID[Int(movedError.slot.rawValue)].value {
+            // if the slot had a shard assignment before
+            var shard = self.shardIDToShard[shardIndex]
+
+            // 1. No change
+            if shard.master == movedError.nodeID {
+                return .updatedSlotToExistingNode
+            }
+
+            // 2. Failover
+            if shard.replicas.contains(movedError.nodeID) {
+                // lets promote the replica to be the primary and remove the old primary for now
+                shard.master = movedError.nodeID
+                shard.replicas.removeAll { $0 == movedError.nodeID }
+                self.shardIDToShard[shardIndex] = shard
+                return .updatedSlotToExistingNode
+            }
+        }
+
+        // 3. Slot migration to an existing primary
+        if let newShardIndex = self.shardIDToShard.firstIndex(where: { $0.master == movedError.nodeID }) {
+            self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
+            return .updatedSlotToExistingNode
+        }
+
+        // 4. Replica moved to a different shard
+        if let ogShardIndexOfNewPrimary = self.shardIDToShard.firstIndex(where: { $0.replicas.contains(movedError.nodeID) }) {
+            // remove replica from its og shard
+            self.shardIDToShard[ogShardIndexOfNewPrimary].replicas.removeAll(where: { $0 == movedError.nodeID })
+            // create a new shard with the replica
+            let newShardIndex = self.shardIDToShard.endIndex
+            self.shardIDToShard.append(.init(master: movedError.nodeID))
+            self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
+            return .updatedSlotToExistingNode
+        }
+
+        // 5. totally new node
+        let newShardIndex = self.shardIDToShard.endIndex
+        self.shardIDToShard.append(.init(master: movedError.nodeID))
+        self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
+        return .updatedSlotToUnknownNode
     }
 
     /// An internal type representing an optional shard ID with efficient storage.
