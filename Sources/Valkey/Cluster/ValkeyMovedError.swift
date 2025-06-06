@@ -23,18 +23,24 @@ import NIOCore
 /// This error provides the necessary information for clients to redirect their
 /// request to the correct node in the cluster.
 @usableFromInline
-struct ValkeyMovedError: Hashable, Sendable {
+package struct ValkeyMovedError: Hashable, Sendable {
     /// The hash slot number that triggered the redirection.
-    var slot: HashSlot
-    
+    package var slot: HashSlot
+
     /// The hostname or IP address of the node that owns the requested hash slot.
-    var endpoint: String
-    
+    package var endpoint: String
+
     /// The port number of the node that owns the requested hash slot.
-    var port: Int
+    package var port: Int
+
+    package init(slot: HashSlot, endpoint: String, port: Int) {
+        self.slot = slot
+        self.endpoint = endpoint
+        self.port = port
+    }
 
     @usableFromInline
-    var nodeID: ValkeyNodeID {
+    package var nodeID: ValkeyNodeID {
         ValkeyNodeID(endpoint: self.endpoint, port: self.port)
     }
 }
