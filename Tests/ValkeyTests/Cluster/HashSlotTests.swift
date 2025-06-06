@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey project
+// This source file is part of the valkey-swift project
 //
-// Copyright (c) 2025 the swift-valkey authors
+// Copyright (c) 2025 the valkey-swift authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
+// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -29,9 +29,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Foundation
 import Testing
 import Valkey
-import Foundation
 
 @Suite
 struct HashSlotTests {
@@ -39,7 +39,7 @@ struct HashSlotTests {
     @Test
     func computesHashSlot() {
         #expect(HashSlot(key: "foo") == 12182)
-        
+
     }
 
     @Test

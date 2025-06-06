@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey open source project
+// This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 the swift-valkey project authors
+// Copyright (c) 2025 the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+// See CONTRIBUTORS.txt for the list of valkey-swift project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -195,7 +195,6 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 
-
         @inlinable public init(field: Field, value: Value) {
             self.field = field
             self.value = value
@@ -232,7 +231,6 @@ public struct HRANDFIELD: ValkeyCommand {
     public struct Options: RESPRenderable, Sendable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
-
 
         @inlinable public init(count: Int, withvalues: Bool = false) {
             self.count = count
@@ -288,7 +286,14 @@ public struct HSCAN: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPPureToken("NOVALUES", novalues))
+        commandEncoder.encodeArray(
+            "HSCAN",
+            key,
+            cursor,
+            RESPWithToken("MATCH", pattern),
+            RESPWithToken("COUNT", count),
+            RESPPureToken("NOVALUES", novalues)
+        )
     }
 }
 
@@ -297,7 +302,6 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     public struct Data: RESPRenderable, Sendable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
-
 
         @inlinable public init(field: Field, value: Value) {
             self.field = field
@@ -528,7 +532,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Returns: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func hscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> RESPToken.Array {
+    public func hscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> RESPToken.Array
+    {
         try await send(command: HSCAN(key: key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
     }
 

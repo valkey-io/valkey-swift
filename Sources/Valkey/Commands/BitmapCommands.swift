@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey open source project
+// This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 the swift-valkey project authors
+// Copyright (c) 2025 the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+// See CONTRIBUTORS.txt for the list of valkey-swift project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -43,7 +43,6 @@ public struct BITCOUNT: ValkeyCommand {
         @usableFromInline let end: Int
         @usableFromInline let unit: RangeEndUnitBlockUnit?
 
-
         @inlinable public init(end: Int, unit: RangeEndUnitBlockUnit? = nil) {
             self.end = end
             self.unit = unit
@@ -63,7 +62,6 @@ public struct BITCOUNT: ValkeyCommand {
     public struct Range: RESPRenderable, Sendable {
         @usableFromInline let start: Int
         @usableFromInline let endUnitBlock: RangeEndUnitBlock?
-
 
         @inlinable public init(start: Int, endUnitBlock: RangeEndUnitBlock? = nil) {
             self.start = start
@@ -104,7 +102,6 @@ public struct BITFIELD: ValkeyCommand {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
-
         @inlinable public init(encoding: String, offset: Int) {
             self.encoding = encoding
             self.offset = offset
@@ -143,7 +140,6 @@ public struct BITFIELD: ValkeyCommand {
         @usableFromInline let offset: Int
         @usableFromInline let value: Int
 
-
         @inlinable public init(encoding: String, offset: Int, value: Int) {
             self.encoding = encoding
             self.offset = offset
@@ -166,7 +162,6 @@ public struct BITFIELD: ValkeyCommand {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let increment: Int
-
 
         @inlinable public init(encoding: String, offset: Int, increment: Int) {
             self.encoding = encoding
@@ -209,7 +204,6 @@ public struct BITFIELD: ValkeyCommand {
     public struct OperationWrite: RESPRenderable, Sendable {
         @usableFromInline let overflowBlock: OperationWriteOverflowBlock?
         @usableFromInline let writeOperation: OperationWriteWriteOperation
-
 
         @inlinable public init(overflowBlock: OperationWriteOverflowBlock? = nil, writeOperation: OperationWriteWriteOperation) {
             self.overflowBlock = overflowBlock
@@ -269,7 +263,6 @@ public struct BITFIELDRO: ValkeyCommand {
     public struct GetBlock: RESPRenderable, Sendable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
-
 
         @inlinable public init(encoding: String, offset: Int) {
             self.encoding = encoding
@@ -365,7 +358,6 @@ public struct BITPOS: ValkeyCommand {
         @usableFromInline let end: Int
         @usableFromInline let unit: RangeEndUnitBlockUnit?
 
-
         @inlinable public init(end: Int, unit: RangeEndUnitBlockUnit? = nil) {
             self.end = end
             self.unit = unit
@@ -385,7 +377,6 @@ public struct BITPOS: ValkeyCommand {
     public struct Range: RESPRenderable, Sendable {
         @usableFromInline let start: Int
         @usableFromInline let endUnitBlock: RangeEndUnitBlock?
-
 
         @inlinable public init(start: Int, endUnitBlock: RangeEndUnitBlock? = nil) {
             self.start = start

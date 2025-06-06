@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey open source project
+// This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 the swift-valkey project authors
+// Copyright (c) 2025 the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+// See CONTRIBUTORS.txt for the list of valkey-swift project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -42,7 +42,6 @@ public enum SENTINEL {
         public struct ActionSet: RESPRenderable, Sendable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
-
 
             @inlinable public init(parameter: String, value: String) {
                 self.parameter = parameter
@@ -98,7 +97,6 @@ public enum SENTINEL {
         public struct Data: RESPRenderable, Sendable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
-
 
             @inlinable public init(parameter: String, value: String) {
                 self.parameter = parameter
@@ -410,7 +408,6 @@ public enum SENTINEL {
             @usableFromInline let option: Option
             @usableFromInline let value: Value
 
-
             @inlinable public init(option: Option, value: Value) {
                 self.option = option
                 self.value = value
@@ -604,7 +601,12 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
+    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
+        ip: Ip,
+        port: Int,
+        currentEpoch: Int,
+        runid: Runid
+    ) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISMASTERDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -617,7 +619,12 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
+    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
+        ip: Ip,
+        port: Int,
+        currentEpoch: Int,
+        runid: Runid
+    ) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISPRIMARYDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -747,7 +754,10 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.4
     /// - Complexity: O(1)
     @inlinable
-    public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(primaryName: PrimaryName, data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]) async throws {
+    public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(
+        primaryName: PrimaryName,
+        data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]
+    ) async throws {
         _ = try await send(command: SENTINEL.SET(primaryName: primaryName, data: data))
     }
 

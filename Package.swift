@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "swift-valkey",
+    name: "valkey-swift",
     platforms: [.macOS(.v15)],
     products: [
         .library(name: "Valkey", targets: ["Valkey"]),
