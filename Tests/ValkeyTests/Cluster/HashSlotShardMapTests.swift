@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey project
+// This source file is part of the valkey-swift project
 //
-// Copyright (c) 2025 the swift-valkey authors
+// Copyright (c) 2025 the valkey-swift authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
+// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -76,21 +76,21 @@ struct HashSlotShardMapTests {
         #expect(map[150] == nil)
         #expect(map[76] == nil)
     }
-    
+
     @Test
     func testEmptyCluster() {
         // Test handling of an empty cluster
         var map = HashSlotShardMap()
         map.updateCluster([])
-        
+
         // All slots should be unassigned
         #expect(map[0] == nil)
         #expect(map[HashSlot.max] == nil)
-        
+
         // Attempting to get a nodeID for a slot should throw
         #expect(throws: ValkeyClusterError.clusterIsMissingSlotAssignment) { try map.nodeID(for: [0]) }
     }
-    
+
     @Test
     func testNodeIDForEmptySlotsCollection() {
         // Set up a non-empty cluster
@@ -111,21 +111,21 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        
+
         map.updateCluster([shard])
-        
+
         // When we pass an empty collection of slots to nodeID(for:), it should choose a random node
         #expect(throws: Never.self) { try map.nodeID(for: [] as [HashSlot]) }
-        
+
         // Now with an empty cluster, it should throw clusterHasNoNodes
         map.updateCluster([])
         #expect(throws: ValkeyClusterError.clusterHasNoNodes) { try map.nodeID(for: [] as [HashSlot]) }
     }
-    
+
     @Test
     func testBoundarySlots() {
         var map = HashSlotShardMap()
-        
+
         // Test the min and max valid slot values
         let shard = ValkeyClusterDescription.Shard(
             slots: [HashSlot.min...5, HashSlot.max...HashSlot.max],
@@ -143,19 +143,19 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        
+
         map.updateCluster([shard])
-        
+
         let expected: ValkeyShardNodeIDs = [.init(endpoint: "mockEndpoint", port: 6)]
         #expect(map[HashSlot.min] == expected)
         #expect(map[HashSlot.max] == expected)
     }
-    
+
     @Test
     func testMultipleNodeID() throws {
         // Test the nodeID(for:) method with multiple slots that map to the same shard
         var map = HashSlotShardMap()
-        
+
         let shard1 = ValkeyClusterDescription.Shard(
             slots: [0...100, 200...300],
             nodes: [
@@ -172,7 +172,7 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        
+
         let shard2 = ValkeyClusterDescription.Shard(
             slots: [101...199],
             nodes: [
@@ -189,25 +189,25 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        
+
         map.updateCluster([shard1, shard2])
-        
+
         // Test slots from the same shard
         let sameShardSlots: [HashSlot] = [5, 50, 250]
         let nodeID = try map.nodeID(for: sameShardSlots)
         #expect(nodeID.master.endpoint == "node1.example.com")
-        
+
         // Test slots from different shards - should throw
-        let differentShardSlots: [HashSlot] = [5, 150] // 5 from shard1, 150 from shard2
+        let differentShardSlots: [HashSlot] = [5, 150]  // 5 from shard1, 150 from shard2
         #expect(throws: ValkeyClusterError.keysInCommandRequireMultipleNodes) {
             try map.nodeID(for: differentShardSlots)
         }
     }
-    
+
     @Test
     func testUnassignedSlotsInNodeIDRequest() {
         var map = HashSlotShardMap()
-        
+
         let shard = ValkeyClusterDescription.Shard(
             slots: [0...100],
             nodes: [
@@ -224,24 +224,24 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        
+
         map.updateCluster([shard])
-        
+
         // Requesting an unassigned slot should throw
         #expect(throws: ValkeyClusterError.clusterIsMissingSlotAssignment) {
             _ = try map.nodeID(for: [500])
         }
-        
+
         // Requesting a mix of assigned and unassigned slots should throw for the first unassigned slot
         #expect(throws: ValkeyClusterError.clusterIsMissingSlotAssignment) {
             _ = try map.nodeID(for: [50, 500])
         }
     }
-    
+
     @Test
     func testClusterUpdates() {
         var map = HashSlotShardMap()
-        
+
         // Initial cluster state
         let shard1 = ValkeyClusterDescription.Shard(
             slots: [0...100],
@@ -259,12 +259,12 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        
+
         map.updateCluster([shard1])
-        
+
         let expected1: ValkeyShardNodeIDs = [.init(endpoint: "node1.example.com", port: 6)]
         #expect(map[50] == expected1)
-        
+
         // Update the cluster - same node but different endpoint/port
         let shard2 = ValkeyClusterDescription.Shard(
             slots: [0...100],
@@ -282,18 +282,18 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        
+
         map.updateCluster([shard2])
-        
+
         let expected2: ValkeyShardNodeIDs = [.init(endpoint: "node1-new.example.com", port: 8)]
         #expect(map[50] == expected2)
         #expect(map[50] != expected1)
     }
-    
+
     @Test
     func testShardWithReplicas() {
         var map = HashSlotShardMap()
-        
+
         // Create a shard with a master and two replicas
         let shard = ValkeyClusterDescription.Shard(
             slots: [0...100],
@@ -333,33 +333,33 @@ struct HashSlotShardMapTests {
                     role: .replica,
                     replicationOffset: 98,
                     health: .online
-                )
+                ),
             ]
         )
-        
+
         map.updateCluster([shard])
-        
+
         // Verify that the shard node IDs include both master and replicas
         let expectedMaster = ValkeyNodeID(endpoint: "master1.example.com", port: 6)
         let expectedReplica1 = ValkeyNodeID(endpoint: "replica1.example.com", port: 8)
         let expectedReplica2 = ValkeyNodeID(endpoint: "replica2.example.com", port: 10)
-        
+
         let shardNodes = map[50]!
         #expect(shardNodes.master == expectedMaster)
         #expect(shardNodes.replicas.count == 2)
         #expect(shardNodes.replicas.contains(expectedReplica1))
         #expect(shardNodes.replicas.contains(expectedReplica2))
-        
+
         // Test nodeID(for:) continues to return correct master when replicas exist
         let nodeID = try! map.nodeID(for: [50, 75])
         #expect(nodeID.master == expectedMaster)
         #expect(nodeID.replicas.count == 2)
     }
-    
+
     @Test
     func testMultipleShardWithReplicas() {
         var map = HashSlotShardMap()
-        
+
         // Create two shards, each with replicas
         let shard1 = ValkeyClusterDescription.Shard(
             slots: [0...5000],
@@ -387,10 +387,10 @@ struct HashSlotShardMapTests {
                     role: .replica,
                     replicationOffset: 95,
                     health: .online
-                )
+                ),
             ]
         )
-        
+
         let shard2 = ValkeyClusterDescription.Shard(
             slots: [5001...16383],
             nodes: [
@@ -429,42 +429,42 @@ struct HashSlotShardMapTests {
                     role: .replica,
                     replicationOffset: 198,
                     health: .online
-                )
+                ),
             ]
         )
-        
+
         map.updateCluster([shard1, shard2])
-        
+
         // Test slots from shard 1
         let expectedMaster1 = ValkeyNodeID(endpoint: "master1.example.com", port: 6)
         let expectedReplica1 = ValkeyNodeID(endpoint: "replica1.example.com", port: 8)
-        
+
         let shardNodes1 = map[1000]!
         #expect(shardNodes1.master == expectedMaster1)
         #expect(shardNodes1.replicas.count == 1)
         #expect(shardNodes1.replicas[0] == expectedReplica1)
-        
+
         // Test slots from shard 2
         let expectedMaster2 = ValkeyNodeID(endpoint: "master2.example.com", port: 10)
         let expectedReplica2_1 = ValkeyNodeID(endpoint: "replica2-1.example.com", port: 12)
         let expectedReplica2_2 = ValkeyNodeID(endpoint: "replica2-2.example.com", port: 14)
-        
+
         let shardNodes2 = map[10000]!
         #expect(shardNodes2.master == expectedMaster2)
         #expect(shardNodes2.replicas.count == 2)
         #expect(shardNodes2.replicas.contains(expectedReplica2_1))
         #expect(shardNodes2.replicas.contains(expectedReplica2_2))
-        
+
         // Verify that nodeID(for:) still throws when slots span multiple shards
         #expect(throws: ValkeyClusterError.keysInCommandRequireMultipleNodes) {
             _ = try map.nodeID(for: [1000, 10000])
         }
     }
-    
+
     @Test
     func testShardWithoutNodes() {
         var map = HashSlotShardMap()
-        
+
         // Create a normal shard with nodes
         let shard1 = ValkeyClusterDescription.Shard(
             slots: [0...100],
@@ -482,27 +482,27 @@ struct HashSlotShardMapTests {
                 )
             ]
         )
-        
+
         // Create a shard without any nodes (empty nodes array)
         let emptyNodeShard = ValkeyClusterDescription.Shard(
             slots: [200...300],
             nodes: []
         )
-        
+
         // The updateCluster implementation should skip shards without a master
         map.updateCluster([shard1, emptyNodeShard])
-        
+
         // Slots from shard1 should be assigned
         #expect(map[50] != nil)
-        
+
         // Slots from the empty shard should be unassigned
         #expect(map[250] == nil)
     }
-    
+
     @Test
     func testNodeHealthStatus() {
         var map = HashSlotShardMap()
-        
+
         // Create a shard with a master that's failed and a healthy replica
         let shard = ValkeyClusterDescription.Shard(
             slots: [0...100],
@@ -530,26 +530,26 @@ struct HashSlotShardMapTests {
                     role: .replica,
                     replicationOffset: 95,
                     health: .online
-                )
+                ),
             ]
         )
-        
+
         map.updateCluster([shard])
-        
+
         // Verify that even though the master is failed, it's still mapped correctly
         let expectedMaster = ValkeyNodeID(endpoint: "master1.example.com", port: 6)
         let expectedReplica = ValkeyNodeID(endpoint: "replica1.example.com", port: 8)
-        
+
         let shardNodes = map[50]!
         #expect(shardNodes.master == expectedMaster)
         #expect(shardNodes.replicas.count == 1)
         #expect(shardNodes.replicas[0] == expectedReplica)
     }
-    
+
     @Test
     func testReplicaLoadingState() {
         var map = HashSlotShardMap()
-        
+
         // Create a shard with a master and replicas in different health states
         let shard = ValkeyClusterDescription.Shard(
             slots: [0...100],
@@ -589,28 +589,28 @@ struct HashSlotShardMapTests {
                     role: .replica,
                     replicationOffset: 90,
                     health: .loading
-                )
+                ),
             ]
         )
-        
+
         map.updateCluster([shard])
-        
+
         // Verify all nodes (including loading replica) are included in the mapping
         let expectedMaster = ValkeyNodeID(endpoint: "master1.example.com", port: 6)
         let expectedReplica1 = ValkeyNodeID(endpoint: "replica1.example.com", port: 8)
-        let expectedReplica2 = ValkeyNodeID(endpoint: "replica2.example.com", port: 10) 
-        
+        let expectedReplica2 = ValkeyNodeID(endpoint: "replica2.example.com", port: 10)
+
         let shardNodes = map[50]!
         #expect(shardNodes.master == expectedMaster)
         #expect(shardNodes.replicas.count == 2)
         #expect(shardNodes.replicas.contains(expectedReplica1))
         #expect(shardNodes.replicas.contains(expectedReplica2))
     }
-    
+
     @Test
     func testReplicaWithoutTLSPort() {
         var map = HashSlotShardMap()
-        
+
         // Create a shard with replicas that have different port configurations
         let shard = ValkeyClusterDescription.Shard(
             slots: [0...100],
@@ -650,17 +650,17 @@ struct HashSlotShardMapTests {
                     role: .replica,
                     replicationOffset: 98,
                     health: .online
-                )
+                ),
             ]
         )
-        
+
         map.updateCluster([shard])
-        
+
         // Verify the mapping correctly handles nil ports
         let expectedMaster = ValkeyNodeID(endpoint: "master1.example.com", port: 6)
         let expectedReplica1 = ValkeyNodeID(endpoint: "replica1.example.com", port: 8)
-        let expectedReplica2 = ValkeyNodeID(endpoint: "replica2.example.com", port: 9) // Should use non-TLS port
-        
+        let expectedReplica2 = ValkeyNodeID(endpoint: "replica2.example.com", port: 9)  // Should use non-TLS port
+
         let shardNodes = map[50]!
         #expect(shardNodes.master == expectedMaster)
         #expect(shardNodes.replicas.count == 2)

@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey project
+// This source file is part of the valkey-swift project
 //
-// Copyright (c) 2025 the swift-valkey authors
+// Copyright (c) 2025 the valkey-swift authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
+// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -42,22 +42,22 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     ///
     /// This may be `nil` if the node is only known by IP address.
     package var host: String?
-    
+
     /// The IP address of the Valkey node, if available.
     ///
     /// This may be `nil` if the node is only known by hostname.
     package var ip: String?
-    
+
     /// The network endpoint (hostname or IP) used to connect to this node.
     ///
     /// This property is required and is used as part of the node's unique identifier.
     package var endpoint: String
-    
+
     /// The port number on which this Valkey node is listening.
     ///
     /// This property is required and is used as part of the node's unique identifier.
     package var port: Int
-    
+
     /// Indicates whether TLS/SSL should be used when connecting to this node.
     ///
     /// When `true`, the connection will use secure transport with TLS.
@@ -96,7 +96,7 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
 
     /// Determines whether this node description matches a given cluster node description.
     ///
-    /// This method compares the essential connection properties of this node with 
+    /// This method compares the essential connection properties of this node with
     /// another node description to determine if they refer to the same logical node.
     ///
     /// - Parameter other: The `ValkeyClusterDescription.Node` to compare against.

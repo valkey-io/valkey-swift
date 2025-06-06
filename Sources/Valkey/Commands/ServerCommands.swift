@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey open source project
+// This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
+// Copyright (c) 2025 Apple Inc. and the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+// See CONTRIBUTORS.txt for the list of valkey-swift project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -533,7 +533,6 @@ public enum CONFIG {
             @usableFromInline let parameter: Parameter
             @usableFromInline let value: Value
 
-
             @inlinable public init(parameter: Parameter, value: Value) {
                 self.parameter = parameter
                 self.value = value
@@ -783,7 +782,6 @@ public enum MODULE {
             @usableFromInline let name: String
             @usableFromInline let value: String
 
-
             @inlinable public init(name: String, value: String) {
                 self.name = name
                 self.value = value
@@ -952,7 +950,6 @@ public struct FAILOVER: ValkeyCommand {
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
 
-
         @inlinable public init(host: String, port: Int, force: Bool = false) {
             self.host = host
             self.port = port
@@ -1111,7 +1108,6 @@ public struct REPLICAOF: ValkeyCommand {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
-
         @inlinable public init(host: String, port: Int) {
             self.host = host
             self.port = port
@@ -1131,7 +1127,6 @@ public struct REPLICAOF: ValkeyCommand {
     public struct ArgsNoOne: RESPRenderable, Sendable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
-
 
         @inlinable public init(no: Bool = false, one: Bool = false) {
             self.no = no
@@ -1224,7 +1219,6 @@ public struct SHUTDOWN: ValkeyCommand {
         @usableFromInline let now: Bool
         @usableFromInline let force: Bool
 
-
         @inlinable public init(saveSelector: AbortSelectorSaveSelectorBlockSaveSelector? = nil, now: Bool = false, force: Bool = false) {
             self.saveSelector = saveSelector
             self.now = now
@@ -1280,7 +1274,6 @@ public struct SLAVEOF: ValkeyCommand {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
-
         @inlinable public init(host: String, port: Int) {
             self.host = host
             self.port = port
@@ -1300,7 +1293,6 @@ public struct SLAVEOF: ValkeyCommand {
     public struct ArgsNoOne: RESPRenderable, Sendable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
-
 
         @inlinable public init(no: Bool = false, one: Bool = false) {
             self.no = no
@@ -1420,7 +1412,11 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
-    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, arg: [String] = []) async throws -> RESPToken? {
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(
+        username: Username,
+        command: Command,
+        arg: [String] = []
+    ) async throws -> RESPToken? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 

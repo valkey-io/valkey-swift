@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey project
+// This source file is part of the valkey-swift project
 //
-// Copyright (c) 2025 the swift-valkey authors
+// Copyright (c) 2025 the valkey-swift authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
+// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -46,10 +46,10 @@ public struct HashSlot: Hashable, Sendable {
 
     /// The maximum valid hash slot value (16,383).
     public static let max = HashSlot(.hashSlotMax)
-    
+
     /// The minimum valid hash slot value (0).
     public static let min = HashSlot(.hashSlotMin)
-    
+
     /// The total number of hash slots in a Valkey cluster (16,384).
     public static let count: Int = 16384
 
@@ -266,7 +266,7 @@ extension HashSlot {
     /// Calculates the CRC16 checksum for a sequence of bytes using the XMODEM algorithm.
     ///
     /// This is the specific CRC16 implementation used by Valkey/Redis for hash slot calculation.
-    /// 
+    ///
     /// - Parameter bytes: A sequence of bytes to compute the CRC16 value for
     /// - Returns: The computed CRC16 value
     package static func crc16<Bytes: Sequence>(_ bytes: Bytes) -> UInt16 where Bytes.Element == UInt8 {

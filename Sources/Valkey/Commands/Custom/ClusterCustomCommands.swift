@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey project
+// This source file is part of the valkey-swift project
 //
-// Copyright (c) 2025 the swift-valkey authors
+// Copyright (c) 2025 the valkey-swift authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
+// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -384,8 +384,9 @@ struct MapStyleArray: Sequence {
 
         mutating func next() -> (String, RESPToken)? {
             guard let nodeKey = self.underlying.next(),
-                    let key = try? String(fromRESP: nodeKey),
-                    let nodeVal = self.underlying.next() else {
+                let key = try? String(fromRESP: nodeKey),
+                let nodeVal = self.underlying.next()
+            else {
                 return nil
             }
 

@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey project
+// This source file is part of the valkey-swift project
 //
-// Copyright (c) 2025 the swift-valkey authors
+// Copyright (c) 2025 the valkey-swift authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
+// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -26,10 +26,10 @@ import NIOCore
 struct ValkeyMovedError: Hashable, Sendable {
     /// The hash slot number that triggered the redirection.
     var slot: HashSlot
-    
+
     /// The hostname or IP address of the node that owns the requested hash slot.
     var endpoint: String
-    
+
     /// The port number of the node that owns the requested hash slot.
     var port: Int
 
@@ -45,7 +45,7 @@ extension RESPToken {
     /// Attempts to parse a RESP error token as a Valkey MOVED error.
     ///
     /// This method extracts the hash slot, endpoint, and port information from a RESP error
-    /// token if it represents a Valkey MOVED error. MOVED errors are returned by Valkey cluster 
+    /// token if it represents a Valkey MOVED error. MOVED errors are returned by Valkey cluster
     /// nodes when a client attempts to access a key that belongs to a different node.
     ///
     /// The error format is expected to be: `"MOVED <slot> <endpoint>:<port>"`
@@ -53,26 +53,27 @@ extension RESPToken {
     /// - Returns: A `ValkeyMovedError` if the token represents a valid MOVED error, or `nil` otherwise.
     @usableFromInline
     func parseMovedError() -> ValkeyMovedError? {
-        let byteBuffer: ByteBuffer? = switch self.value {
-        case .bulkError(let byteBuffer),
-             .simpleError(let byteBuffer):
-            byteBuffer
+        let byteBuffer: ByteBuffer? =
+            switch self.value {
+            case .bulkError(let byteBuffer),
+                .simpleError(let byteBuffer):
+                byteBuffer
 
-        case .simpleString,
-             .bulkString,
-             .verbatimString,
-             .number,
-             .double,
-             .boolean,
-             .bigNumber,
-             .array,
-             .attribute,
-             .map,
-             .set,
-             .push,
-             .null:
-            nil
-        }
+            case .simpleString,
+                .bulkString,
+                .verbatimString,
+                .number,
+                .double,
+                .boolean,
+                .bigNumber,
+                .array,
+                .attribute,
+                .map,
+                .set,
+                .push,
+                .null:
+                nil
+            }
 
         guard var byteBuffer else {
             return nil
@@ -108,4 +109,3 @@ extension RESPToken {
         return ValkeyMovedError(slot: slot, endpoint: String(endpoint), port: port)
     }
 }
-

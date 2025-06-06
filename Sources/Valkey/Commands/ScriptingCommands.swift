@@ -1,12 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey open source project
+// This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 Apple Inc. and the swift-valkey project authors
+// Copyright (c) 2025 Apple Inc. and the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of swift-valkey project authors
+// See CONTRIBUTORS.txt for the list of valkey-swift project authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -477,7 +477,11 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: Depends on the function that is executed.
     /// - Returns: Return value depends on the function that is executed
     @inlinable
-    public func fcallRo<Function: RESPStringRenderable>(function: Function, key: [ValkeyKey] = [], arg: [String] = []) async throws -> FCALLRO.Response {
+    public func fcallRo<Function: RESPStringRenderable>(
+        function: Function,
+        key: [ValkeyKey] = [],
+        arg: [String] = []
+    ) async throws -> FCALLRO.Response {
         try await send(command: FCALLRO(function: function, key: key, arg: arg))
     }
 
@@ -550,7 +554,10 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) (considering compilation time is redundant)
     /// - Returns: [String]: The library name that was loaded
     @inlinable
-    public func functionLoad<FunctionCode: RESPStringRenderable>(replace: Bool = false, functionCode: FunctionCode) async throws -> FUNCTION.LOAD.Response {
+    public func functionLoad<FunctionCode: RESPStringRenderable>(
+        replace: Bool = false,
+        functionCode: FunctionCode
+    ) async throws -> FUNCTION.LOAD.Response {
         try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
     }
 
@@ -560,7 +567,10 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions on the payload
     @inlinable
-    public func functionRestore<SerializedValue: RESPStringRenderable>(serializedValue: SerializedValue, policy: FUNCTION.RESTORE<SerializedValue>.Policy? = nil) async throws {
+    public func functionRestore<SerializedValue: RESPStringRenderable>(
+        serializedValue: SerializedValue,
+        policy: FUNCTION.RESTORE<SerializedValue>.Policy? = nil
+    ) async throws {
         _ = try await send(command: FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
     }
 
