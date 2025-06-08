@@ -303,13 +303,13 @@ struct GeneratedCommands {
                     #expect(rt1?.key == key)
                     #expect(element == "a")
                     let rt2 = try await connection.lmpop(key: [key, key2], where: .right)
-                    let (element2) = try rt2?.values.decodeElements(as: (String).self)
+                    let elements2 = try rt2?.values.decode(as: [String].self)
                     #expect(rt2?.key == key2)
-                    #expect(element2 == "b")
+                    #expect(elements2 == ["b"])
                     let rt3 = try await connection.lmpop(key: [key, key2], where: .right, count: 2)
-                    let elements = try rt3?.values.decode(as: [String].self)
+                    let elements3 = try rt3?.values.decode(as: [String].self)
                     #expect(rt3?.key == key2)
-                    #expect(elements == ["c", "d"])
+                    #expect(elements3 == ["c", "d"])
                 }
             }
         }

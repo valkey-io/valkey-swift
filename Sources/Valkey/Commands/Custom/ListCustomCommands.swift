@@ -17,8 +17,8 @@ extension LMPOP {
     ///     * [Null]: If no element could be popped.
     ///     * [Array]: List key from which elements were popped.
     public struct OptionalResponse: RESPTokenDecodable, Sendable {
-        let key: ValkeyKey
-        let values: RESPToken.Array
+        public let key: ValkeyKey
+        public let values: RESPToken.Array
 
         public init(fromRESP token: RESPToken) throws {
             switch token.value {

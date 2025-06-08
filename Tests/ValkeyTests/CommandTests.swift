@@ -135,6 +135,53 @@ struct CommandTests {
                 try await group.waitForAll()
             }
         }
+
+        @Test
+        func lmpop() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    var values = try await connection.lmpop(key: ["key1", "key2"], where: .right)
+                    #expect(values?.key == "key1")
+                    try #expect(values?.values.decode(as: [String].self) == ["a"])
+                    values = try await connection.lmpop(key: ["key1", "key2"], where: .left, count: 2)
+                    #expect(values?.key == "key2")
+                    try #expect(values?.values.decode(as: [String].self) == ["c", "b"])
+                }
+                group.addTask {
+                    var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["LMPOP", "2", "key1", "key2", "RIGHT"])).base)
+                    try await channel.writeInbound(
+                        RESPToken(
+                            .array([
+                                .bulkString("key1"),
+                                .array([
+                                    .bulkString("a")
+                                ]),
+                            ])
+                        ).base
+                    )
+                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["LMPOP", "2", "key1", "key2", "LEFT", "COUNT", "2"])).base)
+                    try await channel.writeInbound(
+                        RESPToken(
+                            .array([
+                                .bulkString("key2"),
+                                .array([
+                                    .bulkString("c"),
+                                    .bulkString("b"),
+                                ]),
+                            ])
+                        ).base
+                    )
+                }
+                try await group.waitForAll()
+            }
+        }
     }
 
     struct SortedSetCommands {
