@@ -493,7 +493,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.4
     /// - Returns: [String]: Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
     @inlinable
-    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> SENTINEL.CKQUORUM.Response {
+    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> SENTINEL.CKQUORUM<PrimaryName>.Response {
         try await send(command: SENTINEL.CKQUORUM(primaryName: primaryName))
     }
 

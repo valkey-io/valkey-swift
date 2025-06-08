@@ -613,8 +613,6 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
             id.map { RESPBulkString($0) }.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken.Map?
-
     public var count: Int?
     public var milliseconds: Int?
     public var streams: Streams
@@ -1049,7 +1047,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Map]: A map of key-value elements when each element composed of key name and the entries reported for that key.
     ///     * [Null]: If BLOCK option is given, and a timeout occurs, or there is no stream we can serve.
     @inlinable
-    public func xread<Id: RESPStringRenderable>(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD<Id>.Streams) async throws -> RESPToken.Map? {
+    public func xread<Id: RESPStringRenderable>(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD<Id>.Streams) async throws -> XREAD<Id>.Response {
         try await send(command: XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
