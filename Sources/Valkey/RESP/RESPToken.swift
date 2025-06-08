@@ -585,3 +585,99 @@ extension UInt32 {
         return value
     }()
 }
+
+extension RESPToken.Value: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        self.debugDescriptionWith(indent: "", childIndent: "")
+    }
+
+    fileprivate func debugDescriptionWith(indent tab: String, childIndent childTab: String) -> String {
+        switch self {
+        case .simpleString(let buffer): "\(tab).simpleString(\"\(String(buffer: buffer))\")"
+        case .simpleError(let buffer): "\(tab).simpleError(\"\(String(buffer: buffer))\")"
+        case .bulkString(let buffer): "\(tab).bulkString(\"\(String(buffer: buffer))\")"
+        case .bulkError(let buffer): "\(tab).bulkError(\"\(String(buffer: buffer))\")"
+        case .verbatimString(let buffer): "\(tab).verbatimString(\"\(String(buffer: buffer))\")"
+        case .number(let integer): "\(tab).number(\(integer))"
+        case .double(let double): "\(tab).double(\(double))"
+        case .boolean(let bool): "\(tab).boolean(\(bool ? "t" : "f"))"
+        case .null: "\(tab).null"
+        case .bigNumber(let buffer): "\(tab).bigNumber(\"\(String(buffer: buffer))\"))"
+        case .array(let array): "\(tab).array([\n\(array.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        case .attribute(let map): "\(tab).attribute([\n\(map.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        case .map(let map): "\(tab).map([\n\(map.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        case .set(let array): "\(tab).set([\n\(array.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        case .push(let array): "\(tab).push([\n\(array.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        }
+    }
+}
+
+extension RESPToken.Array: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        self.debugDescriptionWith(indent: "")
+    }
+
+    fileprivate func debugDescriptionWith(indent tab: String) -> String {
+        self.map { $0.value.debugDescriptionWith(indent: "\(tab)", childIndent: "\(tab)") }.joined(separator: ",\n")
+    }
+}
+
+extension RESPToken.Map: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        self.debugDescriptionWith(indent: "")
+    }
+
+    fileprivate func debugDescriptionWith(indent tab: String) -> String {
+        self.map {
+            "\($0.key.value.debugDescriptionWith(indent: "\(tab)", childIndent: "\(tab)")): \($0.value.value.debugDescriptionWith(indent: "", childIndent: "\(tab)"))"
+        }.joined(separator: ",\n")
+    }
+}
+
+extension RESPToken.Value: CustomStringConvertible {
+    public var description: String {
+        self.descriptionWith(indent: "", childIndent: "")
+    }
+
+    fileprivate func descriptionWith(indent tab: String, childIndent childTab: String) -> String {
+        switch self {
+        case .simpleString: "\(tab).simpleString(***)"
+        case .simpleError: "\(tab).simpleError(***)"
+        case .bulkString: "\(tab).bulkString(***)"
+        case .bulkError: "\(tab).bulkError(***)"
+        case .verbatimString: "\(tab).verbatimString(***)"
+        case .number(let integer): "\(tab).number(\(integer))"
+        case .double(let double): "\(tab).double(\(double))"
+        case .boolean(let bool): "\(tab).boolean(\(bool ? "t" : "f"))"
+        case .null: "\(tab).null"
+        case .bigNumber(let buffer): "\(tab).bigNumber(\"\(String(buffer: buffer))\"))"
+        case .array(let array): "\(tab).array([\n\(array.descriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        case .attribute(let map): "\(tab).attribute([\n\(map.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        case .map(let map): "\(tab).map([\n\(map.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        case .set(let array): "\(tab).set([\n\(array.descriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        case .push(let array): "\(tab).push([\n\(array.descriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
+        }
+    }
+}
+
+extension RESPToken.Array: CustomStringConvertible {
+    public var description: String {
+        self.descriptionWith(indent: "")
+    }
+
+    fileprivate func descriptionWith(indent tab: String) -> String {
+        self.map { $0.value.descriptionWith(indent: "\(tab)", childIndent: "\(tab)") }.joined(separator: ",\n")
+    }
+}
+
+extension RESPToken.Map: CustomStringConvertible {
+    public var description: String {
+        self.descriptionWith(indent: "")
+    }
+
+    fileprivate func descriptionWith(indent tab: String) -> String {
+        self.map {
+            "\($0.key.value.descriptionWith(indent: "\(tab)", childIndent: "\(tab)")): \($0.value.value.descriptionWith(indent: "", childIndent: "\(tab)"))"
+        }.joined(separator: ",\n")
+    }
+}
