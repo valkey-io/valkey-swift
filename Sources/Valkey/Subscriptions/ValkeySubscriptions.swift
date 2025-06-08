@@ -16,6 +16,7 @@ import Logging
 import Synchronization
 
 /// Container for all subscriptions on one connection
+@available(valkeySwift 1.0, *)
 @usableFromInline
 struct ValkeySubscriptions {
     var subscriptionIDMap: [Int: SubscriptionRef]

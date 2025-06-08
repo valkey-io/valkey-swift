@@ -22,13 +22,15 @@ struct App {
     }
 
     func run() async throws {
-        let resourceFolder = Bundle.module.resourceURL!
-        let commands = try load(fileURL: resourceFolder.appending(path: "valkey-commands.json"), as: ValkeyCommands.self)
-        try writeValkeyCommands(toFolder: "Sources/Valkey/Commands/", commands: commands, module: false)
-        let bloomCommands = try load(fileURL: resourceFolder.appending(path: "valkey-bloom-commands.json"), as: ValkeyCommands.self)
-        try writeValkeyCommands(toFolder: "Sources/ValkeyBloom/", commands: bloomCommands, module: true)
-        let jsonCommands = try load(fileURL: resourceFolder.appending(path: "valkey-json-commands.json"), as: ValkeyCommands.self)
-        try writeValkeyCommands(toFolder: "Sources/ValkeyJSON/", commands: jsonCommands, module: true)
+        if #available(valkeySwift 1.0, *) {
+            let resourceFolder = Bundle.module.resourceURL!
+            let commands = try load(fileURL: resourceFolder.appending(path: "valkey-commands.json"), as: ValkeyCommands.self)
+            try writeValkeyCommands(toFolder: "Sources/Valkey/Commands/", commands: commands, module: false)
+            let bloomCommands = try load(fileURL: resourceFolder.appending(path: "valkey-bloom-commands.json"), as: ValkeyCommands.self)
+            try writeValkeyCommands(toFolder: "Sources/ValkeyBloom/", commands: bloomCommands, module: true)
+            let jsonCommands = try load(fileURL: resourceFolder.appending(path: "valkey-json-commands.json"), as: ValkeyCommands.self)
+            try writeValkeyCommands(toFolder: "Sources/ValkeyJSON/", commands: jsonCommands, module: true)
+        }
     }
 
     func writeValkeyCommands(toFolder: String, commands: ValkeyCommands, module: Bool) throws {

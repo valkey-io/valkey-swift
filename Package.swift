@@ -3,9 +3,15 @@
 
 import PackageDescription
 
+let defaultSwiftSettings: [SwiftSetting] =
+    [
+        .swiftLanguageMode(.v6),
+        .enableExperimentalFeature("AvailabilityMacro=valkeySwift 1.0:macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0"),
+    ]
+
 let package = Package(
     name: "valkey-swift",
-    platforms: [.macOS(.v15)],
+    platforms: [.macOS(.v13)],
     products: [
         .library(name: "Valkey", targets: ["Valkey"]),
         .library(name: "ValkeyBloom", targets: ["ValkeyBloom"]),
@@ -24,7 +30,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.23.0"),
         .package(url: "https://github.com/swift-server/swift-service-lifecycle.git", from: "2.8.0"),
 
-        .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.29.2"),
+        .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -38,15 +44,18 @@ let package = Package(
                 .product(name: "NIOSSL", package: "swift-nio-ssl"),
                 .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
                 .product(name: "ServiceLifecycle", package: "swift-service-lifecycle", condition: .when(traits: ["ServiceLifecycleSupport"])),
-            ]
+            ],
+            swiftSettings: defaultSwiftSettings
         ),
         .target(
             name: "ValkeyBloom",
-            dependencies: ["Valkey"]
+            dependencies: ["Valkey"],
+            swiftSettings: defaultSwiftSettings
         ),
         .target(
             name: "ValkeyJSON",
-            dependencies: ["Valkey"]
+            dependencies: ["Valkey"],
+            swiftSettings: defaultSwiftSettings
         ),
         .target(
             name: "_ConnectionPoolModule",
@@ -54,12 +63,14 @@ let package = Package(
                 .product(name: "Atomics", package: "swift-atomics"),
                 .product(name: "DequeModule", package: "swift-collections"),
             ],
-            path: "Sources/ConnectionPoolModule"
+            path: "Sources/ConnectionPoolModule",
+            swiftSettings: defaultSwiftSettings
         ),
         .executableTarget(
             name: "ValkeyCommandsBuilder",
             path: "Sources/_ValkeyCommandsBuilder",
-            resources: [.process("Resources")]
+            resources: [.process("Resources")],
+            swiftSettings: defaultSwiftSettings
         ),
         .executableTarget(
             name: "ValkeyBenchmarks",
@@ -71,6 +82,7 @@ let package = Package(
                 .product(name: "NIOPosix", package: "swift-nio"),
             ],
             path: "Benchmarks/ValkeyBenchmarks",
+            swiftSettings: defaultSwiftSettings,
             plugins: [
                 .plugin(name: "BenchmarkPlugin", package: "package-benchmark")
             ]
@@ -79,7 +91,8 @@ let package = Package(
             name: "IntegrationTests",
             dependencies: [
                 "Valkey"
-            ]
+            ],
+            swiftSettings: defaultSwiftSettings
         ),
         .testTarget(
             name: "ValkeyTests",
@@ -88,7 +101,8 @@ let package = Package(
                 .product(name: "NIOTestUtils", package: "swift-nio"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOEmbedded", package: "swift-nio"),
-            ]
+            ],
+            swiftSettings: defaultSwiftSettings
         ),
     ]
 )

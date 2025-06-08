@@ -14,6 +14,7 @@
 
 import Synchronization
 
+@available(valkeySwift 1.0, *)
 @usableFromInline
 struct IDGenerator: ~Copyable, Sendable {
     private let atomic: Atomic<Int>

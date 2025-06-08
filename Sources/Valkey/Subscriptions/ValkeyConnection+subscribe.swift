@@ -14,6 +14,7 @@
 
 import NIOCore
 
+@available(valkeySwift 1.0, *)
 extension ValkeyConnection {
     /// Subscribe to list of channels and run closure with subscription
     ///

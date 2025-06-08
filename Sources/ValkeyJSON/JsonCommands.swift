@@ -246,6 +246,7 @@ public enum JSON {
             @usableFromInline let path: Path
             @usableFromInline let json: Json
 
+
             @inlinable public init(key: ValkeyKey, path: Path, json: Json) {
                 self.key = key
                 self.path = path
