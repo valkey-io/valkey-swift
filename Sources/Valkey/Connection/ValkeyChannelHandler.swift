@@ -365,6 +365,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     func handleToken(context: ChannelHandlerContext, token: RESPToken) {
+        print(token.value.debugDescription)
         switch token.identifier {
         case .simpleError, .bulkError:
             switch self.stateMachine.receivedResponse() {

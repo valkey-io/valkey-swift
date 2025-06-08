@@ -308,7 +308,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
         "BZPOPMAX",
         "BZPOPMIN",
         "CLUSTER SHARDS",
-        //"LMPOP",
+        "LMPOP",
         "ZMPOP",
         "ZPOPMAX",
         "ZPOPMIN",
