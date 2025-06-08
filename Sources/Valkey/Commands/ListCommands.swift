@@ -385,14 +385,7 @@ public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "LPOS",
-            key,
-            RESPBulkString(element),
-            RESPWithToken("RANK", rank),
-            RESPWithToken("COUNT", numMatches),
-            RESPWithToken("MAXLEN", len)
-        )
+        commandEncoder.encodeArray("LPOS", key, RESPBulkString(element), RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 }
 
@@ -600,13 +593,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The popped element.
     ///     * [Null]: Operation timed-out
     @inlinable
-    public func blmove(
-        source: ValkeyKey,
-        destination: ValkeyKey,
-        wherefrom: BLMOVE.Wherefrom,
-        whereto: BLMOVE.Whereto,
-        timeout: Double
-    ) async throws -> RESPToken? {
+    public func blmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> RESPToken? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
@@ -647,7 +634,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of provided keys.
     /// - Returns: One of the following
     ///     * [Null]: No element could be popped and the timeout expired.
-    ///     * [Array]: The name of the key where an element was popped
+    ///     * [Array]: The name of the key where an element was popped 
     @inlinable
     public func brpop(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
         try await send(command: BRPOP(key: key, timeout: timeout))
@@ -692,12 +679,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: In case key doesn't exist.
     ///     * -1: When the pivot wasn't found.
     @inlinable
-    public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(
-        key: ValkeyKey,
-        `where`: LINSERT<Pivot, Element>.Where,
-        pivot: Pivot,
-        element: Element
-    ) async throws -> Int {
+    public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(key: ValkeyKey, `where`: LINSERT<Pivot, Element>.Where, pivot: Pivot, element: Element) async throws -> Int {
         try await send(command: LINSERT(key: key, where: `where`, pivot: pivot, element: element))
     }
 
@@ -762,13 +744,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: An integer representing the matching element
     ///     * [Array]: If the COUNT option is given, an array of integers representing the matching elements (empty if there are no matches)
     @inlinable
-    public func lpos<Element: RESPStringRenderable>(
-        key: ValkeyKey,
-        element: Element,
-        rank: Int? = nil,
-        numMatches: Int? = nil,
-        len: Int? = nil
-    ) async throws -> [Int]? {
+    public func lpos<Element: RESPStringRenderable>(key: ValkeyKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> [Int]? {
         try await send(command: LPOS(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 

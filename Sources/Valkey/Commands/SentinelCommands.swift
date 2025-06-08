@@ -601,12 +601,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
-        ip: Ip,
-        port: Int,
-        currentEpoch: Int,
-        runid: Runid
-    ) async throws -> RESPToken.Array {
+    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISMASTERDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -619,12 +614,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
-        ip: Ip,
-        port: Int,
-        currentEpoch: Int,
-        runid: Runid
-    ) async throws -> RESPToken.Array {
+    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISPRIMARYDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -754,10 +744,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.4
     /// - Complexity: O(1)
     @inlinable
-    public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(
-        primaryName: PrimaryName,
-        data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]
-    ) async throws {
+    public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(primaryName: PrimaryName, data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]) async throws {
         _ = try await send(command: SENTINEL.SET(primaryName: primaryName, data: data))
     }
 

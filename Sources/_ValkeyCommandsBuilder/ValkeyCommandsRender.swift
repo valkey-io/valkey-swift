@@ -158,7 +158,7 @@ extension String {
             arguments
             .map { "\($0.name.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true, genericStrings: genericStrings))" }
             .joined(separator: ", ")
-        self.append("\n\(tab)        @inlinable public init(\(commandParametersString)) {\n")
+        self.append("\(tab)        @inlinable public init(\(commandParametersString)) {\n")
         for arg in arguments {
             self.append("\(tab)            self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
@@ -314,6 +314,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
         "BZPOPMAX",
         "BZPOPMIN",
         "CLUSTER SHARDS",
+        //"LMPOP",
         "ZMPOP",
         "ZPOPMAX",
         "ZPOPMIN",
