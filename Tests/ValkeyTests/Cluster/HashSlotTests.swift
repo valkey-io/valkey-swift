@@ -84,24 +84,24 @@ struct HashSlotTests {
     @Test
     func hashTagComputation() {
         #expect(
-            HashSlot.hashTag(forKey: "{user1000}.following").elementsEqual(
-                HashSlot.hashTag(forKey: "{user1000}.followers")
+            HashSlot.hashTag(forKey: "{user1000}.following".utf8).elementsEqual(
+                HashSlot.hashTag(forKey: "{user1000}.followers".utf8)
             )
         )
-        #expect(HashSlot.hashTag(forKey: "{user1000}.following").elementsEqual("user1000".utf8))
-        #expect(HashSlot.hashTag(forKey: "{user1000}.followers").elementsEqual("user1000".utf8))
+        #expect(HashSlot.hashTag(forKey: "{user1000}.following".utf8).elementsEqual("user1000".utf8))
+        #expect(HashSlot.hashTag(forKey: "{user1000}.followers".utf8).elementsEqual("user1000".utf8))
 
-        #expect(HashSlot.hashTag(forKey: "foo{}{bar}").elementsEqual("foo{}{bar}".utf8))
-        #expect(HashSlot.hashTag(forKey: "foo{{bar}}zap").elementsEqual("{bar".utf8))
-        #expect(HashSlot.hashTag(forKey: "foo{bar}{zap}").elementsEqual("bar".utf8))
-        #expect(HashSlot.hashTag(forKey: "{}foo{bar}{zap}").elementsEqual("{}foo{bar}{zap}".utf8))
-        #expect(HashSlot.hashTag(forKey: "foo").elementsEqual("foo".utf8))
-        #expect(HashSlot.hashTag(forKey: "foo}").elementsEqual("foo}".utf8))
-        #expect(HashSlot.hashTag(forKey: "{foo}").elementsEqual("foo".utf8))
-        #expect(HashSlot.hashTag(forKey: "bar{foo}").elementsEqual("foo".utf8))
-        #expect(HashSlot.hashTag(forKey: "bar{}").elementsEqual("bar{}".utf8))
-        #expect(HashSlot.hashTag(forKey: "{}").elementsEqual("{}".utf8))
-        #expect(HashSlot.hashTag(forKey: "{}bar").elementsEqual("{}bar".utf8))
+        #expect(HashSlot.hashTag(forKey: "foo{}{bar}".utf8).elementsEqual("foo{}{bar}".utf8))
+        #expect(HashSlot.hashTag(forKey: "foo{{bar}}zap".utf8).elementsEqual("{bar".utf8))
+        #expect(HashSlot.hashTag(forKey: "foo{bar}{zap}".utf8).elementsEqual("bar".utf8))
+        #expect(HashSlot.hashTag(forKey: "{}foo{bar}{zap}".utf8).elementsEqual("{}foo{bar}{zap}".utf8))
+        #expect(HashSlot.hashTag(forKey: "foo".utf8).elementsEqual("foo".utf8))
+        #expect(HashSlot.hashTag(forKey: "foo}".utf8).elementsEqual("foo}".utf8))
+        #expect(HashSlot.hashTag(forKey: "{foo}".utf8).elementsEqual("foo".utf8))
+        #expect(HashSlot.hashTag(forKey: "bar{foo}".utf8).elementsEqual("foo".utf8))
+        #expect(HashSlot.hashTag(forKey: "bar{}".utf8).elementsEqual("bar{}".utf8))
+        #expect(HashSlot.hashTag(forKey: "{}".utf8).elementsEqual("{}".utf8))
+        #expect(HashSlot.hashTag(forKey: "{}bar".utf8).elementsEqual("{}bar".utf8))
     }
 
     @Test
@@ -113,3 +113,9 @@ struct HashSlotTests {
         #expect("\(HashSlot(rawValue: 20)!)" == "20")
     }
 }
+/*
+extension HashSlot {
+    static func hashTag(forKey key: String) -> String.UTF8View.SubSequence {
+        Self.hashTag(forKey: key.utf8)
+    }
+}*/

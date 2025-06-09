@@ -15,11 +15,43 @@
 import NIOCore
 
 /// Type representing a Valkey Key
-public struct ValkeyKey: RawRepresentable, Sendable, Equatable, Hashable {
-    public var rawValue: String
+public struct ValkeyKey: Sendable, Equatable, Hashable {
+    @usableFromInline
+    enum _Storage: Sendable {
+        case string(String)
+        case buffer(ByteBuffer)
+    }
+    @usableFromInline
+    let _storage: _Storage
 
-    public init(rawValue: String) {
-        self.rawValue = rawValue
+    @inlinable
+    public init(_ string: String) {
+        self._storage = .string(string)
+    }
+
+    @inlinable
+    public init(_ buffer: ByteBuffer) {
+        self._storage = .buffer(buffer)
+    }
+
+    @inlinable
+    public var string: String {
+        switch self._storage {
+        case .string(let string): string
+        case .buffer(let buffer): String(buffer: buffer)
+        }
+    }
+
+    @inlinable
+    public var buffer: ByteBuffer {
+        switch self._storage {
+        case .string(let string): ByteBuffer(string: string)
+        case .buffer(let buffer): buffer
+        }
+    }
+
+    static public func == (_ lhs: Self, _ rhs: Self) -> Bool {
+        lhs.buffer == rhs.buffer
     }
 }
 
@@ -27,7 +59,7 @@ extension ValkeyKey: RESPTokenDecodable {
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .bulkString(let buffer):
-            self.rawValue = String(buffer: buffer)
+            self._storage = .buffer(buffer)
         default:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
@@ -35,23 +67,29 @@ extension ValkeyKey: RESPTokenDecodable {
 }
 
 extension ValkeyKey: CustomStringConvertible {
-    public var description: String { rawValue.description }
+    public var description: String { self.string }
 }
 
 extension ValkeyKey: RESPRenderable {
-
     @inlinable
     public var respEntries: Int { 1 }
 
     @inlinable
     public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        self.rawValue.encode(into: &commandEncoder)
+        switch self._storage {
+        case .string(let string):
+            string.encode(into: &commandEncoder)
+        case .buffer(let buffer):
+            buffer.encode(into: &commandEncoder)
+        }
     }
 }
+
+extension ValkeyKey: RESPStringRenderable {}
 
 extension ValkeyKey: ExpressibleByStringLiteral {
     @inlinable
     public init(stringLiteral string: String) {
-        self.init(rawValue: string)
+        self.init(string)
     }
 }
