@@ -20,7 +20,7 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array).self)
-            let keyValuePairs = try values.decodeKeyValueElements(key: String.self, value: RESPToken.self)
+            let keyValuePairs = try values.asMap().map { try ($0.key.decode(as: String.self), $0.value) }
             self.id = id
             self.fields = keyValuePairs
         default:
@@ -37,7 +37,7 @@ public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array?).self)
-            let keyValuePairs = try values?.decodeKeyValueElements(key: String.self, value: RESPToken.self)
+            let keyValuePairs = try values.map { try $0.asMap().map { try ($0.key.decode(as: String.self), $0.value) } }
             self.id = id
             self.fields = keyValuePairs
         default:

@@ -38,6 +38,11 @@ public struct RESPToken: Hashable, Sendable {
                 try! RESPToken(consuming: &self.buffer)
             }
         }
+
+        public func asMap() throws -> Map {
+            guard (self.count & 1) == 0 else { throw RESPParsingError(code: .invalidElementCount, buffer: self.buffer) }
+            return Map(count: self.count / 2, buffer: self.buffer)
+        }
     }
 
     public struct Map: Sequence, Sendable, Hashable {
