@@ -166,6 +166,21 @@ struct GeneratedCommands {
     }
 
     @Test
+    func testPipelinedSetGetClient() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                let responses = await client.pipeline(
+                    SET(key: key, value: "Pipelined Hello"),
+                    GET(key: key)
+                )
+                try #expect(responses.1.get()?.decode(as: String.self) == "Pipelined Hello")
+            }
+        }
+    }
+
+    @Test
     func testTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
