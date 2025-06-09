@@ -479,6 +479,55 @@ struct CommandTests {
         }
 
         @Test
+        func xclaim() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            async let asyncResult = connection.xclaim(key: "key1", group: "MyGroup", consumer: "consumer1", minIdleTime: "0", id: ["1749463853292-0"])
+
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            #expect(outbound == RESPToken(.command(["XCLAIM", "key1", "MyGroup", "consumer1", "0", "1749463853292-0"])).base)
+
+            try await channel.writeInbound(
+                RESPToken(
+                    .array([
+                        .array([
+                            .bulkString("1749464199407-0"),
+                            .array([
+                                .bulkString("f"),
+                                .bulkString("v"),
+                            ]),
+                        ]),
+                        .array([
+                            .bulkString("1749464199408-0"),
+                            .array([
+                                .bulkString("f2"),
+                                .bulkString("v2"),
+                            ]),
+                        ]),
+                    ])
+                ).base
+            )
+            let result = try await asyncResult
+            switch result {
+            case .messages(let messages):
+                #expect(messages.count == 2)
+                #expect(messages[0].id == "1749463853292-0")
+                #expect(messages[0].fields.count == 1)
+                #expect(messages[0].fields[0].key == "f")
+                #expect(messages[0].fields[0].value == "v")
+                #expect(messages[1].id == "1749464199408-0")
+                #expect(messages[1].fields.count == 1)
+                #expect(messages[1].fields[0].key == "f2")
+                #expect(messages[1].fields[0].value == "v2")
+            default:
+                Issue.record("Expected `messages` case")
+            }
+        }
+
+        @Test
         func xpending() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")

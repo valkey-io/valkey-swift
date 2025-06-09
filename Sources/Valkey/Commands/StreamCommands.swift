@@ -445,8 +445,6 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
 
 /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
 public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var group: Group
     public var consumer: Consumer
@@ -854,7 +852,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
     /// - Returns: Stream entries with IDs matching the specified range.
     @inlinable
-    public func xclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>(key: ValkeyKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, id: [Id], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> RESPToken.Array {
+    public func xclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>(key: ValkeyKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, id: [Id], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> XCLAIM<Group, Consumer, MinIdleTime, Id>.Response {
         try await send(command: XCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, id: id, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
     }
 

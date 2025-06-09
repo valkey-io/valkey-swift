@@ -85,6 +85,31 @@ extension XAUTOCLAIM {
     }
 }
 
+extension XCLAIM {
+    public enum Response: RESPTokenDecodable, Sendable {
+        case none
+        case messages([XREADMessage])
+        case ids([String])
+
+        public init(fromRESP token: RESPToken) throws {
+            switch token.value {
+            case .array(let array):
+                if array.count == 0 {
+                    self = .none
+                    return
+                }
+                do {
+                    self = try .messages(array.decode())
+                } catch {
+                    self = try .ids(array.decode())
+                }
+            default:
+                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            }
+        }
+    }
+}
+
 extension XPENDING {
     public enum Response: RESPTokenDecodable, Sendable {
         public struct Standard: RESPTokenDecodable, Sendable {

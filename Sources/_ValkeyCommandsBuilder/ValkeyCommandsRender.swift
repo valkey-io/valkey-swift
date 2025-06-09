@@ -20,6 +20,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
         "CLUSTER SHARDS",
         "LMPOP",
         "XAUTOCLAIM",
+        "XCLAIM",
         "XPENDING",
         "XRANGE",
         "XREAD",
