@@ -570,8 +570,6 @@ public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
 
 /// Returns the messages from a stream within a range of IDs.
 public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var start: Start
     public var end: End
@@ -672,8 +670,6 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
             id.map { RESPBulkString($0) }.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken.Map?
-
     public var groupBlock: GroupBlock
     public var count: Int?
     public var milliseconds: Int?
@@ -697,8 +693,6 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 
 /// Returns the messages from a stream within a range of IDs in reverse order.
 public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var end: End
     public var start: Start
@@ -1035,7 +1029,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) with N being the number of elements being returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
     /// - Returns: [Array]: Stream entries with IDs matching the specified range.
     @inlinable
-    public func xrange<Start: RESPStringRenderable, End: RESPStringRenderable>(key: ValkeyKey, start: Start, end: End, count: Int? = nil) async throws -> RESPToken.Array {
+    public func xrange<Start: RESPStringRenderable, End: RESPStringRenderable>(key: ValkeyKey, start: Start, end: End, count: Int? = nil) async throws -> XRANGE<Start, End>.Response {
         try await send(command: XRANGE(key: key, start: start, end: end, count: count))
     }
 
@@ -1060,7 +1054,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: If BLOCK option is specified and the timeout expired
     ///     * [Map]: A map of key-value elements when each element composed of key name and the entries reported for that key
     @inlinable
-    public func xreadgroup<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>(groupBlock: XREADGROUP<Group, Consumer, Id>.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP<Group, Consumer, Id>.Streams) async throws -> RESPToken.Map? {
+    public func xreadgroup<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>(groupBlock: XREADGROUP<Group, Consumer, Id>.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP<Group, Consumer, Id>.Streams) async throws -> XREADGROUP<Group, Consumer, Id>.Response {
         try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
@@ -1073,7 +1067,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) with N being the number of elements returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
     /// - Returns: [Array]: An array of the entries with IDs matching the specified range
     @inlinable
-    public func xrevrange<End: RESPStringRenderable, Start: RESPStringRenderable>(key: ValkeyKey, end: End, start: Start, count: Int? = nil) async throws -> RESPToken.Array {
+    public func xrevrange<End: RESPStringRenderable, Start: RESPStringRenderable>(key: ValkeyKey, end: End, start: Start, count: Int? = nil) async throws -> XREVRANGE<End, Start>.Response {
         try await send(command: XREVRANGE(key: key, end: end, start: start, count: count))
     }
 

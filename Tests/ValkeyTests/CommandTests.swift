@@ -326,4 +326,116 @@ struct CommandTests {
 
         }
     }
+
+    struct StreamCommands {
+        @Test
+        func xread() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            async let asyncResult = connection.xread(count: 2, streams: .init(key: ["key1", "key2"], id: ["0-0", "0-0"]))
+
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            #expect(outbound == RESPToken(.command(["XREAD", "COUNT", "2", "STREAMS", "key1", "key2", "0-0", "0-0"])).base)
+
+            try await channel.writeInbound(
+                RESPToken(
+                    .map([
+                        .bulkString("key1"): .array([
+                            .array([
+                                .bulkString("event1"),
+                                .array([
+                                    .bulkString("field1"),
+                                    .bulkString("value1"),
+                                ]),
+                            ])
+                        ]),
+                        .bulkString("key2"): .array([
+                            .array([
+                                .bulkString("event2"),
+                                .array([
+                                    .bulkString("field2"),
+                                    .bulkString("value2"),
+                                ]),
+                            ]),
+                            .array([
+                                .bulkString("event3"),
+                                .array([
+                                    .bulkString("field3"),
+                                    .bulkString("value3"),
+                                    .bulkString("field4"),
+                                    .bulkString("value4"),
+                                ]),
+                            ]),
+                        ]),
+                    ])
+                ).base
+            )
+            let result = try #require(try await asyncResult)
+            #expect(result.streams.count == 2)
+            let stream1 = try #require(result.streams.first { $0.key == "key1" })
+            let stream2 = try #require(result.streams.first { $0.key == "key2" })
+            #expect(stream1.key == "key1")
+            #expect(stream1.events[0].id == "event1")
+            #expect(stream1.events[0].fields[0].key == "field1")
+            #expect(stream1.events[0].fields[0].value == "value1")
+            #expect(stream2.key == "key2")
+            #expect(stream2.events[0].id == "event2")
+            #expect(stream2.events[0].fields[0].key == "field2")
+            #expect(stream2.events[0].fields[0].value == "value2")
+            #expect(stream2.events[1].id == "event3")
+            #expect(stream2.events[1].fields[0].key == "field3")
+            #expect(stream2.events[1].fields[0].value == "value3")
+            #expect(stream2.events[1].fields[1].key == "field4")
+            #expect(stream2.events[1].fields[1].value == "value4")
+
+        }
+        @Test
+        func xreadgroup() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            async let asyncResult = connection.xreadgroup(
+                groupBlock: .init(group: "MyGroup", consumer: "MyConsumer"),
+                count: 2,
+                streams: .init(key: ["key1"], id: [">"])
+            )
+
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            #expect(outbound == RESPToken(.command(["XREADGROUP", "GROUP", "MyGroup", "MyConsumer", "COUNT", "2", "STREAMS", "key1", ">"])).base)
+
+            try await channel.writeInbound(
+                RESPToken(
+                    .map([
+                        .bulkString("key1"): .array([
+                            .array([
+                                .bulkString("event1"),
+                                .array([
+                                    .bulkString("field1"),
+                                    .bulkString("value1"),
+                                ]),
+                            ]),
+                            .array([
+                                .bulkString("event2"),
+                                .null,
+                            ]),
+                        ])
+                    ])
+                ).base
+            )
+            let result = try #require(try await asyncResult)
+            #expect(result.streams.count == 1)
+            let stream1 = try #require(result.streams.first { $0.key == "key1" })
+            #expect(stream1.key == "key1")
+            #expect(stream1.events[0].id == "event1")
+            #expect(stream1.events[0].fields?[0].key == "field1")
+            #expect(stream1.events[0].fields?[0].value == "value1")
+            #expect(stream1.events[1].id == "event2")
+            #expect(stream1.events[1].fields == nil)
+        }
+    }
 }

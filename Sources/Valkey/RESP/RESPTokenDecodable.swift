@@ -358,6 +358,24 @@ extension RESPToken.Array: RESPTokenDecodable {
         var iterator = self.makeIterator()
         return (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
     }
+
+    /// Convert RESP3Token Array to an array of key value tuples
+    @inlinable
+    public func decodeKeyValueElements<Key: RESPTokenDecodable, Value: RESPTokenDecodable>(
+        key: Key.Type = Key.self,
+        value: Value.Type = Value.self
+    ) throws -> [(Key, Value)] {
+        guard (count & 1) == 0 else { throw RESPParsingError(code: .unexpectedType, buffer: .init()) }
+        let count = self.count / 2
+        return try [(Key, Value)](unsafeUninitializedCapacity: count) { buffer, initializedCount in
+            var iterator = self.makeIterator()
+            while let key = iterator.next() {
+                let value = iterator.next()!
+                buffer[initializedCount] = try (key.decode(as: Key.self), value.decode(as: Value.self))
+                initializedCount += 1
+            }
+        }
+    }
 }
 
 extension RESPToken.Map: RESPTokenDecodable {
