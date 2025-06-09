@@ -378,20 +378,21 @@ struct CommandTests {
             let stream1 = try #require(result.streams.first { $0.key == "key1" })
             let stream2 = try #require(result.streams.first { $0.key == "key2" })
             #expect(stream1.key == "key1")
-            #expect(stream1.events[0].id == "event1")
-            #expect(stream1.events[0].fields[0].key == "field1")
-            #expect(stream1.events[0].fields[0].value == "value1")
+            #expect(stream1.messages[0].id == "event1")
+            #expect(stream1.messages[0].fields[0].key == "field1")
+            #expect(stream1.messages[0].fields[0].value == "value1")
             #expect(stream2.key == "key2")
-            #expect(stream2.events[0].id == "event2")
-            #expect(stream2.events[0].fields[0].key == "field2")
-            #expect(stream2.events[0].fields[0].value == "value2")
-            #expect(stream2.events[1].id == "event3")
-            #expect(stream2.events[1].fields[0].key == "field3")
-            #expect(stream2.events[1].fields[0].value == "value3")
-            #expect(stream2.events[1].fields[1].key == "field4")
-            #expect(stream2.events[1].fields[1].value == "value4")
+            #expect(stream2.messages[0].id == "event2")
+            #expect(stream2.messages[0].fields[0].key == "field2")
+            #expect(stream2.messages[0].fields[0].value == "value2")
+            #expect(stream2.messages[1].id == "event3")
+            #expect(stream2.messages[1].fields[0].key == "field3")
+            #expect(stream2.messages[1].fields[0].value == "value3")
+            #expect(stream2.messages[1].fields[1].key == "field4")
+            #expect(stream2.messages[1].fields[1].value == "value4")
 
         }
+
         @Test
         func xreadgroup() async throws {
             let channel = NIOAsyncTestingChannel()
@@ -431,11 +432,50 @@ struct CommandTests {
             #expect(result.streams.count == 1)
             let stream1 = try #require(result.streams.first { $0.key == "key1" })
             #expect(stream1.key == "key1")
-            #expect(stream1.events[0].id == "event1")
-            #expect(stream1.events[0].fields?[0].key == "field1")
-            #expect(stream1.events[0].fields?[0].value == "value1")
-            #expect(stream1.events[1].id == "event2")
-            #expect(stream1.events[1].fields == nil)
+            #expect(stream1.messages[0].id == "event1")
+            #expect(stream1.messages[0].fields?[0].key == "field1")
+            #expect(stream1.messages[0].fields?[0].value == "value1")
+            #expect(stream1.messages[1].id == "event2")
+            #expect(stream1.messages[1].fields == nil)
+        }
+
+        @Test
+        func xautoclaim() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            async let asyncResult = connection.xautoclaim(key: "key1", group: "MyGroup", consumer: "consumer1", minIdleTime: "0", start: "0")
+
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            #expect(outbound == RESPToken(.command(["XAUTOCLAIM", "key1", "MyGroup", "consumer1", "0", "0"])).base)
+
+            try await channel.writeInbound(
+                RESPToken(
+                    .array([
+                        .bulkString("0-0"),
+                        .array([
+                            .array([
+                                .bulkString("1749460498430-0"),
+                                .array([
+                                    .bulkString("f2"),
+                                    .bulkString("v2"),
+                                ]),
+                            ])
+                        ]),
+                        .array([
+                            .bulkString("1749460498428-0")
+                        ]),
+                    ])
+                ).base
+            )
+            let result = try await asyncResult
+            #expect(result.streamID == "0-0")
+            #expect(result.messsages.count == 1)
+            #expect(result.messsages[0].id == "1749460498430-0")
+            #expect(result.deletedMessages.count == 1)
+            #expect(result.deletedMessages[0] == "1749460498428-0")
         }
     }
 }

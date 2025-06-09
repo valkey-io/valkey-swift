@@ -19,6 +19,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
         "BZPOPMIN",
         "CLUSTER SHARDS",
         "LMPOP",
+        "XAUTOCLAIM",
         "XRANGE",
         "XREAD",
         "XREADGROUP",

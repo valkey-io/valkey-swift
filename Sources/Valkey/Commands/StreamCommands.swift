@@ -418,8 +418,6 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
 
 /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
 public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var group: Group
     public var consumer: Consumer
@@ -847,7 +845,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Claimed stream entries (with data, if `JUSTID` was not given).
     ///     * [Array]: Claimed stream entries (without data, if `JUSTID` was given).
     @inlinable
-    public func xautoclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>(key: ValkeyKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, start: Start, count: Int? = nil, justid: Bool = false) async throws -> RESPToken.Array {
+    public func xautoclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>(key: ValkeyKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, start: Start, count: Int? = nil, justid: Bool = false) async throws -> XAUTOCLAIM<Group, Consumer, MinIdleTime, Start>.Response {
         try await send(command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
     }
 
