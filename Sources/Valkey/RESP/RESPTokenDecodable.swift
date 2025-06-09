@@ -370,7 +370,9 @@ extension RESPToken.Array: RESPTokenDecodable {
         return try [(Key, Value)](unsafeUninitializedCapacity: count) { buffer, initializedCount in
             var iterator = self.makeIterator()
             while let key = iterator.next() {
-                let value = iterator.next()!
+                guard let value = iterator.next() else {
+                    throw RESPParsingError(code: .unexpectedType, buffer: key.base)
+                }
                 buffer[initializedCount] = try (key.decode(as: Key.self), value.decode(as: Value.self))
                 initializedCount += 1
             }
