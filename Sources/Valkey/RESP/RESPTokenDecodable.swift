@@ -366,6 +366,7 @@ extension RESPToken.Array: RESPTokenDecodable {
         value: Value.Type = Value.self
     ) throws -> [(Key, Value)] {
         guard (count & 1) == 0 else { throw RESPParsingError(code: .unexpectedType, buffer: .init()) }
+        /* This currently crashes on Ubuntu 6.1
         let count = self.count / 2
         return try [(Key, Value)](unsafeUninitializedCapacity: count) { buffer, initializedCount in
             var iterator = self.makeIterator()
@@ -376,7 +377,18 @@ extension RESPToken.Array: RESPTokenDecodable {
                 buffer[initializedCount] = try (key.decode(as: Key.self), value.decode(as: Value.self))
                 initializedCount += 1
             }
+        }*/
+        var keyValueArray: [(Key, Value)] = []
+        var iterator = self.makeIterator()
+        var index = 0
+        while let key = iterator.next() {
+            guard let value = iterator.next() else {
+                throw RESPParsingError(code: .unexpectedType, buffer: key.base)
+            }
+            try keyValueArray.append((key.decode(as: Key.self), value.decode(as: Value.self)))
+            index += 1
         }
+        return keyValueArray
     }
 }
 
