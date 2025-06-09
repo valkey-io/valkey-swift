@@ -547,8 +547,6 @@ public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
             consumer.encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var group: Group
     public var filters: Filters?
@@ -1014,7 +1012,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Extended form, in case `start` was given.
     ///     * [Array]: Summary form, in case `start` was not given.
     @inlinable
-    public func xpending<Group: RESPStringRenderable>(key: ValkeyKey, group: Group, filters: XPENDING<Group>.Filters? = nil) async throws -> RESPToken.Array {
+    public func xpending<Group: RESPStringRenderable>(key: ValkeyKey, group: Group, filters: XPENDING<Group>.Filters? = nil) async throws -> XPENDING<Group>.Response {
         try await send(command: XPENDING(key: key, group: group, filters: filters))
     }
 

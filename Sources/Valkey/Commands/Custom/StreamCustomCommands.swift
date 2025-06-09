@@ -85,6 +85,77 @@ extension XAUTOCLAIM {
     }
 }
 
+extension XPENDING {
+    public enum Response: RESPTokenDecodable, Sendable {
+        public struct Standard: RESPTokenDecodable, Sendable {
+            public struct Consumer: RESPTokenDecodable, Sendable {
+                public let consumer: String
+                public let count: String
+
+                public init(fromRESP token: RESPToken) throws {
+                    switch token.value {
+                    case .array(let array):
+                        (self.consumer, self.count) = try array.decodeElements()
+                    default:
+                        throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                    }
+                }
+            }
+            public let pendingMessageCount: Int
+            public let minimumID: String
+            public let maximumID: String
+            public let consumers: [Consumer]
+
+            public init(fromRESP token: RESPToken) throws {
+                switch token.value {
+                case .array(let array):
+                    (self.pendingMessageCount, self.minimumID, self.maximumID, self.consumers) = try array.decodeElements()
+                default:
+                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                }
+            }
+        }
+        public struct Extended: RESPTokenDecodable, Sendable {
+            struct PendingMessage: RESPTokenDecodable, Sendable {
+                public let id: String
+                public let consumer: String
+                public let millisecondsSinceDelivered: Int
+                public let numberOfTimesDelivered: Int
+
+                public init(fromRESP token: RESPToken) throws {
+                    switch token.value {
+                    case .array(let array):
+                        (self.id, self.consumer, self.millisecondsSinceDelivered, self.numberOfTimesDelivered) = try array.decodeElements()
+                    default:
+                        throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                    }
+                }
+            }
+            let messages: [PendingMessage]
+
+            public init(fromRESP token: RESPToken) throws {
+                switch token.value {
+                case .array(let array):
+                    self.messages = try array.decode(as: [PendingMessage].self)
+                default:
+                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                }
+            }
+        }
+
+        case standard(Standard)
+        case extended(Extended)
+
+        public init(fromRESP token: RESPToken) throws {
+            do {
+                self = try .standard(.init(fromRESP: token))
+            } catch {
+                self = try .extended(.init(fromRESP: token))
+            }
+        }
+    }
+}
+
 extension XRANGE {
     public typealias Response = [XREADMessage]
 }

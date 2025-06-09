@@ -477,5 +477,53 @@ struct CommandTests {
             #expect(result.deletedMessages.count == 1)
             #expect(result.deletedMessages[0] == "1749460498428-0")
         }
+
+        @Test
+        func xpending() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            async let asyncResult = connection.xpending(key: "key", group: "MyGroup")
+
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            #expect(outbound == RESPToken(.command(["XPENDING", "key", "MyGroup"])).base)
+
+            try await channel.writeInbound(
+                RESPToken(
+                    .array([
+                        .number(3),
+                        .bulkString("1749462751004-0"),
+                        .bulkString("1749462751005-0"),
+                        .array([
+                            .array([
+                                .bulkString("consumer1"),
+                                .bulkString("1"),
+                            ]),
+                            .array([
+                                .bulkString("consumer2"),
+                                .bulkString("2"),
+                            ]),
+                        ]),
+                    ])
+                ).base
+            )
+            let result = try await asyncResult
+            switch result {
+            case .standard(let standard):
+                #expect(standard.pendingMessageCount == 3)
+                #expect(standard.minimumID == "1749462751004-0")
+                #expect(standard.maximumID == "1749462751005-0")
+                #expect(standard.consumers.count == 2)
+                #expect(standard.consumers[0].consumer == "consumer1")
+                #expect(standard.consumers[0].count == "1")
+                #expect(standard.consumers[1].consumer == "consumer2")
+                #expect(standard.consumers[1].count == "2")
+            case .extended:
+                Issue.record("Expected `standard` case")
+
+            }
+        }
     }
 }
