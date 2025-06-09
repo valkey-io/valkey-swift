@@ -14,13 +14,13 @@
 
 public struct XREADMessage: RESPTokenDecodable, Sendable {
     public let id: String
-    public let fields: [(key: String, value: String)]
+    public let fields: [(key: String, value: RESPToken)]
 
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array).self)
-            let keyValuePairs = try values.decodeKeyValueElements(key: String.self, value: String.self)
+            let keyValuePairs = try values.decodeKeyValueElements(key: String.self, value: RESPToken.self)
             self.id = id
             self.fields = keyValuePairs
         default:
@@ -31,13 +31,13 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
 
 public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
     public let id: String
-    public let fields: [(key: String, value: String)]?
+    public let fields: [(key: String, value: RESPToken)]?
 
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array?).self)
-            let keyValuePairs = try values?.decodeKeyValueElements(key: String.self, value: String.self)
+            let keyValuePairs = try values?.decodeKeyValueElements(key: String.self, value: RESPToken.self)
             self.id = id
             self.fields = keyValuePairs
         default:

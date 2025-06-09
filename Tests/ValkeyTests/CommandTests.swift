@@ -380,16 +380,16 @@ struct CommandTests {
             #expect(stream1.key == "key1")
             #expect(stream1.messages[0].id == "event1")
             #expect(stream1.messages[0].fields[0].key == "field1")
-            #expect(stream1.messages[0].fields[0].value == "value1")
+            #expect(try stream1.messages[0].fields[0].value.decode(as: String.self) == "value1")
             #expect(stream2.key == "key2")
             #expect(stream2.messages[0].id == "event2")
             #expect(stream2.messages[0].fields[0].key == "field2")
-            #expect(stream2.messages[0].fields[0].value == "value2")
+            #expect(try stream2.messages[0].fields[0].value.decode(as: String.self) == "value2")
             #expect(stream2.messages[1].id == "event3")
             #expect(stream2.messages[1].fields[0].key == "field3")
-            #expect(stream2.messages[1].fields[0].value == "value3")
+            #expect(try stream2.messages[1].fields[0].value.decode(as: String.self) == "value3")
             #expect(stream2.messages[1].fields[1].key == "field4")
-            #expect(stream2.messages[1].fields[1].value == "value4")
+            #expect(try stream2.messages[1].fields[1].value.decode(as: String.self) == "value4")
 
         }
 
@@ -434,7 +434,7 @@ struct CommandTests {
             #expect(stream1.key == "key1")
             #expect(stream1.messages[0].id == "event1")
             #expect(stream1.messages[0].fields?[0].key == "field1")
-            #expect(stream1.messages[0].fields?[0].value == "value1")
+            #expect(try stream1.messages[0].fields?[0].value.decode(as: String.self) == "value1")
             #expect(stream1.messages[1].id == "event2")
             #expect(stream1.messages[1].fields == nil)
         }
@@ -514,14 +514,14 @@ struct CommandTests {
             switch result {
             case .messages(let messages):
                 #expect(messages.count == 2)
-                #expect(messages[0].id == "1749463853292-0")
+                #expect(messages[0].id == "1749464199407-0")
                 #expect(messages[0].fields.count == 1)
                 #expect(messages[0].fields[0].key == "f")
-                #expect(messages[0].fields[0].value == "v")
+                #expect(try messages[0].fields[0].value.decode(as: String.self) == "v")
                 #expect(messages[1].id == "1749464199408-0")
                 #expect(messages[1].fields.count == 1)
                 #expect(messages[1].fields[0].key == "f2")
-                #expect(messages[1].fields[0].value == "v2")
+                #expect(try messages[1].fields[0].value.decode(as: String.self) == "v2")
             default:
                 Issue.record("Expected `messages` case")
             }
