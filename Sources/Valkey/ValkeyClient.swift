@@ -169,6 +169,26 @@ extension ValkeyClient: ValkeyConnectionProtocol {
     }
 }
 
+extension ValkeyClient {
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// This function will only return once it has the results of all the commands sent
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the results of all the commands
+    @inlinable
+    public func pipeline<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async -> sending (repeat Result<(each Command).Response, Error>) {
+        do {
+            return try await self.withConnection { connection in
+                await connection.pipeline(repeat (each commands))
+            }
+        } catch {
+            return (repeat Result<(each Command).Response, Error>.failure(error))
+        }
+    }
+}
+
 #if ServiceLifecycleSupport
 extension ValkeyClient: Service {}
 #endif  // ServiceLifecycle
