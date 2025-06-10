@@ -13,12 +13,6 @@
 //===----------------------------------------------------------------------===//
 
 extension String {
-    var cleanupReplyComment: String {
-        self
-            .replacing("../topics/protocol.md", with: "https:/valkey.io/topics/protocol/")
-            .replacing(" reply]", with: "]")
-    }
-
     mutating func appendDeprecatedMessage(command: ValkeyCommand, name: String, tab: String) {
         guard let deprecatedSince = command.deprecatedSince else { return }
         self.append("\(tab)@available(*, deprecated, message: \"Since \(deprecatedSince)")
@@ -32,7 +26,7 @@ extension String {
     }
 
     mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String) {
-        let linkName = name.replacing(" ", with: "-").lowercased()
+        let linkName = name.replacingOccurrences(of: " ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
         self.append("    /// - Documentation: [\(name)](https:/valkey.io/commands/\(linkName))\n")
@@ -407,6 +401,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
 
     // transaction commands should be added to ValkeyConnection as they require a single connection.
     if commands.first?.value.group == "transactions" {
+        string.append("@available(valkeySwift 1.0, *)\n")
         string.append("extension ValkeyConnection {\n")
     } else {
         string.append("extension ValkeyConnectionProtocol {\n")

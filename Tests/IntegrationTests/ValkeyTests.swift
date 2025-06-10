@@ -35,6 +35,7 @@ struct GeneratedCommands {
         return value
     }
 
+    @available(valkeySwift 1.0, *)
     func withValkeyClient(
         _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
@@ -54,6 +55,7 @@ struct GeneratedCommands {
         }
     }
 
+    @available(valkeySwift 1.0, *)
     func withValkeyConnection(
         _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
@@ -67,6 +69,7 @@ struct GeneratedCommands {
         }
     }
     @Test
+    @available(valkeySwift 1.0, *)
     func testValkeyCommand() async throws {
         struct GET: ValkeyCommand {
             typealias Response = String?
@@ -93,6 +96,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -108,6 +112,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testClientSetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -121,6 +126,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testBinarySetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -135,6 +141,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testUnixTime() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -151,6 +158,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testPipelinedSetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -166,6 +174,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testPipelinedSetGetClient() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -181,6 +190,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -196,7 +206,9 @@ struct GeneratedCommands {
         }
     }
 
-    @Test func testWatch() async throws {
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testWatch() async throws {
         let logger = {
             var logger = Logger(label: "Valkey")
             logger.logLevel = .trace
@@ -229,6 +241,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSingleElementArray() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -243,6 +256,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCommandWithMoreThan9Strings() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -257,6 +271,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSort() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -271,6 +286,7 @@ struct GeneratedCommands {
         }
     }
 
+    @available(valkeySwift 1.0, *)
     @Test("Array with count using LMPOP")
     func testArrayWithCount() async throws {
         var logger = Logger(label: "Valkey")
@@ -295,6 +311,7 @@ struct GeneratedCommands {
         }
     }
 
+    @available(valkeySwift 1.0, *)
     @Test("Test command error is thrown")
     func testCommandError() async throws {
         var logger = Logger(label: "Valkey")
@@ -308,6 +325,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testMultiplexing() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -328,6 +346,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testMultiplexingPipelinedRequests() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -352,6 +371,7 @@ struct GeneratedCommands {
     }
     /*
         @Test
+    @available(valkeySwift 1.0, *)
         func testClientName() async throws {
             var logger = Logger(label: "Valkey")
             logger.logLevel = .debug
@@ -363,6 +383,7 @@ struct GeneratedCommands {
         }*/
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testAuthentication() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -380,6 +401,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "Subscriptions")
@@ -410,6 +432,7 @@ struct GeneratedCommands {
     /// Test two different subscriptions to the same channel both receive messages and that when one ends the other still
     /// receives messages
     @Test
+    @available(valkeySwift 1.0, *)
     func testDoubleSubscription() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "DoubleSubscription")
@@ -448,6 +471,7 @@ struct GeneratedCommands {
 
     /// Test two different subscriptions to two different channels both receive messages
     @Test
+    @available(valkeySwift 1.0, *)
     func testTwoDifferentSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "TwoDifferentSubscriptions")
@@ -480,6 +504,7 @@ struct GeneratedCommands {
 
     /// Test multiple subscriptions in one command all receive messages
     @Test
+    @available(valkeySwift 1.0, *)
     func testMultipleSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "MultipleSubscriptions")
@@ -511,6 +536,7 @@ struct GeneratedCommands {
 
     /// Test subscribing to a channel pattern works
     @Test
+    @available(valkeySwift 1.0, *)
     func testPatternSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "PatternSubscriptions")
@@ -540,6 +566,7 @@ struct GeneratedCommands {
 
     /// Test we can run both pattern and normal channel subscriptions on the same connection
     @Test
+    @available(valkeySwift 1.0, *)
     func testPatternChannelSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "PatternChannelSubscriptions")
@@ -572,6 +599,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testShardSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "ShardSubscriptions")
@@ -601,6 +629,7 @@ struct GeneratedCommands {
 
     /// Test subscriptions and sending command on same connection works
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscriptionAndCommandOnSameConnection() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "Subscriptions")
@@ -638,6 +667,7 @@ struct GeneratedCommands {
 
     /// Test subscriptions and sending command on same connection works
     @Test
+    @available(valkeySwift 1.0, *)
     func testLoadsOfConnections() async throws {
         var logger = Logger(label: "testLoadsOfConnections")
         logger.logLevel = .trace
@@ -668,6 +698,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testKeyspaceSubscription() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
@@ -690,6 +721,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testBlockingCommandTimeout() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace

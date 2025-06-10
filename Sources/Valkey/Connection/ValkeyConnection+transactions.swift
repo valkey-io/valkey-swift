@@ -2,6 +2,7 @@
 
 import NIOCore
 
+@available(valkeySwift 1.0, *)
 extension ValkeyConnection {
 
     @inlinable

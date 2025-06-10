@@ -41,6 +41,7 @@ echo
 
 echo "import NIOCore"
 echo ""
+echo "@available(valkeySwift 1.0, *)"
 echo "extension ValkeyConnection {"
 # note:
 # - widening the inverval below (eg. going from {1..15} to {1..25}) is Semver minor

@@ -23,6 +23,7 @@ import Testing
 struct ConnectionTests {
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testConnectionCreationAndGET() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -39,6 +40,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testConnectionCreationHelloV3() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -49,6 +51,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testConnectionCreationHelloError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -64,6 +67,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testConnectionCreationHelloAuth() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -80,6 +84,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testConnectionCreationHelloClientName() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -94,6 +99,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testParseError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -116,6 +122,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSimpleError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -136,6 +143,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testBulkError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -156,6 +164,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testUnsolicitedErrorToken() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -169,6 +178,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testUnsolicitedToken() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -182,6 +192,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testPipeline() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -203,6 +214,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testPipelineError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -225,6 +237,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testTransaction() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -251,6 +264,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testTransactionError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -281,6 +295,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testTransactionCommandError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -307,6 +322,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCancellation() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -327,6 +343,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testAlreadyCancelled() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -346,6 +363,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testConnectionCloseDueToCancellation() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -373,6 +391,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testPipelineCancellation() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -400,6 +419,7 @@ struct ConnectionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testAlreadyCancelledPipeline() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")

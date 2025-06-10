@@ -24,6 +24,7 @@ import Valkey
 struct CommandTests {
     struct StringCommands {
         @Test
+        @available(valkeySwift 1.0, *)
         func lcs() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -82,6 +83,7 @@ struct CommandTests {
 
     struct ListCommands {
         @Test
+        @available(valkeySwift 1.0, *)
         func lpop() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -108,6 +110,7 @@ struct CommandTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func lpos() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -136,6 +139,7 @@ struct CommandTests {
 
     struct SortedSetCommands {
         @Test
+        @available(valkeySwift 1.0, *)
         func zpopmin() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -174,6 +178,7 @@ struct CommandTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func zmpop() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -226,6 +231,7 @@ struct CommandTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func zrange() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
