@@ -230,7 +230,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.ADD](https:/valkey.io/commands/bf.add)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
-    public func bfAdd<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> BF.ADD<Value>.Response {
+    public func bfAdd<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
         try await send(command: BF.ADD(key: key, value: value))
     }
 
@@ -248,7 +248,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.EXISTS](https:/valkey.io/commands/bf.exists)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
-    public func bfExists<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> BF.EXISTS<Value>.Response {
+    public func bfExists<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
         try await send(command: BF.EXISTS(key: key, value: value))
     }
 
@@ -275,7 +275,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.LOAD](https:/valkey.io/commands/bf.load)
     /// - Complexity: O(N), where N is the capacity
     @inlinable
-    public func bfLoad<Dump: RESPStringRenderable>(key: ValkeyKey, dump: Dump) async throws -> BF.LOAD<Dump>.Response {
+    public func bfLoad<Dump: RESPStringRenderable>(key: ValkeyKey, dump: Dump) async throws -> RESPToken {
         try await send(command: BF.LOAD(key: key, dump: dump))
     }
 
@@ -284,7 +284,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.MADD](https:/valkey.io/commands/bf.madd)
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
-    public func bfMadd<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> BF.MADD<Value>.Response {
+    public func bfMadd<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
         try await send(command: BF.MADD(key: key, value: value))
     }
 
@@ -293,7 +293,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.MEXISTS](https:/valkey.io/commands/bf.mexists)
     /// - Complexity: O(K * N), where N is the number of hash functions used by the bloom filter and K is the number of items
     @inlinable
-    public func bfMexists<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> BF.MEXISTS<Value>.Response {
+    public func bfMexists<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
         try await send(command: BF.MEXISTS(key: key, value: value))
     }
 

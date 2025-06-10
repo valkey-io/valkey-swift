@@ -68,131 +68,139 @@ public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message:
     }
 }
 
-extension XAUTOCLAIM {
-    public struct Response: RESPTokenDecodable, Sendable {
-        public let streamID: String
-        public let messsages: [XREADMessage]
-        public let deletedMessages: [String]
+public struct XAUTOCLAIMResponse: RESPTokenDecodable, Sendable {
+    public let streamID: String
+    public let messsages: [XREADMessage]
+    public let deletedMessages: [String]
 
-        public init(fromRESP token: RESPToken) throws {
-            switch token.value {
-            case .array(let array):
-                (self.streamID, self.messsages, self.deletedMessages) = try array.decodeElements()
-            default:
-                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+    public init(fromRESP token: RESPToken) throws {
+        switch token.value {
+        case .array(let array):
+            (self.streamID, self.messsages, self.deletedMessages) = try array.decodeElements()
+        default:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+        }
+    }
+}
+extension XAUTOCLAIM {
+    public typealias Response = XAUTOCLAIMResponse
+}
+
+public enum XCLAIMResponse: RESPTokenDecodable, Sendable {
+    case none
+    case messages([XREADMessage])
+    case ids([String])
+
+    public init(fromRESP token: RESPToken) throws {
+        switch token.value {
+        case .array(let array):
+            if array.count == 0 {
+                self = .none
+                return
             }
+            do {
+                self = try .messages(array.decode())
+            } catch {
+                self = try .ids(array.decode())
+            }
+        default:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
 }
 
 extension XCLAIM {
-    public enum Response: RESPTokenDecodable, Sendable {
-        case none
-        case messages([XREADMessage])
-        case ids([String])
+    public typealias Response = XCLAIMResponse
+}
+
+public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
+    public struct Standard: RESPTokenDecodable, Sendable {
+        public struct Consumer: RESPTokenDecodable, Sendable {
+            public let consumer: String
+            public let count: String
+
+            public init(fromRESP token: RESPToken) throws {
+                switch token.value {
+                case .array(let array):
+                    (self.consumer, self.count) = try array.decodeElements()
+                default:
+                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                }
+            }
+        }
+        public let pendingMessageCount: Int
+        public let minimumID: String
+        public let maximumID: String
+        public let consumers: [Consumer]
 
         public init(fromRESP token: RESPToken) throws {
             switch token.value {
             case .array(let array):
-                if array.count == 0 {
-                    self = .none
-                    return
-                }
-                do {
-                    self = try .messages(array.decode())
-                } catch {
-                    self = try .ids(array.decode())
-                }
+                (self.pendingMessageCount, self.minimumID, self.maximumID, self.consumers) = try array.decodeElements()
             default:
                 throw RESPParsingError(code: .unexpectedType, buffer: token.base)
             }
         }
     }
-}
-
-extension XPENDING {
-    public enum Response: RESPTokenDecodable, Sendable {
-        public struct Standard: RESPTokenDecodable, Sendable {
-            public struct Consumer: RESPTokenDecodable, Sendable {
-                public let consumer: String
-                public let count: String
-
-                public init(fromRESP token: RESPToken) throws {
-                    switch token.value {
-                    case .array(let array):
-                        (self.consumer, self.count) = try array.decodeElements()
-                    default:
-                        throw RESPParsingError(code: .unexpectedType, buffer: token.base)
-                    }
-                }
-            }
-            public let pendingMessageCount: Int
-            public let minimumID: String
-            public let maximumID: String
-            public let consumers: [Consumer]
+    public struct Extended: RESPTokenDecodable, Sendable {
+        struct PendingMessage: RESPTokenDecodable, Sendable {
+            public let id: String
+            public let consumer: String
+            public let millisecondsSinceDelivered: Int
+            public let numberOfTimesDelivered: Int
 
             public init(fromRESP token: RESPToken) throws {
                 switch token.value {
                 case .array(let array):
-                    (self.pendingMessageCount, self.minimumID, self.maximumID, self.consumers) = try array.decodeElements()
+                    (self.id, self.consumer, self.millisecondsSinceDelivered, self.numberOfTimesDelivered) = try array.decodeElements()
                 default:
                     throw RESPParsingError(code: .unexpectedType, buffer: token.base)
                 }
             }
         }
-        public struct Extended: RESPTokenDecodable, Sendable {
-            struct PendingMessage: RESPTokenDecodable, Sendable {
-                public let id: String
-                public let consumer: String
-                public let millisecondsSinceDelivered: Int
-                public let numberOfTimesDelivered: Int
-
-                public init(fromRESP token: RESPToken) throws {
-                    switch token.value {
-                    case .array(let array):
-                        (self.id, self.consumer, self.millisecondsSinceDelivered, self.numberOfTimesDelivered) = try array.decodeElements()
-                    default:
-                        throw RESPParsingError(code: .unexpectedType, buffer: token.base)
-                    }
-                }
-            }
-            let messages: [PendingMessage]
-
-            public init(fromRESP token: RESPToken) throws {
-                switch token.value {
-                case .array(let array):
-                    self.messages = try array.decode(as: [PendingMessage].self)
-                default:
-                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
-                }
-            }
-        }
-
-        case standard(Standard)
-        case extended(Extended)
+        let messages: [PendingMessage]
 
         public init(fromRESP token: RESPToken) throws {
-            do {
-                self = try .standard(.init(fromRESP: token))
-            } catch {
-                self = try .extended(.init(fromRESP: token))
+            switch token.value {
+            case .array(let array):
+                self.messages = try array.decode(as: [PendingMessage].self)
+            default:
+                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
             }
         }
     }
+
+    case standard(Standard)
+    case extended(Extended)
+
+    public init(fromRESP token: RESPToken) throws {
+        do {
+            self = try .standard(.init(fromRESP: token))
+        } catch {
+            self = try .extended(.init(fromRESP: token))
+        }
+    }
+}
+extension XPENDING {
+    public typealias Response = XPENDINGResponse
 }
 
+public typealias XRANGEResponse = [XREADMessage]
 extension XRANGE {
-    public typealias Response = [XREADMessage]
+    public typealias Response = XRANGEResponse
 }
 
+public typealias XREADResponse = XREADStreams<XREADMessage>?
 extension XREAD {
-    public typealias Response = XREADStreams<XREADMessage>?
+    public typealias Response = XREADResponse
 }
 
+public typealias XREADGROUPResponse = XREADStreams<XREADGroupMessage>?
 extension XREADGROUP {
-    public typealias Response = XREADStreams<XREADGroupMessage>?
+    public typealias Response = XREADGROUPResponse
 }
 
+public typealias XREVRANGEResponse = [XREADMessage]
 extension XREVRANGE {
-    public typealias Response = [XREADMessage]
+    public typealias Response = XREVRANGEResponse
 }

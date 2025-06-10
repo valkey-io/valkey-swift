@@ -988,7 +988,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The given string
     @inlinable
-    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ECHO<Message>.Response {
+    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> RESPToken {
         try await send(command: ECHO(message: message))
     }
 

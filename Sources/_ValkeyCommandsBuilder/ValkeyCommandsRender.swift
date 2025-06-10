@@ -392,16 +392,24 @@ extension String {
         let genericTypeParameters = genericTypeParameters(command.arguments)
         let genericParameters = genericParameters(command.arguments)
 
-        var returnType: String = " -> \(name.commandTypeName)\(genericParameters).Response"
-        var ignoreSendResponse = ""
-        let type = disableResponseCalculation ? "RESPToken" : getResponseType(command: command)
-        if type == "Void" {
-            returnType = ""
-            ignoreSendResponse = "_ = "
-        } else if type != "RESPToken" {
-            //converting = true
-            returnType = " -> \(type)"
-        }
+        let calculatedResponseType = getResponseType(command: command)
+        let returnType: String =
+            if disableResponseCalculation {
+                if genericParameters != "" {
+                    " -> \(name.commandTypeName)Response"
+                } else {
+                    " -> \(name.commandTypeName).Response"
+                }
+            } else if calculatedResponseType == "Void" {
+                ""
+            } else if calculatedResponseType != "RESPToken" {
+                " -> \(calculatedResponseType)"
+            } else if genericParameters == "" {
+                " -> \(name.commandTypeName).Response"
+            } else {
+                " -> RESPToken"
+            }
+        let ignoreSendResponse = if returnType == "" { "_ = " } else { "" }
 
         func _appendFunction(isArray: Bool) {
             // Comment header

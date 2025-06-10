@@ -1837,7 +1837,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: Latency graph
     @inlinable
-    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> LATENCY.GRAPH<Event>.Response {
+    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> RESPToken {
         try await send(command: LATENCY.GRAPH(event: event))
     }
 
@@ -2039,7 +2039,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [PSYNC](https:/valkey.io/commands/psync)
     /// - Available: 2.8.0
     @inlinable
-    public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> PSYNC<Replicationid>.Response {
+    public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> RESPToken {
         try await send(command: PSYNC(replicationid: replicationid, offset: offset))
     }
 
