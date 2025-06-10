@@ -35,109 +35,112 @@ let benchmarks: @Sendable () -> Void = {
             .throughput,
         ]
 
-    var server: Channel?
-    Benchmark("GET benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let port = server!.localAddress!.port!
-        let logger = Logger(label: "test")
-        let client = ValkeyClient(.hostname("127.0.0.1", port: port), logger: logger)
+    var server: (any Channel)?
 
-        try await withThrowingTaskGroup(of: Void.self) { group in
-            group.addTask {
-                await client.run()
-            }
-            await Task.yield()
-            try await client.withConnection { connection in
-                benchmark.startMeasurement()
+    if #available(valkeySwift 1.0, *) {
+        Benchmark("GET benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+            let port = server!.localAddress!.port!
+            let logger = Logger(label: "test")
+            let client = ValkeyClient(.hostname("127.0.0.1", port: port), logger: logger)
 
-                for _ in benchmark.scaledIterations {
-                    let foo = try await connection.get(key: "foo")?.decode(as: String.self)
-                    precondition(foo == "Bar")
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    await client.run()
                 }
+                await Task.yield()
+                try await client.withConnection { connection in
+                    benchmark.startMeasurement()
 
-                benchmark.stopMeasurement()
-            }
-            group.cancelAll()
-        }
-    } setup: {
-        struct GetHandler: BenchmarkCommandHandler {
-            static let expectedCommand = RESPToken.Value.bulkString(ByteBuffer(string: "GET"))
-            static let response = ByteBuffer(string: "$3\r\nBar\r\n")
-            func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
-                switch command {
-                case Self.expectedCommand:
-                    write(Self.response)
-                default:
-                    fatalError()
+                    for _ in benchmark.scaledIterations {
+                        let foo = try await connection.get(key: "foo")?.decode(as: String.self)
+                        precondition(foo == "Bar")
+                    }
+
+                    benchmark.stopMeasurement()
                 }
+                group.cancelAll()
             }
-        }
-        server = try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
-            .childChannelInitializer { channel in
-                do {
-                    try channel.pipeline.syncOperations.addHandler(
-                        ValkeyServerChannelHandler(commandHandler: GetHandler())
-                    )
-                    return channel.eventLoop.makeSucceededVoidFuture()
-                } catch {
-                    return channel.eventLoop.makeFailedFuture(error)
+        } setup: {
+            struct GetHandler: BenchmarkCommandHandler {
+                static let expectedCommand = RESPToken.Value.bulkString(ByteBuffer(string: "GET"))
+                static let response = ByteBuffer(string: "$3\r\nBar\r\n")
+                func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
+                    switch command {
+                    case Self.expectedCommand:
+                        write(Self.response)
+                    default:
+                        fatalError()
+                    }
                 }
             }
-            .bind(host: "127.0.0.1", port: 0)
-            .get()
-    } teardown: {
-        try await server?.close().get()
-    }
-
-    Benchmark("ValkeyCommandEncoder – Simple GET", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let command = GET(key: "foo")
-        benchmark.startMeasurement()
-
-        var encoder = ValkeyCommandEncoder()
-        for _ in benchmark.scaledIterations {
-            encoder.reset()
-            command.encode(into: &encoder)
+            server = try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
+                .childChannelInitializer { channel in
+                    do {
+                        try channel.pipeline.syncOperations.addHandler(
+                            ValkeyServerChannelHandler(commandHandler: GetHandler())
+                        )
+                        return channel.eventLoop.makeSucceededVoidFuture()
+                    } catch {
+                        return channel.eventLoop.makeFailedFuture(error)
+                    }
+                }
+                .bind(host: "127.0.0.1", port: 0)
+                .get()
+        } teardown: {
+            try await server?.close().get()
         }
 
-        benchmark.stopMeasurement()
-    }
+        Benchmark("ValkeyCommandEncoder – Simple GET", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+            let command = GET(key: "foo")
+            benchmark.startMeasurement()
 
-    Benchmark("ValkeyCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let keys = (0..<15).map { ValkeyKey(rawValue: "foo-\($0)") }
-        let command = MGET(key: keys)
-        benchmark.startMeasurement()
+            var encoder = ValkeyCommandEncoder()
+            for _ in benchmark.scaledIterations {
+                encoder.reset()
+                command.encode(into: &encoder)
+            }
 
-        var encoder = ValkeyCommandEncoder()
-        for _ in benchmark.scaledIterations {
-            encoder.reset()
-            command.encode(into: &encoder)
+            benchmark.stopMeasurement()
         }
 
-        benchmark.stopMeasurement()
-    }
+        Benchmark("ValkeyCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+            let keys = (0..<15).map { ValkeyKey(rawValue: "foo-\($0)") }
+            let command = MGET(key: keys)
+            benchmark.startMeasurement()
 
-    Benchmark("ValkeyCommandEncoder – Command with 7 words", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let string = "string"
-        let optionalString: String? = "optionalString"
-        let array = ["array", "of", "strings"]
-        let number = 456
-        let token = RESPPureToken("TOKEN", true)
-        benchmark.startMeasurement()
+            var encoder = ValkeyCommandEncoder()
+            for _ in benchmark.scaledIterations {
+                encoder.reset()
+                command.encode(into: &encoder)
+            }
 
-        var encoder = ValkeyCommandEncoder()
-        for _ in benchmark.scaledIterations {
-            encoder.reset()
-            encoder.encodeArray(string, optionalString, array, number, token)
+            benchmark.stopMeasurement()
         }
 
-        benchmark.stopMeasurement()
-    }
+        Benchmark("ValkeyCommandEncoder – Command with 7 words", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+            let string = "string"
+            let optionalString: String? = "optionalString"
+            let array = ["array", "of", "strings"]
+            let number = 456
+            let token = RESPPureToken("TOKEN", true)
+            benchmark.startMeasurement()
 
-    Benchmark("HashSlot – {user}.whatever", configuration: .init(metrics: defaultMetrics, scalingFactor: .mega)) { benchmark in
-        let key = "{user}.whatever"
+            var encoder = ValkeyCommandEncoder()
+            for _ in benchmark.scaledIterations {
+                encoder.reset()
+                encoder.encodeArray(string, optionalString, array, number, token)
+            }
 
-        benchmark.startMeasurement()
-        for _ in benchmark.scaledIterations {
-            blackHole(HashSlot(key: key))
+            benchmark.stopMeasurement()
+        }
+
+        Benchmark("HashSlot – {user}.whatever", configuration: .init(metrics: defaultMetrics, scalingFactor: .mega)) { benchmark in
+            let key = "{user}.whatever"
+
+            benchmark.startMeasurement()
+            for _ in benchmark.scaledIterations {
+                blackHole(HashSlot(key: key))
+            }
         }
     }
 }

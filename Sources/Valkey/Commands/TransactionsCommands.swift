@@ -79,6 +79,7 @@ public struct WATCH: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyConnection {
     /// Discards a transaction.
     ///

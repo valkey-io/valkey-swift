@@ -24,6 +24,7 @@ struct SubscriptionTests {
     struct StateMachine {
         final class TestType: Identifiable {}
         @Test
+        @available(valkeySwift 1.0, *)
         func testSubscribeAndUnsubscribe() async throws {
             var stateMachine = ValkeyChannelStateMachine<TestType>()
             let value = TestType()
@@ -34,6 +35,7 @@ struct SubscriptionTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func testSubscribeAndReceiveMessage() async throws {
             var stateMachine = ValkeyChannelStateMachine<TestType>()
             let value = TestType()
@@ -53,6 +55,7 @@ struct SubscriptionTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func testMultipleSubscriptions() async throws {
             var stateMachine = ValkeyChannelStateMachine<TestType>()
             let value = TestType()
@@ -72,6 +75,7 @@ struct SubscriptionTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func testMultipleSubscriptionsV2() async throws {
             var stateMachine = ValkeyChannelStateMachine<TestType>()
             let value = TestType()
@@ -91,6 +95,7 @@ struct SubscriptionTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func testSubscribeAfterStartingClose() async throws {
             var stateMachine = ValkeyChannelStateMachine<TestType>()
             let value = TestType()
@@ -106,6 +111,7 @@ struct SubscriptionTests {
 
     }
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscribe() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -140,6 +146,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscribeFailed() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
@@ -167,6 +174,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscribeAfterChannelError() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -200,6 +208,7 @@ struct SubscriptionTests {
 
     /// Test a single subscription can subscribe to multiple channels
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscribeMultipleChannels() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -243,6 +252,7 @@ struct SubscriptionTests {
 
     /// Test you can have multiple subscriptions running on one connection
     @Test
+    @available(valkeySwift 1.0, *)
     func testMultipleSubscriptions() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -308,6 +318,7 @@ struct SubscriptionTests {
 
     /// Test we can unsubscribe from one subscription while the other still continues to receive messages
     @Test
+    @available(valkeySwift 1.0, *)
     func testMultipleSubscriptionsDontAffectEachOther() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -355,6 +366,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCloseFinishesSubscriptionWithError() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -390,6 +402,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testPSubscribe() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -434,6 +447,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testPSubscribeAndSubscribeOnOneChanel() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -486,6 +500,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testInvalidPush() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -521,6 +536,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscriptionsAndCommandsCombined() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -565,6 +581,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscribeError() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -593,6 +610,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testUnsubscribeError() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -625,6 +643,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testShardSubscribe() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -660,6 +679,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCancelSubscribe() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -685,6 +705,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCancelSubscribeStream() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
@@ -716,6 +737,7 @@ struct SubscriptionTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCancelUnsubscribe() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")

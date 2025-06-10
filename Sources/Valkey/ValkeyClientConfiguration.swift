@@ -16,6 +16,7 @@ import NIOSSL
 import _ConnectionPoolModule
 
 /// Configuration for the Valkey client
+@available(valkeySwift 1.0, *)
 public struct ValkeyClientConfiguration: Sendable {
     public struct TLS: Sendable {
         enum Base {

@@ -25,6 +25,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testClose() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClose")
@@ -40,6 +41,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testClosed() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClosed")
@@ -53,6 +55,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testGracefulShutdown() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testGracefulShutdown")
@@ -66,6 +69,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testGracefulShutdownWithPendingCommands() async throws {
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
@@ -97,6 +101,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testClosedClosingState() async throws {
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
@@ -130,6 +135,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testReceivedResponse() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testReceivedResponse")
@@ -153,6 +159,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testReceivedResponseWithoutCommand() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testReceivedResponse")
@@ -167,6 +174,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCancel() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancel")
@@ -197,6 +205,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCancelOfNotPendingCommand() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancel")
@@ -210,6 +219,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCancelGracefulShutdown() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancelGracefulShutdown")
@@ -234,6 +244,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testTimeout() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testTimeout")
@@ -288,6 +299,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testTimeoutWithDeadlineInversion() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testTimeout")
@@ -330,6 +342,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyChannelHandler.StateMachine<String>.State {
     public static func == (_ lhs: borrowing Self, _ rhs: borrowing Self) -> Bool {
         switch lhs {
@@ -369,6 +382,7 @@ extension ValkeyChannelHandler.StateMachine<String>.State {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyChannelHandler.StateMachine.DeadlineCallbackAction: Equatable {
     public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
         switch (lhs, rhs) {
