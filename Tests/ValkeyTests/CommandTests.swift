@@ -137,6 +137,7 @@ struct CommandTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func lmpop() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -329,6 +330,7 @@ struct CommandTests {
 
     struct StreamCommands {
         @Test
+        @available(valkeySwift 1.0, *)
         func xread() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -394,6 +396,7 @@ struct CommandTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func xreadgroup() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -440,6 +443,7 @@ struct CommandTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func xautoclaim() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -479,6 +483,7 @@ struct CommandTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func xclaim() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
@@ -528,6 +533,7 @@ struct CommandTests {
         }
 
         @Test
+        @available(valkeySwift 1.0, *)
         func xpending() async throws {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
