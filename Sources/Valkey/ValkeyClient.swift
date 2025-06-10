@@ -172,6 +172,7 @@ extension ValkeyClient: ValkeyConnectionProtocol {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClient {
     /// Pipeline a series of commands to Valkey connection
     ///
