@@ -430,6 +430,31 @@ struct RESPTokenTests {
         )
         #expect(respSimpleStringAttributes1.testDict == [.simpleString(.init(string: "aaaa")): .boolean(false)])
     }
+
+    @Test
+    func testArrayAsMap() throws {
+        let array = RESPToken(
+            .array([
+                .bulkString("one"), .number(1), .bulkString("two"), .number(2), .bulkString("three"), .number(3), .bulkString("four"), .number(4),
+            ])
+        )
+        guard case .array(let array) = array.value else { preconditionFailure() }
+        let map = try array.asMap()
+        var dictionary = [RESPToken.Value: RESPToken.Value]()
+        dictionary.reserveCapacity(map.count)
+        for (key, value) in map {
+            dictionary[key.value] = value.value
+        }
+
+        #expect(
+            dictionary == [
+                .bulkString(.init(string: "one")): .number(1),
+                .bulkString(.init(string: "two")): .number(2),
+                .bulkString(.init(string: "three")): .number(3),
+                .bulkString(.init(string: "four")): .number(4),
+            ]
+        )
+    }
 }
 
 extension RESPToken {

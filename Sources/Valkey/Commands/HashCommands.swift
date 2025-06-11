@@ -455,7 +455,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The value of the field after the increment operation.
     @inlinable
-    public func hincrbyfloat<Field: RESPStringRenderable>(key: ValkeyKey, field: Field, increment: Double) async throws -> HINCRBYFLOAT.Response {
+    public func hincrbyfloat<Field: RESPStringRenderable>(key: ValkeyKey, field: Field, increment: Double) async throws -> RESPToken {
         try await send(command: HINCRBYFLOAT(key: key, field: field, increment: increment))
     }
 
