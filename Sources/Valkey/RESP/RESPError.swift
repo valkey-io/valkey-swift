@@ -32,6 +32,7 @@ public struct RESPParsingError: Error {
             case canNotParseDouble
             case canNotParseBigNumber
             case unexpectedType
+            case invalidElementCount
         }
 
         private let base: Base
@@ -48,6 +49,7 @@ public struct RESPParsingError: Error {
         public static let canNotParseDouble = Self.init(.canNotParseDouble)
         public static let canNotParseBigNumber = Self.init(.canNotParseBigNumber)
         public static let unexpectedType = Self.init(.unexpectedType)
+        public static let invalidElementCount = Self.init(.invalidElementCount)
 
         public var description: String {
             switch self.base {
@@ -67,6 +69,8 @@ public struct RESPParsingError: Error {
                 return "canNotParseBigNumber"
             case .unexpectedType:
                 return "unexpectedType"
+            case .invalidElementCount:
+                return "invalidElementCount"
             }
         }
     }

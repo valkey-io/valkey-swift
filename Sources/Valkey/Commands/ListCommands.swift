@@ -326,8 +326,6 @@ public struct LMPOP: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken.Array?
-
     public var key: [ValkeyKey]
     public var `where`: Where
     public var count: Int?
@@ -714,7 +712,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: If no element could be popped.
     ///     * [Array]: List key from which elements were popped.
     @inlinable
-    public func lmpop(key: [ValkeyKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
+    public func lmpop(key: [ValkeyKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> LMPOP.Response {
         try await send(command: LMPOP(key: key, where: `where`, count: count))
     }
 
