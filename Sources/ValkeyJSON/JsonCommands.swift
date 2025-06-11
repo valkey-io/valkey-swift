@@ -246,7 +246,6 @@ public enum JSON {
             @usableFromInline let path: Path
             @usableFromInline let json: Json
 
-
             @inlinable public init(key: ValkeyKey, path: Path, json: Json) {
                 self.key = key
                 self.path = path
@@ -270,6 +269,8 @@ public enum JSON {
         @inlinable public init(data: [Data]) {
             self.data = data
         }
+
+        public var keysAffected: [ValkeyKey] { data.map { $0.key } }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("JSON.MSET", data)

@@ -200,7 +200,6 @@ extension String {
         } else {
             typeName = name.commandTypeName
         }
-        let keyArguments = command.arguments?.filter { $0.type == .key } ?? []
         let conformance = "ValkeyCommand"
         let genericTypeParameters = genericTypeParameters(command.arguments)
         // Comment header
@@ -208,7 +207,7 @@ extension String {
         self.append("\(tab)public struct \(typeName)\(genericTypeParameters): \(conformance) {\n")
 
         let arguments = (command.arguments ?? [])
-        // Enums
+        // Enums and internal structs
         for arg in arguments {
             if case .oneOf = arg.type {
                 self.appendOneOfEnum(argument: arg, names: [], tab: tab)
@@ -248,8 +247,7 @@ extension String {
             self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
         self.append("\(tab)    }\n\n")
-        if keyArguments.count > 0 {
-            let (keysAffectedType, keysAffected) = constructKeysAffected(keyArguments)
+        if let (keysAffectedType, keysAffected) = constructKeysAffected(command.arguments) {
             self.append("\(tab)    public var keysAffected: \(keysAffectedType) { \(keysAffected) }\n\n")
         }
         if command.commandFlags?.contains("BLOCKING") == true {
@@ -472,57 +470,54 @@ private func responseTypeComment(_ response: ValkeyCommand.ReplySchema.Response)
     }
 }
 
-private func constructKeysAffected(_ keyArguments: [ValkeyCommand.Argument]) -> (type: String, value: String) {
+private func constructKeysAffected(_ arguments: [ValkeyCommand.Argument]?) -> (type: String, value: String)? {
+    guard let arguments else { return nil }
+    let keyArguments: [(name: String, multiple: Bool)] = arguments.flatMap { getKeyArguments(from: $0) }
+    guard keyArguments.count > 0 else { return nil }
     if keyArguments.count == 1 {
-        if keyArguments.first!.multiple {
-            return (type: "[ValkeyKey]", value: keyArguments.first!.name.swiftVariable)
+        if keyArguments[0].multiple {
+            return (type: "[ValkeyKey]", value: keyArguments[0].name)
         } else {
-            return (type: "CollectionOfOne<ValkeyKey>", value: ".init(\(keyArguments.first!.name.swiftVariable))")
+            return (type: "CollectionOfOne<ValkeyKey>", value: ".init(\(keyArguments[0].name))")
         }
     } else {
-        var keysAffectedBuilder: String = ""
-        var inArray = false
-        var first = true
-        for key in keyArguments {
-            if key.multiple {
-                if inArray {
-                    keysAffectedBuilder += "]"
-                    inArray = false
-                }
-                if !first {
-                    keysAffectedBuilder += " + "
-                }
-                keysAffectedBuilder += "\(key.name.swiftVariable)"
-            } else if key.optional {
-                if inArray {
-                    keysAffectedBuilder += "]"
-                    inArray = false
-                }
-                if !first {
-                    keysAffectedBuilder += " + "
-                }
-                keysAffectedBuilder += "(\(key.name.swiftVariable).map { [$0] } ?? [])"
-            } else {
-                if !inArray {
-                    if !first {
-                        keysAffectedBuilder += " + "
-                    }
-                    keysAffectedBuilder += "[\(key.name.swiftVariable)"
-                    inArray = true
-                } else {
-                    if !first {
-                        keysAffectedBuilder += ", "
-                    }
-                    keysAffectedBuilder += "\(key.name.swiftVariable)"
-                }
-            }
-            first = false
+        var multipleKeys = keyArguments.compactMap { if $0.multiple { $0.name } else { nil } }
+        let singleKeys = keyArguments.compactMap { if !$0.multiple { $0.name } else { nil } }
+        if singleKeys.count > 0 {
+            multipleKeys.append("[\(singleKeys.joined(separator: ", "))]")
         }
-        if inArray {
-            keysAffectedBuilder += "]"
-        }
-        return (type: "[ValkeyKey]", value: keysAffectedBuilder)
+        let multipleKeysString = multipleKeys.joined(separator: " + ")
+        return (type: "[ValkeyKey]", value: multipleKeysString)
     }
+}
+
+private func getKeyArguments(from argument: ValkeyCommand.Argument) -> [(name: String, multiple: Bool)] {
+    if argument.type == .key {
+        if argument.multiple {
+            return [(name: argument.name.swiftVariable, multiple: true)]
+        } else if argument.optional {
+            return [(name: "(\(argument.name.swiftVariable).map { [$0] } ?? [])", multiple: true)]
+        } else {
+            return [(name: argument.name.swiftVariable, multiple: false)]
+        }
+    } else if argument.type == .block, let blockArguments = argument.arguments {
+        let blockKeyArguments = blockArguments.flatMap { getKeyArguments(from: $0) }
+        assert(blockKeyArguments.count <= 1, "Do not currently support multiple keys in a block")
+        if let blockArgument = blockKeyArguments.first {
+            if argument.multiple {
+                if blockArgument.multiple {
+                    return [(name: "\(argument.name.swiftVariable).flatMap { $0.\(blockArgument.name) }", multiple: true)]
+                } else {
+                    return [(name: "\(argument.name.swiftVariable).map { $0.\(blockArgument.name) }", multiple: true)]
+                }
+            } else if argument.optional {
+                assert(blockKeyArguments.count <= 1, "Do not currently support optional blocks holding keys")
+            } else {
+                return [(name: "\(argument.name.swiftVariable).\(blockArgument.name)", multiple: blockArgument.multiple)]
+            }
+        }
+    }
+    return []
 }
 
 private func subCommand(_ command: String) -> (String.SubSequence, String.SubSequence?) {

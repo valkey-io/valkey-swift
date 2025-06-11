@@ -320,6 +320,8 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
         self.data = data
     }
 
+    public var keysAffected: [ValkeyKey] { data.map { $0.key } }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MSET", data)
     }
@@ -354,6 +356,8 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
     @inlinable public init(data: [Data]) {
         self.data = data
     }
+
+    public var keysAffected: [ValkeyKey] { data.map { $0.key } }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MSETNX", data)

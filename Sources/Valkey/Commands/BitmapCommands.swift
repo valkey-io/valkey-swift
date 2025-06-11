@@ -330,7 +330,7 @@ public struct BITOP: ValkeyCommand {
         self.key = key
     }
 
-    public var keysAffected: [ValkeyKey] { [destkey] + key }
+    public var keysAffected: [ValkeyKey] { key + [destkey] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("BITOP", operation, destkey, key)

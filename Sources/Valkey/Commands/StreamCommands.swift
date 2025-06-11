@@ -625,6 +625,8 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
         self.streams = streams
     }
 
+    public var keysAffected: [ValkeyKey] { streams.key }
+
     public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
@@ -689,6 +691,8 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
         self.noack = noack
         self.streams = streams
     }
+
+    public var keysAffected: [ValkeyKey] { streams.key }
 
     public var isBlocking: Bool { true }
 
