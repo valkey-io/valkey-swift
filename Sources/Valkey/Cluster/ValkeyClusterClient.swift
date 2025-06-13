@@ -20,7 +20,7 @@ import Synchronization
 
 /// A client for interacting with a Valkey cluster.
 ///
-/// `ValkeyClusterClient` provides a high-level interface for communicating with a Valkey cluster.
+/// ``ValkeyClusterClient`` provides a high-level interface for communicating with a Valkey cluster.
 /// It handles cluster topology discovery, command routing, and automatic connection management
 /// across multiple Valkey server nodes.
 ///
@@ -89,15 +89,15 @@ public final class ValkeyClusterClient: Sendable {
     private let actionStream: AsyncStream<RunAction>
     private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
-    /// Creates a new `ValkeyClusterClient` instance.
+    /// Creates a new ``ValkeyClusterClient`` instance.
+    ///
+    /// This client only becomes usable once ``run()`` has been invoked.
     ///
     /// - Parameters:
     ///   - clientConfiguration: Configuration for the underlying Valkey client connections.
-    ///   - nodeDiscovery: A service that discovers Valkey nodes in the cluster.
+    ///   - nodeDiscovery: A ``ValkeyNodeDiscovery`` service that discovers Valkey nodes for the client in the cluster.
     ///   - eventLoopGroup: The event loop group used for handling connections. Defaults to the global singleton.
     ///   - logger: A logger for recording internal events and diagnostic information.
-    ///
-    /// - Returns: A new `ValkeyClusterClient` instance that is ready to be started with `run()`.
     public init(
         clientConfiguration: ValkeyClientConfiguration,
         nodeDiscovery: some ValkeyNodeDiscovery,
@@ -158,6 +158,7 @@ public final class ValkeyClusterClient: Sendable {
             logger: logger
         )
 
+        // TODO: We might want to collect redirects here for diagnostic purposes.
         while let movedError = respToken.parseMovedError() {
             respToken = try await self.retryingSend(
                 clientSelector: { try await self.client(for: movedError) },
@@ -167,21 +168,6 @@ public final class ValkeyClusterClient: Sendable {
         }
 
         return try Command.Response(fromRESP: respToken)
-    }
-
-    /// Retrieves a client for communicating with the node that manages the given key.
-    ///
-    /// This is a lower-level method that can be used when you need direct access to a
-    /// specific `ValkeyClient` instance for the node managing a particular key. Most users
-    /// should prefer the higher-level `send(command:)` method.
-    ///
-    /// - Parameter key: The key to determine which node to connect to.
-    /// - Returns: A `ValkeyClient` instance connected to the appropriate node.
-    /// - Throws:
-    ///   - `ValkeyClusterError.clusterIsUnavailable` if no healthy nodes are available
-    ///   - `ValkeyClusterError.clusterIsMissingSlotAssignment` if the slot assignment cannot be determined
-    public func client(for key: ValkeyKey) async throws -> ValkeyClient {
-        try await self.client(for: CollectionOfOne(HashSlot(key: key)))
     }
 
     /// Starts running the cluster client.
@@ -560,10 +546,9 @@ public final class ValkeyClusterClient: Sendable {
         }
     }
 
-
-    /// Discovers available Valkey nodes using the configured node discovery service.
+    /// Discovers available Valkey nodes using the configured ``ValkeyNodeDiscovery`` service.
     ///
-    /// - Returns: A list of voters that can participate in cluster topology consensus.
+    /// - Returns: A list of voters that can participate in cluster topology election.
     /// - Throws: Any error encountered during node discovery.
     private func runNodeDiscovery() async throws -> [ValkeyClusterVoter<ValkeyClient>] {
         do {
@@ -662,9 +647,9 @@ public final class ValkeyClusterClient: Sendable {
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient: ValkeyConnectionProtocol {}
 
-/// Extension that makes `ValkeyClient` conform to `ValkeyNodeConnectionPool`.
+/// Extension that makes ``ValkeyClient`` conform to ``ValkeyNodeConnectionPool``.
 ///
-/// This enables the cluster client to manage individual Valkey client instances.
+/// This enables the ``ValkeyClusterClient`` to manage individual ``ValkeyClient`` instances.
 @available(valkeySwift 1.0, *)
 extension ValkeyClient: ValkeyNodeConnectionPool {
     /// Initiates a graceful shutdown of the client.
@@ -678,9 +663,9 @@ extension ValkeyClient: ValkeyNodeConnectionPool {
     }
 }
 
-/// A factory for creating `ValkeyClient` instances to connect to specific nodes.
+/// A factory for creating ``ValkeyClient`` instances to connect to specific nodes.
 ///
-/// This factory is used by the `ValkeyClusterClient` to create client instances
+/// This factory is used by the ``ValkeyClusterClient`` to create client instances
 /// for each node in the cluster as needed.
 @available(valkeySwift 1.0, *)
 @usableFromInline
