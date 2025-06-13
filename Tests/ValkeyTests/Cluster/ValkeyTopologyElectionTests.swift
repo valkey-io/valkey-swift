@@ -71,7 +71,7 @@ struct ValkeyTopologyElectionTests {
     }
 
     /// Creates a cluster description with a master and replica nodes
-    func createClusterWithReplicas() -> ValkeyClusterDescription {
+    static func createClusterWithReplicas() -> ValkeyClusterDescription {
         let master = ValkeyClusterDescription.Node(
             id: "master1",
             port: 6379,
@@ -126,7 +126,7 @@ struct ValkeyTopologyElectionTests {
         var election = ValkeyTopologyElection()
 
         // Create a larger cluster description so a single vote isn't enough to win
-        let multiNodeDescription = createClusterWithReplicas()
+        let multiNodeDescription = Self.createClusterWithReplicas()
 
         let voterID = ValkeyNodeID(endpoint: "voter1.example.com", port: 6380)
         let metrics = try election.voteReceived(for: multiNodeDescription, from: voterID)
@@ -189,7 +189,7 @@ struct ValkeyTopologyElectionTests {
         var election = ValkeyTopologyElection()
 
         // Create a description that will need 3 votes to win
-        let description = createClusterWithReplicas()
+        let description = Self.createClusterWithReplicas()
 
         // Cast 3 votes from different voters
         let voter1 = ValkeyNodeID(endpoint: "master.example.com", port: 6380)
@@ -219,7 +219,7 @@ struct ValkeyTopologyElectionTests {
         var election = ValkeyTopologyElection()
 
         // Create a description that will need 3 votes to win
-        let description1 = createClusterWithReplicas()
+        let description1 = Self.createClusterWithReplicas()
 
         // Cast 3 votes from different voters
         let voter1 = ValkeyNodeID(endpoint: "master.example.com", port: 6380)

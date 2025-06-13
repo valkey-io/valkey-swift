@@ -23,19 +23,19 @@ import Glibc
 import Musl
 #endif
 
-/* private */ struct ValkeyClusterTimer {
-    enum UseCase: Hashable {
+package struct ValkeyClusterTimer: Sendable, Hashable {
+    package enum UseCase: Hashable {
         case nextDiscovery
         case circuitBreaker
     }
 
-    var useCase: UseCase
+    package var useCase: UseCase
 
-    var duration: Duration
+    package var duration: Duration
 
-    var timerID: Int
+    package var timerID: Int
 
-    init(timerID: Int, useCase: UseCase, duration: Duration) {
+    package init(timerID: Int, useCase: UseCase, duration: Duration) {
         self.useCase = useCase
         self.timerID = timerID
         self.duration = duration
@@ -43,17 +43,22 @@ import Musl
 }
 
 @usableFromInline
-struct ValkeyClusterClientStateMachineConfiguration {
+package struct ValkeyClusterClientStateMachineConfiguration {
     /// The duration after which the cluster client rejects all requests, because it can't find a cluster consensus
     @usableFromInline
-    var circuitBreakerDuration: Duration
+    package var circuitBreakerDuration: Duration
 
     /// The default duration between starts of cluster refreshs, if the previous refresh was successful
-    var defaultClusterRefreshInterval: Duration
+    package var defaultClusterRefreshInterval: Duration
+
+    package init(circuitBreakerDuration: Duration, defaultClusterRefreshInterval: Duration) {
+        self.circuitBreakerDuration = circuitBreakerDuration
+        self.defaultClusterRefreshInterval = defaultClusterRefreshInterval
+    }
 }
 
 @usableFromInline
-struct ValkeyClusterClientStateMachine<
+package struct ValkeyClusterClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
     Clock: _Concurrency.Clock,
@@ -164,7 +169,7 @@ struct ValkeyClusterClientStateMachine<
 
     private var _nextTimerID: Int = 0
 
-    init(
+    package init(
         configuration: ValkeyClusterClientStateMachineConfiguration,
         poolFactory: ConnectionPoolFactory,
         clock: Clock
@@ -183,7 +188,7 @@ struct ValkeyClusterClientStateMachine<
         self.poolFactory = poolFactory
     }
 
-    mutating func start() -> ValkeyClusterTimer {
+    package mutating func start() -> ValkeyClusterTimer {
         switch self.refreshState {
         case .notRefreshing:
             switch self.clusterState {
@@ -203,13 +208,13 @@ struct ValkeyClusterClientStateMachine<
         }
     }
 
-    struct UpdateValkeyNodesAction {
+    package struct UpdateValkeyNodesAction {
         // new pools that were created as a response to the update
-        var clientsToRun: [ConnectionPool]
+        package var clientsToRun: [ConnectionPool]
 
-        var clientsToShutdown: [ConnectionPool]
+        package var clientsToShutdown: [ConnectionPool]
 
-        var voters: [ValkeyClusterVoter<ConnectionPool>]
+        package var voters: [ValkeyClusterVoter<ConnectionPool>]
 
         static func empty() -> Self {
             .init(clientsToRun: [], clientsToShutdown: [], voters: [])
@@ -244,16 +249,16 @@ struct ValkeyClusterClientStateMachine<
         self.allNodeClients().map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
     }
 
-    struct ClusterDiscoverySucceededAction {
-        var createTimer: ValkeyClusterTimer? = nil
+    package struct ClusterDiscoverySucceededAction {
+        package var createTimer: ValkeyClusterTimer? = nil
 
-        var cancelTimer: TimerCancellationToken? = nil
+        package var cancelTimer: TimerCancellationToken? = nil
 
-        var waitersToSucceed: [SuccessNotifier] = []
+        package var waitersToSucceed: [SuccessNotifier] = []
 
-        var clientsToShutdown: [ConnectionPool] = []
+        package var clientsToShutdown: [ConnectionPool] = []
 
-        var clientsToRun: [ConnectionPool] = []
+        package var clientsToRun: [ConnectionPool] = []
     }
 
     package mutating func valkeyClusterDiscoverySucceeded(
@@ -309,10 +314,10 @@ struct ValkeyClusterClientStateMachine<
         }
     }
 
-    struct ClusterDiscoveryFailedAction {
-        var retryTimer: ValkeyClusterTimer?
+    package struct ClusterDiscoveryFailedAction: Hashable, Sendable {
+        package var retryTimer: ValkeyClusterTimer?
 
-        var circuitBreakerTimer: ValkeyClusterTimer?
+        package var circuitBreakerTimer: ValkeyClusterTimer?
     }
 
     package mutating func valkeyClusterDiscoveryFailed(
@@ -377,19 +382,28 @@ struct ValkeyClusterClientStateMachine<
         }
     }
 
-    struct TimerFiredAction {
-        struct RunDiscovery {
-            var runNodeDiscoveryFirst: Bool
+    package struct TimerFiredAction {
+        package struct RunDiscovery {
+            package var runNodeDiscoveryFirst: Bool
+
+            package init(runNodeDiscoveryFirst: Bool) {
+                self.runNodeDiscoveryFirst = runNodeDiscoveryFirst
+            }
         }
 
-        struct FailWaiters {
-            var waitersToFail: [SuccessNotifier]
+        package struct FailWaiters {
+            package var waitersToFail: [SuccessNotifier]
 
-            var error: any Error
+            package var error: any Error
         }
 
-        var runDiscovery: RunDiscovery?
-        var failWaiters: FailWaiters?
+        package var runDiscovery: RunDiscovery?
+        package var failWaiters: FailWaiters?
+
+        package init(runDiscovery: RunDiscovery? = nil, failWaiters: FailWaiters? = nil) {
+            self.runDiscovery = runDiscovery
+            self.failWaiters = failWaiters
+        }
     }
 
     package mutating func timerFired(_ timer: ValkeyClusterTimer) -> TimerFiredAction {
@@ -516,7 +530,7 @@ struct ValkeyClusterClientStateMachine<
     }
 
     @inlinable
-    func poolFastPath(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ConnectionPool {
+    package func poolFastPath(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ConnectionPool {
         switch self.clusterState {
         case .unavailable:
             throw ValkeyClusterError.clusterIsUnavailable
@@ -547,15 +561,20 @@ struct ValkeyClusterClientStateMachine<
     }
 
     @usableFromInline
-    enum PoolForMovedErrorAction {
+    package enum PoolForMovedErrorAction {
         case connectionPool(ConnectionPool)
         case moveToDegraded(MoveToDegraded)
         case waitForDiscovery
 
         @usableFromInline
-        struct MoveToDegraded {
-            var runDiscoveryAndCancelTimer: TimerCancellationToken?
-            var circuitBreakerTimer: ValkeyClusterTimer
+        package struct MoveToDegraded {
+            package var runDiscoveryAndCancelTimer: TimerCancellationToken?
+            package var circuitBreakerTimer: ValkeyClusterTimer
+
+            package init(runDiscoveryAndCancelTimer: TimerCancellationToken? = nil, circuitBreakerTimer: ValkeyClusterTimer) {
+                self.runDiscoveryAndCancelTimer = runDiscoveryAndCancelTimer
+                self.circuitBreakerTimer = circuitBreakerTimer
+            }
         }
     }
 
@@ -626,17 +645,17 @@ struct ValkeyClusterClientStateMachine<
     }
 
     @usableFromInline
-    enum WaitForHealthyAction {
+    package enum WaitForHealthyAction {
         case none
         case succeed(SuccessNotifier)
         case fail(any Error, SuccessNotifier)
     }
 
     @inlinable
-    mutating func waitForHealthy(waiterID: Int, successNotifier: SuccessNotifier) -> WaitForHealthyAction {
+    mutating package func waitForHealthy(waiterID: Int, successNotifier: SuccessNotifier) -> WaitForHealthyAction {
         switch self.clusterState {
         case .unavailable(var context):
-            if context.start.advanced(by: self.configuration.circuitBreakerDuration) < self.clock.now {
+            if context.start.advanced(by: self.configuration.circuitBreakerDuration) <= self.clock.now {
                 return .fail(ValkeyClusterError.noConsensusReachedCircuitBreakerOpen, successNotifier)
             }
             context.pendingSuccessNotifiers[waiterID] = successNotifier
