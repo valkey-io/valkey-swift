@@ -169,7 +169,7 @@ extension ValkeyConnection {
         return value
     }
 
-    /// Subscribe to cache invalidation channel
+    /// Subscribe to key invalidation channel required for client-side caching
     ///
     /// See https://valkey.io/topics/client-side-caching/ for more details
     ///
