@@ -24,19 +24,19 @@ import Musl
 #endif
 
 /* private */ struct ValkeyClusterTimer {
-    enum Usecase: Hashable {
+    enum UseCase: Hashable {
         case nextDiscovery
         case circuitBreaker
     }
 
-    var usecase: Usecase
+    var useCase: UseCase
 
     var duration: Duration
 
     var timerID: Int
 
-    init(timerID: Int, usecase: Usecase, duration: Duration) {
-        self.usecase = usecase
+    init(timerID: Int, useCase: UseCase, duration: Duration) {
+        self.useCase = useCase
         self.timerID = timerID
         self.duration = duration
     }
@@ -192,7 +192,7 @@ struct ValkeyClusterClientStateMachine<
                 let timerID = self.nextTimerID()
                 unavailableContext.circuitBreakerTimer = .init(id: timerID)
                 self.clusterState = .unavailable(unavailableContext)
-                return .init(timerID: timerID, usecase: .circuitBreaker, duration: .seconds(30))
+                return .init(timerID: timerID, useCase: .circuitBreaker, duration: .seconds(30))
 
             case .degraded, .healthy, .shutdown:
                 preconditionFailure("Invalid state: \(self.refreshState)")
@@ -282,7 +282,7 @@ struct ValkeyClusterClientStateMachine<
             var result = ClusterDiscoverySucceededAction(
                 createTimer: .init(
                     timerID: refreshTimerID,
-                    usecase: .nextDiscovery,
+                    useCase: .nextDiscovery,
                     duration: self.configuration.defaultClusterRefreshInterval
                 ),
                 clientsToShutdown: poolUpdate.poolsToShutdown,
@@ -330,7 +330,7 @@ struct ValkeyClusterClientStateMachine<
                 let circuitBreakerTimerID = self.nextTimerID()
                 let timerTillUnavailable = ValkeyClusterTimer(
                     timerID: circuitBreakerTimerID,
-                    usecase: .circuitBreaker,
+                    useCase: .circuitBreaker,
                     duration: self.configuration.circuitBreakerDuration
                 )
                 self.clusterState = .degraded(.init(
@@ -368,7 +368,11 @@ struct ValkeyClusterClientStateMachine<
                 previousRefresh: refreshContext
             )
 
-            failedAction.retryTimer = .init(timerID: refreshTimerID, usecase: .nextDiscovery, duration: waitTillNextTry)
+            failedAction.retryTimer = .init(
+                timerID: refreshTimerID,
+                useCase: .nextDiscovery,
+                duration: waitTillNextTry
+            )
             return failedAction
         }
     }
@@ -389,7 +393,7 @@ struct ValkeyClusterClientStateMachine<
     }
 
     package mutating func timerFired(_ timer: ValkeyClusterTimer) -> TimerFiredAction {
-        switch timer.usecase {
+        switch timer.useCase {
         case .nextDiscovery:
             let runNodeDiscoveryFirst: Bool
             switch self.clusterState {
@@ -472,7 +476,43 @@ struct ValkeyClusterClientStateMachine<
         _ token: TimerCancellationToken,
         for timer: ValkeyClusterTimer
     ) -> TimerCancellationToken? {
-        return nil
+        switch timer.useCase {
+        case .nextDiscovery:
+            switch self.refreshState {
+            case .notRefreshing, .refreshing:
+                return token
+
+            case .waitingForRefresh(var timerState, let previousRefresh):
+                if timerState.id == timer.timerID {
+                    timerState.cancellationToken = token
+                    self.refreshState = .waitingForRefresh(timerState, previousRefresh: previousRefresh)
+                    return nil
+                }
+                return token
+            }
+
+        case .circuitBreaker:
+            switch self.clusterState {
+            case .degraded(var context):
+                if context.circuitBreakerTimer?.id == timer.timerID {
+                    context.circuitBreakerTimer!.cancellationToken = token
+                    self.clusterState = .degraded(context)
+                    return nil
+                }
+                return token
+
+            case .unavailable(var context):
+                if context.circuitBreakerTimer?.id == timer.timerID {
+                    context.circuitBreakerTimer!.cancellationToken = token
+                    self.clusterState = .unavailable(context)
+                    return nil
+                }
+                return token
+
+            case .healthy, .shutdown:
+                return token
+            }
+        }
     }
 
     @inlinable
@@ -541,13 +581,13 @@ struct ValkeyClusterClientStateMachine<
         case .healthy(var healthyContext):
             switch healthyContext.hashSlotShardMap.updateSlots(with: movedError) {
             case .updatedSlotToUnknownNode:
+                break
+
+            case .updatedSlotToExistingNode:
                 if let pool = self.runningClients[movedError.nodeID]?.pool {
                     self.clusterState = .healthy(healthyContext)
                     return .connectionPool(pool)
                 }
-
-            case .updatedSlotToExistingNode:
-                break
             }
 
             let circuitBreakerTimerID = self.nextTimerID()
@@ -575,7 +615,7 @@ struct ValkeyClusterClientStateMachine<
                 runDiscoveryAndCancelTimer: cancelTimer,
                 circuitBreakerTimer: .init(
                     timerID: circuitBreakerTimerID,
-                    usecase: .circuitBreaker,
+                    useCase: .circuitBreaker,
                     duration: self.configuration.circuitBreakerDuration
                 )
             ))
@@ -596,7 +636,7 @@ struct ValkeyClusterClientStateMachine<
     mutating func waitForHealthy(waiterID: Int, successNotifier: SuccessNotifier) -> WaitForHealthyAction {
         switch self.clusterState {
         case .unavailable(var context):
-            if context.start.advanced(by: .seconds(30)) < self.clock.now {
+            if context.start.advanced(by: self.configuration.circuitBreakerDuration) < self.clock.now {
                 return .fail(ValkeyClusterError.noConsensusReachedCircuitBreakerOpen, successNotifier)
             }
             context.pendingSuccessNotifiers[waiterID] = successNotifier
@@ -706,7 +746,7 @@ struct ValkeyClusterClientStateMachine<
             )
         }
 
-        // readd pools that where not part of the node list.
+        // re-add pools that were not part of the node list.
         for (nodeID, poolDescription) in previousNodes {
             self.runningClients[nodeID] = poolDescription
         }
@@ -784,8 +824,8 @@ extension ValkeyClusterClientStateMachine {
 
         let backoff = Duration.nanoseconds(backoffNanoseconds)
 
-        // Calculate a 3% jitter range
-        let jitterRange = (backoffNanoseconds / 100) * 3
+        // Calculate a 10% jitter range
+        let jitterRange = (backoffNanoseconds / 100) * 10
         // Pick a random element from the range +/- jitter range.
         let jitter: Duration = .nanoseconds((-jitterRange...jitterRange).randomElement()!)
         let jitteredBackoff = backoff + jitter
