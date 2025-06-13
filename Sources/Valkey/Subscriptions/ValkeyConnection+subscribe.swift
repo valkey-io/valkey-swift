@@ -182,7 +182,7 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with async sequence of key invalidations
     /// - Returns: Return value of closure
     @inlinable
-    public func subscribeInvalidations<Value>(
+    public func subscribeKeyInvalidations<Value>(
         process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> sending Value
     ) async throws -> Value {
         try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in

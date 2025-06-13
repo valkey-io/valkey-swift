@@ -772,7 +772,7 @@ struct SubscriptionTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testInvalidationSubscription() async throws {
+    func testKeyInvalidationSubscription() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
         logger.logLevel = .trace
@@ -781,7 +781,7 @@ struct SubscriptionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                try await connection.subscribeInvalidations { keys in
+                try await connection.subscribeKeyInvalidations { keys in
                     var iterator = keys.makeAsyncIterator()
                     let key = try await iterator.next()
                     #expect(key == "foo")

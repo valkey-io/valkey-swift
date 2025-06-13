@@ -753,7 +753,7 @@ struct GeneratedCommands {
             try await connection.clientTracking(status: .on)
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
-                    try await connection.subscribeInvalidations { keys in
+                    try await connection.subscribeKeyInvalidations { keys in
                         cont.finish()
                         var iterator = keys.makeAsyncIterator()
                         let key = try await iterator.next()
