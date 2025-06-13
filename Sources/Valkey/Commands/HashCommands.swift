@@ -55,6 +55,8 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HEXISTS", key, RESPBulkString(field))
     }
@@ -74,6 +76,8 @@ public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HGET", key, RESPBulkString(field))
     }
@@ -90,6 +94,8 @@ public struct HGETALL: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HGETALL", key)
@@ -148,6 +154,8 @@ public struct HKEYS: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HKEYS", key)
     }
@@ -164,6 +172,8 @@ public struct HLEN: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HLEN", key)
@@ -183,6 +193,8 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HMGET", key, field.map { RESPBulkString($0) })
@@ -260,6 +272,8 @@ public struct HRANDFIELD: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HRANDFIELD", key, options)
     }
@@ -284,6 +298,8 @@ public struct HSCAN: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPPureToken("NOVALUES", novalues))
@@ -364,6 +380,8 @@ public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HSTRLEN", key, RESPBulkString(field))
     }
@@ -380,6 +398,8 @@ public struct HVALS: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HVALS", key)
