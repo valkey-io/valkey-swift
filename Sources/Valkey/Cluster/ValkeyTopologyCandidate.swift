@@ -114,7 +114,12 @@ package struct ValkeyTopologyCandidate: Hashable {
     }
 }
 
-struct ValkeyClusterVoter<ConnectionPool: ValkeyNodeConnectionPool> {
-    var client: ConnectionPool
-    var nodeID: ValkeyNodeID
+package struct ValkeyClusterVoter<ConnectionPool: ValkeyNodeConnectionPool> {
+    package var client: ConnectionPool
+    package var nodeID: ValkeyNodeID
+
+    package init(client: ConnectionPool, nodeID: ValkeyNodeID) {
+        self.client = client
+        self.nodeID = nodeID
+    }
 }
