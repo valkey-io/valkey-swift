@@ -169,6 +169,28 @@ extension ValkeyConnection {
         return value
     }
 
+    /// Subscribe to cache invalidation channel
+    ///
+    /// See https://valkey.io/topics/client-side-caching/ for more details
+    ///
+    /// When the closure is exited the channel is automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// channel
+    ///
+    /// - Parameters:
+    ///   - process: Closure that is called with async sequence of key invalidations
+    /// - Returns: Return value of closure
+    @inlinable
+    public func subscribeInvalidations<Value>(
+        process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> sending Value
+    ) async throws -> Value {
+        try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
+            let keys = subscription.map { ValkeyKey(rawValue: $0.message) }
+            return try await process(keys)
+        }
+    }
+
     @usableFromInline
     func subscribe(
         command: some ValkeyCommand,
