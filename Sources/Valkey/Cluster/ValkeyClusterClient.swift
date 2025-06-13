@@ -49,13 +49,14 @@ import Synchronization
 ///     logger: logger
 /// )
 ///
-/// // Start the client
-/// Task {
-///     await client.run()
-/// }
+/// try await withThrowingTaskGroup(of: Void.self) { group in
+///     group.addTask {
+///         await client.run()
+///     }
 ///
-/// // Send commands
-/// let result = try await client.send(command: MyValkeyCommand())
+///     // use the client here
+///     let foo = try await client.get(key: "foo")
+/// }
 /// ```
 @available(valkeySwift 1.0, *)
 public final class ValkeyClusterClient: Sendable {
@@ -197,8 +198,13 @@ public final class ValkeyClusterClient: Sendable {
     /// Example:
     /// ```swift
     /// let client = ValkeyClusterClient(...)
-    /// Task {
-    ///     await client.run()
+    /// try await withThrowingTaskGroup(of: Void.self) { group in
+    ///     group.addTask {
+    ///         await client.run()
+    ///     }
+    ///     
+    ///     // use the client here
+    ///     let foo = try await client.get(key: "foo")
     /// }
     /// ```
     ///
