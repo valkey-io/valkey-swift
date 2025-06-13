@@ -585,7 +585,7 @@ package struct ValkeyClusterClientStateMachine<
             if unavailableContext.start.advanced(by: self.configuration.circuitBreakerDuration) > self.clock.now {
                 return .waitForDiscovery
             }
-            throw ValkeyClusterError.clusterIsUnavailable
+            throw ValkeyClusterError.noConsensusReachedCircuitBreakerOpen
 
         case .degraded(var degradedContext):
             switch degradedContext.hashSlotShardMap.updateSlots(with: movedError) {
@@ -703,6 +703,10 @@ package struct ValkeyClusterClientStateMachine<
         case .shutdown:
             return .empty()
         }
+    }
+
+    struct ShutdownAction {
+
     }
 
     package mutating func shutdown() -> [ConnectionPool] {
