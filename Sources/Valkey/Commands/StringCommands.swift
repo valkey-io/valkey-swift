@@ -113,7 +113,7 @@ public struct GETDEL: ValkeyCommand {
 
 /// Returns the string value of a key after setting its expiration time.
 public struct GETEX: ValkeyCommand {
-    public enum Expiration: RESPRenderable, Sendable {
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
@@ -294,7 +294,7 @@ public struct MGET: ValkeyCommand {
 
 /// Atomically creates or modifies the string values of one or more keys.
 public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: ValkeyKey
         @usableFromInline let value: Value
 
@@ -327,7 +327,7 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
 
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
 public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: ValkeyKey
         @usableFromInline let value: Value
 
@@ -381,7 +381,7 @@ public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
 
 /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
 public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case comparisonValue(String)
@@ -404,7 +404,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public enum Expiration: RESPRenderable, Sendable {
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)

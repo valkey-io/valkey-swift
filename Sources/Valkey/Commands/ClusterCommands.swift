@@ -39,7 +39,7 @@ public enum CLUSTER {
 
     /// Assigns new hash slot ranges to a node.
     public struct ADDSLOTSRANGE: ValkeyCommand {
-        public struct Range: RESPRenderable, Sendable {
+        public struct Range: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
@@ -125,7 +125,7 @@ public enum CLUSTER {
 
     /// Sets hash slot ranges as unbound for a node.
     public struct DELSLOTSRANGE: ValkeyCommand {
-        public struct Range: RESPRenderable, Sendable {
+        public struct Range: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
@@ -158,7 +158,7 @@ public enum CLUSTER {
 
     /// Forces a replica to perform a manual failover of its primary.
     public struct FAILOVER: ValkeyCommand {
-        public enum Options: RESPRenderable, Sendable {
+        public enum Options: RESPRenderable, Sendable, Hashable {
             case force
             case takeover
 
@@ -350,7 +350,7 @@ public enum CLUSTER {
 
     /// Resets a node.
     public struct RESET: ValkeyCommand {
-        public enum ResetType: RESPRenderable, Sendable {
+        public enum ResetType: RESPRenderable, Sendable, Hashable {
             case hard
             case soft
 
@@ -401,7 +401,7 @@ public enum CLUSTER {
 
     /// Binds a hash slot to a node.
     public struct SETSLOT: ValkeyCommand {
-        public enum Subcommand: RESPRenderable, Sendable {
+        public enum Subcommand: RESPRenderable, Sendable, Hashable {
             case importing(String)
             case migrating(String)
             case node(String)
@@ -469,7 +469,7 @@ public enum CLUSTER {
 
     /// Return an array of slot usage statistics for slots assigned to the current node.
     public struct SLOTSTATS: ValkeyCommand {
-        public struct FilterSlotsrange: RESPRenderable, Sendable {
+        public struct FilterSlotsrange: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
             @usableFromInline let endSlot: Int
 
@@ -489,7 +489,7 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
-        public enum FilterOrderbyOrder: RESPRenderable, Sendable {
+        public enum FilterOrderbyOrder: RESPRenderable, Sendable, Hashable {
             case asc
             case desc
 
@@ -504,7 +504,7 @@ public enum CLUSTER {
                 }
             }
         }
-        public struct FilterOrderby: RESPRenderable, Sendable {
+        public struct FilterOrderby: RESPRenderable, Sendable, Hashable {
             @usableFromInline let metric: String
             @usableFromInline let limit: Int?
             @usableFromInline let order: FilterOrderbyOrder?
@@ -527,7 +527,7 @@ public enum CLUSTER {
                 order.encode(into: &commandEncoder)
             }
         }
-        public enum Filter: RESPRenderable, Sendable {
+        public enum Filter: RESPRenderable, Sendable, Hashable {
             case slotsrange(FilterSlotsrange)
             case orderby(FilterOrderby)
 
