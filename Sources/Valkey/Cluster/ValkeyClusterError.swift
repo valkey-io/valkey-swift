@@ -16,8 +16,8 @@
 package enum ValkeyClusterError: Error {
     case clusterIsMissingSlotAssignment
     case clusterIsMissingMovedErrorNode
-    case shardIsMissingMasterNode
-    case shardHasMultipleMasterNodes
+    case shardIsMissingPrimaryNode
+    case shardHasMultiplePrimaryNodes
     case noNodeToTalkTo
     case serverDiscoveryFailedNoKnownNode
     case keysInCommandRequireMultipleNodes

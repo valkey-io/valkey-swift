@@ -30,7 +30,7 @@ struct ValkeyTopologyElectionTests {
             ip: "127.0.0.1",
             hostname: "localhost",
             endpoint: endpoint,
-            role: .master,
+            role: .primary,
             replicationOffset: 0,
             health: .online
         )
@@ -48,7 +48,7 @@ struct ValkeyTopologyElectionTests {
             ip: "127.0.0.1",
             hostname: "server1",
             endpoint: "server1.example.com",
-            role: .master,
+            role: .primary,
             replicationOffset: 0,
             health: .online
         )
@@ -60,7 +60,7 @@ struct ValkeyTopologyElectionTests {
             ip: "127.0.0.2",
             hostname: "server2",
             endpoint: "server2.example.com",
-            role: .master,
+            role: .primary,
             replicationOffset: 0,
             health: .online
         )
@@ -70,16 +70,16 @@ struct ValkeyTopologyElectionTests {
         return ValkeyClusterDescription([shard1, shard2])
     }
 
-    /// Creates a cluster description with a master and replica nodes
+    /// Creates a cluster description with a primary and replica nodes
     static func createClusterWithReplicas() -> ValkeyClusterDescription {
-        let master = ValkeyClusterDescription.Node(
-            id: "master1",
+        let primary = ValkeyClusterDescription.Node(
+            id: "primary1",
             port: 6379,
             tlsPort: 6380,
             ip: "127.0.0.1",
-            hostname: "master",
-            endpoint: "master.example.com",
-            role: .master,
+            hostname: "primary",
+            endpoint: "primary.example.com",
+            role: .primary,
             replicationOffset: 100,
             health: .online
         )
@@ -110,7 +110,7 @@ struct ValkeyTopologyElectionTests {
 
         let shard = ValkeyClusterDescription.Shard(
             slots: [0...16383],
-            nodes: [master, replica1, replica2]
+            nodes: [primary, replica1, replica2]
         )
         return ValkeyClusterDescription([shard])
     }
@@ -192,7 +192,7 @@ struct ValkeyTopologyElectionTests {
         let description = Self.createClusterWithReplicas()
 
         // Cast 3 votes from different voters
-        let voter1 = ValkeyNodeID(endpoint: "master.example.com", port: 6380)
+        let voter1 = ValkeyNodeID(endpoint: "primary.example.com", port: 6380)
         let voter2 = ValkeyNodeID(endpoint: "replica1.example.com", port: 6380)
         let voter3 = ValkeyNodeID(endpoint: "replica2.example.com", port: 6380)
 
@@ -222,7 +222,7 @@ struct ValkeyTopologyElectionTests {
         let description1 = Self.createClusterWithReplicas()
 
         // Cast 3 votes from different voters
-        let voter1 = ValkeyNodeID(endpoint: "master.example.com", port: 6380)
+        let voter1 = ValkeyNodeID(endpoint: "primary.example.com", port: 6380)
         let voter2 = ValkeyNodeID(endpoint: "replica1.example.com", port: 6380)
         let voter3 = ValkeyNodeID(endpoint: "replica2.example.com", port: 6380)
 

@@ -12,27 +12,27 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Represents the mapping of nodes in a Valkey shard, consisting of a master node and optional replicas.
+/// Represents the mapping of nodes in a Valkey shard, consisting of a primary node and optional replicas.
 ///
-/// In a Valkey cluster, each shard consists of one master node and zero or more replica nodes.
+/// In a Valkey cluster, each shard consists of one primary node and zero or more replica nodes.
 @usableFromInline
 package struct ValkeyShardNodeIDs: Hashable, Sendable {
-    /// The master node responsible for handling write operations for this shard.
+    /// The primary node responsible for handling write operations for this shard.
     @usableFromInline
-    package var master: ValkeyNodeID
+    package var primary: ValkeyNodeID
 
-    /// The replica nodes that maintain copies of the master's data.
+    /// The replica nodes that maintain copies of the primary's data.
     /// Replicas can handle read operations but not writes.
     @usableFromInline
     package var replicas: [ValkeyNodeID]
 
-    /// Creates a new shard node mapping with the specified master and optional replicas.
+    /// Creates a new shard node mapping with the specified primary and optional replicas.
     ///
     /// - Parameters:
-    ///   - master: The master node ID for this shard
+    ///   - primary: The primary node ID for this shard
     ///   - replicas: An array of replica node IDs, defaults to empty
-    package init(master: ValkeyNodeID, replicas: [ValkeyNodeID] = []) {
-        self.master = master
+    package init(primary: ValkeyNodeID, replicas: [ValkeyNodeID] = []) {
+        self.primary = primary
         self.replicas = replicas
     }
 }
@@ -43,8 +43,8 @@ extension ValkeyShardNodeIDs: ExpressibleByArrayLiteral {
 
     @usableFromInline
     package init(arrayLiteral elements: ValkeyNodeID...) {
-        precondition(!elements.isEmpty, "ValkeyShardNodeIDs requires at least one node ID for the master")
-        self.master = elements.first!
+        precondition(!elements.isEmpty, "ValkeyShardNodeIDs requires at least one node ID for the primary")
+        self.primary = elements.first!
         self.replicas = Array(elements.dropFirst())
     }
 }
@@ -121,8 +121,8 @@ package struct HashSlotShardMap: Sendable {
     /// It performs the following operations:
     /// 1. Resets the slot-to-shard mapping (all slots become unassigned)
     /// 2. Clears the current shard collection
-    /// 3. For each valid shard (that has a master node):
-    ///    - Creates a `ValkeyShardNodeIDs` object with the master and its replicas
+    /// 3. For each valid shard (that has a primary node):
+    ///    - Creates a `ValkeyShardNodeIDs` object with the primary and its replicas
     ///    - Assigns all slots belonging to this shard in the mapping
     ///
     /// - Parameter shards: A collection of shard descriptions containing slot assignments and node information
@@ -133,26 +133,26 @@ package struct HashSlotShardMap: Sendable {
 
         var shardID = 0
         for shard in shards {
-            var master: ValkeyNodeID?
+            var primary: ValkeyNodeID?
             var replicas = [ValkeyNodeID]()
             replicas.reserveCapacity(shard.nodes.count - 1)
 
             for node in shard.nodes {
                 switch node.role.base {
-                case .master:
-                    master = node.nodeID
+                case .primary:
+                    primary = node.nodeID
 
                 case .replica:
                     replicas.append(node.nodeID)
                 }
             }
 
-            guard let master else {
+            guard let primary else {
                 continue
             }
 
             let nodeIDs = ValkeyShardNodeIDs(
-                master: master,
+                primary: primary,
                 replicas: replicas
             )
 
@@ -194,14 +194,14 @@ package struct HashSlotShardMap: Sendable {
             var shard = self.shardIDToShard[shardIndex]
 
             // 1. No change
-            if shard.master == movedError.nodeID {
+            if shard.primary == movedError.nodeID {
                 return .updatedSlotToExistingNode
             }
 
             // 2. Failover
             if shard.replicas.contains(movedError.nodeID) {
                 // lets promote the replica to be the primary and remove the old primary for now
-                shard.master = movedError.nodeID
+                shard.primary = movedError.nodeID
                 shard.replicas.removeAll { $0 == movedError.nodeID }
                 self.shardIDToShard[shardIndex] = shard
                 return .updatedSlotToExistingNode
@@ -209,7 +209,7 @@ package struct HashSlotShardMap: Sendable {
         }
 
         // 3. Slot migration to an existing primary
-        if let newShardIndex = self.shardIDToShard.firstIndex(where: { $0.master == movedError.nodeID }) {
+        if let newShardIndex = self.shardIDToShard.firstIndex(where: { $0.primary == movedError.nodeID }) {
             self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
             return .updatedSlotToExistingNode
         }
@@ -220,14 +220,14 @@ package struct HashSlotShardMap: Sendable {
             self.shardIDToShard[ogShardIndexOfNewPrimary].replicas.removeAll(where: { $0 == movedError.nodeID })
             // create a new shard with the replica
             let newShardIndex = self.shardIDToShard.endIndex
-            self.shardIDToShard.append(.init(master: movedError.nodeID))
+            self.shardIDToShard.append(.init(primary: movedError.nodeID))
             self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
             return .updatedSlotToExistingNode
         }
 
         // 5. totally new node
         let newShardIndex = self.shardIDToShard.endIndex
-        self.shardIDToShard.append(.init(master: movedError.nodeID))
+        self.shardIDToShard.append(.init(primary: movedError.nodeID))
         self.slotToShardID[Int(movedError.slot.rawValue)] = .init(newShardIndex)
         return .updatedSlotToUnknownNode
     }
