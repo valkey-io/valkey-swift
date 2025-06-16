@@ -145,10 +145,8 @@ public final class ValkeyClusterClient: Sendable {
     ///   - Other errors if the command execution or parsing fails
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
-        let clientSelector: () async throws -> ValkeyClient
-
         let hashSlots = command.keysAffected.map { HashSlot(key: $0) }
-        clientSelector = {
+        let clientSelector: () async throws -> ValkeyClient = {
             try await self.client(for: hashSlots)
         }
 
