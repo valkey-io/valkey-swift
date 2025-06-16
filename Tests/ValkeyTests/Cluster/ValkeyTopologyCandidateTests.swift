@@ -53,7 +53,7 @@ struct ValkeyTopologyCandidateTests {
                         ip: "192.168.12.3",
                         hostname: "node3",
                         endpoint: "node3",
-                        role: .master,
+                        role: .primary,
                         replicationOffset: 123,
                         health: .online
                     ),
@@ -91,7 +91,7 @@ struct ValkeyTopologyCandidateTests {
                         ip: "192.168.12.6",
                         hostname: "node6",
                         endpoint: "node6",
-                        role: .master,
+                        role: .primary,
                         replicationOffset: 123,
                         health: .online
                     ),
@@ -112,8 +112,8 @@ struct ValkeyTopologyCandidateTests {
         #expect(candidate1 == candidate2)
     }
 
-    @Test("Two master nodes for the same shard throws")
-    func twoMasterNodesForTheSameShardThrows() {
+    @Test("Two primary nodes for the same shard throws")
+    func twoPrimaryNodesForTheSameShardThrows() {
         let description = ValkeyClusterDescription([
             .init(
                 slots: [0...2000, 8000...12000],
@@ -136,7 +136,7 @@ struct ValkeyTopologyCandidateTests {
                         ip: "192.168.12.2",
                         hostname: "node2",
                         endpoint: "node2",
-                        role: .master,
+                        role: .primary,
                         replicationOffset: 123,
                         health: .online
                     ),
@@ -147,7 +147,7 @@ struct ValkeyTopologyCandidateTests {
                         ip: "192.168.12.3",
                         hostname: "node3",
                         endpoint: "node3",
-                        role: .master,
+                        role: .primary,
                         replicationOffset: 123,
                         health: .online
                     ),
@@ -155,11 +155,11 @@ struct ValkeyTopologyCandidateTests {
             )
         ])
 
-        #expect(throws: ValkeyClusterError.shardHasMultipleMasterNodes) { try ValkeyTopologyCandidate(description) }
+        #expect(throws: ValkeyClusterError.shardHasMultiplePrimaryNodes) { try ValkeyTopologyCandidate(description) }
     }
 
-    @Test("No master node for a shard throws")
-    func noMasterNodeForAShardThrows() {
+    @Test("No primary node for a shard throws")
+    func noPrimaryNodeForAShardThrows() {
         let description = ValkeyClusterDescription([
             .init(
                 slots: [0...2000, 8000...12000],
@@ -201,6 +201,6 @@ struct ValkeyTopologyCandidateTests {
             )
         ])
 
-        #expect(throws: ValkeyClusterError.shardIsMissingMasterNode) { try ValkeyTopologyCandidate(description) }
+        #expect(throws: ValkeyClusterError.shardIsMissingPrimaryNode) { try ValkeyTopologyCandidate(description) }
     }
 }

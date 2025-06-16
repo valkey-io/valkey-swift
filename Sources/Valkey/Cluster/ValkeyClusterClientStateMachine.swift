@@ -537,7 +537,7 @@ package struct ValkeyClusterClientStateMachine<
 
         case .degraded(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
-            if let pool = self.runningClients[shardID.master]?.pool {
+            if let pool = self.runningClients[shardID.primary]?.pool {
                 return pool
             }
             // If we don't have a node for a shard, that means that this shard got created from
@@ -547,7 +547,7 @@ package struct ValkeyClusterClientStateMachine<
 
         case .healthy(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
-            if let pool = self.runningClients[shardID.master]?.pool {
+            if let pool = self.runningClients[shardID.primary]?.pool {
                 return pool
             }
             // If we don't have a node for a shard, that means that this shard got created from
