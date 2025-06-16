@@ -3,8 +3,8 @@ version: '3.8'
 services:
 
   # Here we have six Valkey containers with Cluster mode enabled,
-  # three of them will work as master nodes and each one of
-  # will have a replica, so in case of failures, the replica becomes the master.
+  # three of them will work as primary nodes and each one of
+  # will have a replica, so in case of failures, the replica becomes the primary.
   # They are configured by the `cluster_initiator` container.
 
   # To make Docker compatible with Valkey Cluster, you need to use Docker's host
