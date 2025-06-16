@@ -36,6 +36,8 @@ public enum OBJECT {
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+        public var isReadOnly: Bool { true }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "ENCODING", key)
         }
@@ -52,6 +54,8 @@ public enum OBJECT {
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+        public var isReadOnly: Bool { true }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "FREQ", key)
@@ -82,6 +86,8 @@ public enum OBJECT {
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+        public var isReadOnly: Bool { true }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "IDLETIME", key)
         }
@@ -98,6 +104,8 @@ public enum OBJECT {
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+        public var isReadOnly: Bool { true }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("OBJECT", "REFCOUNT", key)
@@ -158,6 +166,8 @@ public struct DUMP: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("DUMP", key)
     }
@@ -174,6 +184,8 @@ public struct EXISTS: ValkeyCommand {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EXISTS", key)
@@ -272,6 +284,8 @@ public struct EXPIRETIME: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EXPIRETIME", key)
     }
@@ -286,6 +300,8 @@ public struct KEYS: ValkeyCommand {
     @inlinable public init(pattern: String) {
         self.pattern = pattern
     }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("KEYS", pattern)
@@ -513,6 +529,8 @@ public struct PEXPIRETIME: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PEXPIRETIME", key)
     }
@@ -530,6 +548,8 @@ public struct PTTL: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PTTL", key)
     }
@@ -541,6 +561,8 @@ public struct RANDOMKEY: ValkeyCommand {
 
     @inlinable public init() {
     }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("RANDOMKEY")
@@ -625,6 +647,8 @@ public struct SCAN: ValkeyCommand {
         self.count = count
         self.type = type
     }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SCAN", cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPWithToken("TYPE", type))
@@ -750,6 +774,8 @@ public struct SORTRO: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SORT_RO", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting))
     }
@@ -766,6 +792,8 @@ public struct TOUCH: ValkeyCommand {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("TOUCH", key)
@@ -784,6 +812,8 @@ public struct TTL: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("TTL", key)
     }
@@ -800,6 +830,8 @@ public struct TYPE: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("TYPE", key)

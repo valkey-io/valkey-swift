@@ -770,4 +770,39 @@ struct SubscriptionTests {
         #expect(await connection.isSubscriptionsEmpty())
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testKeyInvalidationSubscription() async throws {
+        let channel = NIOAsyncTestingChannel()
+        var logger = Logger(label: "test")
+        logger.logLevel = .trace
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                try await connection.subscribeKeyInvalidations { keys in
+                    var iterator = keys.makeAsyncIterator()
+                    let key = try await iterator.next()
+                    #expect(key == "foo")
+                }
+            }
+
+            group.addTask {
+                // SUBSCRIBE command
+                var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "__redis__:invalidate"])).base)
+                // push subscribe
+                try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("__redis__:invalidate"), .number(1)])).base)
+                // push invalidate
+                try await channel.writeInbound(RESPToken(.push([.bulkString("invalidate"), .bulkString("foo")])).base)
+                // expect UNSUBSCRIBE command
+                outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "__redis__:invalidate"])).base)
+                // push unsubcribe
+                try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("__redis__:invalidate"), .number(0)])).base)
+            }
+            try await group.waitForAll()
+        }
+    }
 }

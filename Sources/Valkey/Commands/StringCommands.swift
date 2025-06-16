@@ -89,6 +89,8 @@ public struct GET: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GET", key)
     }
@@ -172,6 +174,8 @@ public struct GETRANGE: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GETRANGE", key, start, end)
@@ -270,6 +274,8 @@ public struct LCS: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { [key1, key2] }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LCS", key1, key2, RESPPureToken("LEN", len), RESPPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RESPPureToken("WITHMATCHLEN", withmatchlen))
     }
@@ -286,6 +292,8 @@ public struct MGET: ValkeyCommand {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MGET", key)
@@ -527,6 +535,8 @@ public struct STRLEN: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("STRLEN", key)
     }
@@ -545,6 +555,8 @@ public struct SUBSTR: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SUBSTR", key, start, end)
