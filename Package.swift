@@ -95,6 +95,13 @@ let package = Package(
             swiftSettings: defaultSwiftSettings
         ),
         .testTarget(
+            name: "ClusterIntegrationTests",
+            dependencies: [
+                "Valkey"
+            ],
+            swiftSettings: defaultSwiftSettings
+        ),
+        .testTarget(
             name: "ValkeyTests",
             dependencies: [
                 "Valkey",

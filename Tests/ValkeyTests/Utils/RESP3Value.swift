@@ -15,7 +15,7 @@
 import NIOCore
 import Valkey
 
-enum RESP3Value: Hashable {
+enum RESP3Value: Hashable, Sendable {
     case simpleString(ByteBuffer)
     case simpleError(ByteBuffer)
     case bulkString(ByteBuffer)
@@ -169,5 +169,13 @@ extension RESPToken {
 extension ByteBuffer {
     mutating func writeCRLF() {
         self.writeBytes("\r\n".utf8)
+    }
+}
+
+extension ByteBuffer {
+    init(_ respValue: RESP3Value) {
+        var buffer = ByteBuffer()
+        respValue.writeTo(&buffer)
+        self = buffer
     }
 }
