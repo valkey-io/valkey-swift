@@ -28,7 +28,6 @@ jobs:
       valkey_1:
         image: valkey/valkey:latest
         command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
-          
       valkey_2:
         image: valkey/valkey:latest
         command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
@@ -46,7 +45,7 @@ jobs:
         command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
       valkey_cluster_initiator:
         image: valkey/valkey:latest
-        command: ["valkey-cli", "--cluster", "create", "valkey_1:6379", "valkey_2:6379", "valkey_3:6379", "valkey_4:6379", "valkey_5:6379", "valkey_6:6379", ""
+        command: ["valkey-cli", "--cluster", "create", "valkey_1:6379", "valkey_2:6379", "valkey_3:6379", "valkey_4:6379", "valkey_5:6379", "valkey_6:6379",
           "--cluster-replicas", "1", "--cluster-yes"]
     steps:
       - name: Checkout
