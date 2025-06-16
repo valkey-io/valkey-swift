@@ -19,12 +19,14 @@ import Foundation
 
 struct ClusterIntegrationTests {
 
-    @Test(.disabled(if: ClusterIntegrationTests.isInCI))
+    @Test(.disabled(if: ClusterIntegrationTests.firstNodeHostname == nil, "VALKEY_NODE1_HOSTNAME environment variable is not set."))
     @available(valkeySwift 1.0, *)
     func testSetGet() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
-        try await Self.withValkeyCluster([(host: "192.168.64.2", port: 36001, tls: false)]) { (client, logger) in
+        let firstNodeHostname = ClusterIntegrationTests.firstNodeHostname!
+        let firstNodePort = ClusterIntegrationTests.firstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)]) { (client, logger) in
             try await Self.withKey(connection: client) { key in
                 _ = try await client.set(key: key, value: "Hello")
 
@@ -86,7 +88,11 @@ struct ClusterIntegrationTests {
 }
 
 extension ClusterIntegrationTests {
-    static var isInCI: Bool {
-        ProcessInfo.processInfo.environment["CI"] == "true"
+    static var firstNodeHostname: String? {
+        ProcessInfo.processInfo.environment["VALKEY_NODE1_HOSTNAME"]
+    }
+
+    static var firstNodePort: Int? {
+        ProcessInfo.processInfo.environment["VALKEY_NODE1_PORT"].flatMap { Int($0) }
     }
 }
