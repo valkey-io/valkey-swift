@@ -49,7 +49,7 @@ public enum FUNCTION {
 
     /// Deletes all libraries and functions.
     public struct FLUSH: ValkeyCommand {
-        public enum FlushType: RESPRenderable, Sendable {
+        public enum FlushType: RESPRenderable, Sendable, Hashable {
             case async
             case sync
 
@@ -131,7 +131,7 @@ public enum FUNCTION {
 
     /// Restores all libraries from a payload.
     public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
-        public enum Policy: RESPRenderable, Sendable {
+        public enum Policy: RESPRenderable, Sendable, Hashable {
             case flush
             case append
             case replace
@@ -179,7 +179,7 @@ public enum FUNCTION {
 public enum SCRIPT {
     /// Sets the debug mode of server-side Lua scripts.
     public struct DEBUG: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case yes
             case sync
             case no
@@ -224,7 +224,7 @@ public enum SCRIPT {
 
     /// Removes all server-side Lua scripts from the script cache.
     public struct FLUSH: ValkeyCommand {
-        public enum FlushType: RESPRenderable, Sendable {
+        public enum FlushType: RESPRenderable, Sendable, Hashable {
             case async
             case sync
 

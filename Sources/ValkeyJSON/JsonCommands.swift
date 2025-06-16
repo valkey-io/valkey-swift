@@ -241,7 +241,7 @@ public enum JSON {
 
     /// Set multiple JSON values at the path to multiple keys.
     public struct MSET<Path: RESPStringRenderable, Json: RESPStringRenderable>: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let key: ValkeyKey
             @usableFromInline let path: Path
             @usableFromInline let json: Json

@@ -191,7 +191,7 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
 
 /// Sets the values of multiple fields.
 public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 
@@ -228,7 +228,7 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
 
 /// Returns one or more random fields from a hash.
 public struct HRANDFIELD: ValkeyCommand {
-    public struct Options: RESPRenderable, Sendable {
+    public struct Options: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
 
@@ -292,7 +292,7 @@ public struct HSCAN: ValkeyCommand {
 
 /// Creates or modifies the value of a field in a hash.
 public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 

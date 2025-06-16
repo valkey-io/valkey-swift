@@ -24,7 +24,7 @@ import Foundation
 
 /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
 public struct BLMOVE: ValkeyCommand {
-    public enum Wherefrom: RESPRenderable, Sendable {
+    public enum Wherefrom: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -39,7 +39,7 @@ public struct BLMOVE: ValkeyCommand {
             }
         }
     }
-    public enum Whereto: RESPRenderable, Sendable {
+    public enum Whereto: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -81,7 +81,7 @@ public struct BLMOVE: ValkeyCommand {
 
 /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
 public struct BLMPOP: ValkeyCommand {
-    public enum Where: RESPRenderable, Sendable {
+    public enum Where: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -205,7 +205,7 @@ public struct LINDEX: ValkeyCommand {
 
 /// Inserts an element before or after another element in a list.
 public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable>: ValkeyCommand {
-    public enum Where: RESPRenderable, Sendable {
+    public enum Where: RESPRenderable, Sendable, Hashable {
         case before
         case after
 
@@ -260,7 +260,7 @@ public struct LLEN: ValkeyCommand {
 
 /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
 public struct LMOVE: ValkeyCommand {
-    public enum Wherefrom: RESPRenderable, Sendable {
+    public enum Wherefrom: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -275,7 +275,7 @@ public struct LMOVE: ValkeyCommand {
             }
         }
     }
-    public enum Whereto: RESPRenderable, Sendable {
+    public enum Whereto: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
@@ -311,7 +311,7 @@ public struct LMOVE: ValkeyCommand {
 
 /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
 public struct LMPOP: ValkeyCommand {
-    public enum Where: RESPRenderable, Sendable {
+    public enum Where: RESPRenderable, Sendable, Hashable {
         case left
         case right
 
