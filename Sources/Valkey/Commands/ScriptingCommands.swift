@@ -352,6 +352,8 @@ public struct EVALSHARO<Sha1: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EVALSHA_RO", RESPBulkString(sha1), RESPArrayWithCount(key), arg)
     }
@@ -370,6 +372,8 @@ public struct EVALRO<Script: RESPStringRenderable>: ValkeyCommand {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("EVAL_RO", RESPBulkString(script), RESPArrayWithCount(key), arg)
@@ -408,6 +412,8 @@ public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand {
     }
 
     public var keysAffected: [ValkeyKey] { key }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("FCALL_RO", RESPBulkString(function), RESPArrayWithCount(key), arg)

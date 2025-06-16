@@ -120,6 +120,8 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GEODIST", key, RESPBulkString(member1), RESPBulkString(member2), unit)
     }
@@ -139,6 +141,8 @@ public struct GEOHASH: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GEOHASH", key, member)
     }
@@ -157,6 +161,8 @@ public struct GEOPOS: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GEOPOS", key, member)
@@ -461,6 +467,8 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, RESPBulkString(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
     }
@@ -549,6 +557,8 @@ public struct GEORADIUSRO: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GEORADIUS_RO", key, longitude, latitude, radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
@@ -756,6 +766,8 @@ public struct GEOSEARCH: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GEOSEARCH", key, from, by, order, countBlock, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash))
