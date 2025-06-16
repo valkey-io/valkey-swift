@@ -25,4 +25,6 @@ package enum ValkeyClusterError: Error {
     case noConsensusReachedCircuitBreakerOpen
     case clusterHasNoNodes
     case clusterClientIsShutDown
+    case clientRequestCancelled
+    case waitedForDiscoveryAfterMovedErrorThreeTimes
 }

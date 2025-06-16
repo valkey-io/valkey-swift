@@ -814,7 +814,6 @@ struct HashSlotShardMapTests {
         map.updateCluster(clusterDescription.shards)
 
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
-        let otherShard = try map.nodeID(for: CollectionOfOne(.max))
         let newPrimary = ValkeyNodeID(endpoint: "new.valkey.io", port: 6379)
 
         let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
