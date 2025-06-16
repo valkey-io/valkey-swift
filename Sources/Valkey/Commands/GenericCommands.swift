@@ -710,7 +710,7 @@ public struct SORT: ValkeyCommand {
         self.destination = destination
     }
 
-    public var keysAffected: [ValkeyKey] { [key] + (destination.map { [$0] } ?? []) }
+    public var keysAffected: [ValkeyKey] { (destination.map { [$0] } ?? []) + [key] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SORT", key, RESPWithToken("BY", byPattern), RESPWithToken("LIMIT", limit), RESPWithToken("GET", getPattern), order, RESPPureToken("ALPHA", sorting), RESPWithToken("STORE", destination))

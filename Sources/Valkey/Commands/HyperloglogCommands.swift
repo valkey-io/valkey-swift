@@ -70,7 +70,7 @@ public struct PFMERGE: ValkeyCommand {
         self.sourcekey = sourcekey
     }
 
-    public var keysAffected: [ValkeyKey] { [destkey] + sourcekey }
+    public var keysAffected: [ValkeyKey] { sourcekey + [destkey] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)

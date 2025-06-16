@@ -270,6 +270,8 @@ public enum JSON {
             self.data = data
         }
 
+        public var keysAffected: [ValkeyKey] { data.map { $0.key } }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("JSON.MSET", data)
         }

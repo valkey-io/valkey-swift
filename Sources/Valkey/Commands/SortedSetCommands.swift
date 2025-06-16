@@ -250,7 +250,7 @@ public struct ZDIFFSTORE: ValkeyCommand {
         self.key = key
     }
 
-    public var keysAffected: [ValkeyKey] { [destination] + key }
+    public var keysAffected: [ValkeyKey] { key + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZDIFFSTORE", destination, RESPArrayWithCount(key))
@@ -374,7 +374,7 @@ public struct ZINTERSTORE: ValkeyCommand {
         self.aggregate = aggregate
     }
 
-    public var keysAffected: [ValkeyKey] { [destination] + key }
+    public var keysAffected: [ValkeyKey] { key + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZINTERSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
@@ -1124,7 +1124,7 @@ public struct ZUNIONSTORE: ValkeyCommand {
         self.aggregate = aggregate
     }
 
-    public var keysAffected: [ValkeyKey] { [destination] + key }
+    public var keysAffected: [ValkeyKey] { key + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("ZUNIONSTORE", destination, RESPArrayWithCount(key), RESPWithToken("WEIGHTS", weight), RESPWithToken("AGGREGATE", aggregate))
