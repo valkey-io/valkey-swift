@@ -91,7 +91,7 @@ public struct SDIFFSTORE: ValkeyCommand {
         self.key = key
     }
 
-    public var keysAffected: [ValkeyKey] { [destination] + key }
+    public var keysAffected: [ValkeyKey] { key + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SDIFFSTORE", destination, key)
@@ -150,7 +150,7 @@ public struct SINTERSTORE: ValkeyCommand {
         self.key = key
     }
 
-    public var keysAffected: [ValkeyKey] { [destination] + key }
+    public var keysAffected: [ValkeyKey] { key + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SINTERSTORE", destination, key)
@@ -354,7 +354,7 @@ public struct SUNIONSTORE: ValkeyCommand {
         self.key = key
     }
 
-    public var keysAffected: [ValkeyKey] { [destination] + key }
+    public var keysAffected: [ValkeyKey] { key + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SUNIONSTORE", destination, key)
