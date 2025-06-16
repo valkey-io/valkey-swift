@@ -19,7 +19,7 @@ import Foundation
 
 struct ClusterIntegrationTests {
 
-    @Test
+    @Test(.disabled(if: ClusterIntegrationTests.isInCI))
     @available(valkeySwift 1.0, *)
     func testSetGet() async throws {
         var logger = Logger(label: "ValkeyCluster")
@@ -85,3 +85,8 @@ struct ClusterIntegrationTests {
 
 }
 
+extension ClusterIntegrationTests {
+    static var isInCI: Bool {
+        ProcessInfo.processInfo.environment["CI"] == "true"
+    }
+}

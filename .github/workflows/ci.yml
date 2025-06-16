@@ -39,8 +39,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Test
         run: |
-          swift build --build-tests
-          swift test --enable-code-coverage --filter='^(ValkeyTests|IntegrationTests)' 
+          swift test
+        env:
+          CI: "true"
       - name: Convert coverage files
         run: |
           llvm-cov export -format="lcov" \
