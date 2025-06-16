@@ -32,7 +32,7 @@ extension ValkeyConnection {
         to channels: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.subscribe(to: channels, process: process)
     }
 
@@ -52,7 +52,7 @@ extension ValkeyConnection {
         to channels: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         let command = SUBSCRIBE(channel: channels)
         let (id, stream) = try await subscribe(command: command, filters: channels.map { .channel($0) })
         let value: Value
@@ -83,7 +83,7 @@ extension ValkeyConnection {
         to patterns: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.psubscribe(to: patterns, process: process)
     }
 
@@ -103,7 +103,7 @@ extension ValkeyConnection {
         to patterns: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         let command = PSUBSCRIBE(pattern: patterns)
         let (id, stream) = try await subscribe(command: command, filters: patterns.map { .pattern($0) })
         let value: Value
@@ -134,7 +134,7 @@ extension ValkeyConnection {
         to shardchannel: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.ssubscribe(to: shardchannel, process: process)
     }
 
@@ -154,7 +154,7 @@ extension ValkeyConnection {
         to shardchannel: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         let command = SSUBSCRIBE(shardchannel: shardchannel)
         let (id, stream) = try await subscribe(command: command, filters: shardchannel.map { .shardChannel($0) })
         let value: Value
@@ -184,7 +184,7 @@ extension ValkeyConnection {
     @inlinable
     public func subscribeKeyInvalidations<Value>(
         process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
             let keys = subscription.map { ValkeyKey(rawValue: $0.message) }
             return try await process(keys)
