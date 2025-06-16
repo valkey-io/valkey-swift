@@ -26,7 +26,7 @@ import Foundation
 public enum XGROUP {
     /// Creates a consumer group.
     public struct CREATE<Group: RESPStringRenderable>: ValkeyCommand {
-        public enum IdSelector: RESPRenderable, Sendable {
+        public enum IdSelector: RESPRenderable, Sendable, Hashable {
             case id(String)
             case newId
 
@@ -142,7 +142,7 @@ public enum XGROUP {
 
     /// Sets the last-delivered ID of a consumer group.
     public struct SETID<Group: RESPStringRenderable>: ValkeyCommand {
-        public enum IdSelector: RESPRenderable, Sendable {
+        public enum IdSelector: RESPRenderable, Sendable, Hashable {
             case id(String)
             case newId
 
@@ -235,7 +235,7 @@ public enum XINFO {
 
     /// Returns information about a stream.
     public struct STREAM: ValkeyCommand {
-        public struct FullBlock: RESPRenderable, Sendable {
+        public struct FullBlock: RESPRenderable, Sendable, Hashable {
             @usableFromInline let full: Bool
             @usableFromInline let count: Int?
 
@@ -297,7 +297,7 @@ public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: Valke
 
 /// Appends a new message to a stream. Creates the key if it doesn't exist.
 public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-    public enum TrimStrategy: RESPRenderable, Sendable {
+    public enum TrimStrategy: RESPRenderable, Sendable, Hashable {
         case maxlen
         case minid
 
@@ -312,7 +312,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             }
         }
     }
-    public enum TrimOperator: RESPRenderable, Sendable {
+    public enum TrimOperator: RESPRenderable, Sendable, Hashable {
         case equal
         case approximately
 
@@ -327,7 +327,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             }
         }
     }
-    public struct Trim: RESPRenderable, Sendable {
+    public struct Trim: RESPRenderable, Sendable, Hashable {
         @usableFromInline let strategy: TrimStrategy
         @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: String
@@ -353,7 +353,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
         }
     }
-    public enum IdSelector: RESPRenderable, Sendable {
+    public enum IdSelector: RESPRenderable, Sendable, Hashable {
         case autoId
         case id(String)
 
@@ -373,7 +373,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             }
         }
     }
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 
@@ -516,7 +516,7 @@ public struct XLEN: ValkeyCommand {
 
 /// Returns the information and entries from a stream consumer group's pending entries list.
 public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
-    public struct Filters: RESPRenderable, Sendable {
+    public struct Filters: RESPRenderable, Sendable, Hashable {
         @usableFromInline let minIdleTime: Int?
         @usableFromInline let start: String
         @usableFromInline let end: String
@@ -585,7 +585,7 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: Va
 
 /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
 public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
-    public struct Streams: RESPRenderable, Sendable {
+    public struct Streams: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: [ValkeyKey]
         @usableFromInline let id: [Id]
 
@@ -624,7 +624,7 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
 
 /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
 public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand {
-    public struct GroupBlock: RESPRenderable, Sendable {
+    public struct GroupBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let group: Group
         @usableFromInline let consumer: Consumer
 
@@ -644,7 +644,7 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
             RESPBulkString(consumer).encode(into: &commandEncoder)
         }
     }
-    public struct Streams: RESPRenderable, Sendable {
+    public struct Streams: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: [ValkeyKey]
         @usableFromInline let id: [Id]
 
@@ -729,7 +729,7 @@ public struct XSETID<LastId: RESPStringRenderable>: ValkeyCommand {
 
 /// Deletes messages from the beginning of a stream.
 public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
-    public enum TrimStrategy: RESPRenderable, Sendable {
+    public enum TrimStrategy: RESPRenderable, Sendable, Hashable {
         case maxlen
         case minid
 
@@ -744,7 +744,7 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public enum TrimOperator: RESPRenderable, Sendable {
+    public enum TrimOperator: RESPRenderable, Sendable, Hashable {
         case equal
         case approximately
 
@@ -759,7 +759,7 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct Trim: RESPRenderable, Sendable {
+    public struct Trim: RESPRenderable, Sendable, Hashable {
         @usableFromInline let strategy: TrimStrategy
         @usableFromInline let `operator`: TrimOperator?
         @usableFromInline let threshold: Threshold

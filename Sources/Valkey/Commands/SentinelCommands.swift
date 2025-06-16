@@ -39,7 +39,7 @@ public enum SENTINEL {
 
     /// Configures Sentinel.
     public struct CONFIG: ValkeyCommand {
-        public struct ActionSet: RESPRenderable, Sendable {
+        public struct ActionSet: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
@@ -59,7 +59,7 @@ public enum SENTINEL {
                 value.encode(into: &commandEncoder)
             }
         }
-        public enum Action: RESPRenderable, Sendable {
+        public enum Action: RESPRenderable, Sendable, Hashable {
             case set([ActionSet])
             case parameter([String])
 
@@ -94,7 +94,7 @@ public enum SENTINEL {
 
     /// Lists or updates the current configurable parameters of Sentinel.
     public struct DEBUG: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
@@ -404,7 +404,7 @@ public enum SENTINEL {
 
     /// Changes the configuration of a monitored primary.
     public struct SET<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let option: Option
             @usableFromInline let value: Value
 
@@ -439,7 +439,7 @@ public enum SENTINEL {
 
     /// Simulates failover scenarios.
     public struct SIMULATEFAILURE: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case crashAfterElection
             case crashAfterPromotion
             case help

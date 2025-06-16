@@ -25,7 +25,7 @@ import Foundation
 extension CLIENT {
     /// Instructs the server whether to track the keys in the next request.
     public struct CACHING: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case yes
             case no
 
@@ -114,7 +114,7 @@ extension CLIENT {
 
     /// Mark this client as an import source when server is in import mode.
     public struct IMPORTSOURCE: ValkeyCommand {
-        public enum Enabled: RESPRenderable, Sendable {
+        public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -152,7 +152,7 @@ extension CLIENT {
 
     /// Terminates open connections.
     public struct KILL: ValkeyCommand {
-        public enum FilterNewFormatClientType: RESPRenderable, Sendable {
+        public enum FilterNewFormatClientType: RESPRenderable, Sendable, Hashable {
             case normal
             case master
             case primary
@@ -175,7 +175,7 @@ extension CLIENT {
                 }
             }
         }
-        public enum FilterNewFormatSkipme: RESPRenderable, Sendable {
+        public enum FilterNewFormatSkipme: RESPRenderable, Sendable, Hashable {
             case yes
             case no
 
@@ -190,7 +190,7 @@ extension CLIENT {
                 }
             }
         }
-        public enum FilterNewFormat: RESPRenderable, Sendable {
+        public enum FilterNewFormat: RESPRenderable, Sendable, Hashable {
             case clientId([Int])
             case clientType(FilterNewFormatClientType?)
             case username(String?)
@@ -225,7 +225,7 @@ extension CLIENT {
                 }
             }
         }
-        public enum Filter: RESPRenderable, Sendable {
+        public enum Filter: RESPRenderable, Sendable, Hashable {
             case oldFormat(String)
             case newFormat([FilterNewFormat])
 
@@ -260,7 +260,7 @@ extension CLIENT {
 
     /// Lists open connections.
     public struct LIST: ValkeyCommand {
-        public enum ClientType: RESPRenderable, Sendable {
+        public enum ClientType: RESPRenderable, Sendable, Hashable {
             case normal
             case master
             case replica
@@ -279,7 +279,7 @@ extension CLIENT {
                 }
             }
         }
-        public enum Skipme: RESPRenderable, Sendable {
+        public enum Skipme: RESPRenderable, Sendable, Hashable {
             case yes
             case no
 
@@ -319,7 +319,7 @@ extension CLIENT {
 
     /// Sets the client eviction mode of the connection.
     public struct NOEVICT: ValkeyCommand {
-        public enum Enabled: RESPRenderable, Sendable {
+        public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -347,7 +347,7 @@ extension CLIENT {
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
     public struct NOTOUCH: ValkeyCommand {
-        public enum Enabled: RESPRenderable, Sendable {
+        public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -375,7 +375,7 @@ extension CLIENT {
 
     /// Suspends commands processing.
     public struct PAUSE: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case write
             case all
 
@@ -405,7 +405,7 @@ extension CLIENT {
 
     /// Instructs the server whether to reply to commands.
     public struct REPLY: ValkeyCommand {
-        public enum Action: RESPRenderable, Sendable {
+        public enum Action: RESPRenderable, Sendable, Hashable {
             case on
             case off
             case skip
@@ -435,7 +435,7 @@ extension CLIENT {
 
     /// Sets information specific to the client or connection.
     public struct SETINFO: ValkeyCommand {
-        public enum Attr: RESPRenderable, Sendable {
+        public enum Attr: RESPRenderable, Sendable, Hashable {
             case libname(String)
             case libver(String)
 
@@ -481,7 +481,7 @@ extension CLIENT {
 
     /// Controls server-assisted client-side caching for the connection.
     public struct TRACKING: ValkeyCommand {
-        public enum Status: RESPRenderable, Sendable {
+        public enum Status: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -533,7 +533,7 @@ extension CLIENT {
 
     /// Unblocks a client blocked by a blocking command from a different connection.
     public struct UNBLOCK: ValkeyCommand {
-        public enum UnblockType: RESPRenderable, Sendable {
+        public enum UnblockType: RESPRenderable, Sendable, Hashable {
             case timeout
             case error
 
@@ -615,7 +615,7 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
 
 /// Handshakes with the server.
 public struct HELLO: ValkeyCommand {
-    public struct ArgumentsAuth: RESPRenderable, Sendable {
+    public struct ArgumentsAuth: RESPRenderable, Sendable, Hashable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -635,7 +635,7 @@ public struct HELLO: ValkeyCommand {
             password.encode(into: &commandEncoder)
         }
     }
-    public struct Arguments: RESPRenderable, Sendable {
+    public struct Arguments: RESPRenderable, Sendable, Hashable {
         @usableFromInline let protover: Int
         @usableFromInline let auth: ArgumentsAuth?
         @usableFromInline let clientname: String?

@@ -24,7 +24,7 @@ import Foundation
 
 /// Counts the number of set bits (population counting) in a string.
 public struct BITCOUNT: ValkeyCommand {
-    public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable {
+    public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable, Hashable {
         case byte
         case bit
 
@@ -39,7 +39,7 @@ public struct BITCOUNT: ValkeyCommand {
             }
         }
     }
-    public struct RangeEndUnitBlock: RESPRenderable, Sendable {
+    public struct RangeEndUnitBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let end: Int
         @usableFromInline let unit: RangeEndUnitBlockUnit?
 
@@ -59,7 +59,7 @@ public struct BITCOUNT: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
-    public struct Range: RESPRenderable, Sendable {
+    public struct Range: RESPRenderable, Sendable, Hashable {
         @usableFromInline let start: Int
         @usableFromInline let endUnitBlock: RangeEndUnitBlock?
 
@@ -98,7 +98,7 @@ public struct BITCOUNT: ValkeyCommand {
 
 /// Performs arbitrary bitfield integer operations on strings.
 public struct BITFIELD: ValkeyCommand {
-    public struct OperationGetBlock: RESPRenderable, Sendable {
+    public struct OperationGetBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
@@ -118,7 +118,7 @@ public struct BITFIELD: ValkeyCommand {
             offset.encode(into: &commandEncoder)
         }
     }
-    public enum OperationWriteOverflowBlock: RESPRenderable, Sendable {
+    public enum OperationWriteOverflowBlock: RESPRenderable, Sendable, Hashable {
         case wrap
         case sat
         case fail
@@ -135,7 +135,7 @@ public struct BITFIELD: ValkeyCommand {
             }
         }
     }
-    public struct OperationWriteWriteOperationSetBlock: RESPRenderable, Sendable {
+    public struct OperationWriteWriteOperationSetBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let value: Int
@@ -158,7 +158,7 @@ public struct BITFIELD: ValkeyCommand {
             value.encode(into: &commandEncoder)
         }
     }
-    public struct OperationWriteWriteOperationIncrbyBlock: RESPRenderable, Sendable {
+    public struct OperationWriteWriteOperationIncrbyBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
         @usableFromInline let increment: Int
@@ -181,7 +181,7 @@ public struct BITFIELD: ValkeyCommand {
             increment.encode(into: &commandEncoder)
         }
     }
-    public enum OperationWriteWriteOperation: RESPRenderable, Sendable {
+    public enum OperationWriteWriteOperation: RESPRenderable, Sendable, Hashable {
         case setBlock(OperationWriteWriteOperationSetBlock)
         case incrbyBlock(OperationWriteWriteOperationIncrbyBlock)
 
@@ -201,7 +201,7 @@ public struct BITFIELD: ValkeyCommand {
             }
         }
     }
-    public struct OperationWrite: RESPRenderable, Sendable {
+    public struct OperationWrite: RESPRenderable, Sendable, Hashable {
         @usableFromInline let overflowBlock: OperationWriteOverflowBlock?
         @usableFromInline let writeOperation: OperationWriteWriteOperation
 
@@ -221,7 +221,7 @@ public struct BITFIELD: ValkeyCommand {
             writeOperation.encode(into: &commandEncoder)
         }
     }
-    public enum Operation: RESPRenderable, Sendable {
+    public enum Operation: RESPRenderable, Sendable, Hashable {
         case getBlock(OperationGetBlock)
         case write(OperationWrite)
 
@@ -260,7 +260,7 @@ public struct BITFIELD: ValkeyCommand {
 
 /// Performs arbitrary read-only bitfield integer operations on strings.
 public struct BITFIELDRO: ValkeyCommand {
-    public struct GetBlock: RESPRenderable, Sendable {
+    public struct GetBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let encoding: String
         @usableFromInline let offset: Int
 
@@ -299,7 +299,7 @@ public struct BITFIELDRO: ValkeyCommand {
 
 /// Performs bitwise operations on multiple strings, and stores the result.
 public struct BITOP: ValkeyCommand {
-    public enum Operation: RESPRenderable, Sendable {
+    public enum Operation: RESPRenderable, Sendable, Hashable {
         case and
         case or
         case xor
@@ -339,7 +339,7 @@ public struct BITOP: ValkeyCommand {
 
 /// Finds the first set (1) or clear (0) bit in a string.
 public struct BITPOS: ValkeyCommand {
-    public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable {
+    public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable, Hashable {
         case byte
         case bit
 
@@ -354,7 +354,7 @@ public struct BITPOS: ValkeyCommand {
             }
         }
     }
-    public struct RangeEndUnitBlock: RESPRenderable, Sendable {
+    public struct RangeEndUnitBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let end: Int
         @usableFromInline let unit: RangeEndUnitBlockUnit?
 
@@ -374,7 +374,7 @@ public struct BITPOS: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
-    public struct Range: RESPRenderable, Sendable {
+    public struct Range: RESPRenderable, Sendable, Hashable {
         @usableFromInline let start: Int
         @usableFromInline let endUnitBlock: RangeEndUnitBlock?
 

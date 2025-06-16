@@ -182,7 +182,7 @@ public struct EXISTS: ValkeyCommand {
 
 /// Sets the expiration time of a key in seconds.
 public struct EXPIRE: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case gt
@@ -222,7 +222,7 @@ public struct EXPIRE: ValkeyCommand {
 
 /// Sets the expiration time of a key to a Unix timestamp.
 public struct EXPIREAT: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case gt
@@ -294,7 +294,7 @@ public struct KEYS: ValkeyCommand {
 
 /// Atomically transfers a key from one instance to another.
 public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
-    public enum KeySelector: RESPRenderable, Sendable {
+    public enum KeySelector: RESPRenderable, Sendable, Hashable {
         case key(ValkeyKey)
         case emptyString
 
@@ -314,7 +314,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public struct AuthenticationAuth2: RESPRenderable, Sendable {
+    public struct AuthenticationAuth2: RESPRenderable, Sendable, Hashable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -334,7 +334,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
             password.encode(into: &commandEncoder)
         }
     }
-    public enum Authentication: RESPRenderable, Sendable {
+    public enum Authentication: RESPRenderable, Sendable, Hashable {
         case auth(String)
         case auth2(AuthenticationAuth2)
 
@@ -423,7 +423,7 @@ public struct PERSIST: ValkeyCommand {
 
 /// Sets the expiration time of a key in milliseconds.
 public struct PEXPIRE: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case gt
@@ -463,7 +463,7 @@ public struct PEXPIRE: ValkeyCommand {
 
 /// Sets the expiration time of a key to a Unix milliseconds timestamp.
 public struct PEXPIREAT: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case gt
@@ -633,7 +633,7 @@ public struct SCAN: ValkeyCommand {
 
 /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
 public struct SORT: ValkeyCommand {
-    public struct Limit: RESPRenderable, Sendable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -653,7 +653,7 @@ public struct SORT: ValkeyCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 
@@ -695,7 +695,7 @@ public struct SORT: ValkeyCommand {
 
 /// Returns the sorted elements of a list, a set, or a sorted set.
 public struct SORTRO: ValkeyCommand {
-    public struct Limit: RESPRenderable, Sendable {
+    public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
         @usableFromInline let count: Int
 
@@ -715,7 +715,7 @@ public struct SORTRO: ValkeyCommand {
             count.encode(into: &commandEncoder)
         }
     }
-    public enum Order: RESPRenderable, Sendable {
+    public enum Order: RESPRenderable, Sendable, Hashable {
         case asc
         case desc
 

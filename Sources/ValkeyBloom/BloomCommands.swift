@@ -75,7 +75,7 @@ public enum BF {
 
     /// Returns usage information and properties of a specific bloom filter
     public struct INFO: ValkeyCommand {
-        public enum Sortby: RESPRenderable, Sendable {
+        public enum Sortby: RESPRenderable, Sendable, Hashable {
             case capacity
             case size
             case filters
