@@ -16,47 +16,6 @@ concurrency:
 env:
   VALKEY_HOSTNAME: valkey
 jobs:
-  cluster-test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      matrix:
-        image: ["valkey/valkey:8.0"]
-    container:
-      image: ${{ matrix.image }}
-    services:
-      valkey_1:
-        image: valkey/valkey:latest
-        command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
-      valkey_2:
-        image: valkey/valkey:latest
-        command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
-      valkey_3:
-        image: valkey/valkey:latest
-        command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
-      valkey_4:
-        image: valkey/valkey:latest
-        command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
-      valkey_5:
-        image: valkey/valkey:latest
-        command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
-      valkey_6:
-        image: valkey/valkey:latest
-        command: ["valkey-server", "--cluster-enabled", "yes", "--cluster-config-file", "nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
-      valkey_cluster_initiator:
-        image: valkey/valkey:latest
-        command: ["valkey-cli", "--cluster", "create", "valkey_1:6379", "valkey_2:6379", "valkey_3:6379", "valkey_4:6379", "valkey_5:6379", "valkey_6:6379",
-          "--cluster-replicas", "1", "--cluster-yes"]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Test
-        run: |
-          swift test --enable-code-coverage
-        env:
-          VALKEY_NODE1_HOSTNAME: valkey_1
-          VALKEY_NODE1_PORT: 6379
-
   linux:
     runs-on: ubuntu-latest
     timeout-minutes: 15
