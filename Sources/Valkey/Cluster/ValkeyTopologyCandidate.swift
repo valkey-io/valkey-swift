@@ -21,19 +21,19 @@
 package struct ValkeyTopologyCandidate: Hashable {
     /// Represents a shard (hash slot range) within a Valkey cluster topology.
     ///
-    /// A shard consists of a set of hash slots assigned to a master node and optional replica nodes.
+    /// A shard consists of a set of hash slots assigned to a primary node and optional replica nodes.
     package struct Shard: Hashable {
         /// The hash slots assigned to this shard.
         package var slots: HashSlots
 
-        /// The master node responsible for this shard.
-        package var master: Node
+        /// The primary node responsible for this shard.
+        package var primary: Node
 
         /// The replica nodes for this shard, sorted by endpoint, port, and TLS status for consistent equality checking.
         package var replicas: [Node]
     }
 
-    /// Represents a node (either master or replica) in the Valkey cluster topology.
+    /// Represents a node (either primary or replica) in the Valkey cluster topology.
     ///
     /// Contains only the essential connection properties needed to identify and connect to a node.
     package struct Node: Hashable {
@@ -70,17 +70,17 @@ package struct ValkeyTopologyCandidate: Hashable {
     package init(_ description: ValkeyClusterDescription) throws(ValkeyClusterError) {
 
         self.shards = try description.shards.map({ shard throws(ValkeyClusterError) in
-            var master: Node?
+            var primary: Node?
             var replicas = [Node]()
             replicas.reserveCapacity(shard.nodes.count)
 
             for node in shard.nodes {
                 switch node.role.base {
-                case .master:
-                    if master != nil {
-                        throw ValkeyClusterError.shardHasMultipleMasterNodes
+                case .primary:
+                    if primary != nil {
+                        throw ValkeyClusterError.shardHasMultiplePrimaryNodes
                     }
-                    master = Node(node)
+                    primary = Node(node)
                 case .replica:
                     replicas.append(Node(node))
                 }
@@ -99,13 +99,13 @@ package struct ValkeyTopologyCandidate: Hashable {
                 return true
             })
 
-            guard let master else {
-                throw ValkeyClusterError.shardIsMissingMasterNode
+            guard let primary else {
+                throw ValkeyClusterError.shardIsMissingPrimaryNode
             }
 
             return Shard(
                 slots: shard.slots.sorted(by: { $0.startIndex < $1.startIndex }),
-                master: master,
+                primary: primary,
                 replicas: sorted
             )
         })
@@ -114,7 +114,12 @@ package struct ValkeyTopologyCandidate: Hashable {
     }
 }
 
-struct ValkeyClusterVoter<ConnectionPool: ValkeyNodeConnectionPool> {
-    var client: ConnectionPool
-    var nodeID: ValkeyNodeID
+package struct ValkeyClusterVoter<ConnectionPool: ValkeyNodeConnectionPool> {
+    package var client: ConnectionPool
+    package var nodeID: ValkeyNodeID
+
+    package init(client: ConnectionPool, nodeID: ValkeyNodeID) {
+        self.client = client
+        self.nodeID = nodeID
+    }
 }

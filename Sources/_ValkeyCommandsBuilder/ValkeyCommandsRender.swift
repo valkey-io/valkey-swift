@@ -12,308 +12,20 @@
 //
 //===----------------------------------------------------------------------===//
 
-extension String {
-    var cleanupReplyComment: String {
-        self
-            .replacing("../topics/protocol.md", with: "https:/valkey.io/topics/protocol/")
-            .replacing(" reply]", with: "]")
-    }
-
-    mutating func appendDeprecatedMessage(command: ValkeyCommand, name: String, tab: String) {
-        guard let deprecatedSince = command.deprecatedSince else { return }
-        self.append("\(tab)@available(*, deprecated, message: \"Since \(deprecatedSince)")
-        if let replacedBy = command.replacedBy {
-            self.append(". Replaced by \(replacedBy)")
-        }
-        self.append(".\")\n")
-    }
-    mutating func appendCommandCommentHeader(command: ValkeyCommand, name: String, tab: String) {
-        self.append("\(tab)/// \(command.summary)\n")
-    }
-
-    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String) {
-        let linkName = name.replacing(" ", with: "-").lowercased()
-        self.append("    /// \(command.summary)\n")
-        self.append("    ///\n")
-        self.append("    /// - Documentation: [\(name)](https:/valkey.io/commands/\(linkName))\n")
-        if let since = command.since {
-            self.append("    /// - Available: \(since)\n")
-        }
-        if let history = command.history {
-            self.append("    /// - History:\n")
-            for line in history {
-                self.append("    ///     * \(line[0]): \(line[1])\n")
-            }
-        }
-        if let deprecatedSince = command.deprecatedSince {
-            self.append("    /// - Deprecated since: \(deprecatedSince)")
-            if let replacedBy = command.replacedBy {
-                self.append(". Replaced by \(replacedBy)")
-            }
-            self.append(".\n")
-        }
-        if let complexity = command.complexity {
-            self.append("    /// - Complexity: \(complexity)\n")
-        }
-        if let replySchema = command.replySchema {
-            let responses = responseTypeComment(replySchema)
-            if responses.count == 1 {
-                self.append("    /// - Returns: \(responses[0])\n")
-            } else if responses.count > 1 {
-                self.append("    /// - Returns: One of the following\n")
-                for response in responses {
-                    self.append("    ///     * \(response)\n")
-                }
-            }
-        }
-    }
-
-    mutating func appendOneOfEnum(argument: ValkeyCommand.Argument, names: [String], tab: String) {
-        guard let arguments = argument.arguments, arguments.count > 0 else {
-            preconditionFailure("OneOf without arguments")
-        }
-        let names = names + [argument.name.swiftTypename]
-        let enumName = enumName(names: names)
-        for arg in arguments {
-            if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, names: names, tab: tab)
-            } else if case .block = arg.type {
-                self.appendBlock(argument: arg, names: names, tab: tab, genericStrings: false)
-            }
-        }
-        self.append("\(tab)    public enum \(enumName): RESPRenderable, Sendable {\n")
-        var allPureTokens = true
-        for arg in arguments {
-            if case .pureToken = arg.type {
-                self.append("\(tab)        case \(arg.swiftArgument)\n")
-            } else {
-                allPureTokens = false
-                self.append(
-                    "\(tab)        case \(arg.swiftArgument)(\(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: false)))\n"
-                )
-            }
-        }
-        self.append("\n")
-        if allPureTokens {
-            self.append("\(tab)        @inlinable\n")
-            self.append("\(tab)        public var respEntries: Int { 1 }\n\n")
-        } else {
-            self.append("\(tab)        @inlinable\n")
-            self.append("\(tab)        public var respEntries: Int {\n")
-            self.append("\(tab)            switch self {\n")
-            for arg in arguments {
-                if case .pureToken = arg.type {
-                    self.append(
-                        "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".respEntries\n"
-                    )
-                } else {
-                    self.append(
-                        "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).respEntries\n"
-                    )
-                }
-            }
-            self.append("\(tab)            }\n")
-            self.append("\(tab)        }\n\n")
-        }
-        self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
-        self.append("\(tab)            switch self {\n")
-        for arg in arguments {
-            if case .pureToken = arg.type {
-                self.append(
-                    "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".encode(into: &commandEncoder)\n"
-                )
-            } else {
-                self.append(
-                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).encode(into: &commandEncoder)\n"
-                )
-            }
-        }
-        self.append("\(tab)            }\n")
-        self.append("\(tab)        }\n")
-        self.append("\(tab)    }\n")
-    }
-
-    mutating func appendBlock(argument: ValkeyCommand.Argument, names: [String], tab: String, genericStrings: Bool) {
-        guard let arguments = argument.arguments, arguments.count > 0 else {
-            preconditionFailure("OneOf without arguments")
-        }
-        let names = names + [argument.name.swiftTypename]
-        let blockName = enumName(names: names)
-        for arg in arguments {
-            if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, names: names, tab: tab)
-            } else if case .block = arg.type {
-                self.appendBlock(argument: arg, names: names, tab: tab, genericStrings: genericStrings)
-            }
-        }
-        self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable {\n")
-        for arg in arguments {
-            self.append(
-                "\(tab)        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: genericStrings))\n"
-            )
-        }
-        self.append("\n")
-        let commandParametersString =
-            arguments
-            .map { "\($0.name.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true, genericStrings: genericStrings))" }
-            .joined(separator: ", ")
-        self.append("\n\(tab)        @inlinable public init(\(commandParametersString)) {\n")
-        for arg in arguments {
-            self.append("\(tab)            self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
-        }
-        self.append("\(tab)        }\n\n")
-        self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public var respEntries: Int {\n")
-        self.append("\(tab)            ")
-        let entries = arguments.map {
-            if case .pureToken = $0.type {
-                "\"\($0.token!)\".respEntries"
-            } else {
-                "\($0.respRepresentable(isArray: false, genericString: genericStrings)).respEntries"
-            }
-        }
-        self.append(entries.joined(separator: " + "))
-        self.append("\n")
-        self.append("\(tab)        }\n\n")
-        self.append("\(tab)        @inlinable\n")
-        self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
-        for arg in arguments {
-            if case .pureToken = arg.type {
-                self.append("\(tab)            \"\(arg.token!)\".encode(into: &commandEncoder)\n")
-            } else {
-                self.append(
-                    "\(tab)            \(arg.respRepresentable(isArray: false, genericString: genericStrings)).encode(into: &commandEncoder)\n"
-                )
-            }
-        }
-        self.append("\(tab)        }\n")
-        self.append("\(tab)    }\n")
-    }
-
-    mutating func appendCommand(command: ValkeyCommand, name: String, tab: String, disableResponseCalculation: Bool) {
-        var commandName = name
-        var subCommand: String? = nil
-        let typeName: String
-        if name.contains(" ") {
-            var split = name.split(separator: " ", maxSplits: 1)
-            commandName = .init(split.removeFirst())
-            subCommand = .init(split.last!)
-            typeName = subCommand!.commandTypeName
-        } else if name.contains(".") {
-            let split = name.split(separator: ".", maxSplits: 1)
-            typeName = split.last!.commandTypeName
-        } else {
-            typeName = name.commandTypeName
-        }
-        let keyArguments = command.arguments?.filter { $0.type == .key } ?? []
-        let conformance = "ValkeyCommand"
-        let genericTypeParameters = genericTypeParameters(command.arguments)
-        // Comment header
-        self.appendCommandCommentHeader(command: command, name: name, tab: tab)
-        self.append("\(tab)public struct \(typeName)\(genericTypeParameters): \(conformance) {\n")
-
-        let arguments = (command.arguments ?? [])
-        // Enums
-        for arg in arguments {
-            if case .oneOf = arg.type {
-                self.appendOneOfEnum(argument: arg, names: [], tab: tab)
-            } else if case .block = arg.type {
-                self.appendBlock(argument: arg, names: [], tab: tab, genericStrings: !arg.optional)
-            }
-        }
-        var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(command: command)
-        if returnType == "Void" {
-            returnType = "RESPToken"
-        }
-        // Command function
-        let commandParametersString =
-            arguments
-            .map { "\($0.name.swiftVariable): \(parameterType($0, names: [], scope: nil, isArray: true, genericStrings: true))" }
-            .joined(separator: ", ")
-        let commandArguments =
-            if let subCommand {
-                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
-            } else {
-                ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
-            }
-        let commandArgumentsString = commandArguments.joined(separator: ", ")
-        if returnType != "RESPToken" {
-            self.append("\(tab)    public typealias Response = \(returnType)\n\n")
-        }
-        if arguments.count > 0 {
-            for arg in arguments {
-                self.append(
-                    "\(tab)    public var \(arg.name.swiftVariable): \(variableType(arg, names: [], scope: nil, isArray: true, genericStrings: true))\n"
-                )
-            }
-            self.append("\n")
-        }
-        self.append("\(tab)    @inlinable public init(\(commandParametersString)) {\n")
-        for arg in arguments {
-            self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
-        }
-        self.append("\(tab)    }\n\n")
-        if keyArguments.count > 0 {
-            let (keysAffectedType, keysAffected) = constructKeysAffected(keyArguments)
-            self.append("\(tab)    public var keysAffected: \(keysAffectedType) { \(keysAffected) }\n\n")
-        }
-        if command.commandFlags?.contains("BLOCKING") == true {
-            self.append("\(tab)    public var isBlocking: Bool { true }\n\n")
-        }
-        self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
-        self.append("\(tab)        commandEncoder.encodeArray(\(commandArgumentsString))\n")
-        self.append("\(tab)    }\n")
-        self.append("\(tab)}\n\n")
-    }
-
-    mutating func appendFunction(command: ValkeyCommand, name: String, disableResponseCalculation: Bool) {
-        let arguments = (command.arguments ?? [])
-        //var converting: Bool = false
-        var returnType: String = " -> \(name.commandTypeName).Response"
-        var ignoreSendResponse = ""
-        let type = disableResponseCalculation ? "RESPToken" : getResponseType(command: command)
-        if type == "Void" {
-            returnType = ""
-            ignoreSendResponse = "_ = "
-        } else if type != "RESPToken" {
-            //converting = true
-            returnType = " -> \(type)"
-        }
-        func _appendFunction(isArray: Bool) {
-            // Comment header
-            self.appendFunctionCommentHeader(command: command, name: name)
-            // Operation function
-            let genericTypeParameters = genericTypeParameters(command.arguments)
-            let genericParameters = genericParameters(command.arguments)
-            let parametersString =
-                arguments
-                .map {
-                    "\($0.functionLabel(isArray: isArray)): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray, genericStrings: true))"
-                }
-                .joined(separator: ", ")
-            self.append("    @inlinable\n")
-            self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
-            let commandArguments = arguments.map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
-            let argumentsString = commandArguments.joined(separator: ", ")
-            self.append(
-                "        \(ignoreSendResponse)try await send(command: \(name.commandTypeName)(\(argumentsString)))\n"
-            )
-            self.append("    }\n\n")
-        }
-        //_appendFunction(isArray: false)
-        //if arguments.contains(where: \.multiple) {
-        _appendFunction(isArray: true)
-        //}
-    }
-}
-
 func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands, module: Bool) -> String {
     let disableResponseCalculationCommands: Set<String> = [
         "BZMPOP",
         "BZPOPMAX",
         "BZPOPMIN",
         "CLUSTER SHARDS",
+        "LMPOP",
+        "XAUTOCLAIM",
+        "XCLAIM",
+        "XPENDING",
+        "XRANGE",
+        "XREAD",
+        "XREADGROUP",
+        "XREVRANGE",
         "ZMPOP",
         "ZPOPMAX",
         "ZPOPMIN",
@@ -406,6 +118,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
 
     // transaction commands should be added to ValkeyConnection as they require a single connection.
     if commands.first?.value.group == "transactions" {
+        string.append("@available(valkeySwift 1.0, *)\n")
         string.append("extension ValkeyConnection {\n")
     } else {
         string.append("extension ValkeyConnectionProtocol {\n")
@@ -423,6 +136,307 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
     }
     string.append("}\n")
     return string
+}
+
+extension String {
+    mutating func appendDeprecatedMessage(command: ValkeyCommand, name: String, tab: String) {
+        guard let deprecatedSince = command.deprecatedSince else { return }
+        self.append("\(tab)@available(*, deprecated, message: \"Since \(deprecatedSince)")
+        if let replacedBy = command.replacedBy {
+            self.append(". Replaced by \(replacedBy)")
+        }
+        self.append(".\")\n")
+    }
+    mutating func appendCommandCommentHeader(command: ValkeyCommand, name: String, tab: String) {
+        self.append("\(tab)/// \(command.summary)\n")
+    }
+
+    mutating func appendFunctionCommentHeader(command: ValkeyCommand, name: String) {
+        let linkName = name.replacingOccurrences(of: " ", with: "-").lowercased()
+        self.append("    /// \(command.summary)\n")
+        self.append("    ///\n")
+        self.append("    /// - Documentation: [\(name)](https:/valkey.io/commands/\(linkName))\n")
+        if let since = command.since {
+            self.append("    /// - Available: \(since)\n")
+        }
+        if let history = command.history {
+            self.append("    /// - History:\n")
+            for line in history {
+                self.append("    ///     * \(line[0]): \(line[1])\n")
+            }
+        }
+        if let deprecatedSince = command.deprecatedSince {
+            self.append("    /// - Deprecated since: \(deprecatedSince)")
+            if let replacedBy = command.replacedBy {
+                self.append(". Replaced by \(replacedBy)")
+            }
+            self.append(".\n")
+        }
+        if let complexity = command.complexity {
+            self.append("    /// - Complexity: \(complexity)\n")
+        }
+        if let replySchema = command.replySchema {
+            let responses = responseTypeComment(replySchema)
+            if responses.count == 1 {
+                self.append("    /// - Returns: \(responses[0])\n")
+            } else if responses.count > 1 {
+                self.append("    /// - Returns: One of the following\n")
+                for response in responses {
+                    self.append("    ///     * \(response)\n")
+                }
+            }
+        }
+    }
+
+    mutating func appendOneOfEnum(argument: ValkeyCommand.Argument, names: [String], tab: String) {
+        guard let arguments = argument.arguments, arguments.count > 0 else {
+            preconditionFailure("OneOf without arguments")
+        }
+        let names = names + [argument.name.swiftTypename]
+        let enumName = enumName(names: names)
+        for arg in arguments {
+            if case .oneOf = arg.type {
+                self.appendOneOfEnum(argument: arg, names: names, tab: tab)
+            } else if case .block = arg.type {
+                self.appendBlock(argument: arg, names: names, tab: tab, genericStrings: false)
+            }
+        }
+        self.append("\(tab)    public enum \(enumName): RESPRenderable, Sendable, Hashable {\n")
+        var allPureTokens = true
+        for arg in arguments {
+            if case .pureToken = arg.type {
+                self.append("\(tab)        case \(arg.swiftArgument)\n")
+            } else {
+                allPureTokens = false
+                self.append(
+                    "\(tab)        case \(arg.swiftArgument)(\(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: false)))\n"
+                )
+            }
+        }
+        self.append("\n")
+        if allPureTokens {
+            self.append("\(tab)        @inlinable\n")
+            self.append("\(tab)        public var respEntries: Int { 1 }\n\n")
+        } else {
+            self.append("\(tab)        @inlinable\n")
+            self.append("\(tab)        public var respEntries: Int {\n")
+            self.append("\(tab)            switch self {\n")
+            for arg in arguments {
+                if case .pureToken = arg.type {
+                    self.append(
+                        "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".respEntries\n"
+                    )
+                } else {
+                    self.append(
+                        "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).respEntries\n"
+                    )
+                }
+            }
+            self.append("\(tab)            }\n")
+            self.append("\(tab)        }\n\n")
+        }
+        self.append("\(tab)        @inlinable\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
+        self.append("\(tab)            switch self {\n")
+        for arg in arguments {
+            if case .pureToken = arg.type {
+                self.append(
+                    "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".encode(into: &commandEncoder)\n"
+                )
+            } else {
+                self.append(
+                    "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).encode(into: &commandEncoder)\n"
+                )
+            }
+        }
+        self.append("\(tab)            }\n")
+        self.append("\(tab)        }\n")
+        self.append("\(tab)    }\n")
+    }
+
+    mutating func appendBlock(argument: ValkeyCommand.Argument, names: [String], tab: String, genericStrings: Bool) {
+        guard let arguments = argument.arguments, arguments.count > 0 else {
+            preconditionFailure("OneOf without arguments")
+        }
+        let names = names + [argument.name.swiftTypename]
+        let blockName = enumName(names: names)
+        for arg in arguments {
+            if case .oneOf = arg.type {
+                self.appendOneOfEnum(argument: arg, names: names, tab: tab)
+            } else if case .block = arg.type {
+                self.appendBlock(argument: arg, names: names, tab: tab, genericStrings: genericStrings)
+            }
+        }
+        self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable, Hashable {\n")
+        for arg in arguments {
+            self.append(
+                "\(tab)        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: genericStrings))\n"
+            )
+        }
+        self.append("\n")
+        let commandParametersString =
+            arguments
+            .map { "\($0.name.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true, genericStrings: genericStrings))" }
+            .joined(separator: ", ")
+        self.append("\(tab)        @inlinable public init(\(commandParametersString)) {\n")
+        for arg in arguments {
+            self.append("\(tab)            self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
+        }
+        self.append("\(tab)        }\n\n")
+        self.append("\(tab)        @inlinable\n")
+        self.append("\(tab)        public var respEntries: Int {\n")
+        self.append("\(tab)            ")
+        let entries = arguments.map {
+            if case .pureToken = $0.type {
+                "\"\($0.token!)\".respEntries"
+            } else {
+                "\($0.respRepresentable(isArray: false, genericString: genericStrings)).respEntries"
+            }
+        }
+        self.append(entries.joined(separator: " + "))
+        self.append("\n")
+        self.append("\(tab)        }\n\n")
+        self.append("\(tab)        @inlinable\n")
+        self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
+        for arg in arguments {
+            if case .pureToken = arg.type {
+                self.append("\(tab)            \"\(arg.token!)\".encode(into: &commandEncoder)\n")
+            } else {
+                self.append(
+                    "\(tab)            \(arg.respRepresentable(isArray: false, genericString: genericStrings)).encode(into: &commandEncoder)\n"
+                )
+            }
+        }
+        self.append("\(tab)        }\n")
+        self.append("\(tab)    }\n")
+    }
+
+    mutating func appendCommand(command: ValkeyCommand, name: String, tab: String, disableResponseCalculation: Bool) {
+        var commandName = name
+        var subCommand: String? = nil
+        let typeName: String
+        if name.contains(" ") {
+            var split = name.split(separator: " ", maxSplits: 1)
+            commandName = .init(split.removeFirst())
+            subCommand = .init(split.last!)
+            typeName = subCommand!.commandTypeName
+        } else if name.contains(".") {
+            let split = name.split(separator: ".", maxSplits: 1)
+            typeName = split.last!.commandTypeName
+        } else {
+            typeName = name.commandTypeName
+        }
+        let conformance = "ValkeyCommand"
+        let genericTypeParameters = genericTypeParameters(command.arguments)
+        // Comment header
+        self.appendCommandCommentHeader(command: command, name: name, tab: tab)
+        self.append("\(tab)public struct \(typeName)\(genericTypeParameters): \(conformance) {\n")
+
+        let arguments = (command.arguments ?? [])
+        // Enums and internal structs
+        for arg in arguments {
+            if case .oneOf = arg.type {
+                self.appendOneOfEnum(argument: arg, names: [], tab: tab)
+            } else if case .block = arg.type {
+                self.appendBlock(argument: arg, names: [], tab: tab, genericStrings: !arg.optional)
+            }
+        }
+        var returnType = disableResponseCalculation ? "RESPToken" : getResponseType(command: command)
+        if returnType == "Void" {
+            returnType = "RESPToken"
+        }
+        // Command function
+        let commandParametersString =
+            arguments
+            .map { "\($0.name.swiftVariable): \(parameterType($0, names: [], scope: nil, isArray: true, genericStrings: true))" }
+            .joined(separator: ", ")
+        let commandArguments =
+            if let subCommand {
+                ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
+            } else {
+                ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
+            }
+        let commandArgumentsString = commandArguments.joined(separator: ", ")
+        if returnType != "RESPToken" {
+            self.append("\(tab)    public typealias Response = \(returnType)\n\n")
+        }
+        if arguments.count > 0 {
+            for arg in arguments {
+                self.append(
+                    "\(tab)    public var \(arg.name.swiftVariable): \(variableType(arg, names: [], scope: nil, isArray: true, genericStrings: true))\n"
+                )
+            }
+            self.append("\n")
+        }
+        self.append("\(tab)    @inlinable public init(\(commandParametersString)) {\n")
+        for arg in arguments {
+            self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
+        }
+        self.append("\(tab)    }\n\n")
+        if let (keysAffectedType, keysAffected) = constructKeysAffected(command.arguments) {
+            self.append("\(tab)    public var keysAffected: \(keysAffectedType) { \(keysAffected) }\n\n")
+        }
+        if command.commandFlags?.contains("BLOCKING") == true {
+            self.append("\(tab)    public var isBlocking: Bool { true }\n\n")
+        }
+        // read onlyAdd commentMore actions
+        if command.commandFlags?.contains("READONLY") == true {
+            self.append("\(tab)    public var isReadOnly: Bool { true }\n\n")
+        }
+        self.append("\(tab)    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
+        self.append("\(tab)        commandEncoder.encodeArray(\(commandArgumentsString))\n")
+        self.append("\(tab)    }\n")
+        self.append("\(tab)}\n\n")
+    }
+
+    mutating func appendFunction(command: ValkeyCommand, name: String, disableResponseCalculation: Bool) {
+        let arguments = (command.arguments ?? [])
+        let genericTypeParameters = genericTypeParameters(command.arguments)
+        let genericParameters = genericParameters(command.arguments)
+
+        let calculatedResponseType = getResponseType(command: command)
+        let returnType: String =
+            if disableResponseCalculation {
+                if genericParameters != "" {
+                    " -> \(name.commandTypeName)Response"
+                } else {
+                    " -> \(name.commandTypeName).Response"
+                }
+            } else if calculatedResponseType == "Void" {
+                ""
+            } else if calculatedResponseType != "RESPToken" {
+                " -> \(calculatedResponseType)"
+            } else if genericParameters == "" {
+                " -> \(name.commandTypeName).Response"
+            } else {
+                " -> RESPToken"
+            }
+        let ignoreSendResponse = if returnType == "" { "_ = " } else { "" }
+
+        func _appendFunction(isArray: Bool) {
+            // Comment header
+            self.appendFunctionCommentHeader(command: command, name: name)
+            // Operation function
+            let parametersString =
+                arguments
+                .map {
+                    "\($0.functionLabel(isArray: isArray)): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray, genericStrings: true))"
+                }
+                .joined(separator: ", ")
+            self.append("    @inlinable\n")
+            self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
+            let commandArguments = arguments.map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
+            let argumentsString = commandArguments.joined(separator: ", ")
+            self.append(
+                "        \(ignoreSendResponse)try await send(command: \(name.commandTypeName)(\(argumentsString)))\n"
+            )
+            self.append("    }\n\n")
+        }
+        //_appendFunction(isArray: false)
+        //if arguments.contains(where: \.multiple) {
+        _appendFunction(isArray: true)
+        //}
+    }
 }
 
 private func responseTypeComment(_ replySchema: ValkeyCommand.ReplySchema) -> [String] {
@@ -476,57 +490,54 @@ private func responseTypeComment(_ response: ValkeyCommand.ReplySchema.Response)
     }
 }
 
-private func constructKeysAffected(_ keyArguments: [ValkeyCommand.Argument]) -> (type: String, value: String) {
+private func constructKeysAffected(_ arguments: [ValkeyCommand.Argument]?) -> (type: String, value: String)? {
+    guard let arguments else { return nil }
+    let keyArguments: [(name: String, multiple: Bool)] = arguments.flatMap { getKeyArguments(from: $0) }
+    guard keyArguments.count > 0 else { return nil }
     if keyArguments.count == 1 {
-        if keyArguments.first!.multiple {
-            return (type: "[ValkeyKey]", value: keyArguments.first!.name.swiftVariable)
+        if keyArguments[0].multiple {
+            return (type: "[ValkeyKey]", value: keyArguments[0].name)
         } else {
-            return (type: "CollectionOfOne<ValkeyKey>", value: ".init(\(keyArguments.first!.name.swiftVariable))")
+            return (type: "CollectionOfOne<ValkeyKey>", value: ".init(\(keyArguments[0].name))")
         }
     } else {
-        var keysAffectedBuilder: String = ""
-        var inArray = false
-        var first = true
-        for key in keyArguments {
-            if key.multiple {
-                if inArray {
-                    keysAffectedBuilder += "]"
-                    inArray = false
-                }
-                if !first {
-                    keysAffectedBuilder += " + "
-                }
-                keysAffectedBuilder += "\(key.name.swiftVariable)"
-            } else if key.optional {
-                if inArray {
-                    keysAffectedBuilder += "]"
-                    inArray = false
-                }
-                if !first {
-                    keysAffectedBuilder += " + "
-                }
-                keysAffectedBuilder += "(\(key.name.swiftVariable).map { [$0] } ?? [])"
-            } else {
-                if !inArray {
-                    if !first {
-                        keysAffectedBuilder += " + "
-                    }
-                    keysAffectedBuilder += "[\(key.name.swiftVariable)"
-                    inArray = true
-                } else {
-                    if !first {
-                        keysAffectedBuilder += ", "
-                    }
-                    keysAffectedBuilder += "\(key.name.swiftVariable)"
-                }
-            }
-            first = false
+        var multipleKeys = keyArguments.compactMap { if $0.multiple { $0.name } else { nil } }
+        let singleKeys = keyArguments.compactMap { if !$0.multiple { $0.name } else { nil } }
+        if singleKeys.count > 0 {
+            multipleKeys.append("[\(singleKeys.joined(separator: ", "))]")
         }
-        if inArray {
-            keysAffectedBuilder += "]"
-        }
-        return (type: "[ValkeyKey]", value: keysAffectedBuilder)
+        let multipleKeysString = multipleKeys.joined(separator: " + ")
+        return (type: "[ValkeyKey]", value: multipleKeysString)
     }
+}
+
+private func getKeyArguments(from argument: ValkeyCommand.Argument) -> [(name: String, multiple: Bool)] {
+    if argument.type == .key {
+        if argument.multiple {
+            return [(name: argument.name.swiftVariable, multiple: true)]
+        } else if argument.optional {
+            return [(name: "(\(argument.name.swiftVariable).map { [$0] } ?? [])", multiple: true)]
+        } else {
+            return [(name: argument.name.swiftVariable, multiple: false)]
+        }
+    } else if argument.type == .block, let blockArguments = argument.arguments {
+        let blockKeyArguments = blockArguments.flatMap { getKeyArguments(from: $0) }
+        assert(blockKeyArguments.count <= 1, "Do not currently support multiple keys in a block")
+        if let blockArgument = blockKeyArguments.first {
+            if argument.multiple {
+                if blockArgument.multiple {
+                    return [(name: "\(argument.name.swiftVariable).flatMap { $0.\(blockArgument.name) }", multiple: true)]
+                } else {
+                    return [(name: "\(argument.name.swiftVariable).map { $0.\(blockArgument.name) }", multiple: true)]
+                }
+            } else if argument.optional {
+                assert(blockKeyArguments.count <= 1, "Do not currently support optional blocks holding keys")
+            } else {
+                return [(name: "\(argument.name.swiftVariable).\(blockArgument.name)", multiple: blockArgument.multiple)]
+            }
+        }
+    }
+    return []
 }
 
 private func subCommand(_ command: String) -> (String.SubSequence, String.SubSequence?) {

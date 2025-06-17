@@ -44,9 +44,9 @@ package struct ValkeyClusterParseError: Error, Equatable {
 public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     /// Details for a node within a cluster shard
     public struct Node: Hashable, Sendable {
-        /// Replication role of a given shard (master or replica)
+        /// Replication role of a given node within a shard (primary or replica)
         public struct Role: Sendable, Hashable, RawRepresentable {
-            public static let master = Role(base: .master)
+            public static let primary = Role(base: .primary)
             public static let replica = Role(base: .replica)
 
             public init?(rawValue: String) {
@@ -61,7 +61,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             }
 
             enum Base: String {
-                case master
+                case primary = "master"
                 case replica
             }
 
@@ -139,14 +139,6 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     public struct Shard: Hashable, Sendable {
         public var slots: HashSlots
         public var nodes: [Node]
-
-        public var master: Node? {
-            self.nodes.first
-        }
-
-        public var replicas: ArraySlice<Node> {
-            self.nodes.dropFirst(1)
-        }
 
         public init(slots: HashSlots, nodes: [Node]) {
             self.slots = slots

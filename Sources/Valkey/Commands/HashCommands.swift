@@ -55,6 +55,8 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HEXISTS", key, RESPBulkString(field))
     }
@@ -74,6 +76,8 @@ public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HGET", key, RESPBulkString(field))
     }
@@ -90,6 +94,8 @@ public struct HGETALL: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HGETALL", key)
@@ -148,6 +154,8 @@ public struct HKEYS: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HKEYS", key)
     }
@@ -164,6 +172,8 @@ public struct HLEN: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HLEN", key)
@@ -184,6 +194,8 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HMGET", key, field.map { RESPBulkString($0) })
     }
@@ -191,7 +203,7 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
 
 /// Sets the values of multiple fields.
 public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 
@@ -228,7 +240,7 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
 
 /// Returns one or more random fields from a hash.
 public struct HRANDFIELD: ValkeyCommand {
-    public struct Options: RESPRenderable, Sendable {
+    public struct Options: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
         @usableFromInline let withvalues: Bool
 
@@ -260,6 +272,8 @@ public struct HRANDFIELD: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HRANDFIELD", key, options)
     }
@@ -285,21 +299,16 @@ public struct HSCAN: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "HSCAN",
-            key,
-            cursor,
-            RESPWithToken("MATCH", pattern),
-            RESPWithToken("COUNT", count),
-            RESPPureToken("NOVALUES", novalues)
-        )
+        commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPPureToken("NOVALUES", novalues))
     }
 }
 
 /// Creates or modifies the value of a field in a hash.
 public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
         @usableFromInline let value: Value
 
@@ -371,6 +380,8 @@ public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HSTRLEN", key, RESPBulkString(field))
     }
@@ -387,6 +398,8 @@ public struct HVALS: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HVALS", key)
@@ -462,7 +475,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The value of the field after the increment operation.
     @inlinable
-    public func hincrbyfloat<Field: RESPStringRenderable>(key: ValkeyKey, field: Field, increment: Double) async throws -> HINCRBYFLOAT.Response {
+    public func hincrbyfloat<Field: RESPStringRenderable>(key: ValkeyKey, field: Field, increment: Double) async throws -> RESPToken {
         try await send(command: HINCRBYFLOAT(key: key, field: field, increment: increment))
     }
 
@@ -532,8 +545,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Returns: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func hscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> RESPToken.Array
-    {
+    public func hscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> RESPToken.Array {
         try await send(command: HSCAN(key: key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
     }
 

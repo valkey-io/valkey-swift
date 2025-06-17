@@ -15,7 +15,7 @@
 import NIOCore
 
 /// A Valkey command that can be executed on a connection.
-public protocol ValkeyCommand: Sendable {
+public protocol ValkeyCommand: Sendable, Hashable {
     associatedtype Response: RESPTokenDecodable & Sendable = RESPToken
     associatedtype Keys: Collection<ValkeyKey>
 
@@ -25,6 +25,9 @@ public protocol ValkeyCommand: Sendable {
 
     /// Does this command block the connection
     var isBlocking: Bool { get }
+
+    /// Is this command readonly
+    var isReadOnly: Bool { get }
 
     /// Encode Valkey Command into RESP
     /// - Parameter commandEncoder: ValkeyCommandEncoder
@@ -36,6 +39,8 @@ extension ValkeyCommand {
     public var keysAffected: [ValkeyKey] { [] }
     /// Default is not blocking
     public var isBlocking: Bool { false }
+    /// Default is not read only
+    public var isReadOnly: Bool { false }
 }
 
 /// Wrapper for Valkey command that returns the response as a `RESPToken`

@@ -75,7 +75,7 @@ public enum BF {
 
     /// Returns usage information and properties of a specific bloom filter
     public struct INFO: ValkeyCommand {
-        public enum Sortby: RESPRenderable, Sendable {
+        public enum Sortby: RESPRenderable, Sendable, Hashable {
             case capacity
             case size
             case filters
@@ -128,18 +128,7 @@ public enum BF {
         public var nocreate: Bool
         public var value: [String]
 
-        @inlinable public init(
-            key: ValkeyKey,
-            capacity: Int? = nil,
-            error: Double? = nil,
-            expansion: Int? = nil,
-            seed: String? = nil,
-            tightening: Double? = nil,
-            validatescaleto: Int? = nil,
-            nonscaling: Bool = false,
-            nocreate: Bool = false,
-            value: [String] = []
-        ) {
+        @inlinable public init(key: ValkeyKey, capacity: Int? = nil, error: Double? = nil, expansion: Int? = nil, seed: String? = nil, tightening: Double? = nil, validatescaleto: Int? = nil, nonscaling: Bool = false, nocreate: Bool = false, value: [String] = []) {
             self.key = key
             self.capacity = capacity
             self.error = error
@@ -155,19 +144,7 @@ public enum BF {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray(
-                "BF.INSERT",
-                key,
-                RESPWithToken("CAPACITY", capacity),
-                RESPWithToken("ERROR", error),
-                RESPWithToken("EXPANSION", expansion),
-                RESPWithToken("SEED", seed),
-                RESPWithToken("TIGHTENING", tightening),
-                RESPWithToken("VALIDATESCALETO", validatescaleto),
-                RESPPureToken("NONSCALING", nonscaling),
-                RESPPureToken("NOCREATE", nocreate),
-                RESPWithToken("ITEMS", value)
-            )
+            commandEncoder.encodeArray("BF.INSERT", key, RESPWithToken("CAPACITY", capacity), RESPWithToken("ERROR", error), RESPWithToken("EXPANSION", expansion), RESPWithToken("SEED", seed), RESPWithToken("TIGHTENING", tightening), RESPWithToken("VALIDATESCALETO", validatescaleto), RESPPureToken("NONSCALING", nonscaling), RESPPureToken("NOCREATE", nocreate), RESPWithToken("ITEMS", value))
         }
     }
 
@@ -241,14 +218,7 @@ public enum BF {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray(
-                "BF.RESERVE",
-                key,
-                errorRate,
-                capacity,
-                RESPWithToken("EXPANSION", expansion),
-                RESPPureToken("NONSCALING", nonscaling)
-            )
+            commandEncoder.encodeArray("BF.RESERVE", key, errorRate, capacity, RESPWithToken("EXPANSION", expansion), RESPPureToken("NONSCALING", nonscaling))
         }
     }
 
@@ -260,7 +230,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.ADD](https:/valkey.io/commands/bf.add)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
-    public func bfAdd<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> BF.ADD.Response {
+    public func bfAdd<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
         try await send(command: BF.ADD(key: key, value: value))
     }
 
@@ -278,7 +248,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.EXISTS](https:/valkey.io/commands/bf.exists)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
-    public func bfExists<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> BF.EXISTS.Response {
+    public func bfExists<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
         try await send(command: BF.EXISTS(key: key, value: value))
     }
 
@@ -296,32 +266,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.INSERT](https:/valkey.io/commands/bf.insert)
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
-    public func bfInsert(
-        key: ValkeyKey,
-        capacity: Int? = nil,
-        error: Double? = nil,
-        expansion: Int? = nil,
-        seed: String? = nil,
-        tightening: Double? = nil,
-        validatescaleto: Int? = nil,
-        nonscaling: Bool = false,
-        nocreate: Bool = false,
-        value: [String] = []
-    ) async throws -> BF.INSERT.Response {
-        try await send(
-            command: BF.INSERT(
-                key: key,
-                capacity: capacity,
-                error: error,
-                expansion: expansion,
-                seed: seed,
-                tightening: tightening,
-                validatescaleto: validatescaleto,
-                nonscaling: nonscaling,
-                nocreate: nocreate,
-                value: value
-            )
-        )
+    public func bfInsert(key: ValkeyKey, capacity: Int? = nil, error: Double? = nil, expansion: Int? = nil, seed: String? = nil, tightening: Double? = nil, validatescaleto: Int? = nil, nonscaling: Bool = false, nocreate: Bool = false, value: [String] = []) async throws -> BF.INSERT.Response {
+        try await send(command: BF.INSERT(key: key, capacity: capacity, error: error, expansion: expansion, seed: seed, tightening: tightening, validatescaleto: validatescaleto, nonscaling: nonscaling, nocreate: nocreate, value: value))
     }
 
     /// Restores a bloom filter in a single operation. The command is only generated during AOF Rewrite of bloom filters
@@ -329,7 +275,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.LOAD](https:/valkey.io/commands/bf.load)
     /// - Complexity: O(N), where N is the capacity
     @inlinable
-    public func bfLoad<Dump: RESPStringRenderable>(key: ValkeyKey, dump: Dump) async throws -> BF.LOAD.Response {
+    public func bfLoad<Dump: RESPStringRenderable>(key: ValkeyKey, dump: Dump) async throws -> RESPToken {
         try await send(command: BF.LOAD(key: key, dump: dump))
     }
 
@@ -338,7 +284,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.MADD](https:/valkey.io/commands/bf.madd)
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
-    public func bfMadd<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> BF.MADD.Response {
+    public func bfMadd<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
         try await send(command: BF.MADD(key: key, value: value))
     }
 
@@ -347,7 +293,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.MEXISTS](https:/valkey.io/commands/bf.mexists)
     /// - Complexity: O(K * N), where N is the number of hash functions used by the bloom filter and K is the number of items
     @inlinable
-    public func bfMexists<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> BF.MEXISTS.Response {
+    public func bfMexists<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
         try await send(command: BF.MEXISTS(key: key, value: value))
     }
 
@@ -356,13 +302,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.RESERVE](https:/valkey.io/commands/bf.reserve)
     /// - Complexity: O(1)
     @inlinable
-    public func bfReserve(
-        key: ValkeyKey,
-        errorRate: Double,
-        capacity: Int,
-        expansion: Int? = nil,
-        nonscaling: Bool = false
-    ) async throws -> BF.RESERVE.Response {
+    public func bfReserve(key: ValkeyKey, errorRate: Double, capacity: Int, expansion: Int? = nil, nonscaling: Bool = false) async throws -> BF.RESERVE.Response {
         try await send(command: BF.RESERVE(key: key, errorRate: errorRate, capacity: capacity, expansion: expansion, nonscaling: nonscaling))
     }
 

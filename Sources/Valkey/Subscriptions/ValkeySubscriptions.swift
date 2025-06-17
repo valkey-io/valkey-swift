@@ -16,8 +16,12 @@ import Logging
 import Synchronization
 
 /// Container for all subscriptions on one connection
+@available(valkeySwift 1.0, *)
 @usableFromInline
 struct ValkeySubscriptions {
+    /// invalidation subscription channelAdd commentMore actions
+    @usableFromInline
+    static let invalidateChannel = "__redis__:invalidate"
     var subscriptionIDMap: [Int: SubscriptionRef]
     private var commandStack: ValkeySubscriptionCommandStack
     private var subscriptionMap: [ValkeySubscriptionFilter: ValkeyChannelStateMachine<SubscriptionRef>]
@@ -76,6 +80,18 @@ struct ValkeySubscriptions {
                 }
             case .doNothing, .none:
                 self.logger.trace("Received message for inactive subscription", metadata: ["subscription": "\(pushToken.value)"])
+            }
+
+        case .invalidate(let keys):
+            switch self.subscriptionMap[pushToken.value]?.receivedMessage() {
+            case .forwardMessage(let subscriptions):
+                for subscription in subscriptions {
+                    for key in keys {
+                        subscription.sendMessage(.init(channel: Self.invalidateChannel, message: key.rawValue))
+                    }
+                }
+            case .doNothing, .none:
+                self.logger.trace("Received message for inactive subscription \(pushToken.value)")
             }
         }
         return returnValue

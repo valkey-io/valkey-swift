@@ -89,6 +89,8 @@ public struct GET: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GET", key)
     }
@@ -113,7 +115,7 @@ public struct GETDEL: ValkeyCommand {
 
 /// Returns the string value of a key after setting its expiration time.
 public struct GETEX: ValkeyCommand {
-    public enum Expiration: RESPRenderable, Sendable {
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
@@ -126,8 +128,7 @@ public struct GETEX: ValkeyCommand {
             case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
             case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
-            case .unixTimeMilliseconds(let unixTimeMilliseconds):
-                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
             case .persist: "PERSIST".respEntries
             }
         }
@@ -137,10 +138,8 @@ public struct GETEX: ValkeyCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
-            case .unixTimeSeconds(let unixTimeSeconds):
-                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds):
-                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
             case .persist: "PERSIST".encode(into: &commandEncoder)
             }
         }
@@ -175,6 +174,8 @@ public struct GETRANGE: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("GETRANGE", key, start, end)
@@ -262,14 +263,7 @@ public struct LCS: ValkeyCommand {
     public var minMatchLen: Int?
     public var withmatchlen: Bool
 
-    @inlinable public init(
-        key1: ValkeyKey,
-        key2: ValkeyKey,
-        len: Bool = false,
-        idx: Bool = false,
-        minMatchLen: Int? = nil,
-        withmatchlen: Bool = false
-    ) {
+    @inlinable public init(key1: ValkeyKey, key2: ValkeyKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) {
         self.key1 = key1
         self.key2 = key2
         self.len = len
@@ -280,16 +274,10 @@ public struct LCS: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { [key1, key2] }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "LCS",
-            key1,
-            key2,
-            RESPPureToken("LEN", len),
-            RESPPureToken("IDX", idx),
-            RESPWithToken("MINMATCHLEN", minMatchLen),
-            RESPPureToken("WITHMATCHLEN", withmatchlen)
-        )
+        commandEncoder.encodeArray("LCS", key1, key2, RESPPureToken("LEN", len), RESPPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RESPPureToken("WITHMATCHLEN", withmatchlen))
     }
 }
 
@@ -305,6 +293,8 @@ public struct MGET: ValkeyCommand {
 
     public var keysAffected: [ValkeyKey] { key }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MGET", key)
     }
@@ -312,7 +302,7 @@ public struct MGET: ValkeyCommand {
 
 /// Atomically creates or modifies the string values of one or more keys.
 public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: ValkeyKey
         @usableFromInline let value: Value
 
@@ -338,6 +328,8 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
         self.data = data
     }
 
+    public var keysAffected: [ValkeyKey] { data.map { $0.key } }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MSET", data)
     }
@@ -345,7 +337,7 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
 
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
 public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
-    public struct Data: RESPRenderable, Sendable {
+    public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: ValkeyKey
         @usableFromInline let value: Value
 
@@ -373,6 +365,8 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
         self.data = data
     }
 
+    public var keysAffected: [ValkeyKey] { data.map { $0.key } }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("MSETNX", data)
     }
@@ -399,7 +393,7 @@ public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
 
 /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
 public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
-    public enum Condition: RESPRenderable, Sendable {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
         case xx
         case comparisonValue(String)
@@ -422,7 +416,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public enum Expiration: RESPRenderable, Sendable {
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
         case seconds(Int)
         case milliseconds(Int)
         case unixTimeSeconds(Date)
@@ -435,8 +429,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
             case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
-            case .unixTimeMilliseconds(let unixTimeMilliseconds):
-                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
             case .keepttl: "KEEPTTL".respEntries
             }
         }
@@ -446,10 +439,8 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
-            case .unixTimeSeconds(let unixTimeSeconds):
-                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds):
-                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
             case .keepttl: "KEEPTTL".encode(into: &commandEncoder)
             }
         }
@@ -548,6 +539,8 @@ public struct STRLEN: ValkeyCommand {
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("STRLEN", key)
     }
@@ -566,6 +559,8 @@ public struct SUBSTR: ValkeyCommand {
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("SUBSTR", key, start, end)
@@ -713,14 +708,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: The length of the longest common subsequence when 'LEN' is given.
     ///     * [Map]: Array with the LCS length and all the ranges in both the strings when 'IDX' is given. In RESP2 this is returned as a flat array
     @inlinable
-    public func lcs(
-        key1: ValkeyKey,
-        key2: ValkeyKey,
-        len: Bool = false,
-        idx: Bool = false,
-        minMatchLen: Int? = nil,
-        withmatchlen: Bool = false
-    ) async throws -> LCS.Response {
+    public func lcs(key1: ValkeyKey, key2: ValkeyKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> LCS.Response {
         try await send(command: LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
@@ -786,13 +774,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: `GET` given: The key didn't exist before the `SET`
     ///     * [String]: `GET` given: The previous value of the key
     @inlinable
-    public func set<Value: RESPStringRenderable>(
-        key: ValkeyKey,
-        value: Value,
-        condition: SET<Value>.Condition? = nil,
-        get: Bool = false,
-        expiration: SET<Value>.Expiration? = nil
-    ) async throws -> RESPToken? {
+    public func set<Value: RESPStringRenderable>(key: ValkeyKey, value: Value, condition: SET<Value>.Condition? = nil, get: Bool = false, expiration: SET<Value>.Expiration? = nil) async throws -> RESPToken? {
         try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
     }
 

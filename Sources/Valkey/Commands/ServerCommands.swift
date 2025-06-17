@@ -137,7 +137,7 @@ public enum ACL {
 
     /// Lists recent security events generated due to ACL rules.
     public struct LOG: ValkeyCommand {
-        public enum Operation: RESPRenderable, Sendable {
+        public enum Operation: RESPRenderable, Sendable, Hashable {
             case count(Int)
             case reset
 
@@ -310,7 +310,7 @@ extension COMMAND {
 
     /// Returns a list of command names.
     public struct LIST: ValkeyCommand {
-        public enum Filterby: RESPRenderable, Sendable {
+        public enum Filterby: RESPRenderable, Sendable, Hashable {
             case moduleName(String)
             case category(String)
             case pattern(String)
@@ -352,7 +352,7 @@ extension COMMAND {
 public enum COMMANDLOG {
     /// Returns the specified command log's entries.
     public struct GET: ValkeyCommand {
-        public enum _Type: RESPRenderable, Sendable {
+        public enum _Type: RESPRenderable, Sendable, Hashable {
             case slow(String)
             case largeRequest(String)
             case largeReply(String)
@@ -404,7 +404,7 @@ public enum COMMANDLOG {
 
     /// Returns the number of entries in the specified type of command log.
     public struct LEN: ValkeyCommand {
-        public enum _Type: RESPRenderable, Sendable {
+        public enum _Type: RESPRenderable, Sendable, Hashable {
             case slow(String)
             case largeRequest(String)
             case largeReply(String)
@@ -442,7 +442,7 @@ public enum COMMANDLOG {
 
     /// Clears all entries from the specified type of command log.
     public struct RESET: ValkeyCommand {
-        public enum _Type: RESPRenderable, Sendable {
+        public enum _Type: RESPRenderable, Sendable, Hashable {
             case slow(String)
             case largeRequest(String)
             case largeReply(String)
@@ -529,7 +529,7 @@ public enum CONFIG {
 
     /// Sets configuration parameters in-flight.
     public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: Parameter
             @usableFromInline let value: Value
 
@@ -728,6 +728,8 @@ public enum MEMORY {
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
+        public var isReadOnly: Bool { true }
+
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("MEMORY", "USAGE", key, RESPWithToken("SAMPLES", count))
         }
@@ -778,7 +780,7 @@ public enum MODULE {
 
     /// Loads a module using extended parameters.
     public struct LOADEX<Path: RESPStringRenderable>: ValkeyCommand {
-        public struct Configs: RESPRenderable, Sendable {
+        public struct Configs: RESPRenderable, Sendable, Hashable {
             @usableFromInline let name: String
             @usableFromInline let value: String
 
@@ -893,7 +895,7 @@ public struct BGREWRITEAOF: ValkeyCommand {
 
 /// Asynchronously saves the database(s) to disk.
 public struct BGSAVE: ValkeyCommand {
-    public enum Operation: RESPRenderable, Sendable {
+    public enum Operation: RESPRenderable, Sendable, Hashable {
         case schedule
         case cancel
 
@@ -938,6 +940,8 @@ public struct DBSIZE: ValkeyCommand {
     @inlinable public init() {
     }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("DBSIZE")
     }
@@ -945,7 +949,7 @@ public struct DBSIZE: ValkeyCommand {
 
 /// Starts a coordinated failover from a server to one of its replicas.
 public struct FAILOVER: ValkeyCommand {
-    public struct Target: RESPRenderable, Sendable {
+    public struct Target: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
         @usableFromInline let force: Bool
@@ -985,7 +989,7 @@ public struct FAILOVER: ValkeyCommand {
 
 /// Removes all keys from all databases.
 public struct FLUSHALL: ValkeyCommand {
-    public enum FlushType: RESPRenderable, Sendable {
+    public enum FlushType: RESPRenderable, Sendable, Hashable {
         case async
         case sync
 
@@ -1013,7 +1017,7 @@ public struct FLUSHALL: ValkeyCommand {
 
 /// Remove all keys from the current database.
 public struct FLUSHDB: ValkeyCommand {
-    public enum FlushType: RESPRenderable, Sendable {
+    public enum FlushType: RESPRenderable, Sendable, Hashable {
         case async
         case sync
 
@@ -1072,6 +1076,8 @@ public struct LOLWUT: ValkeyCommand {
         self.version = version
     }
 
+    public var isReadOnly: Bool { true }
+
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("LOLWUT", RESPWithToken("VERSION", version))
     }
@@ -1104,7 +1110,7 @@ public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
 
 /// Configures a server as replica of another, or promotes it to a primary.
 public struct REPLICAOF: ValkeyCommand {
-    public struct ArgsHostPort: RESPRenderable, Sendable {
+    public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -1124,7 +1130,7 @@ public struct REPLICAOF: ValkeyCommand {
             port.encode(into: &commandEncoder)
         }
     }
-    public struct ArgsNoOne: RESPRenderable, Sendable {
+    public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -1144,7 +1150,7 @@ public struct REPLICAOF: ValkeyCommand {
             "ONE".encode(into: &commandEncoder)
         }
     }
-    public enum Args: RESPRenderable, Sendable {
+    public enum Args: RESPRenderable, Sendable, Hashable {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
@@ -1199,7 +1205,7 @@ public struct SAVE: ValkeyCommand {
 
 /// Synchronously saves the database(s) to disk and shuts down the server.
 public struct SHUTDOWN: ValkeyCommand {
-    public enum AbortSelectorSaveSelectorBlockSaveSelector: RESPRenderable, Sendable {
+    public enum AbortSelectorSaveSelectorBlockSaveSelector: RESPRenderable, Sendable, Hashable {
         case nosave
         case save
 
@@ -1214,7 +1220,7 @@ public struct SHUTDOWN: ValkeyCommand {
             }
         }
     }
-    public struct AbortSelectorSaveSelectorBlock: RESPRenderable, Sendable {
+    public struct AbortSelectorSaveSelectorBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let saveSelector: AbortSelectorSaveSelectorBlockSaveSelector?
         @usableFromInline let now: Bool
         @usableFromInline let force: Bool
@@ -1237,7 +1243,7 @@ public struct SHUTDOWN: ValkeyCommand {
             "FORCE".encode(into: &commandEncoder)
         }
     }
-    public enum AbortSelector: RESPRenderable, Sendable {
+    public enum AbortSelector: RESPRenderable, Sendable, Hashable {
         case saveSelectorBlock(AbortSelectorSaveSelectorBlock)
         case abort
 
@@ -1270,7 +1276,7 @@ public struct SHUTDOWN: ValkeyCommand {
 
 /// Sets a server as a replica of another, or promotes it to being a primary.
 public struct SLAVEOF: ValkeyCommand {
-    public struct ArgsHostPort: RESPRenderable, Sendable {
+    public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
         @usableFromInline let port: Int
 
@@ -1290,7 +1296,7 @@ public struct SLAVEOF: ValkeyCommand {
             port.encode(into: &commandEncoder)
         }
     }
-    public struct ArgsNoOne: RESPRenderable, Sendable {
+    public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
         @usableFromInline let no: Bool
         @usableFromInline let one: Bool
 
@@ -1310,7 +1316,7 @@ public struct SLAVEOF: ValkeyCommand {
             "ONE".encode(into: &commandEncoder)
         }
     }
-    public enum Args: RESPRenderable, Sendable {
+    public enum Args: RESPRenderable, Sendable, Hashable {
         case hostPort(ArgsHostPort)
         case noOne(ArgsNoOne)
 
@@ -1412,11 +1418,7 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
-    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(
-        username: Username,
-        command: Command,
-        arg: [String] = []
-    ) async throws -> RESPToken? {
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, arg: [String] = []) async throws -> RESPToken? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 
@@ -1841,7 +1843,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: Latency graph
     @inlinable
-    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> LATENCY.GRAPH.Response {
+    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> RESPToken {
         try await send(command: LATENCY.GRAPH(event: event))
     }
 
@@ -2043,7 +2045,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [PSYNC](https:/valkey.io/commands/psync)
     /// - Available: 2.8.0
     @inlinable
-    public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> PSYNC.Response {
+    public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> RESPToken {
         try await send(command: PSYNC(replicationid: replicationid, offset: offset))
     }
 

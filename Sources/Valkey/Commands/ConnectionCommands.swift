@@ -25,7 +25,7 @@ import Foundation
 extension CLIENT {
     /// Instructs the server whether to track the keys in the next request.
     public struct CACHING: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case yes
             case no
 
@@ -114,7 +114,7 @@ extension CLIENT {
 
     /// Mark this client as an import source when server is in import mode.
     public struct IMPORTSOURCE: ValkeyCommand {
-        public enum Enabled: RESPRenderable, Sendable {
+        public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -152,7 +152,7 @@ extension CLIENT {
 
     /// Terminates open connections.
     public struct KILL: ValkeyCommand {
-        public enum FilterNewFormatClientType: RESPRenderable, Sendable {
+        public enum FilterNewFormatClientType: RESPRenderable, Sendable, Hashable {
             case normal
             case master
             case primary
@@ -175,7 +175,7 @@ extension CLIENT {
                 }
             }
         }
-        public enum FilterNewFormatSkipme: RESPRenderable, Sendable {
+        public enum FilterNewFormatSkipme: RESPRenderable, Sendable, Hashable {
             case yes
             case no
 
@@ -190,7 +190,7 @@ extension CLIENT {
                 }
             }
         }
-        public enum FilterNewFormat: RESPRenderable, Sendable {
+        public enum FilterNewFormat: RESPRenderable, Sendable, Hashable {
             case clientId([Int])
             case clientType(FilterNewFormatClientType?)
             case username(String?)
@@ -225,7 +225,7 @@ extension CLIENT {
                 }
             }
         }
-        public enum Filter: RESPRenderable, Sendable {
+        public enum Filter: RESPRenderable, Sendable, Hashable {
             case oldFormat(String)
             case newFormat([FilterNewFormat])
 
@@ -260,7 +260,7 @@ extension CLIENT {
 
     /// Lists open connections.
     public struct LIST: ValkeyCommand {
-        public enum ClientType: RESPRenderable, Sendable {
+        public enum ClientType: RESPRenderable, Sendable, Hashable {
             case normal
             case master
             case replica
@@ -279,7 +279,7 @@ extension CLIENT {
                 }
             }
         }
-        public enum Skipme: RESPRenderable, Sendable {
+        public enum Skipme: RESPRenderable, Sendable, Hashable {
             case yes
             case no
 
@@ -302,15 +302,7 @@ extension CLIENT {
         public var skipme: Skipme?
         public var maxage: Int?
 
-        @inlinable public init(
-            clientType: ClientType? = nil,
-            clientId: [Int] = [],
-            username: String? = nil,
-            addr: String? = nil,
-            laddr: String? = nil,
-            skipme: Skipme? = nil,
-            maxage: Int? = nil
-        ) {
+        @inlinable public init(clientType: ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: Skipme? = nil, maxage: Int? = nil) {
             self.clientType = clientType
             self.clientId = clientId
             self.username = username
@@ -321,23 +313,13 @@ extension CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray(
-                "CLIENT",
-                "LIST",
-                RESPWithToken("TYPE", clientType),
-                RESPWithToken("ID", clientId),
-                RESPWithToken("USER", username),
-                RESPWithToken("ADDR", addr),
-                RESPWithToken("LADDR", laddr),
-                RESPWithToken("SKIPME", skipme),
-                RESPWithToken("MAXAGE", maxage)
-            )
+            commandEncoder.encodeArray("CLIENT", "LIST", RESPWithToken("TYPE", clientType), RESPWithToken("ID", clientId), RESPWithToken("USER", username), RESPWithToken("ADDR", addr), RESPWithToken("LADDR", laddr), RESPWithToken("SKIPME", skipme), RESPWithToken("MAXAGE", maxage))
         }
     }
 
     /// Sets the client eviction mode of the connection.
     public struct NOEVICT: ValkeyCommand {
-        public enum Enabled: RESPRenderable, Sendable {
+        public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -365,7 +347,7 @@ extension CLIENT {
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
     public struct NOTOUCH: ValkeyCommand {
-        public enum Enabled: RESPRenderable, Sendable {
+        public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -393,7 +375,7 @@ extension CLIENT {
 
     /// Suspends commands processing.
     public struct PAUSE: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case write
             case all
 
@@ -423,7 +405,7 @@ extension CLIENT {
 
     /// Instructs the server whether to reply to commands.
     public struct REPLY: ValkeyCommand {
-        public enum Action: RESPRenderable, Sendable {
+        public enum Action: RESPRenderable, Sendable, Hashable {
             case on
             case off
             case skip
@@ -453,7 +435,7 @@ extension CLIENT {
 
     /// Sets information specific to the client or connection.
     public struct SETINFO: ValkeyCommand {
-        public enum Attr: RESPRenderable, Sendable {
+        public enum Attr: RESPRenderable, Sendable, Hashable {
             case libname(String)
             case libver(String)
 
@@ -499,7 +481,7 @@ extension CLIENT {
 
     /// Controls server-assisted client-side caching for the connection.
     public struct TRACKING: ValkeyCommand {
-        public enum Status: RESPRenderable, Sendable {
+        public enum Status: RESPRenderable, Sendable, Hashable {
             case on
             case off
 
@@ -522,15 +504,7 @@ extension CLIENT {
         public var optout: Bool
         public var noloop: Bool
 
-        @inlinable public init(
-            status: Status,
-            clientId: Int? = nil,
-            prefix: [String] = [],
-            bcast: Bool = false,
-            optin: Bool = false,
-            optout: Bool = false,
-            noloop: Bool = false
-        ) {
+        @inlinable public init(status: Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) {
             self.status = status
             self.clientId = clientId
             self.prefix = prefix
@@ -541,17 +515,7 @@ extension CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray(
-                "CLIENT",
-                "TRACKING",
-                status,
-                RESPWithToken("REDIRECT", clientId),
-                RESPWithToken("PREFIX", prefix),
-                RESPPureToken("BCAST", bcast),
-                RESPPureToken("OPTIN", optin),
-                RESPPureToken("OPTOUT", optout),
-                RESPPureToken("NOLOOP", noloop)
-            )
+            commandEncoder.encodeArray("CLIENT", "TRACKING", status, RESPWithToken("REDIRECT", clientId), RESPWithToken("PREFIX", prefix), RESPPureToken("BCAST", bcast), RESPPureToken("OPTIN", optin), RESPPureToken("OPTOUT", optout), RESPPureToken("NOLOOP", noloop))
         }
     }
 
@@ -569,7 +533,7 @@ extension CLIENT {
 
     /// Unblocks a client blocked by a blocking command from a different connection.
     public struct UNBLOCK: ValkeyCommand {
-        public enum UnblockType: RESPRenderable, Sendable {
+        public enum UnblockType: RESPRenderable, Sendable, Hashable {
             case timeout
             case error
 
@@ -651,7 +615,7 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
 
 /// Handshakes with the server.
 public struct HELLO: ValkeyCommand {
-    public struct ArgumentsAuth: RESPRenderable, Sendable {
+    public struct ArgumentsAuth: RESPRenderable, Sendable, Hashable {
         @usableFromInline let username: String
         @usableFromInline let password: String
 
@@ -671,7 +635,7 @@ public struct HELLO: ValkeyCommand {
             password.encode(into: &commandEncoder)
         }
     }
-    public struct Arguments: RESPRenderable, Sendable {
+    public struct Arguments: RESPRenderable, Sendable, Hashable {
         @usableFromInline let protover: Int
         @usableFromInline let auth: ArgumentsAuth?
         @usableFromInline let clientname: String?
@@ -906,26 +870,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: [String]: Information and statistics about client connections
     @inlinable
-    public func clientList(
-        clientType: CLIENT.LIST.ClientType? = nil,
-        clientId: [Int] = [],
-        username: String? = nil,
-        addr: String? = nil,
-        laddr: String? = nil,
-        skipme: CLIENT.LIST.Skipme? = nil,
-        maxage: Int? = nil
-    ) async throws -> CLIENT.LIST.Response {
-        try await send(
-            command: CLIENT.LIST(
-                clientType: clientType,
-                clientId: clientId,
-                username: username,
-                addr: addr,
-                laddr: laddr,
-                skipme: skipme,
-                maxage: maxage
-            )
-        )
+    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: CLIENT.LIST.Skipme? = nil, maxage: Int? = nil) async throws -> CLIENT.LIST.Response {
+        try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId, username: username, addr: addr, laddr: laddr, skipme: skipme, maxage: maxage))
     }
 
     /// Sets the client eviction mode of the connection.
@@ -998,18 +944,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1). Some options may introduce additional complexity.
     /// - Returns: "OK": If the client was successfully put into or taken out of tracking mode.
     @inlinable
-    public func clientTracking(
-        status: CLIENT.TRACKING.Status,
-        clientId: Int? = nil,
-        prefix: [String] = [],
-        bcast: Bool = false,
-        optin: Bool = false,
-        optout: Bool = false,
-        noloop: Bool = false
-    ) async throws {
-        _ = try await send(
-            command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
-        )
+    public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
+        _ = try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
@@ -1052,7 +988,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The given string
     @inlinable
-    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ECHO.Response {
+    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> RESPToken {
         try await send(command: ECHO(message: message))
     }
 

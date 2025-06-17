@@ -29,6 +29,7 @@ import ServiceLifecycle
 /// Connect to Valkey server.
 ///
 /// Supports TLS via both NIOSSL and Network framework.
+@available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
     typealias Pool = ConnectionPool<
         ValkeyConnection,
@@ -64,7 +65,7 @@ public final class ValkeyClient: Sendable {
     public convenience init(
         _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
-        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger
     ) {
         self.init(
@@ -111,6 +112,7 @@ public final class ValkeyClient: Sendable {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClient {
     /// Run ValkeyClient connection pool
     public func run() async {
@@ -154,6 +156,7 @@ extension ValkeyClient {
 }
 
 /// Extend ValkeyClient so we can call commands directly from it
+@available(valkeySwift 1.0, *)
 extension ValkeyClient: ValkeyConnectionProtocol {
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
@@ -169,6 +172,28 @@ extension ValkeyClient: ValkeyConnectionProtocol {
     }
 }
 
+@available(valkeySwift 1.0, *)
+extension ValkeyClient {
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// This function will only return once it has the results of all the commands sent
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the results of all the commands
+    @inlinable
+    public func pipeline<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async -> sending (repeat Result<(each Command).Response, Error>) {
+        do {
+            return try await self.withConnection { connection in
+                await connection.pipeline(repeat (each commands))
+            }
+        } catch {
+            return (repeat Result<(each Command).Response, Error>.failure(error))
+        }
+    }
+}
+
 #if ServiceLifecycleSupport
+@available(valkeySwift 1.0, *)
 extension ValkeyClient: Service {}
 #endif  // ServiceLifecycle

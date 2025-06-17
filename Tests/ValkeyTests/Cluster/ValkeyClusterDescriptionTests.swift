@@ -68,7 +68,7 @@ struct ValkeyClusterDescriptionTests {
                                 ip: "127.0.0.1",
                                 hostname: "mockHostname",
                                 endpoint: "mockEndpoint",
-                                role: .master,
+                                role: .primary,
                                 replicationOffset: 22,
                                 health: .online
                             )
@@ -250,7 +250,7 @@ struct ValkeyClusterDescriptionTests {
                                 ip: "127.0.0.1",
                                 hostname: "mockHostname",
                                 endpoint: "mockEndpoint",
-                                role: .master,
+                                role: .primary,
                                 replicationOffset: 22,
                                 health: .online
                             )
@@ -327,7 +327,7 @@ struct ValkeyClusterDescriptionTests {
                                 ip: "192.168.1.100",
                                 hostname: nil,
                                 endpoint: "node1.example.com",
-                                role: .master,
+                                role: .primary,
                                 replicationOffset: 100,
                                 health: .online
                             )
@@ -343,7 +343,7 @@ struct ValkeyClusterDescriptionTests {
                                 ip: "192.168.1.101",
                                 hostname: nil,
                                 endpoint: "node2.example.com",
-                                role: .master,
+                                role: .primary,
                                 replicationOffset: 200,
                                 health: .online
                             )

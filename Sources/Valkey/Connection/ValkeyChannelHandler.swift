@@ -46,6 +46,7 @@ enum ValkeyRequest: Sendable {
     case multiple(buffer: ByteBuffer, promises: [ValkeyPromise<RESPToken>], id: Int)
 }
 
+@available(valkeySwift 1.0, *)
 @usableFromInline
 final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline

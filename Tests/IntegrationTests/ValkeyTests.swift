@@ -35,6 +35,7 @@ struct GeneratedCommands {
         return value
     }
 
+    @available(valkeySwift 1.0, *)
     func withValkeyClient(
         _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
@@ -54,6 +55,7 @@ struct GeneratedCommands {
         }
     }
 
+    @available(valkeySwift 1.0, *)
     func withValkeyConnection(
         _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
@@ -67,6 +69,7 @@ struct GeneratedCommands {
         }
     }
     @Test
+    @available(valkeySwift 1.0, *)
     func testValkeyCommand() async throws {
         struct GET: ValkeyCommand {
             typealias Response = String?
@@ -93,6 +96,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -108,6 +112,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testClientSetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -121,6 +126,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testBinarySetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -135,6 +141,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testUnixTime() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -151,6 +158,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testPipelinedSetGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -166,6 +174,23 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
+    func testPipelinedSetGetClient() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                let responses = await client.pipeline(
+                    SET(key: key, value: "Pipelined Hello"),
+                    GET(key: key)
+                )
+                try #expect(responses.1.get()?.decode(as: String.self) == "Pipelined Hello")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -181,7 +206,9 @@ struct GeneratedCommands {
         }
     }
 
-    @Test func testWatch() async throws {
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testWatch() async throws {
         let logger = {
             var logger = Logger(label: "Valkey")
             logger.logLevel = .trace
@@ -214,6 +241,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSingleElementArray() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -228,6 +256,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testCommandWithMoreThan9Strings() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -242,6 +271,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSort() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -256,6 +286,7 @@ struct GeneratedCommands {
         }
     }
 
+    @available(valkeySwift 1.0, *)
     @Test("Array with count using LMPOP")
     func testArrayWithCount() async throws {
         var logger = Logger(label: "Valkey")
@@ -265,21 +296,26 @@ struct GeneratedCommands {
                 try await withKey(connection: connection) { key2 in
                     _ = try await connection.lpush(key: key, element: ["a"])
                     _ = try await connection.lpush(key: key2, element: ["b"])
-                    let rt1 = try await connection.lmpop(key: [key, key2], where: .left)!.decode(as: [RESPToken].self)
-                    let keyReturned1 = try ValkeyKey(fromRESP: rt1[0])
-                    let values1 = try [String](fromRESP: rt1[1])
-                    #expect(keyReturned1 == key)
-                    #expect(values1.first == "a")
-                    let rt2 = try await connection.lmpop(key: [key, key2], where: .left)!.decode(as: [RESPToken].self)
-                    let keyReturned2 = try ValkeyKey(fromRESP: rt2[0])
-                    let values2 = try [String](fromRESP: rt2[1])
-                    #expect(keyReturned2 == key2)
-                    #expect(values2.first == "b")
+                    _ = try await connection.lpush(key: key2, element: ["c"])
+                    _ = try await connection.lpush(key: key2, element: ["d"])
+                    let rt1 = try await connection.lmpop(key: [key, key2], where: .right)
+                    let (element) = try rt1?.values.decodeElements(as: (String).self)
+                    #expect(rt1?.key == key)
+                    #expect(element == "a")
+                    let rt2 = try await connection.lmpop(key: [key, key2], where: .right)
+                    let elements2 = try rt2?.values.decode(as: [String].self)
+                    #expect(rt2?.key == key2)
+                    #expect(elements2 == ["b"])
+                    let rt3 = try await connection.lmpop(key: [key, key2], where: .right, count: 2)
+                    let elements3 = try rt3?.values.decode(as: [String].self)
+                    #expect(rt3?.key == key2)
+                    #expect(elements3 == ["c", "d"])
                 }
             }
         }
     }
 
+    @available(valkeySwift 1.0, *)
     @Test("Test command error is thrown")
     func testCommandError() async throws {
         var logger = Logger(label: "Valkey")
@@ -293,6 +329,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testMultiplexing() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -313,6 +350,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testMultiplexingPipelinedRequests() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -337,6 +375,7 @@ struct GeneratedCommands {
     }
     /*
         @Test
+    @available(valkeySwift 1.0, *)
         func testClientName() async throws {
             var logger = Logger(label: "Valkey")
             logger.logLevel = .debug
@@ -348,6 +387,7 @@ struct GeneratedCommands {
         }*/
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testAuthentication() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -365,6 +405,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "Subscriptions")
@@ -395,6 +436,7 @@ struct GeneratedCommands {
     /// Test two different subscriptions to the same channel both receive messages and that when one ends the other still
     /// receives messages
     @Test
+    @available(valkeySwift 1.0, *)
     func testDoubleSubscription() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "DoubleSubscription")
@@ -433,6 +475,7 @@ struct GeneratedCommands {
 
     /// Test two different subscriptions to two different channels both receive messages
     @Test
+    @available(valkeySwift 1.0, *)
     func testTwoDifferentSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "TwoDifferentSubscriptions")
@@ -465,6 +508,7 @@ struct GeneratedCommands {
 
     /// Test multiple subscriptions in one command all receive messages
     @Test
+    @available(valkeySwift 1.0, *)
     func testMultipleSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "MultipleSubscriptions")
@@ -496,6 +540,7 @@ struct GeneratedCommands {
 
     /// Test subscribing to a channel pattern works
     @Test
+    @available(valkeySwift 1.0, *)
     func testPatternSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "PatternSubscriptions")
@@ -525,6 +570,7 @@ struct GeneratedCommands {
 
     /// Test we can run both pattern and normal channel subscriptions on the same connection
     @Test
+    @available(valkeySwift 1.0, *)
     func testPatternChannelSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "PatternChannelSubscriptions")
@@ -557,6 +603,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testShardSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "ShardSubscriptions")
@@ -586,6 +633,7 @@ struct GeneratedCommands {
 
     /// Test subscriptions and sending command on same connection works
     @Test
+    @available(valkeySwift 1.0, *)
     func testSubscriptionAndCommandOnSameConnection() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "Subscriptions")
@@ -623,6 +671,7 @@ struct GeneratedCommands {
 
     /// Test subscriptions and sending command on same connection works
     @Test
+    @available(valkeySwift 1.0, *)
     func testLoadsOfConnections() async throws {
         var logger = Logger(label: "testLoadsOfConnections")
         logger.logLevel = .trace
@@ -653,6 +702,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testKeyspaceSubscription() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
@@ -675,6 +725,7 @@ struct GeneratedCommands {
     }
 
     @Test
+    @available(valkeySwift 1.0, *)
     func testBlockingCommandTimeout() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
@@ -685,6 +736,35 @@ struct GeneratedCommands {
         ) { connection in
             await #expect(throws: ValkeyClientError(.timeout)) {
                 _ = try await connection.brpop(key: ["testBlockingCommandTimeout"], timeout: 10000)
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientCaching() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyConnection(
+            .hostname(valkeyHostname, port: 6379),
+            logger: logger
+        ) { connection in
+            try await connection.clientTracking(status: .on)
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await connection.subscribeKeyInvalidations { keys in
+                        cont.finish()
+                        var iterator = keys.makeAsyncIterator()
+                        let key = try await iterator.next()
+                        #expect(key == "foo")
+                    }
+                }
+                await stream.first { _ in true }
+                _ = try await connection.get(key: "foo")
+                _ = try await connection.set(key: "foo", value: "baz")
+
+                try await group.waitForAll()
             }
         }
     }

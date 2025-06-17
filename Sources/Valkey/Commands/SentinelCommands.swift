@@ -39,7 +39,7 @@ public enum SENTINEL {
 
     /// Configures Sentinel.
     public struct CONFIG: ValkeyCommand {
-        public struct ActionSet: RESPRenderable, Sendable {
+        public struct ActionSet: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
@@ -59,7 +59,7 @@ public enum SENTINEL {
                 value.encode(into: &commandEncoder)
             }
         }
-        public enum Action: RESPRenderable, Sendable {
+        public enum Action: RESPRenderable, Sendable, Hashable {
             case set([ActionSet])
             case parameter([String])
 
@@ -94,7 +94,7 @@ public enum SENTINEL {
 
     /// Lists or updates the current configurable parameters of Sentinel.
     public struct DEBUG: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: String
             @usableFromInline let value: String
 
@@ -404,7 +404,7 @@ public enum SENTINEL {
 
     /// Changes the configuration of a monitored primary.
     public struct SET<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
-        public struct Data: RESPRenderable, Sendable {
+        public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let option: Option
             @usableFromInline let value: Value
 
@@ -439,7 +439,7 @@ public enum SENTINEL {
 
     /// Simulates failover scenarios.
     public struct SIMULATEFAILURE: ValkeyCommand {
-        public enum Mode: RESPRenderable, Sendable {
+        public enum Mode: RESPRenderable, Sendable, Hashable {
             case crashAfterElection
             case crashAfterPromotion
             case help
@@ -493,7 +493,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.4
     /// - Returns: [String]: Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
     @inlinable
-    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> SENTINEL.CKQUORUM.Response {
+    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken {
         try await send(command: SENTINEL.CKQUORUM(primaryName: primaryName))
     }
 
@@ -601,12 +601,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
-        ip: Ip,
-        port: Int,
-        currentEpoch: Int,
-        runid: Runid
-    ) async throws -> RESPToken.Array {
+    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISMASTERDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -619,12 +614,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
-        ip: Ip,
-        port: Int,
-        currentEpoch: Int,
-        runid: Runid
-    ) async throws -> RESPToken.Array {
+    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISPRIMARYDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -754,10 +744,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.4
     /// - Complexity: O(1)
     @inlinable
-    public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(
-        primaryName: PrimaryName,
-        data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]
-    ) async throws {
+    public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(primaryName: PrimaryName, data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]) async throws {
         _ = try await send(command: SENTINEL.SET(primaryName: primaryName, data: data))
     }
 

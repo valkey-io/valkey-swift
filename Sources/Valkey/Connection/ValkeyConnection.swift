@@ -24,6 +24,7 @@ import NIOTransportServices
 #endif
 
 /// Single connection to a Valkey database
+@available(valkeySwift 1.0, *)
 public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     nonisolated public let unownedExecutor: UnownedSerialExecutor
 
@@ -35,7 +36,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// Logger used by Server
     let logger: Logger
     @usableFromInline
-    let channel: Channel
+    let channel: any Channel
     @usableFromInline
     let channelHandler: ValkeyChannelHandler
     let configuration: ValkeyClientConfiguration
@@ -43,7 +44,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
 
     /// Initialize connection
     private init(
-        channel: Channel,
+        channel: any Channel,
         connectionID: ID,
         channelHandler: ValkeyChannelHandler,
         configuration: ValkeyClientConfiguration,
