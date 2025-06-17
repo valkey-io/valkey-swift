@@ -23,8 +23,10 @@ import Foundation
 #endif
 
 /// A container for object introspection commands.
+@_documentation(visibility: internal)
 public enum OBJECT {
     /// Returns the internal encoding of an object.
+    @_documentation(visibility: internal)
     public struct ENCODING: ValkeyCommand {
         public typealias Response = RESPToken?
 
@@ -44,6 +46,7 @@ public enum OBJECT {
     }
 
     /// Returns the logarithmic access frequency counter of an object.
+    @_documentation(visibility: internal)
     public struct FREQ: ValkeyCommand {
         public typealias Response = Int
 
@@ -63,6 +66,7 @@ public enum OBJECT {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -75,6 +79,7 @@ public enum OBJECT {
     }
 
     /// Returns the time since the last access to an object.
+    @_documentation(visibility: internal)
     public struct IDLETIME: ValkeyCommand {
         public typealias Response = Int
 
@@ -94,6 +99,7 @@ public enum OBJECT {
     }
 
     /// Returns the reference count of a value of a key.
+    @_documentation(visibility: internal)
     public struct REFCOUNT: ValkeyCommand {
         public typealias Response = Int
 
@@ -115,6 +121,7 @@ public enum OBJECT {
 }
 
 /// Copies the value of a key to a new key.
+@_documentation(visibility: internal)
 public struct COPY: ValkeyCommand {
     public typealias Response = Int
 
@@ -138,6 +145,7 @@ public struct COPY: ValkeyCommand {
 }
 
 /// Deletes one or more keys.
+@_documentation(visibility: internal)
 public struct DEL: ValkeyCommand {
     public typealias Response = Int
 
@@ -155,6 +163,7 @@ public struct DEL: ValkeyCommand {
 }
 
 /// Returns a serialized representation of the value stored at a key.
+@_documentation(visibility: internal)
 public struct DUMP: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -174,6 +183,7 @@ public struct DUMP: ValkeyCommand {
 }
 
 /// Determines whether one or more keys exist.
+@_documentation(visibility: internal)
 public struct EXISTS: ValkeyCommand {
     public typealias Response = Int
 
@@ -193,6 +203,7 @@ public struct EXISTS: ValkeyCommand {
 }
 
 /// Sets the expiration time of a key in seconds.
+@_documentation(visibility: internal)
 public struct EXPIRE: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
@@ -233,6 +244,7 @@ public struct EXPIRE: ValkeyCommand {
 }
 
 /// Sets the expiration time of a key to a Unix timestamp.
+@_documentation(visibility: internal)
 public struct EXPIREAT: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
@@ -273,6 +285,7 @@ public struct EXPIREAT: ValkeyCommand {
 }
 
 /// Returns the expiration time of a key as a Unix timestamp.
+@_documentation(visibility: internal)
 public struct EXPIRETIME: ValkeyCommand {
     public typealias Response = Int
 
@@ -292,6 +305,7 @@ public struct EXPIRETIME: ValkeyCommand {
 }
 
 /// Returns all key names that match a pattern.
+@_documentation(visibility: internal)
 public struct KEYS: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -309,6 +323,7 @@ public struct KEYS: ValkeyCommand {
 }
 
 /// Atomically transfers a key from one instance to another.
+@_documentation(visibility: internal)
 public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
     public enum KeySelector: RESPRenderable, Sendable, Hashable {
         case key(ValkeyKey)
@@ -402,6 +417,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Moves a key to another database.
+@_documentation(visibility: internal)
 public struct MOVE: ValkeyCommand {
     public typealias Response = Int
 
@@ -421,6 +437,7 @@ public struct MOVE: ValkeyCommand {
 }
 
 /// Removes the expiration time of a key.
+@_documentation(visibility: internal)
 public struct PERSIST: ValkeyCommand {
     public typealias Response = Int
 
@@ -438,6 +455,7 @@ public struct PERSIST: ValkeyCommand {
 }
 
 /// Sets the expiration time of a key in milliseconds.
+@_documentation(visibility: internal)
 public struct PEXPIRE: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
@@ -478,6 +496,7 @@ public struct PEXPIRE: ValkeyCommand {
 }
 
 /// Sets the expiration time of a key to a Unix milliseconds timestamp.
+@_documentation(visibility: internal)
 public struct PEXPIREAT: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
@@ -518,6 +537,7 @@ public struct PEXPIREAT: ValkeyCommand {
 }
 
 /// Returns the expiration time of a key as a Unix milliseconds timestamp.
+@_documentation(visibility: internal)
 public struct PEXPIRETIME: ValkeyCommand {
     public typealias Response = Int
 
@@ -537,6 +557,7 @@ public struct PEXPIRETIME: ValkeyCommand {
 }
 
 /// Returns the expiration time in milliseconds of a key.
+@_documentation(visibility: internal)
 public struct PTTL: ValkeyCommand {
     public typealias Response = Int
 
@@ -556,6 +577,7 @@ public struct PTTL: ValkeyCommand {
 }
 
 /// Returns a random key name from the database.
+@_documentation(visibility: internal)
 public struct RANDOMKEY: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -570,6 +592,7 @@ public struct RANDOMKEY: ValkeyCommand {
 }
 
 /// Renames a key and overwrites the destination.
+@_documentation(visibility: internal)
 public struct RENAME: ValkeyCommand {
     public var key: ValkeyKey
     public var newkey: ValkeyKey
@@ -587,6 +610,7 @@ public struct RENAME: ValkeyCommand {
 }
 
 /// Renames a key only when the target key name doesn't exist.
+@_documentation(visibility: internal)
 public struct RENAMENX: ValkeyCommand {
     public typealias Response = Int
 
@@ -606,6 +630,7 @@ public struct RENAMENX: ValkeyCommand {
 }
 
 /// Creates a key from the serialized representation of a value.
+@_documentation(visibility: internal)
 public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var ttl: Int
@@ -633,6 +658,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Iterates over the key names in the database.
+@_documentation(visibility: internal)
 public struct SCAN: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -656,6 +682,7 @@ public struct SCAN: ValkeyCommand {
 }
 
 /// Sorts the elements in a list, a set, or a sorted set, optionally storing the result.
+@_documentation(visibility: internal)
 public struct SORT: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
@@ -718,6 +745,7 @@ public struct SORT: ValkeyCommand {
 }
 
 /// Returns the sorted elements of a list, a set, or a sorted set.
+@_documentation(visibility: internal)
 public struct SORTRO: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
         @usableFromInline let offset: Int
@@ -782,6 +810,7 @@ public struct SORTRO: ValkeyCommand {
 }
 
 /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
+@_documentation(visibility: internal)
 public struct TOUCH: ValkeyCommand {
     public typealias Response = Int
 
@@ -801,6 +830,7 @@ public struct TOUCH: ValkeyCommand {
 }
 
 /// Returns the expiration time in seconds of a key.
+@_documentation(visibility: internal)
 public struct TTL: ValkeyCommand {
     public typealias Response = Int
 
@@ -820,6 +850,7 @@ public struct TTL: ValkeyCommand {
 }
 
 /// Determines the type of value stored at a key.
+@_documentation(visibility: internal)
 public struct TYPE: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -839,6 +870,7 @@ public struct TYPE: ValkeyCommand {
 }
 
 /// Asynchronously deletes one or more keys.
+@_documentation(visibility: internal)
 public struct UNLINK: ValkeyCommand {
     public typealias Response = Int
 
@@ -856,6 +888,7 @@ public struct UNLINK: ValkeyCommand {
 }
 
 /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.
+@_documentation(visibility: internal)
 public struct WAIT: ValkeyCommand {
     public typealias Response = Int
 
@@ -875,6 +908,7 @@ public struct WAIT: ValkeyCommand {
 }
 
 /// Blocks until all of the preceding write commands sent by the connection are written to the append-only file of the primary and/or replicas.
+@_documentation(visibility: internal)
 public struct WAITAOF: ValkeyCommand {
     public typealias Response = RESPToken.Array
 

@@ -23,8 +23,10 @@ import Foundation
 #endif
 
 /// A container for Cluster commands.
+@_documentation(visibility: internal)
 public enum CLUSTER {
     /// Assigns new hash slots to a node.
+    @_documentation(visibility: internal)
     public struct ADDSLOTS: ValkeyCommand {
         public var slot: [Int]
 
@@ -38,6 +40,7 @@ public enum CLUSTER {
     }
 
     /// Assigns new hash slot ranges to a node.
+    @_documentation(visibility: internal)
     public struct ADDSLOTSRANGE: ValkeyCommand {
         public struct Range: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
@@ -71,6 +74,7 @@ public enum CLUSTER {
     }
 
     /// Advances the cluster config epoch.
+    @_documentation(visibility: internal)
     public struct BUMPEPOCH: ValkeyCommand {
         @inlinable public init() {
         }
@@ -81,6 +85,7 @@ public enum CLUSTER {
     }
 
     /// Returns the number of active failure reports active for a node.
+    @_documentation(visibility: internal)
     public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
 
@@ -96,6 +101,7 @@ public enum CLUSTER {
     }
 
     /// Returns the number of keys in a hash slot.
+    @_documentation(visibility: internal)
     public struct COUNTKEYSINSLOT: ValkeyCommand {
         public typealias Response = Int
 
@@ -111,6 +117,7 @@ public enum CLUSTER {
     }
 
     /// Sets hash slots as unbound for a node.
+    @_documentation(visibility: internal)
     public struct DELSLOTS: ValkeyCommand {
         public var slot: [Int]
 
@@ -124,6 +131,7 @@ public enum CLUSTER {
     }
 
     /// Sets hash slot ranges as unbound for a node.
+    @_documentation(visibility: internal)
     public struct DELSLOTSRANGE: ValkeyCommand {
         public struct Range: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
@@ -157,6 +165,7 @@ public enum CLUSTER {
     }
 
     /// Forces a replica to perform a manual failover of its primary.
+    @_documentation(visibility: internal)
     public struct FAILOVER: ValkeyCommand {
         public enum Options: RESPRenderable, Sendable, Hashable {
             case force
@@ -185,6 +194,7 @@ public enum CLUSTER {
     }
 
     /// Deletes all slots information from a node.
+    @_documentation(visibility: internal)
     public struct FLUSHSLOTS: ValkeyCommand {
         @inlinable public init() {
         }
@@ -195,6 +205,7 @@ public enum CLUSTER {
     }
 
     /// Removes a node from the nodes table.
+    @_documentation(visibility: internal)
     public struct FORGET<NodeId: RESPStringRenderable>: ValkeyCommand {
         public var nodeId: NodeId
 
@@ -208,6 +219,7 @@ public enum CLUSTER {
     }
 
     /// Returns the key names in a hash slot.
+    @_documentation(visibility: internal)
     public struct GETKEYSINSLOT: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -225,6 +237,7 @@ public enum CLUSTER {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -237,6 +250,7 @@ public enum CLUSTER {
     }
 
     /// Returns information about the state of a node.
+    @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
         @inlinable public init() {
         }
@@ -247,6 +261,7 @@ public enum CLUSTER {
     }
 
     /// Returns the hash slot for a key.
+    @_documentation(visibility: internal)
     public struct KEYSLOT<Key: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
 
@@ -262,6 +277,7 @@ public enum CLUSTER {
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
+    @_documentation(visibility: internal)
     public struct LINKS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -274,6 +290,7 @@ public enum CLUSTER {
     }
 
     /// Forces a node to handshake with another node.
+    @_documentation(visibility: internal)
     public struct MEET<Ip: RESPStringRenderable>: ValkeyCommand {
         public var ip: Ip
         public var port: Int
@@ -291,6 +308,7 @@ public enum CLUSTER {
     }
 
     /// Returns the ID of a node.
+    @_documentation(visibility: internal)
     public struct MYID: ValkeyCommand {
         @inlinable public init() {
         }
@@ -301,6 +319,7 @@ public enum CLUSTER {
     }
 
     /// Returns the shard ID of a node.
+    @_documentation(visibility: internal)
     public struct MYSHARDID: ValkeyCommand {
         @inlinable public init() {
         }
@@ -311,6 +330,7 @@ public enum CLUSTER {
     }
 
     /// Returns the cluster configuration for a node.
+    @_documentation(visibility: internal)
     public struct NODES: ValkeyCommand {
         @inlinable public init() {
         }
@@ -321,6 +341,7 @@ public enum CLUSTER {
     }
 
     /// Lists the replica nodes of a primary node.
+    @_documentation(visibility: internal)
     public struct REPLICAS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -336,6 +357,7 @@ public enum CLUSTER {
     }
 
     /// Configure a node as replica of a primary node.
+    @_documentation(visibility: internal)
     public struct REPLICATE<NodeId: RESPStringRenderable>: ValkeyCommand {
         public var nodeId: NodeId
 
@@ -349,6 +371,7 @@ public enum CLUSTER {
     }
 
     /// Resets a node.
+    @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
         public enum ResetType: RESPRenderable, Sendable, Hashable {
             case hard
@@ -377,6 +400,7 @@ public enum CLUSTER {
     }
 
     /// Forces a node to save the cluster configuration to disk.
+    @_documentation(visibility: internal)
     public struct SAVECONFIG: ValkeyCommand {
         @inlinable public init() {
         }
@@ -387,6 +411,7 @@ public enum CLUSTER {
     }
 
     /// Sets the configuration epoch for a new node.
+    @_documentation(visibility: internal)
     public struct SETCONFIGEPOCH: ValkeyCommand {
         public var configEpoch: Int
 
@@ -400,6 +425,7 @@ public enum CLUSTER {
     }
 
     /// Binds a hash slot to a node.
+    @_documentation(visibility: internal)
     public struct SETSLOT: ValkeyCommand {
         public enum Subcommand: RESPRenderable, Sendable, Hashable {
             case importing(String)
@@ -443,6 +469,7 @@ public enum CLUSTER {
     }
 
     /// Returns the mapping of cluster slots to shards.
+    @_documentation(visibility: internal)
     public struct SHARDS: ValkeyCommand {
         @inlinable public init() {
         }
@@ -453,6 +480,7 @@ public enum CLUSTER {
     }
 
     /// Lists the replica nodes of a primary node.
+    @_documentation(visibility: internal)
     public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -468,6 +496,7 @@ public enum CLUSTER {
     }
 
     /// Return an array of slot usage statistics for slots assigned to the current node.
+    @_documentation(visibility: internal)
     public struct SLOTSTATS: ValkeyCommand {
         public struct FilterSlotsrange: RESPRenderable, Sendable, Hashable {
             @usableFromInline let startSlot: Int
@@ -561,6 +590,7 @@ public enum CLUSTER {
     }
 
     /// Returns the mapping of cluster slots to nodes.
+    @_documentation(visibility: internal)
     public struct SLOTS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -575,6 +605,7 @@ public enum CLUSTER {
 }
 
 /// Signals that a cluster client is following an -ASK redirect.
+@_documentation(visibility: internal)
 public struct ASKING: ValkeyCommand {
     @inlinable public init() {
     }
@@ -585,6 +616,7 @@ public struct ASKING: ValkeyCommand {
 }
 
 /// Enables read-only queries for a connection to a Valkey replica node.
+@_documentation(visibility: internal)
 public struct READONLY: ValkeyCommand {
     @inlinable public init() {
     }
@@ -595,6 +627,7 @@ public struct READONLY: ValkeyCommand {
 }
 
 /// Enables read-write queries for a connection to a Valkey replica node.
+@_documentation(visibility: internal)
 public struct READWRITE: ValkeyCommand {
     @inlinable public init() {
     }

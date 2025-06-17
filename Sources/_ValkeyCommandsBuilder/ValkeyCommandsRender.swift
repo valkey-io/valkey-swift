@@ -79,6 +79,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
             if let summary = commands[namespace]?.summary {
                 string.append("/// \(summary)\n")
             }
+            string.append("\(tab)@_documentation(visibility: internal)\n")
             string.append("public enum \(namespace.commandTypeName) {\n")
         }
         for key in keys {
@@ -330,6 +331,7 @@ extension String {
         let genericTypeParameters = genericTypeParameters(command.arguments)
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, tab: tab)
+        self.append("\(tab)@_documentation(visibility: internal)\n")
         self.append("\(tab)public struct \(typeName)\(genericTypeParameters): \(conformance) {\n")
 
         let arguments = (command.arguments ?? [])
