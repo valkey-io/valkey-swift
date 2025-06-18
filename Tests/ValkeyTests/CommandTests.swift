@@ -381,18 +381,13 @@ struct CommandTests {
             let stream2 = try #require(result.streams.first { $0.key == "key2" })
             #expect(stream1.key == "key1")
             #expect(stream1.messages[0].id == "event1")
-            #expect(stream1.messages[0].fields[0].key == "field1")
-            #expect(try stream1.messages[0].fields[0].value.decode(as: String.self) == "value1")
+            #expect(try stream1.messages[0][field: "field1"]?.decode(as: String.self) == "value1")
             #expect(stream2.key == "key2")
             #expect(stream2.messages[0].id == "event2")
-            #expect(stream2.messages[0].fields[0].key == "field2")
-            #expect(try stream2.messages[0].fields[0].value.decode(as: String.self) == "value2")
+            #expect(try stream2.messages[0][field: "field2"]?.decode(as: String.self) == "value2")
             #expect(stream2.messages[1].id == "event3")
-            #expect(stream2.messages[1].fields[0].key == "field3")
-            #expect(try stream2.messages[1].fields[0].value.decode(as: String.self) == "value3")
-            #expect(stream2.messages[1].fields[1].key == "field4")
-            #expect(try stream2.messages[1].fields[1].value.decode(as: String.self) == "value4")
-
+            #expect(try stream2.messages[1][field: "field3"]?.decode(as: String.self) == "value3")
+            #expect(try stream2.messages[1][field: "field4"]?.decode(as: String.self) == "value4")
         }
 
         @Test

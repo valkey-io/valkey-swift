@@ -54,6 +54,16 @@ extension String: RESPRenderable {
     }
 }
 
+extension Substring: RESPRenderable {
+    @inlinable
+    public var respEntries: Int { 1 }
+
+    @inlinable
+    public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeBulkString(self)
+    }
+}
+
 extension Array: RESPRenderable where Element: RESPRenderable {
     @inlinable
     public var respEntries: Int {
