@@ -23,6 +23,7 @@ import Foundation
 #endif
 
 /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
+@_documentation(visibility: internal)
 public struct PFADD: ValkeyCommand {
     public typealias Response = Int
 
@@ -42,6 +43,7 @@ public struct PFADD: ValkeyCommand {
 }
 
 /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
+@_documentation(visibility: internal)
 public struct PFCOUNT: ValkeyCommand {
     public typealias Response = Int
 
@@ -61,6 +63,7 @@ public struct PFCOUNT: ValkeyCommand {
 }
 
 /// Merges one or more HyperLogLog values into a single key.
+@_documentation(visibility: internal)
 public struct PFMERGE: ValkeyCommand {
     public var destkey: ValkeyKey
     public var sourcekey: [ValkeyKey]

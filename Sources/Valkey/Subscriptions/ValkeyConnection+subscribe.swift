@@ -25,6 +25,7 @@ extension ValkeyConnection {
     ///
     /// - Parameters:
     ///   - channels: list of channels to subscribe to
+    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -46,6 +47,7 @@ extension ValkeyConnection {
     ///
     /// - Parameters:
     ///   - channels: list of channels to subscribe to
+    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     public func subscribe<Value>(
@@ -75,7 +77,8 @@ extension ValkeyConnection {
     /// pattern
     ///
     /// - Parameters:
-    ///   - channels: list of channels to subscribe to
+    ///   - patterns: list of channel patterns to subscribe to
+    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -95,7 +98,8 @@ extension ValkeyConnection {
     /// pattern
     ///
     /// - Parameters:
-    ///   - channels: list of channels to subscribe to
+    ///   - patterns: list of channel patterns to subscribe to
+    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -118,15 +122,16 @@ extension ValkeyConnection {
         return value
     }
 
-    /// Subscribe to list of channel patterns and run closure with subscription
+    /// Subscribe to list of shard channels and run closure with subscription
     ///
-    /// When the closure is exited the patterns are automatically unsubscribed from. It is
+    /// When the closure is exited the shard channels are automatically unsubscribed from. It is
     /// possible to have multiple subscriptions running on the same connection and unsubscribe
     /// commands will only be sent to Valkey when there are no subscriptions active for that
     /// pattern
     ///
     /// - Parameters:
-    ///   - channels: list of channels to subscribe to
+    ///   - shardchannel: list of shard channels to subscribe to
+    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -138,15 +143,16 @@ extension ValkeyConnection {
         try await self.ssubscribe(to: shardchannel, process: process)
     }
 
-    /// Subscribe to list of pattern matching channels and run closure with subscription
+    /// Subscribe to list of shard channels and run closure with subscription
     ///
-    /// When the closure is exited the patterns are automatically unsubscribed from. It is
+    /// When the closure is exited the shard channels are automatically unsubscribed from. It is
     /// possible to have multiple subscriptions running on the same connection and unsubscribe
     /// commands will only be sent to Valkey when there are no subscriptions active for that
     /// pattern
     ///
     /// - Parameters:
-    ///   - channels: list of channels to subscribe to
+    ///   - shardchannel: list of shard channels to subscribe to
+    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable

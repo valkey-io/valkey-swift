@@ -23,6 +23,7 @@ import Foundation
 #endif
 
 /// Counts the number of set bits (population counting) in a string.
+@_documentation(visibility: internal)
 public struct BITCOUNT: ValkeyCommand {
     public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable, Hashable {
         case byte
@@ -99,6 +100,7 @@ public struct BITCOUNT: ValkeyCommand {
 }
 
 /// Performs arbitrary bitfield integer operations on strings.
+@_documentation(visibility: internal)
 public struct BITFIELD: ValkeyCommand {
     public struct OperationGetBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let encoding: String
@@ -261,6 +263,7 @@ public struct BITFIELD: ValkeyCommand {
 }
 
 /// Performs arbitrary read-only bitfield integer operations on strings.
+@_documentation(visibility: internal)
 public struct BITFIELDRO: ValkeyCommand {
     public struct GetBlock: RESPRenderable, Sendable, Hashable {
         @usableFromInline let encoding: String
@@ -302,6 +305,7 @@ public struct BITFIELDRO: ValkeyCommand {
 }
 
 /// Performs bitwise operations on multiple strings, and stores the result.
+@_documentation(visibility: internal)
 public struct BITOP: ValkeyCommand {
     public enum Operation: RESPRenderable, Sendable, Hashable {
         case and
@@ -342,6 +346,7 @@ public struct BITOP: ValkeyCommand {
 }
 
 /// Finds the first set (1) or clear (0) bit in a string.
+@_documentation(visibility: internal)
 public struct BITPOS: ValkeyCommand {
     public enum RangeEndUnitBlockUnit: RESPRenderable, Sendable, Hashable {
         case byte
@@ -420,6 +425,7 @@ public struct BITPOS: ValkeyCommand {
 }
 
 /// Returns a bit value by offset.
+@_documentation(visibility: internal)
 public struct GETBIT: ValkeyCommand {
     public typealias Response = Int
 
@@ -441,6 +447,7 @@ public struct GETBIT: ValkeyCommand {
 }
 
 /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
+@_documentation(visibility: internal)
 public struct SETBIT: ValkeyCommand {
     public typealias Response = Int
 

@@ -23,6 +23,7 @@ import Foundation
 #endif
 
 /// Discards a transaction.
+@_documentation(visibility: internal)
 public struct DISCARD: ValkeyCommand {
     @inlinable public init() {
     }
@@ -33,6 +34,7 @@ public struct DISCARD: ValkeyCommand {
 }
 
 /// Executes all commands in a transaction.
+@_documentation(visibility: internal)
 public struct EXEC: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
@@ -45,6 +47,7 @@ public struct EXEC: ValkeyCommand {
 }
 
 /// Starts a transaction.
+@_documentation(visibility: internal)
 public struct MULTI: ValkeyCommand {
     @inlinable public init() {
     }
@@ -55,6 +58,7 @@ public struct MULTI: ValkeyCommand {
 }
 
 /// Forgets about watched keys of a transaction.
+@_documentation(visibility: internal)
 public struct UNWATCH: ValkeyCommand {
     @inlinable public init() {
     }
@@ -65,6 +69,7 @@ public struct UNWATCH: ValkeyCommand {
 }
 
 /// Monitors changes to keys to determine the execution of a transaction.
+@_documentation(visibility: internal)
 public struct WATCH: ValkeyCommand {
     public var key: [ValkeyKey]
 

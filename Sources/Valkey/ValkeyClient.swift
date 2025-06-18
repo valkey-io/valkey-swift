@@ -59,7 +59,6 @@ public final class ValkeyClient: Sendable {
     /// - Parameters:
     ///   - address: Valkey database address
     ///   - configuration: Valkey client configuration
-    ///   - tlsConfiguration: Valkey TLS connection configuration
     ///   - eventLoopGroup: EventLoopGroup to run WebSocket client on
     ///   - logger: Logger
     public convenience init(
@@ -132,9 +131,11 @@ extension ValkeyClient {
     }
 
     /// Get connection from connection pool and run operation using connection
-    ///
+    /// 
     /// - Parameters:
+    ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
+    /// - Returns: Value returned by closure
     public func withConnection<Value>(
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
@@ -158,6 +159,9 @@ extension ValkeyClient {
 /// Extend ValkeyClient so we can call commands directly from it
 @available(valkeySwift 1.0, *)
 extension ValkeyClient: ValkeyConnectionProtocol {
+    /// Send command to Valkey connection from connection pool
+    /// - Parameter command: Valkey command
+    /// - Returns: Response from Valkey command
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let token = try await self._send(command)

@@ -14,16 +14,16 @@
 
 import NIOCore
 
-public struct RESPTokenDecoder: NIOSingleStepByteToMessageDecoder {
-    public typealias InboundOut = RESPToken
+package struct RESPTokenDecoder: NIOSingleStepByteToMessageDecoder {
+    package typealias InboundOut = RESPToken
 
-    public init() {}
+    package init() {}
 
-    public mutating func decode(buffer: inout ByteBuffer) throws -> RESPToken? {
+    package mutating func decode(buffer: inout ByteBuffer) throws -> RESPToken? {
         try RESPToken(consuming: &buffer)
     }
 
-    public mutating func decodeLast(buffer: inout ByteBuffer, seenEOF _: Bool) throws -> RESPToken? {
+    package mutating func decodeLast(buffer: inout ByteBuffer, seenEOF _: Bool) throws -> RESPToken? {
         try self.decode(buffer: &buffer)
     }
 }

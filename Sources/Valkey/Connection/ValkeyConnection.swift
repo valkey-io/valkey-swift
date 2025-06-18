@@ -60,12 +60,13 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     }
 
     /// Connect to Valkey database and return connection
-    ///
+    /// 
     /// - Parameters:
     ///   - address: Internet address of database
+    ///   - connectionID: Connection identifier
     ///   - name: Name of connection. The connection name is used in many of the `CLIENT` commands.
     ///   - configuration: Configuration of Valkey connection
-    ///   - eventLoopGroup: EventLoopGroup to use
+    ///   - eventLoop: EventLoop to run connection on
     ///   - logger: Logger for connection
     /// - Returns: ValkeyConnection
     public static func connect(
@@ -103,7 +104,6 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     }
 
     /// Close connection
-    /// - Returns: EventLoopFuture that is completed on connection closure
     public nonisolated func close() {
         guard self.isClosed.compareExchange(expected: false, desired: true, successOrdering: .relaxed, failureOrdering: .relaxed).exchanged else {
             return

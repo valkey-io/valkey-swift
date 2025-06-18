@@ -23,6 +23,7 @@ import Foundation
 #endif
 
 /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
+@_documentation(visibility: internal)
 public struct HDEL<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -42,6 +43,7 @@ public struct HDEL<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Determines whether a field exists in a hash.
+@_documentation(visibility: internal)
 public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -63,6 +65,7 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the value of a field in a hash.
+@_documentation(visibility: internal)
 public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -84,6 +87,7 @@ public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns all fields and values in a hash.
+@_documentation(visibility: internal)
 public struct HGETALL: ValkeyCommand {
     public typealias Response = RESPToken.Map
 
@@ -103,6 +107,7 @@ public struct HGETALL: ValkeyCommand {
 }
 
 /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
+@_documentation(visibility: internal)
 public struct HINCRBY<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -124,6 +129,7 @@ public struct HINCRBY<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
+@_documentation(visibility: internal)
 public struct HINCRBYFLOAT<Field: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var field: Field
@@ -143,6 +149,7 @@ public struct HINCRBYFLOAT<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns all fields in a hash.
+@_documentation(visibility: internal)
 public struct HKEYS: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -162,6 +169,7 @@ public struct HKEYS: ValkeyCommand {
 }
 
 /// Returns the number of fields in a hash.
+@_documentation(visibility: internal)
 public struct HLEN: ValkeyCommand {
     public typealias Response = Int
 
@@ -181,6 +189,7 @@ public struct HLEN: ValkeyCommand {
 }
 
 /// Returns the values of all fields in a hash.
+@_documentation(visibility: internal)
 public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -202,6 +211,7 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets the values of multiple fields.
+@_documentation(visibility: internal)
 public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
@@ -239,6 +249,7 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
 }
 
 /// Returns one or more random fields from a hash.
+@_documentation(visibility: internal)
 public struct HRANDFIELD: ValkeyCommand {
     public struct Options: RESPRenderable, Sendable, Hashable {
         @usableFromInline let count: Int
@@ -280,6 +291,7 @@ public struct HRANDFIELD: ValkeyCommand {
 }
 
 /// Iterates over fields and values of a hash.
+@_documentation(visibility: internal)
 public struct HSCAN: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -307,6 +319,7 @@ public struct HSCAN: ValkeyCommand {
 }
 
 /// Creates or modifies the value of a field in a hash.
+@_documentation(visibility: internal)
 public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let field: Field
@@ -346,6 +359,7 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
 }
 
 /// Sets the value of a field in a hash only when the field doesn't exist.
+@_documentation(visibility: internal)
 public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -367,6 +381,7 @@ public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
 }
 
 /// Returns the length of the value of a field.
+@_documentation(visibility: internal)
 public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -388,6 +403,7 @@ public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns all values in a hash.
+@_documentation(visibility: internal)
 public struct HVALS: ValkeyCommand {
     public typealias Response = RESPToken.Array
 

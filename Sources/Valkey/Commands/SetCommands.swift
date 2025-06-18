@@ -23,6 +23,7 @@ import Foundation
 #endif
 
 /// Adds one or more members to a set. Creates the key if it doesn't exist.
+@_documentation(visibility: internal)
 public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -42,6 +43,7 @@ public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the number of members in a set.
+@_documentation(visibility: internal)
 public struct SCARD: ValkeyCommand {
     public typealias Response = Int
 
@@ -61,6 +63,7 @@ public struct SCARD: ValkeyCommand {
 }
 
 /// Returns the difference of multiple sets.
+@_documentation(visibility: internal)
 public struct SDIFF: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -80,6 +83,7 @@ public struct SDIFF: ValkeyCommand {
 }
 
 /// Stores the difference of multiple sets in a key.
+@_documentation(visibility: internal)
 public struct SDIFFSTORE: ValkeyCommand {
     public typealias Response = Int
 
@@ -99,6 +103,7 @@ public struct SDIFFSTORE: ValkeyCommand {
 }
 
 /// Returns the intersect of multiple sets.
+@_documentation(visibility: internal)
 public struct SINTER: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -118,6 +123,7 @@ public struct SINTER: ValkeyCommand {
 }
 
 /// Returns the number of members of the intersect of multiple sets.
+@_documentation(visibility: internal)
 public struct SINTERCARD: ValkeyCommand {
     public typealias Response = Int
 
@@ -139,6 +145,7 @@ public struct SINTERCARD: ValkeyCommand {
 }
 
 /// Stores the intersect of multiple sets in a key.
+@_documentation(visibility: internal)
 public struct SINTERSTORE: ValkeyCommand {
     public typealias Response = Int
 
@@ -158,6 +165,7 @@ public struct SINTERSTORE: ValkeyCommand {
 }
 
 /// Determines whether a member belongs to a set.
+@_documentation(visibility: internal)
 public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -179,6 +187,7 @@ public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns all members of a set.
+@_documentation(visibility: internal)
 public struct SMEMBERS: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -198,6 +207,7 @@ public struct SMEMBERS: ValkeyCommand {
 }
 
 /// Determines whether multiple members belong to a set.
+@_documentation(visibility: internal)
 public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -219,6 +229,7 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Moves a member from one set to another.
+@_documentation(visibility: internal)
 public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -240,6 +251,7 @@ public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
+@_documentation(visibility: internal)
 public struct SPOP: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -259,6 +271,7 @@ public struct SPOP: ValkeyCommand {
 }
 
 /// Get one or multiple random members from a set
+@_documentation(visibility: internal)
 public struct SRANDMEMBER: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -280,6 +293,7 @@ public struct SRANDMEMBER: ValkeyCommand {
 }
 
 /// Removes one or more members from a set. Deletes the set if the last member was removed.
+@_documentation(visibility: internal)
 public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -299,6 +313,7 @@ public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Iterates over members of a set.
+@_documentation(visibility: internal)
 public struct SSCAN: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -324,6 +339,7 @@ public struct SSCAN: ValkeyCommand {
 }
 
 /// Returns the union of multiple sets.
+@_documentation(visibility: internal)
 public struct SUNION: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -343,6 +359,7 @@ public struct SUNION: ValkeyCommand {
 }
 
 /// Stores the union of multiple sets in a key.
+@_documentation(visibility: internal)
 public struct SUNIONSTORE: ValkeyCommand {
     public typealias Response = Int
 
