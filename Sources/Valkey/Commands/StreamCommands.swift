@@ -63,7 +63,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "CREATE", key, RESPBulkString(group), idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesread))
+            commandEncoder.encodeArray("XGROUP", "CREATE", key, RESPBulkStringRenderer(group), idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesread))
         }
     }
 
@@ -84,7 +84,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, RESPBulkString(group), RESPBulkString(consumer))
+            commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, RESPBulkStringRenderer(group), RESPBulkStringRenderer(consumer))
         }
     }
 
@@ -105,7 +105,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, RESPBulkString(group), RESPBulkString(consumer))
+            commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, RESPBulkStringRenderer(group), RESPBulkStringRenderer(consumer))
         }
     }
 
@@ -124,7 +124,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "DESTROY", key, RESPBulkString(group))
+            commandEncoder.encodeArray("XGROUP", "DESTROY", key, RESPBulkStringRenderer(group))
         }
     }
 
@@ -177,7 +177,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "SETID", key, RESPBulkString(group), idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+            commandEncoder.encodeArray("XGROUP", "SETID", key, RESPBulkStringRenderer(group), idSelector, RESPWithToken("ENTRIESREAD", entriesread))
         }
     }
 
@@ -202,7 +202,7 @@ public enum XINFO {
         public var isReadOnly: Bool { true }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XINFO", "CONSUMERS", key, RESPBulkString(group))
+            commandEncoder.encodeArray("XINFO", "CONSUMERS", key, RESPBulkStringRenderer(group))
         }
     }
 
@@ -297,7 +297,7 @@ public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: Valke
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XACK", key, RESPBulkString(group), id.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("XACK", key, RESPBulkStringRenderer(group), id.map { RESPBulkStringRenderer($0) })
     }
 }
 
@@ -390,16 +390,16 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
 
         @inlinable
         public var respEntries: Int {
-            RESPBulkString(field).respEntries + RESPBulkString(value).respEntries
+            RESPBulkStringRenderer(field).respEntries + RESPBulkStringRenderer(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPBulkString(field).encode(into: &commandEncoder)
-            RESPBulkString(value).encode(into: &commandEncoder)
+            RESPBulkStringRenderer(field).encode(into: &commandEncoder)
+            RESPBulkStringRenderer(value).encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken?
+    public typealias Response = RESPString?
 
     public var key: ValkeyKey
     public var nomkstream: Bool
@@ -445,7 +445,7 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XAUTOCLAIM", key, RESPBulkString(group), RESPBulkString(consumer), RESPBulkString(minIdleTime), RESPBulkString(start), RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
+        commandEncoder.encodeArray("XAUTOCLAIM", key, RESPBulkStringRenderer(group), RESPBulkStringRenderer(consumer), RESPBulkStringRenderer(minIdleTime), RESPBulkStringRenderer(start), RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
     }
 }
 
@@ -480,7 +480,7 @@ public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XCLAIM", key, RESPBulkString(group), RESPBulkString(consumer), RESPBulkString(minIdleTime), id.map { RESPBulkString($0) }, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
+        commandEncoder.encodeArray("XCLAIM", key, RESPBulkStringRenderer(group), RESPBulkStringRenderer(consumer), RESPBulkStringRenderer(minIdleTime), id.map { RESPBulkStringRenderer($0) }, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 }
 
@@ -499,7 +499,7 @@ public struct XDEL<Id: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XDEL", key, id.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("XDEL", key, id.map { RESPBulkStringRenderer($0) })
     }
 }
 
@@ -568,7 +568,7 @@ public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XPENDING", key, RESPBulkString(group), filters)
+        commandEncoder.encodeArray("XPENDING", key, RESPBulkStringRenderer(group), filters)
     }
 }
 
@@ -591,7 +591,7 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: Va
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XRANGE", key, RESPBulkString(start), RESPBulkString(end), RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("XRANGE", key, RESPBulkStringRenderer(start), RESPBulkStringRenderer(end), RESPWithToken("COUNT", count))
     }
 }
 
@@ -608,13 +608,13 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + id.map { RESPBulkString($0) }.respEntries
+            key.respEntries + id.map { RESPBulkStringRenderer($0) }.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             key.encode(into: &commandEncoder)
-            id.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+            id.map { RESPBulkStringRenderer($0) }.encode(into: &commandEncoder)
         }
     }
     public var count: Int?
@@ -651,13 +651,13 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 
         @inlinable
         public var respEntries: Int {
-            RESPBulkString(group).respEntries + RESPBulkString(consumer).respEntries
+            RESPBulkStringRenderer(group).respEntries + RESPBulkStringRenderer(consumer).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPBulkString(group).encode(into: &commandEncoder)
-            RESPBulkString(consumer).encode(into: &commandEncoder)
+            RESPBulkStringRenderer(group).encode(into: &commandEncoder)
+            RESPBulkStringRenderer(consumer).encode(into: &commandEncoder)
         }
     }
     public struct Streams: RESPRenderable, Sendable, Hashable {
@@ -671,13 +671,13 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + id.map { RESPBulkString($0) }.respEntries
+            key.respEntries + id.map { RESPBulkStringRenderer($0) }.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             key.encode(into: &commandEncoder)
-            id.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+            id.map { RESPBulkStringRenderer($0) }.encode(into: &commandEncoder)
         }
     }
     public var groupBlock: GroupBlock
@@ -722,7 +722,7 @@ public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>:
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XREVRANGE", key, RESPBulkString(end), RESPBulkString(start), RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("XREVRANGE", key, RESPBulkStringRenderer(end), RESPBulkStringRenderer(start), RESPWithToken("COUNT", count))
     }
 }
 
@@ -743,7 +743,7 @@ public struct XSETID<LastId: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XSETID", key, RESPBulkString(lastId), RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
+        commandEncoder.encodeArray("XSETID", key, RESPBulkStringRenderer(lastId), RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
     }
 }
 
@@ -794,14 +794,14 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            strategy.respEntries + `operator`.respEntries + RESPBulkString(threshold).respEntries + RESPWithToken("LIMIT", count).respEntries
+            strategy.respEntries + `operator`.respEntries + RESPBulkStringRenderer(threshold).respEntries + RESPWithToken("LIMIT", count).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             strategy.encode(into: &commandEncoder)
             `operator`.encode(into: &commandEncoder)
-            RESPBulkString(threshold).encode(into: &commandEncoder)
+            RESPBulkStringRenderer(threshold).encode(into: &commandEncoder)
             RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
         }
     }
@@ -846,7 +846,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The ID of the added entry. The ID is the one auto-generated if * is passed as ID argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null]: The NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: ValkeyKey, nomkstream: Bool = false, trim: XADD<Field, Value>.Trim? = nil, idSelector: XADD<Field, Value>.IdSelector, data: [XADD<Field, Value>.Data]) async throws -> RESPToken? {
+    public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: ValkeyKey, nomkstream: Bool = false, trim: XADD<Field, Value>.Trim? = nil, idSelector: XADD<Field, Value>.IdSelector, data: [XADD<Field, Value>.Data]) async throws -> RESPString? {
         try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 

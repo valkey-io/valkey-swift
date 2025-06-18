@@ -72,6 +72,8 @@ public enum CLUSTER {
 
     /// Advances the cluster config epoch.
     public struct BUMPEPOCH: ValkeyCommand {
+        public typealias Response = RESPString
+
         @inlinable public init() {
         }
 
@@ -91,7 +93,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", RESPBulkStringRenderer(nodeId))
         }
     }
 
@@ -203,7 +205,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "FORGET", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "FORGET", RESPBulkStringRenderer(nodeId))
         }
     }
 
@@ -238,6 +240,8 @@ public enum CLUSTER {
 
     /// Returns information about the state of a node.
     public struct INFO: ValkeyCommand {
+        public typealias Response = RESPString
+
         @inlinable public init() {
         }
 
@@ -257,7 +261,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", RESPBulkString(key))
+            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", RESPBulkStringRenderer(key))
         }
     }
 
@@ -286,12 +290,14 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "MEET", RESPBulkString(ip), port, clusterBusPort)
+            commandEncoder.encodeArray("CLUSTER", "MEET", RESPBulkStringRenderer(ip), port, clusterBusPort)
         }
     }
 
     /// Returns the ID of a node.
     public struct MYID: ValkeyCommand {
+        public typealias Response = RESPString
+
         @inlinable public init() {
         }
 
@@ -302,6 +308,8 @@ public enum CLUSTER {
 
     /// Returns the shard ID of a node.
     public struct MYSHARDID: ValkeyCommand {
+        public typealias Response = RESPString
+
         @inlinable public init() {
         }
 
@@ -312,6 +320,8 @@ public enum CLUSTER {
 
     /// Returns the cluster configuration for a node.
     public struct NODES: ValkeyCommand {
+        public typealias Response = RESPString
+
         @inlinable public init() {
         }
 
@@ -331,7 +341,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICAS", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "REPLICAS", RESPBulkStringRenderer(nodeId))
         }
     }
 
@@ -344,7 +354,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICATE", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "REPLICATE", RESPBulkStringRenderer(nodeId))
         }
     }
 
@@ -463,7 +473,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPBulkStringRenderer(nodeId))
         }
     }
 
@@ -644,7 +654,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: If the epoch was incremented.
     ///     * [String]: If the node already has the greatest config epoch in the cluster.
     @inlinable
-    public func clusterBumpepoch() async throws -> CLUSTER.BUMPEPOCH.Response {
+    public func clusterBumpepoch() async throws -> RESPString {
         try await send(command: CLUSTER.BUMPEPOCH())
     }
 
@@ -749,7 +759,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF
     @inlinable
-    public func clusterInfo() async throws -> CLUSTER.INFO.Response {
+    public func clusterInfo() async throws -> RESPString {
         try await send(command: CLUSTER.INFO())
     }
 
@@ -794,7 +804,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The node id.
     @inlinable
-    public func clusterMyid() async throws -> CLUSTER.MYID.Response {
+    public func clusterMyid() async throws -> RESPString {
         try await send(command: CLUSTER.MYID())
     }
 
@@ -805,7 +815,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The node's shard id.
     @inlinable
-    public func clusterMyshardid() async throws -> CLUSTER.MYSHARDID.Response {
+    public func clusterMyshardid() async throws -> RESPString {
         try await send(command: CLUSTER.MYSHARDID())
     }
 
@@ -816,7 +826,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Returns: [String]: The serialized cluster configuration.
     @inlinable
-    public func clusterNodes() async throws -> CLUSTER.NODES.Response {
+    public func clusterNodes() async throws -> RESPString {
         try await send(command: CLUSTER.NODES())
     }
 

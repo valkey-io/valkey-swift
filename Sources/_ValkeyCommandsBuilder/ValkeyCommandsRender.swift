@@ -676,7 +676,7 @@ private func getResponseType(response: ValkeyCommand.ReplySchema.Response) -> St
                 "String"
             }
         } else {
-            "RESPToken"
+            "RESPString"
         }
     case .integer:
         "Int"
@@ -741,9 +741,9 @@ extension ValkeyCommand.Argument {
                 }
             } else if self.type == .string, !self.optional, genericString {
                 if self.multiple {
-                    variable = "\(variable).map { RESPBulkString($0) }"
+                    variable = "\(variable).map { RESPBulkStringRenderer($0) }"
                 } else {
-                    variable = "RESPBulkString(\(variable))"
+                    variable = "RESPBulkStringRenderer(\(variable))"
                 }
             }
             if let token = self.token {

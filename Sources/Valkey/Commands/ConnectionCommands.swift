@@ -60,13 +60,13 @@ extension CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "CAPA", capability.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("CLIENT", "CAPA", capability.map { RESPBulkStringRenderer($0) })
         }
     }
 
     /// Returns the name of the connection.
     public struct GETNAME: ValkeyCommand {
-        public typealias Response = RESPToken?
+        public typealias Response = RESPString?
 
         @inlinable public init() {
         }
@@ -142,6 +142,8 @@ extension CLIENT {
 
     /// Returns information about the connection.
     public struct INFO: ValkeyCommand {
+        public typealias Response = RESPString
+
         @inlinable public init() {
         }
 
@@ -294,6 +296,8 @@ extension CLIENT {
                 }
             }
         }
+        public typealias Response = RESPString
+
         public var clientType: ClientType?
         public var clientId: [Int]
         public var username: String?
@@ -475,7 +479,7 @@ extension CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "SETNAME", RESPBulkString(connectionName))
+            commandEncoder.encodeArray("CLIENT", "SETNAME", RESPBulkStringRenderer(connectionName))
         }
     }
 
@@ -586,7 +590,7 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("AUTH", username, RESPBulkString(password))
+        commandEncoder.encodeArray("AUTH", username, RESPBulkStringRenderer(password))
     }
 }
 
@@ -602,6 +606,8 @@ public struct CLIENT: ValkeyCommand {
 
 /// Returns the given string.
 public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = RESPString
+
     public var message: Message
 
     @inlinable public init(message: Message) {
@@ -609,7 +615,7 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ECHO", RESPBulkString(message))
+        commandEncoder.encodeArray("ECHO", RESPBulkStringRenderer(message))
     }
 }
 
@@ -771,7 +777,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The connection name of the current connection
     ///     * [Null]: Connection name was not set
     @inlinable
-    public func clientGetname() async throws -> RESPToken? {
+    public func clientGetname() async throws -> RESPString? {
         try await send(command: CLIENT.GETNAME())
     }
 
@@ -828,7 +834,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
-    public func clientInfo() async throws -> CLIENT.INFO.Response {
+    public func clientInfo() async throws -> RESPString {
         try await send(command: CLIENT.INFO())
     }
 
@@ -870,7 +876,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: [String]: Information and statistics about client connections
     @inlinable
-    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: CLIENT.LIST.Skipme? = nil, maxage: Int? = nil) async throws -> CLIENT.LIST.Response {
+    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: CLIENT.LIST.Skipme? = nil, maxage: Int? = nil) async throws -> RESPString {
         try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId, username: username, addr: addr, laddr: laddr, skipme: skipme, maxage: maxage))
     }
 
@@ -988,7 +994,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The given string
     @inlinable
-    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> RESPToken {
+    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> RESPString {
         try await send(command: ECHO(message: message))
     }
 

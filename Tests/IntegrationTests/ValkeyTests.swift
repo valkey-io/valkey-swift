@@ -400,7 +400,7 @@ struct GeneratedCommands {
             logger: logger
         ) { connection in
             let user = try await connection.aclWhoami()
-            #expect(try user.decode() == "johnsmith")
+            #expect(user.decode() == "johnsmith")
         }
     }
 
@@ -650,7 +650,7 @@ struct GeneratedCommands {
                             try await withKey(connection: connection) { key in
                                 _ = try await connection.set(key: key, value: "Hello")
                                 let response = try await connection.get(key: key)
-                                #expect(try response?.decode() == "Hello")
+                                #expect(response?.decode() == "Hello")
                             }
 
                             await #expect(throws: Never.self) { try await iterator.next()?.message == "goodbye" }

@@ -550,7 +550,7 @@ struct SubscriptionTests {
                     var iterator = subscription.makeAsyncIterator()
                     try #expect(await iterator.next() == .init(channel: "test", message: "Testing!"))
                     let value = try await connection.get(key: "foo")
-                    #expect(try value?.decode() == "bar")
+                    #expect(value?.decode() == "bar")
                     try #expect(await iterator.next() == .init(channel: "test", message: "Testing2!"))
                 }
             }
