@@ -15,13 +15,14 @@
 @_documentation(visibility: internal)
 public struct XREADMessage: RESPTokenDecodable, Sendable {
     public let id: String
-    public let fields: [(key: String, value: RESPToken)]
+    public let fields: [(key: String, value: RESPToken.String)]
 
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array).self)
-            let keyValuePairs = try values.asMap().map { try ($0.key.decode(as: String.self), $0.value) }
+            let keyValuePairs = try values.asMap()
+                .map { try ($0.key.decode(as: String.self), $0.value.decode(as: RESPToken.String.self)) }
             self.id = id
             self.fields = keyValuePairs
         default:
@@ -43,7 +44,7 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
     ///
     /// - Parameter key: The field key to look up.
     /// - Returns: The `RESPToken` value associated with the given key, or `nil` if the key does not exist.
-    public subscript(field key: String) -> RESPToken? {
+    public subscript(field key: String) -> RESPToken.String? {
         fields.first(where: { $0.key == key })?.value
     }
 
@@ -54,7 +55,7 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
     ///
     /// - Parameter key: The field key to retrieve values for.
     /// - Returns: An array of `RESPToken` values associated with the given field key.
-    public subscript(fields key: String) -> [RESPToken] {
+    public subscript(fields key: String) -> [RESPToken.String] {
         fields.compactMap {
             if $0.key == key {
                 $0.value
@@ -68,13 +69,16 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
 @_documentation(visibility: internal)
 public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
     public let id: String
-    public let fields: [(key: String, value: RESPToken)]?
+    public let fields: [(key: String, value: RESPToken.String)]?
 
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array?).self)
-            let keyValuePairs = try values.map { try $0.asMap().map { try ($0.key.decode(as: String.self), $0.value) } }
+            let keyValuePairs = try values.map {
+                try $0.asMap()
+                    .map { try ($0.key.decode(as: String.self), $0.value.decode(as: RESPToken.String.self)) }
+            }
             self.id = id
             self.fields = keyValuePairs
         default:
