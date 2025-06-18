@@ -23,8 +23,10 @@ import Foundation
 #endif
 
 /// A container for Sentinel commands.
+@_documentation(visibility: internal)
 public enum SENTINEL {
     /// Checks for a Sentinel quorum.
+    @_documentation(visibility: internal)
     public struct CKQUORUM<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.String
 
@@ -40,6 +42,7 @@ public enum SENTINEL {
     }
 
     /// Configures Sentinel.
+    @_documentation(visibility: internal)
     public struct CONFIG: ValkeyCommand {
         public struct ActionSet: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: String
@@ -95,6 +98,7 @@ public enum SENTINEL {
     }
 
     /// Lists or updates the current configurable parameters of Sentinel.
+    @_documentation(visibility: internal)
     public struct DEBUG: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: String
@@ -130,6 +134,7 @@ public enum SENTINEL {
     }
 
     /// Forces a Sentinel failover.
+    @_documentation(visibility: internal)
     public struct FAILOVER<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public var primaryName: PrimaryName
 
@@ -143,6 +148,7 @@ public enum SENTINEL {
     }
 
     /// Rewrites the Sentinel configuration file.
+    @_documentation(visibility: internal)
     public struct FLUSHCONFIG: ValkeyCommand {
         @inlinable public init() {
         }
@@ -153,6 +159,7 @@ public enum SENTINEL {
     }
 
     /// Returns the port and address of a primary instance.
+    @_documentation(visibility: internal)
     public struct GETMASTERADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -168,6 +175,7 @@ public enum SENTINEL {
     }
 
     /// Returns the port and address of a primary instance.
+    @_documentation(visibility: internal)
     public struct GETPRIMARYADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -183,6 +191,7 @@ public enum SENTINEL {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -195,6 +204,7 @@ public enum SENTINEL {
     }
 
     /// Returns the cached `INFO` replies from the deployment's instances.
+    @_documentation(visibility: internal)
     public struct INFOCACHE<Nodename: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -210,6 +220,7 @@ public enum SENTINEL {
     }
 
     /// Determines whether a primary instance is down.
+    @_documentation(visibility: internal)
     public struct ISMASTERDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -231,6 +242,7 @@ public enum SENTINEL {
     }
 
     /// Determines whether a primary instance is down.
+    @_documentation(visibility: internal)
     public struct ISPRIMARYDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -252,6 +264,7 @@ public enum SENTINEL {
     }
 
     /// Returns the state of a primary instance.
+    @_documentation(visibility: internal)
     public struct MASTER<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
@@ -267,6 +280,7 @@ public enum SENTINEL {
     }
 
     /// Returns a list of monitored primaries.
+    @_documentation(visibility: internal)
     public struct MASTERS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -279,6 +293,7 @@ public enum SENTINEL {
     }
 
     /// Starts monitoring.
+    @_documentation(visibility: internal)
     public struct MONITOR<Name: RESPStringRenderable, Ip: RESPStringRenderable>: ValkeyCommand {
         public var name: Name
         public var ip: Ip
@@ -298,6 +313,7 @@ public enum SENTINEL {
     }
 
     /// Returns the Sentinel instance ID.
+    @_documentation(visibility: internal)
     public struct MYID: ValkeyCommand {
         public typealias Response = RESPToken.String
 
@@ -310,6 +326,7 @@ public enum SENTINEL {
     }
 
     /// Returns information about pending scripts for Sentinel.
+    @_documentation(visibility: internal)
     public struct PENDINGSCRIPTS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -322,6 +339,7 @@ public enum SENTINEL {
     }
 
     /// Returns a list of monitored primaries.
+    @_documentation(visibility: internal)
     public struct PRIMARIES: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -334,6 +352,7 @@ public enum SENTINEL {
     }
 
     /// Returns the state of a primary instance.
+    @_documentation(visibility: internal)
     public struct PRIMARY<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
@@ -349,6 +368,7 @@ public enum SENTINEL {
     }
 
     /// Stops monitoring.
+    @_documentation(visibility: internal)
     public struct REMOVE<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public var primaryName: PrimaryName
 
@@ -362,6 +382,7 @@ public enum SENTINEL {
     }
 
     /// Returns a list of the monitored replicas.
+    @_documentation(visibility: internal)
     public struct REPLICAS<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -377,6 +398,7 @@ public enum SENTINEL {
     }
 
     /// Resets primaries by name matching a pattern.
+    @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
         public typealias Response = Int
 
@@ -392,6 +414,7 @@ public enum SENTINEL {
     }
 
     /// Returns a list of Sentinel instances.
+    @_documentation(visibility: internal)
     public struct SENTINELS<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -407,6 +430,7 @@ public enum SENTINEL {
     }
 
     /// Changes the configuration of a monitored primary.
+    @_documentation(visibility: internal)
     public struct SET<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let option: Option
@@ -442,6 +466,7 @@ public enum SENTINEL {
     }
 
     /// Simulates failover scenarios.
+    @_documentation(visibility: internal)
     public struct SIMULATEFAILURE: ValkeyCommand {
         public enum Mode: RESPRenderable, Sendable, Hashable {
             case crashAfterElection
@@ -474,6 +499,7 @@ public enum SENTINEL {
     }
 
     /// Returns a list of the monitored replicas.
+    @_documentation(visibility: internal)
     public struct SLAVES<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 

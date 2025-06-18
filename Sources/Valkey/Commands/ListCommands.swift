@@ -23,6 +23,7 @@ import Foundation
 #endif
 
 /// Pops an element from a list, pushes it to another list and returns it. Blocks until an element is available otherwise. Deletes the list if the last element was moved.
+@_documentation(visibility: internal)
 public struct BLMOVE: ValkeyCommand {
     public enum Wherefrom: RESPRenderable, Sendable, Hashable {
         case left
@@ -80,6 +81,7 @@ public struct BLMOVE: ValkeyCommand {
 }
 
 /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
+@_documentation(visibility: internal)
 public struct BLMPOP: ValkeyCommand {
     public enum Where: RESPRenderable, Sendable, Hashable {
         case left
@@ -120,6 +122,7 @@ public struct BLMPOP: ValkeyCommand {
 }
 
 /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
+@_documentation(visibility: internal)
 public struct BLPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
@@ -141,6 +144,7 @@ public struct BLPOP: ValkeyCommand {
 }
 
 /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
+@_documentation(visibility: internal)
 public struct BRPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
@@ -162,6 +166,7 @@ public struct BRPOP: ValkeyCommand {
 }
 
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
+@_documentation(visibility: internal)
 public struct BRPOPLPUSH: ValkeyCommand {
     public typealias Response = RESPToken.String?
 
@@ -185,6 +190,7 @@ public struct BRPOPLPUSH: ValkeyCommand {
 }
 
 /// Returns an element from a list by its index.
+@_documentation(visibility: internal)
 public struct LINDEX: ValkeyCommand {
     public typealias Response = RESPToken.String?
 
@@ -206,6 +212,7 @@ public struct LINDEX: ValkeyCommand {
 }
 
 /// Inserts an element before or after another element in a list.
+@_documentation(visibility: internal)
 public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable>: ValkeyCommand {
     public enum Where: RESPRenderable, Sendable, Hashable {
         case before
@@ -244,6 +251,7 @@ public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable
 }
 
 /// Returns the length of a list.
+@_documentation(visibility: internal)
 public struct LLEN: ValkeyCommand {
     public typealias Response = Int
 
@@ -263,6 +271,7 @@ public struct LLEN: ValkeyCommand {
 }
 
 /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
+@_documentation(visibility: internal)
 public struct LMOVE: ValkeyCommand {
     public enum Wherefrom: RESPRenderable, Sendable, Hashable {
         case left
@@ -316,6 +325,7 @@ public struct LMOVE: ValkeyCommand {
 }
 
 /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
+@_documentation(visibility: internal)
 public struct LMPOP: ValkeyCommand {
     public enum Where: RESPRenderable, Sendable, Hashable {
         case left
@@ -350,6 +360,7 @@ public struct LMPOP: ValkeyCommand {
 }
 
 /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
+@_documentation(visibility: internal)
 public struct LPOP: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -369,6 +380,7 @@ public struct LPOP: ValkeyCommand {
 }
 
 /// Returns the index of matching elements in a list.
+@_documentation(visibility: internal)
 public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = [Int]?
 
@@ -396,6 +408,7 @@ public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
+@_documentation(visibility: internal)
 public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -415,6 +428,7 @@ public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Prepends one or more elements to a list only when the list exists.
+@_documentation(visibility: internal)
 public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -434,6 +448,7 @@ public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns a range of elements from a list.
+@_documentation(visibility: internal)
 public struct LRANGE: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -457,6 +472,7 @@ public struct LRANGE: ValkeyCommand {
 }
 
 /// Removes elements from a list. Deletes the list if the last element was removed.
+@_documentation(visibility: internal)
 public struct LREM<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -478,6 +494,7 @@ public struct LREM<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets the value of an element in a list by its index.
+@_documentation(visibility: internal)
 public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var index: Int
@@ -497,6 +514,7 @@ public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
+@_documentation(visibility: internal)
 public struct LTRIM: ValkeyCommand {
     public var key: ValkeyKey
     public var start: Int
@@ -516,6 +534,7 @@ public struct LTRIM: ValkeyCommand {
 }
 
 /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
+@_documentation(visibility: internal)
 public struct RPOP: ValkeyCommand {
     public typealias Response = RESPToken?
 
@@ -535,6 +554,7 @@ public struct RPOP: ValkeyCommand {
 }
 
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
+@_documentation(visibility: internal)
 public struct RPOPLPUSH: ValkeyCommand {
     public typealias Response = RESPToken.String?
 
@@ -554,6 +574,7 @@ public struct RPOPLPUSH: ValkeyCommand {
 }
 
 /// Appends one or more elements to a list. Creates the key if it doesn't exist.
+@_documentation(visibility: internal)
 public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -573,6 +594,7 @@ public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Appends an element to a list only when the list exists.
+@_documentation(visibility: internal)
 public struct RPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 

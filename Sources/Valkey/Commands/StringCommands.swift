@@ -23,6 +23,7 @@ import Foundation
 #endif
 
 /// Appends a string to the value of a key. Creates the key if it doesn't exist.
+@_documentation(visibility: internal)
 public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -42,6 +43,7 @@ public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
+@_documentation(visibility: internal)
 public struct DECR: ValkeyCommand {
     public typealias Response = Int
 
@@ -59,6 +61,7 @@ public struct DECR: ValkeyCommand {
 }
 
 /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
+@_documentation(visibility: internal)
 public struct DECRBY: ValkeyCommand {
     public typealias Response = Int
 
@@ -78,6 +81,7 @@ public struct DECRBY: ValkeyCommand {
 }
 
 /// Returns the string value of a key.
+@_documentation(visibility: internal)
 public struct GET: ValkeyCommand {
     public typealias Response = RESPToken.String?
 
@@ -97,6 +101,7 @@ public struct GET: ValkeyCommand {
 }
 
 /// Returns the string value of a key after deleting the key.
+@_documentation(visibility: internal)
 public struct GETDEL: ValkeyCommand {
     public typealias Response = RESPToken.String?
 
@@ -114,6 +119,7 @@ public struct GETDEL: ValkeyCommand {
 }
 
 /// Returns the string value of a key after setting its expiration time.
+@_documentation(visibility: internal)
 public struct GETEX: ValkeyCommand {
     public enum Expiration: RESPRenderable, Sendable, Hashable {
         case seconds(Int)
@@ -162,6 +168,7 @@ public struct GETEX: ValkeyCommand {
 }
 
 /// Returns a substring of the string stored at a key.
+@_documentation(visibility: internal)
 public struct GETRANGE: ValkeyCommand {
     public typealias Response = RESPToken.String
 
@@ -185,6 +192,7 @@ public struct GETRANGE: ValkeyCommand {
 }
 
 /// Returns the previous string value of a key after setting it to a new value.
+@_documentation(visibility: internal)
 public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.String?
 
@@ -204,6 +212,7 @@ public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
+@_documentation(visibility: internal)
 public struct INCR: ValkeyCommand {
     public typealias Response = Int
 
@@ -221,6 +230,7 @@ public struct INCR: ValkeyCommand {
 }
 
 /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
+@_documentation(visibility: internal)
 public struct INCRBY: ValkeyCommand {
     public typealias Response = Int
 
@@ -240,6 +250,7 @@ public struct INCRBY: ValkeyCommand {
 }
 
 /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
+@_documentation(visibility: internal)
 public struct INCRBYFLOAT: ValkeyCommand {
     public typealias Response = RESPToken.String
 
@@ -259,6 +270,7 @@ public struct INCRBYFLOAT: ValkeyCommand {
 }
 
 /// Finds the longest common substring.
+@_documentation(visibility: internal)
 public struct LCS: ValkeyCommand {
     public var key1: ValkeyKey
     public var key2: ValkeyKey
@@ -286,6 +298,7 @@ public struct LCS: ValkeyCommand {
 }
 
 /// Atomically returns the string values of one or more keys.
+@_documentation(visibility: internal)
 public struct MGET: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -305,6 +318,7 @@ public struct MGET: ValkeyCommand {
 }
 
 /// Atomically creates or modifies the string values of one or more keys.
+@_documentation(visibility: internal)
 public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: ValkeyKey
@@ -340,6 +354,7 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Atomically modifies the string values of one or more keys only when all keys don't exist.
+@_documentation(visibility: internal)
 public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
         @usableFromInline let key: ValkeyKey
@@ -377,6 +392,7 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
+@_documentation(visibility: internal)
 public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var milliseconds: Int
@@ -396,6 +412,7 @@ public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
+@_documentation(visibility: internal)
 public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
@@ -473,6 +490,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
+@_documentation(visibility: internal)
 public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var seconds: Int
@@ -492,6 +510,7 @@ public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Set the string value of a key only when the key doesn't exist.
+@_documentation(visibility: internal)
 public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -511,6 +530,7 @@ public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
+@_documentation(visibility: internal)
 public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -532,6 +552,7 @@ public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the length of a string value.
+@_documentation(visibility: internal)
 public struct STRLEN: ValkeyCommand {
     public typealias Response = Int
 
@@ -551,6 +572,7 @@ public struct STRLEN: ValkeyCommand {
 }
 
 /// Returns a substring from a string value.
+@_documentation(visibility: internal)
 public struct SUBSTR: ValkeyCommand {
     public typealias Response = RESPToken.String
 

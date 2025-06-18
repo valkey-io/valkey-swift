@@ -23,6 +23,7 @@ import Foundation
 #endif
 
 /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
+@_documentation(visibility: internal)
 public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
     public enum Condition: RESPRenderable, Sendable, Hashable {
         case nx
@@ -84,6 +85,7 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns the distance between two members of a geospatial index.
+@_documentation(visibility: internal)
 public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderable>: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
@@ -128,6 +130,7 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
 }
 
 /// Returns members from a geospatial index as geohash strings.
+@_documentation(visibility: internal)
 public struct GEOHASH: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -149,6 +152,7 @@ public struct GEOHASH: ValkeyCommand {
 }
 
 /// Returns the longitude and latitude of members from a geospatial index.
+@_documentation(visibility: internal)
 public struct GEOPOS: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -170,6 +174,7 @@ public struct GEOPOS: ValkeyCommand {
 }
 
 /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
+@_documentation(visibility: internal)
 public struct GEORADIUS: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
@@ -279,6 +284,7 @@ public struct GEORADIUS: ValkeyCommand {
 }
 
 /// Queries a geospatial index for members within a distance from a member, optionally stores the result.
+@_documentation(visibility: internal)
 public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
@@ -386,6 +392,7 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns members from a geospatial index that are within a distance from a member.
+@_documentation(visibility: internal)
 public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
@@ -475,6 +482,7 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Returns members from a geospatial index that are within a distance from a coordinate.
+@_documentation(visibility: internal)
 public struct GEORADIUSRO: ValkeyCommand {
     public enum Unit: RESPRenderable, Sendable, Hashable {
         case m
@@ -566,6 +574,7 @@ public struct GEORADIUSRO: ValkeyCommand {
 }
 
 /// Queries a geospatial index for members inside an area of a box or a circle.
+@_documentation(visibility: internal)
 public struct GEOSEARCH: ValkeyCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
         @usableFromInline let longitude: Double
@@ -775,6 +784,7 @@ public struct GEOSEARCH: ValkeyCommand {
 }
 
 /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
+@_documentation(visibility: internal)
 public struct GEOSEARCHSTORE: ValkeyCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
         @usableFromInline let longitude: Double

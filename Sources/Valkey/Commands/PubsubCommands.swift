@@ -23,8 +23,10 @@ import Foundation
 #endif
 
 /// A container for Pub/Sub commands.
+@_documentation(visibility: internal)
 public enum PUBSUB {
     /// Returns the active channels.
+    @_documentation(visibility: internal)
     public struct CHANNELS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -40,6 +42,7 @@ public enum PUBSUB {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -52,6 +55,7 @@ public enum PUBSUB {
     }
 
     /// Returns a count of unique pattern subscriptions.
+    @_documentation(visibility: internal)
     public struct NUMPAT: ValkeyCommand {
         public typealias Response = Int
 
@@ -64,6 +68,7 @@ public enum PUBSUB {
     }
 
     /// Returns a count of subscribers to channels.
+    @_documentation(visibility: internal)
     public struct NUMSUB: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -79,6 +84,7 @@ public enum PUBSUB {
     }
 
     /// Returns the active shard channels.
+    @_documentation(visibility: internal)
     public struct SHARDCHANNELS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -94,6 +100,7 @@ public enum PUBSUB {
     }
 
     /// Returns the count of subscribers of shard channels.
+    @_documentation(visibility: internal)
     public struct SHARDNUMSUB: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -111,6 +118,7 @@ public enum PUBSUB {
 }
 
 /// Listens for messages published to channels that match one or more patterns.
+@_documentation(visibility: internal)
 public struct PSUBSCRIBE: ValkeyCommand {
     public var pattern: [String]
 
@@ -124,6 +132,7 @@ public struct PSUBSCRIBE: ValkeyCommand {
 }
 
 /// Posts a message to a channel.
+@_documentation(visibility: internal)
 public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -141,6 +150,7 @@ public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderab
 }
 
 /// Stops listening to messages published to channels that match one or more patterns.
+@_documentation(visibility: internal)
 public struct PUNSUBSCRIBE: ValkeyCommand {
     public var pattern: [String]
 
@@ -154,6 +164,7 @@ public struct PUNSUBSCRIBE: ValkeyCommand {
 }
 
 /// Post a message to a shard channel
+@_documentation(visibility: internal)
 public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
@@ -171,6 +182,7 @@ public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRe
 }
 
 /// Listens for messages published to shard channels.
+@_documentation(visibility: internal)
 public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
     public var shardchannel: [Shardchannel]
 
@@ -184,6 +196,7 @@ public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Listens for messages published to channels.
+@_documentation(visibility: internal)
 public struct SUBSCRIBE<Channel: RESPStringRenderable>: ValkeyCommand {
     public var channel: [Channel]
 
@@ -197,6 +210,7 @@ public struct SUBSCRIBE<Channel: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Stops listening to messages posted to shard channels.
+@_documentation(visibility: internal)
 public struct SUNSUBSCRIBE: ValkeyCommand {
     public var shardchannel: [String]
 
@@ -210,6 +224,7 @@ public struct SUNSUBSCRIBE: ValkeyCommand {
 }
 
 /// Stops listening to messages posted to channels.
+@_documentation(visibility: internal)
 public struct UNSUBSCRIBE: ValkeyCommand {
     public var channel: [String]
 

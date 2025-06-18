@@ -23,8 +23,10 @@ import Foundation
 #endif
 
 /// A container for Access List Control commands.
+@_documentation(visibility: internal)
 public enum ACL {
     /// Lists the ACL categories, or the commands inside a category.
+    @_documentation(visibility: internal)
     public struct CAT: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -40,6 +42,7 @@ public enum ACL {
     }
 
     /// Deletes ACL users, and terminates their connections.
+    @_documentation(visibility: internal)
     public struct DELUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
 
@@ -55,6 +58,7 @@ public enum ACL {
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
+    @_documentation(visibility: internal)
     public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.String?
 
@@ -74,6 +78,7 @@ public enum ACL {
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
+    @_documentation(visibility: internal)
     public struct GENPASS: ValkeyCommand {
         public typealias Response = RESPToken.String
 
@@ -89,6 +94,7 @@ public enum ACL {
     }
 
     /// Lists the ACL rules of a user.
+    @_documentation(visibility: internal)
     public struct GETUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map?
 
@@ -104,6 +110,7 @@ public enum ACL {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -116,6 +123,7 @@ public enum ACL {
     }
 
     /// Dumps the effective rules in ACL file format.
+    @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -128,6 +136,7 @@ public enum ACL {
     }
 
     /// Reloads the rules from the configured ACL file.
+    @_documentation(visibility: internal)
     public struct LOAD: ValkeyCommand {
         @inlinable public init() {
         }
@@ -138,6 +147,7 @@ public enum ACL {
     }
 
     /// Lists recent security events generated due to ACL rules.
+    @_documentation(visibility: internal)
     public struct LOG: ValkeyCommand {
         public enum Operation: RESPRenderable, Sendable, Hashable {
             case count(Int)
@@ -173,6 +183,7 @@ public enum ACL {
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
+    @_documentation(visibility: internal)
     public struct SAVE: ValkeyCommand {
         @inlinable public init() {
         }
@@ -183,6 +194,7 @@ public enum ACL {
     }
 
     /// Creates and modifies an ACL user and its rules.
+    @_documentation(visibility: internal)
     public struct SETUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public var username: Username
         public var rule: [String]
@@ -198,6 +210,7 @@ public enum ACL {
     }
 
     /// Lists all ACL users.
+    @_documentation(visibility: internal)
     public struct USERS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -210,6 +223,7 @@ public enum ACL {
     }
 
     /// Returns the authenticated username of the current connection.
+    @_documentation(visibility: internal)
     public struct WHOAMI: ValkeyCommand {
         public typealias Response = RESPToken.String
 
@@ -225,6 +239,7 @@ public enum ACL {
 
 extension COMMAND {
     /// Returns a count of commands.
+    @_documentation(visibility: internal)
     public struct COUNT: ValkeyCommand {
         public typealias Response = Int
 
@@ -237,6 +252,7 @@ extension COMMAND {
     }
 
     /// Returns documentary information about one, multiple or all commands.
+    @_documentation(visibility: internal)
     public struct DOCS: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
@@ -252,6 +268,7 @@ extension COMMAND {
     }
 
     /// Extracts the key names from an arbitrary command.
+    @_documentation(visibility: internal)
     public struct GETKEYS<Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -269,6 +286,7 @@ extension COMMAND {
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
+    @_documentation(visibility: internal)
     public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -286,6 +304,7 @@ extension COMMAND {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -298,6 +317,7 @@ extension COMMAND {
     }
 
     /// Returns information about one, multiple or all commands.
+    @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -313,6 +333,7 @@ extension COMMAND {
     }
 
     /// Returns a list of command names.
+    @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
         public enum Filterby: RESPRenderable, Sendable, Hashable {
             case moduleName(String)
@@ -353,8 +374,10 @@ extension COMMAND {
 }
 
 /// A container for command log commands.
+@_documentation(visibility: internal)
 public enum COMMANDLOG {
     /// Returns the specified command log's entries.
+    @_documentation(visibility: internal)
     public struct GET: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
             case slow(String)
@@ -395,6 +418,7 @@ public enum COMMANDLOG {
     }
 
     /// Show helpful text about the different subcommands
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -407,6 +431,7 @@ public enum COMMANDLOG {
     }
 
     /// Returns the number of entries in the specified type of command log.
+    @_documentation(visibility: internal)
     public struct LEN: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
             case slow(String)
@@ -445,6 +470,7 @@ public enum COMMANDLOG {
     }
 
     /// Clears all entries from the specified type of command log.
+    @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
             case slow(String)
@@ -483,8 +509,10 @@ public enum COMMANDLOG {
 }
 
 /// A container for server configuration commands.
+@_documentation(visibility: internal)
 public enum CONFIG {
     /// Returns the effective values of configuration parameters.
+    @_documentation(visibility: internal)
     public struct GET<Parameter: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
@@ -500,6 +528,7 @@ public enum CONFIG {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -512,6 +541,7 @@ public enum CONFIG {
     }
 
     /// Resets the server's statistics.
+    @_documentation(visibility: internal)
     public struct RESETSTAT: ValkeyCommand {
         @inlinable public init() {
         }
@@ -522,6 +552,7 @@ public enum CONFIG {
     }
 
     /// Persists the effective configuration to file.
+    @_documentation(visibility: internal)
     public struct REWRITE: ValkeyCommand {
         @inlinable public init() {
         }
@@ -532,6 +563,7 @@ public enum CONFIG {
     }
 
     /// Sets configuration parameters in-flight.
+    @_documentation(visibility: internal)
     public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable, Hashable {
             @usableFromInline let parameter: Parameter
@@ -567,8 +599,10 @@ public enum CONFIG {
 }
 
 /// A container for latency diagnostics commands.
+@_documentation(visibility: internal)
 public enum LATENCY {
     /// Returns a human-readable latency analysis report.
+    @_documentation(visibility: internal)
     public struct DOCTOR: ValkeyCommand {
         public typealias Response = RESPToken.String
 
@@ -581,6 +615,7 @@ public enum LATENCY {
     }
 
     /// Returns a latency graph for an event.
+    @_documentation(visibility: internal)
     public struct GRAPH<Event: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.String
 
@@ -596,6 +631,7 @@ public enum LATENCY {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -608,6 +644,7 @@ public enum LATENCY {
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
+    @_documentation(visibility: internal)
     public struct HISTOGRAM: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
@@ -623,6 +660,7 @@ public enum LATENCY {
     }
 
     /// Returns timestamp-latency samples for an event.
+    @_documentation(visibility: internal)
     public struct HISTORY<Event: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -638,6 +676,7 @@ public enum LATENCY {
     }
 
     /// Returns the latest latency samples for all events.
+    @_documentation(visibility: internal)
     public struct LATEST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -650,6 +689,7 @@ public enum LATENCY {
     }
 
     /// Resets the latency data for one or more events.
+    @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
         public typealias Response = Int
 
@@ -667,8 +707,10 @@ public enum LATENCY {
 }
 
 /// A container for memory diagnostics commands.
+@_documentation(visibility: internal)
 public enum MEMORY {
     /// Outputs a memory problems report.
+    @_documentation(visibility: internal)
     public struct DOCTOR: ValkeyCommand {
         public typealias Response = RESPToken.String
 
@@ -681,6 +723,7 @@ public enum MEMORY {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -693,6 +736,7 @@ public enum MEMORY {
     }
 
     /// Returns the allocator statistics.
+    @_documentation(visibility: internal)
     public struct MALLOCSTATS: ValkeyCommand {
         public typealias Response = RESPToken.String
 
@@ -705,6 +749,7 @@ public enum MEMORY {
     }
 
     /// Asks the allocator to release memory.
+    @_documentation(visibility: internal)
     public struct PURGE: ValkeyCommand {
         @inlinable public init() {
         }
@@ -715,6 +760,7 @@ public enum MEMORY {
     }
 
     /// Returns details about memory usage.
+    @_documentation(visibility: internal)
     public struct STATS: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
@@ -727,6 +773,7 @@ public enum MEMORY {
     }
 
     /// Estimates the memory usage of a key.
+    @_documentation(visibility: internal)
     public struct USAGE: ValkeyCommand {
         public typealias Response = Int?
 
@@ -750,8 +797,10 @@ public enum MEMORY {
 }
 
 /// A container for module commands.
+@_documentation(visibility: internal)
 public enum MODULE {
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -764,6 +813,7 @@ public enum MODULE {
     }
 
     /// Returns all loaded modules.
+    @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -776,6 +826,7 @@ public enum MODULE {
     }
 
     /// Loads a module.
+    @_documentation(visibility: internal)
     public struct LOAD<Path: RESPStringRenderable>: ValkeyCommand {
         public var path: Path
         public var arg: [String]
@@ -791,6 +842,7 @@ public enum MODULE {
     }
 
     /// Loads a module using extended parameters.
+    @_documentation(visibility: internal)
     public struct LOADEX<Path: RESPStringRenderable>: ValkeyCommand {
         public struct Configs: RESPRenderable, Sendable, Hashable {
             @usableFromInline let name: String
@@ -828,6 +880,7 @@ public enum MODULE {
     }
 
     /// Unloads a module.
+    @_documentation(visibility: internal)
     public struct UNLOAD<Name: RESPStringRenderable>: ValkeyCommand {
         public var name: Name
 
@@ -843,8 +896,10 @@ public enum MODULE {
 }
 
 /// A container for slow log commands.
+@_documentation(visibility: internal)
 public enum SLOWLOG {
     /// Returns the slow log's entries.
+    @_documentation(visibility: internal)
     public struct GET: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -860,6 +915,7 @@ public enum SLOWLOG {
     }
 
     /// Show helpful text about the different subcommands
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -872,6 +928,7 @@ public enum SLOWLOG {
     }
 
     /// Returns the number of entries in the slow log.
+    @_documentation(visibility: internal)
     public struct LEN: ValkeyCommand {
         public typealias Response = Int
 
@@ -884,6 +941,7 @@ public enum SLOWLOG {
     }
 
     /// Clears all entries from the slow log.
+    @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
         @inlinable public init() {
         }
@@ -896,6 +954,7 @@ public enum SLOWLOG {
 }
 
 /// Asynchronously rewrites the append-only file to disk.
+@_documentation(visibility: internal)
 public struct BGREWRITEAOF: ValkeyCommand {
     public typealias Response = RESPToken.String
 
@@ -908,6 +967,7 @@ public struct BGREWRITEAOF: ValkeyCommand {
 }
 
 /// Asynchronously saves the database(s) to disk.
+@_documentation(visibility: internal)
 public struct BGSAVE: ValkeyCommand {
     public enum Operation: RESPRenderable, Sendable, Hashable {
         case schedule
@@ -938,6 +998,7 @@ public struct BGSAVE: ValkeyCommand {
 }
 
 /// Returns detailed information about all commands.
+@_documentation(visibility: internal)
 public struct COMMAND: ValkeyCommand {
     @inlinable public init() {
     }
@@ -948,6 +1009,7 @@ public struct COMMAND: ValkeyCommand {
 }
 
 /// Returns the number of keys in the database.
+@_documentation(visibility: internal)
 public struct DBSIZE: ValkeyCommand {
     public typealias Response = Int
 
@@ -962,6 +1024,7 @@ public struct DBSIZE: ValkeyCommand {
 }
 
 /// Starts a coordinated failover from a server to one of its replicas.
+@_documentation(visibility: internal)
 public struct FAILOVER: ValkeyCommand {
     public struct Target: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
@@ -1002,6 +1065,7 @@ public struct FAILOVER: ValkeyCommand {
 }
 
 /// Removes all keys from all databases.
+@_documentation(visibility: internal)
 public struct FLUSHALL: ValkeyCommand {
     public enum FlushType: RESPRenderable, Sendable, Hashable {
         case async
@@ -1030,6 +1094,7 @@ public struct FLUSHALL: ValkeyCommand {
 }
 
 /// Remove all keys from the current database.
+@_documentation(visibility: internal)
 public struct FLUSHDB: ValkeyCommand {
     public enum FlushType: RESPRenderable, Sendable, Hashable {
         case async
@@ -1058,6 +1123,7 @@ public struct FLUSHDB: ValkeyCommand {
 }
 
 /// Returns information and statistics about the server.
+@_documentation(visibility: internal)
 public struct INFO: ValkeyCommand {
     public typealias Response = RESPToken.String
 
@@ -1073,6 +1139,7 @@ public struct INFO: ValkeyCommand {
 }
 
 /// Returns the Unix timestamp of the last successful save to disk.
+@_documentation(visibility: internal)
 public struct LASTSAVE: ValkeyCommand {
     public typealias Response = Int
 
@@ -1085,6 +1152,7 @@ public struct LASTSAVE: ValkeyCommand {
 }
 
 /// Displays computer art and the server version
+@_documentation(visibility: internal)
 public struct LOLWUT: ValkeyCommand {
     public typealias Response = RESPToken.String
 
@@ -1102,6 +1170,7 @@ public struct LOLWUT: ValkeyCommand {
 }
 
 /// Listens for all requests received by the server in real-time.
+@_documentation(visibility: internal)
 public struct MONITOR: ValkeyCommand {
     @inlinable public init() {
     }
@@ -1112,6 +1181,7 @@ public struct MONITOR: ValkeyCommand {
 }
 
 /// An internal command used in replication.
+@_documentation(visibility: internal)
 public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
     public var replicationid: Replicationid
     public var offset: Int
@@ -1127,6 +1197,7 @@ public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Configures a server as replica of another, or promotes it to a primary.
+@_documentation(visibility: internal)
 public struct REPLICAOF: ValkeyCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
@@ -1202,6 +1273,7 @@ public struct REPLICAOF: ValkeyCommand {
 }
 
 /// Returns the replication role.
+@_documentation(visibility: internal)
 public struct ROLE: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
@@ -1214,6 +1286,7 @@ public struct ROLE: ValkeyCommand {
 }
 
 /// Synchronously saves the database(s) to disk.
+@_documentation(visibility: internal)
 public struct SAVE: ValkeyCommand {
     @inlinable public init() {
     }
@@ -1224,6 +1297,7 @@ public struct SAVE: ValkeyCommand {
 }
 
 /// Synchronously saves the database(s) to disk and shuts down the server.
+@_documentation(visibility: internal)
 public struct SHUTDOWN: ValkeyCommand {
     public enum AbortSelectorSaveSelectorBlockSaveSelector: RESPRenderable, Sendable, Hashable {
         case nosave
@@ -1295,6 +1369,7 @@ public struct SHUTDOWN: ValkeyCommand {
 }
 
 /// Sets a server as a replica of another, or promotes it to being a primary.
+@_documentation(visibility: internal)
 public struct SLAVEOF: ValkeyCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
         @usableFromInline let host: String
@@ -1370,6 +1445,7 @@ public struct SLAVEOF: ValkeyCommand {
 }
 
 /// Swaps two databases.
+@_documentation(visibility: internal)
 public struct SWAPDB: ValkeyCommand {
     public var index1: Int
     public var index2: Int
@@ -1385,6 +1461,7 @@ public struct SWAPDB: ValkeyCommand {
 }
 
 /// An internal command used in replication.
+@_documentation(visibility: internal)
 public struct SYNC: ValkeyCommand {
     @inlinable public init() {
     }
@@ -1395,6 +1472,7 @@ public struct SYNC: ValkeyCommand {
 }
 
 /// Returns the server time.
+@_documentation(visibility: internal)
 public struct TIME: ValkeyCommand {
     public typealias Response = RESPToken.Array
 

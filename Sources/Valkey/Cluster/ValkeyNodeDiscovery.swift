@@ -87,7 +87,7 @@ public struct ValkeyStaticNodeDiscovery: ValkeyNodeDiscovery {
 
     private var nodes: [NodeDescription]
 
-    /// Initializes a ``ValkeyStaticClusterDiscovery`` with a list of nodes.
+    /// Initializes a ``ValkeyStaticNodeDiscovery`` with a list of nodes.
     ///
     /// - Parameter nodes: An array of ``ValkeyStaticNodeDiscovery/NodeDescription`` objects representing the nodes in the cluster.
     public init(_ nodes: [NodeDescription]) {
