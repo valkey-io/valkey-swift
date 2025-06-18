@@ -51,7 +51,7 @@ extension Data: RESPStringRenderable {}
 /// Collections to conform to RESPStringRenderable, as there is already a conformance
 /// to Collection when all the elements conform to RESPRenderable.
 @usableFromInline
-package struct RESPBulkStringRenderer<Value: RESPStringRenderable>: RESPRenderable {
+package struct RESPBulkString<Value: RESPStringRenderable>: RESPRenderable {
     @usableFromInline
     package var respEntries: Int { 1 }
 
