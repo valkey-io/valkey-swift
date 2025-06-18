@@ -28,6 +28,41 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
+
+    /// Accesses the value associated with the specified field key in the stream.
+    ///
+    /// The field collection is an array so subscript access is a O(n) where n is
+    /// the number of fields.
+    ///
+    /// Alternatively the user can create a Dictionary if there are a large number of
+    /// fields and many are accessed
+    /// ```
+    /// let fields = Dictionary(uniqueKeysWithValues: message.fields)
+    /// let field = field["fieldName"]
+    /// ```
+    ///
+    /// - Parameter key: The field key to look up.
+    /// - Returns: The `RESPToken` value associated with the given key, or `nil` if the key does not exist.
+    public subscript(field key: String) -> RESPToken? {
+        fields.first(where: { $0.key == key })?.value
+    }
+
+    /// Accesses the values associated with the specified field key as an array of `RESPToken`.
+    ///
+    /// The field collection is an array so subscript access is a O(n) where n is
+    /// the number of fields.
+    ///
+    /// - Parameter key: The field key to retrieve values for.
+    /// - Returns: An array of `RESPToken` values associated with the given field key.
+    public subscript(fields key: String) -> [RESPToken] {
+        fields.compactMap {
+            if $0.key == key {
+                $0.value
+            } else {
+                nil
+            }
+        }
+    }
 }
 
 @_documentation(visibility: internal)
