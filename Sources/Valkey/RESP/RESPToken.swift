@@ -80,8 +80,12 @@ public struct RESPToken: Hashable, Sendable {
         }
     }
 
+    /// A value type representing a RESP (REdis Serialization Protocol) string token.
+    ///
+    /// Internally it stores a ByteBuffer with the String contents. You can use `String(_:)`
+    /// to convert this to a Swift String.
     public struct String: Sendable, Hashable {
-        /// String contents
+        /// String bytes
         public let buffer: ByteBuffer
     }
 
