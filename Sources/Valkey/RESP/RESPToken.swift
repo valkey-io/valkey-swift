@@ -655,7 +655,7 @@ extension RESPToken.Value: CustomStringConvertible {
         case .double(let double): "\(tab).double(\(double))"
         case .boolean(let bool): "\(tab).boolean(\(bool ? "t" : "f"))"
         case .null: "\(tab).null"
-        case .bigNumber(let buffer): "\(tab).bigNumber(\"\(String(buffer: buffer))\"))"
+        case .bigNumber: "\(tab).bigNumber(\"***\"))"
         case .array(let array): "\(tab).array([\n\(array.descriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
         case .attribute(let map): "\(tab).attribute([\n\(map.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
         case .map(let map): "\(tab).map([\n\(map.debugDescriptionWith(indent: "\(childTab)  "))\n\(childTab)])"
