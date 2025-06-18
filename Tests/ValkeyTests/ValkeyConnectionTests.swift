@@ -30,7 +30,7 @@ struct ConnectionTests {
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
         try await channel.processHello()
 
-        async let fooResult = connection.get(key: "foo")?.decode(as: String.self)
+        async let fooResult = connection.get(key: "foo").map { String($0) }
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
@@ -210,7 +210,7 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
         try await channel.writeInbound(RESPToken(.bulkString("bar")).base)
 
-        #expect(try await results.1.get()?.decode(as: String.self) == "bar")
+        #expect(try await results.1.get().map { String($0) } == "bar")
     }
 
     @Test
@@ -332,7 +332,7 @@ struct ConnectionTests {
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
                 await #expect(throws: ValkeyClientError(.cancelled)) {
-                    _ = try await connection.get(key: "foo")?.decode(as: String.self)
+                    _ = try await connection.get(key: "foo").map { String($0) }
                 }
             }
             _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -354,7 +354,7 @@ struct ConnectionTests {
             group.cancelAll()
             group.addTask {
                 await #expect(throws: ValkeyClientError(.cancelled)) {
-                    _ = try await connection.get(key: "foo")?.decode(as: String.self)
+                    _ = try await connection.get(key: "foo").map { String($0) }
                 }
             }
         }
@@ -373,13 +373,13 @@ struct ConnectionTests {
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
                 await #expect(throws: ValkeyClientError(.connectionClosedDueToCancellation)) {
-                    _ = try await connection.get(key: "foo")?.decode(as: String.self)
+                    _ = try await connection.get(key: "foo").map { String($0) }
                 }
             }
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     await #expect(throws: ValkeyClientError(.cancelled)) {
-                        _ = try await connection.get(key: "foo")?.decode(as: String.self)
+                        _ = try await connection.get(key: "foo").map { String($0) }
                     }
                 }
                 // wait for outbound write from both tasks

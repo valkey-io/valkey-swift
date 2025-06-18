@@ -30,8 +30,8 @@ struct ClusterIntegrationTests {
             try await Self.withKey(connection: client) { key in
                 _ = try await client.set(key: key, value: "Hello")
 
-                let response = try await client.get(key: key)
-                #expect(response!.decode(as: String.self) == "Hello")
+                let response: RESPToken.String? = try await client.get(key: key)
+                #expect(response.map { String($0) } == "Hello")
             }
         }
     }
