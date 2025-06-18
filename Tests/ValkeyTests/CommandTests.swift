@@ -198,12 +198,12 @@ struct CommandTests {
                 group.addTask {
                     var result = try await connection.zpopmin(key: "key")
                     #expect(result[0].score == 1)
-                    #expect(try result[0].value.decode(as: String.self) == "one")
+                    #expect(String(result[0].value) == "one")
                     result = try await connection.zpopmin(key: "key", count: 2)
                     #expect(result[0].score == 2)
-                    #expect(try result[0].value.decode(as: String.self) == "two")
+                    #expect(String(result[0].value) == "two")
                     #expect(result[1].score == 3)
-                    #expect(try result[1].value.decode(as: String.self) == "three")
+                    #expect(String(result[1].value) == "three")
                 }
                 group.addTask {
                     var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -238,13 +238,13 @@ struct CommandTests {
                     var result = try await connection.zmpop(key: ["key", "key2"], where: .max)
                     #expect(result?.key == ValkeyKey(rawValue: "key"))
                     #expect(result?.values[0].score == 3)
-                    #expect(try result?.values[0].value.decode(as: String.self) == "three")
+                    #expect((result?.values[0].value).map { String($0) } == "three")
                     result = try await connection.zmpop(key: ["key", "key2"], where: .max, count: 2)
                     #expect(result?.key == ValkeyKey(rawValue: "key2"))
                     #expect(result?.values[0].score == 5)
-                    #expect(try result?.values[0].value.decode(as: String.self) == "five")
+                    #expect((result?.values[0].value).map { String($0) } == "five")
                     #expect(result?.values[1].score == 4)
-                    #expect(try result?.values[1].value.decode(as: String.self) == "four")
+                    #expect((result?.values[1].value).map { String($0) } == "four")
                 }
                 group.addTask {
                     var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -291,14 +291,14 @@ struct CommandTests {
                     var result = try await connection.zrange(key: "key", start: "4", stop: "10", sortby: .byscore, withscores: true)
                         .decode(as: [SortedSetEntry].self)
                     #expect(result[0].score == 4)
-                    #expect(try result[0].value.decode(as: String.self) == "four")
+                    #expect(String(result[0].value) == "four")
                     result = try await connection.zrange(key: "key", start: "2", stop: "3", sortby: .byscore, withscores: true).decode(
                         as: [SortedSetEntry].self
                     )
                     #expect(result[0].score == 2)
-                    #expect(try result[0].value.decode(as: String.self) == "two")
+                    #expect(String(result[0].value) == "two")
                     #expect(result[1].score == 3)
-                    #expect(try result[1].value.decode(as: String.self) == "three")
+                    #expect(String(result[1].value) == "three")
                 }
                 group.addTask {
                     var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)

@@ -15,7 +15,7 @@
 /// Sorted set entry
 @_documentation(visibility: internal)
 public struct SortedSetEntry: RESPTokenDecodable, Sendable {
-    public let value: RESPToken
+    public let value: RESPToken.String
     public let score: Double
 
     public init(fromRESP token: RESPToken) throws {
