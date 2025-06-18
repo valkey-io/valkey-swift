@@ -27,6 +27,8 @@ public protocol RESPStringRenderable: Sendable, Hashable {
 
 extension String: RESPStringRenderable {}
 
+extension Substring: RESPStringRenderable {}
+
 extension ByteBuffer: RESPStringRenderable {
     public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeBulkString(self.readableBytesView)

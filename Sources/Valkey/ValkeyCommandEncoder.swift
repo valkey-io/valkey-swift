@@ -39,6 +39,16 @@ public struct ValkeyCommandEncoder {
     }
 
     @inlinable
+    mutating func encodeBulkString(_ string: Substring) {
+        encodeIdentifier(.bulkString)
+
+        buffer.writeString(String(string.utf8.count))
+        buffer.writeStaticString("\r\n")
+        buffer.writeSubstring(string)
+        buffer.writeStaticString("\r\n")
+    }
+
+    @inlinable
     mutating func encodeBulkString<Bytes: Collection>(_ string: Bytes) where Bytes.Element == UInt8 {
         encodeIdentifier(.bulkString)
 
