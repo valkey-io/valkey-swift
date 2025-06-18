@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+@_documentation(visibility: internal)
 public struct XREADMessage: RESPTokenDecodable, Sendable {
     public let id: String
     public let fields: [(key: String, value: RESPToken)]
@@ -29,6 +30,7 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
     }
 }
 
+@_documentation(visibility: internal)
 public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
     public let id: String
     public let fields: [(key: String, value: RESPToken)]?
@@ -46,6 +48,7 @@ public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
     }
 }
 
+@_documentation(visibility: internal)
 public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message: RESPTokenDecodable & Sendable {
     public struct Stream: Sendable {
         public let key: ValkeyKey
@@ -68,6 +71,7 @@ public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message:
     }
 }
 
+@_documentation(visibility: internal)
 public struct XAUTOCLAIMResponse: RESPTokenDecodable, Sendable {
     public let streamID: String
     public let messsages: [XREADMessage]
@@ -86,6 +90,7 @@ extension XAUTOCLAIM {
     public typealias Response = XAUTOCLAIMResponse
 }
 
+@_documentation(visibility: internal)
 public enum XCLAIMResponse: RESPTokenDecodable, Sendable {
     case none
     case messages([XREADMessage])
@@ -113,6 +118,7 @@ extension XCLAIM {
     public typealias Response = XCLAIMResponse
 }
 
+@_documentation(visibility: internal)
 public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
     public struct Standard: RESPTokenDecodable, Sendable {
         public struct Consumer: RESPTokenDecodable, Sendable {
@@ -185,21 +191,25 @@ extension XPENDING {
     public typealias Response = XPENDINGResponse
 }
 
+@_documentation(visibility: internal)
 public typealias XRANGEResponse = [XREADMessage]
 extension XRANGE {
     public typealias Response = XRANGEResponse
 }
 
+@_documentation(visibility: internal)
 public typealias XREADResponse = XREADStreams<XREADMessage>?
 extension XREAD {
     public typealias Response = XREADResponse
 }
 
+@_documentation(visibility: internal)
 public typealias XREADGROUPResponse = XREADStreams<XREADGroupMessage>?
 extension XREADGROUP {
     public typealias Response = XREADGROUPResponse
 }
 
+@_documentation(visibility: internal)
 public typealias XREVRANGEResponse = [XREADMessage]
 extension XREVRANGE {
     public typealias Response = XREVRANGEResponse
