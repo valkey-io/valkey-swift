@@ -80,6 +80,21 @@ public struct RESPToken: Hashable, Sendable {
         }
     }
 
+    public struct String: Sendable, Hashable {
+        @usableFromInline
+        let buffer: ByteBuffer
+
+        @inlinable
+        public func decode(as type: Swift.String.Type = Swift.String.self) -> Swift.String {
+            Swift.String(buffer: self.buffer)
+        }
+
+        @inlinable
+        public func decode(as type: ByteBuffer.Type = ByteBuffer.self) -> ByteBuffer {
+            buffer
+        }
+    }
+
     public enum Value: Hashable, Sendable {
         case simpleString(ByteBuffer)
         case simpleError(ByteBuffer)

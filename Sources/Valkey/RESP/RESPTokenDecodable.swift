@@ -39,7 +39,7 @@ extension RESPToken: RESPTokenDecodable {
     func decodeResult<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) -> Result<Value, Error> {
         switch self.identifier {
         case .simpleError, .bulkError:
-            return .failure(ValkeyClientError(.commandError, message: self.errorString.map { String(buffer: $0) }))
+            return .failure(ValkeyClientError(.commandError, message: self.errorString.map { Swift.String(buffer: $0) }))
         default:
             do {
                 return try .success(Value(fromRESP: self))
@@ -221,7 +221,6 @@ extension Bool: RESPTokenDecodable {
 extension Optional: RESPTokenDecodable where Wrapped: RESPTokenDecodable {
     @inlinable
     public init(fromRESP token: RESPToken) throws {
-        print(String(buffer: token.base))
         switch token.value {
         case .null:
             self = nil
@@ -298,6 +297,18 @@ extension ClosedRange: RESPTokenDecodable where Bound: RESPTokenDecodable {
     }
 }
 
+extension RESPToken.String: RESPTokenDecodable {
+    @inlinable
+    public init(fromRESP token: RESPToken) throws {
+        switch token.value {
+        case .bulkString(let buffer), .simpleString(let buffer), .verbatimString(let buffer):
+            self.buffer = buffer
+        default:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+        }
+    }
+}
+
 extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
     public init(fromRESP token: RESPToken) throws {
@@ -358,27 +369,6 @@ extension RESPToken.Array: RESPTokenDecodable {
         }
         var iterator = self.makeIterator()
         return (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
-    }
-}
-
-public struct RESPString: RESPTokenDecodable, Sendable {
-    let buffer: ByteBuffer
-    public init(fromRESP token: RESPToken) throws {
-        switch token.value {
-        case .bulkString(let buffer), .simpleString(let buffer):
-            self.buffer = buffer
-        default:
-            print(token.value)
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
-        }
-    }
-
-    public func decode(as type: String.Type = String.self) -> String {
-        String(buffer: self.buffer)
-    }
-
-    public func decode(as type: ByteBuffer.Type = ByteBuffer.self) -> ByteBuffer {
-        buffer
     }
 }
 

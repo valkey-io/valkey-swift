@@ -26,7 +26,7 @@ import Foundation
 public enum OBJECT {
     /// Returns the internal encoding of an object.
     public struct ENCODING: ValkeyCommand {
-        public typealias Response = RESPString?
+        public typealias Response = RESPToken.String?
 
         public var key: ValkeyKey
 
@@ -156,7 +156,7 @@ public struct DEL: ValkeyCommand {
 
 /// Returns a serialized representation of the value stored at a key.
 public struct DUMP: ValkeyCommand {
-    public typealias Response = RESPString?
+    public typealias Response = RESPToken.String?
 
     public var key: ValkeyKey
 
@@ -557,7 +557,7 @@ public struct PTTL: ValkeyCommand {
 
 /// Returns a random key name from the database.
 public struct RANDOMKEY: ValkeyCommand {
-    public typealias Response = RESPString?
+    public typealias Response = RESPToken.String?
 
     @inlinable public init() {
     }
@@ -821,7 +821,7 @@ public struct TTL: ValkeyCommand {
 
 /// Determines the type of value stored at a key.
 public struct TYPE: ValkeyCommand {
-    public typealias Response = RESPString?
+    public typealias Response = RESPToken.String?
 
     public var key: ValkeyKey
 
@@ -929,7 +929,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The serialized value.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func dump(key: ValkeyKey) async throws -> RESPString? {
+    public func dump(key: ValkeyKey) async throws -> RESPToken.String? {
         try await send(command: DUMP(key: key))
     }
 
@@ -1041,7 +1041,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key doesn't exist.
     ///     * [String]: Encoding of the object.
     @inlinable
-    public func objectEncoding(key: ValkeyKey) async throws -> RESPString? {
+    public func objectEncoding(key: ValkeyKey) async throws -> RESPToken.String? {
         try await send(command: OBJECT.ENCODING(key: key))
     }
 
@@ -1171,7 +1171,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: When the database is empty.
     ///     * [String]: Random key in db.
     @inlinable
-    public func randomkey() async throws -> RESPString? {
+    public func randomkey() async throws -> RESPToken.String? {
         try await send(command: RANDOMKEY())
     }
 
@@ -1287,7 +1287,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key doesn't exist
     ///     * [String]: Type of the key
     @inlinable
-    public func type(key: ValkeyKey) async throws -> RESPString? {
+    public func type(key: ValkeyKey) async throws -> RESPToken.String? {
         try await send(command: TYPE(key: key))
     }
 
