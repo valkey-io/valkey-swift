@@ -79,7 +79,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
             if let summary = commands[namespace]?.summary {
                 string.append("/// \(summary)\n")
             }
-            string.append("\(tab)@_documentation(visibility: internal)\n")
+            string.append("@_documentation(visibility: internal)\n")
             string.append("public enum \(namespace.commandTypeName) {\n")
         }
         for key in keys {
