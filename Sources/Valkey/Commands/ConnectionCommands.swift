@@ -62,7 +62,7 @@ extension CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "CAPA", capability.map { RESPBulkStringRenderer($0) })
+            commandEncoder.encodeArray("CLIENT", "CAPA", capability.map { RESPBulkString($0) })
         }
     }
 
@@ -495,7 +495,7 @@ extension CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "SETNAME", RESPBulkStringRenderer(connectionName))
+            commandEncoder.encodeArray("CLIENT", "SETNAME", RESPBulkString(connectionName))
         }
     }
 
@@ -611,7 +611,7 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("AUTH", username, RESPBulkStringRenderer(password))
+        commandEncoder.encodeArray("AUTH", username, RESPBulkString(password))
     }
 }
 
@@ -638,7 +638,7 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ECHO", RESPBulkStringRenderer(message))
+        commandEncoder.encodeArray("ECHO", RESPBulkString(message))
     }
 }
 

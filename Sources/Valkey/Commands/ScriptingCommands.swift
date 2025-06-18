@@ -35,7 +35,7 @@ public enum FUNCTION {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("FUNCTION", "DELETE", RESPBulkStringRenderer(libraryName))
+            commandEncoder.encodeArray("FUNCTION", "DELETE", RESPBulkString(libraryName))
         }
     }
 
@@ -137,7 +137,7 @@ public enum FUNCTION {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("FUNCTION", "LOAD", RESPPureToken("REPLACE", replace), RESPBulkStringRenderer(functionCode))
+            commandEncoder.encodeArray("FUNCTION", "LOAD", RESPPureToken("REPLACE", replace), RESPBulkString(functionCode))
         }
     }
 
@@ -170,7 +170,7 @@ public enum FUNCTION {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("FUNCTION", "RESTORE", RESPBulkStringRenderer(serializedValue), policy)
+            commandEncoder.encodeArray("FUNCTION", "RESTORE", RESPBulkString(serializedValue), policy)
         }
     }
 
@@ -235,7 +235,7 @@ public enum SCRIPT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SCRIPT", "EXISTS", sha1.map { RESPBulkStringRenderer($0) })
+            commandEncoder.encodeArray("SCRIPT", "EXISTS", sha1.map { RESPBulkString($0) })
         }
     }
 
@@ -304,7 +304,7 @@ public enum SCRIPT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SCRIPT", "LOAD", RESPBulkStringRenderer(script))
+            commandEncoder.encodeArray("SCRIPT", "LOAD", RESPBulkString(script))
         }
     }
 
@@ -320,7 +320,7 @@ public enum SCRIPT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SCRIPT", "SHOW", RESPBulkStringRenderer(sha1))
+            commandEncoder.encodeArray("SCRIPT", "SHOW", RESPBulkString(sha1))
         }
     }
 
@@ -342,7 +342,7 @@ public struct EVAL<Script: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("EVAL", RESPBulkStringRenderer(script), RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("EVAL", RESPBulkString(script), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -362,7 +362,7 @@ public struct EVALSHA<Sha1: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("EVALSHA", RESPBulkStringRenderer(sha1), RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("EVALSHA", RESPBulkString(sha1), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -384,7 +384,7 @@ public struct EVALSHARO<Sha1: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("EVALSHA_RO", RESPBulkStringRenderer(sha1), RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("EVALSHA_RO", RESPBulkString(sha1), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -406,7 +406,7 @@ public struct EVALRO<Script: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("EVAL_RO", RESPBulkStringRenderer(script), RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("EVAL_RO", RESPBulkString(script), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -426,7 +426,7 @@ public struct FCALL<Function: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { key }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("FCALL", RESPBulkStringRenderer(function), RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("FCALL", RESPBulkString(function), RESPArrayWithCount(key), arg)
     }
 }
 
@@ -448,7 +448,7 @@ public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("FCALL_RO", RESPBulkStringRenderer(function), RESPArrayWithCount(key), arg)
+        commandEncoder.encodeArray("FCALL_RO", RESPBulkString(function), RESPArrayWithCount(key), arg)
     }
 }
 

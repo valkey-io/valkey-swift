@@ -98,7 +98,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", RESPBulkStringRenderer(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "COUNT-FAILURE-REPORTS", RESPBulkString(nodeId))
         }
     }
 
@@ -216,7 +216,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "FORGET", RESPBulkStringRenderer(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "FORGET", RESPBulkString(nodeId))
         }
     }
 
@@ -276,7 +276,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", RESPBulkStringRenderer(key))
+            commandEncoder.encodeArray("CLUSTER", "KEYSLOT", RESPBulkString(key))
         }
     }
 
@@ -307,7 +307,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "MEET", RESPBulkStringRenderer(ip), port, clusterBusPort)
+            commandEncoder.encodeArray("CLUSTER", "MEET", RESPBulkString(ip), port, clusterBusPort)
         }
     }
 
@@ -362,7 +362,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICAS", RESPBulkStringRenderer(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "REPLICAS", RESPBulkString(nodeId))
         }
     }
 
@@ -376,7 +376,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICATE", RESPBulkStringRenderer(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "REPLICATE", RESPBulkString(nodeId))
         }
     }
 
@@ -501,7 +501,7 @@ public enum CLUSTER {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPBulkStringRenderer(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "SLAVES", RESPBulkString(nodeId))
         }
     }
 

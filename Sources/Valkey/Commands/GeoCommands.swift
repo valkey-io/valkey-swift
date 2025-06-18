@@ -53,14 +53,14 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            longitude.respEntries + latitude.respEntries + RESPBulkStringRenderer(member).respEntries
+            longitude.respEntries + latitude.respEntries + RESPBulkString(member).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             longitude.encode(into: &commandEncoder)
             latitude.encode(into: &commandEncoder)
-            RESPBulkStringRenderer(member).encode(into: &commandEncoder)
+            RESPBulkString(member).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -125,7 +125,7 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GEODIST", key, RESPBulkStringRenderer(member1), RESPBulkStringRenderer(member2), unit)
+        commandEncoder.encodeArray("GEODIST", key, RESPBulkString(member1), RESPBulkString(member2), unit)
     }
 }
 
@@ -387,7 +387,7 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, RESPBulkStringRenderer(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER", key, RESPBulkString(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order, store)
     }
 }
 
@@ -477,7 +477,7 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, RESPBulkStringRenderer(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
+        commandEncoder.encodeArray("GEORADIUSBYMEMBER_RO", key, RESPBulkString(member), radius, unit, RESPPureToken("WITHCOORD", withcoord), RESPPureToken("WITHDIST", withdist), RESPPureToken("WITHHASH", withhash), countBlock, order)
     }
 }
 

@@ -38,7 +38,7 @@ public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("APPEND", key, RESPBulkStringRenderer(value))
+        commandEncoder.encodeArray("APPEND", key, RESPBulkString(value))
     }
 }
 
@@ -207,7 +207,7 @@ public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GETSET", key, RESPBulkStringRenderer(value))
+        commandEncoder.encodeArray("GETSET", key, RESPBulkString(value))
     }
 }
 
@@ -331,13 +331,13 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + RESPBulkStringRenderer(value).respEntries
+            key.respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             key.encode(into: &commandEncoder)
-            RESPBulkStringRenderer(value).encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public var data: [Data]
@@ -367,13 +367,13 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + RESPBulkStringRenderer(value).respEntries
+            key.respEntries + RESPBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             key.encode(into: &commandEncoder)
-            RESPBulkStringRenderer(value).encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -407,7 +407,7 @@ public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PSETEX", key, milliseconds, RESPBulkStringRenderer(value))
+        commandEncoder.encodeArray("PSETEX", key, milliseconds, RESPBulkString(value))
     }
 }
 
@@ -485,7 +485,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SET", key, RESPBulkStringRenderer(value), condition, RESPPureToken("GET", get), expiration)
+        commandEncoder.encodeArray("SET", key, RESPBulkString(value), condition, RESPPureToken("GET", get), expiration)
     }
 }
 
@@ -505,7 +505,7 @@ public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SETEX", key, seconds, RESPBulkStringRenderer(value))
+        commandEncoder.encodeArray("SETEX", key, seconds, RESPBulkString(value))
     }
 }
 
@@ -525,7 +525,7 @@ public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SETNX", key, RESPBulkStringRenderer(value))
+        commandEncoder.encodeArray("SETNX", key, RESPBulkString(value))
     }
 }
 
@@ -547,7 +547,7 @@ public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SETRANGE", key, offset, RESPBulkStringRenderer(value))
+        commandEncoder.encodeArray("SETRANGE", key, offset, RESPBulkString(value))
     }
 }
 

@@ -246,7 +246,7 @@ public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LINSERT", key, `where`, RESPBulkStringRenderer(pivot), RESPBulkStringRenderer(element))
+        commandEncoder.encodeArray("LINSERT", key, `where`, RESPBulkString(pivot), RESPBulkString(element))
     }
 }
 
@@ -403,7 +403,7 @@ public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LPOS", key, RESPBulkStringRenderer(element), RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
+        commandEncoder.encodeArray("LPOS", key, RESPBulkString(element), RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 }
 
@@ -423,7 +423,7 @@ public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LPUSH", key, element.map { RESPBulkStringRenderer($0) })
+        commandEncoder.encodeArray("LPUSH", key, element.map { RESPBulkString($0) })
     }
 }
 
@@ -443,7 +443,7 @@ public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LPUSHX", key, element.map { RESPBulkStringRenderer($0) })
+        commandEncoder.encodeArray("LPUSHX", key, element.map { RESPBulkString($0) })
     }
 }
 
@@ -489,7 +489,7 @@ public struct LREM<Element: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LREM", key, count, RESPBulkStringRenderer(element))
+        commandEncoder.encodeArray("LREM", key, count, RESPBulkString(element))
     }
 }
 
@@ -509,7 +509,7 @@ public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LSET", key, index, RESPBulkStringRenderer(element))
+        commandEncoder.encodeArray("LSET", key, index, RESPBulkString(element))
     }
 }
 
@@ -589,7 +589,7 @@ public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("RPUSH", key, element.map { RESPBulkStringRenderer($0) })
+        commandEncoder.encodeArray("RPUSH", key, element.map { RESPBulkString($0) })
     }
 }
 
@@ -609,7 +609,7 @@ public struct RPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("RPUSHX", key, element.map { RESPBulkStringRenderer($0) })
+        commandEncoder.encodeArray("RPUSHX", key, element.map { RESPBulkString($0) })
     }
 }
 

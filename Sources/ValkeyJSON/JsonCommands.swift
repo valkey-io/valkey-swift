@@ -41,7 +41,7 @@ public enum JSON {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.ARRAPPEND", key, RESPBulkStringRenderer(path), json.map { RESPBulkStringRenderer($0) })
+            commandEncoder.encodeArray("JSON.ARRAPPEND", key, RESPBulkString(path), json.map { RESPBulkString($0) })
         }
     }
 
@@ -65,7 +65,7 @@ public enum JSON {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.ARRINDEX", key, RESPBulkStringRenderer(path), RESPBulkStringRenderer(jsonScalar), start, end)
+            commandEncoder.encodeArray("JSON.ARRINDEX", key, RESPBulkString(path), RESPBulkString(jsonScalar), start, end)
         }
     }
 
@@ -87,7 +87,7 @@ public enum JSON {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.ARRINSERT", key, RESPBulkStringRenderer(path), index, json.map { RESPBulkStringRenderer($0) })
+            commandEncoder.encodeArray("JSON.ARRINSERT", key, RESPBulkString(path), index, json.map { RESPBulkString($0) })
         }
     }
 
@@ -147,7 +147,7 @@ public enum JSON {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.ARRTRIM", key, RESPBulkStringRenderer(path), start, end)
+            commandEncoder.encodeArray("JSON.ARRTRIM", key, RESPBulkString(path), start, end)
         }
     }
 
@@ -179,7 +179,7 @@ public enum JSON {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.DEBUG", RESPBulkStringRenderer(subcommandArguments))
+            commandEncoder.encodeArray("JSON.DEBUG", RESPBulkString(subcommandArguments))
         }
     }
 
@@ -248,7 +248,7 @@ public enum JSON {
         public var keysAffected: [ValkeyKey] { key }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.MGET", key, RESPBulkStringRenderer(path))
+            commandEncoder.encodeArray("JSON.MGET", key, RESPBulkString(path))
         }
     }
 
@@ -268,14 +268,14 @@ public enum JSON {
 
             @inlinable
             public var respEntries: Int {
-                key.respEntries + RESPBulkStringRenderer(path).respEntries + RESPBulkStringRenderer(json).respEntries
+                key.respEntries + RESPBulkString(path).respEntries + RESPBulkString(json).respEntries
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 key.encode(into: &commandEncoder)
-                RESPBulkStringRenderer(path).encode(into: &commandEncoder)
-                RESPBulkStringRenderer(json).encode(into: &commandEncoder)
+                RESPBulkString(path).encode(into: &commandEncoder)
+                RESPBulkString(json).encode(into: &commandEncoder)
             }
         }
         public var data: [Data]
@@ -307,7 +307,7 @@ public enum JSON {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.NUMINCRBY", key, RESPBulkStringRenderer(path), number)
+            commandEncoder.encodeArray("JSON.NUMINCRBY", key, RESPBulkString(path), number)
         }
     }
 
@@ -327,7 +327,7 @@ public enum JSON {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.NUMMULTBY", key, RESPBulkStringRenderer(path), number)
+            commandEncoder.encodeArray("JSON.NUMMULTBY", key, RESPBulkString(path), number)
         }
     }
 
@@ -403,7 +403,7 @@ public enum JSON {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.SET", key, RESPBulkStringRenderer(path), RESPBulkStringRenderer(json), options)
+            commandEncoder.encodeArray("JSON.SET", key, RESPBulkString(path), RESPBulkString(json), options)
         }
     }
 
@@ -423,7 +423,7 @@ public enum JSON {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.STRAPPEND", key, path, RESPBulkStringRenderer(jsonString))
+            commandEncoder.encodeArray("JSON.STRAPPEND", key, path, RESPBulkString(jsonString))
         }
     }
 

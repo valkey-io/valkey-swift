@@ -145,7 +145,7 @@ public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderab
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PUBLISH", RESPBulkStringRenderer(channel), RESPBulkStringRenderer(message))
+        commandEncoder.encodeArray("PUBLISH", RESPBulkString(channel), RESPBulkString(message))
     }
 }
 
@@ -177,7 +177,7 @@ public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRe
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SPUBLISH", RESPBulkStringRenderer(shardchannel), RESPBulkStringRenderer(message))
+        commandEncoder.encodeArray("SPUBLISH", RESPBulkString(shardchannel), RESPBulkString(message))
     }
 }
 
@@ -191,7 +191,7 @@ public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SSUBSCRIBE", shardchannel.map { RESPBulkStringRenderer($0) })
+        commandEncoder.encodeArray("SSUBSCRIBE", shardchannel.map { RESPBulkString($0) })
     }
 }
 
@@ -205,7 +205,7 @@ public struct SUBSCRIBE<Channel: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SUBSCRIBE", channel.map { RESPBulkStringRenderer($0) })
+        commandEncoder.encodeArray("SUBSCRIBE", channel.map { RESPBulkString($0) })
     }
 }
 

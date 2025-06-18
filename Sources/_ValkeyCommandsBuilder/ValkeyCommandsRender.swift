@@ -743,9 +743,9 @@ extension ValkeyCommand.Argument {
                 }
             } else if self.type == .string, !self.optional, genericString {
                 if self.multiple {
-                    variable = "\(variable).map { RESPBulkStringRenderer($0) }"
+                    variable = "\(variable).map { RESPBulkString($0) }"
                 } else {
-                    variable = "RESPBulkStringRenderer(\(variable))"
+                    variable = "RESPBulkString(\(variable))"
                 }
             }
             if let token = self.token {
