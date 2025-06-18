@@ -27,6 +27,20 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
     }
+
+    public subscript(field key: String) -> RESPToken? {
+        fields.first(where: { $0.key == key })?.value
+    }
+
+    public subscript(fields key: String) -> [RESPToken] {
+        fields.compactMap {
+            if $0.key == key {
+                $0.value
+            } else {
+                nil
+            }
+        }
+    }
 }
 
 public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
