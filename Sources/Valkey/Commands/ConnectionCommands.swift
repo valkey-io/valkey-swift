@@ -24,6 +24,7 @@ import Foundation
 
 extension CLIENT {
     /// Instructs the server whether to track the keys in the next request.
+    @_documentation(visibility: internal)
     public struct CACHING: ValkeyCommand {
         public enum Mode: RESPRenderable, Sendable, Hashable {
             case yes
@@ -52,6 +53,7 @@ extension CLIENT {
     }
 
     /// A client claims its capability.
+    @_documentation(visibility: internal)
     public struct CAPA<Capability: RESPStringRenderable>: ValkeyCommand {
         public var capability: [Capability]
 
@@ -65,6 +67,7 @@ extension CLIENT {
     }
 
     /// Returns the name of the connection.
+    @_documentation(visibility: internal)
     public struct GETNAME: ValkeyCommand {
         public typealias Response = RESPToken?
 
@@ -77,6 +80,7 @@ extension CLIENT {
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
+    @_documentation(visibility: internal)
     public struct GETREDIR: ValkeyCommand {
         public typealias Response = Int
 
@@ -89,6 +93,7 @@ extension CLIENT {
     }
 
     /// Returns helpful text about the different subcommands.
+    @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
@@ -101,6 +106,7 @@ extension CLIENT {
     }
 
     /// Returns the unique client ID of the connection.
+    @_documentation(visibility: internal)
     public struct ID: ValkeyCommand {
         public typealias Response = Int
 
@@ -113,6 +119,7 @@ extension CLIENT {
     }
 
     /// Mark this client as an import source when server is in import mode.
+    @_documentation(visibility: internal)
     public struct IMPORTSOURCE: ValkeyCommand {
         public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
@@ -141,6 +148,7 @@ extension CLIENT {
     }
 
     /// Returns information about the connection.
+    @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
         @inlinable public init() {
         }
@@ -151,6 +159,7 @@ extension CLIENT {
     }
 
     /// Terminates open connections.
+    @_documentation(visibility: internal)
     public struct KILL: ValkeyCommand {
         public enum FilterNewFormatClientType: RESPRenderable, Sendable, Hashable {
             case normal
@@ -259,6 +268,7 @@ extension CLIENT {
     }
 
     /// Lists open connections.
+    @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
         public enum ClientType: RESPRenderable, Sendable, Hashable {
             case normal
@@ -318,6 +328,7 @@ extension CLIENT {
     }
 
     /// Sets the client eviction mode of the connection.
+    @_documentation(visibility: internal)
     public struct NOEVICT: ValkeyCommand {
         public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
@@ -346,6 +357,7 @@ extension CLIENT {
     }
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
+    @_documentation(visibility: internal)
     public struct NOTOUCH: ValkeyCommand {
         public enum Enabled: RESPRenderable, Sendable, Hashable {
             case on
@@ -374,6 +386,7 @@ extension CLIENT {
     }
 
     /// Suspends commands processing.
+    @_documentation(visibility: internal)
     public struct PAUSE: ValkeyCommand {
         public enum Mode: RESPRenderable, Sendable, Hashable {
             case write
@@ -404,6 +417,7 @@ extension CLIENT {
     }
 
     /// Instructs the server whether to reply to commands.
+    @_documentation(visibility: internal)
     public struct REPLY: ValkeyCommand {
         public enum Action: RESPRenderable, Sendable, Hashable {
             case on
@@ -434,6 +448,7 @@ extension CLIENT {
     }
 
     /// Sets information specific to the client or connection.
+    @_documentation(visibility: internal)
     public struct SETINFO: ValkeyCommand {
         public enum Attr: RESPRenderable, Sendable, Hashable {
             case libname(String)
@@ -467,6 +482,7 @@ extension CLIENT {
     }
 
     /// Sets the connection name.
+    @_documentation(visibility: internal)
     public struct SETNAME<ConnectionName: RESPStringRenderable>: ValkeyCommand {
         public var connectionName: ConnectionName
 
@@ -480,6 +496,7 @@ extension CLIENT {
     }
 
     /// Controls server-assisted client-side caching for the connection.
+    @_documentation(visibility: internal)
     public struct TRACKING: ValkeyCommand {
         public enum Status: RESPRenderable, Sendable, Hashable {
             case on
@@ -520,6 +537,7 @@ extension CLIENT {
     }
 
     /// Returns information about server-assisted client-side caching for the connection.
+    @_documentation(visibility: internal)
     public struct TRACKINGINFO: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
@@ -532,6 +550,7 @@ extension CLIENT {
     }
 
     /// Unblocks a client blocked by a blocking command from a different connection.
+    @_documentation(visibility: internal)
     public struct UNBLOCK: ValkeyCommand {
         public enum UnblockType: RESPRenderable, Sendable, Hashable {
             case timeout
@@ -564,6 +583,7 @@ extension CLIENT {
     }
 
     /// Resumes processing commands from paused clients.
+    @_documentation(visibility: internal)
     public struct UNPAUSE: ValkeyCommand {
         @inlinable public init() {
         }
@@ -576,6 +596,7 @@ extension CLIENT {
 }
 
 /// Authenticates the connection.
+@_documentation(visibility: internal)
 public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
     public var username: String?
     public var password: Password
@@ -591,6 +612,7 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// A container for client connection commands.
+@_documentation(visibility: internal)
 public struct CLIENT: ValkeyCommand {
     @inlinable public init() {
     }
@@ -601,6 +623,7 @@ public struct CLIENT: ValkeyCommand {
 }
 
 /// Returns the given string.
+@_documentation(visibility: internal)
 public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     public var message: Message
 
@@ -614,6 +637,7 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
 }
 
 /// Handshakes with the server.
+@_documentation(visibility: internal)
 public struct HELLO: ValkeyCommand {
     public struct ArgumentsAuth: RESPRenderable, Sendable, Hashable {
         @usableFromInline let username: String
@@ -672,6 +696,7 @@ public struct HELLO: ValkeyCommand {
 }
 
 /// Returns the server's liveliness response.
+@_documentation(visibility: internal)
 public struct PING: ValkeyCommand {
     public var message: String?
 
@@ -685,6 +710,7 @@ public struct PING: ValkeyCommand {
 }
 
 /// Closes the connection.
+@_documentation(visibility: internal)
 public struct QUIT: ValkeyCommand {
     @inlinable public init() {
     }
@@ -695,6 +721,7 @@ public struct QUIT: ValkeyCommand {
 }
 
 /// Resets the connection.
+@_documentation(visibility: internal)
 public struct RESET: ValkeyCommand {
     public typealias Response = String
 
@@ -707,6 +734,7 @@ public struct RESET: ValkeyCommand {
 }
 
 /// Changes the selected database.
+@_documentation(visibility: internal)
 public struct SELECT: ValkeyCommand {
     public var index: Int
 
