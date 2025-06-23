@@ -36,7 +36,7 @@ let package = Package(
         .target(
             name: "Valkey",
             dependencies: [
-                .byName(name: "_ConnectionPoolModule"),
+                .byName(name: "_ValkeyConnectionPool"),
                 .product(name: "DequeModule", package: "swift-collections"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOCore", package: "swift-nio"),
@@ -58,12 +58,12 @@ let package = Package(
             swiftSettings: defaultSwiftSettings
         ),
         .target(
-            name: "_ConnectionPoolModule",
+            name: "_ValkeyConnectionPool",
             dependencies: [
                 .product(name: "Atomics", package: "swift-atomics"),
                 .product(name: "DequeModule", package: "swift-collections"),
             ],
-            path: "Sources/ConnectionPoolModule",
+            path: "Sources/ValkeyConnectionPool",
             swiftSettings: defaultSwiftSettings
         ),
         .executableTarget(
