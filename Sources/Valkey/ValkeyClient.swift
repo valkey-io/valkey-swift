@@ -18,7 +18,7 @@ import NIOPosix
 import NIOSSL
 import NIOTransportServices
 import Synchronization
-import _ConnectionPoolModule
+import _ValkeyConnectionPool
 
 #if ServiceLifecycleSupport
 import ServiceLifecycle

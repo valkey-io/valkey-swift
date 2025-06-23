@@ -14,7 +14,7 @@
 
 import Logging
 import Synchronization
-import _ConnectionPoolModule
+import _ValkeyConnectionPool
 
 /// Extend ValkeyConnection so we can use it with the connection pool
 @available(valkeySwift 1.0, *)

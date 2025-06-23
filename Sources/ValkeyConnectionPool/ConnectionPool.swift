@@ -181,7 +181,7 @@ where
 
     @usableFromInline let stateBox: NIOLockedValueBox<State>
 
-    private let requestIDGenerator = _ConnectionPoolModule.ConnectionIDGenerator()
+    private let requestIDGenerator = _ValkeyConnectionPool.ConnectionIDGenerator()
 
     @usableFromInline
     let eventStream: AsyncStream<NewPoolActions>
