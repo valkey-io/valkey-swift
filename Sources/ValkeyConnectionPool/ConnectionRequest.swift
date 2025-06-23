@@ -1,4 +1,3 @@
-
 public struct ConnectionRequest<Connection: PooledConnection>: ConnectionRequestProtocol {
     public typealias ID = Int
 
@@ -22,13 +21,13 @@ public struct ConnectionRequest<Connection: PooledConnection>: ConnectionRequest
 }
 
 @usableFromInline
-let requestIDGenerator = _ConnectionPoolModule.ConnectionIDGenerator()
+let requestIDGenerator = _ValkeyConnectionPool.ConnectionIDGenerator()
 
 @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
 extension ConnectionPool where Request == ConnectionRequest<Connection> {
     public convenience init(
         configuration: ConnectionPoolConfiguration,
-        idGenerator: ConnectionIDGenerator = _ConnectionPoolModule.ConnectionIDGenerator(),
+        idGenerator: ConnectionIDGenerator = _ValkeyConnectionPool.ConnectionIDGenerator(),
         keepAliveBehavior: KeepAliveBehavior,
         observabilityDelegate: ObservabilityDelegate,
         clock: Clock = ContinuousClock(),

@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import NIOSSL
-import _ConnectionPoolModule
+import _ValkeyConnectionPool
 
 /// Configuration for the Valkey client
 @available(valkeySwift 1.0, *)
