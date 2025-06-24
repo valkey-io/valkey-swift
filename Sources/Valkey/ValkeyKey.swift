@@ -38,6 +38,7 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
         self._storage = .buffer(buffer)
     }
 
+    @inlinable
     static public func == (_ lhs: Self, _ rhs: Self) -> Bool {
         switch (lhs._storage, rhs._storage) {
         case (.string(let lhs), .string(let rhs)):
@@ -61,6 +62,7 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
 }
 
 extension ValkeyKey: RESPTokenDecodable {
+    @inlinable
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .simpleString(let buffer), .bulkString(let buffer):
@@ -89,6 +91,7 @@ extension ValkeyKey: RESPRenderable {
 extension ValkeyKey: RESPStringRenderable {}
 
 extension ValkeyKey: CustomStringConvertible {
+    @inlinable
     public var description: String {
         switch self._storage {
         case .string(let string): string
@@ -107,6 +110,7 @@ extension ValkeyKey: ExpressibleByStringLiteral {
 extension String {
     ///  Initialize String from ValkeyKey
     /// - Parameter valkeyKey: key
+    @inlinable
     public init(valkeyKey: ValkeyKey) {
         switch valkeyKey._storage {
         case .string(let string): self = string
@@ -118,6 +122,7 @@ extension String {
 extension ByteBuffer {
     ///  Initialize ByteBuffer from ValkeyKey
     /// - Parameter valkeyKey: key
+    @inlinable
     public init(valkeyKey: ValkeyKey) {
         switch valkeyKey._storage {
         case .string(let string): self = ByteBuffer(string: string)
