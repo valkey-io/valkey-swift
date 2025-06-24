@@ -60,7 +60,7 @@ public enum ACL {
     /// Simulates the execution of a command by a user, without executing the command.
     @_documentation(visibility: internal)
     public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.String?
+        public typealias Response = ByteBuffer?
 
         public var username: Username
         public var command: Command
@@ -80,7 +80,7 @@ public enum ACL {
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     @_documentation(visibility: internal)
     public struct GENPASS: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         public var bits: Int?
 
@@ -225,7 +225,7 @@ public enum ACL {
     /// Returns the authenticated username of the current connection.
     @_documentation(visibility: internal)
     public struct WHOAMI: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -604,7 +604,7 @@ public enum LATENCY {
     /// Returns a human-readable latency analysis report.
     @_documentation(visibility: internal)
     public struct DOCTOR: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -617,7 +617,7 @@ public enum LATENCY {
     /// Returns a latency graph for an event.
     @_documentation(visibility: internal)
     public struct GRAPH<Event: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         public var event: Event
 
@@ -712,7 +712,7 @@ public enum MEMORY {
     /// Outputs a memory problems report.
     @_documentation(visibility: internal)
     public struct DOCTOR: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -738,7 +738,7 @@ public enum MEMORY {
     /// Returns the allocator statistics.
     @_documentation(visibility: internal)
     public struct MALLOCSTATS: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -956,7 +956,7 @@ public enum SLOWLOG {
 /// Asynchronously rewrites the append-only file to disk.
 @_documentation(visibility: internal)
 public struct BGREWRITEAOF: ValkeyCommand {
-    public typealias Response = RESPToken.String
+    public typealias Response = ByteBuffer
 
     @inlinable public init() {
     }
@@ -1125,7 +1125,7 @@ public struct FLUSHDB: ValkeyCommand {
 /// Returns information and statistics about the server.
 @_documentation(visibility: internal)
 public struct INFO: ValkeyCommand {
-    public typealias Response = RESPToken.String
+    public typealias Response = ByteBuffer
 
     public var section: [String]
 
@@ -1154,7 +1154,7 @@ public struct LASTSAVE: ValkeyCommand {
 /// Displays computer art and the server version
 @_documentation(visibility: internal)
 public struct LOLWUT: ValkeyCommand {
-    public typealias Response = RESPToken.String
+    public typealias Response = ByteBuffer
 
     public var version: Int?
 
@@ -1259,7 +1259,7 @@ public struct REPLICAOF: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken.String
+    public typealias Response = ByteBuffer
 
     public var args: Args
 
@@ -1431,7 +1431,7 @@ public struct SLAVEOF: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken.String
+    public typealias Response = ByteBuffer
 
     public var args: Args
 
@@ -1518,7 +1518,7 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
-    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, arg: [String] = []) async throws -> RESPToken.String? {
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, arg: [String] = []) async throws -> ByteBuffer? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 
@@ -1529,7 +1529,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: Pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
-    public func aclGenpass(bits: Int? = nil) async throws -> RESPToken.String {
+    public func aclGenpass(bits: Int? = nil) async throws -> ByteBuffer {
         try await send(command: ACL.GENPASS(bits: bits))
     }
 
@@ -1637,7 +1637,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The username of the current connection.
     @inlinable
-    public func aclWhoami() async throws -> RESPToken.String {
+    public func aclWhoami() async throws -> ByteBuffer {
         try await send(command: ACL.WHOAMI())
     }
 
@@ -1648,7 +1648,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: A simple string reply indicating that the rewriting started or is about to start ASAP
     @inlinable
-    public func bgrewriteaof() async throws -> RESPToken.String {
+    public func bgrewriteaof() async throws -> ByteBuffer {
         try await send(command: BGREWRITEAOF())
     }
 
@@ -1910,7 +1910,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
     @inlinable
-    public func info(section: [String] = []) async throws -> RESPToken.String {
+    public func info(section: [String] = []) async throws -> ByteBuffer {
         try await send(command: INFO(section: section))
     }
 
@@ -1932,7 +1932,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: A human readable latency analysis report.
     @inlinable
-    public func latencyDoctor() async throws -> RESPToken.String {
+    public func latencyDoctor() async throws -> ByteBuffer {
         try await send(command: LATENCY.DOCTOR())
     }
 
@@ -1943,7 +1943,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: Latency graph
     @inlinable
-    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> RESPToken.String {
+    public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> ByteBuffer {
         try await send(command: LATENCY.GRAPH(event: event))
     }
 
@@ -2008,7 +2008,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 5.0.0
     /// - Returns: [String]: String containing the generative computer art, and a text with the server version.
     @inlinable
-    public func lolwut(version: Int? = nil) async throws -> RESPToken.String {
+    public func lolwut(version: Int? = nil) async throws -> ByteBuffer {
         try await send(command: LOLWUT(version: version))
     }
 
@@ -2019,7 +2019,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: Memory problems report.
     @inlinable
-    public func memoryDoctor() async throws -> RESPToken.String {
+    public func memoryDoctor() async throws -> ByteBuffer {
         try await send(command: MEMORY.DOCTOR())
     }
 
@@ -2041,7 +2041,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: Depends on how much memory is allocated, could be slow
     /// - Returns: [String]: The memory allocator's internal statistics report.
     @inlinable
-    public func memoryMallocStats() async throws -> RESPToken.String {
+    public func memoryMallocStats() async throws -> ByteBuffer {
         try await send(command: MEMORY.MALLOCSTATS())
     }
 
@@ -2156,7 +2156,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: ReplicaOf status.
     @inlinable
-    public func replicaof(args: REPLICAOF.Args) async throws -> RESPToken.String {
+    public func replicaof(args: REPLICAOF.Args) async throws -> ByteBuffer {
         try await send(command: REPLICAOF(args: args))
     }
 
@@ -2201,7 +2201,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: SlaveOf status.
     @inlinable
-    public func slaveof(args: SLAVEOF.Args) async throws -> RESPToken.String {
+    public func slaveof(args: SLAVEOF.Args) async throws -> ByteBuffer {
         try await send(command: SLAVEOF(args: args))
     }
 

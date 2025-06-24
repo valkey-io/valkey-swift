@@ -53,7 +53,7 @@ let benchmarks: @Sendable () -> Void = {
 
                     for _ in benchmark.scaledIterations {
                         let foo = try await connection.get(key: "foo")
-                        precondition(foo.map { String($0) } == "Bar")
+                        precondition(foo.map { String(buffer: $0) } == "Bar")
                     }
 
                     benchmark.stopMeasurement()

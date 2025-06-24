@@ -297,18 +297,6 @@ extension ClosedRange: RESPTokenDecodable where Bound: RESPTokenDecodable {
     }
 }
 
-extension RESPToken.String: RESPTokenDecodable {
-    @inlinable
-    public init(fromRESP token: RESPToken) throws {
-        switch token.value {
-        case .bulkString(let buffer), .simpleString(let buffer), .verbatimString(let buffer):
-            self.buffer = buffer
-        default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
-        }
-    }
-}
-
 extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
     public init(fromRESP token: RESPToken) throws {

@@ -55,7 +55,7 @@ public struct BLMOVE: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken.String?
+    public typealias Response = ByteBuffer?
 
     public var source: ValkeyKey
     public var destination: ValkeyKey
@@ -168,7 +168,7 @@ public struct BRPOP: ValkeyCommand {
 /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct BRPOPLPUSH: ValkeyCommand {
-    public typealias Response = RESPToken.String?
+    public typealias Response = ByteBuffer?
 
     public var source: ValkeyKey
     public var destination: ValkeyKey
@@ -192,7 +192,7 @@ public struct BRPOPLPUSH: ValkeyCommand {
 /// Returns an element from a list by its index.
 @_documentation(visibility: internal)
 public struct LINDEX: ValkeyCommand {
-    public typealias Response = RESPToken.String?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
     public var index: Int
@@ -303,7 +303,7 @@ public struct LMOVE: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken.String
+    public typealias Response = ByteBuffer
 
     public var source: ValkeyKey
     public var destination: ValkeyKey
@@ -556,7 +556,7 @@ public struct RPOP: ValkeyCommand {
 /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct RPOPLPUSH: ValkeyCommand {
-    public typealias Response = RESPToken.String?
+    public typealias Response = ByteBuffer?
 
     public var source: ValkeyKey
     public var destination: ValkeyKey
@@ -623,7 +623,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The popped element.
     ///     * [Null]: Operation timed-out
     @inlinable
-    public func blmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> RESPToken.String? {
+    public func blmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> ByteBuffer? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
@@ -682,7 +682,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The element being popped from source and pushed to destination.
     ///     * [Null]: Timeout is reached.
     @inlinable
-    public func brpoplpush(source: ValkeyKey, destination: ValkeyKey, timeout: Double) async throws -> RESPToken.String? {
+    public func brpoplpush(source: ValkeyKey, destination: ValkeyKey, timeout: Double) async throws -> ByteBuffer? {
         try await send(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
 
@@ -695,7 +695,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Index is out of range
     ///     * [String]: The requested element
     @inlinable
-    public func lindex(key: ValkeyKey, index: Int) async throws -> RESPToken.String? {
+    public func lindex(key: ValkeyKey, index: Int) async throws -> ByteBuffer? {
         try await send(command: LINDEX(key: key, index: index))
     }
 
@@ -731,7 +731,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The element being popped and pushed.
     @inlinable
-    public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> RESPToken.String {
+    public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> ByteBuffer {
         try await send(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
@@ -872,7 +872,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The element being popped and pushed.
     ///     * [Null]: Source list is empty.
     @inlinable
-    public func rpoplpush(source: ValkeyKey, destination: ValkeyKey) async throws -> RESPToken.String? {
+    public func rpoplpush(source: ValkeyKey, destination: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: RPOPLPUSH(source: source, destination: destination))
     }
 

@@ -76,7 +76,7 @@ public enum CLUSTER {
     /// Advances the cluster config epoch.
     @_documentation(visibility: internal)
     public struct BUMPEPOCH: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -254,7 +254,7 @@ public enum CLUSTER {
     /// Returns information about the state of a node.
     @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -314,7 +314,7 @@ public enum CLUSTER {
     /// Returns the ID of a node.
     @_documentation(visibility: internal)
     public struct MYID: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -327,7 +327,7 @@ public enum CLUSTER {
     /// Returns the shard ID of a node.
     @_documentation(visibility: internal)
     public struct MYSHARDID: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -340,7 +340,7 @@ public enum CLUSTER {
     /// Returns the cluster configuration for a node.
     @_documentation(visibility: internal)
     public struct NODES: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -687,7 +687,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: If the epoch was incremented.
     ///     * [String]: If the node already has the greatest config epoch in the cluster.
     @inlinable
-    public func clusterBumpepoch() async throws -> RESPToken.String {
+    public func clusterBumpepoch() async throws -> ByteBuffer {
         try await send(command: CLUSTER.BUMPEPOCH())
     }
 
@@ -792,7 +792,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF
     @inlinable
-    public func clusterInfo() async throws -> RESPToken.String {
+    public func clusterInfo() async throws -> ByteBuffer {
         try await send(command: CLUSTER.INFO())
     }
 
@@ -837,7 +837,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The node id.
     @inlinable
-    public func clusterMyid() async throws -> RESPToken.String {
+    public func clusterMyid() async throws -> ByteBuffer {
         try await send(command: CLUSTER.MYID())
     }
 
@@ -848,7 +848,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The node's shard id.
     @inlinable
-    public func clusterMyshardid() async throws -> RESPToken.String {
+    public func clusterMyshardid() async throws -> ByteBuffer {
         try await send(command: CLUSTER.MYSHARDID())
     }
 
@@ -859,7 +859,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Returns: [String]: The serialized cluster configuration.
     @inlinable
-    public func clusterNodes() async throws -> RESPToken.String {
+    public func clusterNodes() async throws -> ByteBuffer {
         try await send(command: CLUSTER.NODES())
     }
 

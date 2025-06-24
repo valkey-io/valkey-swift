@@ -28,7 +28,7 @@ public enum SENTINEL {
     /// Checks for a Sentinel quorum.
     @_documentation(visibility: internal)
     public struct CKQUORUM<PrimaryName: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         public var primaryName: PrimaryName
 
@@ -315,7 +315,7 @@ public enum SENTINEL {
     /// Returns the Sentinel instance ID.
     @_documentation(visibility: internal)
     public struct MYID: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -523,7 +523,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.4
     /// - Returns: [String]: Returns OK if the current Sentinel configuration is able to reach the quorum needed to failover a primary, and the majority needed to authorize the failover.
     @inlinable
-    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> RESPToken.String {
+    public func sentinelCkquorum<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws -> ByteBuffer {
         try await send(command: SENTINEL.CKQUORUM(primaryName: primaryName))
     }
 
@@ -689,7 +689,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: Node ID of the sentinel instance.
     @inlinable
-    public func sentinelMyid() async throws -> RESPToken.String {
+    public func sentinelMyid() async throws -> ByteBuffer {
         try await send(command: SENTINEL.MYID())
     }
 

@@ -413,7 +413,7 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
             RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken.String?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
     public var nomkstream: Bool
@@ -871,7 +871,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The ID of the added entry. The ID is the one auto-generated if * is passed as ID argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null]: The NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: ValkeyKey, nomkstream: Bool = false, trim: XADD<Field, Value>.Trim? = nil, idSelector: XADD<Field, Value>.IdSelector, data: [XADD<Field, Value>.Data]) async throws -> RESPToken.String? {
+    public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(key: ValkeyKey, nomkstream: Bool = false, trim: XADD<Field, Value>.Trim? = nil, idSelector: XADD<Field, Value>.IdSelector, data: [XADD<Field, Value>.Data]) async throws -> ByteBuffer? {
         try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 

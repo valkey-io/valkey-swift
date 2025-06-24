@@ -69,7 +69,7 @@ extension CLIENT {
     /// Returns the name of the connection.
     @_documentation(visibility: internal)
     public struct GETNAME: ValkeyCommand {
-        public typealias Response = RESPToken.String?
+        public typealias Response = ByteBuffer?
 
         @inlinable public init() {
         }
@@ -150,7 +150,7 @@ extension CLIENT {
     /// Returns information about the connection.
     @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         @inlinable public init() {
         }
@@ -306,7 +306,7 @@ extension CLIENT {
                 }
             }
         }
-        public typealias Response = RESPToken.String
+        public typealias Response = ByteBuffer
 
         public var clientType: ClientType?
         public var clientId: [Int]
@@ -629,7 +629,7 @@ public struct CLIENT: ValkeyCommand {
 /// Returns the given string.
 @_documentation(visibility: internal)
 public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = RESPToken.String
+    public typealias Response = ByteBuffer
 
     public var message: Message
 
@@ -805,7 +805,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The connection name of the current connection
     ///     * [Null]: Connection name was not set
     @inlinable
-    public func clientGetname() async throws -> RESPToken.String? {
+    public func clientGetname() async throws -> ByteBuffer? {
         try await send(command: CLIENT.GETNAME())
     }
 
@@ -862,7 +862,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
-    public func clientInfo() async throws -> RESPToken.String {
+    public func clientInfo() async throws -> ByteBuffer {
         try await send(command: CLIENT.INFO())
     }
 
@@ -904,7 +904,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of client connections
     /// - Returns: [String]: Information and statistics about client connections
     @inlinable
-    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: CLIENT.LIST.Skipme? = nil, maxage: Int? = nil) async throws -> RESPToken.String {
+    public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: CLIENT.LIST.Skipme? = nil, maxage: Int? = nil) async throws -> ByteBuffer {
         try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId, username: username, addr: addr, laddr: laddr, skipme: skipme, maxage: maxage))
     }
 
@@ -1022,7 +1022,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The given string
     @inlinable
-    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> RESPToken.String {
+    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ByteBuffer {
         try await send(command: ECHO(message: message))
     }
 

@@ -28,7 +28,7 @@ public enum OBJECT {
     /// Returns the internal encoding of an object.
     @_documentation(visibility: internal)
     public struct ENCODING: ValkeyCommand {
-        public typealias Response = RESPToken.String?
+        public typealias Response = ByteBuffer?
 
         public var key: ValkeyKey
 
@@ -165,7 +165,7 @@ public struct DEL: ValkeyCommand {
 /// Returns a serialized representation of the value stored at a key.
 @_documentation(visibility: internal)
 public struct DUMP: ValkeyCommand {
-    public typealias Response = RESPToken.String?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
 
@@ -579,7 +579,7 @@ public struct PTTL: ValkeyCommand {
 /// Returns a random key name from the database.
 @_documentation(visibility: internal)
 public struct RANDOMKEY: ValkeyCommand {
-    public typealias Response = RESPToken.String?
+    public typealias Response = ByteBuffer?
 
     @inlinable public init() {
     }
@@ -852,7 +852,7 @@ public struct TTL: ValkeyCommand {
 /// Determines the type of value stored at a key.
 @_documentation(visibility: internal)
 public struct TYPE: ValkeyCommand {
-    public typealias Response = RESPToken.String?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
 
@@ -963,7 +963,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The serialized value.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func dump(key: ValkeyKey) async throws -> RESPToken.String? {
+    public func dump(key: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: DUMP(key: key))
     }
 
@@ -1075,7 +1075,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key doesn't exist.
     ///     * [String]: Encoding of the object.
     @inlinable
-    public func objectEncoding(key: ValkeyKey) async throws -> RESPToken.String? {
+    public func objectEncoding(key: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: OBJECT.ENCODING(key: key))
     }
 
@@ -1205,7 +1205,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: When the database is empty.
     ///     * [String]: Random key in db.
     @inlinable
-    public func randomkey() async throws -> RESPToken.String? {
+    public func randomkey() async throws -> ByteBuffer? {
         try await send(command: RANDOMKEY())
     }
 
@@ -1321,7 +1321,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key doesn't exist
     ///     * [String]: Type of the key
     @inlinable
-    public func type(key: ValkeyKey) async throws -> RESPToken.String? {
+    public func type(key: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: TYPE(key: key))
     }
 
