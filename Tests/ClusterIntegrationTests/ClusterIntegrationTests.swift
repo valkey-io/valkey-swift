@@ -12,10 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Valkey
-import Testing
-import Logging
 import Foundation
+import Logging
+import Testing
+import Valkey
 
 struct ClusterIntegrationTests {
 
@@ -31,7 +31,7 @@ struct ClusterIntegrationTests {
                 _ = try await client.set(key: key, value: "Hello")
 
                 let response = try await client.get(key: key)
-                #expect(try String(fromRESP: response!) == "Hello")
+                #expect(response.map { String(buffer: $0) } == "Hello")
             }
         }
     }
