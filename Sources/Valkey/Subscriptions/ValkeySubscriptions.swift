@@ -87,7 +87,7 @@ struct ValkeySubscriptions {
             case .forwardMessage(let subscriptions):
                 for subscription in subscriptions {
                     for key in keys {
-                        subscription.sendMessage(.init(channel: Self.invalidateChannel, message: key.rawValue))
+                        subscription.sendMessage(.init(channel: Self.invalidateChannel, message: key.string))
                     }
                 }
             case .doNothing, .none:

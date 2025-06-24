@@ -53,6 +53,14 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
     static public func == (_ lhs: Self, _ rhs: Self) -> Bool {
         lhs.buffer == rhs.buffer
     }
+
+    @inlinable
+    public func hash(into hasher: inout Hasher) {
+        switch self._storage {
+        case .string(let string): string.hash(into: &hasher)
+        case .buffer(let buffer): buffer.hash(into: &hasher)
+        }
+    }
 }
 
 extension ValkeyKey: RESPTokenDecodable {
