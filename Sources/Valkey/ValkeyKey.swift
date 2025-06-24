@@ -51,7 +51,16 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
     }
 
     static public func == (_ lhs: Self, _ rhs: Self) -> Bool {
-        lhs.buffer == rhs.buffer
+        switch (lhs._storage, rhs._storage) {
+        case (.string(let lhs), .string(let rhs)):
+            lhs == rhs
+        case (.buffer(let lhs), .buffer(let rhs)):
+            lhs == rhs
+        case (.string(let lhs), .buffer(let rhs)):
+            ByteBuffer(string: lhs) == rhs
+        case (.buffer(let lhs), .string(let rhs)):
+            lhs == ByteBuffer(string: rhs)
+        }
     }
 
     @inlinable
