@@ -104,7 +104,7 @@ let benchmarks: @Sendable () -> Void = {
         }
 
         Benchmark("ValkeyCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-            let keys = (0..<15).map { ValkeyKey(string: "foo-\($0)") }
+            let keys = (0..<15).map { ValkeyKey("foo-\($0)") }
             let command = MGET(key: keys)
             benchmark.startMeasurement()
 

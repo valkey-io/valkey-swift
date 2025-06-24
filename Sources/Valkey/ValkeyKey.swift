@@ -27,14 +27,14 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
     /// Initialize ValkeyKey with String
     /// - Parameter string: string
     @inlinable
-    public init(string: String) {
+    public init(_ string: String) {
         self._storage = .string(string)
     }
 
     /// Initialize ValkeyKey with ByteBuffer
     /// - Parameter buffer: ByteBuffer
     @inlinable
-    public init(buffer: ByteBuffer) {
+    public init(_ buffer: ByteBuffer) {
         self._storage = .buffer(buffer)
     }
 
@@ -46,9 +46,9 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
         case (.buffer(let lhs), .buffer(let rhs)):
             lhs == rhs
         case (.string(let lhs), .buffer(let rhs)):
-            ByteBuffer(string: lhs) == rhs
+            lhs.utf8.elementsEqual(rhs.readableBytesView)
         case (.buffer(let lhs), .string(let rhs)):
-            lhs == ByteBuffer(string: rhs)
+            rhs.utf8.elementsEqual(lhs.readableBytesView)
         }
     }
 
@@ -103,7 +103,7 @@ extension ValkeyKey: CustomStringConvertible {
 extension ValkeyKey: ExpressibleByStringLiteral {
     @inlinable
     public init(stringLiteral string: String) {
-        self.init(string: string)
+        self.init(string)
     }
 }
 
