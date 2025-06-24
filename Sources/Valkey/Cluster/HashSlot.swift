@@ -130,6 +130,7 @@ extension HashSlot {
     ///
     /// - Parameter key: The key used in a Valkey command
     /// - Returns: A HashSlot representing where this key would be stored in the cluster
+    @inlinable
     public init(key: some BidirectionalCollection<UInt8>) {
         // Banging is safe because the modulo ensures we are in range
         self.init(rawValue: UInt16(HashSlot.crc16(HashSlot.hashTag(forKey: key)) % 16384))!
@@ -157,6 +158,7 @@ extension HashSlot {
     ///
     /// - Parameter key: The key for your operation
     /// - Returns: A substring UTF8 view that will be used in the CRC16 computation
+    @inlinable
     package static func hashTag<Bytes: BidirectionalCollection<UInt8>>(forKey key: Bytes) -> Bytes.SubSequence {
         var firstOpenCurly: Bytes.Index?
         var index = key.startIndex
@@ -272,6 +274,7 @@ extension HashSlot {
     ///
     /// - Parameter bytes: A sequence of bytes to compute the CRC16 value for
     /// - Returns: The computed CRC16 value
+    @usableFromInline
     package static func crc16<Bytes: Sequence>(_ bytes: Bytes) -> UInt16 where Bytes.Element == UInt8 {
         var crc: UInt16 = 0
         for byte in bytes {
