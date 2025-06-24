@@ -24,30 +24,18 @@ public struct ValkeyKey: Sendable, Equatable, Hashable {
     @usableFromInline
     let _storage: _Storage
 
+    /// Initialize ValkeyKey with String
+    /// - Parameter string: string
     @inlinable
-    public init(_ string: String) {
+    public init(string: String) {
         self._storage = .string(string)
     }
 
+    /// Initialize ValkeyKey with ByteBuffer
+    /// - Parameter buffer: ByteBuffer
     @inlinable
-    public init(_ buffer: ByteBuffer) {
+    public init(buffer: ByteBuffer) {
         self._storage = .buffer(buffer)
-    }
-
-    @inlinable
-    public var string: String {
-        switch self._storage {
-        case .string(let string): string
-        case .buffer(let buffer): String(buffer: buffer)
-        }
-    }
-
-    @inlinable
-    public var buffer: ByteBuffer {
-        switch self._storage {
-        case .string(let string): ByteBuffer(string: string)
-        case .buffer(let buffer): buffer
-        }
     }
 
     static public func == (_ lhs: Self, _ rhs: Self) -> Bool {
@@ -83,10 +71,6 @@ extension ValkeyKey: RESPTokenDecodable {
     }
 }
 
-extension ValkeyKey: CustomStringConvertible {
-    public var description: String { self.string }
-}
-
 extension ValkeyKey: RESPRenderable {
     @inlinable
     public var respEntries: Int { 1 }
@@ -104,9 +88,40 @@ extension ValkeyKey: RESPRenderable {
 
 extension ValkeyKey: RESPStringRenderable {}
 
+extension ValkeyKey: CustomStringConvertible {
+    public var description: String {
+        switch self._storage {
+        case .string(let string): string
+        case .buffer(let buffer): String(buffer: buffer)
+        }
+    }
+}
+
 extension ValkeyKey: ExpressibleByStringLiteral {
     @inlinable
     public init(stringLiteral string: String) {
-        self.init(string)
+        self.init(string: string)
+    }
+}
+
+extension String {
+    ///  Initialize String from ValkeyKey
+    /// - Parameter valkeyKey: key
+    public init(valkeyKey: ValkeyKey) {
+        switch valkeyKey._storage {
+        case .string(let string): self = string
+        case .buffer(let buffer): self = String(buffer: buffer)
+        }
+    }
+}
+
+extension ByteBuffer {
+    ///  Initialize ByteBuffer from ValkeyKey
+    /// - Parameter valkeyKey: key
+    public init(valkeyKey: ValkeyKey) {
+        switch valkeyKey._storage {
+        case .string(let string): self = ByteBuffer(string: string)
+        case .buffer(let buffer): self = buffer
+        }
     }
 }

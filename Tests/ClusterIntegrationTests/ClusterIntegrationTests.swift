@@ -41,7 +41,7 @@ struct ClusterIntegrationTests {
         connection: some ValkeyConnectionProtocol,
         _ operation: (ValkeyKey) async throws -> Value
     ) async throws -> Value {
-        let key = ValkeyKey(UUID().uuidString)
+        let key = ValkeyKey(string: UUID().uuidString)
         let result: Result<Value, any Error>
         do {
             result = try await .success(operation(key))
