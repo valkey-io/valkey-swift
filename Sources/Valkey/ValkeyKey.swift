@@ -91,7 +91,6 @@ extension ValkeyKey: RESPRenderable {
 extension ValkeyKey: RESPStringRenderable {}
 
 extension ValkeyKey: CustomStringConvertible {
-    @inlinable
     public var description: String {
         switch self._storage {
         case .string(let string): string
