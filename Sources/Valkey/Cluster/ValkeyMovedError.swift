@@ -112,6 +112,6 @@ extension RESPToken {
             return nil
         }
 
-        return ValkeyMovedError(slot: slot, endpoint: String(endpoint), port: port)
+        return ValkeyMovedError(slot: slot, endpoint: Swift.String(endpoint), port: port)
     }
 }

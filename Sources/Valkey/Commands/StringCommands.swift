@@ -83,7 +83,7 @@ public struct DECRBY: ValkeyCommand {
 /// Returns the string value of a key.
 @_documentation(visibility: internal)
 public struct GET: ValkeyCommand {
-    public typealias Response = RESPToken?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
 
@@ -103,7 +103,7 @@ public struct GET: ValkeyCommand {
 /// Returns the string value of a key after deleting the key.
 @_documentation(visibility: internal)
 public struct GETDEL: ValkeyCommand {
-    public typealias Response = RESPToken?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
 
@@ -150,7 +150,7 @@ public struct GETEX: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
     public var expiration: Expiration?
@@ -170,6 +170,8 @@ public struct GETEX: ValkeyCommand {
 /// Returns a substring of the string stored at a key.
 @_documentation(visibility: internal)
 public struct GETRANGE: ValkeyCommand {
+    public typealias Response = ByteBuffer
+
     public var key: ValkeyKey
     public var start: Int
     public var end: Int
@@ -192,7 +194,7 @@ public struct GETRANGE: ValkeyCommand {
 /// Returns the previous string value of a key after setting it to a new value.
 @_documentation(visibility: internal)
 public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = RESPToken?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
     public var value: Value
@@ -250,6 +252,8 @@ public struct INCRBY: ValkeyCommand {
 /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
 @_documentation(visibility: internal)
 public struct INCRBYFLOAT: ValkeyCommand {
+    public typealias Response = ByteBuffer
+
     public var key: ValkeyKey
     public var increment: Double
 
@@ -462,7 +466,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
     public var value: Value
@@ -570,6 +574,8 @@ public struct STRLEN: ValkeyCommand {
 /// Returns a substring from a string value.
 @_documentation(visibility: internal)
 public struct SUBSTR: ValkeyCommand {
+    public typealias Response = ByteBuffer
+
     public var key: ValkeyKey
     public var start: Int
     public var end: Int
@@ -632,7 +638,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func get(key: ValkeyKey) async throws -> RESPToken? {
+    public func get(key: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: GET(key: key))
     }
 
@@ -645,7 +651,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: The key does not exist.
     @inlinable
-    public func getdel(key: ValkeyKey) async throws -> RESPToken? {
+    public func getdel(key: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: GETDEL(key: key))
     }
 
@@ -658,7 +664,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func getex(key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> RESPToken? {
+    public func getex(key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> ByteBuffer? {
         try await send(command: GETEX(key: key, expiration: expiration))
     }
 
@@ -669,7 +675,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Returns: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func getrange(key: ValkeyKey, start: Int, end: Int) async throws -> GETRANGE.Response {
+    public func getrange(key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
         try await send(command: GETRANGE(key: key, start: start, end: end))
     }
 
@@ -683,7 +689,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The old value stored at the key.
     ///     * [Null]: The key does not exist.
     @inlinable
-    public func getset<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken? {
+    public func getset<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> ByteBuffer? {
         try await send(command: GETSET(key: key, value: value))
     }
 
@@ -716,7 +722,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The value of the key after incrementing it.
     @inlinable
-    public func incrbyfloat(key: ValkeyKey, increment: Double) async throws -> INCRBYFLOAT.Response {
+    public func incrbyfloat(key: ValkeyKey, increment: Double) async throws -> ByteBuffer {
         try await send(command: INCRBYFLOAT(key: key, increment: increment))
     }
 
@@ -796,7 +802,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: `GET` given: The key didn't exist before the `SET`
     ///     * [String]: `GET` given: The previous value of the key
     @inlinable
-    public func set<Value: RESPStringRenderable>(key: ValkeyKey, value: Value, condition: SET<Value>.Condition? = nil, get: Bool = false, expiration: SET<Value>.Expiration? = nil) async throws -> RESPToken? {
+    public func set<Value: RESPStringRenderable>(key: ValkeyKey, value: Value, condition: SET<Value>.Condition? = nil, get: Bool = false, expiration: SET<Value>.Expiration? = nil) async throws -> ByteBuffer? {
         try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
@@ -855,7 +861,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Returns: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func substr(key: ValkeyKey, start: Int, end: Int) async throws -> SUBSTR.Response {
+    public func substr(key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
         try await send(command: SUBSTR(key: key, start: start, end: end))
     }
 

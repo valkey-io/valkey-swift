@@ -67,7 +67,7 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
 /// Returns the value of a field in a hash.
 @_documentation(visibility: internal)
 public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = RESPToken?
+    public typealias Response = ByteBuffer?
 
     public var key: ValkeyKey
     public var field: Field
@@ -131,6 +131,8 @@ public struct HINCRBY<Field: RESPStringRenderable>: ValkeyCommand {
 /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
 @_documentation(visibility: internal)
 public struct HINCRBYFLOAT<Field: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = ByteBuffer
+
     public var key: ValkeyKey
     public var field: Field
     public var increment: Double
@@ -458,7 +460,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value associated with the field.
     ///     * [Null]: If the field is not present in the hash or key does not exist.
     @inlinable
-    public func hget<Field: RESPStringRenderable>(key: ValkeyKey, field: Field) async throws -> RESPToken? {
+    public func hget<Field: RESPStringRenderable>(key: ValkeyKey, field: Field) async throws -> ByteBuffer? {
         try await send(command: HGET(key: key, field: field))
     }
 
@@ -491,7 +493,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Returns: [String]: The value of the field after the increment operation.
     @inlinable
-    public func hincrbyfloat<Field: RESPStringRenderable>(key: ValkeyKey, field: Field, increment: Double) async throws -> RESPToken {
+    public func hincrbyfloat<Field: RESPStringRenderable>(key: ValkeyKey, field: Field, increment: Double) async throws -> ByteBuffer {
         try await send(command: HINCRBYFLOAT(key: key, field: field, increment: increment))
     }
 

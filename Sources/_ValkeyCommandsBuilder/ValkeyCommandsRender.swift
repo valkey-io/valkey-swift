@@ -678,7 +678,7 @@ private func getResponseType(response: ValkeyCommand.ReplySchema.Response) -> St
                 "String"
             }
         } else {
-            "RESPToken"
+            "ByteBuffer"
         }
     case .integer:
         "Int"

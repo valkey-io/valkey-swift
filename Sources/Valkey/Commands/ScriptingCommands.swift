@@ -42,6 +42,8 @@ public enum FUNCTION {
     /// Dumps all libraries into a serialized binary payload.
     @_documentation(visibility: internal)
     public struct DUMP: ValkeyCommand {
+        public typealias Response = ByteBuffer
+
         @inlinable public init() {
         }
 
@@ -124,6 +126,8 @@ public enum FUNCTION {
     /// Creates a library.
     @_documentation(visibility: internal)
     public struct LOAD<FunctionCode: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = ByteBuffer
+
         public var replace: Bool
         public var functionCode: FunctionCode
 
@@ -291,6 +295,8 @@ public enum SCRIPT {
     /// Loads a server-side Lua script to the script cache.
     @_documentation(visibility: internal)
     public struct LOAD<Script: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = ByteBuffer
+
         public var script: Script
 
         @inlinable public init(script: Script) {
@@ -305,6 +311,8 @@ public enum SCRIPT {
     /// Show server-side Lua script in the script cache.
     @_documentation(visibility: internal)
     public struct SHOW<Sha1: RESPStringRenderable>: ValkeyCommand {
+        public typealias Response = ByteBuffer
+
         public var sha1: Sha1
 
         @inlinable public init(sha1: Sha1) {
@@ -528,7 +536,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of functions
     /// - Returns: [String]: The serialized payload.
     @inlinable
-    public func functionDump() async throws -> FUNCTION.DUMP.Response {
+    public func functionDump() async throws -> ByteBuffer {
         try await send(command: FUNCTION.DUMP())
     }
 
@@ -580,7 +588,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) (considering compilation time is redundant)
     /// - Returns: [String]: The library name that was loaded
     @inlinable
-    public func functionLoad<FunctionCode: RESPStringRenderable>(replace: Bool = false, functionCode: FunctionCode) async throws -> RESPToken {
+    public func functionLoad<FunctionCode: RESPStringRenderable>(replace: Bool = false, functionCode: FunctionCode) async throws -> ByteBuffer {
         try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
     }
 
@@ -665,7 +673,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) with N being the length in bytes of the script body.
     /// - Returns: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
-    public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> RESPToken {
+    public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> ByteBuffer {
         try await send(command: SCRIPT.LOAD(script: script))
     }
 
@@ -676,7 +684,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1).
     /// - Returns: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
-    public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> RESPToken {
+    public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> ByteBuffer {
         try await send(command: SCRIPT.SHOW(sha1: sha1))
     }
 

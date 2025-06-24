@@ -39,7 +39,7 @@ extension RESPToken: RESPTokenDecodable {
     func decodeResult<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) -> Result<Value, Error> {
         switch self.identifier {
         case .simpleError, .bulkError:
-            return .failure(ValkeyClientError(.commandError, message: self.errorString.map { String(buffer: $0) }))
+            return .failure(ValkeyClientError(.commandError, message: self.errorString.map { Swift.String(buffer: $0) }))
         default:
             do {
                 return try .success(Value(fromRESP: self))
