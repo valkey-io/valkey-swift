@@ -156,7 +156,7 @@ extension HashSlot {
     /// - If the pattern is empty "{}", or doesn't exist, the entire key is used
     /// - Only the first occurrence of "{...}" is considered
     ///
-    /// - Parameter key: The key for your operation
+    /// - Parameter keyUTF8View: The UTF8 view of key for your operation
     /// - Returns: A substring UTF8 view that will be used in the CRC16 computation
     @inlinable
     package static func hashTag<Bytes: BidirectionalCollection<UInt8>>(forKey keyUTF8View: Bytes) -> Bytes.SubSequence {
