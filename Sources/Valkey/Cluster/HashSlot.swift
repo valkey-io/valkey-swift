@@ -12,6 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+import NIOCore
+
 // This is a derived version from:
 // https://github.com/swift-server/RediStack/blob/2df32390e2366b58cc15c2612bb324b3fc37a190/Sources/RediStack/Cluster/RedisHashSlot.swift
 
@@ -140,12 +142,15 @@ extension HashSlot {
     ///
     /// - Parameter key: The Valkey key for which to calculate the hash slot
     /// - Returns: A HashSlot representing where this key would be stored in the cluster
+    @inlinable
     public init(key: ValkeyKey) {
         switch key._storage {
         case .string(let string):
             self.init(key: string.utf8)
         case .buffer(let buffer):
-            self.init(key: buffer.readableBytesView)
+            self = buffer.withUnsafeReadableBytes { bytes in
+                HashSlot(key: bytes.bindMemory(to: UInt8.self))
+            }
         }
     }
 

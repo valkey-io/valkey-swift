@@ -30,6 +30,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
+import NIOCore
 import Testing
 import Valkey
 
@@ -102,6 +103,13 @@ struct HashSlotTests {
         #expect(HashSlot.hashTag(forKey: "bar{}").elementsEqual("bar{}"))
         #expect(HashSlot.hashTag(forKey: "{}").elementsEqual("{}"))
         #expect(HashSlot.hashTag(forKey: "{}bar").elementsEqual("{}bar"))
+    }
+
+    @Test
+    func byteBufferHashTagComputation() {
+        #expect(HashSlot(key: ValkeyKey(ByteBuffer(string: "foo"))) == HashSlot(key: "foo"))
+        #expect(HashSlot(key: ValkeyKey(ByteBuffer(string: "foo{bar}"))) == HashSlot(key: "foo{bar}"))
+        #expect(HashSlot(key: ValkeyKey(ByteBuffer(string: "foo{bar}"))) == HashSlot(key: "bar"))
     }
 
     @Test
