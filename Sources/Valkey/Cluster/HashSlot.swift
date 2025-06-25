@@ -149,7 +149,7 @@ extension HashSlot {
             self.init(key: string.utf8)
         case .buffer(let buffer):
             self = buffer.withUnsafeReadableBytes { bytes in
-                HashSlot(key: bytes.bindMemory(to: UInt8.self))
+                HashSlot(key: bytes)
             }
         }
     }
