@@ -159,14 +159,14 @@ extension HashSlot {
     /// - Parameter key: The key for your operation
     /// - Returns: A substring UTF8 view that will be used in the CRC16 computation
     @inlinable
-    package static func hashTag<Bytes: BidirectionalCollection<UInt8>>(forKey key: Bytes) -> Bytes.SubSequence {
+    package static func hashTag<Bytes: BidirectionalCollection<UInt8>>(forKey keyUTF8View: Bytes) -> Bytes.SubSequence {
         var firstOpenCurly: Bytes.Index?
-        var index = key.startIndex
+        var index = keyUTF8View.startIndex
 
-        while index < key.endIndex {
-            defer { index = key.index(after: index) }
+        while index < keyUTF8View.endIndex {
+            defer { index = keyUTF8View.index(after: index) }
 
-            switch key[index] {
+            switch keyUTF8View[index] {
             case UInt8(ascii: "{") where firstOpenCurly == nil:
                 firstOpenCurly = index
             case UInt8(ascii: "}"):
@@ -174,18 +174,18 @@ extension HashSlot {
                     continue
                 }
 
-                if firstOpenCurly == key.index(before: index) {
+                if firstOpenCurly == keyUTF8View.index(before: index) {
                     // we had a `{}` combination... this means the complete key shall be used for hashing
-                    return key[...]
+                    return keyUTF8View[...]
                 }
 
-                return key[(key.index(after: firstOpenCurly))..<index]
+                return keyUTF8View[(keyUTF8View.index(after: firstOpenCurly))..<index]
             default:
                 continue
             }
         }
 
-        return key[...]
+        return keyUTF8View[...]
     }
 }
 
@@ -232,7 +232,8 @@ extension HashSlot {
  * Output for "123456789"     : 31C3
  */
 
-private let crc16tab: [UInt16] = [
+@usableFromInline
+/* private */ let crc16tab: [UInt16] = [
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
     0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
     0x1231, 0x0210, 0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6,
@@ -274,7 +275,7 @@ extension HashSlot {
     ///
     /// - Parameter bytes: A sequence of bytes to compute the CRC16 value for
     /// - Returns: The computed CRC16 value
-    @usableFromInline
+    @inlinable
     package static func crc16<Bytes: Sequence>(_ bytes: Bytes) -> UInt16 where Bytes.Element == UInt8 {
         var crc: UInt16 = 0
         for byte in bytes {
