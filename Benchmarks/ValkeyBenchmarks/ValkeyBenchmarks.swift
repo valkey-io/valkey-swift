@@ -135,11 +135,10 @@ let benchmarks: @Sendable () -> Void = {
         }
 
         Benchmark("HashSlot – {user}.whatever", configuration: .init(metrics: defaultMetrics, scalingFactor: .mega)) { benchmark in
-            let key = "{user}.whatever"
-            let utf8Key = key.utf8
+            let key: ValkeyKey = "{user}.whatever"
             benchmark.startMeasurement()
             for _ in benchmark.scaledIterations {
-                blackHole(HashSlot(key: utf8Key))
+                blackHole(HashSlot(key: key))
             }
         }
     }
