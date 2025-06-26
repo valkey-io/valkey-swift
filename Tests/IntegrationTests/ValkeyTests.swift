@@ -23,7 +23,7 @@ import Valkey
 struct GeneratedCommands {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
     func withKey<Value>(connection: some ValkeyConnectionProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
-        let key = ValkeyKey(rawValue: UUID().uuidString)
+        let key = ValkeyKey(UUID().uuidString)
         let value: Value
         do {
             value = try await operation(key)
@@ -338,9 +338,9 @@ struct GeneratedCommands {
                 for _ in 0..<100 {
                     group.addTask {
                         try await withKey(connection: connection) { key in
-                            _ = try await connection.set(key: key, value: key.rawValue)
-                            let response = try await connection.get(key: key).map { String(buffer: $0) }
-                            #expect(response == key.rawValue)
+                            _ = try await connection.set(key: key, value: key)
+                            let response = try await connection.get(key: key).map { ValkeyKey($0) }
+                            #expect(response == key)
                         }
                     }
                 }

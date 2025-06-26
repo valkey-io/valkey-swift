@@ -236,11 +236,11 @@ struct CommandTests {
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     var result = try await connection.zmpop(key: ["key", "key2"], where: .max)
-                    #expect(result?.key == ValkeyKey(rawValue: "key"))
+                    #expect(result?.key == "key")
                     #expect(result?.values[0].score == 3)
                     #expect((result?.values[0].value).map { String(buffer: $0) } == "three")
                     result = try await connection.zmpop(key: ["key", "key2"], where: .max, count: 2)
-                    #expect(result?.key == ValkeyKey(rawValue: "key2"))
+                    #expect(result?.key == ValkeyKey("key2"))
                     #expect(result?.values[0].score == 5)
                     #expect((result?.values[0].value).map { String(buffer: $0) } == "five")
                     #expect(result?.values[1].score == 4)

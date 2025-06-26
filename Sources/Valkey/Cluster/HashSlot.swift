@@ -12,6 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+import NIOCore
+
 // This is a derived version from:
 // https://github.com/swift-server/RediStack/blob/2df32390e2366b58cc15c2612bb324b3fc37a190/Sources/RediStack/Cluster/RedisHashSlot.swift
 
@@ -130,7 +132,8 @@ extension HashSlot {
     ///
     /// - Parameter key: The key used in a Valkey command
     /// - Returns: A HashSlot representing where this key would be stored in the cluster
-    public init(key: String) {
+    @inlinable
+    public init(key: some BidirectionalCollection<UInt8>) {
         // Banging is safe because the modulo ensures we are in range
         self.init(rawValue: UInt16(HashSlot.crc16(HashSlot.hashTag(forKey: key)) % 16384))!
     }
@@ -139,8 +142,16 @@ extension HashSlot {
     ///
     /// - Parameter key: The Valkey key for which to calculate the hash slot
     /// - Returns: A HashSlot representing where this key would be stored in the cluster
+    @inlinable
     public init(key: ValkeyKey) {
-        self.init(key: key.rawValue)
+        switch key._storage {
+        case .string(let string):
+            self.init(key: string.utf8)
+        case .buffer(let buffer):
+            self = buffer.withUnsafeReadableBytes { bytes in
+                HashSlot(key: bytes)
+            }
+        }
     }
 
     /// Computes the portion of the key that should be used for hash slot calculation.
@@ -150,18 +161,17 @@ extension HashSlot {
     /// - If the pattern is empty "{}", or doesn't exist, the entire key is used
     /// - Only the first occurrence of "{...}" is considered
     ///
-    /// - Parameter key: The key for your operation
+    /// - Parameter keyUTF8View: The UTF8 view of key for your operation
     /// - Returns: A substring UTF8 view that will be used in the CRC16 computation
-    package static func hashTag(forKey key: String) -> Substring.UTF8View {
-        let utf8View = key.utf8
+    @inlinable
+    package static func hashTag<Bytes: BidirectionalCollection<UInt8>>(forKey keyUTF8View: Bytes) -> Bytes.SubSequence {
+        var firstOpenCurly: Bytes.Index?
+        var index = keyUTF8View.startIndex
 
-        var firstOpenCurly: String.UTF8View.Index?
-        var index = utf8View.startIndex
+        while index < keyUTF8View.endIndex {
+            defer { index = keyUTF8View.index(after: index) }
 
-        while index < utf8View.endIndex {
-            defer { index = utf8View.index(after: index) }
-
-            switch utf8View[index] {
+            switch keyUTF8View[index] {
             case UInt8(ascii: "{") where firstOpenCurly == nil:
                 firstOpenCurly = index
             case UInt8(ascii: "}"):
@@ -169,18 +179,18 @@ extension HashSlot {
                     continue
                 }
 
-                if firstOpenCurly == utf8View.index(before: index) {
+                if firstOpenCurly == keyUTF8View.index(before: index) {
                     // we had a `{}` combination... this means the complete key shall be used for hashing
-                    return utf8View[...]
+                    return keyUTF8View[...]
                 }
 
-                return utf8View[(utf8View.index(after: firstOpenCurly))..<index]
+                return keyUTF8View[(keyUTF8View.index(after: firstOpenCurly))..<index]
             default:
                 continue
             }
         }
 
-        return utf8View[...]
+        return keyUTF8View[...]
     }
 }
 
@@ -227,7 +237,8 @@ extension HashSlot {
  * Output for "123456789"     : 31C3
  */
 
-private let crc16tab: [UInt16] = [
+@usableFromInline
+/* private */ let crc16tab: [UInt16] = [
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
     0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
     0x1231, 0x0210, 0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6,
@@ -269,6 +280,7 @@ extension HashSlot {
     ///
     /// - Parameter bytes: A sequence of bytes to compute the CRC16 value for
     /// - Returns: The computed CRC16 value
+    @inlinable
     package static func crc16<Bytes: Sequence>(_ bytes: Bytes) -> UInt16 where Bytes.Element == UInt8 {
         var crc: UInt16 = 0
         for byte in bytes {
