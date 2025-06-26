@@ -30,6 +30,7 @@
 //===----------------------------------------------------------------------===//
 
 import Foundation
+import NIOCore
 import Testing
 import Valkey
 
@@ -88,20 +89,27 @@ struct HashSlotTests {
                 HashSlot.hashTag(forKey: "{user1000}.followers")
             )
         )
-        #expect(HashSlot.hashTag(forKey: "{user1000}.following").elementsEqual("user1000".utf8))
-        #expect(HashSlot.hashTag(forKey: "{user1000}.followers").elementsEqual("user1000".utf8))
+        #expect(HashSlot.hashTag(forKey: "{user1000}.following").elementsEqual("user1000"))
+        #expect(HashSlot.hashTag(forKey: "{user1000}.followers").elementsEqual("user1000"))
 
-        #expect(HashSlot.hashTag(forKey: "foo{}{bar}").elementsEqual("foo{}{bar}".utf8))
-        #expect(HashSlot.hashTag(forKey: "foo{{bar}}zap").elementsEqual("{bar".utf8))
-        #expect(HashSlot.hashTag(forKey: "foo{bar}{zap}").elementsEqual("bar".utf8))
-        #expect(HashSlot.hashTag(forKey: "{}foo{bar}{zap}").elementsEqual("{}foo{bar}{zap}".utf8))
-        #expect(HashSlot.hashTag(forKey: "foo").elementsEqual("foo".utf8))
-        #expect(HashSlot.hashTag(forKey: "foo}").elementsEqual("foo}".utf8))
-        #expect(HashSlot.hashTag(forKey: "{foo}").elementsEqual("foo".utf8))
-        #expect(HashSlot.hashTag(forKey: "bar{foo}").elementsEqual("foo".utf8))
-        #expect(HashSlot.hashTag(forKey: "bar{}").elementsEqual("bar{}".utf8))
-        #expect(HashSlot.hashTag(forKey: "{}").elementsEqual("{}".utf8))
-        #expect(HashSlot.hashTag(forKey: "{}bar").elementsEqual("{}bar".utf8))
+        #expect(HashSlot.hashTag(forKey: "foo{}{bar}").elementsEqual("foo{}{bar}"))
+        #expect(HashSlot.hashTag(forKey: "foo{{bar}}zap").elementsEqual("{bar"))
+        #expect(HashSlot.hashTag(forKey: "foo{bar}{zap}").elementsEqual("bar"))
+        #expect(HashSlot.hashTag(forKey: "{}foo{bar}{zap}").elementsEqual("{}foo{bar}{zap}"))
+        #expect(HashSlot.hashTag(forKey: "foo").elementsEqual("foo"))
+        #expect(HashSlot.hashTag(forKey: "foo}").elementsEqual("foo}"))
+        #expect(HashSlot.hashTag(forKey: "{foo}").elementsEqual("foo"))
+        #expect(HashSlot.hashTag(forKey: "bar{foo}").elementsEqual("foo"))
+        #expect(HashSlot.hashTag(forKey: "bar{}").elementsEqual("bar{}"))
+        #expect(HashSlot.hashTag(forKey: "{}").elementsEqual("{}"))
+        #expect(HashSlot.hashTag(forKey: "{}bar").elementsEqual("{}bar"))
+    }
+
+    @Test
+    func byteBufferHashTagComputation() {
+        #expect(HashSlot(key: ValkeyKey(ByteBuffer(string: "foo"))) == HashSlot(key: "foo"))
+        #expect(HashSlot(key: ValkeyKey(ByteBuffer(string: "foo{bar}"))) == HashSlot(key: "foo{bar}"))
+        #expect(HashSlot(key: ValkeyKey(ByteBuffer(string: "foo{bar}"))) == HashSlot(key: "bar"))
     }
 
     @Test
@@ -111,5 +119,14 @@ struct HashSlotTests {
         #expect("\(HashSlot.unknown)" == "unknown")
         #expect("\(HashSlot(rawValue: 3000)!)" == "3000")
         #expect("\(HashSlot(rawValue: 20)!)" == "20")
+    }
+}
+
+extension HashSlot {
+    /// Computes the portion of the key that should be used for hash slot calculation.
+    ///
+    /// Helper for tests
+    static func hashTag(forKey key: String) -> Substring {
+        Substring(Self.hashTag(forKey: key.utf8))
     }
 }

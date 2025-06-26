@@ -104,7 +104,7 @@ let benchmarks: @Sendable () -> Void = {
         }
 
         Benchmark("ValkeyCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-            let keys = (0..<15).map { ValkeyKey(rawValue: "foo-\($0)") }
+            let keys = (0..<15).map { ValkeyKey("foo-\($0)") }
             let command = MGET(key: keys)
             benchmark.startMeasurement()
 
@@ -135,8 +135,7 @@ let benchmarks: @Sendable () -> Void = {
         }
 
         Benchmark("HashSlot – {user}.whatever", configuration: .init(metrics: defaultMetrics, scalingFactor: .mega)) { benchmark in
-            let key = "{user}.whatever"
-
+            let key: ValkeyKey = "{user}.whatever"
             benchmark.startMeasurement()
             for _ in benchmark.scaledIterations {
                 blackHole(HashSlot(key: key))
