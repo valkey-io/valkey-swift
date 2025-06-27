@@ -135,8 +135,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        let deadline: NIODeadline =
-            command.isBlocking ? .now() + self.configuration.blockingCommandTimeout : .now() + self.configuration.commandTimeout
+        let deadline: NIODeadline = if command.isBlocking {
+            .now() + self.configuration.blockingCommandTimeout
+        } else {
+            .now() + self.configuration.commandTimeout
+        }
         let pendingCommand = PendingCommand(
             promise: .swift(continuation),
             requestID: requestID,
