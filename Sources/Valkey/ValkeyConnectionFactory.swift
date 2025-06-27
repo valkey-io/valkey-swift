@@ -95,6 +95,7 @@ package final class ValkeyConnectionFactory: Sendable {
                 )
             }.get()
 
+            try await connection.startupCompleted()
             return connection
         }
     }
@@ -119,4 +120,3 @@ package final class ValkeyConnectionFactory: Sendable {
         )
     }
 }
-

@@ -29,11 +29,13 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testClose() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClose")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         expect(stateMachine.state == .active(.init(context: "testClose", pendingCommands: [])))
         switch stateMachine.close() {
-        case .failPendingCommandsAndClose(let context, let commands):
+        case .failPendingCommandsAndClose(let context, let commands, let startupPromises):
             #expect(context == "testClose")
             #expect(commands.count == 0)
+            #expect(startupPromises.count == 0)
         default:
             Issue.record("Invalid close action")
         }
@@ -45,9 +47,11 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testClosed() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClosed")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         switch stateMachine.setClosed() {
-        case .failPendingCommandsAndSubscriptions(let commands):
+        case .failPendingCommandsAndSubscriptions(let commands, let startupPromises):
             #expect(commands.count == 0)
+            #expect(startupPromises.count == 0)
         default:
             Issue.record("Invalid close action")
         }
@@ -59,9 +63,11 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testGracefulShutdown() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testGracefulShutdown")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         switch stateMachine.gracefulShutdown() {
-        case .closeConnection(let context):
+        case .closeConnection(let context, let startupPromises):
             #expect(context == "testGracefulShutdown")
+            #expect(startupPromises.count == 0)
         default:
             Issue.record("Invalid waitForPendingCommands action")
         }
@@ -74,6 +80,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testGracefulShutdown")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 23, deadline: .now())) {
         case .sendCommand:
             break
@@ -90,10 +97,10 @@ struct ValkeyChannelHandlerStateMachineTests {
             stateMachine.state
                 == .closing(.init(context: "testGracefulShutdown", pendingCommands: [.init(promise: .nio(promise), requestID: 23, deadline: .now())]))
         )
-        switch stateMachine.receivedResponse() {
+        switch stateMachine.receivedResponse(.ok) {
         case .respondAndClose(let command):
             #expect(command.requestID == 23)
-        case .respond, .closeWithError:
+        case .respond, .closeWithError, .failHelloPromisesAndClose, .succeedHelloPromises, .none:
             Issue.record("Invalid receivedResponse action")
         }
         expect(stateMachine.state == .closed)
@@ -106,6 +113,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setActive(context: "testClosedClosingState")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 17, deadline: .now())) {
         case .sendCommand:
             break
@@ -125,8 +133,9 @@ struct ValkeyChannelHandlerStateMachineTests {
                 )
         )
         switch stateMachine.setClosed() {
-        case .failPendingCommandsAndSubscriptions(let commands):
+        case .failPendingCommandsAndSubscriptions(let commands, let startupPromises):
             #expect(commands.map { $0.requestID } == [17])
+            #expect(startupPromises.isEmpty)
         default:
             Issue.record("Invalid close action")
         }
@@ -139,6 +148,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testReceivedResponse() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testReceivedResponse")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 2344, deadline: .now())) {
         case .sendCommand:
@@ -146,12 +156,13 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        switch stateMachine.receivedResponse() {
+        let token = RESPToken(validated: ByteBuffer(string: "+OK\r\n"))
+        switch stateMachine.receivedResponse(token) {
         case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
             #expect(deadlineAction == .cancel)
-            command.promise.succeed(RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
-        case .closeWithError, .respondAndClose:
+            command.promise.succeed(token)
+        case .closeWithError, .respondAndClose, .failHelloPromisesAndClose, .succeedHelloPromises, .none:
             Issue.record("Invalid receivedResponse action")
         }
         expect(stateMachine.state == .active(.init(context: "testReceivedResponse", pendingCommands: [])))
@@ -163,8 +174,10 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testReceivedResponseWithoutCommand() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testReceivedResponse")
-        switch stateMachine.receivedResponse() {
-        case .respond, .respondAndClose:
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
+        let token = RESPToken(validated: ByteBuffer(string: "+OK\r\n"))
+        switch stateMachine.receivedResponse(token) {
+        case .respond, .respondAndClose, .failHelloPromisesAndClose, .succeedHelloPromises, .none:
             Issue.record("Invalid receivedResponse action")
         case .closeWithError(let error):
             let valkeyError = try #require(error as? ValkeyClientError)
@@ -178,6 +191,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testCancel() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancel")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 23, deadline: .now())) {
         case .sendCommand:
@@ -209,6 +223,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testCancelOfNotPendingCommand() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancel")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         switch stateMachine.cancel(requestID: 23) {
         case .failPendingCommandsAndClose:
             Issue.record("Invalid cancel action")
@@ -223,6 +238,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testCancelGracefulShutdown() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testCancelGracefulShutdown")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 23, deadline: .now())) {
         case .sendCommand:
@@ -248,12 +264,13 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testTimeout() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testTimeout")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         let now = NIODeadline.now()
         switch stateMachine.hitDeadline(now: now) {
         case .clearCallback:
             break
-        case .reschedule, .failPendingCommandsAndClose:
+        case .reschedule, .failPendingCommandsAndClose, .failStartupAndClose:
             Issue.record("Invalid hitDeadline action")
         }
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 2344, deadline: now + .seconds(1))) {
@@ -265,7 +282,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         switch stateMachine.hitDeadline(now: now + .milliseconds(500)) {
         case .reschedule(let deadline):
             #expect(deadline == now + .seconds(1))
-        case .clearCallback, .failPendingCommandsAndClose:
+        case .clearCallback, .failPendingCommandsAndClose, .failStartupAndClose:
             Issue.record("Invalid hitDeadline action")
         }
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 2345, deadline: now + .seconds(2))) {
@@ -274,24 +291,24 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        switch stateMachine.receivedResponse() {
+        switch stateMachine.receivedResponse(.ok) {
         case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
             #expect(deadlineAction == .doNothing)
-        case .closeWithError, .respondAndClose:
+        case .closeWithError, .respondAndClose, .failHelloPromisesAndClose, .succeedHelloPromises, .none:
             Issue.record("Invalid receivedResponse action")
         }
         switch stateMachine.hitDeadline(now: now + .seconds(1)) {
         case .reschedule(let deadline):
             #expect(deadline == now + .seconds(2))
-        case .clearCallback, .failPendingCommandsAndClose:
+        case .clearCallback, .failPendingCommandsAndClose, .failStartupAndClose:
             Issue.record("Invalid hitDeadline action")
         }
         switch stateMachine.hitDeadline(now: now + .seconds(3)) {
         case .failPendingCommandsAndClose(let context, let commands):
             #expect(context == "testTimeout")
             #expect(commands.map { $0.requestID } == [2345])
-        case .clearCallback, .reschedule:
+        case .clearCallback, .reschedule, .failStartupAndClose:
             Issue.record("Invalid hitDeadline action")
         }
         expect(stateMachine.state == .closed)
@@ -303,12 +320,13 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testTimeoutWithDeadlineInversion() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testTimeout")
+        stateMachine.receivedResponse(.hello).ensureSucceedPromises()
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         let now = NIODeadline.now()
         switch stateMachine.hitDeadline(now: now) {
         case .clearCallback:
             break
-        case .reschedule, .failPendingCommandsAndClose:
+        case .reschedule, .failPendingCommandsAndClose, .failStartupAndClose:
             Issue.record("Invalid hitDeadline action")
         }
         switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 2344, deadline: now + .seconds(3))) {
@@ -323,18 +341,18 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        switch stateMachine.receivedResponse() {
+        switch stateMachine.receivedResponse(.ok) {
         case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
             #expect(deadlineAction == .reschedule(now + .seconds(2)))
-        case .closeWithError, .respondAndClose:
+        case .closeWithError, .respondAndClose, .failHelloPromisesAndClose, .succeedHelloPromises, .none:
             Issue.record("Invalid receivedResponse action")
         }
         switch stateMachine.hitDeadline(now: now + .seconds(2)) {
         case .failPendingCommandsAndClose(let context, let commands):
             #expect(context == "testTimeout")
             #expect(commands.map { $0.requestID } == [2345])
-        case .clearCallback, .reschedule:
+        case .clearCallback, .reschedule, .failStartupAndClose:
             Issue.record("Invalid hitDeadline action")
         }
         expect(stateMachine.state == .closed)
@@ -346,13 +364,24 @@ struct ValkeyChannelHandlerStateMachineTests {
 extension ValkeyChannelHandler.StateMachine<String>.State {
     public static func == (_ lhs: borrowing Self, _ rhs: borrowing Self) -> Bool {
         switch lhs {
-        case .initializing:
+        case .initialized:
             switch rhs {
-            case .initializing:
+            case .initialized:
                 return true
             default:
                 return false
             }
+
+        case .connected(let lhsPromises, let lhsState):
+            switch rhs {
+            case .connected(let rhsPromises, let rhsState):
+                return rhsPromises.count == lhsPromises.count
+                && lhsState.context == rhsState.context
+                && lhsState.pendingCommands.map { $0.requestID } == rhsState.pendingCommands.map { $0.requestID }
+            default:
+                return false
+            }
+
         case .active(let lhs):
             switch rhs {
             case .active(let rhs):
@@ -394,6 +423,28 @@ extension ValkeyChannelHandler.StateMachine.DeadlineCallbackAction: Equatable {
             lhs == rhs
         default:
             false
+        }
+    }
+}
+
+extension RESPToken {
+    static var ok: RESPToken {
+        RESPToken(.simpleString("OK"))
+    }
+
+    static var hello: RESPToken {
+        RESPToken(.map([:]))
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyChannelHandler.StateMachine.ReceivedResponseAction {
+    func ensureSucceedPromises(sourceLocation: SourceLocation = #_sourceLocation) {
+        switch self {
+        case .succeedHelloPromises:
+            break
+        case .closeWithError, .failHelloPromisesAndClose, .none, .respond, .respondAndClose:
+            Issue.record("Unexpected ReceivedResponseAction: \(self)", sourceLocation: sourceLocation)
         }
     }
 }
