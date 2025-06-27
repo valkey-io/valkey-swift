@@ -100,6 +100,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 }
             }
         let connection = try await future.get()
+        try await connection.startupCompleted()
         return connection
     }
 
