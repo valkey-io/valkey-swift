@@ -163,6 +163,7 @@ extension ValkeyChannelHandler {
             case respond(PendingCommand, DeadlineCallbackAction)
             case respondAndClose(PendingCommand)
             case closeWithError(Error)
+            case none
         }
 
         /// handler wants to send a command
@@ -231,7 +232,8 @@ extension ValkeyChannelHandler {
                 }
 
             case .closed:
-                preconditionFailure("Cannot receive command on closed connection")
+                self = .closed
+                return .none
             }
         }
 
@@ -249,7 +251,7 @@ extension ValkeyChannelHandler {
             case .initialized:
                 preconditionFailure("Cannot cancel when initializing")
 
-            case .connected(let promises, let state):
+            case .connected(let promises, _):
                 let error = ValkeyClientError(.timeout, message: "Server did not respond to HELLO command within timeout interval.")
                 self = .closed
                 return .failStartupAndClose(promises, error)
@@ -403,7 +405,7 @@ extension ValkeyChannelHandler {
             case .initialized:
                 self = .closed
                 return .doNothing
-            case .connected(let promises, let state):
+            case .connected(let promises, _):
                 self = .closed
                 return .failPendingCommandsAndSubscriptions([], promises)
             case .active(let state):

@@ -189,6 +189,10 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         }
     }
 
+    func startupCompleted() async throws {
+        try await self.channelHandler.startupComplete().get()
+    }
+
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
     private static func _makeClient(
         address: ValkeyServerAddress,

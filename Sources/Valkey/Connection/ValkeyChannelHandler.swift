@@ -281,8 +281,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let command = HELLO(
             arguments: .init(
                 protover: 3,
-                auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
-                clientname: configuration.clientName
+                auth: self.configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                clientname: self.configuration.clientName
             )
         )
 
@@ -293,6 +293,19 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         assert(self.deadlineCallback == nil)
         let deadline: NIODeadline = .now() + self.configuration.commandTimeout
         self.scheduleDeadlineCallback(deadline: deadline)
+    }
+
+    func startupComplete() -> EventLoopFuture<Void> {
+        let promise = self.eventLoop.makePromise(of: Void.self)
+        switch self.stateMachine.registerStartupPromise(.nio(promise)) {
+        case .failPromise(let error):
+            promise.fail(error)
+        case .succeedPromise:
+            promise.succeed()
+        case .none:
+            break
+        }
+        return promise.futureResult
     }
 
     @usableFromInline
@@ -369,6 +382,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             switch self.stateMachine.receivedResponse(token) {
             case .failHelloPromisesAndClose(let promises, let error):
                 for promise in promises { promise.fail(error) }
+                context.fireErrorCaught(error)
+                context.close(promise: nil)
             case .succeedHelloPromises(let promises):
                 for promise in promises { promise.succeed(()) }
             case .respond(let command, let deadlineAction):
@@ -379,6 +394,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 self.closeSubscriptionsAndConnection(context: context)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
+            case .none:
+                break
             }
 
         case .push:
@@ -389,6 +406,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                     switch self.stateMachine.receivedResponse(token) {
                     case .failHelloPromisesAndClose(let promises, let error):
                         for promise in promises { promise.fail(error) }
+                        context.fireErrorCaught(error)
+                        context.close(promise: nil)
                     case .succeedHelloPromises(let promises):
                         for promise in promises { promise.succeed(()) }
                     case .respond(let command, let deadlineAction):
@@ -399,6 +418,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                         self.closeSubscriptionsAndConnection(context: context)
                     case .closeWithError(let error):
                         self.closeSubscriptionsAndConnection(context: context, error: error)
+                    case .none:
+                        break
                     }
                 }
             } catch {
@@ -420,6 +441,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             switch self.stateMachine.receivedResponse(token) {
             case .failHelloPromisesAndClose(let promises, let error):
                 for promise in promises { promise.fail(error) }
+                context.fireErrorCaught(error)
+                context.close(promise: nil)
             case .succeedHelloPromises(let promises):
                 for promise in promises { promise.succeed(()) }
             case .respond(let command, let deadlineAction):
@@ -430,6 +453,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 self.closeSubscriptionsAndConnection(context: context)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
+            case .none:
+                break
             }
         }
     }
