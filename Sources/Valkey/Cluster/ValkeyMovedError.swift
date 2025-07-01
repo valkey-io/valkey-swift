@@ -45,46 +45,20 @@ package struct ValkeyMovedError: Hashable, Sendable {
     }
 }
 
-extension RESPToken {
+extension ValkeyMovedError {
     static let movedPrefix = "MOVED "
 
-    /// Attempts to parse a RESP error token as a Valkey MOVED error.
+    /// Attempts to parse a Valkey MOVED error from a String.
     ///
-    /// This method extracts the hash slot, endpoint, and port information from a RESP error
-    /// token if it represents a Valkey MOVED error. MOVED errors are returned by Valkey cluster
+    /// This method extracts the hash slot, endpoint, and port information from the string
+    /// if it represents a Valkey MOVED error. MOVED errors are returned by Valkey cluster
     /// nodes when a client attempts to access a key that belongs to a different node.
     ///
     /// The error format is expected to be: `"MOVED <slot> <endpoint>:<port>"`
     ///
     /// - Returns: A `ValkeyMovedError` if the token represents a valid MOVED error, or `nil` otherwise.
     @usableFromInline
-    func parseMovedError() -> ValkeyMovedError? {
-        let byteBuffer: ByteBuffer? =
-            switch self.value {
-            case .bulkError(let byteBuffer),
-                .simpleError(let byteBuffer):
-                byteBuffer
-
-            case .simpleString,
-                .bulkString,
-                .verbatimString,
-                .number,
-                .double,
-                .boolean,
-                .bigNumber,
-                .array,
-                .attribute,
-                .map,
-                .set,
-                .push,
-                .null:
-                nil
-            }
-
-        guard var byteBuffer else {
-            return nil
-        }
-        let errorMessage = byteBuffer.readString(length: byteBuffer.readableBytes)!
+    init?(_ errorMessage: String) {
         guard errorMessage.hasPrefix(Self.movedPrefix) else {
             return nil
         }
@@ -112,6 +86,6 @@ extension RESPToken {
             return nil
         }
 
-        return ValkeyMovedError(slot: slot, endpoint: Swift.String(endpoint), port: port)
+        self = ValkeyMovedError(slot: slot, endpoint: Swift.String(endpoint), port: port)
     }
 }
