@@ -47,7 +47,7 @@ struct ValkeyKeepAliveBehavior: ConnectionKeepAliveBehavior {
 
 /// Connection id generator for Valkey connection pool
 @available(valkeySwift 1.0, *)
-final class ConnectionIDGenerator: ConnectionIDGeneratorProtocol {
+package final class ConnectionIDGenerator: ConnectionIDGeneratorProtocol {
     static let globalGenerator = ConnectionIDGenerator()
 
     private let atomic: Atomic<Int>
@@ -56,7 +56,7 @@ final class ConnectionIDGenerator: ConnectionIDGeneratorProtocol {
         self.atomic = .init(0)
     }
 
-    func next() -> Int {
+    package func next() -> Int {
         self.atomic.wrappingAdd(1, ordering: .relaxed).oldValue
     }
 }

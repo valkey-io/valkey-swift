@@ -731,12 +731,18 @@ struct GeneratedCommands {
         logger.logLevel = .trace
         try await withValkeyConnection(
             .hostname(valkeyHostname, port: 6379),
-            configuration: .init(blockingCommandTimeout: .milliseconds(500)),
+            configuration: .init(
+                commandTimeout: .milliseconds(200),
+                blockingCommandTimeout: .milliseconds(500),
+            ),
             logger: logger
         ) { connection in
+            let time = ContinuousClock().now
             await #expect(throws: ValkeyClientError(.timeout)) {
                 _ = try await connection.brpop(key: ["testBlockingCommandTimeout"], timeout: 10000)
             }
+            let took = ContinuousClock().now - time
+            #expect(.milliseconds(500) <= took && took < .seconds(1))
         }
     }
 

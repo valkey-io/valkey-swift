@@ -21,13 +21,13 @@ public struct ValkeyClientConfiguration: Sendable {
     public struct TLS: Sendable {
         enum Base {
             case disable
-            case enable(NIOSSLContext, String?)
+            case enable(TLSConfiguration, String?)
         }
         let base: Base
 
         public static var disable: Self { .init(base: .disable) }
-        public static func enable(tlsConfiguration: TLSConfiguration, tlsServerName: String?) throws -> Self {
-            .init(base: .enable(try NIOSSLContext(configuration: tlsConfiguration), tlsServerName))
+        public static func enable(_ tlsConfiguration: TLSConfiguration, tlsServerName: String?) throws -> Self {
+            .init(base: .enable(tlsConfiguration, tlsServerName))
         }
     }
 
@@ -57,14 +57,46 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
+    public struct ConnectionPool: Hashable, Sendable {
+        /// The minimum number of connections to preserve in the pool.
+        ///
+        /// If the pool is mostly idle and the remote servers closes
+        /// idle connections,  the ``ValkeyClient`` will initiate new outbound
+        /// connections proactively to avoid the number of available
+        /// connections dropping below this number.
+        public var minimumConnectionCount: Int
+
+        /// The maximum number of connections in the pool.
+        ///
+        /// The client will at no time create more connections than this.
+        /// If connections become idle, they will be closed, if they haven't received work
+        /// within ``idleTimeout``, as long as we have more connections than
+        /// ``minimumConnectionCount``.
+        public var maximumConnectionCount: Int
+
+        /// The time that a _preserved_ idle connection stays in the
+        /// pool before it is closed.
+        public var idleTimeout: Duration
+
+        public init(
+            minimumConnectionCount: Int = 0,
+            maximumConnectionCount: Int = 20,
+            idleTimeout: Duration = .seconds(60)
+        ) {
+            self.minimumConnectionCount = minimumConnectionCount
+            self.maximumConnectionCount = maximumConnectionCount
+            self.idleTimeout = idleTimeout
+        }
+    }
+
     /// authentication details
     public var authentication: Authentication?
     /// connection pool configuration
     public var connectionPool: ConnectionPoolConfiguration
     /// keep alive behavior
     public var keepAliveBehavior: KeepAliveBehavior
-    /// dead connection timeout
-    public var connectionTimeout: Duration
+    /// A connection is considered dead if a response isn't received within this time amount.
+    public var commandTimeout: Duration
     /// global timeout for blocking commands
     public var blockingCommandTimeout: Duration
 
@@ -83,14 +115,14 @@ public struct ValkeyClientConfiguration: Sendable {
         authentication: Authentication? = nil,
         connectionPool: ConnectionPoolConfiguration = .init(),
         keepAliveBehavior: KeepAliveBehavior = .init(),
-        connectionTimeout: Duration = .seconds(30),
+        commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
         self.keepAliveBehavior = keepAliveBehavior
-        self.connectionTimeout = connectionTimeout
+        self.commandTimeout = commandTimeout
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
     }

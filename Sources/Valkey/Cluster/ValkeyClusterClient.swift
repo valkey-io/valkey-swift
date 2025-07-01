@@ -98,11 +98,14 @@ public final class ValkeyClusterClient: Sendable {
     ///   - nodeDiscovery: A ``ValkeyNodeDiscovery`` service that discovers Valkey nodes for the client in the cluster.
     ///   - eventLoopGroup: The event loop group used for handling connections. Defaults to the global singleton.
     ///   - logger: A logger for recording internal events and diagnostic information.
+    ///   - connectionFactory: An overwrite to provide create your own underlying `Channel`s. Use this to wrap connections
+    ///                        in other NIO protocols (like SSH).
     public init(
         clientConfiguration: ValkeyClientConfiguration,
         nodeDiscovery: some ValkeyNodeDiscovery,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
-        logger: Logger
+        logger: Logger,
+        connectionFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
         self.logger = logger
 
@@ -113,6 +116,10 @@ public final class ValkeyClusterClient: Sendable {
         let factory = ValkeyClientFactory(
             logger: logger,
             configuration: clientConfiguration,
+            connectionFactory: ValkeyConnectionFactory(
+                configuration: clientConfiguration,
+                customHandler: connectionFactory
+            ),
             eventLoopGroup: eventLoopGroup
         )
 
@@ -127,6 +134,8 @@ public final class ValkeyClusterClient: Sendable {
         self.stateLock = Mutex(stateMachine)
         self.nodeDiscovery = nodeDiscovery
     }
+
+
 
     // MARK: - Public methods -
 
@@ -675,6 +684,7 @@ package struct ValkeyClientFactory: ValkeyNodeConnectionPoolFactory {
     var configuration: ValkeyClientConfiguration
     var eventLoopGroup: any EventLoopGroup
     let connectionIDGenerator = ConnectionIDGenerator()
+    let connectionFactory: ValkeyConnectionFactory
 
     /// Creates a new `ValkeyClientFactory` instance.
     ///
@@ -685,10 +695,12 @@ package struct ValkeyClientFactory: ValkeyNodeConnectionPoolFactory {
     package init(
         logger: Logger,
         configuration: ValkeyClientConfiguration,
+        connectionFactory: ValkeyConnectionFactory,
         eventLoopGroup: any EventLoopGroup
     ) {
         self.logger = logger
         self.configuration = configuration
+        self.connectionFactory = connectionFactory
         self.eventLoopGroup = eventLoopGroup
     }
 
@@ -711,8 +723,8 @@ package struct ValkeyClientFactory: ValkeyNodeConnectionPoolFactory {
 
         return ValkeyClient(
             serverAddress,
-            configuration: self.configuration,
             connectionIDGenerator: self.connectionIDGenerator,
+            connectionFactory: self.connectionFactory,
             eventLoopGroup: self.eventLoopGroup,
             logger: self.logger
         )
