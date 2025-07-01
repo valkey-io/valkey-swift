@@ -90,7 +90,7 @@ struct ConnectionTests {
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(
             channel,
-            clientName: "Testing",
+            configuration: .init(clientName: "Testing"),
             logger: logger
         )
 

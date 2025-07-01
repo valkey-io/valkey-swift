@@ -51,9 +51,9 @@ enum ValkeyRequest: Sendable {
 final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     struct Configuration {
-        let authentication: ValkeyClientConfiguration.Authentication?
+        let authentication: ValkeyConnectionConfiguration.Authentication?
         @usableFromInline
-        let connectionTimeout: TimeAmount
+        let commandTimeout: TimeAmount
         @usableFromInline
         let blockingCommandTimeout: TimeAmount
         let clientName: String?
@@ -88,6 +88,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             case .clearCallback:
                 channelHandler.deadlineCallback = nil
                 break
+            case .failStartupAndClose(let promises, let error):
+                for promise in promises { promise.fail(error) }
             }
         }
     }
@@ -133,8 +135,11 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @inlinable
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
-        let deadline: NIODeadline =
-            command.isBlocking ? .now() + self.configuration.blockingCommandTimeout : .now() + self.configuration.connectionTimeout
+        let deadline: NIODeadline = if command.isBlocking {
+            .now() + self.configuration.blockingCommandTimeout
+        } else {
+            .now() + self.configuration.commandTimeout
+        }
         let pendingCommand = PendingCommand(
             promise: .swift(continuation),
             requestID: requestID,
@@ -158,7 +163,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
-        let deadline = .now() + self.configuration.connectionTimeout
+        let deadline = .now() + self.configuration.commandTimeout
         switch request {
         case .single(let buffer, let tokenPromise, let requestID):
             let pendingCommand = PendingCommand(promise: tokenPromise, requestID: requestID, deadline: deadline)
@@ -274,26 +279,36 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     @usableFromInline
-    func hello(context: ChannelHandlerContext) {
+    /* private */ func hello(context: ChannelHandlerContext) {
         // send hello with protocol, authentication and client name details
-        self._send(
-            command: HELLO(
-                arguments: .init(
-                    protover: 3,
-                    auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
-                    clientname: configuration.clientName
-                )
-            ),
-            requestID: 0
-        ).assumeIsolated().whenComplete { result in
-            switch result {
-            case .failure(let error):
-                context.fireErrorCaught(error)
-                context.close(promise: nil)
-            case .success:
-                break
-            }
+        let command = HELLO(
+            arguments: .init(
+                protover: 3,
+                auth: self.configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                clientname: self.configuration.clientName
+            )
+        )
+
+        self.encoder.reset()
+        command.encode(into: &self.encoder)
+        let buffer = self.encoder.buffer
+        context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+        assert(self.deadlineCallback == nil)
+        let deadline: NIODeadline = .now() + self.configuration.commandTimeout
+        self.scheduleDeadlineCallback(deadline: deadline)
+    }
+
+    func startupComplete() -> EventLoopFuture<Void> {
+        let promise = self.eventLoop.makePromise(of: Void.self)
+        switch self.stateMachine.registerStartupPromise(.nio(promise)) {
+        case .failPromise(let error):
+            promise.fail(error)
+        case .succeedPromise:
+            promise.succeed()
+        case .none:
+            break
         }
+        return promise.futureResult
     }
 
     @usableFromInline
@@ -367,7 +382,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handleToken(context: ChannelHandlerContext, token: RESPToken) {
         switch token.identifier {
         case .simpleError, .bulkError:
-            switch self.stateMachine.receivedResponse() {
+            switch self.stateMachine.receivedResponse(token) {
+            case .failHelloPromisesAndClose(let promises, let error):
+                for promise in promises { promise.fail(error) }
+                context.fireErrorCaught(error)
+                context.close(promise: nil)
+            case .succeedHelloPromises(let promises):
+                for promise in promises { promise.succeed(()) }
             case .respond(let command, let deadlineAction):
                 self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
@@ -376,6 +397,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 self.closeSubscriptionsAndConnection(context: context)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
+            case .none:
+                break
             }
 
         case .push:
@@ -383,7 +406,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             // and close the channel with the error
             do {
                 if try self.subscriptions.notify(token) == true {
-                    switch self.stateMachine.receivedResponse() {
+                    switch self.stateMachine.receivedResponse(token) {
+                    case .failHelloPromisesAndClose(let promises, let error):
+                        for promise in promises { promise.fail(error) }
+                        context.fireErrorCaught(error)
+                        context.close(promise: nil)
+                    case .succeedHelloPromises(let promises):
+                        for promise in promises { promise.succeed(()) }
                     case .respond(let command, let deadlineAction):
                         self.processDeadlineCallbackAction(action: deadlineAction)
                         command.promise.succeed(Self.simpleOk)
@@ -392,6 +421,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                         self.closeSubscriptionsAndConnection(context: context)
                     case .closeWithError(let error):
                         self.closeSubscriptionsAndConnection(context: context, error: error)
+                    case .none:
+                        break
                     }
                 }
             } catch {
@@ -410,7 +441,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             .map,
             .set,
             .attribute:
-            switch self.stateMachine.receivedResponse() {
+            switch self.stateMachine.receivedResponse(token) {
+            case .failHelloPromisesAndClose(let promises, let error):
+                for promise in promises { promise.fail(error) }
+                context.fireErrorCaught(error)
+                context.close(promise: nil)
+            case .succeedHelloPromises(let promises):
+                for promise in promises { promise.succeed(()) }
             case .respond(let command, let deadlineAction):
                 self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.succeed(token)
@@ -419,6 +456,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                 self.closeSubscriptionsAndConnection(context: context)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
+            case .none:
+                break
             }
         }
     }
@@ -426,9 +465,12 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handleError(context: ChannelHandlerContext, error: Error) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
         switch self.stateMachine.close() {
-        case .failPendingCommandsAndClose(let context, let commands):
+        case .failPendingCommandsAndClose(let context, let commands, let startupPromises):
             for command in commands {
                 command.promise.fail(error)
+            }
+            for promise in startupPromises {
+                promise.fail(error)
             }
             self.closeSubscriptionsAndConnection(context: context, error: error)
         case .doNothing:
@@ -482,14 +524,30 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     private func setClosed() {
         switch self.stateMachine.setClosed() {
-        case .failPendingCommandsAndSubscriptions(let commands):
+        case .failPendingCommandsAndSubscriptions(let commands, let startupPromises):
+            let error: any Error = ValkeyClientError.init(.connectionClosed)
             for command in commands {
-                command.promise.fail(ValkeyClientError.init(.connectionClosed))
+                command.promise.fail(error)
+            }
+            for promise in startupPromises {
+                promise.fail(error)
             }
             self.subscriptions.close(error: ValkeyClientError.init(.connectionClosed))
             self.deadlineCallback?.cancel()
         case .doNothing:
             break
         }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyChannelHandler.Configuration {
+    init(_ other: ValkeyConnectionConfiguration) {
+        self.init(
+            authentication: other.authentication,
+            commandTimeout: .init(other.commandTimeout),
+            blockingCommandTimeout: .init(other.blockingCommandTimeout),
+            clientName: other.clientName
+        )
     }
 }

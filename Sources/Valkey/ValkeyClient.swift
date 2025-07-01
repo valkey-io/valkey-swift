@@ -95,10 +95,24 @@ public final class ValkeyClient: Sendable {
             var logger = logger
             logger[metadataKey: "valkey_connection_id"] = "\(connectionID)"
 
+            let tls: ValkeyConnectionConfiguration.TLS = switch configuration.tls.base {
+            case .enable(let sslContext, let serverName):
+                .enable(sslContext, tlsServerName: serverName)
+            case .disable:
+                .disable
+            }
             let connection = try await ValkeyConnection.connect(
                 address: address,
                 connectionID: connectionID,
-                configuration: configuration,
+                configuration: ValkeyConnectionConfiguration(
+                    authentication: configuration.authentication.flatMap {
+                        .init(username: $0.username, password: $0.password)
+                    },
+                    commandTimeout: configuration.connectionTimeout,
+                    blockingCommandTimeout: configuration.blockingCommandTimeout,
+                    tls: tls,
+                    clientName: nil
+                ),
                 eventLoop: eventLoopGroup.any(),
                 logger: logger
             )

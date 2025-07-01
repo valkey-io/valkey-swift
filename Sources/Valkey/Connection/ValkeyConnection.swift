@@ -39,15 +39,15 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     let channel: any Channel
     @usableFromInline
     let channelHandler: ValkeyChannelHandler
-    let configuration: ValkeyClientConfiguration
+    let configuration: ValkeyConnectionConfiguration
     let isClosed: Atomic<Bool>
 
     /// Initialize connection
-    private init(
+    init(
         channel: any Channel,
         connectionID: ID,
         channelHandler: ValkeyChannelHandler,
-        configuration: ValkeyClientConfiguration,
+        configuration: ValkeyConnectionConfiguration,
         logger: Logger
     ) {
         self.unownedExecutor = channel.eventLoop.executor.asUnownedSerialExecutor()
@@ -73,7 +73,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         address: ValkeyServerAddress,
         connectionID: ID,
         name: String? = nil,
-        configuration: ValkeyClientConfiguration,
+        configuration: ValkeyConnectionConfiguration,
         eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger
     ) async throws -> ValkeyConnection {
@@ -100,6 +100,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 }
             }
         let connection = try await future.get()
+        try await connection.startupCompleted()
         return connection
     }
 
@@ -189,12 +190,16 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         }
     }
 
+    func startupCompleted() async throws {
+        try await self.channelHandler.startupComplete().get()
+    }
+
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
     private static func _makeClient(
         address: ValkeyServerAddress,
         connectionID: ID,
         eventLoop: EventLoop,
-        configuration: ValkeyClientConfiguration,
+        configuration: ValkeyConnectionConfiguration,
         clientName: String?,
         logger: Logger
     ) -> EventLoopFuture<ValkeyConnection> {
@@ -218,7 +223,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
 
         let connect = bootstrap.channelInitializer { channel in
             do {
-                try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
+                try self._setupChannel(channel, configuration: configuration, logger: logger)
                 return eventLoop.makeSucceededVoidFuture()
             } catch {
                 return eventLoop.makeFailedFuture(error)
@@ -253,26 +258,29 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
 
     package static func setupChannelAndConnect(
         _ channel: any Channel,
-        configuration: ValkeyClientConfiguration = .init(),
-        clientName: String? = nil,
+        configuration: ValkeyConnectionConfiguration = .init(),
         logger: Logger
     ) async throws -> ValkeyConnection {
         if !channel.eventLoop.inEventLoop {
             return try await channel.eventLoop.flatSubmit {
-                self._setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger)
+                self._setupChannelAndConnect(channel, configuration: configuration, logger: logger)
             }.get()
         }
-        return try await self._setupChannelAndConnect(channel, configuration: configuration, clientName: clientName, logger: logger).get()
+        return try await self._setupChannelAndConnect(channel, configuration: configuration, logger: logger).get()
     }
 
     private static func _setupChannelAndConnect(
         _ channel: any Channel,
-        configuration: ValkeyClientConfiguration,
-        clientName: String? = nil,
+        tlsSetting: TLSSetting = .disable,
+        configuration: ValkeyConnectionConfiguration,
         logger: Logger
     ) -> EventLoopFuture<ValkeyConnection> {
         do {
-            let handler = try self._setupChannel(channel, configuration: configuration, clientName: clientName, logger: logger)
+            let handler = try self._setupChannel(
+                channel,
+                configuration: configuration,
+                logger: logger
+            )
             let connection = ValkeyConnection(
                 channel: channel,
                 connectionID: 0,
@@ -288,11 +296,16 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         }
     }
 
+    @usableFromInline
+    enum TLSSetting {
+        case enable(NIOSSLContext, serverName: String?)
+        case disable
+    }
+
     @discardableResult
-    private static func _setupChannel(
+    static func _setupChannel(
         _ channel: any Channel,
-        configuration: ValkeyClientConfiguration,
-        clientName: String?,
+        configuration: ValkeyConnectionConfiguration,
         logger: Logger
     ) throws -> ValkeyChannelHandler {
         channel.eventLoop.assertInEventLoop()
@@ -304,12 +317,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             break
         }
         let valkeyChannelHandler = ValkeyChannelHandler(
-            configuration: .init(
-                authentication: configuration.authentication,
-                connectionTimeout: .init(configuration.connectionTimeout),
-                blockingCommandTimeout: .init(configuration.blockingCommandTimeout),
-                clientName: clientName
-            ),
+            configuration: .init(configuration),
             eventLoop: channel.eventLoop,
             logger: logger
         )
