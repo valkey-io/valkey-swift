@@ -45,8 +45,10 @@ public final class ValkeyClient: Sendable {
     let serverAddress: ValkeyServerAddress
     /// Connection pool
     let connectionPool: Pool
+
+    let connectionFactory: ValkeyConnectionFactory
     /// configuration
-    let configuration: ValkeyClientConfiguration
+    var configuration: ValkeyClientConfiguration { self.connectionFactory.configuration }
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
     /// Logger
@@ -69,42 +71,42 @@ public final class ValkeyClient: Sendable {
     ) {
         self.init(
             address,
-            configuration: configuration,
             connectionIDGenerator: ConnectionIDGenerator(),
+            connectionFactory: ValkeyConnectionFactory(configuration: configuration),
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
     }
 
-    init(
+    package init(
         _ address: ValkeyServerAddress,
-        configuration: ValkeyClientConfiguration,
         connectionIDGenerator: ConnectionIDGenerator,
+        connectionFactory: ValkeyConnectionFactory,
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
         self.serverAddress = address
         self.connectionPool = .init(
-            configuration: configuration.connectionPool,
+            configuration: connectionFactory.configuration.connectionPool,
             idGenerator: connectionIDGenerator,
             requestType: ConnectionRequest<ValkeyConnection>.self,
-            keepAliveBehavior: .init(configuration.keepAliveBehavior),
+            keepAliveBehavior: .init(connectionFactory.configuration.keepAliveBehavior),
             observabilityDelegate: ValkeyClientMetrics(logger: logger),
             clock: .continuous
         ) { (connectionID, pool) in
             var logger = logger
             logger[metadataKey: "valkey_connection_id"] = "\(connectionID)"
 
-            let connection = try await ValkeyConnection.connect(
+            let connection = try await connectionFactory.makeConnection(
                 address: address,
                 connectionID: connectionID,
-                configuration: configuration,
                 eventLoop: eventLoopGroup.any(),
                 logger: logger
             )
+
             return ConnectionAndMetadata(connection: connection, maximalStreamsOnConnection: 1)
         }
-        self.configuration = configuration
+        self.connectionFactory = connectionFactory
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
         self.runningAtomic = .init(false)
