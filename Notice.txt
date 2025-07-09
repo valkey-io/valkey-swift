@@ -4,7 +4,7 @@ The valkey-swift Project
 
 Please visit the valkey-swift web site for more information:
 
-* https://github.com/adam-fowler/valkey-swift
+* https://github.com/valkey-io/valkey-swift
 
 Copyright 2025 The valkey-swift Project
 
