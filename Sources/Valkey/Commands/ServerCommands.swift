@@ -1237,13 +1237,13 @@ public struct REPLICAOF: ValkeyCommand {
     }
     public enum Args: RESPRenderable, Sendable, Hashable {
         case hostPort(ArgsHostPort)
-        case noOne(ArgsNoOne)
+        case noOne
 
         @inlinable
         public var respEntries: Int {
             switch self {
             case .hostPort(let hostPort): hostPort.respEntries
-            case .noOne(let noOne): noOne.respEntries
+            case .noOne: ArgsNoOne().respEntries
             }
         }
 
@@ -1251,7 +1251,7 @@ public struct REPLICAOF: ValkeyCommand {
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
-            case .noOne(let noOne): noOne.encode(into: &commandEncoder)
+            case .noOne: ArgsNoOne().encode(into: &commandEncoder)
             }
         }
     }
@@ -1405,13 +1405,13 @@ public struct SLAVEOF: ValkeyCommand {
     }
     public enum Args: RESPRenderable, Sendable, Hashable {
         case hostPort(ArgsHostPort)
-        case noOne(ArgsNoOne)
+        case noOne
 
         @inlinable
         public var respEntries: Int {
             switch self {
             case .hostPort(let hostPort): hostPort.respEntries
-            case .noOne(let noOne): noOne.respEntries
+            case .noOne: ArgsNoOne().respEntries
             }
         }
 
@@ -1419,7 +1419,7 @@ public struct SLAVEOF: ValkeyCommand {
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
-            case .noOne(let noOne): noOne.encode(into: &commandEncoder)
+            case .noOne: ArgsNoOne().encode(into: &commandEncoder)
             }
         }
     }

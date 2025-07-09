@@ -207,6 +207,9 @@ extension String {
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append("\(tab)        case \(arg.swiftArgument)\n")
+            } else if !arg.hasParameters() {
+                allPureTokens = false
+                self.append("\(tab)        case \(arg.swiftArgument)\n")
             } else {
                 allPureTokens = false
                 self.append(
@@ -229,6 +232,10 @@ extension String {
                     self.append(
                         "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".respEntries\n"
                     )
+                } else if !arg.hasParameters() {
+                    self.append(
+                        "\(tab)            case .\(arg.swiftArgument): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: false))().respEntries\n"
+                    )
                 } else {
                     self.append(
                         "\(tab)            case .\(arg.swiftArgument)(let \(arg.swiftArgument)): \(arg.respRepresentable(isArray: false, genericString: false)).respEntries\n"
@@ -246,6 +253,10 @@ extension String {
                 // shouldn't be optional
                 self.append(
                     "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".encode(into: &commandEncoder)\n"
+                )
+            } else if !arg.hasParameters() {
+                self.append(
+                    "\(tab)            case .\(arg.swiftArgument): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: false))().encode(into: &commandEncoder)\n"
                 )
             } else {
                 self.append(
@@ -762,6 +773,22 @@ extension ValkeyCommand.Argument {
             } else {
                 return variable
             }
+        }
+    }
+
+    // return if argument can be configurated by parameters
+    func hasParameters() -> Bool {
+        switch self.type {
+        case .pureToken:
+            self.optional
+        case .block:
+            if let arguments = self.arguments {
+                arguments.reduce(false) { $0 || $1.hasParameters() }
+            } else {
+                false
+            }
+        default:
+            true
         }
     }
 
