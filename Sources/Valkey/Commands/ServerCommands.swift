@@ -1220,12 +1220,8 @@ public struct REPLICAOF: ValkeyCommand {
         }
     }
     public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let no: Bool
-        @usableFromInline let one: Bool
 
-        @inlinable public init(no: Bool = false, one: Bool = false) {
-            self.no = no
-            self.one = one
+        @inlinable public init() {
         }
 
         @inlinable
@@ -1392,12 +1388,8 @@ public struct SLAVEOF: ValkeyCommand {
         }
     }
     public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let no: Bool
-        @usableFromInline let one: Bool
 
-        @inlinable public init(no: Bool = false, one: Bool = false) {
-            self.no = no
-            self.one = one
+        @inlinable public init() {
         }
 
         @inlinable

@@ -262,6 +262,9 @@ extension String {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
+        let argumentsWithoutNonOptionalTokens = arguments.filter {
+            !($0.type == .pureToken && $0.optional == false)
+        }
         let names = names + [argument.name.swiftTypename]
         let blockName = enumName(names: names)
         for arg in arguments {
@@ -272,18 +275,18 @@ extension String {
             }
         }
         self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable, Hashable {\n")
-        for arg in arguments {
+        for arg in argumentsWithoutNonOptionalTokens {
             self.append(
                 "\(tab)        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: genericStrings))\n"
             )
         }
         self.append("\n")
         let commandParametersString =
-            arguments
+            argumentsWithoutNonOptionalTokens
             .map { "\($0.name.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true, genericStrings: genericStrings))" }
             .joined(separator: ", ")
         self.append("\(tab)        @inlinable public init(\(commandParametersString)) {\n")
-        for arg in arguments {
+        for arg in argumentsWithoutNonOptionalTokens {
             self.append("\(tab)            self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
         self.append("\(tab)        }\n\n")
