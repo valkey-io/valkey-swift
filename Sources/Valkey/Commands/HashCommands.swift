@@ -264,13 +264,13 @@ public struct HRANDFIELD: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            count.respEntries + "WITHVALUES".respEntries
+            count.respEntries + RESPPureToken("WITHVALUES", withvalues).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             count.encode(into: &commandEncoder)
-            "WITHVALUES".encode(into: &commandEncoder)
+            RESPPureToken("WITHVALUES", withvalues).encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken?

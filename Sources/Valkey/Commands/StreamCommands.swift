@@ -252,11 +252,9 @@ public enum XINFO {
     @_documentation(visibility: internal)
     public struct STREAM: ValkeyCommand {
         public struct FullBlock: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let full: Bool
             @usableFromInline let count: Int?
 
-            @inlinable public init(full: Bool = false, count: Int? = nil) {
-                self.full = full
+            @inlinable public init(count: Int? = nil) {
                 self.count = count
             }
 

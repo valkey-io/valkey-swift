@@ -524,13 +524,13 @@ public struct ZRANDMEMBER: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            count.respEntries + "WITHSCORES".respEntries
+            count.respEntries + RESPPureToken("WITHSCORES", withscores).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             count.encode(into: &commandEncoder)
-            "WITHSCORES".encode(into: &commandEncoder)
+            RESPPureToken("WITHSCORES", withscores).encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken?

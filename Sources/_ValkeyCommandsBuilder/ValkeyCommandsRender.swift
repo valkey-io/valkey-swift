@@ -207,6 +207,9 @@ extension String {
         for arg in arguments {
             if case .pureToken = arg.type {
                 self.append("\(tab)        case \(arg.swiftArgument)\n")
+            } else if !arg.hasParameters() {
+                allPureTokens = false
+                self.append("\(tab)        case \(arg.swiftArgument)\n")
             } else {
                 allPureTokens = false
                 self.append(
@@ -224,8 +227,14 @@ extension String {
             self.append("\(tab)            switch self {\n")
             for arg in arguments {
                 if case .pureToken = arg.type {
+                    // shouldn't be optional
+                    precondition(!arg.optional)
                     self.append(
                         "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".respEntries\n"
+                    )
+                } else if !arg.hasParameters() {
+                    self.append(
+                        "\(tab)            case .\(arg.swiftArgument): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: false))().respEntries\n"
                     )
                 } else {
                     self.append(
@@ -241,8 +250,13 @@ extension String {
         self.append("\(tab)            switch self {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
+                // shouldn't be optional
                 self.append(
                     "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".encode(into: &commandEncoder)\n"
+                )
+            } else if !arg.hasParameters() {
+                self.append(
+                    "\(tab)            case .\(arg.swiftArgument): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: false))().encode(into: &commandEncoder)\n"
                 )
             } else {
                 self.append(
@@ -259,6 +273,9 @@ extension String {
         guard let arguments = argument.arguments, arguments.count > 0 else {
             preconditionFailure("OneOf without arguments")
         }
+        let argumentsWithoutNonOptionalTokens = arguments.filter {
+            !($0.type == .pureToken && $0.optional == false)
+        }
         let names = names + [argument.name.swiftTypename]
         let blockName = enumName(names: names)
         for arg in arguments {
@@ -269,18 +286,18 @@ extension String {
             }
         }
         self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable, Hashable {\n")
-        for arg in arguments {
+        for arg in argumentsWithoutNonOptionalTokens {
             self.append(
                 "\(tab)        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: genericStrings))\n"
             )
         }
         self.append("\n")
         let commandParametersString =
-            arguments
+            argumentsWithoutNonOptionalTokens
             .map { "\($0.name.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true, genericStrings: genericStrings))" }
             .joined(separator: ", ")
         self.append("\(tab)        @inlinable public init(\(commandParametersString)) {\n")
-        for arg in arguments {
+        for arg in argumentsWithoutNonOptionalTokens {
             self.append("\(tab)            self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
         }
         self.append("\(tab)        }\n\n")
@@ -288,11 +305,7 @@ extension String {
         self.append("\(tab)        public var respEntries: Int {\n")
         self.append("\(tab)            ")
         let entries = arguments.map {
-            if case .pureToken = $0.type {
-                "\"\($0.token!)\".respEntries"
-            } else {
-                "\($0.respRepresentable(isArray: false, genericString: genericStrings)).respEntries"
-            }
+            "\($0.respRepresentable(isArray: false, genericString: genericStrings)).respEntries"
         }
         self.append(entries.joined(separator: " + "))
         self.append("\n")
@@ -300,13 +313,9 @@ extension String {
         self.append("\(tab)        @inlinable\n")
         self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
         for arg in arguments {
-            if case .pureToken = arg.type {
-                self.append("\(tab)            \"\(arg.token!)\".encode(into: &commandEncoder)\n")
-            } else {
-                self.append(
-                    "\(tab)            \(arg.respRepresentable(isArray: false, genericString: genericStrings)).encode(into: &commandEncoder)\n"
-                )
-            }
+            self.append(
+                "\(tab)            \(arg.respRepresentable(isArray: false, genericString: genericStrings)).encode(into: &commandEncoder)\n"
+            )
         }
         self.append("\(tab)        }\n")
         self.append("\(tab)    }\n")
@@ -725,7 +734,12 @@ extension ValkeyCommand.Argument {
         var variable = self.functionLabel(isArray: multiple && isArray)
         switch self.type
         {
-        case .pureToken: return "RESPPureToken(\"\(self.token!)\", \(variable))"
+        case .pureToken:
+            if self.optional {
+                return "RESPPureToken(\"\(self.token!)\", \(variable))"
+            } else {
+                return "\"\(self.token!)\""
+            }
         default:
             if self.type == .unixTime {
                 if self.optional {
@@ -759,6 +773,22 @@ extension ValkeyCommand.Argument {
             } else {
                 return variable
             }
+        }
+    }
+
+    // return if argument can be configurated by parameters
+    func hasParameters() -> Bool {
+        switch self.type {
+        case .pureToken:
+            self.optional
+        case .block:
+            if let arguments = self.arguments {
+                arguments.reduce(false) { $0 || $1.hasParameters() }
+            } else {
+                false
+            }
+        default:
+            true
         }
     }
 
