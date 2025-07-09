@@ -224,6 +224,8 @@ extension String {
             self.append("\(tab)            switch self {\n")
             for arg in arguments {
                 if case .pureToken = arg.type {
+                    // shouldn't be optional
+                    precondition(!arg.optional)
                     self.append(
                         "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".respEntries\n"
                     )
@@ -241,6 +243,7 @@ extension String {
         self.append("\(tab)            switch self {\n")
         for arg in arguments {
             if case .pureToken = arg.type {
+                // shouldn't be optional
                 self.append(
                     "\(tab)            case .\(arg.swiftArgument): \"\((arg.token ?? arg.name).escaped)\".encode(into: &commandEncoder)\n"
                 )
@@ -288,11 +291,7 @@ extension String {
         self.append("\(tab)        public var respEntries: Int {\n")
         self.append("\(tab)            ")
         let entries = arguments.map {
-            if case .pureToken = $0.type {
-                "\"\($0.token!)\".respEntries"
-            } else {
-                "\($0.respRepresentable(isArray: false, genericString: genericStrings)).respEntries"
-            }
+            "\($0.respRepresentable(isArray: false, genericString: genericStrings)).respEntries"
         }
         self.append(entries.joined(separator: " + "))
         self.append("\n")
@@ -300,13 +299,9 @@ extension String {
         self.append("\(tab)        @inlinable\n")
         self.append("\(tab)        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {\n")
         for arg in arguments {
-            if case .pureToken = arg.type {
-                self.append("\(tab)            \"\(arg.token!)\".encode(into: &commandEncoder)\n")
-            } else {
-                self.append(
-                    "\(tab)            \(arg.respRepresentable(isArray: false, genericString: genericStrings)).encode(into: &commandEncoder)\n"
-                )
-            }
+            self.append(
+                "\(tab)            \(arg.respRepresentable(isArray: false, genericString: genericStrings)).encode(into: &commandEncoder)\n"
+            )
         }
         self.append("\(tab)        }\n")
         self.append("\(tab)    }\n")
@@ -725,7 +720,12 @@ extension ValkeyCommand.Argument {
         var variable = self.functionLabel(isArray: multiple && isArray)
         switch self.type
         {
-        case .pureToken: return "RESPPureToken(\"\(self.token!)\", \(variable))"
+        case .pureToken:
+            if self.optional {
+                return "RESPPureToken(\"\(self.token!)\", \(variable))"
+            } else {
+                return "\"\(self.token!)\""
+            }
         default:
             if self.type == .unixTime {
                 if self.optional {

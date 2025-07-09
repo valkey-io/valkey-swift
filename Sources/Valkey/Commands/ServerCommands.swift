@@ -1039,14 +1039,14 @@ public struct FAILOVER: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            host.respEntries + port.respEntries + "FORCE".respEntries
+            host.respEntries + port.respEntries + RESPPureToken("FORCE", force).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             host.encode(into: &commandEncoder)
             port.encode(into: &commandEncoder)
-            "FORCE".encode(into: &commandEncoder)
+            RESPPureToken("FORCE", force).encode(into: &commandEncoder)
         }
     }
     public var target: Target?
@@ -1327,14 +1327,14 @@ public struct SHUTDOWN: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            saveSelector.respEntries + "NOW".respEntries + "FORCE".respEntries
+            saveSelector.respEntries + RESPPureToken("NOW", now).respEntries + RESPPureToken("FORCE", force).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             saveSelector.encode(into: &commandEncoder)
-            "NOW".encode(into: &commandEncoder)
-            "FORCE".encode(into: &commandEncoder)
+            RESPPureToken("NOW", now).encode(into: &commandEncoder)
+            RESPPureToken("FORCE", force).encode(into: &commandEncoder)
         }
     }
     public enum AbortSelector: RESPRenderable, Sendable, Hashable {

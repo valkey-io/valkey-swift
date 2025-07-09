@@ -206,13 +206,13 @@ public struct GEORADIUS: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            RESPWithToken("COUNT", count).respEntries + "ANY".respEntries
+            RESPWithToken("COUNT", count).respEntries + RESPPureToken("ANY", any).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             RESPWithToken("COUNT", count).encode(into: &commandEncoder)
-            "ANY".encode(into: &commandEncoder)
+            RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
     public enum Order: RESPRenderable, Sendable, Hashable {
@@ -316,13 +316,13 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            RESPWithToken("COUNT", count).respEntries + "ANY".respEntries
+            RESPWithToken("COUNT", count).respEntries + RESPPureToken("ANY", any).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             RESPWithToken("COUNT", count).encode(into: &commandEncoder)
-            "ANY".encode(into: &commandEncoder)
+            RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
     public enum Order: RESPRenderable, Sendable, Hashable {
@@ -424,13 +424,13 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            RESPWithToken("COUNT", count).respEntries + "ANY".respEntries
+            RESPWithToken("COUNT", count).respEntries + RESPPureToken("ANY", any).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             RESPWithToken("COUNT", count).encode(into: &commandEncoder)
-            "ANY".encode(into: &commandEncoder)
+            RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
     public enum Order: RESPRenderable, Sendable, Hashable {
@@ -514,13 +514,13 @@ public struct GEORADIUSRO: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            RESPWithToken("COUNT", count).respEntries + "ANY".respEntries
+            RESPWithToken("COUNT", count).respEntries + RESPPureToken("ANY", any).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             RESPWithToken("COUNT", count).encode(into: &commandEncoder)
-            "ANY".encode(into: &commandEncoder)
+            RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
     public enum Order: RESPRenderable, Sendable, Hashable {
@@ -743,13 +743,13 @@ public struct GEOSEARCH: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            RESPWithToken("COUNT", count).respEntries + "ANY".respEntries
+            RESPWithToken("COUNT", count).respEntries + RESPPureToken("ANY", any).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             RESPWithToken("COUNT", count).encode(into: &commandEncoder)
-            "ANY".encode(into: &commandEncoder)
+            RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
     public typealias Response = RESPToken.Array
@@ -953,13 +953,13 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            RESPWithToken("COUNT", count).respEntries + "ANY".respEntries
+            RESPWithToken("COUNT", count).respEntries + RESPPureToken("ANY", any).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             RESPWithToken("COUNT", count).encode(into: &commandEncoder)
-            "ANY".encode(into: &commandEncoder)
+            RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
