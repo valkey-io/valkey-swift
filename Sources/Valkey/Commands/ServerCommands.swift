@@ -1039,14 +1039,14 @@ public struct FAILOVER: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            host.respEntries + port.respEntries + "FORCE".respEntries
+            host.respEntries + port.respEntries + RESPPureToken("FORCE", force).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             host.encode(into: &commandEncoder)
             port.encode(into: &commandEncoder)
-            "FORCE".encode(into: &commandEncoder)
+            RESPPureToken("FORCE", force).encode(into: &commandEncoder)
         }
     }
     public var target: Target?
@@ -1220,12 +1220,8 @@ public struct REPLICAOF: ValkeyCommand {
         }
     }
     public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let no: Bool
-        @usableFromInline let one: Bool
 
-        @inlinable public init(no: Bool = false, one: Bool = false) {
-            self.no = no
-            self.one = one
+        @inlinable public init() {
         }
 
         @inlinable
@@ -1241,13 +1237,13 @@ public struct REPLICAOF: ValkeyCommand {
     }
     public enum Args: RESPRenderable, Sendable, Hashable {
         case hostPort(ArgsHostPort)
-        case noOne(ArgsNoOne)
+        case noOne
 
         @inlinable
         public var respEntries: Int {
             switch self {
             case .hostPort(let hostPort): hostPort.respEntries
-            case .noOne(let noOne): noOne.respEntries
+            case .noOne: ArgsNoOne().respEntries
             }
         }
 
@@ -1255,7 +1251,7 @@ public struct REPLICAOF: ValkeyCommand {
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
-            case .noOne(let noOne): noOne.encode(into: &commandEncoder)
+            case .noOne: ArgsNoOne().encode(into: &commandEncoder)
             }
         }
     }
@@ -1327,14 +1323,14 @@ public struct SHUTDOWN: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            saveSelector.respEntries + "NOW".respEntries + "FORCE".respEntries
+            saveSelector.respEntries + RESPPureToken("NOW", now).respEntries + RESPPureToken("FORCE", force).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             saveSelector.encode(into: &commandEncoder)
-            "NOW".encode(into: &commandEncoder)
-            "FORCE".encode(into: &commandEncoder)
+            RESPPureToken("NOW", now).encode(into: &commandEncoder)
+            RESPPureToken("FORCE", force).encode(into: &commandEncoder)
         }
     }
     public enum AbortSelector: RESPRenderable, Sendable, Hashable {
@@ -1392,12 +1388,8 @@ public struct SLAVEOF: ValkeyCommand {
         }
     }
     public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let no: Bool
-        @usableFromInline let one: Bool
 
-        @inlinable public init(no: Bool = false, one: Bool = false) {
-            self.no = no
-            self.one = one
+        @inlinable public init() {
         }
 
         @inlinable
@@ -1413,13 +1405,13 @@ public struct SLAVEOF: ValkeyCommand {
     }
     public enum Args: RESPRenderable, Sendable, Hashable {
         case hostPort(ArgsHostPort)
-        case noOne(ArgsNoOne)
+        case noOne
 
         @inlinable
         public var respEntries: Int {
             switch self {
             case .hostPort(let hostPort): hostPort.respEntries
-            case .noOne(let noOne): noOne.respEntries
+            case .noOne: ArgsNoOne().respEntries
             }
         }
 
@@ -1427,7 +1419,7 @@ public struct SLAVEOF: ValkeyCommand {
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .hostPort(let hostPort): hostPort.encode(into: &commandEncoder)
-            case .noOne(let noOne): noOne.encode(into: &commandEncoder)
+            case .noOne: ArgsNoOne().encode(into: &commandEncoder)
             }
         }
     }

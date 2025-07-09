@@ -18,10 +18,39 @@ import NIOEmbedded
 import Testing
 import Valkey
 
-/// Test commands process their response correctly.
+/// Test commands render correctly and process their response correctly.
 ///
 /// Generally the commands being tested here are ones we have written custom responses for
 struct CommandTests {
+    struct ServerCommands {
+        /// Test non-optional tokens render correctly
+        @Test
+        @available(valkeySwift 1.0, *)
+        func replicaof() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    _ = try await connection.replicaof(args: .hostPort(.init(host: "127.0.0.1", port: 18000)))
+                    _ = try await connection.replicaof(args: .noOne)
+                }
+                group.addTask {
+                    var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["REPLICAOF", "127.0.0.1", "18000"])).base)
+                    try await channel.writeInbound(RESPToken(.simpleString("Ok")).base)
+
+                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["REPLICAOF", "NO", "ONE"])).base)
+                    try await channel.writeInbound(RESPToken(.simpleString("Ok")).base)
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
     struct StringCommands {
         @Test
         @available(valkeySwift 1.0, *)
@@ -324,7 +353,33 @@ struct CommandTests {
                 }
                 try await group.waitForAll()
             }
+        }
 
+        /// Test generated commands render optional tokens in blocks correctly
+        @Test
+        @available(valkeySwift 1.0, *)
+        func zrandmember() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    _ = try await connection.zrandmember(key: "test", options: .init(count: 0, withscores: true))
+                    _ = try await connection.zrandmember(key: "test", options: .init(count: 0, withscores: false))
+                }
+                group.addTask {
+                    var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["ZRANDMEMBER", "test", "0", "WITHSCORES"])).base)
+                    try await channel.writeInbound(RESPToken(.array([])).base)
+
+                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["ZRANDMEMBER", "test", "0"])).base)
+                    try await channel.writeInbound(RESPToken(.array([])).base)
+                }
+                try await group.waitForAll()
+            }
         }
     }
 
