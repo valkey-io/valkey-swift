@@ -2,11 +2,10 @@
 //
 // This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 Apple Inc. and the valkey-swift project authors
+// Copyright (c) 2025 the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of valkey-swift project authors
+// See LICENSE for license information
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -1518,7 +1517,11 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
-    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, arg: [String] = []) async throws -> ByteBuffer? {
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(
+        username: Username,
+        command: Command,
+        arg: [String] = []
+    ) async throws -> ByteBuffer? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 

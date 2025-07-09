@@ -1,19 +1,18 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the valkey-swift project
+// This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 the valkey-swift authors
+// Copyright (c) 2025 the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
 //===----------------------------------------------------------------------===//
 
-import Synchronization
 import DequeModule
+import Synchronization
 
 @available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, *)
 public final class MockClock: Clock {
@@ -46,7 +45,7 @@ public final class MockClock: Clock {
     private struct State: Sendable {
         var now: Instant
 
-        var sleepersHeap: Array<Sleeper>
+        var sleepersHeap: [Sleeper]
 
         var waiters: Deque<Waiter>
         var nextDeadlines: Deque<Instant>
@@ -185,4 +184,3 @@ public final class MockClock: Clock {
         }
     }
 }
-

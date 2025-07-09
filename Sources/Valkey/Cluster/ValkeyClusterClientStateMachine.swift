@@ -6,7 +6,6 @@
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -338,14 +337,16 @@ package struct ValkeyClusterClientStateMachine<
                     useCase: .circuitBreaker,
                     duration: self.configuration.circuitBreakerDuration
                 )
-                self.clusterState = .degraded(.init(
-                    start: self.clock.now,
-                    pendingSuccessNotifiers: [:],
-                    circuitBreakerTimer: .init(id: circuitBreakerTimerID),
-                    hashSlotShardMap: healthyContext.hashSlotShardMap,
-                    lastHealthyState: healthyContext.clusterDescription,
-                    lastError: error
-                ))
+                self.clusterState = .degraded(
+                    .init(
+                        start: self.clock.now,
+                        pendingSuccessNotifiers: [:],
+                        circuitBreakerTimer: .init(id: circuitBreakerTimerID),
+                        hashSlotShardMap: healthyContext.hashSlotShardMap,
+                        lastHealthyState: healthyContext.clusterDescription,
+                        lastError: error
+                    )
+                )
                 failedAction = ClusterDiscoveryFailedAction(
                     circuitBreakerTimer: timerTillUnavailable
                 )
@@ -611,14 +612,16 @@ package struct ValkeyClusterClientStateMachine<
 
             let circuitBreakerTimerID = self.nextTimerID()
 
-            self.clusterState = .degraded(.init(
-                start: self.clock.now,
-                pendingSuccessNotifiers: [:],
-                circuitBreakerTimer: .init(id: circuitBreakerTimerID),
-                hashSlotShardMap: healthyContext.hashSlotShardMap,
-                lastHealthyState: healthyContext.clusterDescription,
-                lastError: ValkeyClusterError.clusterIsMissingMovedErrorNode
-            ))
+            self.clusterState = .degraded(
+                .init(
+                    start: self.clock.now,
+                    pendingSuccessNotifiers: [:],
+                    circuitBreakerTimer: .init(id: circuitBreakerTimerID),
+                    hashSlotShardMap: healthyContext.hashSlotShardMap,
+                    lastHealthyState: healthyContext.clusterDescription,
+                    lastError: ValkeyClusterError.clusterIsMissingMovedErrorNode
+                )
+            )
 
             // move into degraded state.
             let cancelTimer: TimerCancellationToken?
@@ -630,14 +633,16 @@ package struct ValkeyClusterClientStateMachine<
                 cancelTimer = context.cancellationToken
             }
 
-            return .moveToDegraded(.init(
-                runDiscoveryAndCancelTimer: cancelTimer,
-                circuitBreakerTimer: .init(
-                    timerID: circuitBreakerTimerID,
-                    useCase: .circuitBreaker,
-                    duration: self.configuration.circuitBreakerDuration
+            return .moveToDegraded(
+                .init(
+                    runDiscoveryAndCancelTimer: cancelTimer,
+                    circuitBreakerTimer: .init(
+                        timerID: circuitBreakerTimerID,
+                        useCase: .circuitBreaker,
+                        duration: self.configuration.circuitBreakerDuration
+                    )
                 )
-            ))
+            )
 
         case .shutdown:
             throw ValkeyClusterError.clusterClientIsShutDown
@@ -674,7 +679,6 @@ package struct ValkeyClusterClientStateMachine<
             return .fail(ValkeyClusterError.clusterClientIsShutDown, successNotifier)
         }
     }
-
 
     package mutating func updateValkeyServiceNodes(
         _ description: ValkeyClusterDescription

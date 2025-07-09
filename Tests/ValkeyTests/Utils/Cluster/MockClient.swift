@@ -1,19 +1,18 @@
 //===----------------------------------------------------------------------===//
 //
-// This source file is part of the valkey-swift project
+// This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 the valkey-swift authors
+// Copyright (c) 2025 the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
 //===----------------------------------------------------------------------===//
 
-import Valkey
 import Synchronization
+import Valkey
 
 @available(valkeySwift 1.0, *)
 final class MockClientFactory: ValkeyNodeConnectionPoolFactory {
@@ -21,7 +20,6 @@ final class MockClientFactory: ValkeyNodeConnectionPoolFactory {
     let _runningPoolsLock = Mutex([MockClient]())
 
     init() {}
-
 
     func makeConnectionPool(nodeDescription: ValkeyNodeDescription) -> MockClient {
         let pool = MockClient(nodeDescription: nodeDescription)

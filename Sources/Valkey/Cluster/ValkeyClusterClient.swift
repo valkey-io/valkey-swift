@@ -6,7 +6,6 @@
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -134,8 +133,6 @@ public final class ValkeyClusterClient: Sendable {
         self.stateLock = Mutex(stateMachine)
         self.nodeDiscovery = nodeDiscovery
     }
-
-
 
     // MARK: - Public methods -
 

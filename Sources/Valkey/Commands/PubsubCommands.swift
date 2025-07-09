@@ -2,11 +2,10 @@
 //
 // This source file is part of the valkey-swift open source project
 //
-// Copyright (c) 2025 Apple Inc. and the valkey-swift project authors
+// Copyright (c) 2025 the valkey-swift project authors
 // Licensed under Apache License v2.0
 //
-// See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of valkey-swift project authors
+// See LICENSE for license information
 //
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -322,7 +321,10 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
     /// - Returns: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
-    public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(shardchannel: Shardchannel, message: Message) async throws -> Int {
+    public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(
+        shardchannel: Shardchannel,
+        message: Message
+    ) async throws -> Int {
         try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
     }
 
