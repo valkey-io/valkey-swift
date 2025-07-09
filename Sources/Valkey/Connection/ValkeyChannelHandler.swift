@@ -51,9 +51,9 @@ enum ValkeyRequest: Sendable {
 final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     struct Configuration {
-        let authentication: ValkeyClientConfiguration.Authentication?
+        let authentication: ValkeyConnectionConfiguration.Authentication?
         @usableFromInline
-        let connectionTimeout: TimeAmount
+        let commandTimeout: TimeAmount
         @usableFromInline
         let blockingCommandTimeout: TimeAmount
         let clientName: String?
@@ -134,7 +134,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func write<Command: ValkeyCommand>(command: Command, continuation: CheckedContinuation<RESPToken, any Error>, requestID: Int) {
         self.eventLoop.assertInEventLoop()
         let deadline: NIODeadline =
-            command.isBlocking ? .now() + self.configuration.blockingCommandTimeout : .now() + self.configuration.connectionTimeout
+            command.isBlocking ? .now() + self.configuration.blockingCommandTimeout : .now() + self.configuration.commandTimeout
         let pendingCommand = PendingCommand(
             promise: .swift(continuation),
             requestID: requestID,
@@ -158,7 +158,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
-        let deadline = .now() + self.configuration.connectionTimeout
+        let deadline = .now() + self.configuration.commandTimeout
         switch request {
         case .single(let buffer, let tokenPromise, let requestID):
             let pendingCommand = PendingCommand(promise: tokenPromise, requestID: requestID, deadline: deadline)
@@ -491,5 +491,17 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         case .doNothing:
             break
         }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyChannelHandler.Configuration {
+    init(_ other: ValkeyConnectionConfiguration) {
+        self.init(
+            authentication: other.authentication,
+            commandTimeout: .init(other.commandTimeout),
+            blockingCommandTimeout: .init(other.blockingCommandTimeout),
+            clientName: other.clientName
+        )
     }
 }

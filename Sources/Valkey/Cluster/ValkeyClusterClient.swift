@@ -98,11 +98,14 @@ public final class ValkeyClusterClient: Sendable {
     ///   - nodeDiscovery: A ``ValkeyNodeDiscovery`` service that discovers Valkey nodes for the client in the cluster.
     ///   - eventLoopGroup: The event loop group used for handling connections. Defaults to the global singleton.
     ///   - logger: A logger for recording internal events and diagnostic information.
+    ///   - connectionFactory: An overwrite to provide create your own underlying `Channel`s. Use this to wrap connections
+    ///                        in other NIO protocols (like SSH).
     public init(
         clientConfiguration: ValkeyClientConfiguration,
         nodeDiscovery: some ValkeyNodeDiscovery,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
-        logger: Logger
+        logger: Logger,
+        connectionFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
         self.logger = logger
 
@@ -113,6 +116,10 @@ public final class ValkeyClusterClient: Sendable {
         let factory = ValkeyClientFactory(
             logger: logger,
             configuration: clientConfiguration,
+            connectionFactory: ValkeyConnectionFactory(
+                configuration: clientConfiguration,
+                customHandler: connectionFactory
+            ),
             eventLoopGroup: eventLoopGroup
         )
 
@@ -127,6 +134,8 @@ public final class ValkeyClusterClient: Sendable {
         self.stateLock = Mutex(stateMachine)
         self.nodeDiscovery = nodeDiscovery
     }
+
+
 
     // MARK: - Public methods -
 
@@ -146,26 +155,25 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let hashSlots = command.keysAffected.map { HashSlot(key: $0) }
-        let clientSelector: () async throws -> ValkeyClient = {
+        var clientSelector: () async throws -> ValkeyClient = {
             try await self.client(for: hashSlots)
         }
 
-        var respToken = try await self.retryingSend(
-            clientSelector: clientSelector,
-            command: command,
-            logger: logger
-        )
-
-        // TODO: We might want to collect redirects here for diagnostic purposes.
-        while let movedError = respToken.parseMovedError() {
-            respToken = try await self.retryingSend(
-                clientSelector: { try await self.client(for: movedError) },
-                command: command,
-                logger: logger
-            )
+        while true {
+            do {
+                let respToken = try await self.retryingSend(
+                    clientSelector: clientSelector,
+                    command: command,
+                    logger: logger
+                )
+                return try Command.Response(fromRESP: respToken)
+            } catch let error as ValkeyClientError where error.errorCode == .commandError {
+                guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
+                    throw error
+                }
+                clientSelector = { try await self.client(for: movedError) }
+            }
         }
-
-        return try Command.Response(fromRESP: respToken)
     }
 
     /// Starts running the cluster client.
@@ -186,7 +194,7 @@ public final class ValkeyClusterClient: Sendable {
     ///     group.addTask {
     ///         await client.run()
     ///     }
-    ///     
+    ///
     ///     // use the client here
     ///     let foo = try await client.get(key: "foo")
     /// }
@@ -200,7 +208,7 @@ public final class ValkeyClusterClient: Sendable {
         self.actionStreamContinuation.yield(.runClusterDiscovery(runNodeDiscovery: true))
 
         await withTaskCancellationHandler {
-            await withDiscardingTaskGroup() { taskGroup in
+            await withDiscardingTaskGroup { taskGroup in
                 await self.runUsingTaskGroup(&taskGroup)
             }
         } onCancel: {
@@ -418,7 +426,6 @@ public final class ValkeyClusterClient: Sendable {
                     try await withCheckedThrowingContinuation {
                         (continuation: CheckedContinuation<Void, any Error>) in
 
-
                         let action = self.stateLock.withLock {
                             $0.waitForHealthy(waiterID: waiterID, successNotifier: continuation)
                         }
@@ -477,9 +484,6 @@ public final class ValkeyClusterClient: Sendable {
                 return try await client._send(command)
             } catch ValkeyClusterError.noNodeToTalkTo {
                 // TODO: Rerun node discovery!
-            } catch let error as ValkeyClientError {
-                fatalError("TODO: error received: \(error)")
-                break
             }
         }
 
@@ -519,13 +523,14 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameter runNodeDiscoveryFirst: Whether to run node discovery before querying for cluster topology.
     private func runClusterDiscovery(runNodeDiscoveryFirst: Bool) async {
         do {
-            let voters = if runNodeDiscoveryFirst {
-                try await self.runNodeDiscovery()
-            } else {
-                self.stateLock.withLock {
-                    $0.getInitialVoters()
+            let voters =
+                if runNodeDiscoveryFirst {
+                    try await self.runNodeDiscovery()
+                } else {
+                    self.stateLock.withLock {
+                        $0.getInitialVoters()
+                    }
                 }
-            }
 
             let clusterDescription = try await self.runClusterDiscoveryFindingConsensus(voters: voters)
             let action = self.stateLock.withLock {
@@ -534,9 +539,12 @@ public final class ValkeyClusterClient: Sendable {
 
             self.runClusterDiscoverySucceededAction(action)
         } catch {
-            self.logger.debug("Valkey cluster discovery failed", metadata: [
-                "error": "\(error)",
-            ])
+            self.logger.debug(
+                "Valkey cluster discovery failed",
+                metadata: [
+                    "error": "\(error)"
+                ]
+            )
             let action = self.stateLock.withLock {
                 $0.valkeyClusterDiscoveryFailed(error)
             }
@@ -558,22 +566,28 @@ public final class ValkeyClusterClient: Sendable {
             let actions = self.stateLock.withLock {
                 $0.updateValkeyServiceNodes(mapped)
             }
-            self.logger.debug("Discovered nodes", metadata: [
-                "node_count": "\(nodes.count)",
-            ])
+            self.logger.debug(
+                "Discovered nodes",
+                metadata: [
+                    "node_count": "\(nodes.count)"
+                ]
+            )
             self.runUpdateValkeyNodesAction(actions)
             return actions.voters
         } catch {
-            self.logger.debug("Failed to discover nodes", metadata: [
-                "error": "\(error)",
-            ])
+            self.logger.debug(
+                "Failed to discover nodes",
+                metadata: [
+                    "error": "\(error)"
+                ]
+            )
             throw error
         }
     }
 
     /// Establishes consensus on the cluster topology by querying multiple nodes.
     ///
-    /// This method uses a voting mechanism to establish consensus among multiple nodes 
+    /// This method uses a voting mechanism to establish consensus among multiple nodes
     /// about the current cluster topology. It requires a quorum of nodes to agree
     /// on the topology before accepting it.
     ///
@@ -581,7 +595,7 @@ public final class ValkeyClusterClient: Sendable {
     /// - Returns: The agreed-upon cluster description.
     /// - Throws: `ValkeyClusterError.clusterIsUnavailable` if consensus cannot be reached.
     private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyClient>]) async throws -> ValkeyClusterDescription {
-        return try await withThrowingTaskGroup(of: (ValkeyClusterDescription, ValkeyNodeID).self) { taskGroup in
+        try await withThrowingTaskGroup(of: (ValkeyClusterDescription, ValkeyNodeID).self) { taskGroup in
             for voter in voters {
                 taskGroup.addTask {
                     (try await voter.client.clusterShards(), voter.nodeID)
@@ -597,17 +611,23 @@ public final class ValkeyClusterClient: Sendable {
                     do {
                         let metrics = try election.voteReceived(for: description, from: nodeID)
 
-                        self.logger.debug("Vote received", metadata: [
-                            "candidate_count": "\(metrics.candidateCount)",
-                            "candidate": "\(metrics.candidate)",
-                            "votes_received": "\(metrics.votesReceived)",
-                            "votes_needed": "\(metrics.votesNeeded)"
-                        ])
+                        self.logger.debug(
+                            "Vote received",
+                            metadata: [
+                                "candidate_count": "\(metrics.candidateCount)",
+                                "candidate": "\(metrics.candidate)",
+                                "votes_received": "\(metrics.votesReceived)",
+                                "votes_needed": "\(metrics.votesNeeded)",
+                            ]
+                        )
                     } catch let error as ValkeyClusterError {
-                        self.logger.debug("Vote invalid", metadata: [
-                            "nodeID": "\(nodeID)",
-                            "error": "\(error)",
-                        ])
+                        self.logger.debug(
+                            "Vote invalid",
+                            metadata: [
+                                "nodeID": "\(nodeID)",
+                                "error": "\(error)",
+                            ]
+                        )
                         continue
                     }
 
@@ -627,9 +647,12 @@ public final class ValkeyClusterClient: Sendable {
                     }
 
                 case .failure(let error):
-                    self.logger.debug("Received an error while asking for cluster topology", metadata: [
-                        "error": "\(error)"
-                    ])
+                    self.logger.debug(
+                        "Received an error while asking for cluster topology",
+                        metadata: [
+                            "error": "\(error)"
+                        ]
+                    )
                 }
             }
 
@@ -675,6 +698,7 @@ package struct ValkeyClientFactory: ValkeyNodeConnectionPoolFactory {
     var configuration: ValkeyClientConfiguration
     var eventLoopGroup: any EventLoopGroup
     let connectionIDGenerator = ConnectionIDGenerator()
+    let connectionFactory: ValkeyConnectionFactory
 
     /// Creates a new `ValkeyClientFactory` instance.
     ///
@@ -685,10 +709,12 @@ package struct ValkeyClientFactory: ValkeyNodeConnectionPoolFactory {
     package init(
         logger: Logger,
         configuration: ValkeyClientConfiguration,
+        connectionFactory: ValkeyConnectionFactory,
         eventLoopGroup: any EventLoopGroup
     ) {
         self.logger = logger
         self.configuration = configuration
+        self.connectionFactory = connectionFactory
         self.eventLoopGroup = eventLoopGroup
     }
 
@@ -711,8 +737,8 @@ package struct ValkeyClientFactory: ValkeyNodeConnectionPoolFactory {
 
         return ValkeyClient(
             serverAddress,
-            configuration: self.configuration,
             connectionIDGenerator: self.connectionIDGenerator,
+            connectionFactory: self.connectionFactory,
             eventLoopGroup: self.eventLoopGroup,
             logger: self.logger
         )

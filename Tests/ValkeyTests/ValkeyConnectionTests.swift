@@ -87,10 +87,11 @@ struct ConnectionTests {
     @available(valkeySwift 1.0, *)
     func testConnectionCreationHelloClientName() async throws {
         let channel = NIOAsyncTestingChannel()
+        let configuration = ValkeyConnectionConfiguration(clientName: "Testing")
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(
             channel,
-            clientName: "Testing",
+            configuration: configuration,
             logger: logger
         )
 

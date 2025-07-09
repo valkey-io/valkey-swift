@@ -22,11 +22,8 @@ struct ValkeyMovedErrorTests {
 
     @Test("parseMovedError parses valid MOVED error")
     func testParseValidMovedError() async throws {
-        // Create a RESPToken with a MOVED error
-        let token = RESPToken(.simpleError("MOVED 1234 redis.example.com:6379"))
-
         // Parse the moved error
-        let movedError = token.parseMovedError()
+        let movedError = ValkeyMovedError("MOVED 1234 redis.example.com:6379")
 
         // Verify the moved error is parsed correctly
         #expect(movedError != nil)
@@ -39,11 +36,9 @@ struct ValkeyMovedErrorTests {
     func testParseValidMovedErrorFromBulkError() async throws {
         // Create a RESPToken with a MOVED error
         let errorMessage = "MOVED 5000 10.0.0.1:6380"
-        let byteBuffer = ByteBuffer(string: errorMessage)
-        let token = RESPToken(.bulkError(byteBuffer))
 
         // Parse the moved error
-        let movedError = token.parseMovedError()
+        let movedError = ValkeyMovedError(errorMessage)
 
         // Verify the moved error is parsed correctly
         #expect(movedError != nil)
@@ -52,29 +47,9 @@ struct ValkeyMovedErrorTests {
         #expect(movedError?.port == 6380)
     }
 
-    @Test("parseMovedError returns nil for non-error tokens")
-    func testParseNonErrorToken() async throws {
-        // Test with various non-error token types
-        let nullToken = RESPToken(.null)
-        #expect(nullToken.parseMovedError() == nil)
-
-        let stringToken = RESPToken(.simpleString("OK"))
-        #expect(stringToken.parseMovedError() == nil)
-
-        let numberToken = RESPToken(.number(42))
-        #expect(numberToken.parseMovedError() == nil)
-
-        let arrayToken = RESPToken(.array([.number(1), .number(2)]))
-        #expect(arrayToken.parseMovedError() == nil)
-    }
-
     @Test("parseMovedError returns nil for error tokens without MOVED prefix")
     func testParseNonMovedError() async throws {
-        let errorMessage = "ERR unknown command"
-        let byteBuffer = ByteBuffer(string: errorMessage)
-        let token = RESPToken(.simpleError(byteBuffer))
-
-        #expect(token.parseMovedError() == nil)
+        #expect(ValkeyMovedError("ERR unknown command") == nil)
     }
 
     @Test("parseMovedError returns nil for invalid MOVED format")
@@ -82,24 +57,23 @@ struct ValkeyMovedErrorTests {
         // Test with various invalid MOVED formats
 
         // Missing slot number
-        let missingSlot = RESPToken(.simpleError("MOVED redis.example.com:6379"))
-        #expect(missingSlot.parseMovedError() == nil)
+        #expect(ValkeyMovedError("MOVED redis.example.com:6379") == nil)
 
         // Missing port number
-        let missingPort = RESPToken(.simpleError("MOVED 1234 redis.example.com"))
-        #expect(missingPort.parseMovedError() == nil)
+        let missingPort = "MOVED 1234 redis.example.com"
+        #expect(ValkeyMovedError(missingPort) == nil)
 
         // Invalid slot number
-        let invalidSlot = RESPToken(.simpleError("MOVED abc redis.example.com:6379"))
-        #expect(invalidSlot.parseMovedError() == nil)
+        let invalidSlot = "MOVED abc redis.example.com:6379"
+        #expect(ValkeyMovedError(invalidSlot) == nil)
 
         // Invalid port number
-        let invalidPort = RESPToken(.simpleError("MOVED 1234 redis.example.com:port"))
-        #expect(invalidPort.parseMovedError() == nil)
+        let invalidPort = "MOVED 1234 redis.example.com:port"
+        #expect(ValkeyMovedError(invalidPort) == nil)
 
         // Slot number out of range
-        let outOfRangeSlot = RESPToken(.simpleError("MOVED 999999 redis.example.com:6379"))
-        #expect(outOfRangeSlot.parseMovedError() == nil)
+        let outOfRangeSlot = "MOVED 999999 redis.example.com:6379"
+        #expect(ValkeyMovedError(outOfRangeSlot) == nil)
     }
 
     @Test("ValkeyMovedError is Hashable")
