@@ -40,6 +40,85 @@ struct ConnectionTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testConnectionCreationHelloV3() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+
+        async let helloResult: Void = connection.sendHello()
+
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
+        try await channel.writeInbound(RESPToken(.map([:])).base)
+        try await helloResult
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testConnectionCreationHelloError() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await #expect(throws: ValkeyClientError(.commandError, message: "Not supported")) {
+                    try await connection.sendHello()
+                }
+            }
+            group.addTask {
+                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
+                try await channel.writeInbound(RESPToken(.bulkError("Not supported")).base)
+            }
+            try await group.waitForAll()
+        }
+        try await connection.channel.closeFuture.get()
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testConnectionCreationHelloAuth() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(
+            channel,
+            configuration: .init(
+                authentication: .init(username: "john", password: "smith")
+            ),
+            logger: logger
+        )
+
+        async let helloResult: Void = connection.sendHello()
+
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        #expect(outbound == RESPToken(.command(["HELLO", "3", "AUTH", "john", "smith"])).base)
+        try await channel.writeInbound(RESPToken(.map([:])).base)
+        try await helloResult
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testConnectionCreationHelloClientName() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let configuration = ValkeyConnectionConfiguration(clientName: "Testing")
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(
+            channel,
+            configuration: configuration,
+            logger: logger
+        )
+
+        async let helloResult: Void = connection.sendHello()
+
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        #expect(outbound == RESPToken(.command(["HELLO", "3", "SETNAME", "Testing"])).base)
+        try await channel.writeInbound(RESPToken(.map([:])).base)
+        try await helloResult
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testParseError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")

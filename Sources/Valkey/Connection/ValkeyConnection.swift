@@ -113,13 +113,18 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     }
 
     func sendHello() async throws {
-        _ = try await hello(
-            arguments: .init(
-                protover: 3,
-                auth: self.configuration.authentication.map { .init(username: $0.username, password: $0.password) },
-                clientname: self.configuration.clientName
+        do {
+            _ = try await hello(
+                arguments: .init(
+                    protover: 3,
+                    auth: self.configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                    clientname: self.configuration.clientName
+                )
             )
-        )
+        } catch {
+            self.close()
+            throw error
+        }
     }
 
     /// Send RESP command to Valkey connection
