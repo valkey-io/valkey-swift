@@ -131,7 +131,7 @@ extension ValkeyChannelHandler {
 
         /// handler wants to send a command
         @usableFromInline
-        mutating func receivedResponse(_ token: RESPToken) -> ReceivedResponseAction {
+        mutating func receivedResponse() -> ReceivedResponseAction {
             switch consume self.state {
             case .initialized:
                 preconditionFailure("Cannot receive responses before connection is established")

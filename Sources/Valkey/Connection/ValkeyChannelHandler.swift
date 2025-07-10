@@ -344,7 +344,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handleToken(context: ChannelHandlerContext, token: RESPToken) {
         switch token.identifier {
         case .simpleError, .bulkError:
-            switch self.stateMachine.receivedResponse(token) {
+            switch self.stateMachine.receivedResponse() {
             case .respond(let command, let deadlineAction):
                 self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
@@ -362,7 +362,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             // and close the channel with the error
             do {
                 if try self.subscriptions.notify(token) == true {
-                    switch self.stateMachine.receivedResponse(token) {
+                    switch self.stateMachine.receivedResponse() {
                     case .respond(let command, let deadlineAction):
                         self.processDeadlineCallbackAction(action: deadlineAction)
                         command.promise.succeed(Self.simpleOk)
@@ -391,7 +391,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             .map,
             .set,
             .attribute:
-            switch self.stateMachine.receivedResponse(token) {
+            switch self.stateMachine.receivedResponse() {
             case .respond(let command, let deadlineAction):
                 self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.succeed(token)

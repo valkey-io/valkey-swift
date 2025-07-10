@@ -90,7 +90,7 @@ struct ValkeyChannelHandlerStateMachineTests {
             stateMachine.state
                 == .closing(.init(context: "testGracefulShutdown", pendingCommands: [.init(promise: .nio(promise), requestID: 23, deadline: .now())]))
         )
-        switch stateMachine.receivedResponse(.ok) {
+        switch stateMachine.receivedResponse() {
         case .respondAndClose(let command):
             #expect(command.requestID == 23)
         case .respond, .closeWithError, .none:
@@ -146,17 +146,16 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        let token = RESPToken(validated: ByteBuffer(string: "+OK\r\n"))
-        switch stateMachine.receivedResponse(token) {
+        switch stateMachine.receivedResponse() {
         case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
             #expect(deadlineAction == .cancel)
-            command.promise.succeed(token)
+            command.promise.succeed(.ok)
         case .closeWithError, .respondAndClose, .none:
             Issue.record("Invalid receivedResponse action")
         }
         expect(stateMachine.state == .active(.init(context: "testReceivedResponse", pendingCommands: [])))
-        await #expect(try promise.futureResult.get() == RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
+        await #expect(try promise.futureResult.get() == .ok)
     }
 
     @Test
@@ -164,8 +163,7 @@ struct ValkeyChannelHandlerStateMachineTests {
     func testReceivedResponseWithoutCommand() async throws {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setActive(context: "testReceivedResponse")
-        let token = RESPToken(validated: ByteBuffer(string: "+OK\r\n"))
-        switch stateMachine.receivedResponse(token) {
+        switch stateMachine.receivedResponse() {
         case .respond, .respondAndClose, .none:
             Issue.record("Invalid receivedResponse action")
         case .closeWithError(let error):
@@ -276,7 +274,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        switch stateMachine.receivedResponse(.ok) {
+        switch stateMachine.receivedResponse() {
         case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
             #expect(deadlineAction == .doNothing)
@@ -325,7 +323,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        switch stateMachine.receivedResponse(.ok) {
+        switch stateMachine.receivedResponse() {
         case .respond(let command, let deadlineAction):
             #expect(command.requestID == 2344)
             #expect(deadlineAction == .reschedule(now + .seconds(2)))
