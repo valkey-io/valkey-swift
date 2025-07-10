@@ -17,23 +17,3 @@ import NIOEmbedded
 import Testing
 
 @testable import Valkey
-
-extension NIOAsyncTestingChannel {
-    func processHello() async throws {
-        let hello = try await self.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(hello == RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
-        try await self.writeInbound(
-            RESPToken(
-                .map([
-                    .bulkString("server"): .bulkString("valkey"),
-                    .bulkString("version"): .bulkString("8.0.2"),
-                    .bulkString("proto"): .number(3),
-                    .bulkString("id"): .number(1117),
-                    .bulkString("mode"): .bulkString("standalone"),
-                    .bulkString("role"): .bulkString("master"),
-                    .bulkString("modules"): .array([]),
-                ])
-            ).base
-        )
-    }
-}

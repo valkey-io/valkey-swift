@@ -58,7 +58,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -117,7 +116,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -144,7 +142,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -171,7 +168,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -221,7 +217,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -260,7 +255,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -313,7 +307,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -390,7 +383,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             async let asyncResult = connection.xread(count: 2, streams: .init(key: ["key1", "key2"], id: ["0-0", "0-0"]))
 
@@ -451,7 +443,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             async let asyncResult = connection.xreadgroup(
                 groupBlock: .init(group: "MyGroup", consumer: "MyConsumer"),
@@ -498,7 +489,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             async let asyncResult = connection.xautoclaim(key: "key1", group: "MyGroup", consumer: "consumer1", minIdleTime: "0", start: "0")
 
@@ -538,7 +528,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             async let asyncResult = connection.xclaim(key: "key1", group: "MyGroup", consumer: "consumer1", minIdleTime: "0", id: ["1749463853292-0"])
 
@@ -588,7 +577,6 @@ struct CommandTests {
             let channel = NIOAsyncTestingChannel()
             let logger = Logger(label: "test")
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
 
             async let asyncResult = connection.xpending(key: "key", group: "MyGroup")
 

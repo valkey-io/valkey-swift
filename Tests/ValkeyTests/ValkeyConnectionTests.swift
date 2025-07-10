@@ -28,7 +28,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         async let fooResult = connection.get(key: "foo").map { String(buffer: $0) }
 
@@ -41,71 +40,10 @@ struct ConnectionTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testConnectionCreationHelloV3() async throws {
-        let channel = NIOAsyncTestingChannel()
-        let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testConnectionCreationHelloError() async throws {
-        let channel = NIOAsyncTestingChannel()
-        let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
-        await #expect(throws: ValkeyClientError(.commandError, message: "Not supported")) {
-            try await channel.writeInbound(RESPToken(.bulkError("Not supported")).base)
-        }
-
-        try await channel.closeFuture.get()
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testConnectionCreationHelloAuth() async throws {
-        let channel = NIOAsyncTestingChannel()
-        let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannelAndConnect(
-            channel,
-            configuration: .init(
-                authentication: .init(username: "john", password: "smith")
-            ),
-            logger: logger
-        )
-
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3", "AUTH", "john", "smith"])).base)
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testConnectionCreationHelloClientName() async throws {
-        let channel = NIOAsyncTestingChannel()
-        let configuration = ValkeyConnectionConfiguration(clientName: "Testing")
-        let logger = Logger(label: "test")
-        _ = try await ValkeyConnection.setupChannelAndConnect(
-            channel,
-            configuration: configuration,
-            logger: logger
-        )
-
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3", "SETNAME", "Testing"])).base)
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
     func testParseError() async throws {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         async let fooResult = connection.get(key: "foo")
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -128,7 +66,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         async let fooResult = connection.get(key: "foo")
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -149,7 +86,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         async let fooResult = connection.get(key: "foo")
         _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -170,7 +106,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
             try await channel.writeInbound(RESPToken(.simpleError("Error!")).base)
@@ -184,7 +119,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         await #expect(throws: ValkeyClientError(.unsolicitedToken, message: "Received a token without having sent a command")) {
             try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
@@ -198,7 +132,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
-        try await channel.processHello()
 
         async let results = connection.pipeline(
             SET(key: "foo", value: "bar"),
@@ -220,7 +153,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
-        try await channel.processHello()
 
         async let asyncResults = connection.pipeline(
             SET(key: "foo", value: "bar"),
@@ -243,7 +175,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
-        try await channel.processHello()
 
         async let results = connection.transaction(
             SET(key: "foo", value: "10"),
@@ -270,7 +201,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
-        try await channel.processHello()
 
         async let asyncResults = connection.transaction(
             SET(key: "foo", value: "bar"),
@@ -301,7 +231,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
-        try await channel.processHello()
 
         async let asyncResults = connection.transaction(
             SET(key: "foo", value: "bar"),
@@ -328,7 +257,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -349,7 +277,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         await withThrowingTaskGroup(of: Void.self) { group in
             group.cancelAll()
@@ -369,7 +296,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -397,7 +323,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
@@ -425,7 +350,6 @@ struct ConnectionTests {
         let channel = NIOAsyncTestingChannel()
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
 
         await withThrowingTaskGroup(of: Void.self) { group in
             group.cancelAll()

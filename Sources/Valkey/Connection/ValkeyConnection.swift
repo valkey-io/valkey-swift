@@ -100,7 +100,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 }
             }
         let connection = try await future.get()
-        try await connection.startupCompleted()
+        try await connection.sendHello()
         return connection
     }
 
@@ -110,6 +110,16 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             return
         }
         self.channel.close(mode: .all, promise: nil)
+    }
+
+    func sendHello() async throws {
+        _ = try await hello(
+            arguments: .init(
+                protover: 3,
+                auth: self.configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                clientname: self.configuration.clientName
+            )
+        )
     }
 
     /// Send RESP command to Valkey connection
@@ -188,10 +198,6 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 this.channelHandler.cancel(requestID: requestID)
             }
         }
-    }
-
-    func startupCompleted() async throws {
-        try await self.channelHandler.startupComplete().get()
     }
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler

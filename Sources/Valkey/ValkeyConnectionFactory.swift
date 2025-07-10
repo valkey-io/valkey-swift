@@ -95,7 +95,7 @@ package final class ValkeyConnectionFactory: Sendable {
                 )
             }.get()
 
-            try await connection.startupCompleted()
+            try await connection.sendHello()
             return connection
         }
     }
