@@ -30,7 +30,7 @@ struct PushToken: RESPTokenDecodable {
     enum TokenType: CustomStringConvertible {
         case subscribe(subscriptionCount: Int)
         case unsubscribe(subscriptionCount: Int)
-        case message(channel: String, message: String)
+        case message(channel: String, message: ByteBuffer)
         case invalidate(keys: [ValkeyKey])
 
         var description: String {
@@ -76,7 +76,7 @@ struct PushToken: RESPTokenDecodable {
                 }
                 let channel = try String(fromRESP: arrayIterator.next()!)
                 self.value = .channel(channel)
-                self.type = try TokenType.message(channel: channel, message: String(fromRESP: arrayIterator.next()!))
+                self.type = try TokenType.message(channel: channel, message: ByteBuffer(fromRESP: arrayIterator.next()!))
 
             case Self.psubscribeString:
                 guard respArray.count == 3 else {
@@ -99,7 +99,7 @@ struct PushToken: RESPTokenDecodable {
                 self.value = .pattern(try String(fromRESP: arrayIterator.next()!))
                 self.type = try TokenType.message(
                     channel: String(fromRESP: arrayIterator.next()!),
-                    message: String(fromRESP: arrayIterator.next()!)
+                    message: ByteBuffer(fromRESP: arrayIterator.next()!)
                 )
 
             case Self.ssubscribeString:
@@ -122,7 +122,7 @@ struct PushToken: RESPTokenDecodable {
                 }
                 let channel = try String(fromRESP: arrayIterator.next()!)
                 self.value = .shardChannel(channel)
-                self.type = try TokenType.message(channel: channel, message: String(fromRESP: arrayIterator.next()!))
+                self.type = try TokenType.message(channel: channel, message: ByteBuffer(fromRESP: arrayIterator.next()!))
 
             case Self.invalidateString:
                 guard respArray.count == 2 else {
