@@ -389,18 +389,6 @@ struct GeneratedCommands {
             }
         }
     }
-    /*
-        @Test
-    @available(valkeySwift 1.0, *)
-        func testClientName() async throws {
-            var logger = Logger(label: "Valkey")
-            logger.logLevel = .debug
-            let valkeyClient = ValkeyClient(.hostname(valkeyHostname), logger: logger)
-            try await valkeyClient.withConnection(name: "phileasfogg", logger: logger) { connection in
-                let name = try await connection.clientGetname()
-                #expect(try name?.decode() == "phileasfogg")
-            }
-        }*/
 
     @Test
     @available(valkeySwift 1.0, *)

@@ -248,6 +248,8 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
                 let value = try Element(fromRESP: token)
                 self = [value]
             }
+        case .null:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         default:
             let value = try Element(fromRESP: token)
             self = [value]
@@ -266,6 +268,8 @@ extension Set: RESPTokenDecodable where Element: RESPTokenDecodable {
                 set.insert(element)
             }
             self = set
+        case .null:
+            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         default:
             let value = try Element(fromRESP: token)
             self = [value]

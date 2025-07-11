@@ -51,6 +51,75 @@ struct CommandTests {
         }
     }
 
+    struct SetCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func spop() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    var result = try #require(try await connection.spop("key1"))
+                    #expect(try result.decode(as: [String].self) == ["mytext"])
+                    result = try #require(try await connection.spop("key2", count: 2))
+                    #expect(try result.decode(as: [String].self) == ["mytext1", "mytext2"])
+                    let nilResult = try await connection.spop("key3")
+                    #expect(nilResult == nil)
+                }
+                group.addTask {
+                    var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["SPOP", "key1"])).base)
+                    try await channel.writeInbound(RESPToken(.bulkString("mytext")).base)
+
+                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(String(buffer: outbound) == String(buffer: RESPToken(.command(["SPOP", "key2", "2"])).base))
+                    try await channel.writeInbound(RESPToken(.array([.bulkString("mytext1"), .bulkString("mytext2")])).base)
+
+                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["SPOP", "key3"])).base)
+                    try await channel.writeInbound(RESPToken(.null).base)
+                }
+                try await group.waitForAll()
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func sscan() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    let result = try await connection.sscan("key1", cursor: 0, pattern: "test*", count: 2)
+                    #expect(result.cursor == 8)
+                    #expect(try result.elements.decode(as: [String].self) == ["entry1", "entry2"])
+                }
+                group.addTask {
+                    let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["SSCAN", "key1", "0", "MATCH", "test*", "COUNT", "2"])).base)
+                    try await channel.writeInbound(
+                        RESPToken(
+                            .array([
+                                .bulkString("8"),
+                                .array([
+                                    .bulkString("entry1"),
+                                    .bulkString("entry2"),
+                                ]),
+                            ])
+                        ).base
+                    )
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
     struct StringCommands {
         @Test
         @available(valkeySwift 1.0, *)

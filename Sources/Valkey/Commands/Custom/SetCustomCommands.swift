@@ -13,13 +13,13 @@
 //===----------------------------------------------------------------------===//
 
 extension SPOP {
-    public typealias Response = [RESPToken]
+    public typealias Response = [RESPToken]?
 }
 
 extension SSCAN {
     public struct Response: RESPTokenDecodable, Sendable {
-        let cursor: Int
-        let elements: RESPToken.Array
+        public let cursor: Int
+        public let elements: RESPToken.Array
 
         public init(fromRESP token: RESPToken) throws {
             // cursor is encoded as a bulkString, but should be
