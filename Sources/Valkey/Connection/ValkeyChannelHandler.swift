@@ -112,7 +112,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private let logger: Logger
-    private var isClosed = false
     @usableFromInline
     /* private*/ let configuration: Configuration
 
