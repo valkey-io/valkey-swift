@@ -274,33 +274,49 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     @usableFromInline
-    func hello(context: ChannelHandlerContext) {
-        // send hello with protocol, authentication and client name details
-        self._send(
-            command: HELLO(
-                arguments: .init(
-                    protover: 3,
-                    auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
-                    clientname: configuration.clientName
-                )
-            ),
-            requestID: 0
-        ).assumeIsolated().whenComplete { result in
-            switch result {
-            case .failure(let error):
-                context.fireErrorCaught(error)
-                context.close(promise: nil)
-            case .success:
-                break
-            }
+    func setConnected(context: ChannelHandlerContext) {
+        // Send initial HELLO command
+        let command = HELLO(
+            arguments: .init(
+                protover: 3,
+                auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                clientname: configuration.clientName
+            )
+        )
+        self.encoder.reset()
+        command.encode(into: &self.encoder)
+        let buffer = self.encoder.buffer
+
+        let promise = eventLoop.makePromise(of: RESPToken.self)
+        let deadline = .now() + self.configuration.commandTimeout
+        context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+        scheduleDeadlineCallback(deadline: deadline)
+
+        // handle error from failing the hello
+        promise.futureResult.assumeIsolated().whenFailure { error in
+            self.handleError(context: context, error: error)
+        }
+
+        self.stateMachine.setConnected(
+            context: context,
+            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: deadline)
+        )
+    }
+
+    @usableFromInline
+    func waitOnActive() -> EventLoopFuture<Void> {
+        switch self.stateMachine.waitOnActive() {
+        case .waitForPromise(let promise):
+            return promise.futureResult.map { _ in return }
+        case .done:
+            return self.eventLoop.makeSucceededVoidFuture()
         }
     }
 
     @usableFromInline
     func handlerAdded(context: ChannelHandlerContext) {
-        self.stateMachine.setActive(context: context)
         if context.channel.isActive {
-            hello(context: context)
+            setConnected(context: context)
         }
     }
 
@@ -311,7 +327,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     @usableFromInline
     func channelActive(context: ChannelHandlerContext) {
-        hello(context: context)
+        setConnected(context: context)
     }
 
     @usableFromInline
