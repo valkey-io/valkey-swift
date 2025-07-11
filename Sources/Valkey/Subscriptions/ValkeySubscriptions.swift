@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import Logging
+import NIOCore
 import Synchronization
 
 /// Container for all subscriptions on one connection
@@ -87,7 +88,7 @@ struct ValkeySubscriptions {
             case .forwardMessage(let subscriptions):
                 for subscription in subscriptions {
                     for key in keys {
-                        subscription.sendMessage(.init(channel: Self.invalidateChannel, message: String(valkeyKey: key)))
+                        subscription.sendMessage(.init(channel: Self.invalidateChannel, message: ByteBuffer(valkeyKey: key)))
                     }
                 }
             case .doNothing, .none:

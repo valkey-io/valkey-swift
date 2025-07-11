@@ -12,14 +12,22 @@
 //
 //===----------------------------------------------------------------------===//
 
+import NIOCore
+
 /// Message received from subscription
 public struct ValkeySubscriptionMessage: Sendable, Equatable {
     public let channel: String
-    public let message: String
+    public let message: ByteBuffer
 
-    package init(channel: String, message: String) {
+    package init(channel: String, message: ByteBuffer) {
         self.channel = channel
         self.message = message
+    }
+
+    /// helper function used by tests
+    package init(channel: String, message: String) {
+        self.channel = channel
+        self.message = ByteBuffer(string: message)
     }
 }
 
