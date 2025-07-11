@@ -63,7 +63,7 @@ extension RESPToken: RESPTokenDecodable {
         as: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
         switch self.value {
-        case .array(let array):
+        case .array(let array), .set(let array):
             try array.decodeElements()
         default:
             throw RESPParsingError(code: .unexpectedType, buffer: self.base)
@@ -234,7 +234,7 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
     @inlinable
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
-        case .array(let respArray), .push(let respArray):
+        case .array(let respArray), .set(let respArray), .push(let respArray):
             do {
                 var array: [Element] = []
                 for respElement in respArray {
@@ -267,7 +267,8 @@ extension Set: RESPTokenDecodable where Element: RESPTokenDecodable {
             }
             self = set
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            let value = try Element(fromRESP: token)
+            self = [value]
         }
     }
 }
@@ -301,7 +302,7 @@ extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
-        case .array(let respArray), .push(let respArray):
+        case .array(let respArray), .set(let respArray), .push(let respArray):
             self = respArray
         default:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
