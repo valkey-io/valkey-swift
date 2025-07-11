@@ -407,7 +407,7 @@ struct GeneratedCommands {
     @Test
     @available(valkeySwift 1.0, *)
     func testAuthenticationFailure() async throws {
-        var logger = Logger(label: "Valkey")
+        var logger = Logger(label: "testAuthenticationFailure")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname), logger: logger) { connection in
             _ = try await connection.aclSetuser(username: "johnsmith", rule: ["on", ">3guygsf43", "+ACL|WHOAMI"])

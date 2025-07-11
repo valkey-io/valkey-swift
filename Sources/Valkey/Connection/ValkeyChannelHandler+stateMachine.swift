@@ -145,19 +145,26 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum ReceivedResponseAction {
             case respond(PendingCommand, DeadlineCallbackAction)
-            case respondAndClose(PendingCommand)
+            case respondAndClose(PendingCommand, Error?)
             case closeWithError(Error)
         }
 
         /// handler wants to send a command
         @usableFromInline
-        mutating func receivedResponse() -> ReceivedResponseAction {
+        mutating func receivedResponse(token: RESPToken) -> ReceivedResponseAction {
             switch consume self.state {
             case .initialized:
                 preconditionFailure("Cannot send command when initialized")
             case .connected(let state):
-                self = .active(.init(context: state.context, pendingCommands: .init()))
-                return .respond(state.pendingHelloCommand, .cancel)
+                switch token.value {
+                case .bulkError(let message), .simpleError(let message):
+                    self = .closed
+                    let error = ValkeyClientError(.commandError, message: String(buffer: message))
+                    return .respondAndClose(state.pendingHelloCommand, error)
+                default:
+                    self = .active(.init(context: state.context, pendingCommands: .init()))
+                    return .respond(state.pendingHelloCommand, .cancel)
+                }
             case .active(var state):
                 guard let command = state.pendingCommands.popFirst() else {
                     self = .closed
@@ -195,7 +202,7 @@ extension ValkeyChannelHandler {
                     return .respond(command, deadlineCallback)
                 } else {
                     self = .closed
-                    return .respondAndClose(command)
+                    return .respondAndClose(command, nil)
                 }
             case .closed:
                 preconditionFailure("Cannot receive command on closed connection")
@@ -206,6 +213,7 @@ extension ValkeyChannelHandler {
         enum WaitOnActiveAction {
             case waitForPromise(EventLoopPromise<RESPToken>)
             case done
+            case close
         }
 
         mutating func waitOnActive() -> WaitOnActiveAction {
@@ -228,7 +236,7 @@ extension ValkeyChannelHandler {
                 return .done
             case .closed:
                 self = .closed
-                return .done
+                return .close
             }
         }
 
