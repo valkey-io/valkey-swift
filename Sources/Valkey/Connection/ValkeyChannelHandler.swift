@@ -302,8 +302,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         switch self.stateMachine.waitOnActive() {
         case .waitForPromise(let promise):
             return promise.futureResult.map { _ in return }
-        case .close:
-            return self.eventLoop.makeFailedFuture(ValkeyClientError(.connectionClosed))
+        case .reportedClosed(let error):
+            return self.eventLoop.makeFailedFuture(error ?? ValkeyClientError(.connectionClosed))
         case .done:
             return self.eventLoop.makeSucceededVoidFuture()
         }
@@ -313,6 +313,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handlerAdded(context: ChannelHandlerContext) {
         if context.channel.isActive {
             setConnected(context: context)
+            self.logger.trace("Handler added and channel active.")
         }
     }
 
@@ -324,6 +325,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func channelActive(context: ChannelHandlerContext) {
         setConnected(context: context)
+        self.logger.trace("Channel active.")
     }
 
     @usableFromInline
@@ -386,6 +388,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             case .respondAndClose(let command, let error):
                 let commandError = ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) })
                 command.promise.fail(commandError)
+                self.logger.trace("Closing due to error in command \(commandError)")
                 self.closeSubscriptionsAndConnection(context: context, error: error)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
@@ -400,9 +403,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
                     case .respond(let command, let deadlineAction):
                         self.processDeadlineCallbackAction(action: deadlineAction)
                         command.promise.succeed(Self.simpleOk)
-                    case .respondAndClose(let command, _):
+                    case .respondAndClose(let command, let error):
                         command.promise.succeed(Self.simpleOk)
-                        self.closeSubscriptionsAndConnection(context: context)
+                        self.closeSubscriptionsAndConnection(context: context, error: error)
                     case .closeWithError(let error):
                         self.closeSubscriptionsAndConnection(context: context, error: error)
                     }
@@ -427,9 +430,9 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             case .respond(let command, let deadlineAction):
                 self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.succeed(token)
-            case .respondAndClose(let command, _):
+            case .respondAndClose(let command, let error):
                 command.promise.succeed(token)
-                self.closeSubscriptionsAndConnection(context: context)
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
             }
