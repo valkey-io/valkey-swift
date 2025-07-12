@@ -313,7 +313,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handlerAdded(context: ChannelHandlerContext) {
         if context.channel.isActive {
             setConnected(context: context)
-            self.logger.trace("Handler added and channel active.")
+            self.logger.trace("Handler added when channel active.")
         }
     }
 
@@ -388,7 +388,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             case .respondAndClose(let command, let error):
                 let commandError = ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) })
                 command.promise.fail(commandError)
-                self.logger.trace("Closing due to error in command \(commandError)")
                 self.closeSubscriptionsAndConnection(context: context, error: error)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
