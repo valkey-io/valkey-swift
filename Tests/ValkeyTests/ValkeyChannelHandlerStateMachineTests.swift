@@ -38,7 +38,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
     }
 
     @Test
@@ -53,7 +53,98 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testConnectedFailsAfterReceive() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()
+        stateMachine.setConnected(context: "testClosed")
+        switch stateMachine.receivedResponse(token: RESPToken(.bulkError("Connect failed"))) {
+        case .respondAndClose(let command, let error):
+            #expect(command.requestID == 0)
+            let valkeyError = try #require(error as? ValkeyClientError)
+            #expect(valkeyError.errorCode == .commandError)
+            #expect(valkeyError.message == "Connect failed")
+            command.promise.fail(error ?? ValkeyClientError(.commandError))
+        case .respond, .closeWithError:
+            Issue.record("Invalid receivedResponse action")
+        }
+        switch stateMachine.waitOnActive() {
+        case .reportedClosed(let error):
+            let valkeyError = try #require(error as? ValkeyClientError)
+            #expect(valkeyError.errorCode == .commandError)
+            #expect(valkeyError.message == "Connect failed")
+        case .done, .waitForPromise:
+            Issue.record("Invalid waitOnActive action")
+        }
+        expect(stateMachine.state == .closed(nil))
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testConnectedReturnsPromiseBeforeReceive() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()
+        stateMachine.setConnected(context: "testClosed")
+        switch stateMachine.waitOnActive() {
+        case .waitForPromise:
+            break
+        case .done, .reportedClosed:
+            Issue.record("Invalid waitOnActive action")
+        }
+        switch stateMachine.receivedResponse(token: RESPToken(.bulkError("Connect failed"))) {
+        case .respondAndClose(let command, let error):
+            #expect(command.requestID == 0)
+            let valkeyError = try #require(error as? ValkeyClientError)
+            #expect(valkeyError.errorCode == .commandError)
+            #expect(valkeyError.message == "Connect failed")
+            command.promise.fail(error ?? ValkeyClientError(.commandError))
+        case .respond, .closeWithError:
+            Issue.record("Invalid receivedResponse action")
+        }
+        switch stateMachine.setClosed() {
+        case .doNothing:
+            break
+        default:
+            Issue.record("Invalid close action")
+        }
+        expect(stateMachine.state == .closed(nil))
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testConnectedTimeout() async throws {
+        var stateMachine = ValkeyChannelHandler.StateMachine<String>()
+        stateMachine.setConnected(context: "testClosed")
+        switch stateMachine.waitOnActive() {
+        case .waitForPromise:
+            break
+        case .done, .reportedClosed:
+            Issue.record("Invalid waitOnActive action")
+        }
+        switch stateMachine.hitDeadline(now: .now() + .seconds(10)) {
+        case .reschedule:
+            break
+        case .clearCallback, .failPendingCommandsAndClose:
+            Issue.record("Invalid hitDeadline action")
+        }
+        switch stateMachine.hitDeadline(now: .now() + .seconds(60)) {
+        case .failPendingCommandsAndClose(_, let commands):
+            let hello = try #require(commands.first)
+            #expect(hello.requestID == 0)
+            hello.promise.fail(ValkeyClientError(.timeout))
+        case .clearCallback, .reschedule:
+            Issue.record("Invalid hitDeadline action")
+        }
+        switch stateMachine.waitOnActive() {
+        case .reportedClosed(let error):
+            let valkeyError = try #require(error as? ValkeyClientError)
+            #expect(valkeyError.errorCode == .timeout)
+        case .done, .waitForPromise:
+            Issue.record("Invalid waitOnActive action")
+        }
+        expect(stateMachine.state == .closed(nil))
     }
 
     @Test
@@ -68,7 +159,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid waitForPendingCommands action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
     }
 
     @Test
@@ -101,7 +192,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .respond, .closeWithError:
             Issue.record("Invalid receivedResponse action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
         promise.fail(CancellationError())
     }
 
@@ -136,7 +227,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
         promise.fail(CancellationError())
     }
 
@@ -178,7 +269,7 @@ struct ValkeyChannelHandlerStateMachineTests {
             let valkeyError = try #require(error as? ValkeyClientError)
             #expect(valkeyError.errorCode == .unsolicitedToken)
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
     }
 
     @Test
@@ -209,7 +300,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
         promise.fail(CancellationError())
     }
 
@@ -225,7 +316,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .doNothing:
             break
         }
-        expect(stateMachine.state != .closed)
+        expect(stateMachine.state != .closed(nil))
     }
 
     @Test
@@ -250,7 +341,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
         promise.fail(CancellationError())
     }
 
@@ -306,7 +397,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .clearCallback, .reschedule:
             Issue.record("Invalid hitDeadline action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
         promise.fail(CancellationError())
     }
 
@@ -350,7 +441,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .clearCallback, .reschedule:
             Issue.record("Invalid hitDeadline action")
         }
-        expect(stateMachine.state == .closed)
+        expect(stateMachine.state == .closed(nil))
         promise.fail(CancellationError())
     }
 }
