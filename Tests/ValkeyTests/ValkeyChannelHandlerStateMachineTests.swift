@@ -79,7 +79,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .done, .waitForPromise:
             Issue.record("Invalid waitOnActive action")
         }
-        expect(stateMachine.state == .closed(nil))
+        expect(stateMachine.state == .closed(ValkeyClientError(.commandError, message: "Connect failed")))
     }
 
     @Test
@@ -109,7 +109,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid close action")
         }
-        expect(stateMachine.state == .closed(nil))
+        expect(stateMachine.state == .closed(ValkeyClientError(.commandError, message: "Connect failed")))
     }
 
     @Test
@@ -144,7 +144,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .done, .waitForPromise:
             Issue.record("Invalid waitOnActive action")
         }
-        expect(stateMachine.state == .closed(nil))
+        expect(stateMachine.state == .closed(ValkeyClientError(.timeout)))
     }
 
     @Test
@@ -300,7 +300,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
-        expect(stateMachine.state == .closed(nil))
+        expect(stateMachine.state == .closed(CancellationError()))
         promise.fail(CancellationError())
     }
 
@@ -341,7 +341,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         default:
             Issue.record("Invalid cancel action")
         }
-        expect(stateMachine.state == .closed(nil))
+        expect(stateMachine.state == .closed(CancellationError()))
         promise.fail(CancellationError())
     }
 
@@ -397,7 +397,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .clearCallback, .reschedule:
             Issue.record("Invalid hitDeadline action")
         }
-        expect(stateMachine.state == .closed(nil))
+        expect(stateMachine.state == .closed(ValkeyClientError(.timeout)))
         promise.fail(CancellationError())
     }
 
@@ -441,7 +441,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .clearCallback, .reschedule:
             Issue.record("Invalid hitDeadline action")
         }
-        expect(stateMachine.state == .closed(nil))
+        expect(stateMachine.state == .closed(ValkeyClientError(.timeout)))
         promise.fail(CancellationError())
     }
 }
@@ -478,10 +478,20 @@ extension ValkeyChannelHandler.StateMachine<String>.State {
             default:
                 return false
             }
-        case .closed:
+        case .closed(let lhs):
             switch rhs {
-            case .closed:
-                return true
+            case .closed(let rhs):
+                switch (lhs, rhs) {
+                case (.some(let lhs), .some(let rhs)):
+                    if let lhsError = lhs as? ValkeyClientError, let rhsError = rhs as? ValkeyClientError {
+                        return lhsError == rhsError
+                    }
+                    return type(of: lhs) == type(of: rhs)
+                case (.none, .none):
+                    return true
+                default:
+                    return false
+                }
             default:
                 return false
             }
