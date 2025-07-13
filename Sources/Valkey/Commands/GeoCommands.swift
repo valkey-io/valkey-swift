@@ -106,8 +106,6 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
             }
         }
     }
-    public typealias Response = ByteBuffer?
-
     public var key: ValkeyKey
     public var member1: Member1
     public var member2: Member2
@@ -154,8 +152,6 @@ public struct GEOHASH: ValkeyCommand {
 /// Returns the longitude and latitude of members from a geospatial index.
 @_documentation(visibility: internal)
 public struct GEOPOS: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var members: [String]
 
@@ -844,8 +840,6 @@ public struct GEOSEARCH: ValkeyCommand {
             RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var from: From
     public var by: By
@@ -1141,7 +1135,7 @@ extension ValkeyConnectionProtocol {
         member1: Member1,
         member2: Member2,
         unit: GEODIST<Member1, Member2>.Unit? = nil
-    ) async throws -> ByteBuffer? {
+    ) async throws -> GEODISTResponse {
         try await send(command: GEODIST(key, member1: member1, member2: member2, unit: unit))
     }
 
@@ -1163,7 +1157,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each member requested.
     /// - Response: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
-    public func geopos(_ key: ValkeyKey, members: [String] = []) async throws -> RESPToken.Array {
+    public func geopos(_ key: ValkeyKey, members: [String] = []) async throws -> GEOPOS.Response {
         try await send(command: GEOPOS(key, members: members))
     }
 
@@ -1341,7 +1335,7 @@ extension ValkeyConnectionProtocol {
         withcoord: Bool = false,
         withdist: Bool = false,
         withhash: Bool = false
-    ) async throws -> RESPToken.Array {
+    ) async throws -> GEOSEARCH.Response {
         try await send(
             command: GEOSEARCH(
                 key,
