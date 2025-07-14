@@ -406,6 +406,24 @@ struct GeneratedCommands {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testAuthenticationFailure() async throws {
+        var logger = Logger(label: "testAuthenticationFailure")
+        logger.logLevel = .trace
+        try await withValkeyConnection(.hostname(valkeyHostname), logger: logger) { connection in
+            _ = try await connection.aclSetuser(username: "johnsmith", rule: ["on", ">3guygsf43", "+ACL|WHOAMI"])
+        }
+        await #expect(throws: ValkeyClientError(.commandError, message: "WRONGPASS invalid username-password pair or user is disabled.")) {
+            _ = try await ValkeyConnection.connect(
+                address: .hostname(valkeyHostname),
+                connectionID: 1,
+                configuration: .init(authentication: .init(username: "johnsmith", password: "3guygsf433")),
+                logger: logger
+            )
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "Subscriptions")

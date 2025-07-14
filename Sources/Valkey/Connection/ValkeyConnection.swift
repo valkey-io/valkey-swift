@@ -100,6 +100,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 }
             }
         let connection = try await future.get()
+        try await connection.waitOnActive()
         return connection
     }
 
@@ -109,6 +110,10 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             return
         }
         self.channel.close(mode: .all, promise: nil)
+    }
+
+    func waitOnActive() async throws {
+        try await self.channelHandler.waitOnActive().get()
     }
 
     /// Send RESP command to Valkey connection

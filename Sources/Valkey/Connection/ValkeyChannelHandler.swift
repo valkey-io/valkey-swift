@@ -112,7 +112,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     private var decoder: NIOSingleStepByteToMessageProcessor<RESPTokenDecoder>
     private let logger: Logger
-    private var isClosed = false
     @usableFromInline
     /* private*/ let configuration: Configuration
 
@@ -274,33 +273,47 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     @usableFromInline
-    func hello(context: ChannelHandlerContext) {
-        // send hello with protocol, authentication and client name details
-        self._send(
-            command: HELLO(
-                arguments: .init(
-                    protover: 3,
-                    auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
-                    clientname: configuration.clientName
-                )
-            ),
-            requestID: 0
-        ).assumeIsolated().whenComplete { result in
-            switch result {
-            case .failure(let error):
-                context.fireErrorCaught(error)
-                context.close(promise: nil)
-            case .success:
-                break
-            }
+    func setConnected(context: ChannelHandlerContext) {
+        // Send initial HELLO command
+        let command = HELLO(
+            arguments: .init(
+                protover: 3,
+                auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
+                clientname: configuration.clientName
+            )
+        )
+        self.encoder.reset()
+        command.encode(into: &self.encoder)
+        let buffer = self.encoder.buffer
+
+        let promise = eventLoop.makePromise(of: RESPToken.self)
+        let deadline = .now() + self.configuration.commandTimeout
+        context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+        scheduleDeadlineCallback(deadline: deadline)
+
+        self.stateMachine.setConnected(
+            context: context,
+            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: deadline)
+        )
+    }
+
+    @usableFromInline
+    func waitOnActive() -> EventLoopFuture<Void> {
+        switch self.stateMachine.waitOnActive() {
+        case .waitForPromise(let promise):
+            return promise.futureResult.map { _ in return }
+        case .reportedClosed(let error):
+            return self.eventLoop.makeFailedFuture(error ?? ValkeyClientError(.connectionClosed))
+        case .done:
+            return self.eventLoop.makeSucceededVoidFuture()
         }
     }
 
     @usableFromInline
     func handlerAdded(context: ChannelHandlerContext) {
-        self.stateMachine.setActive(context: context)
         if context.channel.isActive {
-            hello(context: context)
+            setConnected(context: context)
+            self.logger.trace("Handler added when channel active.")
         }
     }
 
@@ -311,7 +324,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     @usableFromInline
     func channelActive(context: ChannelHandlerContext) {
-        hello(context: context)
+        setConnected(context: context)
+        self.logger.trace("Channel active.")
     }
 
     @usableFromInline
@@ -367,13 +381,14 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func handleToken(context: ChannelHandlerContext, token: RESPToken) {
         switch token.identifier {
         case .simpleError, .bulkError:
-            switch self.stateMachine.receivedResponse() {
+            switch self.stateMachine.receivedResponse(token: token) {
             case .respond(let command, let deadlineAction):
                 self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
-            case .respondAndClose(let command):
-                command.promise.fail(ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) }))
-                self.closeSubscriptionsAndConnection(context: context)
+            case .respondAndClose(let command, let error):
+                let commandError = ValkeyClientError(.commandError, message: token.errorString.map { String(buffer: $0) })
+                command.promise.fail(commandError)
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
             }
@@ -383,13 +398,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             // and close the channel with the error
             do {
                 if try self.subscriptions.notify(token) == true {
-                    switch self.stateMachine.receivedResponse() {
+                    switch self.stateMachine.receivedResponse(token: token) {
                     case .respond(let command, let deadlineAction):
                         self.processDeadlineCallbackAction(action: deadlineAction)
                         command.promise.succeed(Self.simpleOk)
-                    case .respondAndClose(let command):
+                    case .respondAndClose(let command, let error):
                         command.promise.succeed(Self.simpleOk)
-                        self.closeSubscriptionsAndConnection(context: context)
+                        self.closeSubscriptionsAndConnection(context: context, error: error)
                     case .closeWithError(let error):
                         self.closeSubscriptionsAndConnection(context: context, error: error)
                     }
@@ -410,13 +425,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             .map,
             .set,
             .attribute:
-            switch self.stateMachine.receivedResponse() {
+            switch self.stateMachine.receivedResponse(token: token) {
             case .respond(let command, let deadlineAction):
                 self.processDeadlineCallbackAction(action: deadlineAction)
                 command.promise.succeed(token)
-            case .respondAndClose(let command):
+            case .respondAndClose(let command, let error):
                 command.promise.succeed(token)
-                self.closeSubscriptionsAndConnection(context: context)
+                self.closeSubscriptionsAndConnection(context: context, error: error)
             case .closeWithError(let error):
                 self.closeSubscriptionsAndConnection(context: context, error: error)
             }

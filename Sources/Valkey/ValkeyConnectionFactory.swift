@@ -94,7 +94,7 @@ package final class ValkeyConnectionFactory: Sendable {
                     logger: logger
                 )
             }.get()
-
+            try await connection.waitOnActive()
             return connection
         }
     }
@@ -119,4 +119,3 @@ package final class ValkeyConnectionFactory: Sendable {
         )
     }
 }
-
