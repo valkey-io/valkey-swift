@@ -30,10 +30,10 @@ Being able to have multiple requests in transit on a single connection means we 
 try await client.withConnection { connection in
     try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask {
-            _ = try await connection.lpush("fooList", elements: ["bar"])
+            try await connection.lpush("fooList", elements: ["bar"])
         }
         group.addTask {
-            _ = try await connection.rpush("fooList2", elements: ["baz"])
+            try await connection.rpush("fooList2", elements: ["baz"])
         }
         try await group.waitForAll()
     }
