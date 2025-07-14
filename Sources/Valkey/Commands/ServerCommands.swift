@@ -1479,10 +1479,10 @@ public struct TIME: ValkeyCommand {
 extension ValkeyConnectionProtocol {
     /// Lists the ACL categories, or the commands inside a category.
     ///
-    /// - Documentation: [ACL CAT](https:/valkey.io/commands/acl-cat)
+    /// - Documentation: [ACL CAT](https://valkey.io/commands/acl-cat)
     /// - Available: 6.0.0
     /// - Complexity: O(1) since the categories and commands are a fixed set.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [Array]: In case `category` was not given, a list of existing ACL categories
     ///     * [Array]: In case `category` was given, list of commands that fall under the provided ACL category.
     @inlinable
@@ -1492,10 +1492,10 @@ extension ValkeyConnectionProtocol {
 
     /// Deletes ACL users, and terminates their connections.
     ///
-    /// - Documentation: [ACL DELUSER](https:/valkey.io/commands/acl-deluser)
+    /// - Documentation: [ACL DELUSER](https://valkey.io/commands/acl-deluser)
     /// - Available: 6.0.0
     /// - Complexity: O(1) amortized time considering the typical user.
-    /// - Returns: [Integer]: The number of users that were deleted.
+    /// - Response: [Integer]: The number of users that were deleted.
     @inlinable
     public func aclDeluser<Username: RESPStringRenderable>(username: [Username]) async throws -> Int {
         try await send(command: ACL.DELUSER(username: username))
@@ -1503,10 +1503,10 @@ extension ValkeyConnectionProtocol {
 
     /// Simulates the execution of a command by a user, without executing the command.
     ///
-    /// - Documentation: [ACL DRYRUN](https:/valkey.io/commands/acl-dryrun)
+    /// - Documentation: [ACL DRYRUN](https://valkey.io/commands/acl-dryrun)
     /// - Available: 7.0.0
     /// - Complexity: O(1).
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
@@ -1516,10 +1516,10 @@ extension ValkeyConnectionProtocol {
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
     ///
-    /// - Documentation: [ACL GENPASS](https:/valkey.io/commands/acl-genpass)
+    /// - Documentation: [ACL GENPASS](https://valkey.io/commands/acl-genpass)
     /// - Available: 6.0.0
     /// - Complexity: O(1)
-    /// - Returns: [String]: Pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
+    /// - Response: [String]: Pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
     public func aclGenpass(bits: Int? = nil) async throws -> ByteBuffer {
         try await send(command: ACL.GENPASS(bits: bits))
@@ -1527,13 +1527,13 @@ extension ValkeyConnectionProtocol {
 
     /// Lists the ACL rules of a user.
     ///
-    /// - Documentation: [ACL GETUSER](https:/valkey.io/commands/acl-getuser)
+    /// - Documentation: [ACL GETUSER](https://valkey.io/commands/acl-getuser)
     /// - Available: 6.0.0
     /// - History:
     ///     * 6.2.0: Added Pub/Sub channel patterns.
     ///     * 7.0.0: Added selectors and changed the format of key and channel patterns from a list to their rule representation.
     /// - Complexity: O(N). Where N is the number of password, command and pattern rules that the user has.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [Map]: A set of ACL rule definitions for the user.
     ///     * [Null]: If user does not exist
     @inlinable
@@ -1543,10 +1543,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [ACL HELP](https:/valkey.io/commands/acl-help)
+    /// - Documentation: [ACL HELP](https://valkey.io/commands/acl-help)
     /// - Available: 6.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: A list of subcommands and their description.
+    /// - Response: [Array]: A list of subcommands and their description.
     @inlinable
     public func aclHelp() async throws -> RESPToken.Array {
         try await send(command: ACL.HELP())
@@ -1554,10 +1554,10 @@ extension ValkeyConnectionProtocol {
 
     /// Dumps the effective rules in ACL file format.
     ///
-    /// - Documentation: [ACL LIST](https:/valkey.io/commands/acl-list)
+    /// - Documentation: [ACL LIST](https://valkey.io/commands/acl-list)
     /// - Available: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
-    /// - Returns: [Array]: A list of currently active ACL rules.
+    /// - Response: [Array]: A list of currently active ACL rules.
     @inlinable
     public func aclList() async throws -> RESPToken.Array {
         try await send(command: ACL.LIST())
@@ -1565,7 +1565,7 @@ extension ValkeyConnectionProtocol {
 
     /// Reloads the rules from the configured ACL file.
     ///
-    /// - Documentation: [ACL LOAD](https:/valkey.io/commands/acl-load)
+    /// - Documentation: [ACL LOAD](https://valkey.io/commands/acl-load)
     /// - Available: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     @inlinable
@@ -1575,12 +1575,12 @@ extension ValkeyConnectionProtocol {
 
     /// Lists recent security events generated due to ACL rules.
     ///
-    /// - Documentation: [ACL LOG](https:/valkey.io/commands/acl-log)
+    /// - Documentation: [ACL LOG](https://valkey.io/commands/acl-log)
     /// - Available: 6.0.0
     /// - History:
     ///     * 7.2.0: Added entry ID, timestamp created, and timestamp last updated.
     /// - Complexity: O(N) with N being the number of entries shown.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [Array]: In case `RESET` was not given, a list of recent ACL security events.
     ///     * "OK": In case `RESET` was given, OK indicates ACL log was cleared.
     @inlinable
@@ -1590,7 +1590,7 @@ extension ValkeyConnectionProtocol {
 
     /// Saves the effective ACL rules in the configured ACL file.
     ///
-    /// - Documentation: [ACL SAVE](https:/valkey.io/commands/acl-save)
+    /// - Documentation: [ACL SAVE](https://valkey.io/commands/acl-save)
     /// - Available: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
     @inlinable
@@ -1600,7 +1600,7 @@ extension ValkeyConnectionProtocol {
 
     /// Creates and modifies an ACL user and its rules.
     ///
-    /// - Documentation: [ACL SETUSER](https:/valkey.io/commands/acl-setuser)
+    /// - Documentation: [ACL SETUSER](https://valkey.io/commands/acl-setuser)
     /// - Available: 6.0.0
     /// - History:
     ///     * 6.2.0: Added Pub/Sub channel patterns.
@@ -1613,10 +1613,10 @@ extension ValkeyConnectionProtocol {
 
     /// Lists all ACL users.
     ///
-    /// - Documentation: [ACL USERS](https:/valkey.io/commands/acl-users)
+    /// - Documentation: [ACL USERS](https://valkey.io/commands/acl-users)
     /// - Available: 6.0.0
     /// - Complexity: O(N). Where N is the number of configured users.
-    /// - Returns: [Array]: List of existing ACL users.
+    /// - Response: [Array]: List of existing ACL users.
     @inlinable
     public func aclUsers() async throws -> RESPToken.Array {
         try await send(command: ACL.USERS())
@@ -1624,10 +1624,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the authenticated username of the current connection.
     ///
-    /// - Documentation: [ACL WHOAMI](https:/valkey.io/commands/acl-whoami)
+    /// - Documentation: [ACL WHOAMI](https://valkey.io/commands/acl-whoami)
     /// - Available: 6.0.0
     /// - Complexity: O(1)
-    /// - Returns: [String]: The username of the current connection.
+    /// - Response: [String]: The username of the current connection.
     @inlinable
     public func aclWhoami() async throws -> ByteBuffer {
         try await send(command: ACL.WHOAMI())
@@ -1635,10 +1635,10 @@ extension ValkeyConnectionProtocol {
 
     /// Asynchronously rewrites the append-only file to disk.
     ///
-    /// - Documentation: [BGREWRITEAOF](https:/valkey.io/commands/bgrewriteaof)
+    /// - Documentation: [BGREWRITEAOF](https://valkey.io/commands/bgrewriteaof)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: [String]: A simple string reply indicating that the rewriting started or is about to start ASAP
+    /// - Response: [String]: A simple string reply indicating that the rewriting started or is about to start ASAP
     @inlinable
     public func bgrewriteaof() async throws -> ByteBuffer {
         try await send(command: BGREWRITEAOF())
@@ -1646,7 +1646,7 @@ extension ValkeyConnectionProtocol {
 
     /// Asynchronously saves the database(s) to disk.
     ///
-    /// - Documentation: [BGSAVE](https:/valkey.io/commands/bgsave)
+    /// - Documentation: [BGSAVE](https://valkey.io/commands/bgsave)
     /// - Available: 1.0.0
     /// - History:
     ///     * 3.2.2: Added the `SCHEDULE` option.
@@ -1659,7 +1659,7 @@ extension ValkeyConnectionProtocol {
 
     /// Returns detailed information about all commands.
     ///
-    /// - Documentation: [COMMAND](https:/valkey.io/commands/command)
+    /// - Documentation: [COMMAND](https://valkey.io/commands/command)
     /// - Available: 2.8.13
     /// - Complexity: O(N) where N is the total number of commands
     @inlinable
@@ -1669,10 +1669,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns a count of commands.
     ///
-    /// - Documentation: [COMMAND COUNT](https:/valkey.io/commands/command-count)
+    /// - Documentation: [COMMAND COUNT](https://valkey.io/commands/command-count)
     /// - Available: 2.8.13
     /// - Complexity: O(1)
-    /// - Returns: [Integer]: Number of total commands in this server.
+    /// - Response: [Integer]: Number of total commands in this server.
     @inlinable
     public func commandCount() async throws -> Int {
         try await send(command: COMMAND.COUNT())
@@ -1680,10 +1680,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns documentary information about one, multiple or all commands.
     ///
-    /// - Documentation: [COMMAND DOCS](https:/valkey.io/commands/command-docs)
+    /// - Documentation: [COMMAND DOCS](https://valkey.io/commands/command-docs)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of commands to look up
-    /// - Returns: [Map]: A map where each key is a command name, and each value is the documentary information
+    /// - Response: [Map]: A map where each key is a command name, and each value is the documentary information
     @inlinable
     public func commandDocs(commandName: [String] = []) async throws -> RESPToken.Map {
         try await send(command: COMMAND.DOCS(commandName: commandName))
@@ -1691,10 +1691,10 @@ extension ValkeyConnectionProtocol {
 
     /// Extracts the key names from an arbitrary command.
     ///
-    /// - Documentation: [COMMAND GETKEYS](https:/valkey.io/commands/command-getkeys)
+    /// - Documentation: [COMMAND GETKEYS](https://valkey.io/commands/command-getkeys)
     /// - Available: 2.8.13
     /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Returns: [Array]: List of keys from the given command.
+    /// - Response: [Array]: List of keys from the given command.
     @inlinable
     public func commandGetkeys<Command: RESPStringRenderable>(command: Command, arg: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYS(command: command, arg: arg))
@@ -1702,10 +1702,10 @@ extension ValkeyConnectionProtocol {
 
     /// Extracts the key names and access flags for an arbitrary command.
     ///
-    /// - Documentation: [COMMAND GETKEYSANDFLAGS](https:/valkey.io/commands/command-getkeysandflags)
+    /// - Documentation: [COMMAND GETKEYSANDFLAGS](https://valkey.io/commands/command-getkeysandflags)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of arguments to the command
-    /// - Returns: [Array]: List of keys from the given command and their usage flags.
+    /// - Response: [Array]: List of keys from the given command and their usage flags.
     @inlinable
     public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, arg: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, arg: arg))
@@ -1713,10 +1713,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [COMMAND HELP](https:/valkey.io/commands/command-help)
+    /// - Documentation: [COMMAND HELP](https://valkey.io/commands/command-help)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func commandHelp() async throws -> RESPToken.Array {
         try await send(command: COMMAND.HELP())
@@ -1724,12 +1724,12 @@ extension ValkeyConnectionProtocol {
 
     /// Returns information about one, multiple or all commands.
     ///
-    /// - Documentation: [COMMAND INFO](https:/valkey.io/commands/command-info)
+    /// - Documentation: [COMMAND INFO](https://valkey.io/commands/command-info)
     /// - Available: 2.8.13
     /// - History:
     ///     * 7.0.0: Allowed to be called with no argument to get info on all commands.
     /// - Complexity: O(N) where N is the number of commands to look up
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [Array]: Command does not exist.
     ///     * [Array]: Command info array output.
     @inlinable
@@ -1739,10 +1739,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns a list of command names.
     ///
-    /// - Documentation: [COMMAND LIST](https:/valkey.io/commands/command-list)
+    /// - Documentation: [COMMAND LIST](https://valkey.io/commands/command-list)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the total number of commands
-    /// - Returns: [Array]: Command name.
+    /// - Response: [Array]: Command name.
     @inlinable
     public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> RESPToken.Array {
         try await send(command: COMMAND.LIST(filterby: filterby))
@@ -1750,10 +1750,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the specified command log's entries.
     ///
-    /// - Documentation: [COMMANDLOG GET](https:/valkey.io/commands/commandlog-get)
+    /// - Documentation: [COMMANDLOG GET](https://valkey.io/commands/commandlog-get)
     /// - Available: 8.1.0
     /// - Complexity: O(N) where N is the number of entries returned
-    /// - Returns: [Array]: Entries from the command log in chronological order.
+    /// - Response: [Array]: Entries from the command log in chronological order.
     @inlinable
     public func commandlogGet(count: Int, type: COMMANDLOG.GET._Type) async throws -> RESPToken.Array {
         try await send(command: COMMANDLOG.GET(count: count, type: type))
@@ -1761,10 +1761,10 @@ extension ValkeyConnectionProtocol {
 
     /// Show helpful text about the different subcommands
     ///
-    /// - Documentation: [COMMANDLOG HELP](https:/valkey.io/commands/commandlog-help)
+    /// - Documentation: [COMMANDLOG HELP](https://valkey.io/commands/commandlog-help)
     /// - Available: 8.1.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func commandlogHelp() async throws -> RESPToken.Array {
         try await send(command: COMMANDLOG.HELP())
@@ -1772,10 +1772,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the number of entries in the specified type of command log.
     ///
-    /// - Documentation: [COMMANDLOG LEN](https:/valkey.io/commands/commandlog-len)
+    /// - Documentation: [COMMANDLOG LEN](https://valkey.io/commands/commandlog-len)
     /// - Available: 8.1.0
     /// - Complexity: O(1)
-    /// - Returns: [Integer]: Number of entries in the command log.
+    /// - Response: [Integer]: Number of entries in the command log.
     @inlinable
     public func commandlogLen(type: COMMANDLOG.LEN._Type) async throws -> Int {
         try await send(command: COMMANDLOG.LEN(type: type))
@@ -1783,7 +1783,7 @@ extension ValkeyConnectionProtocol {
 
     /// Clears all entries from the specified type of command log.
     ///
-    /// - Documentation: [COMMANDLOG RESET](https:/valkey.io/commands/commandlog-reset)
+    /// - Documentation: [COMMANDLOG RESET](https://valkey.io/commands/commandlog-reset)
     /// - Available: 8.1.0
     /// - Complexity: O(N) where N is the number of entries in the commandlog
     @inlinable
@@ -1793,7 +1793,7 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the effective values of configuration parameters.
     ///
-    /// - Documentation: [CONFIG GET](https:/valkey.io/commands/config-get)
+    /// - Documentation: [CONFIG GET](https://valkey.io/commands/config-get)
     /// - Available: 2.0.0
     /// - History:
     ///     * 7.0.0: Added the ability to pass multiple pattern parameters in one call
@@ -1805,10 +1805,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [CONFIG HELP](https:/valkey.io/commands/config-help)
+    /// - Documentation: [CONFIG HELP](https://valkey.io/commands/config-help)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func configHelp() async throws -> RESPToken.Array {
         try await send(command: CONFIG.HELP())
@@ -1816,7 +1816,7 @@ extension ValkeyConnectionProtocol {
 
     /// Resets the server's statistics.
     ///
-    /// - Documentation: [CONFIG RESETSTAT](https:/valkey.io/commands/config-resetstat)
+    /// - Documentation: [CONFIG RESETSTAT](https://valkey.io/commands/config-resetstat)
     /// - Available: 2.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -1826,7 +1826,7 @@ extension ValkeyConnectionProtocol {
 
     /// Persists the effective configuration to file.
     ///
-    /// - Documentation: [CONFIG REWRITE](https:/valkey.io/commands/config-rewrite)
+    /// - Documentation: [CONFIG REWRITE](https://valkey.io/commands/config-rewrite)
     /// - Available: 2.8.0
     /// - Complexity: O(1)
     @inlinable
@@ -1836,7 +1836,7 @@ extension ValkeyConnectionProtocol {
 
     /// Sets configuration parameters in-flight.
     ///
-    /// - Documentation: [CONFIG SET](https:/valkey.io/commands/config-set)
+    /// - Documentation: [CONFIG SET](https://valkey.io/commands/config-set)
     /// - Available: 2.0.0
     /// - History:
     ///     * 7.0.0: Added the ability to set multiple parameters in one call.
@@ -1848,10 +1848,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the number of keys in the database.
     ///
-    /// - Documentation: [DBSIZE](https:/valkey.io/commands/dbsize)
+    /// - Documentation: [DBSIZE](https://valkey.io/commands/dbsize)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Integer]: The number of keys in the currently-selected database.
+    /// - Response: [Integer]: The number of keys in the currently-selected database.
     @inlinable
     public func dbsize() async throws -> Int {
         try await send(command: DBSIZE())
@@ -1859,7 +1859,7 @@ extension ValkeyConnectionProtocol {
 
     /// Starts a coordinated failover from a server to one of its replicas.
     ///
-    /// - Documentation: [FAILOVER](https:/valkey.io/commands/failover)
+    /// - Documentation: [FAILOVER](https://valkey.io/commands/failover)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
     @inlinable
@@ -1869,7 +1869,7 @@ extension ValkeyConnectionProtocol {
 
     /// Removes all keys from all databases.
     ///
-    /// - Documentation: [FLUSHALL](https:/valkey.io/commands/flushall)
+    /// - Documentation: [FLUSHALL](https://valkey.io/commands/flushall)
     /// - Available: 1.0.0
     /// - History:
     ///     * 4.0.0: Added the `ASYNC` flushing mode modifier.
@@ -1882,7 +1882,7 @@ extension ValkeyConnectionProtocol {
 
     /// Remove all keys from the current database.
     ///
-    /// - Documentation: [FLUSHDB](https:/valkey.io/commands/flushdb)
+    /// - Documentation: [FLUSHDB](https://valkey.io/commands/flushdb)
     /// - Available: 1.0.0
     /// - History:
     ///     * 4.0.0: Added the `ASYNC` flushing mode modifier.
@@ -1895,12 +1895,12 @@ extension ValkeyConnectionProtocol {
 
     /// Returns information and statistics about the server.
     ///
-    /// - Documentation: [INFO](https:/valkey.io/commands/info)
+    /// - Documentation: [INFO](https://valkey.io/commands/info)
     /// - Available: 1.0.0
     /// - History:
     ///     * 7.0.0: Added support for taking multiple section arguments.
     /// - Complexity: O(1)
-    /// - Returns: [String]: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
+    /// - Response: [String]: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
     @inlinable
     public func info(section: [String] = []) async throws -> ByteBuffer {
         try await send(command: INFO(section: section))
@@ -1908,10 +1908,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the Unix timestamp of the last successful save to disk.
     ///
-    /// - Documentation: [LASTSAVE](https:/valkey.io/commands/lastsave)
+    /// - Documentation: [LASTSAVE](https://valkey.io/commands/lastsave)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Integer]: UNIX TIME of the last DB save executed with success.
+    /// - Response: [Integer]: UNIX TIME of the last DB save executed with success.
     @inlinable
     public func lastsave() async throws -> Int {
         try await send(command: LASTSAVE())
@@ -1919,10 +1919,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns a human-readable latency analysis report.
     ///
-    /// - Documentation: [LATENCY DOCTOR](https:/valkey.io/commands/latency-doctor)
+    /// - Documentation: [LATENCY DOCTOR](https://valkey.io/commands/latency-doctor)
     /// - Available: 2.8.13
     /// - Complexity: O(1)
-    /// - Returns: [String]: A human readable latency analysis report.
+    /// - Response: [String]: A human readable latency analysis report.
     @inlinable
     public func latencyDoctor() async throws -> ByteBuffer {
         try await send(command: LATENCY.DOCTOR())
@@ -1930,10 +1930,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns a latency graph for an event.
     ///
-    /// - Documentation: [LATENCY GRAPH](https:/valkey.io/commands/latency-graph)
+    /// - Documentation: [LATENCY GRAPH](https://valkey.io/commands/latency-graph)
     /// - Available: 2.8.13
     /// - Complexity: O(1)
-    /// - Returns: [String]: Latency graph
+    /// - Response: [String]: Latency graph
     @inlinable
     public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> ByteBuffer {
         try await send(command: LATENCY.GRAPH(event: event))
@@ -1941,10 +1941,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [LATENCY HELP](https:/valkey.io/commands/latency-help)
+    /// - Documentation: [LATENCY HELP](https://valkey.io/commands/latency-help)
     /// - Available: 2.8.13
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func latencyHelp() async throws -> RESPToken.Array {
         try await send(command: LATENCY.HELP())
@@ -1952,10 +1952,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
     ///
-    /// - Documentation: [LATENCY HISTOGRAM](https:/valkey.io/commands/latency-histogram)
+    /// - Documentation: [LATENCY HISTOGRAM](https://valkey.io/commands/latency-histogram)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
-    /// - Returns: [Map]: A map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
+    /// - Response: [Map]: A map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
     public func latencyHistogram(command: [String] = []) async throws -> RESPToken.Map {
         try await send(command: LATENCY.HISTOGRAM(command: command))
@@ -1963,10 +1963,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns timestamp-latency samples for an event.
     ///
-    /// - Documentation: [LATENCY HISTORY](https:/valkey.io/commands/latency-history)
+    /// - Documentation: [LATENCY HISTORY](https://valkey.io/commands/latency-history)
     /// - Available: 2.8.13
     /// - Complexity: O(1)
-    /// - Returns: [Array]: An array where each element is a two elements array representing the timestamp and the latency of the event.
+    /// - Response: [Array]: An array where each element is a two elements array representing the timestamp and the latency of the event.
     @inlinable
     public func latencyHistory<Event: RESPStringRenderable>(event: Event) async throws -> RESPToken.Array {
         try await send(command: LATENCY.HISTORY(event: event))
@@ -1974,10 +1974,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the latest latency samples for all events.
     ///
-    /// - Documentation: [LATENCY LATEST](https:/valkey.io/commands/latency-latest)
+    /// - Documentation: [LATENCY LATEST](https://valkey.io/commands/latency-latest)
     /// - Available: 2.8.13
     /// - Complexity: O(1)
-    /// - Returns: [Array]: An array where each element is an array representing the event name, timestamp, latest and all-time latency measurements.
+    /// - Response: [Array]: An array where each element is an array representing the event name, timestamp, latest and all-time latency measurements.
     @inlinable
     public func latencyLatest() async throws -> RESPToken.Array {
         try await send(command: LATENCY.LATEST())
@@ -1985,10 +1985,10 @@ extension ValkeyConnectionProtocol {
 
     /// Resets the latency data for one or more events.
     ///
-    /// - Documentation: [LATENCY RESET](https:/valkey.io/commands/latency-reset)
+    /// - Documentation: [LATENCY RESET](https://valkey.io/commands/latency-reset)
     /// - Available: 2.8.13
     /// - Complexity: O(1)
-    /// - Returns: [Integer]: Number of event time series that were reset.
+    /// - Response: [Integer]: Number of event time series that were reset.
     @inlinable
     public func latencyReset(event: [String] = []) async throws -> Int {
         try await send(command: LATENCY.RESET(event: event))
@@ -1996,9 +1996,9 @@ extension ValkeyConnectionProtocol {
 
     /// Displays computer art and the server version
     ///
-    /// - Documentation: [LOLWUT](https:/valkey.io/commands/lolwut)
+    /// - Documentation: [LOLWUT](https://valkey.io/commands/lolwut)
     /// - Available: 5.0.0
-    /// - Returns: [String]: String containing the generative computer art, and a text with the server version.
+    /// - Response: [String]: String containing the generative computer art, and a text with the server version.
     @inlinable
     public func lolwut(version: Int? = nil) async throws -> ByteBuffer {
         try await send(command: LOLWUT(version: version))
@@ -2006,10 +2006,10 @@ extension ValkeyConnectionProtocol {
 
     /// Outputs a memory problems report.
     ///
-    /// - Documentation: [MEMORY DOCTOR](https:/valkey.io/commands/memory-doctor)
+    /// - Documentation: [MEMORY DOCTOR](https://valkey.io/commands/memory-doctor)
     /// - Available: 4.0.0
     /// - Complexity: O(1)
-    /// - Returns: [String]: Memory problems report.
+    /// - Response: [String]: Memory problems report.
     @inlinable
     public func memoryDoctor() async throws -> ByteBuffer {
         try await send(command: MEMORY.DOCTOR())
@@ -2017,10 +2017,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [MEMORY HELP](https:/valkey.io/commands/memory-help)
+    /// - Documentation: [MEMORY HELP](https://valkey.io/commands/memory-help)
     /// - Available: 4.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func memoryHelp() async throws -> RESPToken.Array {
         try await send(command: MEMORY.HELP())
@@ -2028,10 +2028,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the allocator statistics.
     ///
-    /// - Documentation: [MEMORY MALLOC-STATS](https:/valkey.io/commands/memory-malloc-stats)
+    /// - Documentation: [MEMORY MALLOC-STATS](https://valkey.io/commands/memory-malloc-stats)
     /// - Available: 4.0.0
     /// - Complexity: Depends on how much memory is allocated, could be slow
-    /// - Returns: [String]: The memory allocator's internal statistics report.
+    /// - Response: [String]: The memory allocator's internal statistics report.
     @inlinable
     public func memoryMallocStats() async throws -> ByteBuffer {
         try await send(command: MEMORY.MALLOCSTATS())
@@ -2039,7 +2039,7 @@ extension ValkeyConnectionProtocol {
 
     /// Asks the allocator to release memory.
     ///
-    /// - Documentation: [MEMORY PURGE](https:/valkey.io/commands/memory-purge)
+    /// - Documentation: [MEMORY PURGE](https://valkey.io/commands/memory-purge)
     /// - Available: 4.0.0
     /// - Complexity: Depends on how much memory is allocated, could be slow
     @inlinable
@@ -2049,10 +2049,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns details about memory usage.
     ///
-    /// - Documentation: [MEMORY STATS](https:/valkey.io/commands/memory-stats)
+    /// - Documentation: [MEMORY STATS](https://valkey.io/commands/memory-stats)
     /// - Available: 4.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Map]: Memory usage details.
+    /// - Response: [Map]: Memory usage details.
     @inlinable
     public func memoryStats() async throws -> RESPToken.Map {
         try await send(command: MEMORY.STATS())
@@ -2060,10 +2060,10 @@ extension ValkeyConnectionProtocol {
 
     /// Estimates the memory usage of a key.
     ///
-    /// - Documentation: [MEMORY USAGE](https:/valkey.io/commands/memory-usage)
+    /// - Documentation: [MEMORY USAGE](https://valkey.io/commands/memory-usage)
     /// - Available: 4.0.0
     /// - Complexity: O(N) where N is the number of samples.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [Integer]: Number of bytes that a key and its value require to be stored in RAM.
     ///     * [Null]: Key does not exist.
     @inlinable
@@ -2073,10 +2073,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [MODULE HELP](https:/valkey.io/commands/module-help)
+    /// - Documentation: [MODULE HELP](https://valkey.io/commands/module-help)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func moduleHelp() async throws -> RESPToken.Array {
         try await send(command: MODULE.HELP())
@@ -2084,10 +2084,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns all loaded modules.
     ///
-    /// - Documentation: [MODULE LIST](https:/valkey.io/commands/module-list)
+    /// - Documentation: [MODULE LIST](https://valkey.io/commands/module-list)
     /// - Available: 4.0.0
     /// - Complexity: O(N) where N is the number of loaded modules.
-    /// - Returns: [Array]: Returns information about the modules loaded to the server.
+    /// - Response: [Array]: Returns information about the modules loaded to the server.
     @inlinable
     public func moduleList() async throws -> RESPToken.Array {
         try await send(command: MODULE.LIST())
@@ -2095,7 +2095,7 @@ extension ValkeyConnectionProtocol {
 
     /// Loads a module.
     ///
-    /// - Documentation: [MODULE LOAD](https:/valkey.io/commands/module-load)
+    /// - Documentation: [MODULE LOAD](https://valkey.io/commands/module-load)
     /// - Available: 4.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -2105,7 +2105,7 @@ extension ValkeyConnectionProtocol {
 
     /// Loads a module using extended parameters.
     ///
-    /// - Documentation: [MODULE LOADEX](https:/valkey.io/commands/module-loadex)
+    /// - Documentation: [MODULE LOADEX](https://valkey.io/commands/module-loadex)
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -2115,7 +2115,7 @@ extension ValkeyConnectionProtocol {
 
     /// Unloads a module.
     ///
-    /// - Documentation: [MODULE UNLOAD](https:/valkey.io/commands/module-unload)
+    /// - Documentation: [MODULE UNLOAD](https://valkey.io/commands/module-unload)
     /// - Available: 4.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -2125,7 +2125,7 @@ extension ValkeyConnectionProtocol {
 
     /// Listens for all requests received by the server in real-time.
     ///
-    /// - Documentation: [MONITOR](https:/valkey.io/commands/monitor)
+    /// - Documentation: [MONITOR](https://valkey.io/commands/monitor)
     /// - Available: 1.0.0
     @inlinable
     public func monitor() async throws -> MONITOR.Response {
@@ -2134,7 +2134,7 @@ extension ValkeyConnectionProtocol {
 
     /// An internal command used in replication.
     ///
-    /// - Documentation: [PSYNC](https:/valkey.io/commands/psync)
+    /// - Documentation: [PSYNC](https://valkey.io/commands/psync)
     /// - Available: 2.8.0
     @inlinable
     public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> RESPToken {
@@ -2143,10 +2143,10 @@ extension ValkeyConnectionProtocol {
 
     /// Configures a server as replica of another, or promotes it to a primary.
     ///
-    /// - Documentation: [REPLICAOF](https:/valkey.io/commands/replicaof)
+    /// - Documentation: [REPLICAOF](https://valkey.io/commands/replicaof)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Returns: [String]: ReplicaOf status.
+    /// - Response: [String]: ReplicaOf status.
     @inlinable
     public func replicaof(args: REPLICAOF.Args) async throws -> ByteBuffer {
         try await send(command: REPLICAOF(args: args))
@@ -2154,7 +2154,7 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the replication role.
     ///
-    /// - Documentation: [ROLE](https:/valkey.io/commands/role)
+    /// - Documentation: [ROLE](https://valkey.io/commands/role)
     /// - Available: 2.8.12
     /// - Complexity: O(1)
     @inlinable
@@ -2164,7 +2164,7 @@ extension ValkeyConnectionProtocol {
 
     /// Synchronously saves the database(s) to disk.
     ///
-    /// - Documentation: [SAVE](https:/valkey.io/commands/save)
+    /// - Documentation: [SAVE](https://valkey.io/commands/save)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the total number of keys in all databases
     @inlinable
@@ -2174,12 +2174,12 @@ extension ValkeyConnectionProtocol {
 
     /// Synchronously saves the database(s) to disk and shuts down the server.
     ///
-    /// - Documentation: [SHUTDOWN](https:/valkey.io/commands/shutdown)
+    /// - Documentation: [SHUTDOWN](https://valkey.io/commands/shutdown)
     /// - Available: 1.0.0
     /// - History:
     ///     * 7.0.0: Added the `NOW`, `FORCE` and `ABORT` modifiers.
     /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
-    /// - Returns: "OK": OK if ABORT was specified and shutdown was aborted. On successful shutdown, nothing is returned since the server quits and the connection is closed. On failure, an error is returned.
+    /// - Response: "OK": OK if ABORT was specified and shutdown was aborted. On successful shutdown, nothing is returned since the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
     public func shutdown(abortSelector: SHUTDOWN.AbortSelector? = nil) async throws {
         _ = try await send(command: SHUTDOWN(abortSelector: abortSelector))
@@ -2187,11 +2187,11 @@ extension ValkeyConnectionProtocol {
 
     /// Sets a server as a replica of another, or promotes it to being a primary.
     ///
-    /// - Documentation: [SLAVEOF](https:/valkey.io/commands/slaveof)
+    /// - Documentation: [SLAVEOF](https://valkey.io/commands/slaveof)
     /// - Available: 1.0.0
     /// - Deprecated since: 5.0.0. Replaced by `REPLICAOF`.
     /// - Complexity: O(1)
-    /// - Returns: [String]: SlaveOf status.
+    /// - Response: [String]: SlaveOf status.
     @inlinable
     public func slaveof(args: SLAVEOF.Args) async throws -> ByteBuffer {
         try await send(command: SLAVEOF(args: args))
@@ -2199,13 +2199,13 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the slow log's entries.
     ///
-    /// - Documentation: [SLOWLOG GET](https:/valkey.io/commands/slowlog-get)
+    /// - Documentation: [SLOWLOG GET](https://valkey.io/commands/slowlog-get)
     /// - Available: 2.2.12
     /// - History:
     ///     * 4.0.0: Added client IP address, port and name to the reply.
     /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG GET <count> SLOW`.
     /// - Complexity: O(N) where N is the number of entries returned
-    /// - Returns: [Array]: Entries from the slow log in chronological order.
+    /// - Response: [Array]: Entries from the slow log in chronological order.
     @inlinable
     public func slowlogGet(count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.GET(count: count))
@@ -2213,11 +2213,11 @@ extension ValkeyConnectionProtocol {
 
     /// Show helpful text about the different subcommands
     ///
-    /// - Documentation: [SLOWLOG HELP](https:/valkey.io/commands/slowlog-help)
+    /// - Documentation: [SLOWLOG HELP](https://valkey.io/commands/slowlog-help)
     /// - Available: 6.2.0
     /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG HELP`.
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func slowlogHelp() async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.HELP())
@@ -2225,11 +2225,11 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the number of entries in the slow log.
     ///
-    /// - Documentation: [SLOWLOG LEN](https:/valkey.io/commands/slowlog-len)
+    /// - Documentation: [SLOWLOG LEN](https://valkey.io/commands/slowlog-len)
     /// - Available: 2.2.12
     /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG LEN SLOW`.
     /// - Complexity: O(1)
-    /// - Returns: [Integer]: Number of entries in the slow log.
+    /// - Response: [Integer]: Number of entries in the slow log.
     @inlinable
     public func slowlogLen() async throws -> Int {
         try await send(command: SLOWLOG.LEN())
@@ -2237,7 +2237,7 @@ extension ValkeyConnectionProtocol {
 
     /// Clears all entries from the slow log.
     ///
-    /// - Documentation: [SLOWLOG RESET](https:/valkey.io/commands/slowlog-reset)
+    /// - Documentation: [SLOWLOG RESET](https://valkey.io/commands/slowlog-reset)
     /// - Available: 2.2.12
     /// - Deprecated since: 8.1.0. Replaced by `COMMANDLOG RESET SLOW`.
     /// - Complexity: O(N) where N is the number of entries in the slowlog
@@ -2248,7 +2248,7 @@ extension ValkeyConnectionProtocol {
 
     /// Swaps two databases.
     ///
-    /// - Documentation: [SWAPDB](https:/valkey.io/commands/swapdb)
+    /// - Documentation: [SWAPDB](https://valkey.io/commands/swapdb)
     /// - Available: 4.0.0
     /// - Complexity: O(N) where N is the count of clients watching or blocking on keys from both databases.
     @inlinable
@@ -2258,7 +2258,7 @@ extension ValkeyConnectionProtocol {
 
     /// An internal command used in replication.
     ///
-    /// - Documentation: [SYNC](https:/valkey.io/commands/sync)
+    /// - Documentation: [SYNC](https://valkey.io/commands/sync)
     /// - Available: 1.0.0
     @inlinable
     public func sync() async throws -> SYNC.Response {
@@ -2267,10 +2267,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the server time.
     ///
-    /// - Documentation: [TIME](https:/valkey.io/commands/time)
+    /// - Documentation: [TIME](https://valkey.io/commands/time)
     /// - Available: 2.6.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Array containing two elements: Unix time in seconds and microseconds.
+    /// - Response: [Array]: Array containing two elements: Unix time in seconds and microseconds.
     @inlinable
     public func time() async throws -> RESPToken.Array {
         try await send(command: TIME())

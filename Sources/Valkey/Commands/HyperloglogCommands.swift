@@ -83,10 +83,10 @@ public struct PFMERGE: ValkeyCommand {
 extension ValkeyConnectionProtocol {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [PFADD](https:/valkey.io/commands/pfadd)
+    /// - Documentation: [PFADD](https://valkey.io/commands/pfadd)
     /// - Available: 2.8.9
     /// - Complexity: O(1) to add every element.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * 1: If at least 1 HyperLogLog internal register was altered.
     ///     * 0: If no HyperLogLog internal register were altered.
     @inlinable
@@ -96,10 +96,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
     ///
-    /// - Documentation: [PFCOUNT](https:/valkey.io/commands/pfcount)
+    /// - Documentation: [PFCOUNT](https://valkey.io/commands/pfcount)
     /// - Available: 2.8.9
     /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
-    /// - Returns: [Integer]: The approximated number of unique elements observed via PFADD
+    /// - Response: [Integer]: The approximated number of unique elements observed via PFADD
     @inlinable
     public func pfcount(key: [ValkeyKey]) async throws -> Int {
         try await send(command: PFCOUNT(key: key))
@@ -107,7 +107,7 @@ extension ValkeyConnectionProtocol {
 
     /// Merges one or more HyperLogLog values into a single key.
     ///
-    /// - Documentation: [PFMERGE](https:/valkey.io/commands/pfmerge)
+    /// - Documentation: [PFMERGE](https://valkey.io/commands/pfmerge)
     /// - Available: 2.8.9
     /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
     @inlinable

@@ -237,7 +237,7 @@ public enum BF {
 extension ValkeyConnectionProtocol {
     /// Add a single item to a bloom filter. The bloom filter is created if it doesn't exist
     ///
-    /// - Documentation: [BF.ADD](https:/valkey.io/commands/bf.add)
+    /// - Documentation: [BF.ADD](https://valkey.io/commands/bf.add)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
     public func bfAdd<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
@@ -246,7 +246,7 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the cardinality of a bloom filter
     ///
-    /// - Documentation: [BF.CARD](https:/valkey.io/commands/bf.card)
+    /// - Documentation: [BF.CARD](https://valkey.io/commands/bf.card)
     /// - Complexity: O(1)
     @inlinable
     public func bfCard(key: ValkeyKey) async throws -> BF.CARD.Response {
@@ -255,7 +255,7 @@ extension ValkeyConnectionProtocol {
 
     /// Determines if the bloom filter contains the specified item
     ///
-    /// - Documentation: [BF.EXISTS](https:/valkey.io/commands/bf.exists)
+    /// - Documentation: [BF.EXISTS](https://valkey.io/commands/bf.exists)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
     public func bfExists<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
@@ -264,7 +264,7 @@ extension ValkeyConnectionProtocol {
 
     /// Returns usage information and properties of a specific bloom filter
     ///
-    /// - Documentation: [BF.INFO](https:/valkey.io/commands/bf.info)
+    /// - Documentation: [BF.INFO](https://valkey.io/commands/bf.info)
     /// - Complexity: O(1)
     @inlinable
     public func bfInfo(key: ValkeyKey, sortby: BF.INFO.Sortby? = nil) async throws -> BF.INFO.Response {
@@ -273,7 +273,7 @@ extension ValkeyConnectionProtocol {
 
     /// Creates a bloom filter with 0 or more items or adds items to an existing bloom filter
     ///
-    /// - Documentation: [BF.INSERT](https:/valkey.io/commands/bf.insert)
+    /// - Documentation: [BF.INSERT](https://valkey.io/commands/bf.insert)
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
     public func bfInsert(key: ValkeyKey, capacity: Int? = nil, error: Double? = nil, expansion: Int? = nil, seed: String? = nil, tightening: Double? = nil, validatescaleto: Int? = nil, nonscaling: Bool = false, nocreate: Bool = false, value: [String] = []) async throws -> BF.INSERT.Response {
@@ -282,7 +282,7 @@ extension ValkeyConnectionProtocol {
 
     /// Restores a bloom filter in a single operation. The command is only generated during AOF Rewrite of bloom filters
     ///
-    /// - Documentation: [BF.LOAD](https:/valkey.io/commands/bf.load)
+    /// - Documentation: [BF.LOAD](https://valkey.io/commands/bf.load)
     /// - Complexity: O(N), where N is the capacity
     @inlinable
     public func bfLoad<Dump: RESPStringRenderable>(key: ValkeyKey, dump: Dump) async throws -> RESPToken {
@@ -291,7 +291,7 @@ extension ValkeyConnectionProtocol {
 
     /// Adds one or more items to a bloom filter. The bloom filter is created if it doesn't exist
     ///
-    /// - Documentation: [BF.MADD](https:/valkey.io/commands/bf.madd)
+    /// - Documentation: [BF.MADD](https://valkey.io/commands/bf.madd)
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
     public func bfMadd<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
@@ -300,7 +300,7 @@ extension ValkeyConnectionProtocol {
 
     /// Determines if the bloom filter contains one or more items
     ///
-    /// - Documentation: [BF.MEXISTS](https:/valkey.io/commands/bf.mexists)
+    /// - Documentation: [BF.MEXISTS](https://valkey.io/commands/bf.mexists)
     /// - Complexity: O(K * N), where N is the number of hash functions used by the bloom filter and K is the number of items
     @inlinable
     public func bfMexists<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
@@ -309,7 +309,7 @@ extension ValkeyConnectionProtocol {
 
     /// Creates an empty bloom filter with the specified properties
     ///
-    /// - Documentation: [BF.RESERVE](https:/valkey.io/commands/bf.reserve)
+    /// - Documentation: [BF.RESERVE](https://valkey.io/commands/bf.reserve)
     /// - Complexity: O(1)
     @inlinable
     public func bfReserve(key: ValkeyKey, errorRate: Double, capacity: Int, expansion: Int? = nil, nonscaling: Bool = false) async throws -> BF.RESERVE.Response {

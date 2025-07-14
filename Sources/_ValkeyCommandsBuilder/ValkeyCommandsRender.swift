@@ -156,7 +156,7 @@ extension String {
         let linkName = name.replacingOccurrences(of: " ", with: "-").lowercased()
         self.append("    /// \(command.summary)\n")
         self.append("    ///\n")
-        self.append("    /// - Documentation: [\(name)](https:/valkey.io/commands/\(linkName))\n")
+        self.append("    /// - Documentation: [\(name)](https://valkey.io/commands/\(linkName))\n")
         if let since = command.since {
             self.append("    /// - Available: \(since)\n")
         }
@@ -179,9 +179,9 @@ extension String {
         if let replySchema = command.replySchema {
             let responses = responseTypeComment(replySchema)
             if responses.count == 1 {
-                self.append("    /// - Returns: \(responses[0])\n")
+                self.append("    /// - Response: \(responses[0])\n")
             } else if responses.count > 1 {
-                self.append("    /// - Returns: One of the following\n")
+                self.append("    /// - Response: One of the following\n")
                 for response in responses {
                     self.append("    ///     * \(response)\n")
                 }
