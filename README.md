@@ -1,6 +1,6 @@
 # valkey-swift
 
-Valkey client 
+Valkey client written in Swift
 
 ## Usage
 
@@ -19,30 +19,32 @@ try await withThrowingTaskgroup(of: Void.self) { group in
 
 Or you can use ValkeyClient with [swift-service-lifecycle](https://github.com/swift-server/swift-service-lifecycle).
 
-Once you have a valkey client setup and running you can create connections to your Valkey database using `ValkeyClient.withConnection()`.
+Once you have a valkey client setup and running you can call valkey commands directly from the `ValkeyClient`.
+
+```swift
+try await valkeyClient.set(key: "foo", value: "bar")
+```
+Or you can create a connection and run multiple commands from that connection using `ValkeyClient.withConnection()`.
 
 ```swift
 try await valkeyClient.withConnection { connection in
-    try await doValkeyStuff()
+    try await connection.set(key: "foo1", value: "bar")
+    try await connection.set(key: "foo2", value: "baz")
 }
 ```
 
-All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files Valkey supplies in [valkey](https://github.com/valkey-io/valkey/src/commands). In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible (or we are returning a String) a `RESPToken` is returned and you'll need to convert it manually.
-
-```swift
-try await connection.set(key: "MyKey", value: "TestString")
-let value = try await connection.get(key: "MyKey").decode(as: String.self)
-```
+All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files Valkey supplies in [valkey](https://github.com/valkey-io/valkey/src/commands). In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible we have either added a custom return type or a `RESPToken` is returned and you'll need to convert it manually.
 
 ### Pipelining commands
 
 In some cases it is desirable to send multiple commands at one time, without waiting for the response after each command. This is called pipelining. You can do this using the function `pipeline(_:)`. This takes a parameter pack of commands and returns a parameter pack with the responses once all the commands have executed.
 
 ```swift
-let (setResponse, getResponse) = try await connection.pipeline(
+let (setResponse, getResponse) = await connection.pipeline(
     SET(key: "MyKey", value: "TestString"),
     GET(key: "MyKey")
 )
+let value = try getResponse.get()
 ```
 
 ## Redis compatibilty
