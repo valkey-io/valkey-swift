@@ -488,6 +488,32 @@ struct GeneratedCommands {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.subscribe(to: "testSubscriptions") { subscription in
+                        cont.finish()
+                        var iterator = subscription.makeAsyncIterator()
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                    }
+                }
+                try await client.withConnection { connection in
+                    await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "testSubscriptions", message: "hello")
+                    _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
     /// Test two different subscriptions to the same channel both receive messages and that when one ends the other still
     /// receives messages
     @Test

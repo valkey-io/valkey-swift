@@ -367,15 +367,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// create a BSD sockets based bootstrap
     private static func createSocketsBootstrap(eventLoopGroup: EventLoopGroup) -> ClientBootstrap {
         ClientBootstrap(group: eventLoopGroup)
-            .channelOption(ChannelOptions.allowRemoteHalfClosure, value: true)
     }
 
     #if canImport(Network)
     /// create a NIOTransportServices bootstrap using Network.framework
     private static func createTSBootstrap(eventLoopGroup: EventLoopGroup, tlsOptions: NWProtocolTLS.Options?) -> NIOTSConnectionBootstrap? {
         guard
-            let bootstrap = NIOTSConnectionBootstrap(validatingGroup: eventLoopGroup)?
-                .channelOption(ChannelOptions.allowRemoteHalfClosure, value: true)
+            let bootstrap = NIOTSConnectionBootstrap(validatingGroup: eventLoopGroup)
         else {
             return nil
         }
