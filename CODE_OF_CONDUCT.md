@@ -1,6 +1,6 @@
 # Code of Conduct
 
-All developers should feel welcome and encouraged to contribute to Hummingbird. Because of this we have adopted the code of conduct defined by [contributor-covenant.org](https://www.contributor-covenant.org). This document is used across many open source 
+All developers should feel welcome and encouraged to contribute to valkey-swift. Because of this we have adopted the code of conduct defined by [contributor-covenant.org](https://www.contributor-covenant.org). This document is used across many open source 
 communities, and we think it articulates our values well. The full text is copied below:
 
 ## Contributor Code of Conduct v1.3
