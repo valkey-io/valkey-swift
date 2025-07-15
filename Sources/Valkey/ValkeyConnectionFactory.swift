@@ -115,7 +115,7 @@ package final class ValkeyConnectionFactory: Sendable {
             commandTimeout: self.configuration.commandTimeout,
             blockingCommandTimeout: self.configuration.blockingCommandTimeout,
             tls: tls,
-            clientName: nil,
+            clientName: nil
         )
     }
 }

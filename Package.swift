@@ -1,6 +1,7 @@
 // swift-tools-version: 6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import Foundation
 import PackageDescription
 
 let defaultSwiftSettings: [SwiftSetting] =
@@ -29,8 +30,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.23.0"),
         .package(url: "https://github.com/swift-server/swift-service-lifecycle.git", from: "2.8.0"),
-
-        .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -72,21 +71,6 @@ let package = Package(
             resources: [.process("Resources")],
             swiftSettings: defaultSwiftSettings
         ),
-        .executableTarget(
-            name: "ValkeyBenchmarks",
-            dependencies: [
-                "Valkey",
-                .product(name: "Benchmark", package: "package-benchmark"),
-                .product(name: "Logging", package: "swift-log"),
-                .product(name: "NIOCore", package: "swift-nio"),
-                .product(name: "NIOPosix", package: "swift-nio"),
-            ],
-            path: "Benchmarks/ValkeyBenchmarks",
-            swiftSettings: defaultSwiftSettings,
-            plugins: [
-                .plugin(name: "BenchmarkPlugin", package: "package-benchmark")
-            ]
-        ),
         .testTarget(
             name: "IntegrationTests",
             dependencies: [
@@ -113,3 +97,26 @@ let package = Package(
         ),
     ]
 )
+
+if ProcessInfo.processInfo.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
+    package.dependencies.append(
+        .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0"),
+    )
+    package.targets.append(
+        .executableTarget(
+            name: "ValkeyBenchmarks",
+            dependencies: [
+                "Valkey",
+                .product(name: "Benchmark", package: "package-benchmark"),
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
+            ],
+            path: "Benchmarks/ValkeyBenchmarks",
+            swiftSettings: defaultSwiftSettings,
+            plugins: [
+                .plugin(name: "BenchmarkPlugin", package: "package-benchmark")
+            ]
+        )
+    )
+}
