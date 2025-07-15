@@ -3,50 +3,59 @@
 Thanks for your interest in contributing to Valkey Swift — the Swift client library for Valkey!
 We appreciate all contributions — whether it’s fixing bugs, improving documentation, or adding features.
 
-## How to Contribute
+## Legal
+By submitting a pull request, you represent that you have the right to license your contribution to the community, and agree by submitting the patch
+that your contributions are licensed under the Apache 2.0 license (see [LICENSE](LICENSE)).
 
-1. Fork the repo and clone it locally:
+## Developer Certificate of Origin
+
+We respect the intellectual property rights of others and we want to make sure
+all incoming contributions are correctly attributed and licensed. A Developer
+Certificate of Origin (DCO) is a lightweight mechanism to do that. The DCO is
+a declaration attached to every commit. In the commit message of the contribution,
+the developer simply adds a `Signed-off-by` statement and thereby agrees to the DCO,
+which you can find at [DeveloperCertificate.org](http://developercertificate.org/).
+
+We require that every contribution to Valkey Swift to be signed with a DCO. We require the
+usage of known identity (such as a real or preferred name). We do not accept anonymous
+contributors nor those utilizing pseudonyms. A DCO signed commit will contain a line like:
+
+```text
+Signed-off-by: Jane Smith <jane.smith@email.com>
 ```
-git clone https://github.com/your-username/valkey-swift.git
-cd valkey-swift
-```
 
-2. Create a feature branch:
-```
-git checkout -b your-feature-name
-```
+You may type this line on your own when writing your commit messages. However, if your
+user.name and user.email are set in your git configs, you can use `git commit` with `-s`
+or `--signoff` to add the `Signed-off-by` line to the end of the commit message. We also
+require revert commits to include a DCO.
 
-3. Make your changes, keeping commits focused and meaningful.
+If you're contributing code to the Valkey Swift project in any other form, including
+sending a code fragment or patch via private email or public discussion groups,
+you need to ensure that the contribution is in accordance with the DCO.
 
-4. Run tests to make sure nothing breaks:
-```
-swift test
-```
+## Contributor Conduct
+All contributors are expected to adhere to the project's [Code of Conduct](CODE_OF_CONDUCT.md).
 
-5. Push your branch and open a pull request (PR) on GitHub with:
-- A clear title and description of your changes
-- Reference to any related issues (e.g., Fixes #42)
-- Notes on testing or breaking changes (if applicable)
+## Submitting a bug or issue
 
-## Code Style & Guidelines
-- Follow Swift best practices.
-- Prefer clarity over cleverness.
-- Match existing formatting where possible.
-- Include or update unit tests for any logic changes.
-- Document any new APIs or behaviors.
+Please ensure to include the following in your bug report
+- A consise description of the issue, what happened and what you expected.
+- Simple reproduction steps
+- Version of the library you are using
+- Contextual information (Swift version, OS version, Valkey version, etc)
 
-## Reporting Issues
+## Submitting a Pull Request
 
-Found a bug or have an idea? Open a GitHub Issue and include:
+Please ensure to include the following in your Pull Request
+- A description of what you are trying to do. What the PR provides to the library, additional functionality, fixing a bug etc
+- A description of the code changes
+- Documentation on how these changes are being tested
+- Additional tests to show your code working and to ensure future changes don't break your code.
 
-- What you observed
-- Steps to reproduce (if relevant)
-- Expected behavior
+Please keep your PRs to a minimal number of changes. If a PR is large try to split it up into smaller PRs. Don't move code around unnecessarily it makes comparing old with new very hard.
 
-## Need Help?
+The main development branch of the repository is  `main`.
 
-We’re still early in the development of this client. If you’re unsure where to start, feel free to open an issue or ask a question via a Discussion or PR comment — we're happy to help.
+## Formatting
 
-## License
-
-This project is licensed under the BSD 3-Clause License.
+We use [Apple's swift-format](https://github.com/swiftlang/swift-format) for formatting code. PRs will not be accepted if they haven't be formatted.
