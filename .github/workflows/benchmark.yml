@@ -6,13 +6,13 @@ on:
     branches:
       - main
     paths:
-    - '**.swift'
-    - '**.yml'
+      - '**.swift'
+      - '**.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-benchmark
   cancel-in-progress: true
-    
+
 jobs:
   benchmark-delta:
 
@@ -28,10 +28,10 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         image: ["swift:6.1"]
-        
+
     container:
       image: ${{ matrix.image }}
-      
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,7 +45,7 @@ jobs:
       # https://github.com/actions/checkout/issues/766
       - name: Mark the workspace as safe
         run: git config --global --add safe.directory ${GITHUB_WORKSPACE}
-        
+
       - name: Miscellaneous
         run: |
           [ -d Benchmarks ] && echo "hasBenchmark=1" >> $GITHUB_ENV
