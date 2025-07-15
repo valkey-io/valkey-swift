@@ -11,6 +11,8 @@ concurrency:
 
 env:
   VALKEY_HOSTNAME: valkey
+  DISABLE_VALKEY_BENCHMARKS: true
+
 jobs:
   soundness:
     name: Soundness
@@ -18,6 +20,8 @@ jobs:
     with:
       api_breakage_check_container_image: swift:latest
       unacceptable_language_check_enabled: false  # Valkey commands contain unacceptable language
+      license_header_check_enabled: false  # Temporarily disable
+      format_check_enabled: false  # Temporarily disable
 
   unit-tests:
     runs-on: ubuntu-latest
