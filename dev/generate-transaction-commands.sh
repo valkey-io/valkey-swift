@@ -11,24 +11,24 @@ function genWithoutContextParameter() {
 
     echo "    @inlinable"
     echo -n "    public func transaction<C0: ValkeyCommand"
-    for ((n = 1; n<$how_many; n +=1)); do
-        echo -n ", C$(($n)): ValkeyCommand"
+    for ((n = 1; n<how_many; n +=1)); do
+        echo -n ", C$((n)): ValkeyCommand"
     done
 
     echo -n ">(_ c0: C0"
-    for ((n = 1; n<$how_many; n +=1)); do
-        echo -n ", _ c$(($n)): C$(($n))"
+    for ((n = 1; n<how_many; n +=1)); do
+        echo -n ", _ c$((n)): C$(($n))"
     done
     echo -n ") async throws -> (Result<C0.Response, Error>"
-    for ((n = 1; n<$how_many; n +=1)); do
-        echo -n ", Result<C$(($n)).Response, Error>"
+    for ((n = 1; n<how_many; n +=1)); do
+        echo -n ", Result<C$((n)).Response, Error>"
     done
     echo ") {"
     echo -n "        guard let responses = try await self.pipeline(MULTI(), "
-    for ((n = 0; n<$how_many; n +=1)); do
-        echo -n "ValkeyRawResponseCommand(c$(($n))), "
+    for ((n = 0; n<how_many; n +=1)); do
+        echo -n "ValkeyRawResponseCommand(c$((n))), "
     done
-    echo "EXEC()).$(($how_many+1)).get() else { throw ValkeyClientError(.transactionAborted) }"
+    echo "EXEC()).$((how_many+1)).get() else { throw ValkeyClientError(.transactionAborted) }"
     echo "        return responses.decodeElementResults()"
     echo "    }"
 }
