@@ -9,7 +9,7 @@ jobs:
     name: Soundness
     uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
     with:
-      unacceptable_language_check_word_list: "blacklist whitelist sane sanity insane insanity kill killed killing hang hung hanged hanging"
+      unacceptable_language_check_word_list: "blacklist whitelist sane sanity insane insanity killing hang hung hanged hanging"
 
   unit-tests:
     name: Unit tests

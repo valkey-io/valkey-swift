@@ -33,7 +33,7 @@ cleanup()
 {
     if [ -n "$TEMP_DIR" ]; then
         echo "Cleanup $TEMP_DIR"
-        rm -rf $TEMP_DIR
+        rm -rf "$TEMP_DIR"
     fi
 }
 
@@ -51,7 +51,7 @@ do
             exit 1 ;;
     esac
 done
-shift "$(($OPTIND -1))"
+shift "$((OPTIND -1))"
 COMMANDS_LOCATION=${1:-"https://github.com/valkey-io/valkey.git"}
 COMMANDS_VERSION=${COMMANDS_VERSION:-""}
 COMMANDS_FOLDER=${COMMANDS_FOLDER:-"src/commands/"}
@@ -62,7 +62,7 @@ if [[ "$COMMANDS_LOCATION" == http* ]]; then
     TEMP_DIR=$(mktemp -d)
     trap cleanup EXIT $?
 
-    get_valkey $TEMP_DIR $COMMANDS_LOCATION $COMMANDS_VERSION
+    get_valkey "$TEMP_DIR" "$COMMANDS_LOCATION" "$COMMANDS_VERSION"
     COMMANDS_LOCATION=$TEMP_DIR
 fi
 

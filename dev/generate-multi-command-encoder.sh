@@ -17,7 +17,7 @@ function genWithoutContextParameter() {
 
     echo -n ">(_ t0: T0"
     for ((n = 1; n<how_many; n +=1)); do
-        echo -n ", _ t$((n)): T$(($n))"
+        echo -n ", _ t$((n)): T$((n))"
     done
     echo ") {"
 
