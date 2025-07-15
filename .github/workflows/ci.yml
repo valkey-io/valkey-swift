@@ -16,6 +16,7 @@ jobs:
     name: Soundness
     uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
     with:
+      api_breakage_check_container_image: swift:latest
       unacceptable_language_check_enabled: false  # Valkey commands contain unacceptable language
 
   unit-tests:
