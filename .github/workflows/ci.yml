@@ -16,7 +16,7 @@ jobs:
     name: Soundness
     uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
     with:
-      unacceptable_language_check_enabled: false # Valkey commands contain unacceptable language
+      unacceptable_language_check_enabled: false  # Valkey commands contain unacceptable language
 
   unit-tests:
     runs-on: ubuntu-latest
