@@ -39,7 +39,7 @@ All contributors are expected to adhere to the project's [Code of Conduct](CODE_
 ## Submitting a bug or issue
 
 Please ensure to include the following in your bug report
-- A consise description of the issue, what happened and what you expected.
+- A concise description of the issue, what happened and what you expected.
 - Simple reproduction steps
 - Version of the library you are using
 - Contextual information (Swift version, OS version, Valkey version, etc)
