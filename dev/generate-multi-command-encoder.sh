@@ -11,26 +11,26 @@ function genWithoutContextParameter() {
 
     echo "    @inlinable"
     echo -n "    public mutating func encodeArray<T0: RESPRenderable"
-    for ((n = 1; n<$how_many; n +=1)); do
-        echo -n ", T$(($n)): RESPRenderable"
+    for ((n = 1; n<how_many; n +=1)); do
+        echo -n ", T$((n)): RESPRenderable"
     done
 
     echo -n ">(_ t0: T0"
-    for ((n = 1; n<$how_many; n +=1)); do
-        echo -n ", _ t$(($n)): T$(($n))"
+    for ((n = 1; n<how_many; n +=1)); do
+        echo -n ", _ t$((n)): T$((n))"
     done
     echo ") {"
 
     echo "        self.encodeIdentifier(.array)"
     echo -n "        let count = t0.respEntries"
-    for ((n = 1; n<$how_many; n +=1)); do
-        echo -n " + t$(($n)).respEntries"
+    for ((n = 1; n<how_many; n +=1)); do
+        echo -n " + t$((n)).respEntries"
     done
     echo
     echo "        self.buffer.writeString(\"\\(count)\")"
-    echo "        self.buffer.writeStaticString(\"\\r\\n\")"
-    for ((n = 0; n<$how_many; n +=1)); do
-        echo "        t$(($n)).encode(into: &self)"
+    printf "        self.buffer.writeStaticString(\"\\r\\n\")"
+    for ((n = 0; n<how_many; n +=1)); do
+        echo "        t$((n)).encode(into: &self)"
     done
     echo "    }"
 }

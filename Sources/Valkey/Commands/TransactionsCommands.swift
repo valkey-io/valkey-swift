@@ -88,7 +88,7 @@ public struct WATCH: ValkeyCommand {
 extension ValkeyConnection {
     /// Discards a transaction.
     ///
-    /// - Documentation: [DISCARD](https:/valkey.io/commands/discard)
+    /// - Documentation: [DISCARD](https://valkey.io/commands/discard)
     /// - Available: 2.0.0
     /// - Complexity: O(N), when N is the number of queued commands
     @inlinable
@@ -98,10 +98,10 @@ extension ValkeyConnection {
 
     /// Executes all commands in a transaction.
     ///
-    /// - Documentation: [EXEC](https:/valkey.io/commands/exec)
+    /// - Documentation: [EXEC](https://valkey.io/commands/exec)
     /// - Available: 1.2.0
     /// - Complexity: Depends on commands in the transaction
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [Array]: Each element being the reply to each of the commands in the atomic transaction.
     ///     * [Null]: The transaction was aborted because a `WATCH`ed key was touched
     @inlinable
@@ -111,7 +111,7 @@ extension ValkeyConnection {
 
     /// Starts a transaction.
     ///
-    /// - Documentation: [MULTI](https:/valkey.io/commands/multi)
+    /// - Documentation: [MULTI](https://valkey.io/commands/multi)
     /// - Available: 1.2.0
     /// - Complexity: O(1)
     @inlinable
@@ -121,7 +121,7 @@ extension ValkeyConnection {
 
     /// Forgets about watched keys of a transaction.
     ///
-    /// - Documentation: [UNWATCH](https:/valkey.io/commands/unwatch)
+    /// - Documentation: [UNWATCH](https://valkey.io/commands/unwatch)
     /// - Available: 2.2.0
     /// - Complexity: O(1)
     @inlinable
@@ -131,7 +131,7 @@ extension ValkeyConnection {
 
     /// Monitors changes to keys to determine the execution of a transaction.
     ///
-    /// - Documentation: [WATCH](https:/valkey.io/commands/watch)
+    /// - Documentation: [WATCH](https://valkey.io/commands/watch)
     /// - Available: 2.2.0
     /// - Complexity: O(1) for every key.
     @inlinable

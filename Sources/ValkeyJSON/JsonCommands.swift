@@ -486,7 +486,7 @@ public enum JSON {
 extension ValkeyConnectionProtocol {
     /// Append one or more values to the array values at the path.
     ///
-    /// - Documentation: [JSON.ARRAPPEND](https:/valkey.io/commands/json.arrappend)
+    /// - Documentation: [JSON.ARRAPPEND](https://valkey.io/commands/json.arrappend)
     /// - Complexity: O(N) where N is the number of vaules
     @inlinable
     public func jsonArrappend<Path: RESPStringRenderable, Json: RESPStringRenderable>(key: ValkeyKey, path: Path, json: [Json]) async throws -> RESPToken {
@@ -495,7 +495,7 @@ extension ValkeyConnectionProtocol {
 
     /// Search for the first occurrence of a scalar JSON value in arrays located at the specified path. Indices out of range are adjusted.
     ///
-    /// - Documentation: [JSON.ARRINDEX](https:/valkey.io/commands/json.arrindex)
+    /// - Documentation: [JSON.ARRINDEX](https://valkey.io/commands/json.arrindex)
     /// - Complexity: O(N), where N is the length of the array.
     @inlinable
     public func jsonArrindex<Path: RESPStringRenderable, JsonScalar: RESPStringRenderable>(key: ValkeyKey, path: Path, jsonScalar: JsonScalar, start: Int? = nil, end: Int? = nil) async throws -> RESPToken {
@@ -504,7 +504,7 @@ extension ValkeyConnectionProtocol {
 
     /// Insert one or more values into an array at the given path before the specified index.
     ///
-    /// - Documentation: [JSON.ARRINSERT](https:/valkey.io/commands/json.arrinsert)
+    /// - Documentation: [JSON.ARRINSERT](https://valkey.io/commands/json.arrinsert)
     /// - Complexity: O(N) where N is the length of the array.
     @inlinable
     public func jsonArrinsert<Path: RESPStringRenderable, Json: RESPStringRenderable>(key: ValkeyKey, path: Path, index: Int, json: [Json]) async throws -> RESPToken {
@@ -513,7 +513,7 @@ extension ValkeyConnectionProtocol {
 
     /// Get length of the array at the path.
     ///
-    /// - Documentation: [JSON.ARRLEN](https:/valkey.io/commands/json.arrlen)
+    /// - Documentation: [JSON.ARRLEN](https://valkey.io/commands/json.arrlen)
     /// - Complexity: O(N) where N is the number of json arrays matched at the path.
     @inlinable
     public func jsonArrlen(key: ValkeyKey, path: String? = nil) async throws -> JSON.ARRLEN.Response {
@@ -522,7 +522,7 @@ extension ValkeyConnectionProtocol {
 
     /// Remove and returns the element at the given index. Popping an empty array returns null.
     ///
-    /// - Documentation: [JSON.ARRPOP](https:/valkey.io/commands/json.arrpop)
+    /// - Documentation: [JSON.ARRPOP](https://valkey.io/commands/json.arrpop)
     /// - Complexity: O(N) where N is the number of jsons arrays matched by the path.
     @inlinable
     public func jsonArrpop(key: ValkeyKey, path: String? = nil, index: Int? = nil) async throws -> JSON.ARRPOP.Response {
@@ -531,7 +531,7 @@ extension ValkeyConnectionProtocol {
 
     /// Trim the array at the path so that it becomes subarray [start, end], both inclusive.
     ///
-    /// - Documentation: [JSON.ARRTRIM](https:/valkey.io/commands/json.arrtrim)
+    /// - Documentation: [JSON.ARRTRIM](https://valkey.io/commands/json.arrtrim)
     /// - Complexity: O(N) where N is the number of json arrays matched by the path.
     @inlinable
     public func jsonArrtrim<Path: RESPStringRenderable>(key: ValkeyKey, path: Path, start: Int, end: Int) async throws -> RESPToken {
@@ -540,7 +540,7 @@ extension ValkeyConnectionProtocol {
 
     /// Clear the arrays or an object at the specified path.
     ///
-    /// - Documentation: [JSON.CLEAR](https:/valkey.io/commands/json.clear)
+    /// - Documentation: [JSON.CLEAR](https://valkey.io/commands/json.clear)
     /// - Complexity: O(N) where N is the number of json arrays/objects matched by the path.
     @inlinable
     public func jsonClear(key: ValkeyKey, path: String? = nil) async throws -> JSON.CLEAR.Response {
@@ -549,7 +549,7 @@ extension ValkeyConnectionProtocol {
 
     /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP
     ///
-    /// - Documentation: [JSON.DEBUG](https:/valkey.io/commands/json.debug)
+    /// - Documentation: [JSON.DEBUG](https://valkey.io/commands/json.debug)
     /// - Complexity: O(1)
     @inlinable
     public func jsonDebug<SubcommandArguments: RESPStringRenderable>(subcommandArguments: SubcommandArguments) async throws -> RESPToken {
@@ -558,7 +558,7 @@ extension ValkeyConnectionProtocol {
 
     /// Delete the JSON values at the specified path in a document key.
     ///
-    /// - Documentation: [JSON.DEL](https:/valkey.io/commands/json.del)
+    /// - Documentation: [JSON.DEL](https://valkey.io/commands/json.del)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
     public func jsonDel(key: ValkeyKey, path: String? = nil) async throws -> JSON.DEL.Response {
@@ -567,7 +567,7 @@ extension ValkeyConnectionProtocol {
 
     /// An alias of JSON.DEL.
     ///
-    /// - Documentation: [JSON.FORGET](https:/valkey.io/commands/json.forget)
+    /// - Documentation: [JSON.FORGET](https://valkey.io/commands/json.forget)
     @inlinable
     public func jsonForget() async throws -> JSON.FORGET.Response {
         try await send(command: JSON.FORGET())
@@ -575,7 +575,7 @@ extension ValkeyConnectionProtocol {
 
     /// Get the serialized JSON at one or multiple paths.
     ///
-    /// - Documentation: [JSON.GET](https:/valkey.io/commands/json.get)
+    /// - Documentation: [JSON.GET](https://valkey.io/commands/json.get)
     /// - Complexity: O(N) where N is the number of paths
     @inlinable
     public func jsonGet(key: ValkeyKey, indentNewlineSpace: String? = nil, noescape: String? = nil, path: [String] = []) async throws -> JSON.GET.Response {
@@ -584,7 +584,7 @@ extension ValkeyConnectionProtocol {
 
     /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
     ///
-    /// - Documentation: [JSON.MGET](https:/valkey.io/commands/json.mget)
+    /// - Documentation: [JSON.MGET](https://valkey.io/commands/json.mget)
     /// - Complexity: O(N) where N is the number of keys
     @inlinable
     public func jsonMget<Path: RESPStringRenderable>(key: [ValkeyKey], path: Path) async throws -> RESPToken {
@@ -593,7 +593,7 @@ extension ValkeyConnectionProtocol {
 
     /// Set multiple JSON values at the path to multiple keys.
     ///
-    /// - Documentation: [JSON.MSET](https:/valkey.io/commands/json.mset)
+    /// - Documentation: [JSON.MSET](https://valkey.io/commands/json.mset)
     /// - Complexity: O(N) where N is the number of keys
     @inlinable
     public func jsonMset<Path: RESPStringRenderable, Json: RESPStringRenderable>(data: [JSON.MSET<Path, Json>.Data]) async throws -> RESPToken {
@@ -602,7 +602,7 @@ extension ValkeyConnectionProtocol {
 
     /// Increment the number values at the path by a given number.
     ///
-    /// - Documentation: [JSON.NUMINCRBY](https:/valkey.io/commands/json.numincrby)
+    /// - Documentation: [JSON.NUMINCRBY](https://valkey.io/commands/json.numincrby)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
     public func jsonNumincrby<Path: RESPStringRenderable>(key: ValkeyKey, path: Path, number: Int) async throws -> RESPToken {
@@ -611,7 +611,7 @@ extension ValkeyConnectionProtocol {
 
     /// Multiply the numeric values at the path by a given number.
     ///
-    /// - Documentation: [JSON.NUMMULTBY](https:/valkey.io/commands/json.nummultby)
+    /// - Documentation: [JSON.NUMMULTBY](https://valkey.io/commands/json.nummultby)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
     public func jsonNummultby<Path: RESPStringRenderable>(key: ValkeyKey, path: Path, number: Int) async throws -> RESPToken {
@@ -620,7 +620,7 @@ extension ValkeyConnectionProtocol {
 
     /// Retrieve the key names from the objects at the specified path.
     ///
-    /// - Documentation: [JSON.OBJKEYS](https:/valkey.io/commands/json.objkeys)
+    /// - Documentation: [JSON.OBJKEYS](https://valkey.io/commands/json.objkeys)
     /// - Complexity: O(N) where N is the number of json objects matched by the path.
     @inlinable
     public func jsonObjkeys(key: ValkeyKey, path: String? = nil) async throws -> JSON.OBJKEYS.Response {
@@ -629,7 +629,7 @@ extension ValkeyConnectionProtocol {
 
     /// Get the number of keys in the object at the specified path.
     ///
-    /// - Documentation: [JSON.OBJLEN](https:/valkey.io/commands/json.objlen)
+    /// - Documentation: [JSON.OBJLEN](https://valkey.io/commands/json.objlen)
     /// - Complexity: O(N) where N is the number of json objects matched by the path.
     @inlinable
     public func jsonObjlen(key: ValkeyKey, path: String? = nil) async throws -> JSON.OBJLEN.Response {
@@ -638,7 +638,7 @@ extension ValkeyConnectionProtocol {
 
     /// Return the JSON value at the given path in Redis Serialization Protocol (RESP).
     ///
-    /// - Documentation: [JSON.RESP](https:/valkey.io/commands/json.resp)
+    /// - Documentation: [JSON.RESP](https://valkey.io/commands/json.resp)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
     public func jsonResp(key: ValkeyKey, path: String? = nil) async throws -> JSON.RESP.Response {
@@ -647,7 +647,7 @@ extension ValkeyConnectionProtocol {
 
     /// Set JSON values at the specified path.
     ///
-    /// - Documentation: [JSON.SET](https:/valkey.io/commands/json.set)
+    /// - Documentation: [JSON.SET](https://valkey.io/commands/json.set)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
     public func jsonSet<Path: RESPStringRenderable, Json: RESPStringRenderable>(key: ValkeyKey, path: Path, json: Json, options: String? = nil) async throws -> RESPToken {
@@ -656,7 +656,7 @@ extension ValkeyConnectionProtocol {
 
     /// Append a string to the JSON strings at the specified path.
     ///
-    /// - Documentation: [JSON.STRAPPEND](https:/valkey.io/commands/json.strappend)
+    /// - Documentation: [JSON.STRAPPEND](https://valkey.io/commands/json.strappend)
     /// - Complexity: O(N) where N is the number of string values matched by the path.
     @inlinable
     public func jsonStrappend<JsonString: RESPStringRenderable>(key: ValkeyKey, path: String? = nil, jsonString: JsonString) async throws -> RESPToken {
@@ -665,7 +665,7 @@ extension ValkeyConnectionProtocol {
 
     /// Get the length of the JSON string values at the specified path.
     ///
-    /// - Documentation: [JSON.STRLEN](https:/valkey.io/commands/json.strlen)
+    /// - Documentation: [JSON.STRLEN](https://valkey.io/commands/json.strlen)
     /// - Complexity: O(N) where N is the number of string values matched by the path.
     @inlinable
     public func jsonStrlen(key: ValkeyKey, path: String? = nil) async throws -> JSON.STRLEN.Response {
@@ -674,7 +674,7 @@ extension ValkeyConnectionProtocol {
 
     /// Toggle boolean values between true and false at the specified path.
     ///
-    /// - Documentation: [JSON.TOGGLE](https:/valkey.io/commands/json.toggle)
+    /// - Documentation: [JSON.TOGGLE](https://valkey.io/commands/json.toggle)
     /// - Complexity: O(N) where N is the number of json boolean values matched by the path.
     @inlinable
     public func jsonToggle(key: ValkeyKey, path: String? = nil) async throws -> JSON.TOGGLE.Response {
@@ -683,7 +683,7 @@ extension ValkeyConnectionProtocol {
 
     /// Report the type of the values at the given path.
     ///
-    /// - Documentation: [JSON.TYPE](https:/valkey.io/commands/json.type)
+    /// - Documentation: [JSON.TYPE](https://valkey.io/commands/json.type)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
     public func jsonType(key: ValkeyKey, path: String? = nil) async throws -> JSON.TYPE.Response {

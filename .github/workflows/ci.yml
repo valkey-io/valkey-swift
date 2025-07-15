@@ -2,11 +2,7 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - "**.swift"
-      - "**.yml"
+    branches: [main]
   pull_request:
   workflow_dispatch:
 concurrency:
@@ -16,12 +12,12 @@ concurrency:
 env:
   VALKEY_HOSTNAME: valkey
 jobs:
-  linux:
+  unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       matrix:
-        image: ["swift:6.1"]
+        image: ["swift:6.1", "swiftlang/swift:nightly-6.2-noble"]
     container:
       image: ${{ matrix.image }}
     services:
