@@ -1,0 +1,14 @@
+name: Main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    uses: apple/swift-nio/.github/workflows/unit_tests.yml@main
+    with:
+      linux_6_1_arguments_override: "-Xswiftc -warnings-as-errors --explicit-target-dependency-import-check error -Xswiftc -require-explicit-sendable -Xswiftc -strict-concurrency=complete"
+      linux_nightly_next_arguments_override: "--explicit-target-dependency-import-check error -Xswiftc -require-explicit-sendable"
+      linux_nightly_main_arguments_override: "--explicit-target-dependency-import-check error -Xswiftc -require-explicit-sendable"
