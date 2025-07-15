@@ -455,10 +455,10 @@ public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand {
 extension ValkeyConnectionProtocol {
     /// Executes a server-side Lua script.
     ///
-    /// - Documentation: [EVAL](https:/valkey.io/commands/eval)
+    /// - Documentation: [EVAL](https://valkey.io/commands/eval)
     /// - Available: 2.6.0
     /// - Complexity: Depends on the script that is executed.
-    /// - Returns: Return value depends on the script that is executed
+    /// - Response: Return value depends on the script that is executed
     @inlinable
     public func eval<Script: RESPStringRenderable>(script: Script, key: [ValkeyKey] = [], arg: [String] = []) async throws -> RESPToken {
         try await send(command: EVAL(script: script, key: key, arg: arg))
@@ -466,10 +466,10 @@ extension ValkeyConnectionProtocol {
 
     /// Executes a server-side Lua script by SHA1 digest.
     ///
-    /// - Documentation: [EVALSHA](https:/valkey.io/commands/evalsha)
+    /// - Documentation: [EVALSHA](https://valkey.io/commands/evalsha)
     /// - Available: 2.6.0
     /// - Complexity: Depends on the script that is executed.
-    /// - Returns: Return value depends on the script that is executed
+    /// - Response: Return value depends on the script that is executed
     @inlinable
     public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, key: [ValkeyKey] = [], arg: [String] = []) async throws -> RESPToken {
         try await send(command: EVALSHA(sha1: sha1, key: key, arg: arg))
@@ -477,10 +477,10 @@ extension ValkeyConnectionProtocol {
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
     ///
-    /// - Documentation: [EVALSHA_RO](https:/valkey.io/commands/evalsha_ro)
+    /// - Documentation: [EVALSHA_RO](https://valkey.io/commands/evalsha_ro)
     /// - Available: 7.0.0
     /// - Complexity: Depends on the script that is executed.
-    /// - Returns: Return value depends on the script that is executed
+    /// - Response: Return value depends on the script that is executed
     @inlinable
     public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, key: [ValkeyKey] = [], arg: [String] = []) async throws -> RESPToken {
         try await send(command: EVALSHARO(sha1: sha1, key: key, arg: arg))
@@ -488,10 +488,10 @@ extension ValkeyConnectionProtocol {
 
     /// Executes a read-only server-side Lua script.
     ///
-    /// - Documentation: [EVAL_RO](https:/valkey.io/commands/eval_ro)
+    /// - Documentation: [EVAL_RO](https://valkey.io/commands/eval_ro)
     /// - Available: 7.0.0
     /// - Complexity: Depends on the script that is executed.
-    /// - Returns: Return value depends on the script that is executed
+    /// - Response: Return value depends on the script that is executed
     @inlinable
     public func evalRo<Script: RESPStringRenderable>(script: Script, key: [ValkeyKey] = [], arg: [String] = []) async throws -> RESPToken {
         try await send(command: EVALRO(script: script, key: key, arg: arg))
@@ -499,10 +499,10 @@ extension ValkeyConnectionProtocol {
 
     /// Invokes a function.
     ///
-    /// - Documentation: [FCALL](https:/valkey.io/commands/fcall)
+    /// - Documentation: [FCALL](https://valkey.io/commands/fcall)
     /// - Available: 7.0.0
     /// - Complexity: Depends on the function that is executed.
-    /// - Returns: Return value depends on the function that is executed
+    /// - Response: Return value depends on the function that is executed
     @inlinable
     public func fcall<Function: RESPStringRenderable>(function: Function, key: [ValkeyKey] = [], arg: [String] = []) async throws -> RESPToken {
         try await send(command: FCALL(function: function, key: key, arg: arg))
@@ -510,10 +510,10 @@ extension ValkeyConnectionProtocol {
 
     /// Invokes a read-only function.
     ///
-    /// - Documentation: [FCALL_RO](https:/valkey.io/commands/fcall_ro)
+    /// - Documentation: [FCALL_RO](https://valkey.io/commands/fcall_ro)
     /// - Available: 7.0.0
     /// - Complexity: Depends on the function that is executed.
-    /// - Returns: Return value depends on the function that is executed
+    /// - Response: Return value depends on the function that is executed
     @inlinable
     public func fcallRo<Function: RESPStringRenderable>(function: Function, key: [ValkeyKey] = [], arg: [String] = []) async throws -> RESPToken {
         try await send(command: FCALLRO(function: function, key: key, arg: arg))
@@ -521,7 +521,7 @@ extension ValkeyConnectionProtocol {
 
     /// Deletes a library and its functions.
     ///
-    /// - Documentation: [FUNCTION DELETE](https:/valkey.io/commands/function-delete)
+    /// - Documentation: [FUNCTION DELETE](https://valkey.io/commands/function-delete)
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -531,10 +531,10 @@ extension ValkeyConnectionProtocol {
 
     /// Dumps all libraries into a serialized binary payload.
     ///
-    /// - Documentation: [FUNCTION DUMP](https:/valkey.io/commands/function-dump)
+    /// - Documentation: [FUNCTION DUMP](https://valkey.io/commands/function-dump)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
-    /// - Returns: [String]: The serialized payload.
+    /// - Response: [String]: The serialized payload.
     @inlinable
     public func functionDump() async throws -> ByteBuffer {
         try await send(command: FUNCTION.DUMP())
@@ -542,7 +542,7 @@ extension ValkeyConnectionProtocol {
 
     /// Deletes all libraries and functions.
     ///
-    /// - Documentation: [FUNCTION FLUSH](https:/valkey.io/commands/function-flush)
+    /// - Documentation: [FUNCTION FLUSH](https://valkey.io/commands/function-flush)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions deleted
     @inlinable
@@ -552,10 +552,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [FUNCTION HELP](https:/valkey.io/commands/function-help)
+    /// - Documentation: [FUNCTION HELP](https://valkey.io/commands/function-help)
     /// - Available: 7.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func functionHelp() async throws -> RESPToken.Array {
         try await send(command: FUNCTION.HELP())
@@ -563,7 +563,7 @@ extension ValkeyConnectionProtocol {
 
     /// Terminates a function during execution.
     ///
-    /// - Documentation: [FUNCTION KILL](https:/valkey.io/commands/function-kill)
+    /// - Documentation: [FUNCTION KILL](https://valkey.io/commands/function-kill)
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -573,7 +573,7 @@ extension ValkeyConnectionProtocol {
 
     /// Returns information about all libraries.
     ///
-    /// - Documentation: [FUNCTION LIST](https:/valkey.io/commands/function-list)
+    /// - Documentation: [FUNCTION LIST](https://valkey.io/commands/function-list)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
     @inlinable
@@ -583,10 +583,10 @@ extension ValkeyConnectionProtocol {
 
     /// Creates a library.
     ///
-    /// - Documentation: [FUNCTION LOAD](https:/valkey.io/commands/function-load)
+    /// - Documentation: [FUNCTION LOAD](https://valkey.io/commands/function-load)
     /// - Available: 7.0.0
     /// - Complexity: O(1) (considering compilation time is redundant)
-    /// - Returns: [String]: The library name that was loaded
+    /// - Response: [String]: The library name that was loaded
     @inlinable
     public func functionLoad<FunctionCode: RESPStringRenderable>(replace: Bool = false, functionCode: FunctionCode) async throws -> ByteBuffer {
         try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
@@ -594,7 +594,7 @@ extension ValkeyConnectionProtocol {
 
     /// Restores all libraries from a payload.
     ///
-    /// - Documentation: [FUNCTION RESTORE](https:/valkey.io/commands/function-restore)
+    /// - Documentation: [FUNCTION RESTORE](https://valkey.io/commands/function-restore)
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions on the payload
     @inlinable
@@ -604,7 +604,7 @@ extension ValkeyConnectionProtocol {
 
     /// Returns information about a function during execution.
     ///
-    /// - Documentation: [FUNCTION STATS](https:/valkey.io/commands/function-stats)
+    /// - Documentation: [FUNCTION STATS](https://valkey.io/commands/function-stats)
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -614,7 +614,7 @@ extension ValkeyConnectionProtocol {
 
     /// Sets the debug mode of server-side Lua scripts.
     ///
-    /// - Documentation: [SCRIPT DEBUG](https:/valkey.io/commands/script-debug)
+    /// - Documentation: [SCRIPT DEBUG](https://valkey.io/commands/script-debug)
     /// - Available: 3.2.0
     /// - Complexity: O(1)
     @inlinable
@@ -624,10 +624,10 @@ extension ValkeyConnectionProtocol {
 
     /// Determines whether server-side Lua scripts exist in the script cache.
     ///
-    /// - Documentation: [SCRIPT EXISTS](https:/valkey.io/commands/script-exists)
+    /// - Documentation: [SCRIPT EXISTS](https://valkey.io/commands/script-exists)
     /// - Available: 2.6.0
     /// - Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
-    /// - Returns: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
+    /// - Response: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     public func scriptExists<Sha1: RESPStringRenderable>(sha1: [Sha1]) async throws -> RESPToken.Array {
         try await send(command: SCRIPT.EXISTS(sha1: sha1))
@@ -635,7 +635,7 @@ extension ValkeyConnectionProtocol {
 
     /// Removes all server-side Lua scripts from the script cache.
     ///
-    /// - Documentation: [SCRIPT FLUSH](https:/valkey.io/commands/script-flush)
+    /// - Documentation: [SCRIPT FLUSH](https://valkey.io/commands/script-flush)
     /// - Available: 2.6.0
     /// - History:
     ///     * 6.2.0: Added the `ASYNC` and `SYNC` flushing mode modifiers.
@@ -647,10 +647,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [SCRIPT HELP](https:/valkey.io/commands/script-help)
+    /// - Documentation: [SCRIPT HELP](https://valkey.io/commands/script-help)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func scriptHelp() async throws -> RESPToken.Array {
         try await send(command: SCRIPT.HELP())
@@ -658,7 +658,7 @@ extension ValkeyConnectionProtocol {
 
     /// Terminates a server-side Lua script during execution.
     ///
-    /// - Documentation: [SCRIPT KILL](https:/valkey.io/commands/script-kill)
+    /// - Documentation: [SCRIPT KILL](https://valkey.io/commands/script-kill)
     /// - Available: 2.6.0
     /// - Complexity: O(1)
     @inlinable
@@ -668,10 +668,10 @@ extension ValkeyConnectionProtocol {
 
     /// Loads a server-side Lua script to the script cache.
     ///
-    /// - Documentation: [SCRIPT LOAD](https:/valkey.io/commands/script-load)
+    /// - Documentation: [SCRIPT LOAD](https://valkey.io/commands/script-load)
     /// - Available: 2.6.0
     /// - Complexity: O(N) with N being the length in bytes of the script body.
-    /// - Returns: [String]: The SHA1 digest of the script added into the script cache
+    /// - Response: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
     public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> ByteBuffer {
         try await send(command: SCRIPT.LOAD(script: script))
@@ -679,10 +679,10 @@ extension ValkeyConnectionProtocol {
 
     /// Show server-side Lua script in the script cache.
     ///
-    /// - Documentation: [SCRIPT SHOW](https:/valkey.io/commands/script-show)
+    /// - Documentation: [SCRIPT SHOW](https://valkey.io/commands/script-show)
     /// - Available: 8.0.0
     /// - Complexity: O(1).
-    /// - Returns: [String]: Lua script if sha1 hash exists in script cache.
+    /// - Response: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
     public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> ByteBuffer {
         try await send(command: SCRIPT.SHOW(sha1: sha1))

@@ -756,7 +756,7 @@ public struct SELECT: ValkeyCommand {
 extension ValkeyConnectionProtocol {
     /// Authenticates the connection.
     ///
-    /// - Documentation: [AUTH](https:/valkey.io/commands/auth)
+    /// - Documentation: [AUTH](https://valkey.io/commands/auth)
     /// - Available: 1.0.0
     /// - History:
     ///     * 6.0.0: Added ACL style (username and password).
@@ -768,7 +768,7 @@ extension ValkeyConnectionProtocol {
 
     /// A container for client connection commands.
     ///
-    /// - Documentation: [CLIENT](https:/valkey.io/commands/client)
+    /// - Documentation: [CLIENT](https://valkey.io/commands/client)
     /// - Available: 2.4.0
     /// - Complexity: Depends on subcommand.
     @inlinable
@@ -778,7 +778,7 @@ extension ValkeyConnectionProtocol {
 
     /// Instructs the server whether to track the keys in the next request.
     ///
-    /// - Documentation: [CLIENT CACHING](https:/valkey.io/commands/client-caching)
+    /// - Documentation: [CLIENT CACHING](https://valkey.io/commands/client-caching)
     /// - Available: 6.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -788,7 +788,7 @@ extension ValkeyConnectionProtocol {
 
     /// A client claims its capability.
     ///
-    /// - Documentation: [CLIENT CAPA](https:/valkey.io/commands/client-capa)
+    /// - Documentation: [CLIENT CAPA](https://valkey.io/commands/client-capa)
     /// - Available: 8.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -798,10 +798,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the name of the connection.
     ///
-    /// - Documentation: [CLIENT GETNAME](https:/valkey.io/commands/client-getname)
+    /// - Documentation: [CLIENT GETNAME](https://valkey.io/commands/client-getname)
     /// - Available: 2.6.9
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [String]: The connection name of the current connection
     ///     * [Null]: Connection name was not set
     @inlinable
@@ -811,10 +811,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
     ///
-    /// - Documentation: [CLIENT GETREDIR](https:/valkey.io/commands/client-getredir)
+    /// - Documentation: [CLIENT GETREDIR](https://valkey.io/commands/client-getredir)
     /// - Available: 6.0.0
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * 0: Not redirecting notifications to any client.
     ///     * -1: Client tracking is not enabled.
     ///     * [Integer]: ID of the client we are redirecting the notifications to.
@@ -825,10 +825,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns helpful text about the different subcommands.
     ///
-    /// - Documentation: [CLIENT HELP](https:/valkey.io/commands/client-help)
+    /// - Documentation: [CLIENT HELP](https://valkey.io/commands/client-help)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Array]: Helpful text about subcommands.
+    /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
     public func clientHelp() async throws -> RESPToken.Array {
         try await send(command: CLIENT.HELP())
@@ -836,10 +836,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the unique client ID of the connection.
     ///
-    /// - Documentation: [CLIENT ID](https:/valkey.io/commands/client-id)
+    /// - Documentation: [CLIENT ID](https://valkey.io/commands/client-id)
     /// - Available: 5.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Integer]: The id of the client
+    /// - Response: [Integer]: The id of the client
     @inlinable
     public func clientId() async throws -> Int {
         try await send(command: CLIENT.ID())
@@ -847,7 +847,7 @@ extension ValkeyConnectionProtocol {
 
     /// Mark this client as an import source when server is in import mode.
     ///
-    /// - Documentation: [CLIENT IMPORT-SOURCE](https:/valkey.io/commands/client-import-source)
+    /// - Documentation: [CLIENT IMPORT-SOURCE](https://valkey.io/commands/client-import-source)
     /// - Available: 8.1.0
     /// - Complexity: O(1)
     @inlinable
@@ -857,10 +857,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns information about the connection.
     ///
-    /// - Documentation: [CLIENT INFO](https:/valkey.io/commands/client-info)
+    /// - Documentation: [CLIENT INFO](https://valkey.io/commands/client-info)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Returns: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
+    /// - Response: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
     public func clientInfo() async throws -> ByteBuffer {
         try await send(command: CLIENT.INFO())
@@ -868,7 +868,7 @@ extension ValkeyConnectionProtocol {
 
     /// Terminates open connections.
     ///
-    /// - Documentation: [CLIENT KILL](https:/valkey.io/commands/client-kill)
+    /// - Documentation: [CLIENT KILL](https://valkey.io/commands/client-kill)
     /// - Available: 2.4.0
     /// - History:
     ///     * 2.8.12: Added new filter format.
@@ -880,7 +880,7 @@ extension ValkeyConnectionProtocol {
     ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
     ///     * 8.1.0: `ID` option accepts multiple IDs.
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * "OK": When called in 3 argument format.
     ///     * [Integer]: When called in filter/value format, the number of clients killed.
     @inlinable
@@ -890,7 +890,7 @@ extension ValkeyConnectionProtocol {
 
     /// Lists open connections.
     ///
-    /// - Documentation: [CLIENT LIST](https:/valkey.io/commands/client-list)
+    /// - Documentation: [CLIENT LIST](https://valkey.io/commands/client-list)
     /// - Available: 2.4.0
     /// - History:
     ///     * 2.8.12: Added unique client `id` field.
@@ -902,7 +902,7 @@ extension ValkeyConnectionProtocol {
     ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
     ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE
     /// - Complexity: O(N) where N is the number of client connections
-    /// - Returns: [String]: Information and statistics about client connections
+    /// - Response: [String]: Information and statistics about client connections
     @inlinable
     public func clientList(clientType: CLIENT.LIST.ClientType? = nil, clientId: [Int] = [], username: String? = nil, addr: String? = nil, laddr: String? = nil, skipme: CLIENT.LIST.Skipme? = nil, maxage: Int? = nil) async throws -> ByteBuffer {
         try await send(command: CLIENT.LIST(clientType: clientType, clientId: clientId, username: username, addr: addr, laddr: laddr, skipme: skipme, maxage: maxage))
@@ -910,7 +910,7 @@ extension ValkeyConnectionProtocol {
 
     /// Sets the client eviction mode of the connection.
     ///
-    /// - Documentation: [CLIENT NO-EVICT](https:/valkey.io/commands/client-no-evict)
+    /// - Documentation: [CLIENT NO-EVICT](https://valkey.io/commands/client-no-evict)
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
@@ -920,7 +920,7 @@ extension ValkeyConnectionProtocol {
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
     ///
-    /// - Documentation: [CLIENT NO-TOUCH](https:/valkey.io/commands/client-no-touch)
+    /// - Documentation: [CLIENT NO-TOUCH](https://valkey.io/commands/client-no-touch)
     /// - Available: 7.2.0
     /// - Complexity: O(1)
     @inlinable
@@ -930,7 +930,7 @@ extension ValkeyConnectionProtocol {
 
     /// Suspends commands processing.
     ///
-    /// - Documentation: [CLIENT PAUSE](https:/valkey.io/commands/client-pause)
+    /// - Documentation: [CLIENT PAUSE](https://valkey.io/commands/client-pause)
     /// - Available: 3.0.0
     /// - History:
     ///     * 6.2.0: `CLIENT PAUSE WRITE` mode added along with the `mode` option.
@@ -942,10 +942,10 @@ extension ValkeyConnectionProtocol {
 
     /// Instructs the server whether to reply to commands.
     ///
-    /// - Documentation: [CLIENT REPLY](https:/valkey.io/commands/client-reply)
+    /// - Documentation: [CLIENT REPLY](https://valkey.io/commands/client-reply)
     /// - Available: 3.2.0
     /// - Complexity: O(1)
-    /// - Returns: "OK": When called with either OFF or SKIP subcommands, no reply is made. When called with ON, reply is OK.
+    /// - Response: "OK": When called with either OFF or SKIP subcommands, no reply is made. When called with ON, reply is OK.
     @inlinable
     public func clientReply(action: CLIENT.REPLY.Action) async throws {
         _ = try await send(command: CLIENT.REPLY(action: action))
@@ -953,7 +953,7 @@ extension ValkeyConnectionProtocol {
 
     /// Sets information specific to the client or connection.
     ///
-    /// - Documentation: [CLIENT SETINFO](https:/valkey.io/commands/client-setinfo)
+    /// - Documentation: [CLIENT SETINFO](https://valkey.io/commands/client-setinfo)
     /// - Available: 7.2.0
     /// - Complexity: O(1)
     @inlinable
@@ -963,7 +963,7 @@ extension ValkeyConnectionProtocol {
 
     /// Sets the connection name.
     ///
-    /// - Documentation: [CLIENT SETNAME](https:/valkey.io/commands/client-setname)
+    /// - Documentation: [CLIENT SETNAME](https://valkey.io/commands/client-setname)
     /// - Available: 2.6.9
     /// - Complexity: O(1)
     @inlinable
@@ -973,10 +973,10 @@ extension ValkeyConnectionProtocol {
 
     /// Controls server-assisted client-side caching for the connection.
     ///
-    /// - Documentation: [CLIENT TRACKING](https:/valkey.io/commands/client-tracking)
+    /// - Documentation: [CLIENT TRACKING](https://valkey.io/commands/client-tracking)
     /// - Available: 6.0.0
     /// - Complexity: O(1). Some options may introduce additional complexity.
-    /// - Returns: "OK": If the client was successfully put into or taken out of tracking mode.
+    /// - Response: "OK": If the client was successfully put into or taken out of tracking mode.
     @inlinable
     public func clientTracking(status: CLIENT.TRACKING.Status, clientId: Int? = nil, prefix: [String] = [], bcast: Bool = false, optin: Bool = false, optout: Bool = false, noloop: Bool = false) async throws {
         _ = try await send(command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop))
@@ -984,7 +984,7 @@ extension ValkeyConnectionProtocol {
 
     /// Returns information about server-assisted client-side caching for the connection.
     ///
-    /// - Documentation: [CLIENT TRACKINGINFO](https:/valkey.io/commands/client-trackinginfo)
+    /// - Documentation: [CLIENT TRACKINGINFO](https://valkey.io/commands/client-trackinginfo)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
     @inlinable
@@ -994,10 +994,10 @@ extension ValkeyConnectionProtocol {
 
     /// Unblocks a client blocked by a blocking command from a different connection.
     ///
-    /// - Documentation: [CLIENT UNBLOCK](https:/valkey.io/commands/client-unblock)
+    /// - Documentation: [CLIENT UNBLOCK](https://valkey.io/commands/client-unblock)
     /// - Available: 5.0.0
     /// - Complexity: O(log N) where N is the number of client connections
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * 0: If the client was unblocked successfully.
     ///     * 1: If the client wasn't unblocked.
     @inlinable
@@ -1007,7 +1007,7 @@ extension ValkeyConnectionProtocol {
 
     /// Resumes processing commands from paused clients.
     ///
-    /// - Documentation: [CLIENT UNPAUSE](https:/valkey.io/commands/client-unpause)
+    /// - Documentation: [CLIENT UNPAUSE](https://valkey.io/commands/client-unpause)
     /// - Available: 6.2.0
     /// - Complexity: O(N) Where N is the number of paused clients
     @inlinable
@@ -1017,10 +1017,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the given string.
     ///
-    /// - Documentation: [ECHO](https:/valkey.io/commands/echo)
+    /// - Documentation: [ECHO](https://valkey.io/commands/echo)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: [String]: The given string
+    /// - Response: [String]: The given string
     @inlinable
     public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ByteBuffer {
         try await send(command: ECHO(message: message))
@@ -1028,7 +1028,7 @@ extension ValkeyConnectionProtocol {
 
     /// Handshakes with the server.
     ///
-    /// - Documentation: [HELLO](https:/valkey.io/commands/hello)
+    /// - Documentation: [HELLO](https://valkey.io/commands/hello)
     /// - Available: 6.0.0
     /// - History:
     ///     * 8.1.0: A new `availability_zone` field is added to the response if the `availability-zone` config is set.
@@ -1041,10 +1041,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the server's liveliness response.
     ///
-    /// - Documentation: [PING](https:/valkey.io/commands/ping)
+    /// - Documentation: [PING](https://valkey.io/commands/ping)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * "PONG": Default reply.
     ///     * [String]: Relay of given `message`.
     @inlinable
@@ -1054,7 +1054,7 @@ extension ValkeyConnectionProtocol {
 
     /// Closes the connection.
     ///
-    /// - Documentation: [QUIT](https:/valkey.io/commands/quit)
+    /// - Documentation: [QUIT](https://valkey.io/commands/quit)
     /// - Available: 1.0.0
     /// - Deprecated since: 7.2.0. Replaced by just closing the connection.
     /// - Complexity: O(1)
@@ -1065,7 +1065,7 @@ extension ValkeyConnectionProtocol {
 
     /// Resets the connection.
     ///
-    /// - Documentation: [RESET](https:/valkey.io/commands/reset)
+    /// - Documentation: [RESET](https://valkey.io/commands/reset)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
     @inlinable
@@ -1075,7 +1075,7 @@ extension ValkeyConnectionProtocol {
 
     /// Changes the selected database.
     ///
-    /// - Documentation: [SELECT](https:/valkey.io/commands/select)
+    /// - Documentation: [SELECT](https://valkey.io/commands/select)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
     @inlinable

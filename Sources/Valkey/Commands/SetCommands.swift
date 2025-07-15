@@ -381,12 +381,12 @@ public struct SUNIONSTORE: ValkeyCommand {
 extension ValkeyConnectionProtocol {
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
     ///
-    /// - Documentation: [SADD](https:/valkey.io/commands/sadd)
+    /// - Documentation: [SADD](https://valkey.io/commands/sadd)
     /// - Available: 1.0.0
     /// - History:
     ///     * 2.4.0: Accepts multiple `member` arguments.
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
-    /// - Returns: [Integer]: Number of elements that were added to the set, not including all the elements already present in the set.
+    /// - Response: [Integer]: Number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
     public func sadd<Member: RESPStringRenderable>(key: ValkeyKey, member: [Member]) async throws -> Int {
         try await send(command: SADD(key: key, member: member))
@@ -394,10 +394,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the number of members in a set.
     ///
-    /// - Documentation: [SCARD](https:/valkey.io/commands/scard)
+    /// - Documentation: [SCARD](https://valkey.io/commands/scard)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: [Integer]: The cardinality (number of elements) of the set, or 0 if key does not exist.
+    /// - Response: [Integer]: The cardinality (number of elements) of the set, or 0 if key does not exist.
     @inlinable
     public func scard(key: ValkeyKey) async throws -> Int {
         try await send(command: SCARD(key: key))
@@ -405,10 +405,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the difference of multiple sets.
     ///
-    /// - Documentation: [SDIFF](https:/valkey.io/commands/sdiff)
+    /// - Documentation: [SDIFF](https://valkey.io/commands/sdiff)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Returns: [Array]: List with the members of the resulting set.
+    /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
     public func sdiff(key: [ValkeyKey]) async throws -> RESPToken.Array {
         try await send(command: SDIFF(key: key))
@@ -416,10 +416,10 @@ extension ValkeyConnectionProtocol {
 
     /// Stores the difference of multiple sets in a key.
     ///
-    /// - Documentation: [SDIFFSTORE](https:/valkey.io/commands/sdiffstore)
+    /// - Documentation: [SDIFFSTORE](https://valkey.io/commands/sdiffstore)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Returns: [Integer]: Number of the elements in the resulting set.
+    /// - Response: [Integer]: Number of the elements in the resulting set.
     @inlinable
     public func sdiffstore(destination: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
         try await send(command: SDIFFSTORE(destination: destination, key: key))
@@ -427,10 +427,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the intersect of multiple sets.
     ///
-    /// - Documentation: [SINTER](https:/valkey.io/commands/sinter)
+    /// - Documentation: [SINTER](https://valkey.io/commands/sinter)
     /// - Available: 1.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Returns: [Array]: List with the members of the resulting set.
+    /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
     public func sinter(key: [ValkeyKey]) async throws -> RESPToken.Array {
         try await send(command: SINTER(key: key))
@@ -438,10 +438,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the number of members of the intersect of multiple sets.
     ///
-    /// - Documentation: [SINTERCARD](https:/valkey.io/commands/sintercard)
+    /// - Documentation: [SINTERCARD](https://valkey.io/commands/sintercard)
     /// - Available: 7.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Returns: [Integer]: Number of the elements in the resulting intersection.
+    /// - Response: [Integer]: Number of the elements in the resulting intersection.
     @inlinable
     public func sintercard(key: [ValkeyKey], limit: Int? = nil) async throws -> Int {
         try await send(command: SINTERCARD(key: key, limit: limit))
@@ -449,10 +449,10 @@ extension ValkeyConnectionProtocol {
 
     /// Stores the intersect of multiple sets in a key.
     ///
-    /// - Documentation: [SINTERSTORE](https:/valkey.io/commands/sinterstore)
+    /// - Documentation: [SINTERSTORE](https://valkey.io/commands/sinterstore)
     /// - Available: 1.0.0
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
-    /// - Returns: [Integer]: Number of the elements in the result set.
+    /// - Response: [Integer]: Number of the elements in the result set.
     @inlinable
     public func sinterstore(destination: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
         try await send(command: SINTERSTORE(destination: destination, key: key))
@@ -460,10 +460,10 @@ extension ValkeyConnectionProtocol {
 
     /// Determines whether a member belongs to a set.
     ///
-    /// - Documentation: [SISMEMBER](https:/valkey.io/commands/sismember)
+    /// - Documentation: [SISMEMBER](https://valkey.io/commands/sismember)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * 0: The element is not a member of the set, or the key does not exist.
     ///     * 1: The element is a member of the set.
     @inlinable
@@ -473,10 +473,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns all members of a set.
     ///
-    /// - Documentation: [SMEMBERS](https:/valkey.io/commands/smembers)
+    /// - Documentation: [SMEMBERS](https://valkey.io/commands/smembers)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the set cardinality.
-    /// - Returns: [Array]: All elements of the set.
+    /// - Response: [Array]: All elements of the set.
     @inlinable
     public func smembers(key: ValkeyKey) async throws -> RESPToken.Array {
         try await send(command: SMEMBERS(key: key))
@@ -484,10 +484,10 @@ extension ValkeyConnectionProtocol {
 
     /// Determines whether multiple members belong to a set.
     ///
-    /// - Documentation: [SMISMEMBER](https:/valkey.io/commands/smismember)
+    /// - Documentation: [SMISMEMBER](https://valkey.io/commands/smismember)
     /// - Available: 6.2.0
     /// - Complexity: O(N) where N is the number of elements being checked for membership
-    /// - Returns: [Array]: List representing the membership of the given elements, in the same order as they are requested.
+    /// - Response: [Array]: List representing the membership of the given elements, in the same order as they are requested.
     @inlinable
     public func smismember<Member: RESPStringRenderable>(key: ValkeyKey, member: [Member]) async throws -> RESPToken.Array {
         try await send(command: SMISMEMBER(key: key, member: member))
@@ -495,10 +495,10 @@ extension ValkeyConnectionProtocol {
 
     /// Moves a member from one set to another.
     ///
-    /// - Documentation: [SMOVE](https:/valkey.io/commands/smove)
+    /// - Documentation: [SMOVE](https://valkey.io/commands/smove)
     /// - Available: 1.0.0
     /// - Complexity: O(1)
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * 1: Element is moved.
     ///     * 0: The element is not a member of source and no operation was performed.
     @inlinable
@@ -508,12 +508,12 @@ extension ValkeyConnectionProtocol {
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
     ///
-    /// - Documentation: [SPOP](https:/valkey.io/commands/spop)
+    /// - Documentation: [SPOP](https://valkey.io/commands/spop)
     /// - Available: 1.0.0
     /// - History:
     ///     * 3.2.0: Added the `count` argument.
     /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the value of the passed count.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [Null]: The key does not exist.
     ///     * [String]: The removed member when 'COUNT' is not given.
     ///     * [Array]: List to the removed members when 'COUNT' is given.
@@ -524,12 +524,12 @@ extension ValkeyConnectionProtocol {
 
     /// Get one or multiple random members from a set
     ///
-    /// - Documentation: [SRANDMEMBER](https:/valkey.io/commands/srandmember)
+    /// - Documentation: [SRANDMEMBER](https://valkey.io/commands/srandmember)
     /// - Available: 1.0.0
     /// - History:
     ///     * 2.6.0: Added the optional `count` argument.
     /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the absolute value of the passed count.
-    /// - Returns: One of the following
+    /// - Response: One of the following
     ///     * [Null]: In case `count` is not given and key doesn't exist
     ///     * [String]: In case `count` is not given, randomly selected element
     ///     * [Array]: In case `count` is given, an array of elements
@@ -541,12 +541,12 @@ extension ValkeyConnectionProtocol {
 
     /// Removes one or more members from a set. Deletes the set if the last member was removed.
     ///
-    /// - Documentation: [SREM](https:/valkey.io/commands/srem)
+    /// - Documentation: [SREM](https://valkey.io/commands/srem)
     /// - Available: 1.0.0
     /// - History:
     ///     * 2.4.0: Accepts multiple `member` arguments.
     /// - Complexity: O(N) where N is the number of members to be removed.
-    /// - Returns: [Integer]: Number of members that were removed from the set, not including non existing members.
+    /// - Response: [Integer]: Number of members that were removed from the set, not including non existing members.
     @inlinable
     public func srem<Member: RESPStringRenderable>(key: ValkeyKey, member: [Member]) async throws -> Int {
         try await send(command: SREM(key: key, member: member))
@@ -554,10 +554,10 @@ extension ValkeyConnectionProtocol {
 
     /// Iterates over members of a set.
     ///
-    /// - Documentation: [SSCAN](https:/valkey.io/commands/sscan)
+    /// - Documentation: [SSCAN](https://valkey.io/commands/sscan)
     /// - Available: 2.8.0
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
-    /// - Returns: [Array]: Cursor and scan response in array form.
+    /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
     public func sscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
@@ -565,10 +565,10 @@ extension ValkeyConnectionProtocol {
 
     /// Returns the union of multiple sets.
     ///
-    /// - Documentation: [SUNION](https:/valkey.io/commands/sunion)
+    /// - Documentation: [SUNION](https://valkey.io/commands/sunion)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Returns: [Array]: List with the members of the resulting set.
+    /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
     public func sunion(key: [ValkeyKey]) async throws -> RESPToken.Array {
         try await send(command: SUNION(key: key))
@@ -576,10 +576,10 @@ extension ValkeyConnectionProtocol {
 
     /// Stores the union of multiple sets in a key.
     ///
-    /// - Documentation: [SUNIONSTORE](https:/valkey.io/commands/sunionstore)
+    /// - Documentation: [SUNIONSTORE](https://valkey.io/commands/sunionstore)
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
-    /// - Returns: [Integer]: Number of the elements in the resulting set.
+    /// - Response: [Integer]: Number of the elements in the resulting set.
     @inlinable
     public func sunionstore(destination: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
         try await send(command: SUNIONSTORE(destination: destination, key: key))
