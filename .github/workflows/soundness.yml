@@ -1,0 +1,15 @@
+name: Soundness
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  soundness:
+    name: Soundness
+    uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
+    with:
+      api_breakage_check_container_image: swift:latest
+      unacceptable_language_check_enabled: false  # Valkey commands contain unacceptable language
+      license_header_check_enabled: false  # Temporarily disable
+      format_check_enabled: false  # Temporarily disable

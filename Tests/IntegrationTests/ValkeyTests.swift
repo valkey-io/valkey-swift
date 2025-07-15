@@ -753,7 +753,7 @@ struct GeneratedCommands {
             .hostname(valkeyHostname, port: 6379),
             configuration: .init(
                 commandTimeout: .milliseconds(200),
-                blockingCommandTimeout: .milliseconds(500),
+                blockingCommandTimeout: .milliseconds(500)
             ),
             logger: logger
         ) { connection in
