@@ -17,7 +17,7 @@ function genWithoutContextParameter() {
 
     echo -n ">(_ c0: C0"
     for ((n = 1; n<how_many; n +=1)); do
-        echo -n ", _ c$((n)): C$(($n))"
+        echo -n ", _ c$((n)): C$((n))"
     done
     echo -n ") async throws -> (Result<C0.Response, Error>"
     for ((n = 1; n<how_many; n +=1)); do
