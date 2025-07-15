@@ -8,7 +8,7 @@ Valkey pipelining is a technique for improving performance by issuing multiple c
 
 ## Implementation
 
-In valkey-swift each command has its own type conforming to the protocol ``ValkeyCommand``. This type has an `associatedtype` ``ValkeyCommand/Response``. The ``ValkeyClient/pipeline(_:)`` command takes a parameter pack of types conforming to ``ValkeyCommand`` and returns a parameter pack containing the result of each command.
+In valkey-swift each command has its own type conforming to the protocol ``ValkeyCommand``. This type is initialized with the parameters of the command and has an `associatedtype` ``ValkeyCommand/Response`` which is the expected response type of the command. The ``ValkeyClient/pipeline(_:)`` command takes a parameter pack of types conforming to ``ValkeyCommand`` and returns a parameter pack containing the results holding the corresponding responses of each command.
 
 ```swift
 let (_,_, getResult) = await valkeyClient.pipeline(
@@ -40,4 +40,12 @@ try await client.withConnection { connection in
 }
 ```
 
-Be careful when doing this though. The result of a command will only become available when the result of any previous command queued has been made available. So a command that either blocks the connection or takes a long time could affect the response time of commands that follow it.
+You can also use `async let` to run commands without waiting for their results immediately.
+
+```swift
+async let asyncResult = connection.lpush(key: "fooList", element: ["bar"])
+// do something else
+let result = try await asyncResult
+```
+
+Be careful when using a single connection across multiple Tasks though. The result of a command will only become available when the result of any previous command queued has been made available. So a command that either blocks the connection or takes a long time could affect the response time of commands that follow it.
