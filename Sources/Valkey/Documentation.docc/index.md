@@ -1,6 +1,6 @@
 # ``Valkey``
 
-Valkey client written in Swift
+A Swift client library for Valkey.
 
 ## Overview
 
