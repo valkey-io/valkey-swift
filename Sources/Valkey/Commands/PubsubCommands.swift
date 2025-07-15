@@ -322,7 +322,10 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
     /// - Response: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
-    public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(shardchannel: Shardchannel, message: Message) async throws -> Int {
+    public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(
+        shardchannel: Shardchannel,
+        message: Message
+    ) async throws -> Int {
         try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
     }
 

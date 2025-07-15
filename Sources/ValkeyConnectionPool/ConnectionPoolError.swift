@@ -1,4 +1,3 @@
-
 public struct ConnectionPoolError: Error, Hashable {
     enum Base: Error, Hashable {
         case requestCancelled

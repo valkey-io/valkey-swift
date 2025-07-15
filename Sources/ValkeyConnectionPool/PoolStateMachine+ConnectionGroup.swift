@@ -500,7 +500,7 @@ extension PoolStateMachine {
         @inlinable
         mutating func closeConnectionIfIdle(at index: Int) -> CloseAction? {
             guard let closeAction = self.connections[index].closeIfIdle() else {
-                return nil // apparently the connection isn't idle
+                return nil  // apparently the connection isn't idle
             }
 
             self.stats.idle -= 1
@@ -652,7 +652,7 @@ extension PoolStateMachine {
 
         @inlinable
         /*private*/ func findAvailableConnection() -> Int? {
-            return self.connections.firstIndex(where: { $0.isAvailable })
+            self.connections.firstIndex(where: { $0.isAvailable })
         }
 
         @inlinable

@@ -316,7 +316,14 @@ public struct HSCAN: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPPureToken("NOVALUES", novalues))
+        commandEncoder.encodeArray(
+            "HSCAN",
+            key,
+            cursor,
+            RESPWithToken("MATCH", pattern),
+            RESPWithToken("COUNT", count),
+            RESPPureToken("NOVALUES", novalues)
+        )
     }
 }
 
@@ -563,7 +570,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func hscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> RESPToken.Array {
+    public func hscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> RESPToken.Array
+    {
         try await send(command: HSCAN(key: key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
     }
 

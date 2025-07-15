@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Valkey
 import Synchronization
+import Valkey
 
 @available(valkeySwift 1.0, *)
 final class MockClientFactory: ValkeyNodeConnectionPoolFactory {
@@ -21,7 +21,6 @@ final class MockClientFactory: ValkeyNodeConnectionPoolFactory {
     let _runningPoolsLock = Mutex([MockClient]())
 
     init() {}
-
 
     func makeConnectionPool(nodeDescription: ValkeyNodeDescription) -> MockClient {
         let pool = MockClient(nodeDescription: nodeDescription)

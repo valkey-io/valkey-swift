@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Synchronization
 import DequeModule
+import Synchronization
 
 @available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, *)
 public final class MockClock: Clock {
@@ -46,7 +46,7 @@ public final class MockClock: Clock {
     private struct State: Sendable {
         var now: Instant
 
-        var sleepersHeap: Array<Sleeper>
+        var sleepersHeap: [Sleeper]
 
         var waiters: Deque<Waiter>
         var nextDeadlines: Deque<Instant>
@@ -185,4 +185,3 @@ public final class MockClock: Clock {
         }
     }
 }
-
