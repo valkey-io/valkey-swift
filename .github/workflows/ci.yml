@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-ci
+  cancel-in-progress: true
+
+env:
+  VALKEY_HOSTNAME: valkey
+jobs:
+  soundness:
+    name: Soundness
+    uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
+    with:
+      unacceptable_language_check_word_list: "blacklist whitelist sane sanity insane insanity killing hang hung hanged hanging"
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        image: ["swift:6.1", "swiftlang/swift:nightly-6.2-noble"]
+    container:
+      image: ${{ matrix.image }}
+    services:
+      valkey:
+        image: valkey/valkey:8.0
+        ports:
+          - 6379:6379
+        options: --entrypoint valkey-server
+    steps:
+      - name: Install jemalloc
+        run: |
+          apt-get update
+          apt-get install -y libjemalloc-dev
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Test
+        run: |
+          swift test --enable-code-coverage
+      - name: Convert coverage files
+        run: |
+          llvm-cov export -format="lcov" \
+            .build/debug/valkey-swiftPackageTests.xctest \
+            -ignore-filename-regex="\/Tests\/" \
+            -instr-profile .build/debug/codecov/default.profdata > info.lcov
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v4
+        with:
+          files: info.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
