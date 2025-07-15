@@ -98,7 +98,7 @@ let package = Package(
     ]
 )
 
-if ProcessInfo.processInfo.environment["DISABLE_VALKEY_BENCHMARKS"] != "true" {
+if ProcessInfo.processInfo.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
     package.dependencies.append(
         .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0"),
     )
