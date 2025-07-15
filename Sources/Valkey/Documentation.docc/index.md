@@ -8,7 +8,7 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 
 ### Setup
 
-Valkey-swift uses a connection pool that requires a background process to manage it. You can either run it using a Task group
+``ValkeyClient`` and ``ValkeyClusterClient`` use a connection pool that requires a background root task to run all the maintenance work required to establish connections and maintain the cluster state. You can either run it using a Task group
 
 ```swift
 let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
