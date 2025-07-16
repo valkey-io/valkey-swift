@@ -176,7 +176,7 @@ extension Int: RESPTokenDecodable {
             self = value
 
         case .bulkString(let buffer):
-            guard let value = Int(buffer: buffer) else {
+            guard let value = Int(String(buffer: buffer)) else {
                 throw RESPParsingError(code: .canNotParseInteger, buffer: token.base)
             }
             self = value
