@@ -46,7 +46,9 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     public struct Node: Hashable, Sendable {
         /// Replication role of a given node within a shard (primary or replica)
         public struct Role: Sendable, Hashable, RawRepresentable {
+            /// The node is primary
             public static let primary = Role(base: .primary)
+            /// The node is a replica.
             public static let replica = Role(base: .replica)
 
             public init?(rawValue: String) {
@@ -75,8 +77,11 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
 
         /// Node's health status
         public struct Health: Sendable, Hashable, RawRepresentable {
+            /// The node is online.
             public static let online = Health(base: .online)
+            /// The node is in a failed state.
             public static let failed = Health(base: .failed)
+            /// The node is loading.
             public static let loading = Health(base: .loading)
 
             public init?(rawValue: String) {
@@ -102,17 +107,37 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
                 self.base = base
             }
         }
-
+        
+        /// The ID of the node
         public var id: String
+        /// The port
         public var port: Int?
+        /// The TLS port
         public var tlsPort: Int?
+        /// The IP address
         public var ip: String
+        /// The hostname
         public var hostname: String?
+        /// The endpoint
         public var endpoint: String
+        /// The role of the node
         public var role: Role
+        /// The replication offset for the node
         public var replicationOffset: Int
+        /// The health of the node
         public var health: Health
-
+        
+        /// Creates a new node
+        /// - Parameters:
+        ///   - id: The node ID
+        ///   - port: The port
+        ///   - tlsPort: The TLS port
+        ///   - ip: The IP address
+        ///   - hostname: The hostname
+        ///   - endpoint: The endpoint
+        ///   - role: The node role
+        ///   - replicationOffset: The replication offset
+        ///   - health: The node health
         public init(
             id: String,
             port: Int?,
@@ -135,19 +160,29 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.health = health
         }
     }
-
+    
+    /// A portion of a valkey cluster
     public struct Shard: Hashable, Sendable {
+        /// The slots represented in the shard.
         public var slots: HashSlots
+        /// The nodes that make up the shard.
         public var nodes: [Node]
-
+        
+        /// Create a new shard.
+        /// - Parameters:
+        ///   - slots: The slots in the shard.
+        ///   - nodes: The nodes in the shard.
         public init(slots: HashSlots, nodes: [Node]) {
             self.slots = slots
             self.nodes = nodes
         }
     }
-
+    
+    /// The individual portions of a valkey cluster, known as shards.
     public var shards: [Shard]
-
+    
+    /// Creates a cluster description from the response token you provide.
+    /// - Parameter respToken: The response token.
     public init(fromRESP respToken: RESPToken) throws {
         do {
             self = try Self.makeClusterDescription(respToken: respToken)
@@ -155,7 +190,9 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             throw ValkeyClusterParseError(reason: error, token: respToken)
         }
     }
-
+    
+    /// Creates a cluster description from a list of shards you provide.
+    /// - Parameter shards: The shards that make up the cluster.
     public init(_ shards: [ValkeyClusterDescription.Shard]) {
         self.shards = shards
     }

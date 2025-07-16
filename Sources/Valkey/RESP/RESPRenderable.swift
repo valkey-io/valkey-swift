@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// Type that can be rendered into a RESP buffer
+/// A type that can be rendered into a RESP buffer.
 public protocol RESPRenderable {
     var respEntries: Int { get }
 

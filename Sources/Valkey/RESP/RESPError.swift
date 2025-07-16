@@ -22,6 +22,7 @@ import NIOCore
 ///   2. You are contacting an untrusted backend
 ///
 public struct RESPParsingError: Error {
+    /// The error code associated with an error parsing a response.
     public struct Code: Hashable, Sendable, CustomStringConvertible {
         private enum Base {
             case invalidLeadingByte
@@ -40,15 +41,24 @@ public struct RESPParsingError: Error {
         private init(_ base: Base) {
             self.base = base
         }
-
+        
+        /// The leading byte is invalid.
         public static let invalidLeadingByte = Self.init(.invalidLeadingByte)
+        /// The data is invalid.
         public static let invalidData = Self.init(.invalidData)
+        /// The nested aggregate types are too deeply nested.
         public static let tooDeeplyNestedAggregatedTypes = Self.init(.tooDeeplyNestedAggregatedTypes)
+        /// A colon is missing within a verbatim string
         public static let missingColonInVerbatimString = Self.init(.missingColonInVerbatimString)
+        /// Can't parse the data as an integer.
         public static let canNotParseInteger = Self.init(.canNotParseInteger)
+        /// Can't parse the data as a Double.
         public static let canNotParseDouble = Self.init(.canNotParseDouble)
+        /// Can't parse the data as a big number.
         public static let canNotParseBigNumber = Self.init(.canNotParseBigNumber)
+        /// The type is unexpected.
         public static let unexpectedType = Self.init(.unexpectedType)
+        /// There is an invalid element count.
         public static let invalidElementCount = Self.init(.invalidElementCount)
 
         public var description: String {
@@ -74,8 +84,11 @@ public struct RESPParsingError: Error {
             }
         }
     }
-
+    
+    /// The error code
     public var code: Code
+    
+    /// The byte buffer that failed to parse.
     public var buffer: ByteBuffer
 
     @usableFromInline
