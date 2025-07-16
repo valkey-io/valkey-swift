@@ -33,7 +33,7 @@ struct CommandTests {
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
-                    let role = try await connection.role()
+                    var role = try await connection.role()
                     guard case .primary(let primary) = role else {
                         Issue.record()
                         return
@@ -46,6 +46,16 @@ struct CommandTests {
                     #expect(primary.replicas[1].ip == "127.0.0.1")
                     #expect(primary.replicas[1].port == 9002)
                     #expect(primary.replicas[1].replicationOffset == 6)
+
+                    role = try await connection.role()
+                    guard case .replica(let replica) = role else {
+                        Issue.record()
+                        return
+                    }
+                    #expect(replica.primaryIP == "127.0.0.1")
+                    #expect(replica.primaryPort == 9000)
+                    #expect(replica.state == .connected)
+                    #expect(replica.replicationOffset == 6)
                 }
                 group.addTask {
                     var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -67,6 +77,19 @@ struct CommandTests {
                                         .bulkString("6"),
                                     ]),
                                 ]),
+                            ])
+                        ).base
+                    )
+                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["ROLE"])).base)
+                    try await channel.writeInbound(
+                        RESPToken(
+                            .array([
+                                .bulkString("slave"),
+                                .bulkString("127.0.0.1"),
+                                .number(9000),
+                                .bulkString("connected"),
+                                .number(6),
                             ])
                         ).base
                     )
