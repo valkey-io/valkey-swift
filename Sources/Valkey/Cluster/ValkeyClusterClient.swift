@@ -135,8 +135,6 @@ public final class ValkeyClusterClient: Sendable {
         self.nodeDiscovery = nodeDiscovery
     }
 
-
-
     // MARK: - Public methods -
 
     /// Sends a command to the appropriate node in the Valkey cluster and returns the response.

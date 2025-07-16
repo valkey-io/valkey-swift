@@ -10,6 +10,6 @@ public struct ConnectionIDGenerator: ConnectionIDGeneratorProtocol {
     }
 
     public func next() -> Int {
-        return self.atomic.loadThenWrappingIncrement(ordering: .relaxed)
+        self.atomic.loadThenWrappingIncrement(ordering: .relaxed)
     }
 }

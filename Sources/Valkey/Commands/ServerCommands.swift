@@ -1510,7 +1510,11 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
-    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, arg: [String] = []) async throws -> ByteBuffer? {
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(
+        username: Username,
+        command: Command,
+        arg: [String] = []
+    ) async throws -> ByteBuffer? {
         try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
     }
 

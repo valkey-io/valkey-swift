@@ -12,8 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Valkey
 import Testing
+import Valkey
 
 final class SuccessNotifier: Sendable {}
 final class TimerCancellationToken: Sendable {}
@@ -116,7 +116,6 @@ struct ValkeyClusterClientStateMachineTests {
         let circuitedAction = stateMachine.waitForHealthy(waiterID: 2, successNotifier: nextSuccessNotifier)
         #expect(circuitedAction.isCircuited)
     }
-
 
 }
 

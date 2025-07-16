@@ -53,7 +53,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
         ///
         /// Use this option when connecting to a Valkey server that doesn't require encryption.
         public static var disable: Self { .init(base: .disable) }
-        
+
         /// Enables TLS for the connection.
         ///
         /// - Parameters:
@@ -89,7 +89,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
     /// Optional authentication credentials for accessing the Valkey server.
     /// Set this property when connecting to a server that requires authentication.
     public var authentication: Authentication?
-    
+
     /// TLS configuration for the connection.
     /// Use `.disable` for unencrypted connections or `.enable(...)` for secure connections.
     public var tls: TLS
@@ -99,7 +99,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
     /// This timeout applies to all standard commands sent to the Valkey server.
     /// Default value is 30 seconds.
     public var commandTimeout: Duration
-    
+
     /// The maximum time to wait for a response to blocking commands.
     ///
     /// This timeout applies specifically to blocking commands (like BLPOP, BRPOP, etc.)

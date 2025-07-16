@@ -144,7 +144,7 @@ struct PoolStateMachine<
 
     @usableFromInline
     private(set) var failedConsecutiveConnectionAttempts: Int = 0
-    
+
     @inlinable
     init(
         configuration: PoolConfiguration,
@@ -165,7 +165,7 @@ struct PoolStateMachine<
     }
 
     mutating func refillConnections() -> [ConnectionRequest] {
-        return self.connections.refillConnections()
+        self.connections.refillConnections()
     }
 
     @inlinable
@@ -571,7 +571,7 @@ extension PoolStateMachine.Action: Equatable where TimerCancellationToken: Equat
 @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
 extension PoolStateMachine.ConnectionAction: Equatable where TimerCancellationToken: Equatable {
     @usableFromInline
-    static func ==(lhs: Self, rhs: Self) -> Bool {
+    static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.scheduleTimers(let lhs), .scheduleTimers(let rhs)):
             return lhs == rhs
@@ -586,8 +586,8 @@ extension PoolStateMachine.ConnectionAction: Equatable where TimerCancellationTo
         case (.cancelTimers(let lhs), .cancelTimers(let rhs)):
             return lhs == rhs
         case (.none, .none),
-             (.cancelTimers([]), .none), (.none, .cancelTimers([])),
-             (.scheduleTimers([]), .none), (.none, .scheduleTimers([])):
+            (.cancelTimers([]), .none), (.none, .cancelTimers([])),
+            (.scheduleTimers([]), .none), (.none, .scheduleTimers([])):
             return true
         default:
             return false
@@ -598,17 +598,16 @@ extension PoolStateMachine.ConnectionAction: Equatable where TimerCancellationTo
 @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
 extension PoolStateMachine.ConnectionAction.Shutdown: Equatable where TimerCancellationToken: Equatable {
     @usableFromInline
-    static func ==(lhs: Self, rhs: Self) -> Bool {
+    static func == (lhs: Self, rhs: Self) -> Bool {
         Set(lhs.connections.lazy.map(\.id)) == Set(rhs.connections.lazy.map(\.id)) && lhs.timersToCancel == rhs.timersToCancel
     }
 }
 
-
 @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
 extension PoolStateMachine.RequestAction: Equatable where Request: Equatable {
-    
+
     @usableFromInline
-    static func ==(lhs: Self, rhs: Self) -> Bool {
+    static func == (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
         case (.leaseConnection(let lhsRequests, let lhsConn), .leaseConnection(let rhsRequests, let rhsConn)):
             guard lhsRequests.count == rhsRequests.count else { return false }
