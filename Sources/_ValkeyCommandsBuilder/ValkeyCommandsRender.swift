@@ -21,6 +21,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
         "GEODIST",
         "GEOPOS",
         "GEOSEARCH",
+        "ROLE",
         "LMPOP",
         "SPOP",
         "SSCAN",

@@ -302,6 +302,19 @@ struct GeneratedCommands {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testRole() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                let role = try await connection.role()
+                print(role)
+            }
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     @Test("Array with count using LMPOP")
     func testArrayWithCount() async throws {
