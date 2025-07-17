@@ -708,7 +708,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Index is out of range
     ///     * [String]: The requested element
     @inlinable
-    public func lindex(key: ValkeyKey, index: Int) async throws -> ByteBuffer? {
+    public func lindex(_ key: ValkeyKey, index: Int) async throws -> ByteBuffer? {
         try await send(command: LINDEX(key: key, index: index))
     }
 
@@ -723,7 +723,7 @@ extension ValkeyConnectionProtocol {
     ///     * -1: When the pivot wasn't found.
     @inlinable
     public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         `where`: LINSERT<Pivot, Element>.Where,
         pivot: Pivot,
         element: Element
@@ -738,7 +738,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: List length.
     @inlinable
-    public func llen(key: ValkeyKey) async throws -> Int {
+    public func llen(_ key: ValkeyKey) async throws -> Int {
         try await send(command: LLEN(key: key))
     }
 
@@ -778,7 +778,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: In case `count` argument was not given, the value of the first element.
     ///     * [Array]: In case `count` argument was given, a list of popped elements
     @inlinable
-    public func lpop(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func lpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
         try await send(command: LPOP(key: key, count: count))
     }
 
@@ -793,7 +793,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: If the COUNT option is given, an array of integers representing the matching elements (empty if there are no matches)
     @inlinable
     public func lpos<Element: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         element: Element,
         rank: Int? = nil,
         numMatches: Int? = nil,
@@ -811,7 +811,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Length of the list after the push operations.
     @inlinable
-    public func lpush<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
+    public func lpush<Element: RESPStringRenderable>(_ key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: LPUSH(key: key, element: element))
     }
 
@@ -824,7 +824,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: The length of the list after the push operation.
     @inlinable
-    public func lpushx<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
+    public func lpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: LPUSHX(key: key, element: element))
     }
 
@@ -835,7 +835,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(S+N) where S is the distance of start offset from HEAD for small lists, from nearest end (HEAD or TAIL) for large lists; and N is the number of elements in the specified range.
     /// - Response: [Array]: List of elements in the specified range
     @inlinable
-    public func lrange(key: ValkeyKey, start: Int, stop: Int) async throws -> RESPToken.Array {
+    public func lrange(_ key: ValkeyKey, start: Int, stop: Int) async throws -> RESPToken.Array {
         try await send(command: LRANGE(key: key, start: start, stop: stop))
     }
 
@@ -846,7 +846,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N+M) where N is the length of the list and M is the number of elements removed.
     /// - Response: [Integer]: The number of removed elements.
     @inlinable
-    public func lrem<Element: RESPStringRenderable>(key: ValkeyKey, count: Int, element: Element) async throws -> Int {
+    public func lrem<Element: RESPStringRenderable>(_ key: ValkeyKey, count: Int, element: Element) async throws -> Int {
         try await send(command: LREM(key: key, count: count, element: element))
     }
 
@@ -856,7 +856,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the length of the list. Setting either the first or the last element of the list is O(1).
     @inlinable
-    public func lset<Element: RESPStringRenderable>(key: ValkeyKey, index: Int, element: Element) async throws {
+    public func lset<Element: RESPStringRenderable>(_ key: ValkeyKey, index: Int, element: Element) async throws {
         _ = try await send(command: LSET(key: key, index: index, element: element))
     }
 
@@ -866,7 +866,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.0
     /// - Complexity: O(N) where N is the number of elements to be removed by the operation.
     @inlinable
-    public func ltrim(key: ValkeyKey, start: Int, stop: Int) async throws {
+    public func ltrim(_ key: ValkeyKey, start: Int, stop: Int) async throws {
         _ = try await send(command: LTRIM(key: key, start: start, stop: stop))
     }
 
@@ -882,7 +882,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: When 'COUNT' was not given, the value of the last element.
     ///     * [Array]: When 'COUNT' was given, list of popped elements.
     @inlinable
-    public func rpop(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func rpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
         try await send(command: RPOP(key: key, count: count))
     }
 
@@ -909,7 +909,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Length of the list after the push operations.
     @inlinable
-    public func rpush<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
+    public func rpush<Element: RESPStringRenderable>(_ key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: RPUSH(key: key, element: element))
     }
 
@@ -922,7 +922,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Length of the list after the push operation.
     @inlinable
-    public func rpushx<Element: RESPStringRenderable>(key: ValkeyKey, element: [Element]) async throws -> Int {
+    public func rpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, element: [Element]) async throws -> Int {
         try await send(command: RPUSHX(key: key, element: element))
     }
 

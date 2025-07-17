@@ -164,7 +164,7 @@ struct SubscriptionTests {
             #expect(error.message == "BulkError!")
         }
         // Verify GET runs fine after failing subscription
-        async let fooResult = connection.get(key: "foo")
+        async let fooResult = connection.get("foo")
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
         try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
@@ -549,7 +549,7 @@ struct SubscriptionTests {
                 try await connection.subscribe(to: "test") { subscription in
                     var iterator = subscription.makeAsyncIterator()
                     try #expect(await iterator.next() == .init(channel: "test", message: "Testing!"))
-                    let value = try await connection.get(key: "foo")
+                    let value = try await connection.get("foo")
                     #expect(value.map { String(buffer: $0) } == "bar")
                     try #expect(await iterator.next() == .init(channel: "test", message: "Testing2!"))
                 }

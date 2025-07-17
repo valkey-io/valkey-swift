@@ -1119,7 +1119,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
     public func geoadd<Member: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         condition: GEOADD<Member>.Condition? = nil,
         change: Bool = false,
         data: [GEOADD<Member>.Data]
@@ -1137,7 +1137,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: Distance as a double (represented as a string) in the specified units.
     @inlinable
     public func geodist<Member1: RESPStringRenderable, Member2: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         member1: Member1,
         member2: Member2,
         unit: GEODIST<Member1, Member2>.Unit? = nil
@@ -1152,7 +1152,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each member requested.
     /// - Response: [Array]: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
     @inlinable
-    public func geohash(key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
+    public func geohash(_ key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
         try await send(command: GEOHASH(key: key, member: member))
     }
 
@@ -1163,7 +1163,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each member requested.
     /// - Response: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
-    public func geopos(key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
+    public func geopos(_ key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
         try await send(command: GEOPOS(key: key, member: member))
     }
 
@@ -1179,7 +1179,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func georadius(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         longitude: Double,
         latitude: Double,
         radius: Double,
@@ -1220,7 +1220,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func georadiusbymember<Member: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         member: Member,
         radius: Double,
         unit: GEORADIUSBYMEMBER<Member>.Unit,
@@ -1259,7 +1259,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func georadiusbymemberRo<Member: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         member: Member,
         radius: Double,
         unit: GEORADIUSBYMEMBERRO<Member>.Unit,
@@ -1296,7 +1296,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func georadiusRo(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         longitude: Double,
         latitude: Double,
         radius: Double,
@@ -1333,7 +1333,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func geosearch(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         from: GEOSEARCH.From,
         by: GEOSEARCH.By,
         order: GEOSEARCH.Order? = nil,

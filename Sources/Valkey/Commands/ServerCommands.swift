@@ -2071,7 +2071,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: Number of bytes that a key and its value require to be stored in RAM.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func memoryUsage(key: ValkeyKey, count: Int? = nil) async throws -> Int? {
+    public func memoryUsage(_ key: ValkeyKey, count: Int? = nil) async throws -> Int? {
         try await send(command: MEMORY.USAGE(key: key, count: count))
     }
 

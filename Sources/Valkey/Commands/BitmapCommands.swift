@@ -479,7 +479,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N)
     /// - Response: [Integer]: The number of bits set to 1.
     @inlinable
-    public func bitcount(key: ValkeyKey, range: BITCOUNT.Range? = nil) async throws -> Int {
+    public func bitcount(_ key: ValkeyKey, range: BITCOUNT.Range? = nil) async throws -> Int {
         try await send(command: BITCOUNT(key: key, range: range))
     }
 
@@ -492,7 +492,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: The result of the subcommand at the same position
     ///     * [Array]: In case OVERFLOW FAIL was given and overflows or underflows detected
     @inlinable
-    public func bitfield(key: ValkeyKey, operation: [BITFIELD.Operation] = []) async throws -> RESPToken.Array {
+    public func bitfield(_ key: ValkeyKey, operation: [BITFIELD.Operation] = []) async throws -> RESPToken.Array {
         try await send(command: BITFIELD(key: key, operation: operation))
     }
 
@@ -503,7 +503,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each subcommand specified
     /// - Response: [Array]: The result of the subcommand at the same position
     @inlinable
-    public func bitfieldRo(key: ValkeyKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> [Int] {
+    public func bitfieldRo(_ key: ValkeyKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> [Int] {
         try await send(command: BITFIELDRO(key: key, getBlock: getBlock))
     }
 
@@ -529,7 +529,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: The position of the first bit set to 1 or 0 according to the request.
     ///     * -1: In case the `bit` argument is 1 and the string is empty or composed of just zero bytes.
     @inlinable
-    public func bitpos(key: ValkeyKey, bit: Int, range: BITPOS.Range? = nil) async throws -> Int {
+    public func bitpos(_ key: ValkeyKey, bit: Int, range: BITPOS.Range? = nil) async throws -> Int {
         try await send(command: BITPOS(key: key, bit: bit, range: range))
     }
 
@@ -540,7 +540,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: The bit value stored at offset.
     @inlinable
-    public func getbit(key: ValkeyKey, offset: Int) async throws -> Int {
+    public func getbit(_ key: ValkeyKey, offset: Int) async throws -> Int {
         try await send(command: GETBIT(key: key, offset: offset))
     }
 
@@ -551,7 +551,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: The original bit value stored at offset.
     @inlinable
-    public func setbit(key: ValkeyKey, offset: Int, value: Int) async throws -> Int {
+    public func setbit(_ key: ValkeyKey, offset: Int, value: Int) async throws -> Int {
         try await send(command: SETBIT(key: key, offset: offset, value: value))
     }
 

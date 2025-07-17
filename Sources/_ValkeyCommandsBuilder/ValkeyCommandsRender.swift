@@ -428,12 +428,15 @@ extension String {
             // Comment header
             self.appendFunctionCommentHeader(command: command, name: name)
             // Operation function
-            let parametersString =
+            var parametersString =
                 arguments
                 .map {
                     "\($0.functionLabel(isArray: isArray)): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray, genericStrings: true))"
                 }
                 .joined(separator: ", ")
+            if arguments.first?.name == "key", arguments.first?.multiple == false {
+                parametersString = "_ \(parametersString)"
+            }
             self.append("    @inlinable\n")
             self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
             let commandArguments = arguments.map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
@@ -805,6 +808,14 @@ extension ValkeyCommand.Argument {
             return "\(self.swiftVariable)"
         } else {
             return self.swiftVariable
+        }
+    }
+
+    var renderedName: String {
+        if self.multiple {
+            "\(self.name)s"
+        } else {
+            name
         }
     }
 }

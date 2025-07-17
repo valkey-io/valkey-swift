@@ -88,7 +88,7 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.set(key: key, value: "Hello")
+                _ = try await connection.set(key, value: "Hello")
                 let response = try await connection.send(command: GET(key: key))
                 #expect(response == "Hello")
             }
@@ -102,10 +102,10 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.set(key: key, value: "Hello")
-                let response = try await connection.get(key: key).map { String(buffer: $0) }
+                _ = try await connection.set(key, value: "Hello")
+                let response = try await connection.get(key).map { String(buffer: $0) }
                 #expect(response == "Hello")
-                let response2 = try await connection.get(key: "sdf65fsdf").map { String(buffer: $0) }
+                let response2 = try await connection.get("sdf65fsdf").map { String(buffer: $0) }
                 #expect(response2 == nil)
             }
         }
@@ -117,10 +117,10 @@ struct GeneratedCommands {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { valkeyClient in
-            _ = try await valkeyClient.set(key: "sdf", value: "Hello")
-            let response = try await valkeyClient.get(key: "sdf").map { String(buffer: $0) }
+            _ = try await valkeyClient.set("sdf", value: "Hello")
+            let response = try await valkeyClient.get("sdf").map { String(buffer: $0) }
             #expect(response == "Hello")
-            let response2 = try await valkeyClient.get(key: "sdf65fsdf").map { String(buffer: $0) }
+            let response2 = try await valkeyClient.get("sdf65fsdf").map { String(buffer: $0) }
             #expect(response2 == nil)
         }
     }
@@ -133,8 +133,8 @@ struct GeneratedCommands {
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 let buffer = ByteBuffer(repeating: 12, count: 256)
-                _ = try await connection.set(key: key, value: buffer)
-                let response = try await connection.get(key: key)
+                _ = try await connection.set(key, value: buffer)
+                let response = try await connection.get(key)
                 #expect(response == buffer)
             }
         }
@@ -147,11 +147,11 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.set(key: key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 1))
-                let response = try await connection.get(key: key).map { String(buffer: $0) }
+                _ = try await connection.set(key, value: "Hello", expiration: .unixTimeMilliseconds(.now + 1))
+                let response = try await connection.get(key).map { String(buffer: $0) }
                 #expect(response == "Hello")
                 try await Task.sleep(for: .seconds(2))
-                let response2 = try await connection.get(key: key)
+                let response2 = try await connection.get(key)
                 #expect(response2 == nil)
             }
         }
@@ -231,7 +231,7 @@ struct GeneratedCommands {
                     }
                     group.addTask {
                         await stream2.first { _ in true }
-                        _ = try await connection2.set(key: "testWatch", value: "value1")
+                        _ = try await connection2.set("testWatch", value: "value1")
                         cont.yield()
                     }
                     try await group.waitForAll()
@@ -247,9 +247,9 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.rpush(key: key, element: ["Hello"])
-                _ = try await connection.rpush(key: key, element: ["Good", "Bye"])
-                let values = try await connection.lrange(key: key, start: 0, stop: -1).decode(as: [String].self)
+                _ = try await connection.rpush(key, element: ["Hello"])
+                _ = try await connection.rpush(key, element: ["Good", "Bye"])
+                let values = try await connection.lrange(key, start: 0, stop: -1).decode(as: [String].self)
                 #expect(values == ["Hello", "Good", "Bye"])
             }
         }
@@ -262,9 +262,9 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                let count = try await connection.rpush(key: key, element: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
+                let count = try await connection.rpush(key, element: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
                 #expect(count == 10)
-                let values = try await connection.lrange(key: key, start: 0, stop: -1).decode(as: [String].self)
+                let values = try await connection.lrange(key, start: 0, stop: -1).decode(as: [String].self)
                 #expect(values == ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"])
             }
         }
@@ -277,10 +277,10 @@ struct GeneratedCommands {
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.lpush(key: key, element: ["a"])
-                _ = try await connection.lpush(key: key, element: ["c"])
-                _ = try await connection.lpush(key: key, element: ["b"])
-                let list = try await connection.sort(key: key, sorting: true).decode(as: [String].self)
+                _ = try await connection.lpush(key, element: ["a"])
+                _ = try await connection.lpush(key, element: ["c"])
+                _ = try await connection.lpush(key, element: ["b"])
+                let list = try await connection.sort(key, sorting: true).decode(as: [String].self)
                 #expect(list == ["a", "b", "c"])
             }
         }
@@ -294,10 +294,10 @@ struct GeneratedCommands {
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await withKey(connection: connection) { key2 in
-                    _ = try await connection.lpush(key: key, element: ["a"])
-                    _ = try await connection.lpush(key: key2, element: ["b"])
-                    _ = try await connection.lpush(key: key2, element: ["c"])
-                    _ = try await connection.lpush(key: key2, element: ["d"])
+                    _ = try await connection.lpush(key, element: ["a"])
+                    _ = try await connection.lpush(key2, element: ["b"])
+                    _ = try await connection.lpush(key2, element: ["c"])
+                    _ = try await connection.lpush(key2, element: ["d"])
                     let rt1 = try await connection.lmpop(key: [key, key2], where: .right)
                     let (element) = try rt1?.values.decodeElements(as: (String).self)
                     #expect(rt1?.key == key)
@@ -322,8 +322,8 @@ struct GeneratedCommands {
         logger.logLevel = .trace
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.set(key: key, value: "Hello")
-                await #expect(throws: ValkeyClientError.self) { _ = try await connection.rpop(key: key) }
+                _ = try await connection.set(key, value: "Hello")
+                await #expect(throws: ValkeyClientError.self) { _ = try await connection.rpop(key) }
             }
         }
     }
@@ -338,8 +338,8 @@ struct GeneratedCommands {
                 for _ in 0..<100 {
                     group.addTask {
                         try await withKey(connection: connection) { key in
-                            _ = try await connection.set(key: key, value: key)
-                            let response = try await connection.get(key: key).map { ValkeyKey($0) }
+                            _ = try await connection.set(key, value: key)
+                            let response = try await connection.get(key).map { ValkeyKey($0) }
                             #expect(response == key)
                         }
                     }
@@ -668,8 +668,8 @@ struct GeneratedCommands {
                             await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
                             // test we can send commands on subscription connection
                             try await withKey(connection: connection) { key in
-                                _ = try await connection.set(key: key, value: "Hello")
-                                let response = try await connection.get(key: key)
+                                _ = try await connection.set(key, value: "Hello")
+                                let response = try await connection.get(key)
                                 #expect(response.map { String(buffer: $0) } == "Hello")
                             }
 
@@ -700,18 +700,18 @@ struct GeneratedCommands {
                 let key = ValkeyKey("TestLoadsOfConnections")
                 try await withThrowingTaskGroup(of: Void.self) { group in
                     _ = try await valkeyClient.withConnection { connection in
-                        try await connection.set(key: key, value: "0")
+                        try await connection.set(key, value: "0")
                     }
                     for _ in 0..<1000 {
                         group.addTask {
                             try await valkeyClient.withConnection { connection in
-                                _ = try await connection.incr(key: key)
+                                _ = try await connection.incr(key)
                             }
                         }
                     }
                     try await group.waitForAll()
                     try await valkeyClient.withConnection { connection in
-                        let value = try await connection.get(key: key).map { String(buffer: $0) }
+                        let value = try await connection.get(key).map { String(buffer: $0) }
                         #expect(value == "1000")
                         _ = try await connection.del(key: [key])
                     }
@@ -730,8 +730,8 @@ struct GeneratedCommands {
             try await withKey(connection: connection) { key in
                 _ = try await connection.configSet(data: [.init(parameter: "notify-keyspace-events", value: "KE$")])
                 try await connection.subscribe(to: ["__keyspace@0__:\(key)"]) { subscription in
-                    _ = try await connection.set(key: key, value: "1")
-                    _ = try await connection.incrby(key: key, increment: 20)
+                    _ = try await connection.set(key, value: "1")
+                    _ = try await connection.incrby(key, increment: 20)
                     var iterator = subscription.makeAsyncIterator()
                     var value = try await iterator.next()
                     #expect(value?.channel == "__keyspace@0__:\(key)")
@@ -787,8 +787,8 @@ struct GeneratedCommands {
                     }
                 }
                 await stream.first { _ in true }
-                _ = try await connection.get(key: "foo")
-                _ = try await connection.set(key: "foo", value: "baz")
+                _ = try await connection.get("foo")
+                _ = try await connection.set("foo", value: "baz")
 
                 try await group.waitForAll()
             }

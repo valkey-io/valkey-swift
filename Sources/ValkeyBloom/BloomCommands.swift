@@ -270,7 +270,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.ADD](https://valkey.io/commands/bf.add)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
-    public func bfAdd<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
+    public func bfAdd<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPToken {
         try await send(command: BF.ADD(key: key, value: value))
     }
 
@@ -279,7 +279,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.CARD](https://valkey.io/commands/bf.card)
     /// - Complexity: O(1)
     @inlinable
-    public func bfCard(key: ValkeyKey) async throws -> BF.CARD.Response {
+    public func bfCard(_ key: ValkeyKey) async throws -> BF.CARD.Response {
         try await send(command: BF.CARD(key: key))
     }
 
@@ -288,7 +288,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.EXISTS](https://valkey.io/commands/bf.exists)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
-    public func bfExists<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
+    public func bfExists<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPToken {
         try await send(command: BF.EXISTS(key: key, value: value))
     }
 
@@ -297,7 +297,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.INFO](https://valkey.io/commands/bf.info)
     /// - Complexity: O(1)
     @inlinable
-    public func bfInfo(key: ValkeyKey, sortby: BF.INFO.Sortby? = nil) async throws -> BF.INFO.Response {
+    public func bfInfo(_ key: ValkeyKey, sortby: BF.INFO.Sortby? = nil) async throws -> BF.INFO.Response {
         try await send(command: BF.INFO(key: key, sortby: sortby))
     }
 
@@ -307,7 +307,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
     public func bfInsert(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         capacity: Int? = nil,
         error: Double? = nil,
         expansion: Int? = nil,
@@ -339,7 +339,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.LOAD](https://valkey.io/commands/bf.load)
     /// - Complexity: O(N), where N is the capacity
     @inlinable
-    public func bfLoad<Dump: RESPStringRenderable>(key: ValkeyKey, dump: Dump) async throws -> RESPToken {
+    public func bfLoad<Dump: RESPStringRenderable>(_ key: ValkeyKey, dump: Dump) async throws -> RESPToken {
         try await send(command: BF.LOAD(key: key, dump: dump))
     }
 
@@ -348,7 +348,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.MADD](https://valkey.io/commands/bf.madd)
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
-    public func bfMadd<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
+    public func bfMadd<Value: RESPStringRenderable>(_ key: ValkeyKey, value: [Value]) async throws -> RESPToken {
         try await send(command: BF.MADD(key: key, value: value))
     }
 
@@ -357,7 +357,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.MEXISTS](https://valkey.io/commands/bf.mexists)
     /// - Complexity: O(K * N), where N is the number of hash functions used by the bloom filter and K is the number of items
     @inlinable
-    public func bfMexists<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
+    public func bfMexists<Value: RESPStringRenderable>(_ key: ValkeyKey, value: [Value]) async throws -> RESPToken {
         try await send(command: BF.MEXISTS(key: key, value: value))
     }
 
@@ -367,7 +367,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func bfReserve(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         errorRate: Double,
         capacity: Int,
         expansion: Int? = nil,

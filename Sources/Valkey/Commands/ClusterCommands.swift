@@ -803,7 +803,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of bytes in the key
     /// - Response: [Integer]: The hash slot number for the specified key
     @inlinable
-    public func clusterKeyslot<Key: RESPStringRenderable>(key: Key) async throws -> Int {
+    public func clusterKeyslot<Key: RESPStringRenderable>(_ key: Key) async throws -> Int {
         try await send(command: CLUSTER.KEYSLOT(key: key))
     }
 

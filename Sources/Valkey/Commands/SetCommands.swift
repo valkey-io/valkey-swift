@@ -388,7 +388,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public func sadd<Member: RESPStringRenderable>(key: ValkeyKey, member: [Member]) async throws -> Int {
+    public func sadd<Member: RESPStringRenderable>(_ key: ValkeyKey, member: [Member]) async throws -> Int {
         try await send(command: SADD(key: key, member: member))
     }
 
@@ -399,7 +399,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The cardinality (number of elements) of the set, or 0 if key does not exist.
     @inlinable
-    public func scard(key: ValkeyKey) async throws -> Int {
+    public func scard(_ key: ValkeyKey) async throws -> Int {
         try await send(command: SCARD(key: key))
     }
 
@@ -467,7 +467,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: The element is not a member of the set, or the key does not exist.
     ///     * 1: The element is a member of the set.
     @inlinable
-    public func sismember<Member: RESPStringRenderable>(key: ValkeyKey, member: Member) async throws -> Int {
+    public func sismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws -> Int {
         try await send(command: SISMEMBER(key: key, member: member))
     }
 
@@ -478,7 +478,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the set cardinality.
     /// - Response: [Array]: All elements of the set.
     @inlinable
-    public func smembers(key: ValkeyKey) async throws -> RESPToken.Array {
+    public func smembers(_ key: ValkeyKey) async throws -> RESPToken.Array {
         try await send(command: SMEMBERS(key: key))
     }
 
@@ -489,7 +489,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of elements being checked for membership
     /// - Response: [Array]: List representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember<Member: RESPStringRenderable>(key: ValkeyKey, member: [Member]) async throws -> RESPToken.Array {
+    public func smismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: [Member]) async throws -> RESPToken.Array {
         try await send(command: SMISMEMBER(key: key, member: member))
     }
 
@@ -518,7 +518,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The removed member when 'COUNT' is not given.
     ///     * [Array]: List to the removed members when 'COUNT' is given.
     @inlinable
-    public func spop(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func spop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
         try await send(command: SPOP(key: key, count: count))
     }
 
@@ -535,7 +535,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: In case `count` is given, an array of elements
     ///     * [Array]: In case `count` is given and key doesn't exist
     @inlinable
-    public func srandmember(key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func srandmember(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
         try await send(command: SRANDMEMBER(key: key, count: count))
     }
 
@@ -548,7 +548,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of members to be removed.
     /// - Response: [Integer]: Number of members that were removed from the set, not including non existing members.
     @inlinable
-    public func srem<Member: RESPStringRenderable>(key: ValkeyKey, member: [Member]) async throws -> Int {
+    public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, member: [Member]) async throws -> Int {
         try await send(command: SREM(key: key, member: member))
     }
 
@@ -559,7 +559,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func sscan(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
+    public func sscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
     }
 

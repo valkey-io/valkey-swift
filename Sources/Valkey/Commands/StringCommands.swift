@@ -624,7 +624,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by the server will double the free space available on every reallocation.
     /// - Response: [Integer]: The length of the string after the append operation.
     @inlinable
-    public func append<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> Int {
+    public func append<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
         try await send(command: APPEND(key: key, value: value))
     }
 
@@ -635,7 +635,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of the key after decrementing it.
     @inlinable
-    public func decr(key: ValkeyKey) async throws -> Int {
+    public func decr(_ key: ValkeyKey) async throws -> Int {
         try await send(command: DECR(key: key))
     }
 
@@ -646,7 +646,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of the key after decrementing it.
     @inlinable
-    public func decrby(key: ValkeyKey, decrement: Int) async throws -> Int {
+    public func decrby(_ key: ValkeyKey, decrement: Int) async throws -> Int {
         try await send(command: DECRBY(key: key, decrement: decrement))
     }
 
@@ -659,7 +659,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func get(key: ValkeyKey) async throws -> ByteBuffer? {
+    public func get(_ key: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: GET(key: key))
     }
 
@@ -672,7 +672,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: The key does not exist.
     @inlinable
-    public func getdel(key: ValkeyKey) async throws -> ByteBuffer? {
+    public func getdel(_ key: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: GETDEL(key: key))
     }
 
@@ -685,7 +685,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func getex(key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> ByteBuffer? {
+    public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> ByteBuffer? {
         try await send(command: GETEX(key: key, expiration: expiration))
     }
 
@@ -696,7 +696,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func getrange(key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
+    public func getrange(_ key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
         try await send(command: GETRANGE(key: key, start: start, end: end))
     }
 
@@ -710,7 +710,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The old value stored at the key.
     ///     * [Null]: The key does not exist.
     @inlinable
-    public func getset<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> ByteBuffer? {
+    public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> ByteBuffer? {
         try await send(command: GETSET(key: key, value: value))
     }
 
@@ -721,7 +721,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of key after the increment
     @inlinable
-    public func incr(key: ValkeyKey) async throws -> Int {
+    public func incr(_ key: ValkeyKey) async throws -> Int {
         try await send(command: INCR(key: key))
     }
 
@@ -732,7 +732,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of the key after incrementing it.
     @inlinable
-    public func incrby(key: ValkeyKey, increment: Int) async throws -> Int {
+    public func incrby(_ key: ValkeyKey, increment: Int) async throws -> Int {
         try await send(command: INCRBY(key: key, increment: increment))
     }
 
@@ -743,7 +743,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: The value of the key after incrementing it.
     @inlinable
-    public func incrbyfloat(key: ValkeyKey, increment: Double) async throws -> ByteBuffer {
+    public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws -> ByteBuffer {
         try await send(command: INCRBYFLOAT(key: key, increment: increment))
     }
 
@@ -809,7 +809,7 @@ extension ValkeyConnectionProtocol {
     /// - Deprecated since: 2.6.12. Replaced by `SET` with the `PX` argument.
     /// - Complexity: O(1)
     @inlinable
-    public func psetex<Value: RESPStringRenderable>(key: ValkeyKey, milliseconds: Int, value: Value) async throws {
+    public func psetex<Value: RESPStringRenderable>(_ key: ValkeyKey, milliseconds: Int, value: Value) async throws {
         _ = try await send(command: PSETEX(key: key, milliseconds: milliseconds, value: value))
     }
 
@@ -831,7 +831,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: `GET` given: The previous value of the key
     @inlinable
     public func set<Value: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         value: Value,
         condition: SET<Value>.Condition? = nil,
         get: Bool = false,
@@ -847,7 +847,7 @@ extension ValkeyConnectionProtocol {
     /// - Deprecated since: 2.6.12. Replaced by `SET` with the `EX` argument.
     /// - Complexity: O(1)
     @inlinable
-    public func setex<Value: RESPStringRenderable>(key: ValkeyKey, seconds: Int, value: Value) async throws {
+    public func setex<Value: RESPStringRenderable>(_ key: ValkeyKey, seconds: Int, value: Value) async throws {
         _ = try await send(command: SETEX(key: key, seconds: seconds, value: value))
     }
 
@@ -861,7 +861,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: The key was set.
     ///     * 1: The key was not set.
     @inlinable
-    public func setnx<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> Int {
+    public func setnx<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
         try await send(command: SETNX(key: key, value: value))
     }
 
@@ -872,7 +872,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1), not counting the time taken to copy the new string in place. Usually, this string is very small so the amortized complexity is O(1). Otherwise, complexity is O(M) with M being the length of the value argument.
     /// - Response: [Integer]: Length of the string after it was modified by the command.
     @inlinable
-    public func setrange<Value: RESPStringRenderable>(key: ValkeyKey, offset: Int, value: Value) async throws -> Int {
+    public func setrange<Value: RESPStringRenderable>(_ key: ValkeyKey, offset: Int, value: Value) async throws -> Int {
         try await send(command: SETRANGE(key: key, offset: offset, value: value))
     }
 
@@ -883,7 +883,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The length of the string value stored at key, or 0 when key does not exist.
     @inlinable
-    public func strlen(key: ValkeyKey) async throws -> Int {
+    public func strlen(_ key: ValkeyKey) async throws -> Int {
         try await send(command: STRLEN(key: key))
     }
 
@@ -895,7 +895,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func substr(key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
+    public func substr(_ key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
         try await send(command: SUBSTR(key: key, start: start, end: end))
     }
 

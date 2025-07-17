@@ -90,7 +90,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: If at least 1 HyperLogLog internal register was altered.
     ///     * 0: If no HyperLogLog internal register were altered.
     @inlinable
-    public func pfadd(key: ValkeyKey, element: [String] = []) async throws -> Int {
+    public func pfadd(_ key: ValkeyKey, element: [String] = []) async throws -> Int {
         try await send(command: PFADD(key: key, element: element))
     }
 
