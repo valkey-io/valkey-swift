@@ -808,6 +808,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.4.0
     /// - Complexity: Depends on subcommand.
     @inlinable
+    @discardableResult
     public func client() async throws -> CLIENT.Response {
         try await send(command: CLIENT())
     }
@@ -841,6 +842,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The connection name of the current connection
     ///     * [Null]: Connection name was not set
     @inlinable
+    @discardableResult
     public func clientGetname() async throws -> ByteBuffer? {
         try await send(command: CLIENT.GETNAME())
     }
@@ -855,6 +857,7 @@ extension ValkeyConnectionProtocol {
     ///     * -1: Client tracking is not enabled.
     ///     * [Integer]: ID of the client we are redirecting the notifications to.
     @inlinable
+    @discardableResult
     public func clientGetredir() async throws -> Int {
         try await send(command: CLIENT.GETREDIR())
     }
@@ -866,6 +869,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func clientHelp() async throws -> RESPToken.Array {
         try await send(command: CLIENT.HELP())
     }
@@ -877,6 +881,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The id of the client
     @inlinable
+    @discardableResult
     public func clientId() async throws -> Int {
         try await send(command: CLIENT.ID())
     }
@@ -898,6 +903,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
+    @discardableResult
     public func clientInfo() async throws -> ByteBuffer {
         try await send(command: CLIENT.INFO())
     }
@@ -920,6 +926,7 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": When called in 3 argument format.
     ///     * [Integer]: When called in filter/value format, the number of clients killed.
     @inlinable
+    @discardableResult
     public func clientKill(filter: CLIENT.KILL.Filter) async throws -> Int? {
         try await send(command: CLIENT.KILL(filter: filter))
     }
@@ -940,6 +947,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of client connections
     /// - Response: [String]: Information and statistics about client connections
     @inlinable
+    @discardableResult
     public func clientList(
         clientType: CLIENT.LIST.ClientType? = nil,
         clientIds: [Int] = [],
@@ -1052,6 +1060,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 6.2.0
     /// - Complexity: O(1)
     @inlinable
+    @discardableResult
     public func clientTrackinginfo() async throws -> RESPToken.Map {
         try await send(command: CLIENT.TRACKINGINFO())
     }
@@ -1065,6 +1074,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: If the client was unblocked successfully.
     ///     * 1: If the client wasn't unblocked.
     @inlinable
+    @discardableResult
     public func clientUnblock(clientId: Int, unblockType: CLIENT.UNBLOCK.UnblockType? = nil) async throws -> Int {
         try await send(command: CLIENT.UNBLOCK(clientId: clientId, unblockType: unblockType))
     }
@@ -1086,6 +1096,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: The given string
     @inlinable
+    @discardableResult
     public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ByteBuffer {
         try await send(command: ECHO(message: message))
     }
@@ -1099,6 +1110,7 @@ extension ValkeyConnectionProtocol {
     ///     * 6.2.0: `protover` made optional; when called without arguments the command reports the current connection's context.
     /// - Complexity: O(1)
     @inlinable
+    @discardableResult
     public func hello(arguments: HELLO.Arguments? = nil) async throws -> RESPToken.Map {
         try await send(command: HELLO(arguments: arguments))
     }
@@ -1112,6 +1124,7 @@ extension ValkeyConnectionProtocol {
     ///     * "PONG": Default reply.
     ///     * [String]: Relay of given `message`.
     @inlinable
+    @discardableResult
     public func ping(message: String? = nil) async throws -> PING.Response {
         try await send(command: PING(message: message))
     }
@@ -1133,6 +1146,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 6.2.0
     /// - Complexity: O(1)
     @inlinable
+    @discardableResult
     public func reset() async throws -> String {
         try await send(command: RESET())
     }

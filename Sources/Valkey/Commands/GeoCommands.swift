@@ -1112,6 +1112,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)) for each item added, where N is the number of elements in the sorted set.
     /// - Response: [Integer]: When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
+    @discardableResult
     public func geoadd<Member: RESPStringRenderable>(
         _ key: ValkeyKey,
         condition: GEOADD<Member>.Condition? = nil,
@@ -1172,6 +1173,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Response: Array of matched members information.
     @inlinable
+    @discardableResult
     public func georadius(
         _ key: ValkeyKey,
         longitude: Double,
@@ -1213,6 +1215,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N+log(M)) where N is the number of elements inside the bounding box of the circular area delimited by center and radius and M is the number of items inside the index.
     /// - Response: Array of matched members information.
     @inlinable
+    @discardableResult
     public func georadiusbymember<Member: RESPStringRenderable>(
         _ key: ValkeyKey,
         member: Member,
@@ -1359,6 +1362,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Response: [Integer]: The number of elements in the resulting set.
     @inlinable
+    @discardableResult
     public func geosearchstore(
         destination: ValkeyKey,
         source: ValkeyKey,

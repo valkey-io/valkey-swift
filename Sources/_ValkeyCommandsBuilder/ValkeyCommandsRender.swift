@@ -446,6 +446,9 @@ extension String {
                 parametersString = "_ \(parametersString)"
             }
             self.append("    @inlinable\n")
+            if command.commandFlags?.contains("READONLY") != true, returnType != "" {
+                self.append("    @discardableResult\n")
+            }
             self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
             let commandArguments: [String] =
                 if let firstArgument = arguments.first, firstArgument.shouldRemoveArgumentLabel == true {

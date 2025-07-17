@@ -1486,6 +1486,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: In case `category` was not given, a list of existing ACL categories
     ///     * [Array]: In case `category` was given, list of commands that fall under the provided ACL category.
     @inlinable
+    @discardableResult
     public func aclCat(category: String? = nil) async throws -> RESPToken.Array {
         try await send(command: ACL.CAT(category: category))
     }
@@ -1497,6 +1498,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) amortized time considering the typical user.
     /// - Response: [Integer]: The number of users that were deleted.
     @inlinable
+    @discardableResult
     public func aclDeluser<Username: RESPStringRenderable>(usernames: [Username]) async throws -> Int {
         try await send(command: ACL.DELUSER(usernames: usernames))
     }
@@ -1510,6 +1512,7 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
+    @discardableResult
     public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(
         username: Username,
         command: Command,
@@ -1525,6 +1528,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: Pseudorandom data. By default it contains 64 bytes, representing 256 bits of data. If `bits` was given, the output string length is the number of specified bits (rounded to the next multiple of 4) divided by 4.
     @inlinable
+    @discardableResult
     public func aclGenpass(bits: Int? = nil) async throws -> ByteBuffer {
         try await send(command: ACL.GENPASS(bits: bits))
     }
@@ -1541,6 +1545,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Map]: A set of ACL rule definitions for the user.
     ///     * [Null]: If user does not exist
     @inlinable
+    @discardableResult
     public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws -> RESPToken.Map? {
         try await send(command: ACL.GETUSER(username: username))
     }
@@ -1552,6 +1557,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: A list of subcommands and their description.
     @inlinable
+    @discardableResult
     public func aclHelp() async throws -> RESPToken.Array {
         try await send(command: ACL.HELP())
     }
@@ -1563,6 +1569,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Response: [Array]: A list of currently active ACL rules.
     @inlinable
+    @discardableResult
     public func aclList() async throws -> RESPToken.Array {
         try await send(command: ACL.LIST())
     }
@@ -1588,6 +1595,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: In case `RESET` was not given, a list of recent ACL security events.
     ///     * "OK": In case `RESET` was given, OK indicates ACL log was cleared.
     @inlinable
+    @discardableResult
     public func aclLog(operation: ACL.LOG.Operation? = nil) async throws -> RESPToken.Array? {
         try await send(command: ACL.LOG(operation: operation))
     }
@@ -1622,6 +1630,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N). Where N is the number of configured users.
     /// - Response: [Array]: List of existing ACL users.
     @inlinable
+    @discardableResult
     public func aclUsers() async throws -> RESPToken.Array {
         try await send(command: ACL.USERS())
     }
@@ -1633,6 +1642,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: The username of the current connection.
     @inlinable
+    @discardableResult
     public func aclWhoami() async throws -> ByteBuffer {
         try await send(command: ACL.WHOAMI())
     }
@@ -1644,6 +1654,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: A simple string reply indicating that the rewriting started or is about to start ASAP
     @inlinable
+    @discardableResult
     public func bgrewriteaof() async throws -> ByteBuffer {
         try await send(command: BGREWRITEAOF())
     }
@@ -1657,6 +1668,7 @@ extension ValkeyConnectionProtocol {
     ///     * 8.1.0: Added the `CANCEL` option.
     /// - Complexity: O(1)
     @inlinable
+    @discardableResult
     public func bgsave(operation: BGSAVE.Operation? = nil) async throws -> String {
         try await send(command: BGSAVE(operation: operation))
     }
@@ -1667,6 +1679,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.13
     /// - Complexity: O(N) where N is the total number of commands
     @inlinable
+    @discardableResult
     public func command() async throws -> COMMAND.Response {
         try await send(command: COMMAND())
     }
@@ -1678,6 +1691,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: Number of total commands in this server.
     @inlinable
+    @discardableResult
     public func commandCount() async throws -> Int {
         try await send(command: COMMAND.COUNT())
     }
@@ -1689,6 +1703,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of commands to look up
     /// - Response: [Map]: A map where each key is a command name, and each value is the documentary information
     @inlinable
+    @discardableResult
     public func commandDocs(commandNames: [String] = []) async throws -> RESPToken.Map {
         try await send(command: COMMAND.DOCS(commandNames: commandNames))
     }
@@ -1700,6 +1715,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Response: [Array]: List of keys from the given command.
     @inlinable
+    @discardableResult
     public func commandGetkeys<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYS(command: command, args: args))
     }
@@ -1711,6 +1727,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Response: [Array]: List of keys from the given command and their usage flags.
     @inlinable
+    @discardableResult
     public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, args: args))
     }
@@ -1722,6 +1739,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func commandHelp() async throws -> RESPToken.Array {
         try await send(command: COMMAND.HELP())
     }
@@ -1737,6 +1755,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Command does not exist.
     ///     * [Array]: Command info array output.
     @inlinable
+    @discardableResult
     public func commandInfo(commandNames: [String] = []) async throws -> RESPToken.Array {
         try await send(command: COMMAND.INFO(commandNames: commandNames))
     }
@@ -1748,6 +1767,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of commands
     /// - Response: [Array]: Command name.
     @inlinable
+    @discardableResult
     public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> RESPToken.Array {
         try await send(command: COMMAND.LIST(filterby: filterby))
     }
@@ -1759,6 +1779,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Response: [Array]: Entries from the command log in chronological order.
     @inlinable
+    @discardableResult
     public func commandlogGet(count: Int, type: COMMANDLOG.GET._Type) async throws -> RESPToken.Array {
         try await send(command: COMMANDLOG.GET(count: count, type: type))
     }
@@ -1770,6 +1791,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func commandlogHelp() async throws -> RESPToken.Array {
         try await send(command: COMMANDLOG.HELP())
     }
@@ -1781,6 +1803,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: Number of entries in the command log.
     @inlinable
+    @discardableResult
     public func commandlogLen(type: COMMANDLOG.LEN._Type) async throws -> Int {
         try await send(command: COMMANDLOG.LEN(type: type))
     }
@@ -1803,6 +1826,7 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added the ability to pass multiple pattern parameters in one call
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     @inlinable
+    @discardableResult
     public func configGet<Parameter: RESPStringRenderable>(parameters: [Parameter]) async throws -> RESPToken.Map {
         try await send(command: CONFIG.GET(parameters: parameters))
     }
@@ -1814,6 +1838,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func configHelp() async throws -> RESPToken.Array {
         try await send(command: CONFIG.HELP())
     }
@@ -1906,6 +1931,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
     @inlinable
+    @discardableResult
     public func info(sections: [String] = []) async throws -> ByteBuffer {
         try await send(command: INFO(sections: sections))
     }
@@ -1917,6 +1943,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: UNIX TIME of the last DB save executed with success.
     @inlinable
+    @discardableResult
     public func lastsave() async throws -> Int {
         try await send(command: LASTSAVE())
     }
@@ -1928,6 +1955,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: A human readable latency analysis report.
     @inlinable
+    @discardableResult
     public func latencyDoctor() async throws -> ByteBuffer {
         try await send(command: LATENCY.DOCTOR())
     }
@@ -1939,6 +1967,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: Latency graph
     @inlinable
+    @discardableResult
     public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> ByteBuffer {
         try await send(command: LATENCY.GRAPH(event: event))
     }
@@ -1950,6 +1979,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func latencyHelp() async throws -> RESPToken.Array {
         try await send(command: LATENCY.HELP())
     }
@@ -1961,6 +1991,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
     /// - Response: [Map]: A map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
+    @discardableResult
     public func latencyHistogram(commands: [String] = []) async throws -> RESPToken.Map {
         try await send(command: LATENCY.HISTOGRAM(commands: commands))
     }
@@ -1972,6 +2003,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: An array where each element is a two elements array representing the timestamp and the latency of the event.
     @inlinable
+    @discardableResult
     public func latencyHistory<Event: RESPStringRenderable>(event: Event) async throws -> RESPToken.Array {
         try await send(command: LATENCY.HISTORY(event: event))
     }
@@ -1983,6 +2015,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: An array where each element is an array representing the event name, timestamp, latest and all-time latency measurements.
     @inlinable
+    @discardableResult
     public func latencyLatest() async throws -> RESPToken.Array {
         try await send(command: LATENCY.LATEST())
     }
@@ -1994,6 +2027,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: Number of event time series that were reset.
     @inlinable
+    @discardableResult
     public func latencyReset(events: [String] = []) async throws -> Int {
         try await send(command: LATENCY.RESET(events: events))
     }
@@ -2015,6 +2049,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: Memory problems report.
     @inlinable
+    @discardableResult
     public func memoryDoctor() async throws -> ByteBuffer {
         try await send(command: MEMORY.DOCTOR())
     }
@@ -2026,6 +2061,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func memoryHelp() async throws -> RESPToken.Array {
         try await send(command: MEMORY.HELP())
     }
@@ -2037,6 +2073,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: Depends on how much memory is allocated, could be slow
     /// - Response: [String]: The memory allocator's internal statistics report.
     @inlinable
+    @discardableResult
     public func memoryMallocStats() async throws -> ByteBuffer {
         try await send(command: MEMORY.MALLOCSTATS())
     }
@@ -2058,6 +2095,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Map]: Memory usage details.
     @inlinable
+    @discardableResult
     public func memoryStats() async throws -> RESPToken.Map {
         try await send(command: MEMORY.STATS())
     }
@@ -2082,6 +2120,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func moduleHelp() async throws -> RESPToken.Array {
         try await send(command: MODULE.HELP())
     }
@@ -2093,6 +2132,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of loaded modules.
     /// - Response: [Array]: Returns information about the modules loaded to the server.
     @inlinable
+    @discardableResult
     public func moduleList() async throws -> RESPToken.Array {
         try await send(command: MODULE.LIST())
     }
@@ -2133,6 +2173,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [MONITOR](https://valkey.io/commands/monitor)
     /// - Available: 1.0.0
     @inlinable
+    @discardableResult
     public func monitor() async throws -> MONITOR.Response {
         try await send(command: MONITOR())
     }
@@ -2142,6 +2183,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [PSYNC](https://valkey.io/commands/psync)
     /// - Available: 2.8.0
     @inlinable
+    @discardableResult
     public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> RESPToken {
         try await send(command: PSYNC(replicationid: replicationid, offset: offset))
     }
@@ -2153,6 +2195,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: ReplicaOf status.
     @inlinable
+    @discardableResult
     public func replicaof(args: REPLICAOF.Args) async throws -> ByteBuffer {
         try await send(command: REPLICAOF(args: args))
     }
@@ -2163,6 +2206,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.12
     /// - Complexity: O(1)
     @inlinable
+    @discardableResult
     public func role() async throws -> RESPToken.Array {
         try await send(command: ROLE())
     }
@@ -2198,6 +2242,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: SlaveOf status.
     @inlinable
+    @discardableResult
     public func slaveof(args: SLAVEOF.Args) async throws -> ByteBuffer {
         try await send(command: SLAVEOF(args: args))
     }
@@ -2212,6 +2257,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of entries returned
     /// - Response: [Array]: Entries from the slow log in chronological order.
     @inlinable
+    @discardableResult
     public func slowlogGet(count: Int? = nil) async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.GET(count: count))
     }
@@ -2224,6 +2270,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func slowlogHelp() async throws -> RESPToken.Array {
         try await send(command: SLOWLOG.HELP())
     }
@@ -2236,6 +2283,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: Number of entries in the slow log.
     @inlinable
+    @discardableResult
     public func slowlogLen() async throws -> Int {
         try await send(command: SLOWLOG.LEN())
     }
@@ -2266,6 +2314,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [SYNC](https://valkey.io/commands/sync)
     /// - Available: 1.0.0
     @inlinable
+    @discardableResult
     public func sync() async throws -> SYNC.Response {
         try await send(command: SYNC())
     }
@@ -2277,6 +2326,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Array containing two elements: Unix time in seconds and microseconds.
     @inlinable
+    @discardableResult
     public func time() async throws -> RESPToken.Array {
         try await send(command: TIME())
     }

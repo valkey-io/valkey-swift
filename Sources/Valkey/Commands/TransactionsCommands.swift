@@ -105,6 +105,7 @@ extension ValkeyConnection {
     ///     * [Array]: Each element being the reply to each of the commands in the atomic transaction.
     ///     * [Null]: The transaction was aborted because a `WATCH`ed key was touched
     @inlinable
+    @discardableResult
     public func exec() async throws -> RESPToken.Array? {
         try await send(command: EXEC())
     }

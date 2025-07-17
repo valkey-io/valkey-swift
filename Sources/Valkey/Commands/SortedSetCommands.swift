@@ -1240,6 +1240,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Timeout reached and no elements were popped.
     ///     * [Array]: The keyname and the popped members.
     @inlinable
+    @discardableResult
     public func bzmpop(timeout: Double, keys: [ValkeyKey], where: BZMPOP.Where, count: Int? = nil) async throws -> BZMPOP.Response {
         try await send(command: BZMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
     }
@@ -1255,6 +1256,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Timeout reached and no elements were popped.
     ///     * [Array]: The keyname, popped member, and its score.
     @inlinable
+    @discardableResult
     public func bzpopmax(keys: [ValkeyKey], timeout: Double) async throws -> BZPOPMAX.Response {
         try await send(command: BZPOPMAX(keys: keys, timeout: timeout))
     }
@@ -1270,6 +1272,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Timeout reached and no elements were popped.
     ///     * [Array]: The keyname, popped member, and its score.
     @inlinable
+    @discardableResult
     public func bzpopmin(keys: [ValkeyKey], timeout: Double) async throws -> BZPOPMIN.Response {
         try await send(command: BZPOPMIN(keys: keys, timeout: timeout))
     }
@@ -1289,6 +1292,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: The number of new or updated members (when the `CH` option is used)
     ///     * [Double]: The updated score of the member (when the `INCR` option is used)
     @inlinable
+    @discardableResult
     public func zadd<Member: RESPStringRenderable>(
         _ key: ValkeyKey,
         condition: ZADD<Member>.Condition? = nil,
@@ -1342,6 +1346,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(L + (N-K)log(N)) worst case where L is the total number of elements in all the sets, N is the size of the first set, and K is the size of the result set.
     /// - Response: [Integer]: Number of elements in the resulting sorted set at `destination`
     @inlinable
+    @discardableResult
     public func zdiffstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
         try await send(command: ZDIFFSTORE(destination: destination, keys: keys))
     }
@@ -1353,6 +1358,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)) where N is the number of elements in the sorted set.
     /// - Response: [Double]: The new score of `member`
     @inlinable
+    @discardableResult
     public func zincrby<Member: RESPStringRenderable>(_ key: ValkeyKey, increment: Int, member: Member) async throws -> Double {
         try await send(command: ZINCRBY(key, increment: increment, member: member))
     }
@@ -1393,6 +1399,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// - Response: [Integer]: Number of elements in the resulting sorted set.
     @inlinable
+    @discardableResult
     public func zinterstore(
         destination: ValkeyKey,
         keys: [ValkeyKey],
@@ -1422,6 +1429,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: No element could be popped.
     ///     * [Array]: Name of the key that elements were popped.
     @inlinable
+    @discardableResult
     public func zmpop(keys: [ValkeyKey], where: ZMPOP.Where, count: Int? = nil) async throws -> ZMPOP.Response {
         try await send(command: ZMPOP(keys: keys, where: `where`, count: count))
     }
@@ -1448,6 +1456,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
     ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     @inlinable
+    @discardableResult
     public func zpopmax(_ key: ValkeyKey, count: Int? = nil) async throws -> ZPOPMAX.Response {
         try await send(command: ZPOPMAX(key, count: count))
     }
@@ -1461,6 +1470,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
     ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     @inlinable
+    @discardableResult
     public func zpopmin(_ key: ValkeyKey, count: Int? = nil) async throws -> ZPOPMIN.Response {
         try await send(command: ZPOPMIN(key, count: count))
     }
@@ -1549,6 +1559,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements stored into the destination key.
     /// - Response: [Integer]: Number of elements in the resulting sorted set.
     @inlinable
+    @discardableResult
     public func zrangestore<Min: RESPStringRenderable, Max: RESPStringRenderable>(
         dst: ValkeyKey,
         src: ValkeyKey,
@@ -1586,6 +1597,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(M*log(N)) with N being the number of elements in the sorted set and M the number of elements to be removed.
     /// - Response: [Integer]: The number of members removed from the sorted set, not including non existing members.
     @inlinable
+    @discardableResult
     public func zrem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
         try await send(command: ZREM(key, members: members))
     }
@@ -1597,6 +1609,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Response: [Integer]: Number of elements removed.
     @inlinable
+    @discardableResult
     public func zremrangebylex<Min: RESPStringRenderable, Max: RESPStringRenderable>(_ key: ValkeyKey, min: Min, max: Max) async throws -> Int {
         try await send(command: ZREMRANGEBYLEX(key, min: min, max: max))
     }
@@ -1608,6 +1621,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Response: [Integer]: Number of elements removed.
     @inlinable
+    @discardableResult
     public func zremrangebyrank(_ key: ValkeyKey, start: Int, stop: Int) async throws -> Int {
         try await send(command: ZREMRANGEBYRANK(key, start: start, stop: stop))
     }
@@ -1619,6 +1633,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements removed by the operation.
     /// - Response: [Integer]: Number of elements removed.
     @inlinable
+    @discardableResult
     public func zremrangebyscore(_ key: ValkeyKey, min: Double, max: Double) async throws -> Int {
         try await send(command: ZREMRANGEBYSCORE(key, min: min, max: max))
     }
@@ -1749,6 +1764,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// - Response: [Integer]: The number of elements in the resulting sorted set.
     @inlinable
+    @discardableResult
     public func zunionstore(
         destination: ValkeyKey,
         keys: [ValkeyKey],
