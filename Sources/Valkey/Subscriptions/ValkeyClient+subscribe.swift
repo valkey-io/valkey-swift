@@ -54,7 +54,7 @@ extension ValkeyClient {
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> Value {
         try await self.subscribe(
-            command: SUBSCRIBE(channel: channels),
+            command: SUBSCRIBE(channels: channels),
             filters: channels.map { .channel($0) },
             process: process
         )
@@ -98,7 +98,7 @@ extension ValkeyClient {
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> Value {
         try await self.subscribe(
-            command: PSUBSCRIBE(pattern: patterns),
+            command: PSUBSCRIBE(patterns: patterns),
             filters: patterns.map { .pattern($0) },
             process: process
         )
@@ -118,10 +118,10 @@ extension ValkeyClient {
     /// - Returns: Return value of closure
     @inlinable
     public func ssubscribe<Value>(
-        to shardchannel: String...,
+        to shardchannels: String...,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> Value {
-        try await self.ssubscribe(to: shardchannel, process: process)
+        try await self.ssubscribe(to: shardchannels, process: process)
     }
 
     /// Subscribe to list of shard channels and run closure with subscription
@@ -138,12 +138,12 @@ extension ValkeyClient {
     /// - Returns: Return value of closure
     @inlinable
     public func ssubscribe<Value>(
-        to shardchannel: [String],
+        to shardchannels: [String],
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> Value {
         try await self.subscribe(
-            command: SSUBSCRIBE(shardchannel: shardchannel),
-            filters: shardchannel.map { .shardChannel($0) },
+            command: SSUBSCRIBE(shardchannels: shardchannels),
+            filters: shardchannels.map { .shardChannel($0) },
             process: process
         )
     }
