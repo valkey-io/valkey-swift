@@ -52,7 +52,7 @@ let benchmarks: @Sendable () -> Void = {
                     benchmark.startMeasurement()
 
                     for _ in benchmark.scaledIterations {
-                        let foo = try await connection.get(key: "foo")
+                        let foo = try await connection.get("foo")
                         precondition(foo.map { String(buffer: $0) } == "Bar")
                     }
 
@@ -91,7 +91,7 @@ let benchmarks: @Sendable () -> Void = {
         }
 
         Benchmark("ValkeyCommandEncoder – Simple GET", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-            let command = GET(key: "foo")
+            let command = GET("foo")
             benchmark.startMeasurement()
 
             var encoder = ValkeyCommandEncoder()
@@ -105,7 +105,7 @@ let benchmarks: @Sendable () -> Void = {
 
         Benchmark("ValkeyCommandEncoder – Simple MGET 15 keys", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
             let keys = (0..<15).map { ValkeyKey("foo-\($0)") }
-            let command = MGET(key: keys)
+            let command = MGET(keys: keys)
             benchmark.startMeasurement()
 
             var encoder = ValkeyCommandEncoder()
