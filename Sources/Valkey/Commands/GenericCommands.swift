@@ -32,7 +32,7 @@ public enum OBJECT {
 
         public var key: ValkeyKey
 
-        @inlinable public init(key: ValkeyKey) {
+        @inlinable public init(_ key: ValkeyKey) {
             self.key = key
         }
 
@@ -52,7 +52,7 @@ public enum OBJECT {
 
         public var key: ValkeyKey
 
-        @inlinable public init(key: ValkeyKey) {
+        @inlinable public init(_ key: ValkeyKey) {
             self.key = key
         }
 
@@ -85,7 +85,7 @@ public enum OBJECT {
 
         public var key: ValkeyKey
 
-        @inlinable public init(key: ValkeyKey) {
+        @inlinable public init(_ key: ValkeyKey) {
             self.key = key
         }
 
@@ -105,7 +105,7 @@ public enum OBJECT {
 
         public var key: ValkeyKey
 
-        @inlinable public init(key: ValkeyKey) {
+        @inlinable public init(_ key: ValkeyKey) {
             self.key = key
         }
 
@@ -149,16 +149,16 @@ public struct COPY: ValkeyCommand {
 public struct DEL: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("DEL", key)
+        commandEncoder.encodeArray("DEL", keys)
     }
 }
 
@@ -169,7 +169,7 @@ public struct DUMP: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -187,18 +187,18 @@ public struct DUMP: ValkeyCommand {
 public struct EXISTS: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("EXISTS", key)
+        commandEncoder.encodeArray("EXISTS", keys)
     }
 }
 
@@ -230,7 +230,7 @@ public struct EXPIRE: ValkeyCommand {
     public var seconds: Int
     public var condition: Condition?
 
-    @inlinable public init(key: ValkeyKey, seconds: Int, condition: Condition? = nil) {
+    @inlinable public init(_ key: ValkeyKey, seconds: Int, condition: Condition? = nil) {
         self.key = key
         self.seconds = seconds
         self.condition = condition
@@ -271,7 +271,7 @@ public struct EXPIREAT: ValkeyCommand {
     public var unixTimeSeconds: Date
     public var condition: Condition?
 
-    @inlinable public init(key: ValkeyKey, unixTimeSeconds: Date, condition: Condition? = nil) {
+    @inlinable public init(_ key: ValkeyKey, unixTimeSeconds: Date, condition: Condition? = nil) {
         self.key = key
         self.unixTimeSeconds = unixTimeSeconds
         self.condition = condition
@@ -291,7 +291,7 @@ public struct EXPIRETIME: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -395,7 +395,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
     public var copy: Bool
     public var replace: Bool
     public var authentication: Authentication?
-    public var keys: [ValkeyKey]
+    public var keyss: [ValkeyKey]
 
     @inlinable public init(
         host: Host,
@@ -406,7 +406,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         copy: Bool = false,
         replace: Bool = false,
         authentication: Authentication? = nil,
-        keys: [ValkeyKey] = []
+        keyss: [ValkeyKey] = []
     ) {
         self.host = host
         self.port = port
@@ -416,10 +416,10 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         self.copy = copy
         self.replace = replace
         self.authentication = authentication
-        self.keys = keys
+        self.keyss = keyss
     }
 
-    public var keysAffected: [ValkeyKey] { keys }
+    public var keysAffected: [ValkeyKey] { keyss }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray(
@@ -432,7 +432,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
             RESPPureToken("COPY", copy),
             RESPPureToken("REPLACE", replace),
             authentication,
-            RESPWithToken("KEYS", keys)
+            RESPWithToken("KEYS", keyss)
         )
     }
 }
@@ -445,7 +445,7 @@ public struct MOVE: ValkeyCommand {
     public var key: ValkeyKey
     public var db: Int
 
-    @inlinable public init(key: ValkeyKey, db: Int) {
+    @inlinable public init(_ key: ValkeyKey, db: Int) {
         self.key = key
         self.db = db
     }
@@ -464,7 +464,7 @@ public struct PERSIST: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -503,7 +503,7 @@ public struct PEXPIRE: ValkeyCommand {
     public var milliseconds: Int
     public var condition: Condition?
 
-    @inlinable public init(key: ValkeyKey, milliseconds: Int, condition: Condition? = nil) {
+    @inlinable public init(_ key: ValkeyKey, milliseconds: Int, condition: Condition? = nil) {
         self.key = key
         self.milliseconds = milliseconds
         self.condition = condition
@@ -544,7 +544,7 @@ public struct PEXPIREAT: ValkeyCommand {
     public var unixTimeMilliseconds: Date
     public var condition: Condition?
 
-    @inlinable public init(key: ValkeyKey, unixTimeMilliseconds: Date, condition: Condition? = nil) {
+    @inlinable public init(_ key: ValkeyKey, unixTimeMilliseconds: Date, condition: Condition? = nil) {
         self.key = key
         self.unixTimeMilliseconds = unixTimeMilliseconds
         self.condition = condition
@@ -564,7 +564,7 @@ public struct PEXPIRETIME: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -584,7 +584,7 @@ public struct PTTL: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -618,7 +618,7 @@ public struct RENAME: ValkeyCommand {
     public var key: ValkeyKey
     public var newkey: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey, newkey: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey, newkey: ValkeyKey) {
         self.key = key
         self.newkey = newkey
     }
@@ -638,7 +638,7 @@ public struct RENAMENX: ValkeyCommand {
     public var key: ValkeyKey
     public var newkey: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey, newkey: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey, newkey: ValkeyKey) {
         self.key = key
         self.newkey = newkey
     }
@@ -662,7 +662,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
     public var frequency: Int?
 
     @inlinable public init(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         ttl: Int,
         serializedValue: SerializedValue,
         replace: Bool = false,
@@ -760,16 +760,16 @@ public struct SORT: ValkeyCommand {
     public var key: ValkeyKey
     public var byPattern: String?
     public var limit: Limit?
-    public var getPattern: [String]
+    public var getPatterns: [String]
     public var order: Order?
     public var sorting: Bool
     public var destination: ValkeyKey?
 
     @inlinable public init(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         byPattern: String? = nil,
         limit: Limit? = nil,
-        getPattern: [String] = [],
+        getPatterns: [String] = [],
         order: Order? = nil,
         sorting: Bool = false,
         destination: ValkeyKey? = nil
@@ -777,7 +777,7 @@ public struct SORT: ValkeyCommand {
         self.key = key
         self.byPattern = byPattern
         self.limit = limit
-        self.getPattern = getPattern
+        self.getPatterns = getPatterns
         self.order = order
         self.sorting = sorting
         self.destination = destination
@@ -791,7 +791,7 @@ public struct SORT: ValkeyCommand {
             key,
             RESPWithToken("BY", byPattern),
             RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
+            RESPWithToken("GET", getPatterns),
             order,
             RESPPureToken("ALPHA", sorting),
             RESPWithToken("STORE", destination)
@@ -842,22 +842,22 @@ public struct SORTRO: ValkeyCommand {
     public var key: ValkeyKey
     public var byPattern: String?
     public var limit: Limit?
-    public var getPattern: [String]
+    public var getPatterns: [String]
     public var order: Order?
     public var sorting: Bool
 
     @inlinable public init(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         byPattern: String? = nil,
         limit: Limit? = nil,
-        getPattern: [String] = [],
+        getPatterns: [String] = [],
         order: Order? = nil,
         sorting: Bool = false
     ) {
         self.key = key
         self.byPattern = byPattern
         self.limit = limit
-        self.getPattern = getPattern
+        self.getPatterns = getPatterns
         self.order = order
         self.sorting = sorting
     }
@@ -872,7 +872,7 @@ public struct SORTRO: ValkeyCommand {
             key,
             RESPWithToken("BY", byPattern),
             RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPattern),
+            RESPWithToken("GET", getPatterns),
             order,
             RESPPureToken("ALPHA", sorting)
         )
@@ -884,18 +884,18 @@ public struct SORTRO: ValkeyCommand {
 public struct TOUCH: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("TOUCH", key)
+        commandEncoder.encodeArray("TOUCH", keys)
     }
 }
 
@@ -906,7 +906,7 @@ public struct TTL: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -926,7 +926,7 @@ public struct TYPE: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -944,16 +944,16 @@ public struct TYPE: ValkeyCommand {
 public struct UNLINK: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("UNLINK", key)
+        commandEncoder.encodeArray("UNLINK", keys)
     }
 }
 
@@ -1020,8 +1020,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
     /// - Response: [Integer]: The number of keys that were removed.
     @inlinable
-    public func del(key: [ValkeyKey]) async throws -> Int {
-        try await send(command: DEL(key: key))
+    public func del(keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: DEL(keys: keys))
     }
 
     /// Returns a serialized representation of the value stored at a key.
@@ -1033,8 +1033,8 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The serialized value.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func dump(key: ValkeyKey) async throws -> ByteBuffer? {
-        try await send(command: DUMP(key: key))
+    public func dump(_ key: ValkeyKey) async throws -> ByteBuffer? {
+        try await send(command: DUMP(key))
     }
 
     /// Determines whether one or more keys exist.
@@ -1046,8 +1046,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of keys to check.
     /// - Response: [Integer]: Number of keys that exist from those specified as arguments.
     @inlinable
-    public func exists(key: [ValkeyKey]) async throws -> Int {
-        try await send(command: EXISTS(key: key))
+    public func exists(keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: EXISTS(keys: keys))
     }
 
     /// Sets the expiration time of a key in seconds.
@@ -1061,8 +1061,8 @@ extension ValkeyConnectionProtocol {
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     ///     * 1: The timeout was set.
     @inlinable
-    public func expire(key: ValkeyKey, seconds: Int, condition: EXPIRE.Condition? = nil) async throws -> Int {
-        try await send(command: EXPIRE(key: key, seconds: seconds, condition: condition))
+    public func expire(_ key: ValkeyKey, seconds: Int, condition: EXPIRE.Condition? = nil) async throws -> Int {
+        try await send(command: EXPIRE(key, seconds: seconds, condition: condition))
     }
 
     /// Sets the expiration time of a key to a Unix timestamp.
@@ -1076,8 +1076,8 @@ extension ValkeyConnectionProtocol {
     ///     * 1: The timeout was set.
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     @inlinable
-    public func expireat(key: ValkeyKey, unixTimeSeconds: Date, condition: EXPIREAT.Condition? = nil) async throws -> Int {
-        try await send(command: EXPIREAT(key: key, unixTimeSeconds: unixTimeSeconds, condition: condition))
+    public func expireat(_ key: ValkeyKey, unixTimeSeconds: Date, condition: EXPIREAT.Condition? = nil) async throws -> Int {
+        try await send(command: EXPIREAT(key, unixTimeSeconds: unixTimeSeconds, condition: condition))
     }
 
     /// Returns the expiration time of a key as a Unix timestamp.
@@ -1090,8 +1090,8 @@ extension ValkeyConnectionProtocol {
     ///     * -1: The key exists but has no associated expiration time.
     ///     * -2: The key does not exist.
     @inlinable
-    public func expiretime(key: ValkeyKey) async throws -> Int {
-        try await send(command: EXPIRETIME(key: key))
+    public func expiretime(_ key: ValkeyKey) async throws -> Int {
+        try await send(command: EXPIRETIME(key))
     }
 
     /// Returns all key names that match a pattern.
@@ -1128,7 +1128,7 @@ extension ValkeyConnectionProtocol {
         copy: Bool = false,
         replace: Bool = false,
         authentication: MIGRATE<Host>.Authentication? = nil,
-        keys: [ValkeyKey] = []
+        keyss: [ValkeyKey] = []
     ) async throws -> String? {
         try await send(
             command: MIGRATE(
@@ -1140,7 +1140,7 @@ extension ValkeyConnectionProtocol {
                 copy: copy,
                 replace: replace,
                 authentication: authentication,
-                keys: keys
+                keyss: keyss
             )
         )
     }
@@ -1154,8 +1154,8 @@ extension ValkeyConnectionProtocol {
     ///     * 1: Key was moved.
     ///     * 0: Key wasn't moved. When key already exists in the destination database, or it does not exist in the source database
     @inlinable
-    public func move(key: ValkeyKey, db: Int) async throws -> Int {
-        try await send(command: MOVE(key: key, db: db))
+    public func move(_ key: ValkeyKey, db: Int) async throws -> Int {
+        try await send(command: MOVE(key, db: db))
     }
 
     /// Returns the internal encoding of an object.
@@ -1167,8 +1167,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key doesn't exist.
     ///     * [String]: Encoding of the object.
     @inlinable
-    public func objectEncoding(key: ValkeyKey) async throws -> ByteBuffer? {
-        try await send(command: OBJECT.ENCODING(key: key))
+    public func objectEncoding(_ key: ValkeyKey) async throws -> ByteBuffer? {
+        try await send(command: OBJECT.ENCODING(key))
     }
 
     /// Returns the logarithmic access frequency counter of an object.
@@ -1178,8 +1178,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The counter's value.
     @inlinable
-    public func objectFreq(key: ValkeyKey) async throws -> Int {
-        try await send(command: OBJECT.FREQ(key: key))
+    public func objectFreq(_ key: ValkeyKey) async throws -> Int {
+        try await send(command: OBJECT.FREQ(key))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1200,8 +1200,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The idle time in seconds.
     @inlinable
-    public func objectIdletime(key: ValkeyKey) async throws -> Int {
-        try await send(command: OBJECT.IDLETIME(key: key))
+    public func objectIdletime(_ key: ValkeyKey) async throws -> Int {
+        try await send(command: OBJECT.IDLETIME(key))
     }
 
     /// Returns the reference count of a value of a key.
@@ -1211,8 +1211,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The number of references.
     @inlinable
-    public func objectRefcount(key: ValkeyKey) async throws -> Int {
-        try await send(command: OBJECT.REFCOUNT(key: key))
+    public func objectRefcount(_ key: ValkeyKey) async throws -> Int {
+        try await send(command: OBJECT.REFCOUNT(key))
     }
 
     /// Removes the expiration time of a key.
@@ -1224,8 +1224,8 @@ extension ValkeyConnectionProtocol {
     ///     * 0: Key does not exist or does not have an associated timeout.
     ///     * 1: The timeout has been removed.
     @inlinable
-    public func persist(key: ValkeyKey) async throws -> Int {
-        try await send(command: PERSIST(key: key))
+    public func persist(_ key: ValkeyKey) async throws -> Int {
+        try await send(command: PERSIST(key))
     }
 
     /// Sets the expiration time of a key in milliseconds.
@@ -1239,8 +1239,8 @@ extension ValkeyConnectionProtocol {
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     ///     * 1: The timeout was set.
     @inlinable
-    public func pexpire(key: ValkeyKey, milliseconds: Int, condition: PEXPIRE.Condition? = nil) async throws -> Int {
-        try await send(command: PEXPIRE(key: key, milliseconds: milliseconds, condition: condition))
+    public func pexpire(_ key: ValkeyKey, milliseconds: Int, condition: PEXPIRE.Condition? = nil) async throws -> Int {
+        try await send(command: PEXPIRE(key, milliseconds: milliseconds, condition: condition))
     }
 
     /// Sets the expiration time of a key to a Unix milliseconds timestamp.
@@ -1254,8 +1254,8 @@ extension ValkeyConnectionProtocol {
     ///     * 1: The timeout was set.
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     @inlinable
-    public func pexpireat(key: ValkeyKey, unixTimeMilliseconds: Date, condition: PEXPIREAT.Condition? = nil) async throws -> Int {
-        try await send(command: PEXPIREAT(key: key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition))
+    public func pexpireat(_ key: ValkeyKey, unixTimeMilliseconds: Date, condition: PEXPIREAT.Condition? = nil) async throws -> Int {
+        try await send(command: PEXPIREAT(key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition))
     }
 
     /// Returns the expiration time of a key as a Unix milliseconds timestamp.
@@ -1268,8 +1268,8 @@ extension ValkeyConnectionProtocol {
     ///     * -1: The key exists but has no associated expiration time.
     ///     * -2: The key does not exist.
     @inlinable
-    public func pexpiretime(key: ValkeyKey) async throws -> Int {
-        try await send(command: PEXPIRETIME(key: key))
+    public func pexpiretime(_ key: ValkeyKey) async throws -> Int {
+        try await send(command: PEXPIRETIME(key))
     }
 
     /// Returns the expiration time in milliseconds of a key.
@@ -1284,8 +1284,8 @@ extension ValkeyConnectionProtocol {
     ///     * -1: The key exists but has no associated expire.
     ///     * -2: The key does not exist.
     @inlinable
-    public func pttl(key: ValkeyKey) async throws -> Int {
-        try await send(command: PTTL(key: key))
+    public func pttl(_ key: ValkeyKey) async throws -> Int {
+        try await send(command: PTTL(key))
     }
 
     /// Returns a random key name from the database.
@@ -1307,8 +1307,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func rename(key: ValkeyKey, newkey: ValkeyKey) async throws {
-        _ = try await send(command: RENAME(key: key, newkey: newkey))
+    public func rename(_ key: ValkeyKey, newkey: ValkeyKey) async throws {
+        _ = try await send(command: RENAME(key, newkey: newkey))
     }
 
     /// Renames a key only when the target key name doesn't exist.
@@ -1322,8 +1322,8 @@ extension ValkeyConnectionProtocol {
     ///     * 1: Key was renamed to newkey.
     ///     * 0: New key already exists.
     @inlinable
-    public func renamenx(key: ValkeyKey, newkey: ValkeyKey) async throws -> Int {
-        try await send(command: RENAMENX(key: key, newkey: newkey))
+    public func renamenx(_ key: ValkeyKey, newkey: ValkeyKey) async throws -> Int {
+        try await send(command: RENAMENX(key, newkey: newkey))
     }
 
     /// Creates a key from the serialized representation of a value.
@@ -1337,7 +1337,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) to create the new key and additional O(N*M) to reconstruct the serialized value, where N is the number of objects composing the value and M their average size. For small string values the time complexity is thus O(1)+O(1*M) where M is small, so simply O(1). However for sorted set values the complexity is O(N*M*log(N)) because inserting values into sorted sets is O(log(N)).
     @inlinable
     public func restore<SerializedValue: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         ttl: Int,
         serializedValue: SerializedValue,
         replace: Bool = false,
@@ -1347,7 +1347,7 @@ extension ValkeyConnectionProtocol {
     ) async throws {
         _ = try await send(
             command: RESTORE(
-                key: key,
+                key,
                 ttl: ttl,
                 serializedValue: serializedValue,
                 replace: replace,
@@ -1381,24 +1381,16 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: When not passing the store option the command returns a list of sorted elements.
     @inlinable
     public func sort(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         byPattern: String? = nil,
         limit: SORT.Limit? = nil,
-        getPattern: [String] = [],
+        getPatterns: [String] = [],
         order: SORT.Order? = nil,
         sorting: Bool = false,
         destination: ValkeyKey? = nil
     ) async throws -> SORT.Response {
         try await send(
-            command: SORT(
-                key: key,
-                byPattern: byPattern,
-                limit: limit,
-                getPattern: getPattern,
-                order: order,
-                sorting: sorting,
-                destination: destination
-            )
+            command: SORT(key, byPattern: byPattern, limit: limit, getPatterns: getPatterns, order: order, sorting: sorting, destination: destination)
         )
     }
 
@@ -1410,14 +1402,14 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Array]: A list of sorted elements.
     @inlinable
     public func sortRo(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         byPattern: String? = nil,
         limit: SORTRO.Limit? = nil,
-        getPattern: [String] = [],
+        getPatterns: [String] = [],
         order: SORTRO.Order? = nil,
         sorting: Bool = false
     ) async throws -> RESPToken.Array {
-        try await send(command: SORTRO(key: key, byPattern: byPattern, limit: limit, getPattern: getPattern, order: order, sorting: sorting))
+        try await send(command: SORTRO(key, byPattern: byPattern, limit: limit, getPatterns: getPatterns, order: order, sorting: sorting))
     }
 
     /// Returns the number of existing keys out of those specified after updating the time they were last accessed.
@@ -1427,8 +1419,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of keys that will be touched.
     /// - Response: [Integer]: The number of touched keys.
     @inlinable
-    public func touch(key: [ValkeyKey]) async throws -> Int {
-        try await send(command: TOUCH(key: key))
+    public func touch(keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: TOUCH(keys: keys))
     }
 
     /// Returns the expiration time in seconds of a key.
@@ -1443,8 +1435,8 @@ extension ValkeyConnectionProtocol {
     ///     * -1: The key exists but has no associated expire.
     ///     * -2: The key does not exist.
     @inlinable
-    public func ttl(key: ValkeyKey) async throws -> Int {
-        try await send(command: TTL(key: key))
+    public func ttl(_ key: ValkeyKey) async throws -> Int {
+        try await send(command: TTL(key))
     }
 
     /// Determines the type of value stored at a key.
@@ -1456,8 +1448,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key doesn't exist
     ///     * [String]: Type of the key
     @inlinable
-    public func type(key: ValkeyKey) async throws -> ByteBuffer? {
-        try await send(command: TYPE(key: key))
+    public func type(_ key: ValkeyKey) async throws -> ByteBuffer? {
+        try await send(command: TYPE(key))
     }
 
     /// Asynchronously deletes one or more keys.
@@ -1467,8 +1459,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
     /// - Response: [Integer]: The number of keys that were unlinked.
     @inlinable
-    public func unlink(key: [ValkeyKey]) async throws -> Int {
-        try await send(command: UNLINK(key: key))
+    public func unlink(keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: UNLINK(keys: keys))
     }
 
     /// Blocks until the asynchronous replication of all preceding write commands sent by the connection is completed.

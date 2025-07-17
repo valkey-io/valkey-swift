@@ -68,19 +68,19 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var condition: Condition?
     public var change: Bool
-    public var data: [Data]
+    public var datas: [Data]
 
-    @inlinable public init(key: ValkeyKey, condition: Condition? = nil, change: Bool = false, data: [Data]) {
+    @inlinable public init(_ key: ValkeyKey, condition: Condition? = nil, change: Bool = false, datas: [Data]) {
         self.key = key
         self.condition = condition
         self.change = change
-        self.data = data
+        self.datas = datas
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GEOADD", key, condition, RESPPureToken("CH", change), data)
+        commandEncoder.encodeArray("GEOADD", key, condition, RESPPureToken("CH", change), datas)
     }
 }
 
@@ -113,7 +113,7 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
     public var member2: Member2
     public var unit: Unit?
 
-    @inlinable public init(key: ValkeyKey, member1: Member1, member2: Member2, unit: Unit? = nil) {
+    @inlinable public init(_ key: ValkeyKey, member1: Member1, member2: Member2, unit: Unit? = nil) {
         self.key = key
         self.member1 = member1
         self.member2 = member2
@@ -135,11 +135,11 @@ public struct GEOHASH: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
-    public var member: [String]
+    public var members: [String]
 
-    @inlinable public init(key: ValkeyKey, member: [String] = []) {
+    @inlinable public init(_ key: ValkeyKey, members: [String] = []) {
         self.key = key
-        self.member = member
+        self.members = members
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -147,7 +147,7 @@ public struct GEOHASH: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GEOHASH", key, member)
+        commandEncoder.encodeArray("GEOHASH", key, members)
     }
 }
 
@@ -157,11 +157,11 @@ public struct GEOPOS: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
-    public var member: [String]
+    public var members: [String]
 
-    @inlinable public init(key: ValkeyKey, member: [String] = []) {
+    @inlinable public init(_ key: ValkeyKey, members: [String] = []) {
         self.key = key
-        self.member = member
+        self.members = members
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -169,7 +169,7 @@ public struct GEOPOS: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GEOPOS", key, member)
+        commandEncoder.encodeArray("GEOPOS", key, members)
     }
 }
 
@@ -263,7 +263,7 @@ public struct GEORADIUS: ValkeyCommand {
     public var store: Store?
 
     @inlinable public init(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         longitude: Double,
         latitude: Double,
         radius: Double,
@@ -397,7 +397,7 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public var store: Store?
 
     @inlinable public init(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         member: Member,
         radius: Double,
         unit: Unit,
@@ -509,7 +509,7 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
     public var order: Order?
 
     @inlinable public init(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         member: Member,
         radius: Double,
         unit: Unit,
@@ -621,7 +621,7 @@ public struct GEORADIUSRO: ValkeyCommand {
     public var order: Order?
 
     @inlinable public init(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         longitude: Double,
         latitude: Double,
         radius: Double,
@@ -856,7 +856,7 @@ public struct GEOSEARCH: ValkeyCommand {
     public var withhash: Bool
 
     @inlinable public init(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         from: From,
         by: By,
         order: Order? = nil,
@@ -1119,12 +1119,12 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: When used without optional arguments, the number of elements added to the sorted set (excluding score updates).  If the CH option is specified, the number of elements that were changed (added or updated).
     @inlinable
     public func geoadd<Member: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         condition: GEOADD<Member>.Condition? = nil,
         change: Bool = false,
-        data: [GEOADD<Member>.Data]
+        datas: [GEOADD<Member>.Data]
     ) async throws -> Int {
-        try await send(command: GEOADD(key: key, condition: condition, change: change, data: data))
+        try await send(command: GEOADD(key, condition: condition, change: change, datas: datas))
     }
 
     /// Returns the distance between two members of a geospatial index.
@@ -1137,12 +1137,12 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: Distance as a double (represented as a string) in the specified units.
     @inlinable
     public func geodist<Member1: RESPStringRenderable, Member2: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         member1: Member1,
         member2: Member2,
         unit: GEODIST<Member1, Member2>.Unit? = nil
     ) async throws -> ByteBuffer? {
-        try await send(command: GEODIST(key: key, member1: member1, member2: member2, unit: unit))
+        try await send(command: GEODIST(key, member1: member1, member2: member2, unit: unit))
     }
 
     /// Returns members from a geospatial index as geohash strings.
@@ -1152,8 +1152,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each member requested.
     /// - Response: [Array]: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
     @inlinable
-    public func geohash(key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: GEOHASH(key: key, member: member))
+    public func geohash(_ key: ValkeyKey, members: [String] = []) async throws -> RESPToken.Array {
+        try await send(command: GEOHASH(key, members: members))
     }
 
     /// Returns the longitude and latitude of members from a geospatial index.
@@ -1163,8 +1163,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each member requested.
     /// - Response: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
-    public func geopos(key: ValkeyKey, member: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: GEOPOS(key: key, member: member))
+    public func geopos(_ key: ValkeyKey, members: [String] = []) async throws -> RESPToken.Array {
+        try await send(command: GEOPOS(key, members: members))
     }
 
     /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
@@ -1179,7 +1179,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func georadius(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         longitude: Double,
         latitude: Double,
         radius: Double,
@@ -1193,7 +1193,7 @@ extension ValkeyConnectionProtocol {
     ) async throws -> GEORADIUS.Response {
         try await send(
             command: GEORADIUS(
-                key: key,
+                key,
                 longitude: longitude,
                 latitude: latitude,
                 radius: radius,
@@ -1220,7 +1220,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func georadiusbymember<Member: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         member: Member,
         radius: Double,
         unit: GEORADIUSBYMEMBER<Member>.Unit,
@@ -1233,7 +1233,7 @@ extension ValkeyConnectionProtocol {
     ) async throws -> RESPToken {
         try await send(
             command: GEORADIUSBYMEMBER(
-                key: key,
+                key,
                 member: member,
                 radius: radius,
                 unit: unit,
@@ -1259,7 +1259,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func georadiusbymemberRo<Member: RESPStringRenderable>(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         member: Member,
         radius: Double,
         unit: GEORADIUSBYMEMBERRO<Member>.Unit,
@@ -1271,7 +1271,7 @@ extension ValkeyConnectionProtocol {
     ) async throws -> RESPToken.Array {
         try await send(
             command: GEORADIUSBYMEMBERRO(
-                key: key,
+                key,
                 member: member,
                 radius: radius,
                 unit: unit,
@@ -1296,7 +1296,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func georadiusRo(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         longitude: Double,
         latitude: Double,
         radius: Double,
@@ -1309,7 +1309,7 @@ extension ValkeyConnectionProtocol {
     ) async throws -> RESPToken.Array {
         try await send(
             command: GEORADIUSRO(
-                key: key,
+                key,
                 longitude: longitude,
                 latitude: latitude,
                 radius: radius,
@@ -1333,7 +1333,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: Array of matched members information.
     @inlinable
     public func geosearch(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         from: GEOSEARCH.From,
         by: GEOSEARCH.By,
         order: GEOSEARCH.Order? = nil,
@@ -1344,7 +1344,7 @@ extension ValkeyConnectionProtocol {
     ) async throws -> RESPToken.Array {
         try await send(
             command: GEOSEARCH(
-                key: key,
+                key,
                 from: from,
                 by: by,
                 order: order,

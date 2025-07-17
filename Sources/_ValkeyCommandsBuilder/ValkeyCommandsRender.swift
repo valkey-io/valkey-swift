@@ -294,11 +294,11 @@ extension String {
         self.append("\n")
         let commandParametersString =
             argumentsWithoutNonOptionalTokens
-            .map { "\($0.name.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true, genericStrings: genericStrings))" }
+            .map { "\($0.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true, genericStrings: genericStrings))" }
             .joined(separator: ", ")
         self.append("\(tab)        @inlinable public init(\(commandParametersString)) {\n")
         for arg in argumentsWithoutNonOptionalTokens {
-            self.append("\(tab)            self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
+            self.append("\(tab)            self.\(arg.swiftVariable) = \(arg.swiftVariable)\n")
         }
         self.append("\(tab)        }\n\n")
         self.append("\(tab)        @inlinable\n")
@@ -357,10 +357,13 @@ extension String {
             returnType = "RESPToken"
         }
         // Command function
-        let commandParametersString =
+        var commandParametersString =
             arguments
-            .map { "\($0.name.swiftVariable): \(parameterType($0, names: [], scope: nil, isArray: true, genericStrings: true))" }
+            .map { "\($0.swiftVariable): \(parameterType($0, names: [], scope: nil, isArray: true, genericStrings: true))" }
             .joined(separator: ", ")
+        if arguments.first?.shouldRemoveArgumentLabel == true {
+            commandParametersString = "_ \(commandParametersString)"
+        }
         let commandArguments =
             if let subCommand {
                 ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
@@ -374,14 +377,14 @@ extension String {
         if arguments.count > 0 {
             for arg in arguments {
                 self.append(
-                    "\(tab)    public var \(arg.name.swiftVariable): \(variableType(arg, names: [], scope: nil, isArray: true, genericStrings: true))\n"
+                    "\(tab)    public var \(arg.swiftVariable): \(variableType(arg, names: [], scope: nil, isArray: true, genericStrings: true))\n"
                 )
             }
             self.append("\n")
         }
         self.append("\(tab)    @inlinable public init(\(commandParametersString)) {\n")
         for arg in arguments {
-            self.append("\(tab)        self.\(arg.name.swiftVariable) = \(arg.name.swiftVariable)\n")
+            self.append("\(tab)        self.\(arg.swiftVariable) = \(arg.swiftVariable)\n")
         }
         self.append("\(tab)    }\n\n")
         if let (keysAffectedType, keysAffected) = constructKeysAffected(command.arguments) {
@@ -428,15 +431,23 @@ extension String {
             // Comment header
             self.appendFunctionCommentHeader(command: command, name: name)
             // Operation function
-            let parametersString =
+            var parametersString =
                 arguments
                 .map {
-                    "\($0.functionLabel(isArray: isArray)): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray, genericStrings: true))"
+                    "\($0.swiftArgument): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray, genericStrings: true))"
                 }
                 .joined(separator: ", ")
+            if arguments.first?.shouldRemoveArgumentLabel == true {
+                parametersString = "_ \(parametersString)"
+            }
             self.append("    @inlinable\n")
             self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
-            let commandArguments = arguments.map { "\($0.name.swiftArgument): \($0.name.swiftVariable)" }
+            let commandArguments: [String] =
+                if let firstArgument = arguments.first, firstArgument.shouldRemoveArgumentLabel == true {
+                    [firstArgument.swiftVariable] + (arguments.dropFirst()).map { "\($0.swiftArgument): \($0.swiftVariable)" }
+                } else {
+                    arguments.map { "\($0.swiftArgument): \($0.swiftVariable)" }
+                }
             let argumentsString = commandArguments.joined(separator: ", ")
             self.append(
                 "        \(ignoreSendResponse)try await send(command: \(name.commandTypeName)(\(argumentsString)))\n"
@@ -525,11 +536,11 @@ private func constructKeysAffected(_ arguments: [ValkeyCommand.Argument]?) -> (t
 private func getKeyArguments(from argument: ValkeyCommand.Argument) -> [(name: String, multiple: Bool)] {
     if argument.type == .key {
         if argument.multiple {
-            return [(name: argument.name.swiftVariable, multiple: true)]
+            return [(name: argument.swiftVariable, multiple: true)]
         } else if argument.optional {
-            return [(name: "(\(argument.name.swiftVariable).map { [$0] } ?? [])", multiple: true)]
+            return [(name: "(\(argument.swiftVariable).map { [$0] } ?? [])", multiple: true)]
         } else {
-            return [(name: argument.name.swiftVariable, multiple: false)]
+            return [(name: argument.swiftVariable, multiple: false)]
         }
     } else if argument.type == .block, let blockArguments = argument.arguments {
         let blockKeyArguments = blockArguments.flatMap { getKeyArguments(from: $0) }
@@ -537,14 +548,14 @@ private func getKeyArguments(from argument: ValkeyCommand.Argument) -> [(name: S
         if let blockArgument = blockKeyArguments.first {
             if argument.multiple {
                 if blockArgument.multiple {
-                    return [(name: "\(argument.name.swiftVariable).flatMap { $0.\(blockArgument.name) }", multiple: true)]
+                    return [(name: "\(argument.swiftVariable).flatMap { $0.\(blockArgument.name) }", multiple: true)]
                 } else {
-                    return [(name: "\(argument.name.swiftVariable).map { $0.\(blockArgument.name) }", multiple: true)]
+                    return [(name: "\(argument.swiftVariable).map { $0.\(blockArgument.name) }", multiple: true)]
                 }
             } else if argument.optional {
                 assert(blockKeyArguments.count <= 1, "Do not currently support optional blocks holding keys")
             } else {
-                return [(name: "\(argument.name.swiftVariable).\(blockArgument.name)", multiple: blockArgument.multiple)]
+                return [(name: "\(argument.swiftVariable).\(blockArgument.name)", multiple: blockArgument.multiple)]
             }
         }
     }
@@ -731,7 +742,7 @@ extension ValkeyCommand.ArgumentType {
 
 extension ValkeyCommand.Argument {
     func respRepresentable(isArray: Bool, genericString: Bool) -> String {
-        var variable = self.functionLabel(isArray: multiple && isArray)
+        var variable = self.swiftVariable
         switch self.type
         {
         case .pureToken:
@@ -793,18 +804,23 @@ extension ValkeyCommand.Argument {
     }
 
     var swiftVariable: String {
-        self.name.swiftVariable
+        self.renderedName.swiftVariable
     }
 
     var swiftArgument: String {
-        self.name.swiftArgument
+        self.renderedName.swiftArgument
     }
 
-    func functionLabel(isArray: Bool) -> String {
-        if isArray, self.multiple {
-            return "\(self.swiftVariable)"
+    /// Name we use for rendered variable. Appends an "s" for array arguments
+    var renderedName: String {
+        if self.multiple {
+            "\(self.name)s"
         } else {
-            return self.swiftVariable
+            name
         }
+    }
+
+    var shouldRemoveArgumentLabel: Bool {
+        self.swiftArgument == "key"
     }
 }

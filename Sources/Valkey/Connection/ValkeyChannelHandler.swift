@@ -230,21 +230,21 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         switch self.subscriptions.unsubscribe(id: id) {
         case .unsubscribe(let channels):
             self.performUnsubscribe(
-                command: UNSUBSCRIBE(channel: channels),
+                command: UNSUBSCRIBE(channels: channels),
                 filters: channels.map { .channel($0) },
                 promise: promise,
                 requestID: requestID
             )
         case .punsubscribe(let patterns):
             self.performUnsubscribe(
-                command: PUNSUBSCRIBE(pattern: patterns),
+                command: PUNSUBSCRIBE(patterns: patterns),
                 filters: patterns.map { .pattern($0) },
                 promise: promise,
                 requestID: requestID
             )
         case .sunsubscribe(let shardChannels):
             self.performUnsubscribe(
-                command: SUNSUBSCRIBE(shardchannel: shardChannels),
+                command: SUNSUBSCRIBE(shardchannels: shardChannels),
                 filters: shardChannels.map { .shardChannel($0) },
                 promise: promise,
                 requestID: requestID

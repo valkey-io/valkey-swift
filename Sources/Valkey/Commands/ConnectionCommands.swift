@@ -55,14 +55,14 @@ extension CLIENT {
     /// A client claims its capability.
     @_documentation(visibility: internal)
     public struct CAPA<Capability: RESPStringRenderable>: ValkeyCommand {
-        public var capability: [Capability]
+        public var capabilitys: [Capability]
 
-        @inlinable public init(capability: [Capability]) {
-            self.capability = capability
+        @inlinable public init(capabilitys: [Capability]) {
+            self.capabilitys = capabilitys
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "CAPA", capability.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("CLIENT", "CAPA", capabilitys.map { RESPBulkString($0) })
         }
     }
 
@@ -202,7 +202,7 @@ extension CLIENT {
             }
         }
         public enum FilterNewFormat: RESPRenderable, Sendable, Hashable {
-            case clientId([Int])
+            case clientIds([Int])
             case clientType(FilterNewFormatClientType?)
             case username(String?)
             case addr(String?)
@@ -213,7 +213,7 @@ extension CLIENT {
             @inlinable
             public var respEntries: Int {
                 switch self {
-                case .clientId(let clientId): RESPWithToken("ID", clientId).respEntries
+                case .clientIds(let clientIds): RESPWithToken("ID", clientIds).respEntries
                 case .clientType(let clientType): RESPWithToken("TYPE", clientType).respEntries
                 case .username(let username): RESPWithToken("USER", username).respEntries
                 case .addr(let addr): RESPWithToken("ADDR", addr).respEntries
@@ -226,7 +226,7 @@ extension CLIENT {
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .clientId(let clientId): RESPWithToken("ID", clientId).encode(into: &commandEncoder)
+                case .clientIds(let clientIds): RESPWithToken("ID", clientIds).encode(into: &commandEncoder)
                 case .clientType(let clientType): RESPWithToken("TYPE", clientType).encode(into: &commandEncoder)
                 case .username(let username): RESPWithToken("USER", username).encode(into: &commandEncoder)
                 case .addr(let addr): RESPWithToken("ADDR", addr).encode(into: &commandEncoder)
@@ -238,13 +238,13 @@ extension CLIENT {
         }
         public enum Filter: RESPRenderable, Sendable, Hashable {
             case oldFormat(String)
-            case newFormat([FilterNewFormat])
+            case newFormats([FilterNewFormat])
 
             @inlinable
             public var respEntries: Int {
                 switch self {
                 case .oldFormat(let oldFormat): oldFormat.respEntries
-                case .newFormat(let newFormat): newFormat.respEntries
+                case .newFormats(let newFormats): newFormats.respEntries
                 }
             }
 
@@ -252,7 +252,7 @@ extension CLIENT {
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
                 case .oldFormat(let oldFormat): oldFormat.encode(into: &commandEncoder)
-                case .newFormat(let newFormat): newFormat.encode(into: &commandEncoder)
+                case .newFormats(let newFormats): newFormats.encode(into: &commandEncoder)
                 }
             }
         }
@@ -309,7 +309,7 @@ extension CLIENT {
         public typealias Response = ByteBuffer
 
         public var clientType: ClientType?
-        public var clientId: [Int]
+        public var clientIds: [Int]
         public var username: String?
         public var addr: String?
         public var laddr: String?
@@ -318,7 +318,7 @@ extension CLIENT {
 
         @inlinable public init(
             clientType: ClientType? = nil,
-            clientId: [Int] = [],
+            clientIds: [Int] = [],
             username: String? = nil,
             addr: String? = nil,
             laddr: String? = nil,
@@ -326,7 +326,7 @@ extension CLIENT {
             maxage: Int? = nil
         ) {
             self.clientType = clientType
-            self.clientId = clientId
+            self.clientIds = clientIds
             self.username = username
             self.addr = addr
             self.laddr = laddr
@@ -339,7 +339,7 @@ extension CLIENT {
                 "CLIENT",
                 "LIST",
                 RESPWithToken("TYPE", clientType),
-                RESPWithToken("ID", clientId),
+                RESPWithToken("ID", clientIds),
                 RESPWithToken("USER", username),
                 RESPWithToken("ADDR", addr),
                 RESPWithToken("LADDR", laddr),
@@ -537,7 +537,7 @@ extension CLIENT {
         }
         public var status: Status
         public var clientId: Int?
-        public var prefix: [String]
+        public var prefixs: [String]
         public var bcast: Bool
         public var optin: Bool
         public var optout: Bool
@@ -546,7 +546,7 @@ extension CLIENT {
         @inlinable public init(
             status: Status,
             clientId: Int? = nil,
-            prefix: [String] = [],
+            prefixs: [String] = [],
             bcast: Bool = false,
             optin: Bool = false,
             optout: Bool = false,
@@ -554,7 +554,7 @@ extension CLIENT {
         ) {
             self.status = status
             self.clientId = clientId
-            self.prefix = prefix
+            self.prefixs = prefixs
             self.bcast = bcast
             self.optin = optin
             self.optout = optout
@@ -567,7 +567,7 @@ extension CLIENT {
                 "TRACKING",
                 status,
                 RESPWithToken("REDIRECT", clientId),
-                RESPWithToken("PREFIX", prefix),
+                RESPWithToken("PREFIX", prefixs),
                 RESPPureToken("BCAST", bcast),
                 RESPPureToken("OPTIN", optin),
                 RESPPureToken("OPTOUT", optout),
@@ -828,8 +828,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 8.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func clientCapa<Capability: RESPStringRenderable>(capability: [Capability]) async throws {
-        _ = try await send(command: CLIENT.CAPA(capability: capability))
+    public func clientCapa<Capability: RESPStringRenderable>(capabilitys: [Capability]) async throws {
+        _ = try await send(command: CLIENT.CAPA(capabilitys: capabilitys))
     }
 
     /// Returns the name of the connection.
@@ -942,7 +942,7 @@ extension ValkeyConnectionProtocol {
     @inlinable
     public func clientList(
         clientType: CLIENT.LIST.ClientType? = nil,
-        clientId: [Int] = [],
+        clientIds: [Int] = [],
         username: String? = nil,
         addr: String? = nil,
         laddr: String? = nil,
@@ -952,7 +952,7 @@ extension ValkeyConnectionProtocol {
         try await send(
             command: CLIENT.LIST(
                 clientType: clientType,
-                clientId: clientId,
+                clientIds: clientIds,
                 username: username,
                 addr: addr,
                 laddr: laddr,
@@ -1035,14 +1035,14 @@ extension ValkeyConnectionProtocol {
     public func clientTracking(
         status: CLIENT.TRACKING.Status,
         clientId: Int? = nil,
-        prefix: [String] = [],
+        prefixs: [String] = [],
         bcast: Bool = false,
         optin: Bool = false,
         optout: Bool = false,
         noloop: Bool = false
     ) async throws {
         _ = try await send(
-            command: CLIENT.TRACKING(status: status, clientId: clientId, prefix: prefix, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
+            command: CLIENT.TRACKING(status: status, clientId: clientId, prefixs: prefixs, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
         )
     }
 

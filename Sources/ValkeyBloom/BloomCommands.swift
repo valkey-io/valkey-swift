@@ -31,7 +31,7 @@ public enum BF {
         public var key: ValkeyKey
         public var value: Value
 
-        @inlinable public init(key: ValkeyKey, value: Value) {
+        @inlinable public init(_ key: ValkeyKey, value: Value) {
             self.key = key
             self.value = value
         }
@@ -48,7 +48,7 @@ public enum BF {
     public struct CARD: ValkeyCommand {
         public var key: ValkeyKey
 
-        @inlinable public init(key: ValkeyKey) {
+        @inlinable public init(_ key: ValkeyKey) {
             self.key = key
         }
 
@@ -65,7 +65,7 @@ public enum BF {
         public var key: ValkeyKey
         public var value: Value
 
-        @inlinable public init(key: ValkeyKey, value: Value) {
+        @inlinable public init(_ key: ValkeyKey, value: Value) {
             self.key = key
             self.value = value
         }
@@ -108,7 +108,7 @@ public enum BF {
         public var key: ValkeyKey
         public var sortby: Sortby?
 
-        @inlinable public init(key: ValkeyKey, sortby: Sortby? = nil) {
+        @inlinable public init(_ key: ValkeyKey, sortby: Sortby? = nil) {
             self.key = key
             self.sortby = sortby
         }
@@ -132,10 +132,10 @@ public enum BF {
         public var validatescaleto: Int?
         public var nonscaling: Bool
         public var nocreate: Bool
-        public var value: [String]
+        public var values: [String]
 
         @inlinable public init(
-            key: ValkeyKey,
+            _ key: ValkeyKey,
             capacity: Int? = nil,
             error: Double? = nil,
             expansion: Int? = nil,
@@ -144,7 +144,7 @@ public enum BF {
             validatescaleto: Int? = nil,
             nonscaling: Bool = false,
             nocreate: Bool = false,
-            value: [String] = []
+            values: [String] = []
         ) {
             self.key = key
             self.capacity = capacity
@@ -155,7 +155,7 @@ public enum BF {
             self.validatescaleto = validatescaleto
             self.nonscaling = nonscaling
             self.nocreate = nocreate
-            self.value = value
+            self.values = values
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -172,7 +172,7 @@ public enum BF {
                 RESPWithToken("VALIDATESCALETO", validatescaleto),
                 RESPPureToken("NONSCALING", nonscaling),
                 RESPPureToken("NOCREATE", nocreate),
-                RESPWithToken("ITEMS", value)
+                RESPWithToken("ITEMS", values)
             )
         }
     }
@@ -183,7 +183,7 @@ public enum BF {
         public var key: ValkeyKey
         public var dump: Dump
 
-        @inlinable public init(key: ValkeyKey, dump: Dump) {
+        @inlinable public init(_ key: ValkeyKey, dump: Dump) {
             self.key = key
             self.dump = dump
         }
@@ -199,17 +199,17 @@ public enum BF {
     @_documentation(visibility: internal)
     public struct MADD<Value: RESPStringRenderable>: ValkeyCommand {
         public var key: ValkeyKey
-        public var value: [Value]
+        public var values: [Value]
 
-        @inlinable public init(key: ValkeyKey, value: [Value]) {
+        @inlinable public init(_ key: ValkeyKey, values: [Value]) {
             self.key = key
-            self.value = value
+            self.values = values
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("BF.MADD", key, value.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("BF.MADD", key, values.map { RESPBulkString($0) })
         }
     }
 
@@ -217,17 +217,17 @@ public enum BF {
     @_documentation(visibility: internal)
     public struct MEXISTS<Value: RESPStringRenderable>: ValkeyCommand {
         public var key: ValkeyKey
-        public var value: [Value]
+        public var values: [Value]
 
-        @inlinable public init(key: ValkeyKey, value: [Value]) {
+        @inlinable public init(_ key: ValkeyKey, values: [Value]) {
             self.key = key
-            self.value = value
+            self.values = values
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("BF.MEXISTS", key, value.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("BF.MEXISTS", key, values.map { RESPBulkString($0) })
         }
     }
 
@@ -240,7 +240,7 @@ public enum BF {
         public var expansion: Int?
         public var nonscaling: Bool
 
-        @inlinable public init(key: ValkeyKey, errorRate: Double, capacity: Int, expansion: Int? = nil, nonscaling: Bool = false) {
+        @inlinable public init(_ key: ValkeyKey, errorRate: Double, capacity: Int, expansion: Int? = nil, nonscaling: Bool = false) {
             self.key = key
             self.errorRate = errorRate
             self.capacity = capacity
@@ -270,8 +270,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.ADD](https://valkey.io/commands/bf.add)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
-    public func bfAdd<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
-        try await send(command: BF.ADD(key: key, value: value))
+    public func bfAdd<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPToken {
+        try await send(command: BF.ADD(key, value: value))
     }
 
     /// Returns the cardinality of a bloom filter
@@ -279,8 +279,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.CARD](https://valkey.io/commands/bf.card)
     /// - Complexity: O(1)
     @inlinable
-    public func bfCard(key: ValkeyKey) async throws -> BF.CARD.Response {
-        try await send(command: BF.CARD(key: key))
+    public func bfCard(_ key: ValkeyKey) async throws -> BF.CARD.Response {
+        try await send(command: BF.CARD(key))
     }
 
     /// Determines if the bloom filter contains the specified item
@@ -288,8 +288,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.EXISTS](https://valkey.io/commands/bf.exists)
     /// - Complexity: O(N), where N is the number of hash functions used by the bloom filter.
     @inlinable
-    public func bfExists<Value: RESPStringRenderable>(key: ValkeyKey, value: Value) async throws -> RESPToken {
-        try await send(command: BF.EXISTS(key: key, value: value))
+    public func bfExists<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPToken {
+        try await send(command: BF.EXISTS(key, value: value))
     }
 
     /// Returns usage information and properties of a specific bloom filter
@@ -297,8 +297,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.INFO](https://valkey.io/commands/bf.info)
     /// - Complexity: O(1)
     @inlinable
-    public func bfInfo(key: ValkeyKey, sortby: BF.INFO.Sortby? = nil) async throws -> BF.INFO.Response {
-        try await send(command: BF.INFO(key: key, sortby: sortby))
+    public func bfInfo(_ key: ValkeyKey, sortby: BF.INFO.Sortby? = nil) async throws -> BF.INFO.Response {
+        try await send(command: BF.INFO(key, sortby: sortby))
     }
 
     /// Creates a bloom filter with 0 or more items or adds items to an existing bloom filter
@@ -307,7 +307,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
     public func bfInsert(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         capacity: Int? = nil,
         error: Double? = nil,
         expansion: Int? = nil,
@@ -316,11 +316,11 @@ extension ValkeyConnectionProtocol {
         validatescaleto: Int? = nil,
         nonscaling: Bool = false,
         nocreate: Bool = false,
-        value: [String] = []
+        values: [String] = []
     ) async throws -> BF.INSERT.Response {
         try await send(
             command: BF.INSERT(
-                key: key,
+                key,
                 capacity: capacity,
                 error: error,
                 expansion: expansion,
@@ -329,7 +329,7 @@ extension ValkeyConnectionProtocol {
                 validatescaleto: validatescaleto,
                 nonscaling: nonscaling,
                 nocreate: nocreate,
-                value: value
+                values: values
             )
         )
     }
@@ -339,8 +339,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.LOAD](https://valkey.io/commands/bf.load)
     /// - Complexity: O(N), where N is the capacity
     @inlinable
-    public func bfLoad<Dump: RESPStringRenderable>(key: ValkeyKey, dump: Dump) async throws -> RESPToken {
-        try await send(command: BF.LOAD(key: key, dump: dump))
+    public func bfLoad<Dump: RESPStringRenderable>(_ key: ValkeyKey, dump: Dump) async throws -> RESPToken {
+        try await send(command: BF.LOAD(key, dump: dump))
     }
 
     /// Adds one or more items to a bloom filter. The bloom filter is created if it doesn't exist
@@ -348,8 +348,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.MADD](https://valkey.io/commands/bf.madd)
     /// - Complexity: O(N * K), where N is the number of hash functions used by the bloom filter and K is the number of items being added
     @inlinable
-    public func bfMadd<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
-        try await send(command: BF.MADD(key: key, value: value))
+    public func bfMadd<Value: RESPStringRenderable>(_ key: ValkeyKey, values: [Value]) async throws -> RESPToken {
+        try await send(command: BF.MADD(key, values: values))
     }
 
     /// Determines if the bloom filter contains one or more items
@@ -357,8 +357,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [BF.MEXISTS](https://valkey.io/commands/bf.mexists)
     /// - Complexity: O(K * N), where N is the number of hash functions used by the bloom filter and K is the number of items
     @inlinable
-    public func bfMexists<Value: RESPStringRenderable>(key: ValkeyKey, value: [Value]) async throws -> RESPToken {
-        try await send(command: BF.MEXISTS(key: key, value: value))
+    public func bfMexists<Value: RESPStringRenderable>(_ key: ValkeyKey, values: [Value]) async throws -> RESPToken {
+        try await send(command: BF.MEXISTS(key, values: values))
     }
 
     /// Creates an empty bloom filter with the specified properties
@@ -367,13 +367,13 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func bfReserve(
-        key: ValkeyKey,
+        _ key: ValkeyKey,
         errorRate: Double,
         capacity: Int,
         expansion: Int? = nil,
         nonscaling: Bool = false
     ) async throws -> BF.RESERVE.Response {
-        try await send(command: BF.RESERVE(key: key, errorRate: errorRate, capacity: capacity, expansion: expansion, nonscaling: nonscaling))
+        try await send(command: BF.RESERVE(key, errorRate: errorRate, capacity: capacity, expansion: expansion, nonscaling: nonscaling))
     }
 
 }

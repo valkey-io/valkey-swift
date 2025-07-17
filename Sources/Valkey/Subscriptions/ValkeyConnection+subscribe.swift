@@ -55,7 +55,7 @@ extension ValkeyConnection {
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        let command = SUBSCRIBE(channel: channels)
+        let command = SUBSCRIBE(channels: channels)
         let (id, stream) = try await subscribe(command: command, filters: channels.map { .channel($0) })
         let value: Value
         do {
@@ -108,7 +108,7 @@ extension ValkeyConnection {
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        let command = PSUBSCRIBE(pattern: patterns)
+        let command = PSUBSCRIBE(patterns: patterns)
         let (id, stream) = try await subscribe(command: command, filters: patterns.map { .pattern($0) })
         let value: Value
         do {
@@ -161,7 +161,7 @@ extension ValkeyConnection {
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        let command = SSUBSCRIBE(shardchannel: shardchannel)
+        let command = SSUBSCRIBE(shardchannels: shardchannel)
         let (id, stream) = try await subscribe(command: command, filters: shardchannel.map { .shardChannel($0) })
         let value: Value
         do {

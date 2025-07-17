@@ -28,9 +28,9 @@ struct ClusterIntegrationTests {
         let firstNodePort = ClusterIntegrationTests.firstNodePort ?? 6379
         try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)]) { (client, logger) in
             try await Self.withKey(connection: client) { key in
-                _ = try await client.set(key: key, value: "Hello")
+                _ = try await client.set(key, value: "Hello")
 
-                let response = try await client.get(key: key)
+                let response = try await client.get(key)
                 #expect(response.map { String(buffer: $0) } == "Hello")
             }
         }
@@ -48,7 +48,7 @@ struct ClusterIntegrationTests {
         } catch {
             result = .failure(error)
         }
-        _ = try await connection.del(key: [key])
+        _ = try await connection.del(keys: [key])
         return try result.get()
     }
 
