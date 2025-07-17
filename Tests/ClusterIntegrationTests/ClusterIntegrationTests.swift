@@ -48,7 +48,7 @@ struct ClusterIntegrationTests {
         } catch {
             result = .failure(error)
         }
-        _ = try await connection.del(key: [key])
+        _ = try await connection.del(keys: [key])
         return try result.get()
     }
 

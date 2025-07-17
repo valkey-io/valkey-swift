@@ -357,10 +357,13 @@ extension String {
             returnType = "RESPToken"
         }
         // Command function
-        let commandParametersString =
+        var commandParametersString =
             arguments
             .map { "\($0.swiftVariable): \(parameterType($0, names: [], scope: nil, isArray: true, genericStrings: true))" }
             .joined(separator: ", ")
+        if arguments.first?.shouldRemoveArgumentLabel == true {
+            commandParametersString = "_ \(commandParametersString)"
+        }
         let commandArguments =
             if let subCommand {
                 ["\"\(commandName)\"", "\"\(subCommand)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
@@ -434,12 +437,17 @@ extension String {
                     "\($0.swiftArgument): \(parameterType($0, names: [], scope: "\(name.commandTypeName)\(genericParameters)", isArray: isArray, genericStrings: true))"
                 }
                 .joined(separator: ", ")
-            if arguments.first?.swiftArgument == "key" {
+            if arguments.first?.shouldRemoveArgumentLabel == true {
                 parametersString = "_ \(parametersString)"
             }
             self.append("    @inlinable\n")
             self.append("    public func \(name.swiftFunction)\(genericTypeParameters)(\(parametersString)) async throws\(returnType) {\n")
-            let commandArguments = arguments.map { "\($0.swiftArgument): \($0.swiftVariable)" }
+            let commandArguments: [String] =
+                if let firstArgument = arguments.first, firstArgument.shouldRemoveArgumentLabel == true {
+                    [firstArgument.swiftVariable] + (arguments.dropFirst()).map { "\($0.swiftArgument): \($0.swiftVariable)" }
+                } else {
+                    arguments.map { "\($0.swiftArgument): \($0.swiftVariable)" }
+                }
             let argumentsString = commandArguments.joined(separator: ", ")
             self.append(
                 "        \(ignoreSendResponse)try await send(command: \(name.commandTypeName)(\(argumentsString)))\n"
@@ -810,5 +818,9 @@ extension ValkeyCommand.Argument {
         } else {
             name
         }
+    }
+
+    var shouldRemoveArgumentLabel: Bool {
+        self.swiftArgument == "key"
     }
 }

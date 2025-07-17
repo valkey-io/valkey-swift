@@ -201,8 +201,8 @@ struct ConnectionTests {
         try await channel.processHello()
 
         async let results = connection.pipeline(
-            SET(key: "foo", value: "bar"),
-            GET(key: "foo")
+            SET("foo", value: "bar"),
+            GET("foo")
         )
         var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         let set = RESPToken(.command(["SET", "foo", "bar"])).base
@@ -223,8 +223,8 @@ struct ConnectionTests {
         try await channel.processHello()
 
         async let asyncResults = connection.pipeline(
-            SET(key: "foo", value: "bar"),
-            GET(key: "foo")
+            SET("foo", value: "bar"),
+            GET("foo")
         )
         var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         let set = RESPToken(.command(["SET", "foo", "bar"])).base
@@ -246,8 +246,8 @@ struct ConnectionTests {
         try await channel.processHello()
 
         async let results = connection.transaction(
-            SET(key: "foo", value: "10"),
-            INCR(key: "foo")
+            SET("foo", value: "10"),
+            INCR("foo")
         )
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         var buffer = ByteBuffer()
@@ -273,8 +273,8 @@ struct ConnectionTests {
         try await channel.processHello()
 
         async let asyncResults = connection.transaction(
-            SET(key: "foo", value: "bar"),
-            INCR(key: "foo")
+            SET("foo", value: "bar"),
+            INCR("foo")
         )
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         var buffer = ByteBuffer()
@@ -304,8 +304,8 @@ struct ConnectionTests {
         try await channel.processHello()
 
         async let asyncResults = connection.transaction(
-            SET(key: "foo", value: "bar"),
-            INCR(key: "foo")
+            SET("foo", value: "bar"),
+            INCR("foo")
         )
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         var buffer = ByteBuffer()
@@ -402,8 +402,8 @@ struct ConnectionTests {
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
                 let results = await connection.pipeline(
-                    SET(key: "foo", value: "bar"),
-                    GET(key: "foo")
+                    SET("foo", value: "bar"),
+                    GET("foo")
                 )
                 #expect(throws: ValkeyClientError(.cancelled)) {
                     _ = try results.1.get()
@@ -431,8 +431,8 @@ struct ConnectionTests {
             group.cancelAll()
             group.addTask {
                 let results = await connection.pipeline(
-                    SET(key: "foo", value: "bar"),
-                    GET(key: "foo")
+                    SET("foo", value: "bar"),
+                    GET("foo")
                 )
                 #expect(throws: ValkeyClientError(.cancelled)) {
                     _ = try results.0.get()

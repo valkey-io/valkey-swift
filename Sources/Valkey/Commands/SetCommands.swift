@@ -30,7 +30,7 @@ public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var members: [Member]
 
-    @inlinable public init(key: ValkeyKey, members: [Member]) {
+    @inlinable public init(_ key: ValkeyKey, members: [Member]) {
         self.key = key
         self.members = members
     }
@@ -49,7 +49,7 @@ public struct SCARD: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -172,7 +172,7 @@ public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var member: Member
 
-    @inlinable public init(key: ValkeyKey, member: Member) {
+    @inlinable public init(_ key: ValkeyKey, member: Member) {
         self.key = key
         self.member = member
     }
@@ -193,7 +193,7 @@ public struct SMEMBERS: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -214,7 +214,7 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var members: [Member]
 
-    @inlinable public init(key: ValkeyKey, members: [Member]) {
+    @inlinable public init(_ key: ValkeyKey, members: [Member]) {
         self.key = key
         self.members = members
     }
@@ -258,7 +258,7 @@ public struct SPOP: ValkeyCommand {
     public var key: ValkeyKey
     public var count: Int?
 
-    @inlinable public init(key: ValkeyKey, count: Int? = nil) {
+    @inlinable public init(_ key: ValkeyKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
@@ -278,7 +278,7 @@ public struct SRANDMEMBER: ValkeyCommand {
     public var key: ValkeyKey
     public var count: Int?
 
-    @inlinable public init(key: ValkeyKey, count: Int? = nil) {
+    @inlinable public init(_ key: ValkeyKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
@@ -300,7 +300,7 @@ public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var members: [Member]
 
-    @inlinable public init(key: ValkeyKey, members: [Member]) {
+    @inlinable public init(_ key: ValkeyKey, members: [Member]) {
         self.key = key
         self.members = members
     }
@@ -322,7 +322,7 @@ public struct SSCAN: ValkeyCommand {
     public var pattern: String?
     public var count: Int?
 
-    @inlinable public init(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
+    @inlinable public init(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) {
         self.key = key
         self.cursor = cursor
         self.pattern = pattern
@@ -389,7 +389,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: Number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
     public func sadd<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
-        try await send(command: SADD(key: key, members: members))
+        try await send(command: SADD(key, members: members))
     }
 
     /// Returns the number of members in a set.
@@ -400,7 +400,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The cardinality (number of elements) of the set, or 0 if key does not exist.
     @inlinable
     public func scard(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: SCARD(key: key))
+        try await send(command: SCARD(key))
     }
 
     /// Returns the difference of multiple sets.
@@ -468,7 +468,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: The element is a member of the set.
     @inlinable
     public func sismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws -> Int {
-        try await send(command: SISMEMBER(key: key, member: member))
+        try await send(command: SISMEMBER(key, member: member))
     }
 
     /// Returns all members of a set.
@@ -479,7 +479,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Array]: All elements of the set.
     @inlinable
     public func smembers(_ key: ValkeyKey) async throws -> RESPToken.Array {
-        try await send(command: SMEMBERS(key: key))
+        try await send(command: SMEMBERS(key))
     }
 
     /// Determines whether multiple members belong to a set.
@@ -490,7 +490,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Array]: List representing the membership of the given elements, in the same order as they are requested.
     @inlinable
     public func smismember<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> RESPToken.Array {
-        try await send(command: SMISMEMBER(key: key, members: members))
+        try await send(command: SMISMEMBER(key, members: members))
     }
 
     /// Moves a member from one set to another.
@@ -519,7 +519,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List to the removed members when 'COUNT' is given.
     @inlinable
     public func spop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
-        try await send(command: SPOP(key: key, count: count))
+        try await send(command: SPOP(key, count: count))
     }
 
     /// Get one or multiple random members from a set
@@ -536,7 +536,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: In case `count` is given and key doesn't exist
     @inlinable
     public func srandmember(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
-        try await send(command: SRANDMEMBER(key: key, count: count))
+        try await send(command: SRANDMEMBER(key, count: count))
     }
 
     /// Removes one or more members from a set. Deletes the set if the last member was removed.
@@ -549,7 +549,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: Number of members that were removed from the set, not including non existing members.
     @inlinable
     public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
-        try await send(command: SREM(key: key, members: members))
+        try await send(command: SREM(key, members: members))
     }
 
     /// Iterates over members of a set.
@@ -560,7 +560,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
     public func sscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
-        try await send(command: SSCAN(key: key, cursor: cursor, pattern: pattern, count: count))
+        try await send(command: SSCAN(key, cursor: cursor, pattern: pattern, count: count))
     }
 
     /// Returns the union of multiple sets.

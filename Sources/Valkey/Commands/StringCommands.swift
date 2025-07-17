@@ -30,7 +30,7 @@ public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var value: Value
 
-    @inlinable public init(key: ValkeyKey, value: Value) {
+    @inlinable public init(_ key: ValkeyKey, value: Value) {
         self.key = key
         self.value = value
     }
@@ -49,7 +49,7 @@ public struct DECR: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -68,7 +68,7 @@ public struct DECRBY: ValkeyCommand {
     public var key: ValkeyKey
     public var decrement: Int
 
-    @inlinable public init(key: ValkeyKey, decrement: Int) {
+    @inlinable public init(_ key: ValkeyKey, decrement: Int) {
         self.key = key
         self.decrement = decrement
     }
@@ -87,7 +87,7 @@ public struct GET: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -107,7 +107,7 @@ public struct GETDEL: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -134,7 +134,8 @@ public struct GETEX: ValkeyCommand {
             case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
             case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
             case .persist: "PERSIST".respEntries
             }
         }
@@ -144,8 +145,10 @@ public struct GETEX: ValkeyCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
-            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds):
+                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
             case .persist: "PERSIST".encode(into: &commandEncoder)
             }
         }
@@ -155,7 +158,7 @@ public struct GETEX: ValkeyCommand {
     public var key: ValkeyKey
     public var expiration: Expiration?
 
-    @inlinable public init(key: ValkeyKey, expiration: Expiration? = nil) {
+    @inlinable public init(_ key: ValkeyKey, expiration: Expiration? = nil) {
         self.key = key
         self.expiration = expiration
     }
@@ -176,7 +179,7 @@ public struct GETRANGE: ValkeyCommand {
     public var start: Int
     public var end: Int
 
-    @inlinable public init(key: ValkeyKey, start: Int, end: Int) {
+    @inlinable public init(_ key: ValkeyKey, start: Int, end: Int) {
         self.key = key
         self.start = start
         self.end = end
@@ -199,7 +202,7 @@ public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var value: Value
 
-    @inlinable public init(key: ValkeyKey, value: Value) {
+    @inlinable public init(_ key: ValkeyKey, value: Value) {
         self.key = key
         self.value = value
     }
@@ -218,7 +221,7 @@ public struct INCR: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -237,7 +240,7 @@ public struct INCRBY: ValkeyCommand {
     public var key: ValkeyKey
     public var increment: Int
 
-    @inlinable public init(key: ValkeyKey, increment: Int) {
+    @inlinable public init(_ key: ValkeyKey, increment: Int) {
         self.key = key
         self.increment = increment
     }
@@ -257,7 +260,7 @@ public struct INCRBYFLOAT: ValkeyCommand {
     public var key: ValkeyKey
     public var increment: Double
 
-    @inlinable public init(key: ValkeyKey, increment: Double) {
+    @inlinable public init(_ key: ValkeyKey, increment: Double) {
         self.key = key
         self.increment = increment
     }
@@ -279,7 +282,14 @@ public struct LCS: ValkeyCommand {
     public var minMatchLen: Int?
     public var withmatchlen: Bool
 
-    @inlinable public init(key1: ValkeyKey, key2: ValkeyKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) {
+    @inlinable public init(
+        key1: ValkeyKey,
+        key2: ValkeyKey,
+        len: Bool = false,
+        idx: Bool = false,
+        minMatchLen: Int? = nil,
+        withmatchlen: Bool = false
+    ) {
         self.key1 = key1
         self.key2 = key2
         self.len = len
@@ -293,7 +303,15 @@ public struct LCS: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LCS", key1, key2, RESPPureToken("LEN", len), RESPPureToken("IDX", idx), RESPWithToken("MINMATCHLEN", minMatchLen), RESPPureToken("WITHMATCHLEN", withmatchlen))
+        commandEncoder.encodeArray(
+            "LCS",
+            key1,
+            key2,
+            RESPPureToken("LEN", len),
+            RESPPureToken("IDX", idx),
+            RESPWithToken("MINMATCHLEN", minMatchLen),
+            RESPPureToken("WITHMATCHLEN", withmatchlen)
+        )
     }
 }
 
@@ -398,7 +416,7 @@ public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var milliseconds: Int
     public var value: Value
 
-    @inlinable public init(key: ValkeyKey, milliseconds: Int, value: Value) {
+    @inlinable public init(_ key: ValkeyKey, milliseconds: Int, value: Value) {
         self.key = key
         self.milliseconds = milliseconds
         self.value = value
@@ -450,7 +468,8 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
             case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
             case .keepttl: "KEEPTTL".respEntries
             }
         }
@@ -460,8 +479,10 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             switch self {
             case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
             case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
-            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
-            case .unixTimeMilliseconds(let unixTimeMilliseconds): RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds):
+                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
             case .keepttl: "KEEPTTL".encode(into: &commandEncoder)
             }
         }
@@ -474,7 +495,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
     public var get: Bool
     public var expiration: Expiration?
 
-    @inlinable public init(key: ValkeyKey, value: Value, condition: Condition? = nil, get: Bool = false, expiration: Expiration? = nil) {
+    @inlinable public init(_ key: ValkeyKey, value: Value, condition: Condition? = nil, get: Bool = false, expiration: Expiration? = nil) {
         self.key = key
         self.value = value
         self.condition = condition
@@ -496,7 +517,7 @@ public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var seconds: Int
     public var value: Value
 
-    @inlinable public init(key: ValkeyKey, seconds: Int, value: Value) {
+    @inlinable public init(_ key: ValkeyKey, seconds: Int, value: Value) {
         self.key = key
         self.seconds = seconds
         self.value = value
@@ -517,7 +538,7 @@ public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var value: Value
 
-    @inlinable public init(key: ValkeyKey, value: Value) {
+    @inlinable public init(_ key: ValkeyKey, value: Value) {
         self.key = key
         self.value = value
     }
@@ -538,7 +559,7 @@ public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
     public var offset: Int
     public var value: Value
 
-    @inlinable public init(key: ValkeyKey, offset: Int, value: Value) {
+    @inlinable public init(_ key: ValkeyKey, offset: Int, value: Value) {
         self.key = key
         self.offset = offset
         self.value = value
@@ -558,7 +579,7 @@ public struct STRLEN: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -580,7 +601,7 @@ public struct SUBSTR: ValkeyCommand {
     public var start: Int
     public var end: Int
 
-    @inlinable public init(key: ValkeyKey, start: Int, end: Int) {
+    @inlinable public init(_ key: ValkeyKey, start: Int, end: Int) {
         self.key = key
         self.start = start
         self.end = end
@@ -604,7 +625,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The length of the string after the append operation.
     @inlinable
     public func append<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
-        try await send(command: APPEND(key: key, value: value))
+        try await send(command: APPEND(key, value: value))
     }
 
     /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
@@ -615,7 +636,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The value of the key after decrementing it.
     @inlinable
     public func decr(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: DECR(key: key))
+        try await send(command: DECR(key))
     }
 
     /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
@@ -626,7 +647,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The value of the key after decrementing it.
     @inlinable
     public func decrby(_ key: ValkeyKey, decrement: Int) async throws -> Int {
-        try await send(command: DECRBY(key: key, decrement: decrement))
+        try await send(command: DECRBY(key, decrement: decrement))
     }
 
     /// Returns the string value of a key.
@@ -639,7 +660,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key does not exist.
     @inlinable
     public func get(_ key: ValkeyKey) async throws -> ByteBuffer? {
-        try await send(command: GET(key: key))
+        try await send(command: GET(key))
     }
 
     /// Returns the string value of a key after deleting the key.
@@ -652,7 +673,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: The key does not exist.
     @inlinable
     public func getdel(_ key: ValkeyKey) async throws -> ByteBuffer? {
-        try await send(command: GETDEL(key: key))
+        try await send(command: GETDEL(key))
     }
 
     /// Returns the string value of a key after setting its expiration time.
@@ -665,7 +686,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key does not exist.
     @inlinable
     public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> ByteBuffer? {
-        try await send(command: GETEX(key: key, expiration: expiration))
+        try await send(command: GETEX(key, expiration: expiration))
     }
 
     /// Returns a substring of the string stored at a key.
@@ -676,7 +697,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     public func getrange(_ key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
-        try await send(command: GETRANGE(key: key, start: start, end: end))
+        try await send(command: GETRANGE(key, start: start, end: end))
     }
 
     /// Returns the previous string value of a key after setting it to a new value.
@@ -690,7 +711,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: The key does not exist.
     @inlinable
     public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> ByteBuffer? {
-        try await send(command: GETSET(key: key, value: value))
+        try await send(command: GETSET(key, value: value))
     }
 
     /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
@@ -701,7 +722,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The value of key after the increment
     @inlinable
     public func incr(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: INCR(key: key))
+        try await send(command: INCR(key))
     }
 
     /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
@@ -712,7 +733,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The value of the key after incrementing it.
     @inlinable
     public func incrby(_ key: ValkeyKey, increment: Int) async throws -> Int {
-        try await send(command: INCRBY(key: key, increment: increment))
+        try await send(command: INCRBY(key, increment: increment))
     }
 
     /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
@@ -723,7 +744,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [String]: The value of the key after incrementing it.
     @inlinable
     public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws -> ByteBuffer {
-        try await send(command: INCRBYFLOAT(key: key, increment: increment))
+        try await send(command: INCRBYFLOAT(key, increment: increment))
     }
 
     /// Finds the longest common substring.
@@ -736,7 +757,14 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: The length of the longest common subsequence when 'LEN' is given.
     ///     * [Map]: Array with the LCS length and all the ranges in both the strings when 'IDX' is given. In RESP2 this is returned as a flat array
     @inlinable
-    public func lcs(key1: ValkeyKey, key2: ValkeyKey, len: Bool = false, idx: Bool = false, minMatchLen: Int? = nil, withmatchlen: Bool = false) async throws -> LCS.Response {
+    public func lcs(
+        key1: ValkeyKey,
+        key2: ValkeyKey,
+        len: Bool = false,
+        idx: Bool = false,
+        minMatchLen: Int? = nil,
+        withmatchlen: Bool = false
+    ) async throws -> LCS.Response {
         try await send(command: LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
@@ -782,7 +810,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func psetex<Value: RESPStringRenderable>(_ key: ValkeyKey, milliseconds: Int, value: Value) async throws {
-        _ = try await send(command: PSETEX(key: key, milliseconds: milliseconds, value: value))
+        _ = try await send(command: PSETEX(key, milliseconds: milliseconds, value: value))
     }
 
     /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
@@ -802,8 +830,14 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: `GET` given: The key didn't exist before the `SET`
     ///     * [String]: `GET` given: The previous value of the key
     @inlinable
-    public func set<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value, condition: SET<Value>.Condition? = nil, get: Bool = false, expiration: SET<Value>.Expiration? = nil) async throws -> ByteBuffer? {
-        try await send(command: SET(key: key, value: value, condition: condition, get: get, expiration: expiration))
+    public func set<Value: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        value: Value,
+        condition: SET<Value>.Condition? = nil,
+        get: Bool = false,
+        expiration: SET<Value>.Expiration? = nil
+    ) async throws -> ByteBuffer? {
+        try await send(command: SET(key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
     /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
@@ -814,7 +848,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func setex<Value: RESPStringRenderable>(_ key: ValkeyKey, seconds: Int, value: Value) async throws {
-        _ = try await send(command: SETEX(key: key, seconds: seconds, value: value))
+        _ = try await send(command: SETEX(key, seconds: seconds, value: value))
     }
 
     /// Set the string value of a key only when the key doesn't exist.
@@ -828,7 +862,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: The key was not set.
     @inlinable
     public func setnx<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
-        try await send(command: SETNX(key: key, value: value))
+        try await send(command: SETNX(key, value: value))
     }
 
     /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
@@ -839,7 +873,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: Length of the string after it was modified by the command.
     @inlinable
     public func setrange<Value: RESPStringRenderable>(_ key: ValkeyKey, offset: Int, value: Value) async throws -> Int {
-        try await send(command: SETRANGE(key: key, offset: offset, value: value))
+        try await send(command: SETRANGE(key, offset: offset, value: value))
     }
 
     /// Returns the length of a string value.
@@ -850,7 +884,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The length of the string value stored at key, or 0 when key does not exist.
     @inlinable
     public func strlen(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: STRLEN(key: key))
+        try await send(command: STRLEN(key))
     }
 
     /// Returns a substring from a string value.
@@ -862,7 +896,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     public func substr(_ key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
-        try await send(command: SUBSTR(key: key, start: start, end: end))
+        try await send(command: SUBSTR(key, start: start, end: end))
     }
 
 }

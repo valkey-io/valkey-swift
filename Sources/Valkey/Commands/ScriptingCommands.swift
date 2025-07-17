@@ -598,7 +598,10 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions on the payload
     @inlinable
-    public func functionRestore<SerializedValue: RESPStringRenderable>(serializedValue: SerializedValue, policy: FUNCTION.RESTORE<SerializedValue>.Policy? = nil) async throws {
+    public func functionRestore<SerializedValue: RESPStringRenderable>(
+        serializedValue: SerializedValue,
+        policy: FUNCTION.RESTORE<SerializedValue>.Policy? = nil
+    ) async throws {
         _ = try await send(command: FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
     }
 

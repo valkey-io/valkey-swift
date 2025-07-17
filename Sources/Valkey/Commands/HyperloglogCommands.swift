@@ -30,7 +30,7 @@ public struct PFADD: ValkeyCommand {
     public var key: ValkeyKey
     public var elements: [String]
 
-    @inlinable public init(key: ValkeyKey, elements: [String] = []) {
+    @inlinable public init(_ key: ValkeyKey, elements: [String] = []) {
         self.key = key
         self.elements = elements
     }
@@ -91,7 +91,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: If no HyperLogLog internal register were altered.
     @inlinable
     public func pfadd(_ key: ValkeyKey, elements: [String] = []) async throws -> Int {
-        try await send(command: PFADD(key: key, elements: elements))
+        try await send(command: PFADD(key, elements: elements))
     }
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).

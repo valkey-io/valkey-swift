@@ -271,7 +271,7 @@ public enum CLUSTER {
 
         public var key: Key
 
-        @inlinable public init(key: Key) {
+        @inlinable public init(_ key: Key) {
             self.key = key
         }
 
@@ -804,7 +804,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The hash slot number for the specified key
     @inlinable
     public func clusterKeyslot<Key: RESPStringRenderable>(_ key: Key) async throws -> Int {
-        try await send(command: CLUSTER.KEYSLOT(key: key))
+        try await send(command: CLUSTER.KEYSLOT(key))
     }
 
     /// Returns a list of all TCP links to and from peer nodes.

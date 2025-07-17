@@ -85,7 +85,7 @@ public struct BITCOUNT: ValkeyCommand {
     public var key: ValkeyKey
     public var range: Range?
 
-    @inlinable public init(key: ValkeyKey, range: Range? = nil) {
+    @inlinable public init(_ key: ValkeyKey, range: Range? = nil) {
         self.key = key
         self.range = range
     }
@@ -250,7 +250,7 @@ public struct BITFIELD: ValkeyCommand {
     public var key: ValkeyKey
     public var operations: [Operation]
 
-    @inlinable public init(key: ValkeyKey, operations: [Operation] = []) {
+    @inlinable public init(_ key: ValkeyKey, operations: [Operation] = []) {
         self.key = key
         self.operations = operations
     }
@@ -290,7 +290,7 @@ public struct BITFIELDRO: ValkeyCommand {
     public var key: ValkeyKey
     public var getBlocks: [GetBlock]
 
-    @inlinable public init(key: ValkeyKey, getBlocks: [GetBlock] = []) {
+    @inlinable public init(_ key: ValkeyKey, getBlocks: [GetBlock] = []) {
         self.key = key
         self.getBlocks = getBlocks
     }
@@ -409,7 +409,7 @@ public struct BITPOS: ValkeyCommand {
     public var bit: Int
     public var range: Range?
 
-    @inlinable public init(key: ValkeyKey, bit: Int, range: Range? = nil) {
+    @inlinable public init(_ key: ValkeyKey, bit: Int, range: Range? = nil) {
         self.key = key
         self.bit = bit
         self.range = range
@@ -432,7 +432,7 @@ public struct GETBIT: ValkeyCommand {
     public var key: ValkeyKey
     public var offset: Int
 
-    @inlinable public init(key: ValkeyKey, offset: Int) {
+    @inlinable public init(_ key: ValkeyKey, offset: Int) {
         self.key = key
         self.offset = offset
     }
@@ -455,7 +455,7 @@ public struct SETBIT: ValkeyCommand {
     public var offset: Int
     public var value: Int
 
-    @inlinable public init(key: ValkeyKey, offset: Int, value: Int) {
+    @inlinable public init(_ key: ValkeyKey, offset: Int, value: Int) {
         self.key = key
         self.offset = offset
         self.value = value
@@ -480,7 +480,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The number of bits set to 1.
     @inlinable
     public func bitcount(_ key: ValkeyKey, range: BITCOUNT.Range? = nil) async throws -> Int {
-        try await send(command: BITCOUNT(key: key, range: range))
+        try await send(command: BITCOUNT(key, range: range))
     }
 
     /// Performs arbitrary bitfield integer operations on strings.
@@ -493,7 +493,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: In case OVERFLOW FAIL was given and overflows or underflows detected
     @inlinable
     public func bitfield(_ key: ValkeyKey, operations: [BITFIELD.Operation] = []) async throws -> RESPToken.Array {
-        try await send(command: BITFIELD(key: key, operations: operations))
+        try await send(command: BITFIELD(key, operations: operations))
     }
 
     /// Performs arbitrary read-only bitfield integer operations on strings.
@@ -504,7 +504,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Array]: The result of the subcommand at the same position
     @inlinable
     public func bitfieldRo(_ key: ValkeyKey, getBlocks: [BITFIELDRO.GetBlock] = []) async throws -> [Int] {
-        try await send(command: BITFIELDRO(key: key, getBlocks: getBlocks))
+        try await send(command: BITFIELDRO(key, getBlocks: getBlocks))
     }
 
     /// Performs bitwise operations on multiple strings, and stores the result.
@@ -530,7 +530,7 @@ extension ValkeyConnectionProtocol {
     ///     * -1: In case the `bit` argument is 1 and the string is empty or composed of just zero bytes.
     @inlinable
     public func bitpos(_ key: ValkeyKey, bit: Int, range: BITPOS.Range? = nil) async throws -> Int {
-        try await send(command: BITPOS(key: key, bit: bit, range: range))
+        try await send(command: BITPOS(key, bit: bit, range: range))
     }
 
     /// Returns a bit value by offset.
@@ -541,7 +541,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: The bit value stored at offset.
     @inlinable
     public func getbit(_ key: ValkeyKey, offset: Int) async throws -> Int {
-        try await send(command: GETBIT(key: key, offset: offset))
+        try await send(command: GETBIT(key, offset: offset))
     }
 
     /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
@@ -552,7 +552,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: The original bit value stored at offset.
     @inlinable
     public func setbit(_ key: ValkeyKey, offset: Int, value: Int) async throws -> Int {
-        try await send(command: SETBIT(key: key, offset: offset, value: value))
+        try await send(command: SETBIT(key, offset: offset, value: value))
     }
 
 }

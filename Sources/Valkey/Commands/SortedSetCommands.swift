@@ -163,7 +163,14 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
     public var increment: Bool
     public var datas: [Data]
 
-    @inlinable public init(key: ValkeyKey, condition: Condition? = nil, comparison: Comparison? = nil, change: Bool = false, increment: Bool = false, datas: [Data]) {
+    @inlinable public init(
+        _ key: ValkeyKey,
+        condition: Condition? = nil,
+        comparison: Comparison? = nil,
+        change: Bool = false,
+        increment: Bool = false,
+        datas: [Data]
+    ) {
         self.key = key
         self.condition = condition
         self.comparison = comparison
@@ -186,7 +193,7 @@ public struct ZCARD: ValkeyCommand {
 
     public var key: ValkeyKey
 
-    @inlinable public init(key: ValkeyKey) {
+    @inlinable public init(_ key: ValkeyKey) {
         self.key = key
     }
 
@@ -208,7 +215,7 @@ public struct ZCOUNT: ValkeyCommand {
     public var min: Double
     public var max: Double
 
-    @inlinable public init(key: ValkeyKey, min: Double, max: Double) {
+    @inlinable public init(_ key: ValkeyKey, min: Double, max: Double) {
         self.key = key
         self.min = min
         self.max = max
@@ -274,7 +281,7 @@ public struct ZINCRBY<Member: RESPStringRenderable>: ValkeyCommand {
     public var increment: Int
     public var member: Member
 
-    @inlinable public init(key: ValkeyKey, increment: Int, member: Member) {
+    @inlinable public init(_ key: ValkeyKey, increment: Int, member: Member) {
         self.key = key
         self.increment = increment
         self.member = member
@@ -326,7 +333,13 @@ public struct ZINTER: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZINTER", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray(
+            "ZINTER",
+            RESPArrayWithCount(keys),
+            RESPWithToken("WEIGHTS", weights),
+            RESPWithToken("AGGREGATE", aggregate),
+            RESPPureToken("WITHSCORES", withscores)
+        )
     }
 }
 
@@ -389,7 +402,13 @@ public struct ZINTERSTORE: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { keys + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZINTERSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate))
+        commandEncoder.encodeArray(
+            "ZINTERSTORE",
+            destination,
+            RESPArrayWithCount(keys),
+            RESPWithToken("WEIGHTS", weights),
+            RESPWithToken("AGGREGATE", aggregate)
+        )
     }
 }
 
@@ -402,7 +421,7 @@ public struct ZLEXCOUNT<Min: RESPStringRenderable, Max: RESPStringRenderable>: V
     public var min: Min
     public var max: Max
 
-    @inlinable public init(key: ValkeyKey, min: Min, max: Max) {
+    @inlinable public init(_ key: ValkeyKey, min: Min, max: Max) {
         self.key = key
         self.min = min
         self.max = max
@@ -460,7 +479,7 @@ public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var members: [Member]
 
-    @inlinable public init(key: ValkeyKey, members: [Member]) {
+    @inlinable public init(_ key: ValkeyKey, members: [Member]) {
         self.key = key
         self.members = members
     }
@@ -480,7 +499,7 @@ public struct ZPOPMAX: ValkeyCommand {
     public var key: ValkeyKey
     public var count: Int?
 
-    @inlinable public init(key: ValkeyKey, count: Int? = nil) {
+    @inlinable public init(_ key: ValkeyKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
@@ -498,7 +517,7 @@ public struct ZPOPMIN: ValkeyCommand {
     public var key: ValkeyKey
     public var count: Int?
 
-    @inlinable public init(key: ValkeyKey, count: Int? = nil) {
+    @inlinable public init(_ key: ValkeyKey, count: Int? = nil) {
         self.key = key
         self.count = count
     }
@@ -538,7 +557,7 @@ public struct ZRANDMEMBER: ValkeyCommand {
     public var key: ValkeyKey
     public var options: Options?
 
-    @inlinable public init(key: ValkeyKey, options: Options? = nil) {
+    @inlinable public init(_ key: ValkeyKey, options: Options? = nil) {
         self.key = key
         self.options = options
     }
@@ -600,7 +619,15 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
     public var limit: Limit?
     public var withscores: Bool
 
-    @inlinable public init(key: ValkeyKey, start: Start, stop: Stop, sortby: Sortby? = nil, rev: Bool = false, limit: Limit? = nil, withscores: Bool = false) {
+    @inlinable public init(
+        _ key: ValkeyKey,
+        start: Start,
+        stop: Stop,
+        sortby: Sortby? = nil,
+        rev: Bool = false,
+        limit: Limit? = nil,
+        withscores: Bool = false
+    ) {
         self.key = key
         self.start = start
         self.stop = stop
@@ -615,7 +642,16 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGE", key, RESPBulkString(start), RESPBulkString(stop), sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit), RESPPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray(
+            "ZRANGE",
+            key,
+            RESPBulkString(start),
+            RESPBulkString(stop),
+            sortby,
+            RESPPureToken("REV", rev),
+            RESPWithToken("LIMIT", limit),
+            RESPPureToken("WITHSCORES", withscores)
+        )
     }
 }
 
@@ -649,7 +685,7 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
     public var max: Max
     public var limit: Limit?
 
-    @inlinable public init(key: ValkeyKey, min: Min, max: Max, limit: Limit? = nil) {
+    @inlinable public init(_ key: ValkeyKey, min: Min, max: Max, limit: Limit? = nil) {
         self.key = key
         self.min = min
         self.max = max
@@ -696,7 +732,7 @@ public struct ZRANGEBYSCORE: ValkeyCommand {
     public var withscores: Bool
     public var limit: Limit?
 
-    @inlinable public init(key: ValkeyKey, min: Double, max: Double, withscores: Bool = false, limit: Limit? = nil) {
+    @inlinable public init(_ key: ValkeyKey, min: Double, max: Double, withscores: Bool = false, limit: Limit? = nil) {
         self.key = key
         self.min = min
         self.max = max
@@ -774,7 +810,16 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
     public var keysAffected: [ValkeyKey] { [dst, src] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZRANGESTORE", dst, src, RESPBulkString(min), RESPBulkString(max), sortby, RESPPureToken("REV", rev), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray(
+            "ZRANGESTORE",
+            dst,
+            src,
+            RESPBulkString(min),
+            RESPBulkString(max),
+            sortby,
+            RESPPureToken("REV", rev),
+            RESPWithToken("LIMIT", limit)
+        )
     }
 }
 
@@ -787,7 +832,7 @@ public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand {
     public var member: Member
     public var withscore: Bool
 
-    @inlinable public init(key: ValkeyKey, member: Member, withscore: Bool = false) {
+    @inlinable public init(_ key: ValkeyKey, member: Member, withscore: Bool = false) {
         self.key = key
         self.member = member
         self.withscore = withscore
@@ -810,7 +855,7 @@ public struct ZREM<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var members: [Member]
 
-    @inlinable public init(key: ValkeyKey, members: [Member]) {
+    @inlinable public init(_ key: ValkeyKey, members: [Member]) {
         self.key = key
         self.members = members
     }
@@ -831,7 +876,7 @@ public struct ZREMRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderabl
     public var min: Min
     public var max: Max
 
-    @inlinable public init(key: ValkeyKey, min: Min, max: Max) {
+    @inlinable public init(_ key: ValkeyKey, min: Min, max: Max) {
         self.key = key
         self.min = min
         self.max = max
@@ -853,7 +898,7 @@ public struct ZREMRANGEBYRANK: ValkeyCommand {
     public var start: Int
     public var stop: Int
 
-    @inlinable public init(key: ValkeyKey, start: Int, stop: Int) {
+    @inlinable public init(_ key: ValkeyKey, start: Int, stop: Int) {
         self.key = key
         self.start = start
         self.stop = stop
@@ -875,7 +920,7 @@ public struct ZREMRANGEBYSCORE: ValkeyCommand {
     public var min: Double
     public var max: Double
 
-    @inlinable public init(key: ValkeyKey, min: Double, max: Double) {
+    @inlinable public init(_ key: ValkeyKey, min: Double, max: Double) {
         self.key = key
         self.min = min
         self.max = max
@@ -898,7 +943,7 @@ public struct ZREVRANGE: ValkeyCommand {
     public var stop: Int
     public var withscores: Bool
 
-    @inlinable public init(key: ValkeyKey, start: Int, stop: Int, withscores: Bool = false) {
+    @inlinable public init(_ key: ValkeyKey, start: Int, stop: Int, withscores: Bool = false) {
         self.key = key
         self.start = start
         self.stop = stop
@@ -944,7 +989,7 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
     public var min: Min
     public var limit: Limit?
 
-    @inlinable public init(key: ValkeyKey, max: Max, min: Min, limit: Limit? = nil) {
+    @inlinable public init(_ key: ValkeyKey, max: Max, min: Min, limit: Limit? = nil) {
         self.key = key
         self.max = max
         self.min = min
@@ -991,7 +1036,7 @@ public struct ZREVRANGEBYSCORE: ValkeyCommand {
     public var withscores: Bool
     public var limit: Limit?
 
-    @inlinable public init(key: ValkeyKey, max: Double, min: Double, withscores: Bool = false, limit: Limit? = nil) {
+    @inlinable public init(_ key: ValkeyKey, max: Double, min: Double, withscores: Bool = false, limit: Limit? = nil) {
         self.key = key
         self.max = max
         self.min = min
@@ -1017,7 +1062,7 @@ public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand {
     public var member: Member
     public var withscore: Bool
 
-    @inlinable public init(key: ValkeyKey, member: Member, withscore: Bool = false) {
+    @inlinable public init(_ key: ValkeyKey, member: Member, withscore: Bool = false) {
         self.key = key
         self.member = member
         self.withscore = withscore
@@ -1043,7 +1088,7 @@ public struct ZSCAN: ValkeyCommand {
     public var count: Int?
     public var noscores: Bool
 
-    @inlinable public init(key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, noscores: Bool = false) {
+    @inlinable public init(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, noscores: Bool = false) {
         self.key = key
         self.cursor = cursor
         self.pattern = pattern
@@ -1056,7 +1101,14 @@ public struct ZSCAN: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPPureToken("NOSCORES", noscores))
+        commandEncoder.encodeArray(
+            "ZSCAN",
+            key,
+            cursor,
+            RESPWithToken("MATCH", pattern),
+            RESPWithToken("COUNT", count),
+            RESPPureToken("NOSCORES", noscores)
+        )
     }
 }
 
@@ -1068,7 +1120,7 @@ public struct ZSCORE<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var member: Member
 
-    @inlinable public init(key: ValkeyKey, member: Member) {
+    @inlinable public init(_ key: ValkeyKey, member: Member) {
         self.key = key
         self.member = member
     }
@@ -1121,7 +1173,13 @@ public struct ZUNION: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZUNION", RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate), RESPPureToken("WITHSCORES", withscores))
+        commandEncoder.encodeArray(
+            "ZUNION",
+            RESPArrayWithCount(keys),
+            RESPWithToken("WEIGHTS", weights),
+            RESPWithToken("AGGREGATE", aggregate),
+            RESPPureToken("WITHSCORES", withscores)
+        )
     }
 }
 
@@ -1162,7 +1220,13 @@ public struct ZUNIONSTORE: ValkeyCommand {
     public var keysAffected: [ValkeyKey] { keys + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZUNIONSTORE", destination, RESPArrayWithCount(keys), RESPWithToken("WEIGHTS", weights), RESPWithToken("AGGREGATE", aggregate))
+        commandEncoder.encodeArray(
+            "ZUNIONSTORE",
+            destination,
+            RESPArrayWithCount(keys),
+            RESPWithToken("WEIGHTS", weights),
+            RESPWithToken("AGGREGATE", aggregate)
+        )
     }
 }
 
@@ -1225,8 +1289,15 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: The number of new or updated members (when the `CH` option is used)
     ///     * [Double]: The updated score of the member (when the `INCR` option is used)
     @inlinable
-    public func zadd<Member: RESPStringRenderable>(_ key: ValkeyKey, condition: ZADD<Member>.Condition? = nil, comparison: ZADD<Member>.Comparison? = nil, change: Bool = false, increment: Bool = false, datas: [ZADD<Member>.Data]) async throws -> RESPToken? {
-        try await send(command: ZADD(key: key, condition: condition, comparison: comparison, change: change, increment: increment, datas: datas))
+    public func zadd<Member: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        condition: ZADD<Member>.Condition? = nil,
+        comparison: ZADD<Member>.Comparison? = nil,
+        change: Bool = false,
+        increment: Bool = false,
+        datas: [ZADD<Member>.Data]
+    ) async throws -> RESPToken? {
+        try await send(command: ZADD(key, condition: condition, comparison: comparison, change: change, increment: increment, datas: datas))
     }
 
     /// Returns the number of members in a sorted set.
@@ -1237,7 +1308,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The cardinality (number of elements) of the sorted set, or 0 if key does not exist
     @inlinable
     public func zcard(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: ZCARD(key: key))
+        try await send(command: ZCARD(key))
     }
 
     /// Returns the count of members in a sorted set that have scores within a range.
@@ -1248,7 +1319,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The number of elements in the specified score range
     @inlinable
     public func zcount(_ key: ValkeyKey, min: Double, max: Double) async throws -> Int {
-        try await send(command: ZCOUNT(key: key, min: min, max: max))
+        try await send(command: ZCOUNT(key, min: min, max: max))
     }
 
     /// Returns the difference between multiple sorted sets.
@@ -1283,7 +1354,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Double]: The new score of `member`
     @inlinable
     public func zincrby<Member: RESPStringRenderable>(_ key: ValkeyKey, increment: Int, member: Member) async throws -> Double {
-        try await send(command: ZINCRBY(key: key, increment: increment, member: member))
+        try await send(command: ZINCRBY(key, increment: increment, member: member))
     }
 
     /// Returns the intersect of multiple sorted sets.
@@ -1295,7 +1366,12 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Result of intersection, containing only the member names. Returned in case `WITHSCORES` was not used.
     ///     * [Array]: Result of intersection, containing members and their scores. Returned in case `WITHSCORES` was used. In RESP2 this is returned as a flat array
     @inlinable
-    public func zinter(keys: [ValkeyKey], weights: [Int] = [], aggregate: ZINTER.Aggregate? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
+    public func zinter(
+        keys: [ValkeyKey],
+        weights: [Int] = [],
+        aggregate: ZINTER.Aggregate? = nil,
+        withscores: Bool = false
+    ) async throws -> RESPToken.Array {
         try await send(command: ZINTER(keys: keys, weights: weights, aggregate: aggregate, withscores: withscores))
     }
 
@@ -1317,7 +1393,12 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N*K)+O(M*log(M)) worst case with N being the smallest input sorted set, K being the number of input sorted sets and M being the number of elements in the resulting sorted set.
     /// - Response: [Integer]: Number of elements in the resulting sorted set.
     @inlinable
-    public func zinterstore(destination: ValkeyKey, keys: [ValkeyKey], weights: [Int] = [], aggregate: ZINTERSTORE.Aggregate? = nil) async throws -> Int {
+    public func zinterstore(
+        destination: ValkeyKey,
+        keys: [ValkeyKey],
+        weights: [Int] = [],
+        aggregate: ZINTERSTORE.Aggregate? = nil
+    ) async throws -> Int {
         try await send(command: ZINTERSTORE(destination: destination, keys: keys, weights: weights, aggregate: aggregate))
     }
 
@@ -1329,7 +1410,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: Number of elements in the specified score range.
     @inlinable
     public func zlexcount<Min: RESPStringRenderable, Max: RESPStringRenderable>(_ key: ValkeyKey, min: Min, max: Max) async throws -> Int {
-        try await send(command: ZLEXCOUNT(key: key, min: min, max: max))
+        try await send(command: ZLEXCOUNT(key, min: min, max: max))
     }
 
     /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
@@ -1355,7 +1436,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Member does not exist in the sorted set.
     @inlinable
     public func zmscore<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> RESPToken.Array {
-        try await send(command: ZMSCORE(key: key, members: members))
+        try await send(command: ZMSCORE(key, members: members))
     }
 
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -1368,7 +1449,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     @inlinable
     public func zpopmax(_ key: ValkeyKey, count: Int? = nil) async throws -> ZPOPMAX.Response {
-        try await send(command: ZPOPMAX(key: key, count: count))
+        try await send(command: ZPOPMAX(key, count: count))
     }
 
     /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -1381,7 +1462,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     @inlinable
     public func zpopmin(_ key: ValkeyKey, count: Int? = nil) async throws -> ZPOPMIN.Response {
-        try await send(command: ZPOPMIN(key: key, count: count))
+        try await send(command: ZPOPMIN(key, count: count))
     }
 
     /// Returns one or more random members from a sorted set.
@@ -1396,7 +1477,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Randomly selected elements when 'COUNT' and 'WITHSCORES' modifiers are used.
     @inlinable
     public func zrandmember(_ key: ValkeyKey, options: ZRANDMEMBER.Options? = nil) async throws -> RESPToken? {
-        try await send(command: ZRANDMEMBER(key: key, options: options))
+        try await send(command: ZRANDMEMBER(key, options: options))
     }
 
     /// Returns members in a sorted set within a range of indexes.
@@ -1410,8 +1491,16 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: A list of member elements
     ///     * [Array]: Members and their scores. Returned in case `WITHSCORES` was used. In RESP2 this is returned as a flat array
     @inlinable
-    public func zrange<Start: RESPStringRenderable, Stop: RESPStringRenderable>(_ key: ValkeyKey, start: Start, stop: Stop, sortby: ZRANGE<Start, Stop>.Sortby? = nil, rev: Bool = false, limit: ZRANGE<Start, Stop>.Limit? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
-        try await send(command: ZRANGE(key: key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
+    public func zrange<Start: RESPStringRenderable, Stop: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        start: Start,
+        stop: Stop,
+        sortby: ZRANGE<Start, Stop>.Sortby? = nil,
+        rev: Bool = false,
+        limit: ZRANGE<Start, Stop>.Limit? = nil,
+        withscores: Bool = false
+    ) async throws -> RESPToken.Array {
+        try await send(command: ZRANGE(key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
     }
 
     /// Returns members in a sorted set within a lexicographical range.
@@ -1422,8 +1511,13 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Response: [Array]: List of elements in the specified score range.
     @inlinable
-    public func zrangebylex<Min: RESPStringRenderable, Max: RESPStringRenderable>(_ key: ValkeyKey, min: Min, max: Max, limit: ZRANGEBYLEX<Min, Max>.Limit? = nil) async throws -> RESPToken.Array {
-        try await send(command: ZRANGEBYLEX(key: key, min: min, max: max, limit: limit))
+    public func zrangebylex<Min: RESPStringRenderable, Max: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        min: Min,
+        max: Max,
+        limit: ZRANGEBYLEX<Min, Max>.Limit? = nil
+    ) async throws -> RESPToken.Array {
+        try await send(command: ZRANGEBYLEX(key, min: min, max: max, limit: limit))
     }
 
     /// Returns members in a sorted set within a range of scores.
@@ -1438,8 +1532,14 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
     ///     * [Array]: List of the elements and their scores in the specified score range, as WITHSCORES used.
     @inlinable
-    public func zrangebyscore(_ key: ValkeyKey, min: Double, max: Double, withscores: Bool = false, limit: ZRANGEBYSCORE.Limit? = nil) async throws -> RESPToken.Array {
-        try await send(command: ZRANGEBYSCORE(key: key, min: min, max: max, withscores: withscores, limit: limit))
+    public func zrangebyscore(
+        _ key: ValkeyKey,
+        min: Double,
+        max: Double,
+        withscores: Bool = false,
+        limit: ZRANGEBYSCORE.Limit? = nil
+    ) async throws -> RESPToken.Array {
+        try await send(command: ZRANGEBYSCORE(key, min: min, max: max, withscores: withscores, limit: limit))
     }
 
     /// Stores a range of members from sorted set in a key.
@@ -1449,7 +1549,15 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements stored into the destination key.
     /// - Response: [Integer]: Number of elements in the resulting sorted set.
     @inlinable
-    public func zrangestore<Min: RESPStringRenderable, Max: RESPStringRenderable>(dst: ValkeyKey, src: ValkeyKey, min: Min, max: Max, sortby: ZRANGESTORE<Min, Max>.Sortby? = nil, rev: Bool = false, limit: ZRANGESTORE<Min, Max>.Limit? = nil) async throws -> Int {
+    public func zrangestore<Min: RESPStringRenderable, Max: RESPStringRenderable>(
+        dst: ValkeyKey,
+        src: ValkeyKey,
+        min: Min,
+        max: Max,
+        sortby: ZRANGESTORE<Min, Max>.Sortby? = nil,
+        rev: Bool = false,
+        limit: ZRANGESTORE<Min, Max>.Limit? = nil
+    ) async throws -> Int {
         try await send(command: ZRANGESTORE(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
     }
 
@@ -1466,7 +1574,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: The rank and score of the member when 'WITHSCORE' is used.
     @inlinable
     public func zrank<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member, withscore: Bool = false) async throws -> RESPToken? {
-        try await send(command: ZRANK(key: key, member: member, withscore: withscore))
+        try await send(command: ZRANK(key, member: member, withscore: withscore))
     }
 
     /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
@@ -1479,7 +1587,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The number of members removed from the sorted set, not including non existing members.
     @inlinable
     public func zrem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
-        try await send(command: ZREM(key: key, members: members))
+        try await send(command: ZREM(key, members: members))
     }
 
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
@@ -1490,7 +1598,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: Number of elements removed.
     @inlinable
     public func zremrangebylex<Min: RESPStringRenderable, Max: RESPStringRenderable>(_ key: ValkeyKey, min: Min, max: Max) async throws -> Int {
-        try await send(command: ZREMRANGEBYLEX(key: key, min: min, max: max))
+        try await send(command: ZREMRANGEBYLEX(key, min: min, max: max))
     }
 
     /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
@@ -1501,7 +1609,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: Number of elements removed.
     @inlinable
     public func zremrangebyrank(_ key: ValkeyKey, start: Int, stop: Int) async throws -> Int {
-        try await send(command: ZREMRANGEBYRANK(key: key, start: start, stop: stop))
+        try await send(command: ZREMRANGEBYRANK(key, start: start, stop: stop))
     }
 
     /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
@@ -1512,7 +1620,7 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: Number of elements removed.
     @inlinable
     public func zremrangebyscore(_ key: ValkeyKey, min: Double, max: Double) async throws -> Int {
-        try await send(command: ZREMRANGEBYSCORE(key: key, min: min, max: max))
+        try await send(command: ZREMRANGEBYSCORE(key, min: min, max: max))
     }
 
     /// Returns members in a sorted set within a range of indexes in reverse order.
@@ -1526,7 +1634,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of the members and their scores. Returned in case `WITHSCORES` was used.
     @inlinable
     public func zrevrange(_ key: ValkeyKey, start: Int, stop: Int, withscores: Bool = false) async throws -> RESPToken.Array {
-        try await send(command: ZREVRANGE(key: key, start: start, stop: stop, withscores: withscores))
+        try await send(command: ZREVRANGE(key, start: start, stop: stop, withscores: withscores))
     }
 
     /// Returns members in a sorted set within a lexicographical range in reverse order.
@@ -1537,8 +1645,13 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned. If M is constant (e.g. always asking for the first 10 elements with LIMIT), you can consider it O(log(N)).
     /// - Response: [Array]: List of the elements in the specified score range.
     @inlinable
-    public func zrevrangebylex<Max: RESPStringRenderable, Min: RESPStringRenderable>(_ key: ValkeyKey, max: Max, min: Min, limit: ZREVRANGEBYLEX<Max, Min>.Limit? = nil) async throws -> RESPToken.Array {
-        try await send(command: ZREVRANGEBYLEX(key: key, max: max, min: min, limit: limit))
+    public func zrevrangebylex<Max: RESPStringRenderable, Min: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        max: Max,
+        min: Min,
+        limit: ZREVRANGEBYLEX<Max, Min>.Limit? = nil
+    ) async throws -> RESPToken.Array {
+        try await send(command: ZREVRANGEBYLEX(key, max: max, min: min, limit: limit))
     }
 
     /// Returns members in a sorted set within a range of scores in reverse order.
@@ -1553,8 +1666,14 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: List of the elements in the specified score range, as not WITHSCORES.
     ///     * [Array]: List of the elements and their scores in the specified score range, as WITHSCORES used.
     @inlinable
-    public func zrevrangebyscore(_ key: ValkeyKey, max: Double, min: Double, withscores: Bool = false, limit: ZREVRANGEBYSCORE.Limit? = nil) async throws -> RESPToken.Array {
-        try await send(command: ZREVRANGEBYSCORE(key: key, max: max, min: min, withscores: withscores, limit: limit))
+    public func zrevrangebyscore(
+        _ key: ValkeyKey,
+        max: Double,
+        min: Double,
+        withscores: Bool = false,
+        limit: ZREVRANGEBYSCORE.Limit? = nil
+    ) async throws -> RESPToken.Array {
+        try await send(command: ZREVRANGEBYSCORE(key, max: max, min: min, withscores: withscores, limit: limit))
     }
 
     /// Returns the index of a member in a sorted set ordered by descending scores.
@@ -1570,7 +1689,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: The rank and score of the member when 'WITHSCORE' is used.
     @inlinable
     public func zrevrank<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member, withscore: Bool = false) async throws -> RESPToken? {
-        try await send(command: ZREVRANK(key: key, member: member, withscore: withscore))
+        try await send(command: ZREVRANK(key, member: member, withscore: withscore))
     }
 
     /// Iterates over members and scores of a sorted set.
@@ -1582,8 +1701,14 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func zscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, noscores: Bool = false) async throws -> RESPToken.Array {
-        try await send(command: ZSCAN(key: key, cursor: cursor, pattern: pattern, count: count, noscores: noscores))
+    public func zscan(
+        _ key: ValkeyKey,
+        cursor: Int,
+        pattern: String? = nil,
+        count: Int? = nil,
+        noscores: Bool = false
+    ) async throws -> RESPToken.Array {
+        try await send(command: ZSCAN(key, cursor: cursor, pattern: pattern, count: count, noscores: noscores))
     }
 
     /// Returns the score of a member in a sorted set.
@@ -1596,7 +1721,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Member does not exist in the sorted set, or key does not exist.
     @inlinable
     public func zscore<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws -> Double? {
-        try await send(command: ZSCORE(key: key, member: member))
+        try await send(command: ZSCORE(key, member: member))
     }
 
     /// Returns the union of multiple sorted sets.
@@ -1608,7 +1733,12 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: The result of union when 'WITHSCORES' is not used.
     ///     * [Array]: The result of union when 'WITHSCORES' is used.
     @inlinable
-    public func zunion(keys: [ValkeyKey], weights: [Int] = [], aggregate: ZUNION.Aggregate? = nil, withscores: Bool = false) async throws -> RESPToken.Array {
+    public func zunion(
+        keys: [ValkeyKey],
+        weights: [Int] = [],
+        aggregate: ZUNION.Aggregate? = nil,
+        withscores: Bool = false
+    ) async throws -> RESPToken.Array {
         try await send(command: ZUNION(keys: keys, weights: weights, aggregate: aggregate, withscores: withscores))
     }
 
@@ -1619,7 +1749,12 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets, and M being the number of elements in the resulting sorted set.
     /// - Response: [Integer]: The number of elements in the resulting sorted set.
     @inlinable
-    public func zunionstore(destination: ValkeyKey, keys: [ValkeyKey], weights: [Int] = [], aggregate: ZUNIONSTORE.Aggregate? = nil) async throws -> Int {
+    public func zunionstore(
+        destination: ValkeyKey,
+        keys: [ValkeyKey],
+        weights: [Int] = [],
+        aggregate: ZUNIONSTORE.Aggregate? = nil
+    ) async throws -> Int {
         try await send(command: ZUNIONSTORE(destination: destination, keys: keys, weights: weights, aggregate: aggregate))
     }
 

@@ -780,7 +780,7 @@ public enum MEMORY {
         public var key: ValkeyKey
         public var count: Int?
 
-        @inlinable public init(key: ValkeyKey, count: Int? = nil) {
+        @inlinable public init(_ key: ValkeyKey, count: Int? = nil) {
             self.key = key
             self.count = count
         }
@@ -1510,7 +1510,11 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
-    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, args: [String] = []) async throws -> ByteBuffer? {
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(
+        username: Username,
+        command: Command,
+        args: [String] = []
+    ) async throws -> ByteBuffer? {
         try await send(command: ACL.DRYRUN(username: username, command: command, args: args))
     }
 
@@ -2068,7 +2072,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Key does not exist.
     @inlinable
     public func memoryUsage(_ key: ValkeyKey, count: Int? = nil) async throws -> Int? {
-        try await send(command: MEMORY.USAGE(key: key, count: count))
+        try await send(command: MEMORY.USAGE(key, count: count))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2109,7 +2113,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configss: [MODULE.LOADEX<Path>.Configs] = [], argss: [String] = []) async throws {
+    public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configss: [MODULE.LOADEX<Path>.Configs] = [], argss: [String] = []) async throws
+    {
         _ = try await send(command: MODULE.LOADEX(path: path, configss: configss, argss: argss))
     }
 
