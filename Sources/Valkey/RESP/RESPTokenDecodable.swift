@@ -175,8 +175,13 @@ extension Int: RESPTokenDecodable {
             }
             self = value
 
-        case .bulkString,
-            .simpleString,
+        case .bulkString(let buffer):
+            guard let value = Int(String(buffer: buffer)) else {
+                throw RESPParsingError(code: .canNotParseInteger, buffer: token.base)
+            }
+            self = value
+
+        case .simpleString,
             .bulkError,
             .simpleError,
             .verbatimString,
@@ -200,6 +205,19 @@ extension Double: RESPTokenDecodable {
         switch token.value {
         case .double(let value):
             self = value
+
+        case .number(let value):
+            guard let double = Double(exactly: value) else {
+                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            }
+            self = double
+
+        case .bulkString(let buffer):
+            guard let value = Double(String(buffer: buffer)) else {
+                throw RESPParsingError(code: .canNotParseDouble, buffer: token.base)
+            }
+            self = value
+
         default:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }

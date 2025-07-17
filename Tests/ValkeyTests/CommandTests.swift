@@ -700,4 +700,67 @@ struct CommandTests {
             }
         }
     }
+
+    struct GeoCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func geopos() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    let values = try await connection.geopos("key1", members: ["Edinburgh", "Glasgow", "Dundee"])
+                    #expect(values.count == 3)
+                    let edinburgh = try #require(values[0])
+                    #expect(values[1] == nil)
+                    let dundee = try #require(values[2])
+                    #expect(edinburgh.longitude == 1)
+                    #expect(edinburgh.latitude == 2)
+                    #expect(dundee.longitude == 3)
+                    #expect(dundee.latitude == 4)
+                }
+                group.addTask {
+                    let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["GEOPOS", "key1", "Edinburgh", "Glasgow", "Dundee"])).base)
+                    try await channel.writeInbound(
+                        RESPToken(
+                            .array([
+                                .array([.bulkString("1.0"), .bulkString("2.0")]),
+                                .null,
+                                .array([.bulkString("3.0"), .bulkString("4.0")]),
+                            ])
+                        ).base
+                    )
+                }
+                try await group.waitForAll()
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func geodist() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    let distance = try await connection.geodist("key1", member1: "Edinburgh", member2: "Glasgow")
+                    #expect(distance == 42)
+                }
+                group.addTask {
+                    let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["GEODIST", "key1", "Edinburgh", "Glasgow"])).base)
+                    try await channel.writeInbound(
+                        RESPToken(.bulkString("42.0")).base
+                    )
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
 }
