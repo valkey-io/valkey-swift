@@ -643,7 +643,7 @@ struct CommandTests {
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
-                    let values = try await connection.geopos(key: "key1", member: ["Edinburgh", "Glasgow", "Dundee"])
+                    let values = try await connection.geopos("key1", members: ["Edinburgh", "Glasgow", "Dundee"])
                     #expect(values.count == 3)
                     let edinburgh = try #require(values[0])
                     #expect(values[1] == nil)
@@ -680,7 +680,7 @@ struct CommandTests {
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
-                    let distance = try await connection.geodist(key: "key1", member1: "Edinburgh", member2: "Glasgow")
+                    let distance = try await connection.geodist("key1", member1: "Edinburgh", member2: "Glasgow")
                     #expect(distance == 42)
                 }
                 group.addTask {

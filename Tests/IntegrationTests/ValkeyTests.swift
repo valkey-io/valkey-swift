@@ -803,12 +803,12 @@ struct GeneratedCommands {
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 let count = try await connection.geoadd(
-                    key: key,
-                    data: [.init(longitude: 1.0, latitude: 53.0, member: "Edinburgh"), .init(longitude: 1.4, latitude: 53.5, member: "Glasgow")]
+                    key,
+                    datas: [.init(longitude: 1.0, latitude: 53.0, member: "Edinburgh"), .init(longitude: 1.4, latitude: 53.5, member: "Glasgow")]
                 )
                 #expect(count == 2)
                 let search = try await connection.geosearch(
-                    key: key,
+                    key,
                     from: .fromlonlat(.init(longitude: 0.0, latitude: 53.0)),
                     by: .circle(.init(radius: 10000, unit: .mi)),
                     withcoord: true,
