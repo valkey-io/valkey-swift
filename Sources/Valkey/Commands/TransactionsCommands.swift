@@ -71,16 +71,16 @@ public struct UNWATCH: ValkeyCommand {
 /// Monitors changes to keys to determine the execution of a transaction.
 @_documentation(visibility: internal)
 public struct WATCH: ValkeyCommand {
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("WATCH", key)
+        commandEncoder.encodeArray("WATCH", keys)
     }
 }
 
@@ -135,8 +135,8 @@ extension ValkeyConnection {
     /// - Available: 2.2.0
     /// - Complexity: O(1) for every key.
     @inlinable
-    public func watch(key: [ValkeyKey]) async throws {
-        _ = try await send(command: WATCH(key: key))
+    public func watch(keys: [ValkeyKey]) async throws {
+        _ = try await send(command: WATCH(keys: keys))
     }
 
 }

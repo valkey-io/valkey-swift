@@ -65,22 +65,22 @@ public enum SENTINEL {
             }
         }
         public enum Action: RESPRenderable, Sendable, Hashable {
-            case set([ActionSet])
-            case parameter([String])
+            case sets([ActionSet])
+            case parameters([String])
 
             @inlinable
             public var respEntries: Int {
                 switch self {
-                case .set(let set): RESPWithToken("SET", set).respEntries
-                case .parameter(let parameter): RESPWithToken("GET", parameter).respEntries
+                case .sets(let sets): RESPWithToken("SET", sets).respEntries
+                case .parameters(let parameters): RESPWithToken("GET", parameters).respEntries
                 }
             }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .set(let set): RESPWithToken("SET", set).encode(into: &commandEncoder)
-                case .parameter(let parameter): RESPWithToken("GET", parameter).encode(into: &commandEncoder)
+                case .sets(let sets): RESPWithToken("SET", sets).encode(into: &commandEncoder)
+                case .parameters(let parameters): RESPWithToken("GET", parameters).encode(into: &commandEncoder)
                 }
             }
         }
@@ -122,14 +122,14 @@ public enum SENTINEL {
         }
         public typealias Response = RESPToken.Map?
 
-        public var data: [Data]
+        public var datas: [Data]
 
-        @inlinable public init(data: [Data] = []) {
-            self.data = data
+        @inlinable public init(datas: [Data] = []) {
+            self.datas = datas
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "DEBUG", data)
+            commandEncoder.encodeArray("SENTINEL", "DEBUG", datas)
         }
     }
 
@@ -208,14 +208,14 @@ public enum SENTINEL {
     public struct INFOCACHE<Nodename: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
-        public var nodename: [Nodename]
+        public var nodenames: [Nodename]
 
-        @inlinable public init(nodename: [Nodename]) {
-            self.nodename = nodename
+        @inlinable public init(nodenames: [Nodename]) {
+            self.nodenames = nodenames
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "INFO-CACHE", nodename.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("SENTINEL", "INFO-CACHE", nodenames.map { RESPBulkString($0) })
         }
     }
 
@@ -453,15 +453,15 @@ public enum SENTINEL {
             }
         }
         public var primaryName: PrimaryName
-        public var data: [Data]
+        public var datas: [Data]
 
-        @inlinable public init(primaryName: PrimaryName, data: [Data]) {
+        @inlinable public init(primaryName: PrimaryName, datas: [Data]) {
             self.primaryName = primaryName
-            self.data = data
+            self.datas = datas
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "SET", RESPBulkString(primaryName), data)
+            commandEncoder.encodeArray("SENTINEL", "SET", RESPBulkString(primaryName), datas)
         }
     }
 
@@ -487,14 +487,14 @@ public enum SENTINEL {
         }
         public typealias Response = RESPToken.Array?
 
-        public var mode: [Mode]
+        public var modes: [Mode]
 
-        @inlinable public init(mode: [Mode] = []) {
-            self.mode = mode
+        @inlinable public init(modes: [Mode] = []) {
+            self.modes = modes
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "SIMULATE-FAILURE", mode)
+            commandEncoder.encodeArray("SENTINEL", "SIMULATE-FAILURE", modes)
         }
     }
 
@@ -551,8 +551,8 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The configuration update was successful.
     ///     * [Map]: List of configurable time parameters and their values (milliseconds).
     @inlinable
-    public func sentinelDebug(data: [SENTINEL.DEBUG.Data] = []) async throws -> RESPToken.Map? {
-        try await send(command: SENTINEL.DEBUG(data: data))
+    public func sentinelDebug(datas: [SENTINEL.DEBUG.Data] = []) async throws -> RESPToken.Map? {
+        try await send(command: SENTINEL.DEBUG(datas: datas))
     }
 
     /// Forces a Sentinel failover.
@@ -617,8 +617,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of instances
     /// - Response: [Array]: This is actually a map, the odd entries are a primary name, and the even entries are the last cached INFO output from that primary and all its replicas.
     @inlinable
-    public func sentinelInfoCache<Nodename: RESPStringRenderable>(nodename: [Nodename]) async throws -> RESPToken.Array {
-        try await send(command: SENTINEL.INFOCACHE(nodename: nodename))
+    public func sentinelInfoCache<Nodename: RESPStringRenderable>(nodenames: [Nodename]) async throws -> RESPToken.Array {
+        try await send(command: SENTINEL.INFOCACHE(nodenames: nodenames))
     }
 
     /// Determines whether a primary instance is down.
@@ -631,12 +631,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
-        ip: Ip,
-        port: Int,
-        currentEpoch: Int,
-        runid: Runid
-    ) async throws -> RESPToken.Array {
+    public func sentinelIsMasterDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISMASTERDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -649,12 +644,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Primary is up.
     ///     * [Array]: Primary is down.
     @inlinable
-    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(
-        ip: Ip,
-        port: Int,
-        currentEpoch: Int,
-        runid: Runid
-    ) async throws -> RESPToken.Array {
+    public func sentinelIsPrimaryDownByAddr<Ip: RESPStringRenderable, Runid: RESPStringRenderable>(ip: Ip, port: Int, currentEpoch: Int, runid: Runid) async throws -> RESPToken.Array {
         try await send(command: SENTINEL.ISPRIMARYDOWNBYADDR(ip: ip, port: port, currentEpoch: currentEpoch, runid: runid))
     }
 
@@ -784,11 +774,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.4
     /// - Complexity: O(1)
     @inlinable
-    public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(
-        primaryName: PrimaryName,
-        data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]
-    ) async throws {
-        _ = try await send(command: SENTINEL.SET(primaryName: primaryName, data: data))
+    public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(primaryName: PrimaryName, datas: [SENTINEL.SET<PrimaryName, Option, Value>.Data]) async throws {
+        _ = try await send(command: SENTINEL.SET(primaryName: primaryName, datas: datas))
     }
 
     /// Simulates failover scenarios.
@@ -799,8 +786,8 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The simulated flag was set.
     ///     * [Array]: Supported simulates flags. Returned in case `HELP` was used.
     @inlinable
-    public func sentinelSimulateFailure(mode: [SENTINEL.SIMULATEFAILURE.Mode] = []) async throws -> RESPToken.Array? {
-        try await send(command: SENTINEL.SIMULATEFAILURE(mode: mode))
+    public func sentinelSimulateFailure(modes: [SENTINEL.SIMULATEFAILURE.Mode] = []) async throws -> RESPToken.Array? {
+        try await send(command: SENTINEL.SIMULATEFAILURE(modes: modes))
     }
 
     /// Returns a list of the monitored replicas.

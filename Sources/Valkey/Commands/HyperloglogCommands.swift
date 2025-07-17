@@ -28,17 +28,17 @@ public struct PFADD: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var element: [String]
+    public var elements: [String]
 
-    @inlinable public init(key: ValkeyKey, element: [String] = []) {
+    @inlinable public init(key: ValkeyKey, elements: [String] = []) {
         self.key = key
-        self.element = element
+        self.elements = elements
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PFADD", key, element)
+        commandEncoder.encodeArray("PFADD", key, elements)
     }
 }
 
@@ -47,18 +47,18 @@ public struct PFADD: ValkeyCommand {
 public struct PFCOUNT: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PFCOUNT", key)
+        commandEncoder.encodeArray("PFCOUNT", keys)
     }
 }
 
@@ -66,17 +66,17 @@ public struct PFCOUNT: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct PFMERGE: ValkeyCommand {
     public var destkey: ValkeyKey
-    public var sourcekey: [ValkeyKey]
+    public var sourcekeys: [ValkeyKey]
 
-    @inlinable public init(destkey: ValkeyKey, sourcekey: [ValkeyKey] = []) {
+    @inlinable public init(destkey: ValkeyKey, sourcekeys: [ValkeyKey] = []) {
         self.destkey = destkey
-        self.sourcekey = sourcekey
+        self.sourcekeys = sourcekeys
     }
 
-    public var keysAffected: [ValkeyKey] { sourcekey + [destkey] }
+    public var keysAffected: [ValkeyKey] { sourcekeys + [destkey] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PFMERGE", destkey, sourcekey)
+        commandEncoder.encodeArray("PFMERGE", destkey, sourcekeys)
     }
 }
 
@@ -90,8 +90,8 @@ extension ValkeyConnectionProtocol {
     ///     * 1: If at least 1 HyperLogLog internal register was altered.
     ///     * 0: If no HyperLogLog internal register were altered.
     @inlinable
-    public func pfadd(_ key: ValkeyKey, element: [String] = []) async throws -> Int {
-        try await send(command: PFADD(key: key, element: element))
+    public func pfadd(_ key: ValkeyKey, elements: [String] = []) async throws -> Int {
+        try await send(command: PFADD(key: key, elements: elements))
     }
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
@@ -101,8 +101,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) with a very small average constant time when called with a single key. O(N) with N being the number of keys, and much bigger constant times, when called with multiple keys.
     /// - Response: [Integer]: The approximated number of unique elements observed via PFADD
     @inlinable
-    public func pfcount(key: [ValkeyKey]) async throws -> Int {
-        try await send(command: PFCOUNT(key: key))
+    public func pfcount(keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: PFCOUNT(keys: keys))
     }
 
     /// Merges one or more HyperLogLog values into a single key.
@@ -111,8 +111,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.9
     /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
     @inlinable
-    public func pfmerge(destkey: ValkeyKey, sourcekey: [ValkeyKey] = []) async throws {
-        _ = try await send(command: PFMERGE(destkey: destkey, sourcekey: sourcekey))
+    public func pfmerge(destkey: ValkeyKey, sourcekeys: [ValkeyKey] = []) async throws {
+        _ = try await send(command: PFMERGE(destkey: destkey, sourcekeys: sourcekeys))
     }
 
 }

@@ -248,17 +248,17 @@ public struct BITFIELD: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
-    public var operation: [Operation]
+    public var operations: [Operation]
 
-    @inlinable public init(key: ValkeyKey, operation: [Operation] = []) {
+    @inlinable public init(key: ValkeyKey, operations: [Operation] = []) {
         self.key = key
-        self.operation = operation
+        self.operations = operations
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("BITFIELD", key, operation)
+        commandEncoder.encodeArray("BITFIELD", key, operations)
     }
 }
 
@@ -288,11 +288,11 @@ public struct BITFIELDRO: ValkeyCommand {
     public typealias Response = [Int]
 
     public var key: ValkeyKey
-    public var getBlock: [GetBlock]
+    public var getBlocks: [GetBlock]
 
-    @inlinable public init(key: ValkeyKey, getBlock: [GetBlock] = []) {
+    @inlinable public init(key: ValkeyKey, getBlocks: [GetBlock] = []) {
         self.key = key
-        self.getBlock = getBlock
+        self.getBlocks = getBlocks
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -300,7 +300,7 @@ public struct BITFIELDRO: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("BITFIELD_RO", key, RESPWithToken("GET", getBlock))
+        commandEncoder.encodeArray("BITFIELD_RO", key, RESPWithToken("GET", getBlocks))
     }
 }
 
@@ -330,18 +330,18 @@ public struct BITOP: ValkeyCommand {
 
     public var operation: Operation
     public var destkey: ValkeyKey
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(operation: Operation, destkey: ValkeyKey, key: [ValkeyKey]) {
+    @inlinable public init(operation: Operation, destkey: ValkeyKey, keys: [ValkeyKey]) {
         self.operation = operation
         self.destkey = destkey
-        self.key = key
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key + [destkey] }
+    public var keysAffected: [ValkeyKey] { keys + [destkey] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("BITOP", operation, destkey, key)
+        commandEncoder.encodeArray("BITOP", operation, destkey, keys)
     }
 }
 
@@ -492,8 +492,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: The result of the subcommand at the same position
     ///     * [Array]: In case OVERFLOW FAIL was given and overflows or underflows detected
     @inlinable
-    public func bitfield(_ key: ValkeyKey, operation: [BITFIELD.Operation] = []) async throws -> RESPToken.Array {
-        try await send(command: BITFIELD(key: key, operation: operation))
+    public func bitfield(_ key: ValkeyKey, operations: [BITFIELD.Operation] = []) async throws -> RESPToken.Array {
+        try await send(command: BITFIELD(key: key, operations: operations))
     }
 
     /// Performs arbitrary read-only bitfield integer operations on strings.
@@ -503,8 +503,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each subcommand specified
     /// - Response: [Array]: The result of the subcommand at the same position
     @inlinable
-    public func bitfieldRo(_ key: ValkeyKey, getBlock: [BITFIELDRO.GetBlock] = []) async throws -> [Int] {
-        try await send(command: BITFIELDRO(key: key, getBlock: getBlock))
+    public func bitfieldRo(_ key: ValkeyKey, getBlocks: [BITFIELDRO.GetBlock] = []) async throws -> [Int] {
+        try await send(command: BITFIELDRO(key: key, getBlocks: getBlocks))
     }
 
     /// Performs bitwise operations on multiple strings, and stores the result.
@@ -514,8 +514,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N)
     /// - Response: [Integer]: The size of the string stored in the destination key, that is equal to the size of the longest input string.
     @inlinable
-    public func bitop(operation: BITOP.Operation, destkey: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
-        try await send(command: BITOP(operation: operation, destkey: destkey, key: key))
+    public func bitop(operation: BITOP.Operation, destkey: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: BITOP(operation: operation, destkey: destkey, keys: keys))
     }
 
     /// Finds the first set (1) or clear (0) bit in a string.

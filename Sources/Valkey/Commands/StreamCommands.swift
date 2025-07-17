@@ -65,15 +65,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray(
-                "XGROUP",
-                "CREATE",
-                key,
-                RESPBulkString(group),
-                idSelector,
-                RESPPureToken("MKSTREAM", mkstream),
-                RESPWithToken("ENTRIESREAD", entriesread)
-            )
+            commandEncoder.encodeArray("XGROUP", "CREATE", key, RESPBulkString(group), idSelector, RESPPureToken("MKSTREAM", mkstream), RESPWithToken("ENTRIESREAD", entriesread))
         }
     }
 
@@ -305,18 +297,18 @@ public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: Valke
 
     public var key: ValkeyKey
     public var group: Group
-    public var id: [Id]
+    public var ids: [Id]
 
-    @inlinable public init(key: ValkeyKey, group: Group, id: [Id]) {
+    @inlinable public init(key: ValkeyKey, group: Group, ids: [Id]) {
         self.key = key
         self.group = group
-        self.id = id
+        self.ids = ids
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XACK", key, RESPBulkString(group), id.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("XACK", key, RESPBulkString(group), ids.map { RESPBulkString($0) })
     }
 }
 
@@ -425,28 +417,26 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     public var nomkstream: Bool
     public var trim: Trim?
     public var idSelector: IdSelector
-    public var data: [Data]
+    public var datas: [Data]
 
-    @inlinable public init(key: ValkeyKey, nomkstream: Bool = false, trim: Trim? = nil, idSelector: IdSelector, data: [Data]) {
+    @inlinable public init(key: ValkeyKey, nomkstream: Bool = false, trim: Trim? = nil, idSelector: IdSelector, datas: [Data]) {
         self.key = key
         self.nomkstream = nomkstream
         self.trim = trim
         self.idSelector = idSelector
-        self.data = data
+        self.datas = datas
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XADD", key, RESPPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
+        commandEncoder.encodeArray("XADD", key, RESPPureToken("NOMKSTREAM", nomkstream), trim, idSelector, datas)
     }
 }
 
 /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
 @_documentation(visibility: internal)
-public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>:
-    ValkeyCommand
-{
+public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var group: Group
     public var consumer: Consumer
@@ -455,15 +445,7 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
     public var count: Int?
     public var justid: Bool
 
-    @inlinable public init(
-        key: ValkeyKey,
-        group: Group,
-        consumer: Consumer,
-        minIdleTime: MinIdleTime,
-        start: Start,
-        count: Int? = nil,
-        justid: Bool = false
-    ) {
+    @inlinable public init(key: ValkeyKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, start: Start, count: Int? = nil, justid: Bool = false) {
         self.key = key
         self.group = group
         self.consumer = consumer
@@ -476,29 +458,18 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "XAUTOCLAIM",
-            key,
-            RESPBulkString(group),
-            RESPBulkString(consumer),
-            RESPBulkString(minIdleTime),
-            RESPBulkString(start),
-            RESPWithToken("COUNT", count),
-            RESPPureToken("JUSTID", justid)
-        )
+        commandEncoder.encodeArray("XAUTOCLAIM", key, RESPBulkString(group), RESPBulkString(consumer), RESPBulkString(minIdleTime), RESPBulkString(start), RESPWithToken("COUNT", count), RESPPureToken("JUSTID", justid))
     }
 }
 
 /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
 @_documentation(visibility: internal)
-public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>:
-    ValkeyCommand
-{
+public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var group: Group
     public var consumer: Consumer
     public var minIdleTime: MinIdleTime
-    public var id: [Id]
+    public var ids: [Id]
     public var ms: Int?
     public var unixTimeMilliseconds: Date?
     public var count: Int?
@@ -506,24 +477,12 @@ public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable
     public var justid: Bool
     public var lastid: String?
 
-    @inlinable public init(
-        key: ValkeyKey,
-        group: Group,
-        consumer: Consumer,
-        minIdleTime: MinIdleTime,
-        id: [Id],
-        ms: Int? = nil,
-        unixTimeMilliseconds: Date? = nil,
-        count: Int? = nil,
-        force: Bool = false,
-        justid: Bool = false,
-        lastid: String? = nil
-    ) {
+    @inlinable public init(key: ValkeyKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, ids: [Id], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) {
         self.key = key
         self.group = group
         self.consumer = consumer
         self.minIdleTime = minIdleTime
-        self.id = id
+        self.ids = ids
         self.ms = ms
         self.unixTimeMilliseconds = unixTimeMilliseconds
         self.count = count
@@ -535,20 +494,7 @@ public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "XCLAIM",
-            key,
-            RESPBulkString(group),
-            RESPBulkString(consumer),
-            RESPBulkString(minIdleTime),
-            id.map { RESPBulkString($0) },
-            RESPWithToken("IDLE", ms),
-            RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
-            RESPWithToken("RETRYCOUNT", count),
-            RESPPureToken("FORCE", force),
-            RESPPureToken("JUSTID", justid),
-            RESPWithToken("LASTID", lastid)
-        )
+        commandEncoder.encodeArray("XCLAIM", key, RESPBulkString(group), RESPBulkString(consumer), RESPBulkString(minIdleTime), ids.map { RESPBulkString($0) }, RESPWithToken("IDLE", ms), RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }), RESPWithToken("RETRYCOUNT", count), RESPPureToken("FORCE", force), RESPPureToken("JUSTID", justid), RESPWithToken("LASTID", lastid))
     }
 }
 
@@ -558,17 +504,17 @@ public struct XDEL<Id: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var id: [Id]
+    public var ids: [Id]
 
-    @inlinable public init(key: ValkeyKey, id: [Id]) {
+    @inlinable public init(key: ValkeyKey, ids: [Id]) {
         self.key = key
-        self.id = id
+        self.ids = ids
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XDEL", key, id.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("XDEL", key, ids.map { RESPBulkString($0) })
     }
 }
 
@@ -671,23 +617,23 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: Va
 @_documentation(visibility: internal)
 public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
     public struct Streams: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let key: [ValkeyKey]
-        @usableFromInline let id: [Id]
+        @usableFromInline let keys: [ValkeyKey]
+        @usableFromInline let ids: [Id]
 
-        @inlinable public init(key: [ValkeyKey], id: [Id]) {
-            self.key = key
-            self.id = id
+        @inlinable public init(keys: [ValkeyKey], ids: [Id]) {
+            self.keys = keys
+            self.ids = ids
         }
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + id.map { RESPBulkString($0) }.respEntries
+            keys.respEntries + ids.map { RESPBulkString($0) }.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            key.encode(into: &commandEncoder)
-            id.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+            keys.encode(into: &commandEncoder)
+            ids.map { RESPBulkString($0) }.encode(into: &commandEncoder)
         }
     }
     public var count: Int?
@@ -700,7 +646,7 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
         self.streams = streams
     }
 
-    public var keysAffected: [ValkeyKey] { streams.key }
+    public var keysAffected: [ValkeyKey] { streams.keys }
 
     public var isBlocking: Bool { true }
 
@@ -735,23 +681,23 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
         }
     }
     public struct Streams: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let key: [ValkeyKey]
-        @usableFromInline let id: [Id]
+        @usableFromInline let keys: [ValkeyKey]
+        @usableFromInline let ids: [Id]
 
-        @inlinable public init(key: [ValkeyKey], id: [Id]) {
-            self.key = key
-            self.id = id
+        @inlinable public init(keys: [ValkeyKey], ids: [Id]) {
+            self.keys = keys
+            self.ids = ids
         }
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + id.map { RESPBulkString($0) }.respEntries
+            keys.respEntries + ids.map { RESPBulkString($0) }.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            key.encode(into: &commandEncoder)
-            id.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+            keys.encode(into: &commandEncoder)
+            ids.map { RESPBulkString($0) }.encode(into: &commandEncoder)
         }
     }
     public var groupBlock: GroupBlock
@@ -768,19 +714,12 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
         self.streams = streams
     }
 
-    public var keysAffected: [ValkeyKey] { streams.key }
+    public var keysAffected: [ValkeyKey] { streams.keys }
 
     public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "XREADGROUP",
-            RESPWithToken("GROUP", groupBlock),
-            RESPWithToken("COUNT", count),
-            RESPWithToken("BLOCK", milliseconds),
-            RESPPureToken("NOACK", noack),
-            RESPWithToken("STREAMS", streams)
-        )
+        commandEncoder.encodeArray("XREADGROUP", RESPWithToken("GROUP", groupBlock), RESPWithToken("COUNT", count), RESPWithToken("BLOCK", milliseconds), RESPPureToken("NOACK", noack), RESPWithToken("STREAMS", streams))
     }
 }
 
@@ -826,13 +765,7 @@ public struct XSETID<LastId: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "XSETID",
-            key,
-            RESPBulkString(lastId),
-            RESPWithToken("ENTRIESADDED", entriesAdded),
-            RESPWithToken("MAXDELETEDID", maxDeletedId)
-        )
+        commandEncoder.encodeArray("XSETID", key, RESPBulkString(lastId), RESPWithToken("ENTRIESADDED", entriesAdded), RESPWithToken("MAXDELETEDID", maxDeletedId))
     }
 }
 
@@ -920,8 +853,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each message ID processed.
     /// - Response: [Integer]: The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
-    public func xack<Group: RESPStringRenderable, Id: RESPStringRenderable>(_ key: ValkeyKey, group: Group, id: [Id]) async throws -> Int {
-        try await send(command: XACK(key: key, group: group, id: id))
+    public func xack<Group: RESPStringRenderable, Id: RESPStringRenderable>(_ key: ValkeyKey, group: Group, ids: [Id]) async throws -> Int {
+        try await send(command: XACK(key: key, group: group, ids: ids))
     }
 
     /// Appends a new message to a stream. Creates the key if it doesn't exist.
@@ -936,14 +869,8 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The ID of the added entry. The ID is the one auto-generated if * is passed as ID argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null]: The NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
-    public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        nomkstream: Bool = false,
-        trim: XADD<Field, Value>.Trim? = nil,
-        idSelector: XADD<Field, Value>.IdSelector,
-        data: [XADD<Field, Value>.Data]
-    ) async throws -> ByteBuffer? {
-        try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
+    public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, nomkstream: Bool = false, trim: XADD<Field, Value>.Trim? = nil, idSelector: XADD<Field, Value>.IdSelector, datas: [XADD<Field, Value>.Data]) async throws -> ByteBuffer? {
+        try await send(command: XADD(key: key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, datas: datas))
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
@@ -957,23 +884,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Claimed stream entries (with data, if `JUSTID` was not given).
     ///     * [Array]: Claimed stream entries (without data, if `JUSTID` was given).
     @inlinable
-    public func xautoclaim<
-        Group: RESPStringRenderable,
-        Consumer: RESPStringRenderable,
-        MinIdleTime: RESPStringRenderable,
-        Start: RESPStringRenderable
-    >(
-        _ key: ValkeyKey,
-        group: Group,
-        consumer: Consumer,
-        minIdleTime: MinIdleTime,
-        start: Start,
-        count: Int? = nil,
-        justid: Bool = false
-    ) async throws -> XAUTOCLAIMResponse {
-        try await send(
-            command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid)
-        )
+    public func xautoclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Start: RESPStringRenderable>(_ key: ValkeyKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, start: Start, count: Int? = nil, justid: Bool = false) async throws -> XAUTOCLAIMResponse {
+        try await send(command: XAUTOCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -983,34 +895,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
     /// - Response: Stream entries with IDs matching the specified range.
     @inlinable
-    public func xclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        group: Group,
-        consumer: Consumer,
-        minIdleTime: MinIdleTime,
-        id: [Id],
-        ms: Int? = nil,
-        unixTimeMilliseconds: Date? = nil,
-        count: Int? = nil,
-        force: Bool = false,
-        justid: Bool = false,
-        lastid: String? = nil
-    ) async throws -> XCLAIMResponse {
-        try await send(
-            command: XCLAIM(
-                key: key,
-                group: group,
-                consumer: consumer,
-                minIdleTime: minIdleTime,
-                id: id,
-                ms: ms,
-                unixTimeMilliseconds: unixTimeMilliseconds,
-                count: count,
-                force: force,
-                justid: justid,
-                lastid: lastid
-            )
-        )
+    public func xclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>(_ key: ValkeyKey, group: Group, consumer: Consumer, minIdleTime: MinIdleTime, ids: [Id], ms: Int? = nil, unixTimeMilliseconds: Date? = nil, count: Int? = nil, force: Bool = false, justid: Bool = false, lastid: String? = nil) async throws -> XCLAIMResponse {
+        try await send(command: XCLAIM(key: key, group: group, consumer: consumer, minIdleTime: minIdleTime, ids: ids, ms: ms, unixTimeMilliseconds: unixTimeMilliseconds, count: count, force: force, justid: justid, lastid: lastid))
     }
 
     /// Returns the number of messages after removing them from a stream.
@@ -1020,8 +906,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size.
     /// - Response: [Integer]: The number of entries actually deleted
     @inlinable
-    public func xdel<Id: RESPStringRenderable>(_ key: ValkeyKey, id: [Id]) async throws -> Int {
-        try await send(command: XDEL(key: key, id: id))
+    public func xdel<Id: RESPStringRenderable>(_ key: ValkeyKey, ids: [Id]) async throws -> Int {
+        try await send(command: XDEL(key: key, ids: ids))
     }
 
     /// Creates a consumer group.
@@ -1032,13 +918,7 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added the `entries_read` named argument.
     /// - Complexity: O(1)
     @inlinable
-    public func xgroupCreate<Group: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        group: Group,
-        idSelector: XGROUP.CREATE<Group>.IdSelector,
-        mkstream: Bool = false,
-        entriesread: Int? = nil
-    ) async throws {
+    public func xgroupCreate<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group, idSelector: XGROUP.CREATE<Group>.IdSelector, mkstream: Bool = false, entriesread: Int? = nil) async throws {
         _ = try await send(command: XGROUP.CREATE(key: key, group: group, idSelector: idSelector, mkstream: mkstream, entriesread: entriesread))
     }
 
@@ -1049,11 +929,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: The number of created consumers (0 or 1)
     @inlinable
-    public func xgroupCreateconsumer<Group: RESPStringRenderable, Consumer: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        group: Group,
-        consumer: Consumer
-    ) async throws -> Int {
+    public func xgroupCreateconsumer<Group: RESPStringRenderable, Consumer: RESPStringRenderable>(_ key: ValkeyKey, group: Group, consumer: Consumer) async throws -> Int {
         try await send(command: XGROUP.CREATECONSUMER(key: key, group: group, consumer: consumer))
     }
 
@@ -1064,11 +940,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The number of pending messages that were yet associated with such a consumer
     @inlinable
-    public func xgroupDelconsumer<Group: RESPStringRenderable, Consumer: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        group: Group,
-        consumer: Consumer
-    ) async throws -> Int {
+    public func xgroupDelconsumer<Group: RESPStringRenderable, Consumer: RESPStringRenderable>(_ key: ValkeyKey, group: Group, consumer: Consumer) async throws -> Int {
         try await send(command: XGROUP.DELCONSUMER(key: key, group: group, consumer: consumer))
     }
 
@@ -1102,12 +974,7 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added the optional `entries_read` argument.
     /// - Complexity: O(1)
     @inlinable
-    public func xgroupSetid<Group: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        group: Group,
-        idSelector: XGROUP.SETID<Group>.IdSelector,
-        entriesread: Int? = nil
-    ) async throws {
+    public func xgroupSetid<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group, idSelector: XGROUP.SETID<Group>.IdSelector, entriesread: Int? = nil) async throws {
         _ = try await send(command: XGROUP.SETID(key: key, group: group, idSelector: idSelector, entriesread: entriesread))
     }
 
@@ -1186,11 +1053,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Extended form, in case `start` was given.
     ///     * [Array]: Summary form, in case `start` was not given.
     @inlinable
-    public func xpending<Group: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        group: Group,
-        filters: XPENDING<Group>.Filters? = nil
-    ) async throws -> XPENDINGResponse {
+    public func xpending<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group, filters: XPENDING<Group>.Filters? = nil) async throws -> XPENDINGResponse {
         try await send(command: XPENDING(key: key, group: group, filters: filters))
     }
 
@@ -1203,12 +1066,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) with N being the number of elements being returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
     /// - Response: [Array]: Stream entries with IDs matching the specified range.
     @inlinable
-    public func xrange<Start: RESPStringRenderable, End: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        start: Start,
-        end: End,
-        count: Int? = nil
-    ) async throws -> XRANGEResponse {
+    public func xrange<Start: RESPStringRenderable, End: RESPStringRenderable>(_ key: ValkeyKey, start: Start, end: End, count: Int? = nil) async throws -> XRANGEResponse {
         try await send(command: XRANGE(key: key, start: start, end: end, count: count))
     }
 
@@ -1220,8 +1078,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Map]: A map of key-value elements when each element composed of key name and the entries reported for that key.
     ///     * [Null]: If BLOCK option is given, and a timeout occurs, or there is no stream we can serve.
     @inlinable
-    public func xread<Id: RESPStringRenderable>(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD<Id>.Streams) async throws -> XREADResponse
-    {
+    public func xread<Id: RESPStringRenderable>(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD<Id>.Streams) async throws -> XREADResponse {
         try await send(command: XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
@@ -1234,13 +1091,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: If BLOCK option is specified and the timeout expired
     ///     * [Map]: A map of key-value elements when each element composed of key name and the entries reported for that key
     @inlinable
-    public func xreadgroup<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>(
-        groupBlock: XREADGROUP<Group, Consumer, Id>.GroupBlock,
-        count: Int? = nil,
-        milliseconds: Int? = nil,
-        noack: Bool = false,
-        streams: XREADGROUP<Group, Consumer, Id>.Streams
-    ) async throws -> XREADGROUPResponse {
+    public func xreadgroup<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>(groupBlock: XREADGROUP<Group, Consumer, Id>.GroupBlock, count: Int? = nil, milliseconds: Int? = nil, noack: Bool = false, streams: XREADGROUP<Group, Consumer, Id>.Streams) async throws -> XREADGROUPResponse {
         try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
@@ -1253,12 +1104,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) with N being the number of elements returned. If N is constant (e.g. always asking for the first 10 elements with COUNT), you can consider it O(1).
     /// - Response: [Array]: An array of the entries with IDs matching the specified range
     @inlinable
-    public func xrevrange<End: RESPStringRenderable, Start: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        end: End,
-        start: Start,
-        count: Int? = nil
-    ) async throws -> XREVRANGEResponse {
+    public func xrevrange<End: RESPStringRenderable, Start: RESPStringRenderable>(_ key: ValkeyKey, end: End, start: Start, count: Int? = nil) async throws -> XREVRANGEResponse {
         try await send(command: XREVRANGE(key: key, end: end, start: start, count: count))
     }
 
@@ -1270,12 +1116,7 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added the `entries_added` and `max_deleted_entry_id` arguments.
     /// - Complexity: O(1)
     @inlinable
-    public func xsetid<LastId: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        lastId: LastId,
-        entriesAdded: Int? = nil,
-        maxDeletedId: String? = nil
-    ) async throws {
+    public func xsetid<LastId: RESPStringRenderable>(_ key: ValkeyKey, lastId: LastId, entriesAdded: Int? = nil, maxDeletedId: String? = nil) async throws {
         _ = try await send(command: XSETID(key: key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
     }
 

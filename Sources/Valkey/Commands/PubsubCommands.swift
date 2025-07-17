@@ -72,14 +72,14 @@ public enum PUBSUB {
     public struct NUMSUB: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
-        public var channel: [String]
+        public var channels: [String]
 
-        @inlinable public init(channel: [String] = []) {
-            self.channel = channel
+        @inlinable public init(channels: [String] = []) {
+            self.channels = channels
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("PUBSUB", "NUMSUB", channel)
+            commandEncoder.encodeArray("PUBSUB", "NUMSUB", channels)
         }
     }
 
@@ -104,14 +104,14 @@ public enum PUBSUB {
     public struct SHARDNUMSUB: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
-        public var shardchannel: [String]
+        public var shardchannels: [String]
 
-        @inlinable public init(shardchannel: [String] = []) {
-            self.shardchannel = shardchannel
+        @inlinable public init(shardchannels: [String] = []) {
+            self.shardchannels = shardchannels
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannel)
+            commandEncoder.encodeArray("PUBSUB", "SHARDNUMSUB", shardchannels)
         }
     }
 
@@ -120,14 +120,14 @@ public enum PUBSUB {
 /// Listens for messages published to channels that match one or more patterns.
 @_documentation(visibility: internal)
 public struct PSUBSCRIBE: ValkeyCommand {
-    public var pattern: [String]
+    public var patterns: [String]
 
-    @inlinable public init(pattern: [String]) {
-        self.pattern = pattern
+    @inlinable public init(patterns: [String]) {
+        self.patterns = patterns
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PSUBSCRIBE", pattern)
+        commandEncoder.encodeArray("PSUBSCRIBE", patterns)
     }
 }
 
@@ -152,14 +152,14 @@ public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderab
 /// Stops listening to messages published to channels that match one or more patterns.
 @_documentation(visibility: internal)
 public struct PUNSUBSCRIBE: ValkeyCommand {
-    public var pattern: [String]
+    public var patterns: [String]
 
-    @inlinable public init(pattern: [String] = []) {
-        self.pattern = pattern
+    @inlinable public init(patterns: [String] = []) {
+        self.patterns = patterns
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PUNSUBSCRIBE", pattern)
+        commandEncoder.encodeArray("PUNSUBSCRIBE", patterns)
     }
 }
 
@@ -184,56 +184,56 @@ public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRe
 /// Listens for messages published to shard channels.
 @_documentation(visibility: internal)
 public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
-    public var shardchannel: [Shardchannel]
+    public var shardchannels: [Shardchannel]
 
-    @inlinable public init(shardchannel: [Shardchannel]) {
-        self.shardchannel = shardchannel
+    @inlinable public init(shardchannels: [Shardchannel]) {
+        self.shardchannels = shardchannels
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SSUBSCRIBE", shardchannel.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("SSUBSCRIBE", shardchannels.map { RESPBulkString($0) })
     }
 }
 
 /// Listens for messages published to channels.
 @_documentation(visibility: internal)
 public struct SUBSCRIBE<Channel: RESPStringRenderable>: ValkeyCommand {
-    public var channel: [Channel]
+    public var channels: [Channel]
 
-    @inlinable public init(channel: [Channel]) {
-        self.channel = channel
+    @inlinable public init(channels: [Channel]) {
+        self.channels = channels
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SUBSCRIBE", channel.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("SUBSCRIBE", channels.map { RESPBulkString($0) })
     }
 }
 
 /// Stops listening to messages posted to shard channels.
 @_documentation(visibility: internal)
 public struct SUNSUBSCRIBE: ValkeyCommand {
-    public var shardchannel: [String]
+    public var shardchannels: [String]
 
-    @inlinable public init(shardchannel: [String] = []) {
-        self.shardchannel = shardchannel
+    @inlinable public init(shardchannels: [String] = []) {
+        self.shardchannels = shardchannels
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SUNSUBSCRIBE", shardchannel)
+        commandEncoder.encodeArray("SUNSUBSCRIBE", shardchannels)
     }
 }
 
 /// Stops listening to messages posted to channels.
 @_documentation(visibility: internal)
 public struct UNSUBSCRIBE: ValkeyCommand {
-    public var channel: [String]
+    public var channels: [String]
 
-    @inlinable public init(channel: [String] = []) {
-        self.channel = channel
+    @inlinable public init(channels: [String] = []) {
+        self.channels = channels
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("UNSUBSCRIBE", channel)
+        commandEncoder.encodeArray("UNSUBSCRIBE", channels)
     }
 }
 
@@ -289,8 +289,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
     /// - Response: [Array]: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
-    public func pubsubNumsub(channel: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: PUBSUB.NUMSUB(channel: channel))
+    public func pubsubNumsub(channels: [String] = []) async throws -> RESPToken.Array {
+        try await send(command: PUBSUB.NUMSUB(channels: channels))
     }
 
     /// Returns the active shard channels.
@@ -311,8 +311,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
     /// - Response: [Array]: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
-    public func pubsubShardnumsub(shardchannel: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: PUBSUB.SHARDNUMSUB(shardchannel: shardchannel))
+    public func pubsubShardnumsub(shardchannels: [String] = []) async throws -> RESPToken.Array {
+        try await send(command: PUBSUB.SHARDNUMSUB(shardchannels: shardchannels))
     }
 
     /// Post a message to a shard channel
@@ -322,10 +322,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
     /// - Response: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
-    public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(
-        shardchannel: Shardchannel,
-        message: Message
-    ) async throws -> Int {
+    public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(shardchannel: Shardchannel, message: Message) async throws -> Int {
         try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
     }
 

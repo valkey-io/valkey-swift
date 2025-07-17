@@ -28,17 +28,17 @@ public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var member: [Member]
+    public var members: [Member]
 
-    @inlinable public init(key: ValkeyKey, member: [Member]) {
+    @inlinable public init(key: ValkeyKey, members: [Member]) {
         self.key = key
-        self.member = member
+        self.members = members
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SADD", key, member.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("SADD", key, members.map { RESPBulkString($0) })
     }
 }
 
@@ -67,18 +67,18 @@ public struct SCARD: ValkeyCommand {
 public struct SDIFF: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SDIFF", key)
+        commandEncoder.encodeArray("SDIFF", keys)
     }
 }
 
@@ -88,17 +88,17 @@ public struct SDIFFSTORE: ValkeyCommand {
     public typealias Response = Int
 
     public var destination: ValkeyKey
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(destination: ValkeyKey, key: [ValkeyKey]) {
+    @inlinable public init(destination: ValkeyKey, keys: [ValkeyKey]) {
         self.destination = destination
-        self.key = key
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key + [destination] }
+    public var keysAffected: [ValkeyKey] { keys + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SDIFFSTORE", destination, key)
+        commandEncoder.encodeArray("SDIFFSTORE", destination, keys)
     }
 }
 
@@ -107,18 +107,18 @@ public struct SDIFFSTORE: ValkeyCommand {
 public struct SINTER: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SINTER", key)
+        commandEncoder.encodeArray("SINTER", keys)
     }
 }
 
@@ -127,20 +127,20 @@ public struct SINTER: ValkeyCommand {
 public struct SINTERCARD: ValkeyCommand {
     public typealias Response = Int
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
     public var limit: Int?
 
-    @inlinable public init(key: [ValkeyKey], limit: Int? = nil) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey], limit: Int? = nil) {
+        self.keys = keys
         self.limit = limit
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SINTERCARD", RESPArrayWithCount(key), RESPWithToken("LIMIT", limit))
+        commandEncoder.encodeArray("SINTERCARD", RESPArrayWithCount(keys), RESPWithToken("LIMIT", limit))
     }
 }
 
@@ -150,17 +150,17 @@ public struct SINTERSTORE: ValkeyCommand {
     public typealias Response = Int
 
     public var destination: ValkeyKey
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(destination: ValkeyKey, key: [ValkeyKey]) {
+    @inlinable public init(destination: ValkeyKey, keys: [ValkeyKey]) {
         self.destination = destination
-        self.key = key
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key + [destination] }
+    public var keysAffected: [ValkeyKey] { keys + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SINTERSTORE", destination, key)
+        commandEncoder.encodeArray("SINTERSTORE", destination, keys)
     }
 }
 
@@ -212,11 +212,11 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
-    public var member: [Member]
+    public var members: [Member]
 
-    @inlinable public init(key: ValkeyKey, member: [Member]) {
+    @inlinable public init(key: ValkeyKey, members: [Member]) {
         self.key = key
-        self.member = member
+        self.members = members
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -224,7 +224,7 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SMISMEMBER", key, member.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("SMISMEMBER", key, members.map { RESPBulkString($0) })
     }
 }
 
@@ -298,17 +298,17 @@ public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var member: [Member]
+    public var members: [Member]
 
-    @inlinable public init(key: ValkeyKey, member: [Member]) {
+    @inlinable public init(key: ValkeyKey, members: [Member]) {
         self.key = key
-        self.member = member
+        self.members = members
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SREM", key, member.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("SREM", key, members.map { RESPBulkString($0) })
     }
 }
 
@@ -343,18 +343,18 @@ public struct SSCAN: ValkeyCommand {
 public struct SUNION: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(key: [ValkeyKey]) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey]) {
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SUNION", key)
+        commandEncoder.encodeArray("SUNION", keys)
     }
 }
 
@@ -364,17 +364,17 @@ public struct SUNIONSTORE: ValkeyCommand {
     public typealias Response = Int
 
     public var destination: ValkeyKey
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
-    @inlinable public init(destination: ValkeyKey, key: [ValkeyKey]) {
+    @inlinable public init(destination: ValkeyKey, keys: [ValkeyKey]) {
         self.destination = destination
-        self.key = key
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { key + [destination] }
+    public var keysAffected: [ValkeyKey] { keys + [destination] }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SUNIONSTORE", destination, key)
+        commandEncoder.encodeArray("SUNIONSTORE", destination, keys)
     }
 }
 
@@ -388,8 +388,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
-    public func sadd<Member: RESPStringRenderable>(_ key: ValkeyKey, member: [Member]) async throws -> Int {
-        try await send(command: SADD(key: key, member: member))
+    public func sadd<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
+        try await send(command: SADD(key: key, members: members))
     }
 
     /// Returns the number of members in a set.
@@ -410,8 +410,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
-    public func sdiff(key: [ValkeyKey]) async throws -> RESPToken.Array {
-        try await send(command: SDIFF(key: key))
+    public func sdiff(keys: [ValkeyKey]) async throws -> RESPToken.Array {
+        try await send(command: SDIFF(keys: keys))
     }
 
     /// Stores the difference of multiple sets in a key.
@@ -421,8 +421,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Response: [Integer]: Number of the elements in the resulting set.
     @inlinable
-    public func sdiffstore(destination: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
-        try await send(command: SDIFFSTORE(destination: destination, key: key))
+    public func sdiffstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: SDIFFSTORE(destination: destination, keys: keys))
     }
 
     /// Returns the intersect of multiple sets.
@@ -432,8 +432,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
-    public func sinter(key: [ValkeyKey]) async throws -> RESPToken.Array {
-        try await send(command: SINTER(key: key))
+    public func sinter(keys: [ValkeyKey]) async throws -> RESPToken.Array {
+        try await send(command: SINTER(keys: keys))
     }
 
     /// Returns the number of members of the intersect of multiple sets.
@@ -443,8 +443,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Response: [Integer]: Number of the elements in the resulting intersection.
     @inlinable
-    public func sintercard(key: [ValkeyKey], limit: Int? = nil) async throws -> Int {
-        try await send(command: SINTERCARD(key: key, limit: limit))
+    public func sintercard(keys: [ValkeyKey], limit: Int? = nil) async throws -> Int {
+        try await send(command: SINTERCARD(keys: keys, limit: limit))
     }
 
     /// Stores the intersect of multiple sets in a key.
@@ -454,8 +454,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Response: [Integer]: Number of the elements in the result set.
     @inlinable
-    public func sinterstore(destination: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
-        try await send(command: SINTERSTORE(destination: destination, key: key))
+    public func sinterstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: SINTERSTORE(destination: destination, keys: keys))
     }
 
     /// Determines whether a member belongs to a set.
@@ -489,8 +489,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of elements being checked for membership
     /// - Response: [Array]: List representing the membership of the given elements, in the same order as they are requested.
     @inlinable
-    public func smismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: [Member]) async throws -> RESPToken.Array {
-        try await send(command: SMISMEMBER(key: key, member: member))
+    public func smismember<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> RESPToken.Array {
+        try await send(command: SMISMEMBER(key: key, members: members))
     }
 
     /// Moves a member from one set to another.
@@ -548,8 +548,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of members to be removed.
     /// - Response: [Integer]: Number of members that were removed from the set, not including non existing members.
     @inlinable
-    public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, member: [Member]) async throws -> Int {
-        try await send(command: SREM(key: key, member: member))
+    public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
+        try await send(command: SREM(key: key, members: members))
     }
 
     /// Iterates over members of a set.
@@ -570,8 +570,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
-    public func sunion(key: [ValkeyKey]) async throws -> RESPToken.Array {
-        try await send(command: SUNION(key: key))
+    public func sunion(keys: [ValkeyKey]) async throws -> RESPToken.Array {
+        try await send(command: SUNION(keys: keys))
     }
 
     /// Stores the union of multiple sets in a key.
@@ -581,8 +581,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Response: [Integer]: Number of the elements in the resulting set.
     @inlinable
-    public func sunionstore(destination: ValkeyKey, key: [ValkeyKey]) async throws -> Int {
-        try await send(command: SUNIONSTORE(destination: destination, key: key))
+    public func sunionstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
+        try await send(command: SUNIONSTORE(destination: destination, keys: keys))
     }
 
 }

@@ -175,10 +175,10 @@ struct CommandTests {
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
-                    var values = try await connection.lmpop(key: ["key1", "key2"], where: .right)
+                    var values = try await connection.lmpop(keys: ["key1", "key2"], where: .right)
                     #expect(values?.key == "key1")
                     try #expect(values?.values.decode(as: [String].self) == ["a"])
-                    values = try await connection.lmpop(key: ["key1", "key2"], where: .left, count: 2)
+                    values = try await connection.lmpop(keys: ["key1", "key2"], where: .left, count: 2)
                     #expect(values?.key == "key2")
                     try #expect(values?.values.decode(as: [String].self) == ["c", "b"])
                 }
@@ -264,11 +264,11 @@ struct CommandTests {
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
-                    var result = try await connection.zmpop(key: ["key", "key2"], where: .max)
+                    var result = try await connection.zmpop(keys: ["key", "key2"], where: .max)
                     #expect(result?.key == "key")
                     #expect(result?.values[0].score == 3)
                     #expect((result?.values[0].value).map { String(buffer: $0) } == "three")
-                    result = try await connection.zmpop(key: ["key", "key2"], where: .max, count: 2)
+                    result = try await connection.zmpop(keys: ["key", "key2"], where: .max, count: 2)
                     #expect(result?.key == ValkeyKey("key2"))
                     #expect(result?.values[0].score == 5)
                     #expect((result?.values[0].value).map { String(buffer: $0) } == "five")
@@ -392,7 +392,7 @@ struct CommandTests {
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
             try await channel.processHello()
 
-            async let asyncResult = connection.xread(count: 2, streams: .init(key: ["key1", "key2"], id: ["0-0", "0-0"]))
+            async let asyncResult = connection.xread(count: 2, streams: .init(keys: ["key1", "key2"], ids: ["0-0", "0-0"]))
 
             let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
             #expect(outbound == RESPToken(.command(["XREAD", "COUNT", "2", "STREAMS", "key1", "key2", "0-0", "0-0"])).base)
@@ -456,7 +456,7 @@ struct CommandTests {
             async let asyncResult = connection.xreadgroup(
                 groupBlock: .init(group: "MyGroup", consumer: "MyConsumer"),
                 count: 2,
-                streams: .init(key: ["key1"], id: [">"])
+                streams: .init(keys: ["key1"], ids: [">"])
             )
 
             let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -540,7 +540,7 @@ struct CommandTests {
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
             try await channel.processHello()
 
-            async let asyncResult = connection.xclaim("key1", group: "MyGroup", consumer: "consumer1", minIdleTime: "0", id: ["1749463853292-0"])
+            async let asyncResult = connection.xclaim("key1", group: "MyGroup", consumer: "consumer1", minIdleTime: "0", ids: ["1749463853292-0"])
 
             let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
             #expect(outbound == RESPToken(.command(["XCLAIM", "key1", "MyGroup", "consumer1", "0", "1749463853292-0"])).base)

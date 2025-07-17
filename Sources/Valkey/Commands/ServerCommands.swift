@@ -46,14 +46,14 @@ public enum ACL {
     public struct DELUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
 
-        public var username: [Username]
+        public var usernames: [Username]
 
-        @inlinable public init(username: [Username]) {
-            self.username = username
+        @inlinable public init(usernames: [Username]) {
+            self.usernames = usernames
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "DELUSER", username.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("ACL", "DELUSER", usernames.map { RESPBulkString($0) })
         }
     }
 
@@ -64,16 +64,16 @@ public enum ACL {
 
         public var username: Username
         public var command: Command
-        public var arg: [String]
+        public var args: [String]
 
-        @inlinable public init(username: Username, command: Command, arg: [String] = []) {
+        @inlinable public init(username: Username, command: Command, args: [String] = []) {
             self.username = username
             self.command = command
-            self.arg = arg
+            self.args = args
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "DRYRUN", RESPBulkString(username), RESPBulkString(command), arg)
+            commandEncoder.encodeArray("ACL", "DRYRUN", RESPBulkString(username), RESPBulkString(command), args)
         }
     }
 
@@ -197,15 +197,15 @@ public enum ACL {
     @_documentation(visibility: internal)
     public struct SETUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public var username: Username
-        public var rule: [String]
+        public var rules: [String]
 
-        @inlinable public init(username: Username, rule: [String] = []) {
+        @inlinable public init(username: Username, rules: [String] = []) {
             self.username = username
-            self.rule = rule
+            self.rules = rules
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("ACL", "SETUSER", RESPBulkString(username), rule)
+            commandEncoder.encodeArray("ACL", "SETUSER", RESPBulkString(username), rules)
         }
     }
 
@@ -256,14 +256,14 @@ extension COMMAND {
     public struct DOCS: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
-        public var commandName: [String]
+        public var commandNames: [String]
 
-        @inlinable public init(commandName: [String] = []) {
-            self.commandName = commandName
+        @inlinable public init(commandNames: [String] = []) {
+            self.commandNames = commandNames
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "DOCS", commandName)
+            commandEncoder.encodeArray("COMMAND", "DOCS", commandNames)
         }
     }
 
@@ -273,15 +273,15 @@ extension COMMAND {
         public typealias Response = RESPToken.Array
 
         public var command: Command
-        public var arg: [String]
+        public var args: [String]
 
-        @inlinable public init(command: Command, arg: [String] = []) {
+        @inlinable public init(command: Command, args: [String] = []) {
             self.command = command
-            self.arg = arg
+            self.args = args
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "GETKEYS", RESPBulkString(command), arg)
+            commandEncoder.encodeArray("COMMAND", "GETKEYS", RESPBulkString(command), args)
         }
     }
 
@@ -291,15 +291,15 @@ extension COMMAND {
         public typealias Response = RESPToken.Array
 
         public var command: Command
-        public var arg: [String]
+        public var args: [String]
 
-        @inlinable public init(command: Command, arg: [String] = []) {
+        @inlinable public init(command: Command, args: [String] = []) {
             self.command = command
-            self.arg = arg
+            self.args = args
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", RESPBulkString(command), arg)
+            commandEncoder.encodeArray("COMMAND", "GETKEYSANDFLAGS", RESPBulkString(command), args)
         }
     }
 
@@ -321,14 +321,14 @@ extension COMMAND {
     public struct INFO: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
-        public var commandName: [String]
+        public var commandNames: [String]
 
-        @inlinable public init(commandName: [String] = []) {
-            self.commandName = commandName
+        @inlinable public init(commandNames: [String] = []) {
+            self.commandNames = commandNames
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("COMMAND", "INFO", commandName)
+            commandEncoder.encodeArray("COMMAND", "INFO", commandNames)
         }
     }
 
@@ -516,14 +516,14 @@ public enum CONFIG {
     public struct GET<Parameter: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
-        public var parameter: [Parameter]
+        public var parameters: [Parameter]
 
-        @inlinable public init(parameter: [Parameter]) {
-            self.parameter = parameter
+        @inlinable public init(parameters: [Parameter]) {
+            self.parameters = parameters
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CONFIG", "GET", parameter.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("CONFIG", "GET", parameters.map { RESPBulkString($0) })
         }
     }
 
@@ -585,14 +585,14 @@ public enum CONFIG {
                 RESPBulkString(value).encode(into: &commandEncoder)
             }
         }
-        public var data: [Data]
+        public var datas: [Data]
 
-        @inlinable public init(data: [Data]) {
-            self.data = data
+        @inlinable public init(datas: [Data]) {
+            self.datas = datas
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CONFIG", "SET", data)
+            commandEncoder.encodeArray("CONFIG", "SET", datas)
         }
     }
 
@@ -648,14 +648,14 @@ public enum LATENCY {
     public struct HISTOGRAM: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
-        public var command: [String]
+        public var commands: [String]
 
-        @inlinable public init(command: [String] = []) {
-            self.command = command
+        @inlinable public init(commands: [String] = []) {
+            self.commands = commands
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("LATENCY", "HISTOGRAM", command)
+            commandEncoder.encodeArray("LATENCY", "HISTOGRAM", commands)
         }
     }
 
@@ -693,14 +693,14 @@ public enum LATENCY {
     public struct RESET: ValkeyCommand {
         public typealias Response = Int
 
-        public var event: [String]
+        public var events: [String]
 
-        @inlinable public init(event: [String] = []) {
-            self.event = event
+        @inlinable public init(events: [String] = []) {
+            self.events = events
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("LATENCY", "RESET", event)
+            commandEncoder.encodeArray("LATENCY", "RESET", events)
         }
     }
 
@@ -829,15 +829,15 @@ public enum MODULE {
     @_documentation(visibility: internal)
     public struct LOAD<Path: RESPStringRenderable>: ValkeyCommand {
         public var path: Path
-        public var arg: [String]
+        public var args: [String]
 
-        @inlinable public init(path: Path, arg: [String] = []) {
+        @inlinable public init(path: Path, args: [String] = []) {
             self.path = path
-            self.arg = arg
+            self.args = args
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOAD", RESPBulkString(path), arg)
+            commandEncoder.encodeArray("MODULE", "LOAD", RESPBulkString(path), args)
         }
     }
 
@@ -865,17 +865,17 @@ public enum MODULE {
             }
         }
         public var path: Path
-        public var configs: [Configs]
-        public var args: [String]
+        public var configss: [Configs]
+        public var argss: [String]
 
-        @inlinable public init(path: Path, configs: [Configs] = [], args: [String] = []) {
+        @inlinable public init(path: Path, configss: [Configs] = [], argss: [String] = []) {
             self.path = path
-            self.configs = configs
-            self.args = args
+            self.configss = configss
+            self.argss = argss
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPWithToken("CONFIG", configss), RESPWithToken("ARGS", argss))
         }
     }
 
@@ -1127,14 +1127,14 @@ public struct FLUSHDB: ValkeyCommand {
 public struct INFO: ValkeyCommand {
     public typealias Response = ByteBuffer
 
-    public var section: [String]
+    public var sections: [String]
 
-    @inlinable public init(section: [String] = []) {
-        self.section = section
+    @inlinable public init(sections: [String] = []) {
+        self.sections = sections
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("INFO", section)
+        commandEncoder.encodeArray("INFO", sections)
     }
 }
 
@@ -1497,8 +1497,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) amortized time considering the typical user.
     /// - Response: [Integer]: The number of users that were deleted.
     @inlinable
-    public func aclDeluser<Username: RESPStringRenderable>(username: [Username]) async throws -> Int {
-        try await send(command: ACL.DELUSER(username: username))
+    public func aclDeluser<Username: RESPStringRenderable>(usernames: [Username]) async throws -> Int {
+        try await send(command: ACL.DELUSER(usernames: usernames))
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -1510,12 +1510,8 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": The given user may successfully execute the given command.
     ///     * [String]: The description of the problem, in case the user is not allowed to run the given command.
     @inlinable
-    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(
-        username: Username,
-        command: Command,
-        arg: [String] = []
-    ) async throws -> ByteBuffer? {
-        try await send(command: ACL.DRYRUN(username: username, command: command, arg: arg))
+    public func aclDryrun<Username: RESPStringRenderable, Command: RESPStringRenderable>(username: Username, command: Command, args: [String] = []) async throws -> ByteBuffer? {
+        try await send(command: ACL.DRYRUN(username: username, command: command, args: args))
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
@@ -1611,8 +1607,8 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added selectors and key based permissions.
     /// - Complexity: O(N). Where N is the number of rules provided.
     @inlinable
-    public func aclSetuser<Username: RESPStringRenderable>(username: Username, rule: [String] = []) async throws {
-        _ = try await send(command: ACL.SETUSER(username: username, rule: rule))
+    public func aclSetuser<Username: RESPStringRenderable>(username: Username, rules: [String] = []) async throws {
+        _ = try await send(command: ACL.SETUSER(username: username, rules: rules))
     }
 
     /// Lists all ACL users.
@@ -1689,8 +1685,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of commands to look up
     /// - Response: [Map]: A map where each key is a command name, and each value is the documentary information
     @inlinable
-    public func commandDocs(commandName: [String] = []) async throws -> RESPToken.Map {
-        try await send(command: COMMAND.DOCS(commandName: commandName))
+    public func commandDocs(commandNames: [String] = []) async throws -> RESPToken.Map {
+        try await send(command: COMMAND.DOCS(commandNames: commandNames))
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -1700,8 +1696,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Response: [Array]: List of keys from the given command.
     @inlinable
-    public func commandGetkeys<Command: RESPStringRenderable>(command: Command, arg: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: COMMAND.GETKEYS(command: command, arg: arg))
+    public func commandGetkeys<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
+        try await send(command: COMMAND.GETKEYS(command: command, args: args))
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
@@ -1711,8 +1707,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of arguments to the command
     /// - Response: [Array]: List of keys from the given command and their usage flags.
     @inlinable
-    public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, arg: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, arg: arg))
+    public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
+        try await send(command: COMMAND.GETKEYSANDFLAGS(command: command, args: args))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1737,8 +1733,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Command does not exist.
     ///     * [Array]: Command info array output.
     @inlinable
-    public func commandInfo(commandName: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: COMMAND.INFO(commandName: commandName))
+    public func commandInfo(commandNames: [String] = []) async throws -> RESPToken.Array {
+        try await send(command: COMMAND.INFO(commandNames: commandNames))
     }
 
     /// Returns a list of command names.
@@ -1803,8 +1799,8 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added the ability to pass multiple pattern parameters in one call
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     @inlinable
-    public func configGet<Parameter: RESPStringRenderable>(parameter: [Parameter]) async throws -> RESPToken.Map {
-        try await send(command: CONFIG.GET(parameter: parameter))
+    public func configGet<Parameter: RESPStringRenderable>(parameters: [Parameter]) async throws -> RESPToken.Map {
+        try await send(command: CONFIG.GET(parameters: parameters))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1846,8 +1842,8 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added the ability to set multiple parameters in one call.
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     @inlinable
-    public func configSet<Parameter: RESPStringRenderable, Value: RESPStringRenderable>(data: [CONFIG.SET<Parameter, Value>.Data]) async throws {
-        _ = try await send(command: CONFIG.SET(data: data))
+    public func configSet<Parameter: RESPStringRenderable, Value: RESPStringRenderable>(datas: [CONFIG.SET<Parameter, Value>.Data]) async throws {
+        _ = try await send(command: CONFIG.SET(datas: datas))
     }
 
     /// Returns the number of keys in the database.
@@ -1906,8 +1902,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: A map of info fields, one field per line in the form of <field>:<value> where the value can be a comma separated map like <key>=<val>. Also contains section header lines starting with `#` and blank lines.
     @inlinable
-    public func info(section: [String] = []) async throws -> ByteBuffer {
-        try await send(command: INFO(section: section))
+    public func info(sections: [String] = []) async throws -> ByteBuffer {
+        try await send(command: INFO(sections: sections))
     }
 
     /// Returns the Unix timestamp of the last successful save to disk.
@@ -1961,8 +1957,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of commands with latency information being retrieved.
     /// - Response: [Map]: A map where each key is a command name, and each value is a map with the total calls, and an inner map of the histogram time buckets.
     @inlinable
-    public func latencyHistogram(command: [String] = []) async throws -> RESPToken.Map {
-        try await send(command: LATENCY.HISTOGRAM(command: command))
+    public func latencyHistogram(commands: [String] = []) async throws -> RESPToken.Map {
+        try await send(command: LATENCY.HISTOGRAM(commands: commands))
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -1994,8 +1990,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: Number of event time series that were reset.
     @inlinable
-    public func latencyReset(event: [String] = []) async throws -> Int {
-        try await send(command: LATENCY.RESET(event: event))
+    public func latencyReset(events: [String] = []) async throws -> Int {
+        try await send(command: LATENCY.RESET(events: events))
     }
 
     /// Displays computer art and the server version
@@ -2103,8 +2099,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 4.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func moduleLoad<Path: RESPStringRenderable>(path: Path, arg: [String] = []) async throws {
-        _ = try await send(command: MODULE.LOAD(path: path, arg: arg))
+    public func moduleLoad<Path: RESPStringRenderable>(path: Path, args: [String] = []) async throws {
+        _ = try await send(command: MODULE.LOAD(path: path, args: args))
     }
 
     /// Loads a module using extended parameters.
@@ -2113,8 +2109,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configs: [MODULE.LOADEX<Path>.Configs] = [], args: [String] = []) async throws {
-        _ = try await send(command: MODULE.LOADEX(path: path, configs: configs, args: args))
+    public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configss: [MODULE.LOADEX<Path>.Configs] = [], argss: [String] = []) async throws {
+        _ = try await send(command: MODULE.LOADEX(path: path, configss: configss, argss: argss))
     }
 
     /// Unloads a module.

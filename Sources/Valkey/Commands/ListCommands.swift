@@ -101,23 +101,23 @@ public struct BLMPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
     public var timeout: Double
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
     public var `where`: Where
     public var count: Int?
 
-    @inlinable public init(timeout: Double, key: [ValkeyKey], `where`: Where, count: Int? = nil) {
+    @inlinable public init(timeout: Double, keys: [ValkeyKey], `where`: Where, count: Int? = nil) {
         self.timeout = timeout
-        self.key = key
+        self.keys = keys
         self.`where` = `where`
         self.count = count
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("BLMPOP", timeout, RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count))
     }
 }
 
@@ -126,20 +126,20 @@ public struct BLMPOP: ValkeyCommand {
 public struct BLPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
     public var timeout: Double
 
-    @inlinable public init(key: [ValkeyKey], timeout: Double) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey], timeout: Double) {
+        self.keys = keys
         self.timeout = timeout
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("BLPOP", key, timeout)
+        commandEncoder.encodeArray("BLPOP", keys, timeout)
     }
 }
 
@@ -148,20 +148,20 @@ public struct BLPOP: ValkeyCommand {
 public struct BRPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
     public var timeout: Double
 
-    @inlinable public init(key: [ValkeyKey], timeout: Double) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey], timeout: Double) {
+        self.keys = keys
         self.timeout = timeout
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     public var isBlocking: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("BRPOP", key, timeout)
+        commandEncoder.encodeArray("BRPOP", keys, timeout)
     }
 }
 
@@ -342,20 +342,20 @@ public struct LMPOP: ValkeyCommand {
             }
         }
     }
-    public var key: [ValkeyKey]
+    public var keys: [ValkeyKey]
     public var `where`: Where
     public var count: Int?
 
-    @inlinable public init(key: [ValkeyKey], `where`: Where, count: Int? = nil) {
-        self.key = key
+    @inlinable public init(keys: [ValkeyKey], `where`: Where, count: Int? = nil) {
+        self.keys = keys
         self.`where` = `where`
         self.count = count
     }
 
-    public var keysAffected: [ValkeyKey] { key }
+    public var keysAffected: [ValkeyKey] { keys }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LMPOP", RESPArrayWithCount(key), `where`, RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("LMPOP", RESPArrayWithCount(keys), `where`, RESPWithToken("COUNT", count))
     }
 }
 
@@ -403,14 +403,7 @@ public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "LPOS",
-            key,
-            RESPBulkString(element),
-            RESPWithToken("RANK", rank),
-            RESPWithToken("COUNT", numMatches),
-            RESPWithToken("MAXLEN", len)
-        )
+        commandEncoder.encodeArray("LPOS", key, RESPBulkString(element), RESPWithToken("RANK", rank), RESPWithToken("COUNT", numMatches), RESPWithToken("MAXLEN", len))
     }
 }
 
@@ -420,17 +413,17 @@ public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var element: [Element]
+    public var elements: [Element]
 
-    @inlinable public init(key: ValkeyKey, element: [Element]) {
+    @inlinable public init(key: ValkeyKey, elements: [Element]) {
         self.key = key
-        self.element = element
+        self.elements = elements
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LPUSH", key, element.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("LPUSH", key, elements.map { RESPBulkString($0) })
     }
 }
 
@@ -440,17 +433,17 @@ public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var element: [Element]
+    public var elements: [Element]
 
-    @inlinable public init(key: ValkeyKey, element: [Element]) {
+    @inlinable public init(key: ValkeyKey, elements: [Element]) {
         self.key = key
-        self.element = element
+        self.elements = elements
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("LPUSHX", key, element.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("LPUSHX", key, elements.map { RESPBulkString($0) })
     }
 }
 
@@ -586,17 +579,17 @@ public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var element: [Element]
+    public var elements: [Element]
 
-    @inlinable public init(key: ValkeyKey, element: [Element]) {
+    @inlinable public init(key: ValkeyKey, elements: [Element]) {
         self.key = key
-        self.element = element
+        self.elements = elements
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("RPUSH", key, element.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("RPUSH", key, elements.map { RESPBulkString($0) })
     }
 }
 
@@ -606,17 +599,17 @@ public struct RPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var element: [Element]
+    public var elements: [Element]
 
-    @inlinable public init(key: ValkeyKey, element: [Element]) {
+    @inlinable public init(key: ValkeyKey, elements: [Element]) {
         self.key = key
-        self.element = element
+        self.elements = elements
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("RPUSHX", key, element.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("RPUSHX", key, elements.map { RESPBulkString($0) })
     }
 }
 
@@ -630,13 +623,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The popped element.
     ///     * [Null]: Operation timed-out
     @inlinable
-    public func blmove(
-        source: ValkeyKey,
-        destination: ValkeyKey,
-        wherefrom: BLMOVE.Wherefrom,
-        whereto: BLMOVE.Whereto,
-        timeout: Double
-    ) async throws -> ByteBuffer? {
+    public func blmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: BLMOVE.Wherefrom, whereto: BLMOVE.Whereto, timeout: Double) async throws -> ByteBuffer? {
         try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
@@ -649,8 +636,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: Operation timed-out
     ///     * [Array]: The key from which elements were popped and the popped elements
     @inlinable
-    public func blmpop(timeout: Double, key: [ValkeyKey], `where`: BLMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
-        try await send(command: BLMPOP(timeout: timeout, key: key, where: `where`, count: count))
+    public func blmpop(timeout: Double, keys: [ValkeyKey], where: BLMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
+        try await send(command: BLMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -664,8 +651,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: No element could be popped and timeout expired
     ///     * [Array]: The key from which the element was popped and the value of the popped element
     @inlinable
-    public func blpop(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
-        try await send(command: BLPOP(key: key, timeout: timeout))
+    public func blpop(keys: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
+        try await send(command: BLPOP(keys: keys, timeout: timeout))
     }
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -677,10 +664,10 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of provided keys.
     /// - Response: One of the following
     ///     * [Null]: No element could be popped and the timeout expired.
-    ///     * [Array]: The name of the key where an element was popped
+    ///     * [Array]: The name of the key where an element was popped 
     @inlinable
-    public func brpop(key: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
-        try await send(command: BRPOP(key: key, timeout: timeout))
+    public func brpop(keys: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
+        try await send(command: BRPOP(keys: keys, timeout: timeout))
     }
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
@@ -722,12 +709,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: In case key doesn't exist.
     ///     * -1: When the pivot wasn't found.
     @inlinable
-    public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        `where`: LINSERT<Pivot, Element>.Where,
-        pivot: Pivot,
-        element: Element
-    ) async throws -> Int {
+    public func linsert<Pivot: RESPStringRenderable, Element: RESPStringRenderable>(_ key: ValkeyKey, where: LINSERT<Pivot, Element>.Where, pivot: Pivot, element: Element) async throws -> Int {
         try await send(command: LINSERT(key: key, where: `where`, pivot: pivot, element: element))
     }
 
@@ -762,8 +744,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: If no element could be popped.
     ///     * [Array]: List key from which elements were popped.
     @inlinable
-    public func lmpop(key: [ValkeyKey], `where`: LMPOP.Where, count: Int? = nil) async throws -> LMPOP.Response {
-        try await send(command: LMPOP(key: key, where: `where`, count: count))
+    public func lmpop(keys: [ValkeyKey], where: LMPOP.Where, count: Int? = nil) async throws -> LMPOP.Response {
+        try await send(command: LMPOP(keys: keys, where: `where`, count: count))
     }
 
     /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
@@ -792,13 +774,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: An integer representing the matching element
     ///     * [Array]: If the COUNT option is given, an array of integers representing the matching elements (empty if there are no matches)
     @inlinable
-    public func lpos<Element: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        element: Element,
-        rank: Int? = nil,
-        numMatches: Int? = nil,
-        len: Int? = nil
-    ) async throws -> [Int]? {
+    public func lpos<Element: RESPStringRenderable>(_ key: ValkeyKey, element: Element, rank: Int? = nil, numMatches: Int? = nil, len: Int? = nil) async throws -> [Int]? {
         try await send(command: LPOS(key: key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 
@@ -811,8 +787,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Length of the list after the push operations.
     @inlinable
-    public func lpush<Element: RESPStringRenderable>(_ key: ValkeyKey, element: [Element]) async throws -> Int {
-        try await send(command: LPUSH(key: key, element: element))
+    public func lpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
+        try await send(command: LPUSH(key: key, elements: elements))
     }
 
     /// Prepends one or more elements to a list only when the list exists.
@@ -824,8 +800,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: The length of the list after the push operation.
     @inlinable
-    public func lpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, element: [Element]) async throws -> Int {
-        try await send(command: LPUSHX(key: key, element: element))
+    public func lpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
+        try await send(command: LPUSHX(key: key, elements: elements))
     }
 
     /// Returns a range of elements from a list.
@@ -909,8 +885,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Length of the list after the push operations.
     @inlinable
-    public func rpush<Element: RESPStringRenderable>(_ key: ValkeyKey, element: [Element]) async throws -> Int {
-        try await send(command: RPUSH(key: key, element: element))
+    public func rpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
+        try await send(command: RPUSH(key: key, elements: elements))
     }
 
     /// Appends an element to a list only when the list exists.
@@ -922,8 +898,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Length of the list after the push operation.
     @inlinable
-    public func rpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, element: [Element]) async throws -> Int {
-        try await send(command: RPUSHX(key: key, element: element))
+    public func rpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
+        try await send(command: RPUSHX(key: key, elements: elements))
     }
 
 }

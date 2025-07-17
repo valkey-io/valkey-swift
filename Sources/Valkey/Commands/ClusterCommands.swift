@@ -28,14 +28,14 @@ public enum CLUSTER {
     /// Assigns new hash slots to a node.
     @_documentation(visibility: internal)
     public struct ADDSLOTS: ValkeyCommand {
-        public var slot: [Int]
+        public var slots: [Int]
 
-        @inlinable public init(slot: [Int]) {
-            self.slot = slot
+        @inlinable public init(slots: [Int]) {
+            self.slots = slots
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "ADDSLOTS", slot)
+            commandEncoder.encodeArray("CLUSTER", "ADDSLOTS", slots)
         }
     }
 
@@ -62,14 +62,14 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
-        public var range: [Range]
+        public var ranges: [Range]
 
-        @inlinable public init(range: [Range]) {
-            self.range = range
+        @inlinable public init(ranges: [Range]) {
+            self.ranges = ranges
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "ADDSLOTSRANGE", range)
+            commandEncoder.encodeArray("CLUSTER", "ADDSLOTSRANGE", ranges)
         }
     }
 
@@ -121,14 +121,14 @@ public enum CLUSTER {
     /// Sets hash slots as unbound for a node.
     @_documentation(visibility: internal)
     public struct DELSLOTS: ValkeyCommand {
-        public var slot: [Int]
+        public var slots: [Int]
 
-        @inlinable public init(slot: [Int]) {
-            self.slot = slot
+        @inlinable public init(slots: [Int]) {
+            self.slots = slots
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "DELSLOTS", slot)
+            commandEncoder.encodeArray("CLUSTER", "DELSLOTS", slots)
         }
     }
 
@@ -155,14 +155,14 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
-        public var range: [Range]
+        public var ranges: [Range]
 
-        @inlinable public init(range: [Range]) {
-            self.range = range
+        @inlinable public init(ranges: [Range]) {
+            self.ranges = ranges
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "DELSLOTSRANGE", range)
+            commandEncoder.encodeArray("CLUSTER", "DELSLOTSRANGE", ranges)
         }
     }
 
@@ -664,8 +664,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 3.0.0
     /// - Complexity: O(N) where N is the total number of hash slot arguments
     @inlinable
-    public func clusterAddslots(slot: [Int]) async throws {
-        _ = try await send(command: CLUSTER.ADDSLOTS(slot: slot))
+    public func clusterAddslots(slots: [Int]) async throws {
+        _ = try await send(command: CLUSTER.ADDSLOTS(slots: slots))
     }
 
     /// Assigns new hash slot ranges to a node.
@@ -674,8 +674,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
     @inlinable
-    public func clusterAddslotsrange(range: [CLUSTER.ADDSLOTSRANGE.Range]) async throws {
-        _ = try await send(command: CLUSTER.ADDSLOTSRANGE(range: range))
+    public func clusterAddslotsrange(ranges: [CLUSTER.ADDSLOTSRANGE.Range]) async throws {
+        _ = try await send(command: CLUSTER.ADDSLOTSRANGE(ranges: ranges))
     }
 
     /// Advances the cluster config epoch.
@@ -719,8 +719,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 3.0.0
     /// - Complexity: O(N) where N is the total number of hash slot arguments
     @inlinable
-    public func clusterDelslots(slot: [Int]) async throws {
-        _ = try await send(command: CLUSTER.DELSLOTS(slot: slot))
+    public func clusterDelslots(slots: [Int]) async throws {
+        _ = try await send(command: CLUSTER.DELSLOTS(slots: slots))
     }
 
     /// Sets hash slot ranges as unbound for a node.
@@ -729,8 +729,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
     @inlinable
-    public func clusterDelslotsrange(range: [CLUSTER.DELSLOTSRANGE.Range]) async throws {
-        _ = try await send(command: CLUSTER.DELSLOTSRANGE(range: range))
+    public func clusterDelslotsrange(ranges: [CLUSTER.DELSLOTSRANGE.Range]) async throws {
+        _ = try await send(command: CLUSTER.DELSLOTSRANGE(ranges: ranges))
     }
 
     /// Forces a replica to perform a manual failover of its primary.

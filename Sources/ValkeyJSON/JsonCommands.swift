@@ -30,18 +30,18 @@ public enum JSON {
     public struct ARRAPPEND<Path: RESPStringRenderable, Json: RESPStringRenderable>: ValkeyCommand {
         public var key: ValkeyKey
         public var path: Path
-        public var json: [Json]
+        public var jsons: [Json]
 
-        @inlinable public init(key: ValkeyKey, path: Path, json: [Json]) {
+        @inlinable public init(key: ValkeyKey, path: Path, jsons: [Json]) {
             self.key = key
             self.path = path
-            self.json = json
+            self.jsons = jsons
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.ARRAPPEND", key, RESPBulkString(path), json.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("JSON.ARRAPPEND", key, RESPBulkString(path), jsons.map { RESPBulkString($0) })
         }
     }
 
@@ -75,19 +75,19 @@ public enum JSON {
         public var key: ValkeyKey
         public var path: Path
         public var index: Int
-        public var json: [Json]
+        public var jsons: [Json]
 
-        @inlinable public init(key: ValkeyKey, path: Path, index: Int, json: [Json]) {
+        @inlinable public init(key: ValkeyKey, path: Path, index: Int, jsons: [Json]) {
             self.key = key
             self.path = path
             self.index = index
-            self.json = json
+            self.jsons = jsons
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.ARRINSERT", key, RESPBulkString(path), index, json.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("JSON.ARRINSERT", key, RESPBulkString(path), index, jsons.map { RESPBulkString($0) })
         }
     }
 
@@ -218,37 +218,37 @@ public enum JSON {
         public var key: ValkeyKey
         public var indentNewlineSpace: String?
         public var noescape: String?
-        public var path: [String]
+        public var paths: [String]
 
-        @inlinable public init(key: ValkeyKey, indentNewlineSpace: String? = nil, noescape: String? = nil, path: [String] = []) {
+        @inlinable public init(key: ValkeyKey, indentNewlineSpace: String? = nil, noescape: String? = nil, paths: [String] = []) {
             self.key = key
             self.indentNewlineSpace = indentNewlineSpace
             self.noescape = noescape
-            self.path = path
+            self.paths = paths
         }
 
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.GET", key, indentNewlineSpace, noescape, path)
+            commandEncoder.encodeArray("JSON.GET", key, indentNewlineSpace, noescape, paths)
         }
     }
 
     /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
     @_documentation(visibility: internal)
     public struct MGET<Path: RESPStringRenderable>: ValkeyCommand {
-        public var key: [ValkeyKey]
+        public var keys: [ValkeyKey]
         public var path: Path
 
-        @inlinable public init(key: [ValkeyKey], path: Path) {
-            self.key = key
+        @inlinable public init(keys: [ValkeyKey], path: Path) {
+            self.keys = keys
             self.path = path
         }
 
-        public var keysAffected: [ValkeyKey] { key }
+        public var keysAffected: [ValkeyKey] { keys }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.MGET", key, RESPBulkString(path))
+            commandEncoder.encodeArray("JSON.MGET", keys, RESPBulkString(path))
         }
     }
 
@@ -278,16 +278,16 @@ public enum JSON {
                 RESPBulkString(json).encode(into: &commandEncoder)
             }
         }
-        public var data: [Data]
+        public var datas: [Data]
 
-        @inlinable public init(data: [Data]) {
-            self.data = data
+        @inlinable public init(datas: [Data]) {
+            self.datas = datas
         }
 
-        public var keysAffected: [ValkeyKey] { data.map { $0.key } }
+        public var keysAffected: [ValkeyKey] { datas.map { $0.key } }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.MSET", data)
+            commandEncoder.encodeArray("JSON.MSET", datas)
         }
     }
 
@@ -489,12 +489,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRAPPEND](https://valkey.io/commands/json.arrappend)
     /// - Complexity: O(N) where N is the number of vaules
     @inlinable
-    public func jsonArrappend<Path: RESPStringRenderable, Json: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        path: Path,
-        json: [Json]
-    ) async throws -> RESPToken {
-        try await send(command: JSON.ARRAPPEND(key: key, path: path, json: json))
+    public func jsonArrappend<Path: RESPStringRenderable, Json: RESPStringRenderable>(_ key: ValkeyKey, path: Path, jsons: [Json]) async throws -> RESPToken {
+        try await send(command: JSON.ARRAPPEND(key: key, path: path, jsons: jsons))
     }
 
     /// Search for the first occurrence of a scalar JSON value in arrays located at the specified path. Indices out of range are adjusted.
@@ -502,13 +498,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRINDEX](https://valkey.io/commands/json.arrindex)
     /// - Complexity: O(N), where N is the length of the array.
     @inlinable
-    public func jsonArrindex<Path: RESPStringRenderable, JsonScalar: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        path: Path,
-        jsonScalar: JsonScalar,
-        start: Int? = nil,
-        end: Int? = nil
-    ) async throws -> RESPToken {
+    public func jsonArrindex<Path: RESPStringRenderable, JsonScalar: RESPStringRenderable>(_ key: ValkeyKey, path: Path, jsonScalar: JsonScalar, start: Int? = nil, end: Int? = nil) async throws -> RESPToken {
         try await send(command: JSON.ARRINDEX(key: key, path: path, jsonScalar: jsonScalar, start: start, end: end))
     }
 
@@ -517,13 +507,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRINSERT](https://valkey.io/commands/json.arrinsert)
     /// - Complexity: O(N) where N is the length of the array.
     @inlinable
-    public func jsonArrinsert<Path: RESPStringRenderable, Json: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        path: Path,
-        index: Int,
-        json: [Json]
-    ) async throws -> RESPToken {
-        try await send(command: JSON.ARRINSERT(key: key, path: path, index: index, json: json))
+    public func jsonArrinsert<Path: RESPStringRenderable, Json: RESPStringRenderable>(_ key: ValkeyKey, path: Path, index: Int, jsons: [Json]) async throws -> RESPToken {
+        try await send(command: JSON.ARRINSERT(key: key, path: path, index: index, jsons: jsons))
     }
 
     /// Get length of the array at the path.
@@ -593,13 +578,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.GET](https://valkey.io/commands/json.get)
     /// - Complexity: O(N) where N is the number of paths
     @inlinable
-    public func jsonGet(
-        _ key: ValkeyKey,
-        indentNewlineSpace: String? = nil,
-        noescape: String? = nil,
-        path: [String] = []
-    ) async throws -> JSON.GET.Response {
-        try await send(command: JSON.GET(key: key, indentNewlineSpace: indentNewlineSpace, noescape: noescape, path: path))
+    public func jsonGet(_ key: ValkeyKey, indentNewlineSpace: String? = nil, noescape: String? = nil, paths: [String] = []) async throws -> JSON.GET.Response {
+        try await send(command: JSON.GET(key: key, indentNewlineSpace: indentNewlineSpace, noescape: noescape, paths: paths))
     }
 
     /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
@@ -607,8 +587,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.MGET](https://valkey.io/commands/json.mget)
     /// - Complexity: O(N) where N is the number of keys
     @inlinable
-    public func jsonMget<Path: RESPStringRenderable>(key: [ValkeyKey], path: Path) async throws -> RESPToken {
-        try await send(command: JSON.MGET(key: key, path: path))
+    public func jsonMget<Path: RESPStringRenderable>(keys: [ValkeyKey], path: Path) async throws -> RESPToken {
+        try await send(command: JSON.MGET(keys: keys, path: path))
     }
 
     /// Set multiple JSON values at the path to multiple keys.
@@ -616,8 +596,8 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.MSET](https://valkey.io/commands/json.mset)
     /// - Complexity: O(N) where N is the number of keys
     @inlinable
-    public func jsonMset<Path: RESPStringRenderable, Json: RESPStringRenderable>(data: [JSON.MSET<Path, Json>.Data]) async throws -> RESPToken {
-        try await send(command: JSON.MSET(data: data))
+    public func jsonMset<Path: RESPStringRenderable, Json: RESPStringRenderable>(datas: [JSON.MSET<Path, Json>.Data]) async throws -> RESPToken {
+        try await send(command: JSON.MSET(datas: datas))
     }
 
     /// Increment the number values at the path by a given number.
@@ -670,12 +650,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.SET](https://valkey.io/commands/json.set)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
-    public func jsonSet<Path: RESPStringRenderable, Json: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        path: Path,
-        json: Json,
-        options: String? = nil
-    ) async throws -> RESPToken {
+    public func jsonSet<Path: RESPStringRenderable, Json: RESPStringRenderable>(_ key: ValkeyKey, path: Path, json: Json, options: String? = nil) async throws -> RESPToken {
         try await send(command: JSON.SET(key: key, path: path, json: json, options: options))
     }
 
@@ -684,11 +659,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.STRAPPEND](https://valkey.io/commands/json.strappend)
     /// - Complexity: O(N) where N is the number of string values matched by the path.
     @inlinable
-    public func jsonStrappend<JsonString: RESPStringRenderable>(
-        _ key: ValkeyKey,
-        path: String? = nil,
-        jsonString: JsonString
-    ) async throws -> RESPToken {
+    public func jsonStrappend<JsonString: RESPStringRenderable>(_ key: ValkeyKey, path: String? = nil, jsonString: JsonString) async throws -> RESPToken {
         try await send(command: JSON.STRAPPEND(key: key, path: path, jsonString: jsonString))
     }
 

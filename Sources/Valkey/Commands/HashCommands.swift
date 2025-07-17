@@ -28,17 +28,17 @@ public struct HDEL<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var field: [Field]
+    public var fields: [Field]
 
-    @inlinable public init(key: ValkeyKey, field: [Field]) {
+    @inlinable public init(key: ValkeyKey, fields: [Field]) {
         self.key = key
-        self.field = field
+        self.fields = fields
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HDEL", key, field.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("HDEL", key, fields.map { RESPBulkString($0) })
     }
 }
 
@@ -196,11 +196,11 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
     public var key: ValkeyKey
-    public var field: [Field]
+    public var fields: [Field]
 
-    @inlinable public init(key: ValkeyKey, field: [Field]) {
+    @inlinable public init(key: ValkeyKey, fields: [Field]) {
         self.key = key
-        self.field = field
+        self.fields = fields
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
@@ -208,7 +208,7 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HMGET", key, field.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("HMGET", key, fields.map { RESPBulkString($0) })
     }
 }
 
@@ -236,17 +236,17 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
         }
     }
     public var key: ValkeyKey
-    public var data: [Data]
+    public var datas: [Data]
 
-    @inlinable public init(key: ValkeyKey, data: [Data]) {
+    @inlinable public init(key: ValkeyKey, datas: [Data]) {
         self.key = key
-        self.data = data
+        self.datas = datas
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HMSET", key, data)
+        commandEncoder.encodeArray("HMSET", key, datas)
     }
 }
 
@@ -316,14 +316,7 @@ public struct HSCAN: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray(
-            "HSCAN",
-            key,
-            cursor,
-            RESPWithToken("MATCH", pattern),
-            RESPWithToken("COUNT", count),
-            RESPPureToken("NOVALUES", novalues)
-        )
+        commandEncoder.encodeArray("HSCAN", key, cursor, RESPWithToken("MATCH", pattern), RESPWithToken("COUNT", count), RESPPureToken("NOVALUES", novalues))
     }
 }
 
@@ -353,17 +346,17 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var data: [Data]
+    public var datas: [Data]
 
-    @inlinable public init(key: ValkeyKey, data: [Data]) {
+    @inlinable public init(key: ValkeyKey, datas: [Data]) {
         self.key = key
-        self.data = data
+        self.datas = datas
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HSET", key, data)
+        commandEncoder.encodeArray("HSET", key, datas)
     }
 }
 
@@ -441,8 +434,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of fields to be removed.
     /// - Response: [Integer]: The number of fields that were removed from the hash.
     @inlinable
-    public func hdel<Field: RESPStringRenderable>(_ key: ValkeyKey, field: [Field]) async throws -> Int {
-        try await send(command: HDEL(key: key, field: field))
+    public func hdel<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws -> Int {
+        try await send(command: HDEL(key: key, fields: fields))
     }
 
     /// Determines whether a field exists in a hash.
@@ -533,8 +526,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of fields being requested.
     /// - Response: [Array]: List of values associated with the given fields, in the same order as they are requested.
     @inlinable
-    public func hmget<Field: RESPStringRenderable>(_ key: ValkeyKey, field: [Field]) async throws -> RESPToken.Array {
-        try await send(command: HMGET(key: key, field: field))
+    public func hmget<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws -> RESPToken.Array {
+        try await send(command: HMGET(key: key, fields: fields))
     }
 
     /// Sets the values of multiple fields.
@@ -544,8 +537,8 @@ extension ValkeyConnectionProtocol {
     /// - Deprecated since: 4.0.0. Replaced by `HSET` with multiple field-value pairs.
     /// - Complexity: O(N) where N is the number of fields being set.
     @inlinable
-    public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, data: [HMSET<Field, Value>.Data]) async throws {
-        _ = try await send(command: HMSET(key: key, data: data))
+    public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, datas: [HMSET<Field, Value>.Data]) async throws {
+        _ = try await send(command: HMSET(key: key, datas: datas))
     }
 
     /// Returns one or more random fields from a hash.
@@ -570,13 +563,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func hscan(
-        _ key: ValkeyKey,
-        cursor: Int,
-        pattern: String? = nil,
-        count: Int? = nil,
-        novalues: Bool = false
-    ) async throws -> RESPToken.Array {
+    public func hscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> RESPToken.Array {
         try await send(command: HSCAN(key: key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
     }
 
@@ -589,9 +576,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each field/value pair added, so O(N) to add N field/value pairs when the command is called with multiple field/value pairs.
     /// - Response: [Integer]: The number of fields that were added
     @inlinable
-    public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, data: [HSET<Field, Value>.Data]) async throws -> Int
-    {
-        try await send(command: HSET(key: key, data: data))
+    public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, datas: [HSET<Field, Value>.Data]) async throws -> Int {
+        try await send(command: HSET(key: key, datas: datas))
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
