@@ -22,6 +22,8 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
         "GEOPOS",
         "GEOSEARCH",
         "LMPOP",
+        "SPOP",
+        "SSCAN",
         "XAUTOCLAIM",
         "XCLAIM",
         "XPENDING",

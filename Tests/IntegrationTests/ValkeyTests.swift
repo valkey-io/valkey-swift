@@ -142,6 +142,22 @@ struct GeneratedCommands {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testSPOP() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                _ = try await connection.sadd(key, members: (0..<256).map { "test\($0)" })
+                let response = try await connection.sscan(key, cursor: 0, count: 32)
+                let response2 = try await connection.sscan(key, cursor: response.cursor, count: 32)
+                print(try response.elements.decode(as: [String].self))
+                print(try response2.elements.decode(as: [String].self))
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testUnixTime() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -373,18 +389,6 @@ struct GeneratedCommands {
             }
         }
     }
-    /*
-        @Test
-    @available(valkeySwift 1.0, *)
-        func testClientName() async throws {
-            var logger = Logger(label: "Valkey")
-            logger.logLevel = .debug
-            let valkeyClient = ValkeyClient(.hostname(valkeyHostname), logger: logger)
-            try await valkeyClient.withConnection(name: "phileasfogg", logger: logger) { connection in
-                let name = try await connection.clientGetname()
-                #expect(try name?.decode() == "phileasfogg")
-            }
-        }*/
 
     @Test
     @available(valkeySwift 1.0, *)

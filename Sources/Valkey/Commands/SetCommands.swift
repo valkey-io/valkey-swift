@@ -253,8 +253,6 @@ public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
 @_documentation(visibility: internal)
 public struct SPOP: ValkeyCommand {
-    public typealias Response = RESPToken?
-
     public var key: ValkeyKey
     public var count: Int?
 
@@ -315,8 +313,6 @@ public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
 /// Iterates over members of a set.
 @_documentation(visibility: internal)
 public struct SSCAN: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     public var key: ValkeyKey
     public var cursor: Int
     public var pattern: String?
@@ -518,7 +514,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The removed member when 'COUNT' is not given.
     ///     * [Array]: List to the removed members when 'COUNT' is given.
     @inlinable
-    public func spop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func spop(_ key: ValkeyKey, count: Int? = nil) async throws -> SPOP.Response {
         try await send(command: SPOP(key, count: count))
     }
 
@@ -559,7 +555,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func sscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> RESPToken.Array {
+    public func sscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> SSCAN.Response {
         try await send(command: SSCAN(key, cursor: cursor, pattern: pattern, count: count))
     }
 
