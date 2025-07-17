@@ -185,6 +185,7 @@ extension ValkeyClient {
                         try Task.checkCancellation()
                         return try await self.withConnection { connection in
                             try await connection.subscribe(command: command, filters: filters) { subscription in
+                                // push messages on connection subscription to client subscription
                                 for try await message in subscription {
                                     cont.yield(message)
                                 }
@@ -192,6 +193,7 @@ extension ValkeyClient {
                             cont.finish()
                         }
                     } catch let error as ValkeyClientError {
+                        // if connection closes for some reason don't exit loop so it opens a new connection
                         switch error.errorCode {
                         case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
                             break
