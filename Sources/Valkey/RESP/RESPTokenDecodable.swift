@@ -34,7 +34,7 @@ extension RESPToken: RESPTokenDecodable {
     /// This function also checks for RESP error types and returns them if found
     ///
     /// - Parameter type: Type to convert to
-    /// - Returns: Result contaoining either the Value or an error
+    /// - Returns: Result containing either the Value or an error
     @usableFromInline
     func decodeResult<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) -> Result<Value, Error> {
         switch self.identifier {
