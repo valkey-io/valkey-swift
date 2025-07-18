@@ -384,6 +384,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.
     /// - Response: [Integer]: Number of elements that were added to the set, not including all the elements already present in the set.
     @inlinable
+    @discardableResult
     public func sadd<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
         try await send(command: SADD(key, members: members))
     }
@@ -417,6 +418,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Response: [Integer]: Number of the elements in the resulting set.
     @inlinable
+    @discardableResult
     public func sdiffstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
         try await send(command: SDIFFSTORE(destination: destination, keys: keys))
     }
@@ -450,6 +452,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N*M) worst case where N is the cardinality of the smallest set and M is the number of sets.
     /// - Response: [Integer]: Number of the elements in the result set.
     @inlinable
+    @discardableResult
     public func sinterstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
         try await send(command: SINTERSTORE(destination: destination, keys: keys))
     }
@@ -498,6 +501,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: Element is moved.
     ///     * 0: The element is not a member of source and no operation was performed.
     @inlinable
+    @discardableResult
     public func smove<Member: RESPStringRenderable>(source: ValkeyKey, destination: ValkeyKey, member: Member) async throws -> Int {
         try await send(command: SMOVE(source: source, destination: destination, member: member))
     }
@@ -514,6 +518,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The removed member when 'COUNT' is not given.
     ///     * [Array]: List to the removed members when 'COUNT' is given.
     @inlinable
+    @discardableResult
     public func spop(_ key: ValkeyKey, count: Int? = nil) async throws -> SPOP.Response {
         try await send(command: SPOP(key, count: count))
     }
@@ -544,6 +549,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of members to be removed.
     /// - Response: [Integer]: Number of members that were removed from the set, not including non existing members.
     @inlinable
+    @discardableResult
     public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
         try await send(command: SREM(key, members: members))
     }
@@ -577,6 +583,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of elements in all given sets.
     /// - Response: [Integer]: Number of the elements in the resulting set.
     @inlinable
+    @discardableResult
     public func sunionstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
         try await send(command: SUNIONSTORE(destination: destination, keys: keys))
     }

@@ -460,6 +460,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: Depends on the script that is executed.
     /// - Response: Return value depends on the script that is executed
     @inlinable
+    @discardableResult
     public func eval<Script: RESPStringRenderable>(script: Script, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
         try await send(command: EVAL(script: script, keys: keys, args: args))
     }
@@ -471,6 +472,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: Depends on the script that is executed.
     /// - Response: Return value depends on the script that is executed
     @inlinable
+    @discardableResult
     public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
         try await send(command: EVALSHA(sha1: sha1, keys: keys, args: args))
     }
@@ -504,6 +506,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: Depends on the function that is executed.
     /// - Response: Return value depends on the function that is executed
     @inlinable
+    @discardableResult
     public func fcall<Function: RESPStringRenderable>(function: Function, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
         try await send(command: FCALL(function: function, keys: keys, args: args))
     }
@@ -536,6 +539,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of functions
     /// - Response: [String]: The serialized payload.
     @inlinable
+    @discardableResult
     public func functionDump() async throws -> ByteBuffer {
         try await send(command: FUNCTION.DUMP())
     }
@@ -557,6 +561,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func functionHelp() async throws -> RESPToken.Array {
         try await send(command: FUNCTION.HELP())
     }
@@ -577,6 +582,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(N) where N is the number of functions
     @inlinable
+    @discardableResult
     public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
         try await send(command: FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
     }
@@ -588,6 +594,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) (considering compilation time is redundant)
     /// - Response: [String]: The library name that was loaded
     @inlinable
+    @discardableResult
     public func functionLoad<FunctionCode: RESPStringRenderable>(replace: Bool = false, functionCode: FunctionCode) async throws -> ByteBuffer {
         try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
     }
@@ -611,6 +618,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
+    @discardableResult
     public func functionStats() async throws -> RESPToken.Map {
         try await send(command: FUNCTION.STATS())
     }
@@ -632,6 +640,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) with N being the number of scripts to check (so checking a single script is an O(1) operation).
     /// - Response: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
+    @discardableResult
     public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws -> RESPToken.Array {
         try await send(command: SCRIPT.EXISTS(sha1s: sha1s))
     }
@@ -655,6 +664,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func scriptHelp() async throws -> RESPToken.Array {
         try await send(command: SCRIPT.HELP())
     }
@@ -676,6 +686,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) with N being the length in bytes of the script body.
     /// - Response: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
+    @discardableResult
     public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> ByteBuffer {
         try await send(command: SCRIPT.LOAD(script: script))
     }
@@ -687,6 +698,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1).
     /// - Response: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
+    @discardableResult
     public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> ByteBuffer {
         try await send(command: SCRIPT.SHOW(sha1: sha1))
     }

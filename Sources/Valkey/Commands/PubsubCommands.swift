@@ -245,6 +245,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N+M) where N is the number of clients subscribed to the receiving channel and M is the total number of subscribed patterns (by any client).
     /// - Response: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
+    @discardableResult
     public func publish<Channel: RESPStringRenderable, Message: RESPStringRenderable>(channel: Channel, message: Message) async throws -> Int {
         try await send(command: PUBLISH(channel: channel, message: message))
     }
@@ -256,6 +257,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of active channels, and assuming constant time pattern matching (relatively short channels and patterns)
     /// - Response: [Array]: A list of active channels, optionally matching the specified pattern.
     @inlinable
+    @discardableResult
     public func pubsubChannels(pattern: String? = nil) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.CHANNELS(pattern: pattern))
     }
@@ -267,6 +269,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func pubsubHelp() async throws -> RESPToken.Array {
         try await send(command: PUBSUB.HELP())
     }
@@ -278,6 +281,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The number of patterns all the clients are subscribed to.
     @inlinable
+    @discardableResult
     public func pubsubNumpat() async throws -> Int {
         try await send(command: PUBSUB.NUMPAT())
     }
@@ -289,6 +293,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) for the NUMSUB subcommand, where N is the number of requested channels
     /// - Response: [Array]: The number of subscribers per channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
+    @discardableResult
     public func pubsubNumsub(channels: [String] = []) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.NUMSUB(channels: channels))
     }
@@ -300,6 +305,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of active shard channels, and assuming constant time pattern matching (relatively short shard channels).
     /// - Response: [Array]: A list of active channels, optionally matching the specified pattern.
     @inlinable
+    @discardableResult
     public func pubsubShardchannels(pattern: String? = nil) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.SHARDCHANNELS(pattern: pattern))
     }
@@ -311,6 +317,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) for the SHARDNUMSUB subcommand, where N is the number of requested shard channels
     /// - Response: [Array]: The number of subscribers per shard channel, each even element (including 0th) is channel name, each odd element is the number of subscribers.
     @inlinable
+    @discardableResult
     public func pubsubShardnumsub(shardchannels: [String] = []) async throws -> RESPToken.Array {
         try await send(command: PUBSUB.SHARDNUMSUB(shardchannels: shardchannels))
     }
@@ -322,6 +329,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of clients subscribed to the receiving shard channel.
     /// - Response: [Integer]: The number of clients that received the message. Note that in a Cluster, only clients that are connected to the same node as the publishing client are included in the count.
     @inlinable
+    @discardableResult
     public func spublish<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>(
         shardchannel: Shardchannel,
         message: Message

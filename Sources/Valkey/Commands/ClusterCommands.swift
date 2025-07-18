@@ -687,6 +687,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: If the epoch was incremented.
     ///     * [String]: If the node already has the greatest config epoch in the cluster.
     @inlinable
+    @discardableResult
     public func clusterBumpepoch() async throws -> ByteBuffer {
         try await send(command: CLUSTER.BUMPEPOCH())
     }
@@ -698,6 +699,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of failure reports
     /// - Response: [Integer]: The number of active failure reports for the node.
     @inlinable
+    @discardableResult
     public func clusterCountFailureReports<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> Int {
         try await send(command: CLUSTER.COUNTFAILUREREPORTS(nodeId: nodeId))
     }
@@ -709,6 +711,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The number of keys in the specified hash slot.
     @inlinable
+    @discardableResult
     public func clusterCountkeysinslot(slot: Int) async throws -> Int {
         try await send(command: CLUSTER.COUNTKEYSINSLOT(slot: slot))
     }
@@ -770,6 +773,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of requested keys
     /// - Response: [Array]: An array with up to count elements.
     @inlinable
+    @discardableResult
     public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
     }
@@ -781,6 +785,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func clusterHelp() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.HELP())
     }
@@ -792,6 +797,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: A map between named fields and values in the form of <field>:<value> lines separated by newlines composed by the two bytes CRLF
     @inlinable
+    @discardableResult
     public func clusterInfo() async throws -> ByteBuffer {
         try await send(command: CLUSTER.INFO())
     }
@@ -803,6 +809,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of bytes in the key
     /// - Response: [Integer]: The hash slot number for the specified key
     @inlinable
+    @discardableResult
     public func clusterKeyslot<Key: RESPStringRenderable>(_ key: Key) async throws -> Int {
         try await send(command: CLUSTER.KEYSLOT(key))
     }
@@ -814,6 +821,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Response: [Array]: An array of cluster links and their attributes.
     @inlinable
+    @discardableResult
     public func clusterLinks() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.LINKS())
     }
@@ -837,6 +845,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: The node id.
     @inlinable
+    @discardableResult
     public func clusterMyid() async throws -> ByteBuffer {
         try await send(command: CLUSTER.MYID())
     }
@@ -848,6 +857,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: The node's shard id.
     @inlinable
+    @discardableResult
     public func clusterMyshardid() async throws -> ByteBuffer {
         try await send(command: CLUSTER.MYSHARDID())
     }
@@ -859,6 +869,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Response: [String]: The serialized cluster configuration.
     @inlinable
+    @discardableResult
     public func clusterNodes() async throws -> ByteBuffer {
         try await send(command: CLUSTER.NODES())
     }
@@ -870,6 +881,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of replicas.
     /// - Response: [Array]: A list of replica nodes replicating from the specified primary node provided in the same format used by CLUSTER NODES.
     @inlinable
+    @discardableResult
     public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.REPLICAS(nodeId: nodeId))
     }
@@ -933,6 +945,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of cluster nodes
     /// - Response: [Array]: A nested list of a map of hash ranges and shard nodes describing individual shards.
     @inlinable
+    @discardableResult
     public func clusterShards() async throws -> CLUSTER.SHARDS.Response {
         try await send(command: CLUSTER.SHARDS())
     }
@@ -945,6 +958,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of replicas.
     /// - Response: [Array]: A list of replica nodes replicating from the specified primary node provided in the same format used by CLUSTER NODES.
     @inlinable
+    @discardableResult
     public func clusterSlaves<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLAVES(nodeId: nodeId))
     }
@@ -956,6 +970,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of slots based on arguments. O(N*log(N)) with ORDERBY subcommand.
     /// - Response: [Array]: Array of nested arrays, where the inner array element represents a slot and its respective usage statistics.
     @inlinable
+    @discardableResult
     public func clusterSlotStats(filter: CLUSTER.SLOTSTATS.Filter) async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLOTSTATS(filter: filter))
     }
@@ -970,6 +985,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the total number of Cluster nodes
     /// - Response: [Array]: Nested list of slot ranges with networking information.
     @inlinable
+    @discardableResult
     public func clusterSlots() async throws -> RESPToken.Array {
         try await send(command: CLUSTER.SLOTS())
     }

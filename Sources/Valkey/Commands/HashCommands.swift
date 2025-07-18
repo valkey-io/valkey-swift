@@ -441,6 +441,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of fields to be removed.
     /// - Response: [Integer]: The number of fields that were removed from the hash.
     @inlinable
+    @discardableResult
     public func hdel<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws -> Int {
         try await send(command: HDEL(key, fields: fields))
     }
@@ -489,6 +490,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of the field after the increment operation.
     @inlinable
+    @discardableResult
     public func hincrby<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field, increment: Int) async throws -> Int {
         try await send(command: HINCRBY(key, field: field, increment: increment))
     }
@@ -500,6 +502,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: The value of the field after the increment operation.
     @inlinable
+    @discardableResult
     public func hincrbyfloat<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field, increment: Double) async throws -> ByteBuffer {
         try await send(command: HINCRBYFLOAT(key, field: field, increment: increment))
     }
@@ -589,6 +592,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each field/value pair added, so O(N) to add N field/value pairs when the command is called with multiple field/value pairs.
     /// - Response: [Integer]: The number of fields that were added
     @inlinable
+    @discardableResult
     public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, datas: [HSET<Field, Value>.Data]) async throws -> Int
     {
         try await send(command: HSET(key, datas: datas))
@@ -603,6 +607,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: The field is a new field in the hash and value was set.
     ///     * 1: The field already exists in the hash and no operation was performed.
     @inlinable
+    @discardableResult
     public func hsetnx<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, field: Field, value: Value) async throws -> Int {
         try await send(command: HSETNX(key, field: field, value: value))
     }

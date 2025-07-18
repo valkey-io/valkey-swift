@@ -492,6 +492,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: The result of the subcommand at the same position
     ///     * [Array]: In case OVERFLOW FAIL was given and overflows or underflows detected
     @inlinable
+    @discardableResult
     public func bitfield(_ key: ValkeyKey, operations: [BITFIELD.Operation] = []) async throws -> RESPToken.Array {
         try await send(command: BITFIELD(key, operations: operations))
     }
@@ -514,6 +515,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N)
     /// - Response: [Integer]: The size of the string stored in the destination key, that is equal to the size of the longest input string.
     @inlinable
+    @discardableResult
     public func bitop(operation: BITOP.Operation, destkey: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
         try await send(command: BITOP(operation: operation, destkey: destkey, keys: keys))
     }
@@ -551,6 +553,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: The original bit value stored at offset.
     @inlinable
+    @discardableResult
     public func setbit(_ key: ValkeyKey, offset: Int, value: Int) async throws -> Int {
         try await send(command: SETBIT(key, offset: offset, value: value))
     }

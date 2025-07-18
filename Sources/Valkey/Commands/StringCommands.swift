@@ -624,6 +624,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1). The amortized time complexity is O(1) assuming the appended value is small and the already present value is of any size, since the dynamic string library used by the server will double the free space available on every reallocation.
     /// - Response: [Integer]: The length of the string after the append operation.
     @inlinable
+    @discardableResult
     public func append<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
         try await send(command: APPEND(key, value: value))
     }
@@ -635,6 +636,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of the key after decrementing it.
     @inlinable
+    @discardableResult
     public func decr(_ key: ValkeyKey) async throws -> Int {
         try await send(command: DECR(key))
     }
@@ -646,6 +648,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of the key after decrementing it.
     @inlinable
+    @discardableResult
     public func decrby(_ key: ValkeyKey, decrement: Int) async throws -> Int {
         try await send(command: DECRBY(key, decrement: decrement))
     }
@@ -672,6 +675,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: The key does not exist.
     @inlinable
+    @discardableResult
     public func getdel(_ key: ValkeyKey) async throws -> ByteBuffer? {
         try await send(command: GETDEL(key))
     }
@@ -685,6 +689,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: Key does not exist.
     @inlinable
+    @discardableResult
     public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> ByteBuffer? {
         try await send(command: GETEX(key, expiration: expiration))
     }
@@ -710,6 +715,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The old value stored at the key.
     ///     * [Null]: The key does not exist.
     @inlinable
+    @discardableResult
     public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> ByteBuffer? {
         try await send(command: GETSET(key, value: value))
     }
@@ -721,6 +727,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of key after the increment
     @inlinable
+    @discardableResult
     public func incr(_ key: ValkeyKey) async throws -> Int {
         try await send(command: INCR(key))
     }
@@ -732,6 +739,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The value of the key after incrementing it.
     @inlinable
+    @discardableResult
     public func incrby(_ key: ValkeyKey, increment: Int) async throws -> Int {
         try await send(command: INCRBY(key, increment: increment))
     }
@@ -743,6 +751,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [String]: The value of the key after incrementing it.
     @inlinable
+    @discardableResult
     public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws -> ByteBuffer {
         try await send(command: INCRBYFLOAT(key, increment: increment))
     }
@@ -798,6 +807,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: No key was set (at least one key already existed).
     ///     * 1: All the keys were set.
     @inlinable
+    @discardableResult
     public func msetnx<Value: RESPStringRenderable>(datas: [MSETNX<Value>.Data]) async throws -> Int {
         try await send(command: MSETNX(datas: datas))
     }
@@ -830,6 +840,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: `GET` given: The key didn't exist before the `SET`
     ///     * [String]: `GET` given: The previous value of the key
     @inlinable
+    @discardableResult
     public func set<Value: RESPStringRenderable>(
         _ key: ValkeyKey,
         value: Value,
@@ -861,6 +872,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: The key was set.
     ///     * 1: The key was not set.
     @inlinable
+    @discardableResult
     public func setnx<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
         try await send(command: SETNX(key, value: value))
     }
@@ -872,6 +884,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1), not counting the time taken to copy the new string in place. Usually, this string is very small so the amortized complexity is O(1). Otherwise, complexity is O(M) with M being the length of the value argument.
     /// - Response: [Integer]: Length of the string after it was modified by the command.
     @inlinable
+    @discardableResult
     public func setrange<Value: RESPStringRenderable>(_ key: ValkeyKey, offset: Int, value: Value) async throws -> Int {
         try await send(command: SETRANGE(key, offset: offset, value: value))
     }

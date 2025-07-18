@@ -489,6 +489,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRAPPEND](https://valkey.io/commands/json.arrappend)
     /// - Complexity: O(N) where N is the number of vaules
     @inlinable
+    @discardableResult
     public func jsonArrappend<Path: RESPStringRenderable, Json: RESPStringRenderable>(
         _ key: ValkeyKey,
         path: Path,
@@ -502,6 +503,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRINDEX](https://valkey.io/commands/json.arrindex)
     /// - Complexity: O(N), where N is the length of the array.
     @inlinable
+    @discardableResult
     public func jsonArrindex<Path: RESPStringRenderable, JsonScalar: RESPStringRenderable>(
         _ key: ValkeyKey,
         path: Path,
@@ -517,6 +519,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRINSERT](https://valkey.io/commands/json.arrinsert)
     /// - Complexity: O(N) where N is the length of the array.
     @inlinable
+    @discardableResult
     public func jsonArrinsert<Path: RESPStringRenderable, Json: RESPStringRenderable>(
         _ key: ValkeyKey,
         path: Path,
@@ -531,6 +534,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRLEN](https://valkey.io/commands/json.arrlen)
     /// - Complexity: O(N) where N is the number of json arrays matched at the path.
     @inlinable
+    @discardableResult
     public func jsonArrlen(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.ARRLEN.Response {
         try await send(command: JSON.ARRLEN(key, path: path))
     }
@@ -540,6 +544,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRPOP](https://valkey.io/commands/json.arrpop)
     /// - Complexity: O(N) where N is the number of jsons arrays matched by the path.
     @inlinable
+    @discardableResult
     public func jsonArrpop(_ key: ValkeyKey, path: String? = nil, index: Int? = nil) async throws -> JSON.ARRPOP.Response {
         try await send(command: JSON.ARRPOP(key, path: path, index: index))
     }
@@ -549,6 +554,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.ARRTRIM](https://valkey.io/commands/json.arrtrim)
     /// - Complexity: O(N) where N is the number of json arrays matched by the path.
     @inlinable
+    @discardableResult
     public func jsonArrtrim<Path: RESPStringRenderable>(_ key: ValkeyKey, path: Path, start: Int, end: Int) async throws -> RESPToken {
         try await send(command: JSON.ARRTRIM(key, path: path, start: start, end: end))
     }
@@ -558,6 +564,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.CLEAR](https://valkey.io/commands/json.clear)
     /// - Complexity: O(N) where N is the number of json arrays/objects matched by the path.
     @inlinable
+    @discardableResult
     public func jsonClear(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.CLEAR.Response {
         try await send(command: JSON.CLEAR(key, path: path))
     }
@@ -567,6 +574,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.DEBUG](https://valkey.io/commands/json.debug)
     /// - Complexity: O(1)
     @inlinable
+    @discardableResult
     public func jsonDebug<SubcommandArguments: RESPStringRenderable>(subcommandArguments: SubcommandArguments) async throws -> RESPToken {
         try await send(command: JSON.DEBUG(subcommandArguments: subcommandArguments))
     }
@@ -576,6 +584,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.DEL](https://valkey.io/commands/json.del)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonDel(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.DEL.Response {
         try await send(command: JSON.DEL(key, path: path))
     }
@@ -584,6 +593,7 @@ extension ValkeyConnectionProtocol {
     ///
     /// - Documentation: [JSON.FORGET](https://valkey.io/commands/json.forget)
     @inlinable
+    @discardableResult
     public func jsonForget() async throws -> JSON.FORGET.Response {
         try await send(command: JSON.FORGET())
     }
@@ -593,6 +603,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.GET](https://valkey.io/commands/json.get)
     /// - Complexity: O(N) where N is the number of paths
     @inlinable
+    @discardableResult
     public func jsonGet(
         _ key: ValkeyKey,
         indentNewlineSpace: String? = nil,
@@ -607,6 +618,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.MGET](https://valkey.io/commands/json.mget)
     /// - Complexity: O(N) where N is the number of keys
     @inlinable
+    @discardableResult
     public func jsonMget<Path: RESPStringRenderable>(keys: [ValkeyKey], path: Path) async throws -> RESPToken {
         try await send(command: JSON.MGET(keys: keys, path: path))
     }
@@ -616,6 +628,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.MSET](https://valkey.io/commands/json.mset)
     /// - Complexity: O(N) where N is the number of keys
     @inlinable
+    @discardableResult
     public func jsonMset<Path: RESPStringRenderable, Json: RESPStringRenderable>(datas: [JSON.MSET<Path, Json>.Data]) async throws -> RESPToken {
         try await send(command: JSON.MSET(datas: datas))
     }
@@ -625,6 +638,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.NUMINCRBY](https://valkey.io/commands/json.numincrby)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonNumincrby<Path: RESPStringRenderable>(_ key: ValkeyKey, path: Path, number: Int) async throws -> RESPToken {
         try await send(command: JSON.NUMINCRBY(key, path: path, number: number))
     }
@@ -634,6 +648,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.NUMMULTBY](https://valkey.io/commands/json.nummultby)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonNummultby<Path: RESPStringRenderable>(_ key: ValkeyKey, path: Path, number: Int) async throws -> RESPToken {
         try await send(command: JSON.NUMMULTBY(key, path: path, number: number))
     }
@@ -643,6 +658,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.OBJKEYS](https://valkey.io/commands/json.objkeys)
     /// - Complexity: O(N) where N is the number of json objects matched by the path.
     @inlinable
+    @discardableResult
     public func jsonObjkeys(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.OBJKEYS.Response {
         try await send(command: JSON.OBJKEYS(key, path: path))
     }
@@ -652,6 +668,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.OBJLEN](https://valkey.io/commands/json.objlen)
     /// - Complexity: O(N) where N is the number of json objects matched by the path.
     @inlinable
+    @discardableResult
     public func jsonObjlen(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.OBJLEN.Response {
         try await send(command: JSON.OBJLEN(key, path: path))
     }
@@ -661,6 +678,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.RESP](https://valkey.io/commands/json.resp)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonResp(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.RESP.Response {
         try await send(command: JSON.RESP(key, path: path))
     }
@@ -670,6 +688,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.SET](https://valkey.io/commands/json.set)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonSet<Path: RESPStringRenderable, Json: RESPStringRenderable>(
         _ key: ValkeyKey,
         path: Path,
@@ -684,6 +703,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.STRAPPEND](https://valkey.io/commands/json.strappend)
     /// - Complexity: O(N) where N is the number of string values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonStrappend<JsonString: RESPStringRenderable>(
         _ key: ValkeyKey,
         path: String? = nil,
@@ -697,6 +717,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.STRLEN](https://valkey.io/commands/json.strlen)
     /// - Complexity: O(N) where N is the number of string values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonStrlen(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.STRLEN.Response {
         try await send(command: JSON.STRLEN(key, path: path))
     }
@@ -706,6 +727,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.TOGGLE](https://valkey.io/commands/json.toggle)
     /// - Complexity: O(N) where N is the number of json boolean values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonToggle(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.TOGGLE.Response {
         try await send(command: JSON.TOGGLE(key, path: path))
     }
@@ -715,6 +737,7 @@ extension ValkeyConnectionProtocol {
     /// - Documentation: [JSON.TYPE](https://valkey.io/commands/json.type)
     /// - Complexity: O(N) where N is the number of json values matched by the path.
     @inlinable
+    @discardableResult
     public func jsonType(_ key: ValkeyKey, path: String? = nil) async throws -> JSON.TYPE.Response {
         try await send(command: JSON.TYPE(key, path: path))
     }

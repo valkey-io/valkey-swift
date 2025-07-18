@@ -920,6 +920,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each message ID processed.
     /// - Response: [Integer]: The command returns the number of messages successfully acknowledged. Certain message IDs may no longer be part of the PEL (for example because they have already been acknowledged), and XACK will not count them as successfully acknowledged.
     @inlinable
+    @discardableResult
     public func xack<Group: RESPStringRenderable, Id: RESPStringRenderable>(_ key: ValkeyKey, group: Group, ids: [Id]) async throws -> Int {
         try await send(command: XACK(key, group: group, ids: ids))
     }
@@ -936,6 +937,7 @@ extension ValkeyConnectionProtocol {
     ///     * [String]: The ID of the added entry. The ID is the one auto-generated if * is passed as ID argument, otherwise the command just returns the same ID specified by the user during insertion.
     ///     * [Null]: The NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
+    @discardableResult
     public func xadd<Field: RESPStringRenderable, Value: RESPStringRenderable>(
         _ key: ValkeyKey,
         nomkstream: Bool = false,
@@ -957,6 +959,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Array]: Claimed stream entries (with data, if `JUSTID` was not given).
     ///     * [Array]: Claimed stream entries (without data, if `JUSTID` was given).
     @inlinable
+    @discardableResult
     public func xautoclaim<
         Group: RESPStringRenderable,
         Consumer: RESPStringRenderable,
@@ -983,6 +986,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(log N) with N being the number of messages in the PEL of the consumer group.
     /// - Response: Stream entries with IDs matching the specified range.
     @inlinable
+    @discardableResult
     public func xclaim<Group: RESPStringRenderable, Consumer: RESPStringRenderable, MinIdleTime: RESPStringRenderable, Id: RESPStringRenderable>(
         _ key: ValkeyKey,
         group: Group,
@@ -1020,6 +1024,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each single item to delete in the stream, regardless of the stream size.
     /// - Response: [Integer]: The number of entries actually deleted
     @inlinable
+    @discardableResult
     public func xdel<Id: RESPStringRenderable>(_ key: ValkeyKey, ids: [Id]) async throws -> Int {
         try await send(command: XDEL(key, ids: ids))
     }
@@ -1049,6 +1054,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: The number of created consumers (0 or 1)
     @inlinable
+    @discardableResult
     public func xgroupCreateconsumer<Group: RESPStringRenderable, Consumer: RESPStringRenderable>(
         _ key: ValkeyKey,
         group: Group,
@@ -1064,6 +1070,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The number of pending messages that were yet associated with such a consumer
     @inlinable
+    @discardableResult
     public func xgroupDelconsumer<Group: RESPStringRenderable, Consumer: RESPStringRenderable>(
         _ key: ValkeyKey,
         group: Group,
@@ -1079,6 +1086,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of entries in the group's pending entries list (PEL).
     /// - Response: The number of destroyed consumer groups (0 or 1)
     @inlinable
+    @discardableResult
     public func xgroupDestroy<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> Int {
         try await send(command: XGROUP.DESTROY(key, group: group))
     }
@@ -1090,6 +1098,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func xgroupHelp() async throws -> RESPToken.Array {
         try await send(command: XGROUP.HELP())
     }
@@ -1143,6 +1152,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func xinfoHelp() async throws -> RESPToken.Array {
         try await send(command: XINFO.HELP())
     }
@@ -1234,6 +1244,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Null]: If BLOCK option is specified and the timeout expired
     ///     * [Map]: A map of key-value elements when each element composed of key name and the entries reported for that key
     @inlinable
+    @discardableResult
     public func xreadgroup<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>(
         groupBlock: XREADGROUP<Group, Consumer, Id>.GroupBlock,
         count: Int? = nil,
@@ -1288,6 +1299,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N), with N being the number of evicted entries. Constant times are very small however, since entries are organized in macro nodes containing multiple entries that can be released with a single deallocation.
     /// - Response: [Integer]: The number of entries deleted from the stream.
     @inlinable
+    @discardableResult
     public func xtrim<Threshold: RESPStringRenderable>(_ key: ValkeyKey, trim: XTRIM<Threshold>.Trim) async throws -> Int {
         try await send(command: XTRIM(key, trim: trim))
     }

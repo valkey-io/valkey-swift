@@ -34,8 +34,8 @@ struct CommandTests {
 
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
-                    _ = try await connection.replicaof(args: .hostPort(.init(host: "127.0.0.1", port: 18000)))
-                    _ = try await connection.replicaof(args: .noOne)
+                    try await connection.replicaof(args: .hostPort(.init(host: "127.0.0.1", port: 18000)))
+                    try await connection.replicaof(args: .noOne)
                 }
                 group.addTask {
                     var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)

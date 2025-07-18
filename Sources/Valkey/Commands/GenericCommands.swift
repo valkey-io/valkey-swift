@@ -1009,6 +1009,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: Source was copied.
     ///     * 0: Source was not copied when the destination key already exists
     @inlinable
+    @discardableResult
     public func copy(source: ValkeyKey, destination: ValkeyKey, destinationDb: Int? = nil, replace: Bool = false) async throws -> Int {
         try await send(command: COPY(source: source, destination: destination, destinationDb: destinationDb, replace: replace))
     }
@@ -1020,6 +1021,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of keys that will be removed. When a key to remove holds a value other than a string, the individual complexity for this key is O(M) where M is the number of elements in the list, set, sorted set or hash. Removing a single key that holds a string value is O(1).
     /// - Response: [Integer]: The number of keys that were removed.
     @inlinable
+    @discardableResult
     public func del(keys: [ValkeyKey]) async throws -> Int {
         try await send(command: DEL(keys: keys))
     }
@@ -1061,6 +1063,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     ///     * 1: The timeout was set.
     @inlinable
+    @discardableResult
     public func expire(_ key: ValkeyKey, seconds: Int, condition: EXPIRE.Condition? = nil) async throws -> Int {
         try await send(command: EXPIRE(key, seconds: seconds, condition: condition))
     }
@@ -1076,6 +1079,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: The timeout was set.
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     @inlinable
+    @discardableResult
     public func expireat(_ key: ValkeyKey, unixTimeSeconds: Date, condition: EXPIREAT.Condition? = nil) async throws -> Int {
         try await send(command: EXPIREAT(key, unixTimeSeconds: unixTimeSeconds, condition: condition))
     }
@@ -1119,6 +1123,7 @@ extension ValkeyConnectionProtocol {
     ///     * "OK": Success.
     ///     * "NOKEY": No keys were found in the source instance.
     @inlinable
+    @discardableResult
     public func migrate<Host: RESPStringRenderable>(
         host: Host,
         port: Int,
@@ -1154,6 +1159,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: Key was moved.
     ///     * 0: Key wasn't moved. When key already exists in the destination database, or it does not exist in the source database
     @inlinable
+    @discardableResult
     public func move(_ key: ValkeyKey, db: Int) async throws -> Int {
         try await send(command: MOVE(key, db: db))
     }
@@ -1189,6 +1195,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Helpful text about subcommands.
     @inlinable
+    @discardableResult
     public func objectHelp() async throws -> RESPToken.Array {
         try await send(command: OBJECT.HELP())
     }
@@ -1224,6 +1231,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: Key does not exist or does not have an associated timeout.
     ///     * 1: The timeout has been removed.
     @inlinable
+    @discardableResult
     public func persist(_ key: ValkeyKey) async throws -> Int {
         try await send(command: PERSIST(key))
     }
@@ -1239,6 +1247,7 @@ extension ValkeyConnectionProtocol {
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     ///     * 1: The timeout was set.
     @inlinable
+    @discardableResult
     public func pexpire(_ key: ValkeyKey, milliseconds: Int, condition: PEXPIRE.Condition? = nil) async throws -> Int {
         try await send(command: PEXPIRE(key, milliseconds: milliseconds, condition: condition))
     }
@@ -1254,6 +1263,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: The timeout was set.
     ///     * 0: The timeout was not set. e.g. key doesn't exist, or operation skipped due to the provided arguments.
     @inlinable
+    @discardableResult
     public func pexpireat(_ key: ValkeyKey, unixTimeMilliseconds: Date, condition: PEXPIREAT.Condition? = nil) async throws -> Int {
         try await send(command: PEXPIREAT(key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition))
     }
@@ -1322,6 +1332,7 @@ extension ValkeyConnectionProtocol {
     ///     * 1: Key was renamed to newkey.
     ///     * 0: New key already exists.
     @inlinable
+    @discardableResult
     public func renamenx(_ key: ValkeyKey, newkey: ValkeyKey) async throws -> Int {
         try await send(command: RENAMENX(key, newkey: newkey))
     }
@@ -1380,6 +1391,7 @@ extension ValkeyConnectionProtocol {
     ///     * [Integer]: When the store option is specified the command returns the number of sorted elements in the destination list.
     ///     * [Array]: When not passing the store option the command returns a list of sorted elements.
     @inlinable
+    @discardableResult
     public func sort(
         _ key: ValkeyKey,
         byPattern: String? = nil,
@@ -1459,6 +1471,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1) for each key removed regardless of its size. Then the command does O(N) work in a different thread in order to reclaim memory, where N is the number of allocations the deleted objects where composed of.
     /// - Response: [Integer]: The number of keys that were unlinked.
     @inlinable
+    @discardableResult
     public func unlink(keys: [ValkeyKey]) async throws -> Int {
         try await send(command: UNLINK(keys: keys))
     }
@@ -1470,6 +1483,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Integer]: The number of replicas reached by all the writes performed in the context of the current connection.
     @inlinable
+    @discardableResult
     public func wait(numreplicas: Int, timeout: Int) async throws -> Int {
         try await send(command: WAIT(numreplicas: numreplicas, timeout: timeout))
     }
@@ -1481,6 +1495,7 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(1)
     /// - Response: [Array]: Number of local and remote AOF files in sync.
     @inlinable
+    @discardableResult
     public func waitaof(numlocal: Int, numreplicas: Int, timeout: Int) async throws -> RESPToken.Array {
         try await send(command: WAITAOF(numlocal: numlocal, numreplicas: numreplicas, timeout: timeout))
     }
