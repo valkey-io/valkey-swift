@@ -714,8 +714,8 @@ struct HashSlotShardMapTests {
         return ValkeyClusterDescription(result)
     }
 
-    @Test("Case 1: MovedError specifies the already exisiting shard primary node")
-    func movedErrorSpecifiesTheAlreadyExisitingShardPrimaryNode() throws {
+    @Test("Case 1: MovedError specifies the already existing shard primary node")
+    func movedErrorSpecifiesTheAlreadyExistingShardPrimaryNode() throws {
         let clusterDescription = self.makeExampleCusterWithNShardsAndMReplicasPerShard(shards: 3, replicas: 1)
 
         var map = HashSlotShardMap()
