@@ -487,7 +487,7 @@ extension ValkeyConnectionProtocol {
     /// Append one or more values to the array values at the path.
     ///
     /// - Documentation: [JSON.ARRAPPEND](https://valkey.io/commands/json.arrappend)
-    /// - Complexity: O(N) where N is the number of vaules
+    /// - Complexity: O(N) where N is the number of values
     @inlinable
     @discardableResult
     public func jsonArrappend<Path: RESPStringRenderable, Json: RESPStringRenderable>(
