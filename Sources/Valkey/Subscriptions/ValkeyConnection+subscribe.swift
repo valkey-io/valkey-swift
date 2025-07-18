@@ -167,13 +167,15 @@ extension ValkeyConnection {
     /// channel
     ///
     /// - Parameters:
+    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with async sequence of key invalidations
     /// - Returns: Return value of closure
     @inlinable
     public func subscribeKeyInvalidations<Value>(
+        isolation: isolated (any Actor)? = #isolation,
         process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> sending Value
     ) async throws -> sending Value {
-        try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
+        try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel], isolation: isolation) { subscription in
             let keys = subscription.map { ValkeyKey($0.message) }
             return try await process(keys)
         }
