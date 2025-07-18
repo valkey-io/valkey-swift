@@ -372,9 +372,9 @@ struct RESPTokenTests {
         let tooDeeplyNested = String(repeating: nested, count: 100) + final
         var tooDeeplyNestedBuffer = ByteBuffer(string: tooDeeplyNested)
 
-        let notDepplyEnoughToThrow = String(repeating: nested, count: 99) + final
-        var notDepplyEnoughToThrowBuffer = ByteBuffer(string: notDepplyEnoughToThrow)
-        let notDepplyEnoughToThrowExpected = RESPToken(validated: notDepplyEnoughToThrowBuffer)
+        let notDeepEnoughToThrow = String(repeating: nested, count: 99) + final
+        var notDeepEnoughToThrowBuffer = ByteBuffer(string: notDeepEnoughToThrow)
+        let notDeepEnoughToThrowExpected = RESPToken(validated: notDeepEnoughToThrowBuffer)
 
         #if true
         #expect {
@@ -386,7 +386,7 @@ struct RESPTokenTests {
             return true
         }
 
-        #expect(try RESPToken(consuming: &notDepplyEnoughToThrowBuffer) == notDepplyEnoughToThrowExpected)
+        #expect(try RESPToken(consuming: &notDeepEnoughToThrowBuffer) == notDeepEnoughToThrowExpected)
         #else
         // this is very slow right now. Once we have faster decoding we should use this instead.
         try ByteToMessageDecoderVerifier.verifyDecoder(
