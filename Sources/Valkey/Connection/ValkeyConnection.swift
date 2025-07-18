@@ -159,7 +159,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             }
         }
         let requestID = Self.requestIDGenerator.next()
-        // this currently allocates a promise for every command. We could collpase this down to one promise
+        // this currently allocates a promise for every command. We could collapse this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
         for command in repeat each commands {
