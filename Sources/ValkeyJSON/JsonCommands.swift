@@ -234,7 +234,7 @@ public enum JSON {
         }
     }
 
-    /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
+    /// Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.
     @_documentation(visibility: internal)
     public struct MGET<Path: RESPStringRenderable>: ValkeyCommand {
         public var keys: [ValkeyKey]
@@ -613,7 +613,7 @@ extension ValkeyConnectionProtocol {
         try await send(command: JSON.GET(key, indentNewlineSpace: indentNewlineSpace, noescape: noescape, paths: paths))
     }
 
-    /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
+    /// Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.
     ///
     /// - Documentation: [JSON.MGET](https://valkey.io/commands/json.mget)
     /// - Complexity: O(N) where N is the number of keys

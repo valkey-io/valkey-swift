@@ -286,7 +286,7 @@
     ]
   },
   "JSON.MGET": {
-    "summary": "Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.",
+    "summary": "Get serialized JSONs at the path from multiple document keys. Return null for nonexistent key or JSON path.",
     "complexity": "O(N) where N is the number of keys",
     "group": "json",
     "module_since": "1.0.0",

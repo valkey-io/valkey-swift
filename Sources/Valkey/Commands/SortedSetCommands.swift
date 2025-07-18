@@ -1595,7 +1595,7 @@ extension ValkeyConnectionProtocol {
     /// - History:
     ///     * 2.4.0: Accepts multiple elements.
     /// - Complexity: O(M*log(N)) with N being the number of elements in the sorted set and M the number of elements to be removed.
-    /// - Response: [Integer]: The number of members removed from the sorted set, not including non existing members.
+    /// - Response: [Integer]: The number of members removed from the sorted set, not including nonexistent members.
     @inlinable
     @discardableResult
     public func zrem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {

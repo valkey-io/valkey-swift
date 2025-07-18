@@ -547,7 +547,7 @@ extension ValkeyConnectionProtocol {
     /// - History:
     ///     * 2.4.0: Accepts multiple `member` arguments.
     /// - Complexity: O(N) where N is the number of members to be removed.
-    /// - Response: [Integer]: Number of members that were removed from the set, not including non existing members.
+    /// - Response: [Integer]: Number of members that were removed from the set, not including nonexistent members.
     @inlinable
     @discardableResult
     public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {

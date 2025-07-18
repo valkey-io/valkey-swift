@@ -17761,7 +17761,7 @@
       }
     ],
     "reply_schema": {
-      "description": "Number of members that were removed from the set, not including non existing members.",
+      "description": "Number of members that were removed from the set, not including nonexistent members.",
       "type": "integer",
       "minimum": 0
     },
@@ -22727,7 +22727,7 @@
       }
     ],
     "reply_schema": {
-      "description": "The number of members removed from the sorted set, not including non existing members.",
+      "description": "The number of members removed from the sorted set, not including nonexistent members.",
       "type": "integer",
       "minimum": 0
     },
