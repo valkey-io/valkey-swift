@@ -182,7 +182,7 @@ public final class ValkeyClusterClient: Sendable {
     /// - Returns: Value returned by closure
     @inlinable
     public func withConnection<Value>(
-        forKeys keys: [ValkeyKey],
+        forKeys keys: some Collection<ValkeyKey>,
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
