@@ -159,19 +159,40 @@ public final class ValkeyClusterClient: Sendable {
 
         while true {
             do {
-                let respToken = try await self.retryingSend(
-                    clientSelector: clientSelector,
-                    command: command,
-                    logger: logger
-                )
-                return try Command.Response(fromRESP: respToken)
-            } catch let error as ValkeyClientError where error.errorCode == .commandError {
-                guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
-                    throw error
+                while !Task.isCancelled {
+                    do {
+                        let client = try await clientSelector()
+                        return try await client.send(command: command)
+                    } catch ValkeyClusterError.noNodeToTalkTo {
+                        // TODO: Rerun node discovery!
+                    } catch let error as ValkeyClientError where error.errorCode == .commandError {
+                        guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
+                            throw error
+                        }
+                        clientSelector = { try await self.client(for: movedError) }
+                    }
                 }
-                clientSelector = { try await self.client(for: movedError) }
+                throw CancellationError()
             }
         }
+    }
+
+    /// Get connection from cluster and run operation using connection
+    ///
+    /// - Parameters:
+    ///   - keys: Keys affected by operation. This is used to choose the cluster node
+    ///   - isolation: Actor isolation
+    ///   - operation: Closure handling Valkey connection
+    /// - Returns: Value returned by closure
+    @inlinable
+    public func withConnection<Value>(
+        forKeys keys: [ValkeyKey],
+        isolation: isolated (any Actor)? = #isolation,
+        operation: (ValkeyConnection) async throws -> sending Value
+    ) async throws -> Value {
+        let hashSlots = keys.map { HashSlot(key: $0) }
+        let client = try await self.client(for: hashSlots)
+        return try await client.withConnection(isolation: isolation, operation: operation)
     }
 
     /// Starts running the cluster client.
@@ -453,39 +474,6 @@ public final class ValkeyClusterClient: Sendable {
         }
 
         throw ValkeyClusterError.clusterIsMissingSlotAssignment
-    }
-
-    /// Sends a command to the Valkey cluster with automatic retries and error handling.
-    ///
-    /// This internal method handles:
-    /// - Client selection strategy using the provided selector function
-    /// - Automatic retries for certain types of failures
-    /// - Task cancellation
-    ///
-    /// - Parameters:
-    ///   - clientSelector: A function that resolves to the appropriate client for this command.
-    ///   - command: The command to send to the cluster.
-    ///   - logger: The logger to use for diagnostic information.
-    /// - Returns: The raw RESP token response.
-    /// - Throws:
-    ///   - `CancellationError` if the task is cancelled
-    ///   - Other errors if command execution fails after retries
-    @inlinable
-    func retryingSend(
-        clientSelector: () async throws -> ValkeyClient,
-        command: some ValkeyCommand,
-        logger: Logger
-    ) async throws -> RESPToken {
-        while !Task.isCancelled {
-            do {
-                let client = try await clientSelector()
-                return try await client._send(command)
-            } catch ValkeyClusterError.noNodeToTalkTo {
-                // TODO: Rerun node discovery!
-            }
-        }
-
-        throw CancellationError()
     }
 
     /// Generates a new unique request ID for tracking internal operations.
