@@ -235,12 +235,12 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         case .hostname(let host, let port):
             future = connect.connect(host: host, port: port)
             future.whenSuccess { _ in
-                logger.debug("Client connnected to \(host):\(port)")
+                logger.debug("Client connected to \(host):\(port)")
             }
         case .unixDomainSocket(let path):
             future = connect.connect(unixDomainSocketPath: path)
             future.whenSuccess { _ in
-                logger.debug("Client connnected to socket path \(path)")
+                logger.debug("Client connected to socket path \(path)")
             }
         }
 
