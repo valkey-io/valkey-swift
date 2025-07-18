@@ -25,7 +25,6 @@ extension ValkeyClient {
     ///
     /// - Parameters:
     ///   - channels: list of channels to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -46,7 +45,6 @@ extension ValkeyClient {
     ///
     /// - Parameters:
     ///   - channels: list of channels to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     public func subscribe<Value>(
@@ -69,7 +67,6 @@ extension ValkeyClient {
     ///
     /// - Parameters:
     ///   - patterns: list of channel patterns to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -89,7 +86,6 @@ extension ValkeyClient {
     ///
     /// - Parameters:
     ///   - patterns: list of channel patterns to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -112,8 +108,7 @@ extension ValkeyClient {
     /// pattern
     ///
     /// - Parameters:
-    ///   - shardchannel: list of shard channels to subscribe to
-    ///   - isolation: Actor isolation
+    ///   - shardchannels: list of shard channels to subscribe to
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -132,8 +127,7 @@ extension ValkeyClient {
     /// pattern
     ///
     /// - Parameters:
-    ///   - shardchannel: list of shard channels to subscribe to
-    ///   - isolation: Actor isolation
+    ///   - shardchannels: list of shard channels to subscribe to
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable

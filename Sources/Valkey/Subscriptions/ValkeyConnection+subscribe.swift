@@ -118,17 +118,17 @@ extension ValkeyConnection {
     /// pattern
     ///
     /// - Parameters:
-    ///   - shardchannel: list of shard channels to subscribe to
+    ///   - shardchannels: list of shard channels to subscribe to
     ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
     public func ssubscribe<Value>(
-        to shardchannel: String...,
+        to shardchannels: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        try await self.ssubscribe(to: shardchannel, process: process)
+        try await self.ssubscribe(to: shardchannels, process: process)
     }
 
     /// Subscribe to list of shard channels and run closure with subscription
@@ -139,19 +139,19 @@ extension ValkeyConnection {
     /// pattern
     ///
     /// - Parameters:
-    ///   - shardchannel: list of shard channels to subscribe to
+    ///   - shardchannels: list of shard channels to subscribe to
     ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
     public func ssubscribe<Value>(
-        to shardchannel: [String],
+        to shardchannels: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
         try await self.subscribe(
-            command: SSUBSCRIBE(shardchannels: shardchannel),
-            filters: shardchannel.map { .shardChannel($0) },
+            command: SSUBSCRIBE(shardchannels: shardchannels),
+            filters: shardchannels.map { .shardChannel($0) },
             isolation: isolation,
             process: process
         )
