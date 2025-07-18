@@ -137,7 +137,7 @@ struct SubscriptionTests {
                 // expect UNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
-                // push unsubcribe
+                // push unsubscribe
                 try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(0)])).base)
             }
             try await group.waitForAll()
@@ -670,7 +670,7 @@ struct SubscriptionTests {
                 // expect SUNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 #expect(outbound == RESPToken(.command(["SUNSUBSCRIBE", "test"])).base)
-                // push unsubcribe
+                // push unsubscribe
                 try await channel.writeInbound(RESPToken(.push([.bulkString("sunsubscribe"), .bulkString("test"), .number(1)])).base)
             }
             try await group.waitForAll()
@@ -799,7 +799,7 @@ struct SubscriptionTests {
                 // expect UNSUBSCRIBE command
                 outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "__redis__:invalidate"])).base)
-                // push unsubcribe
+                // push unsubscribe
                 try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("__redis__:invalidate"), .number(0)])).base)
             }
             try await group.waitForAll()
