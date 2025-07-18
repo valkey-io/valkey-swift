@@ -48,7 +48,7 @@ package struct ValkeyClusterClientStateMachineConfiguration {
     @usableFromInline
     package var circuitBreakerDuration: Duration
 
-    /// The default duration between starts of cluster refreshs, if the previous refresh was successful
+    /// The default duration between starts of cluster refreshes, if the previous refresh was successful
     package var defaultClusterRefreshInterval: Duration
 
     package init(circuitBreakerDuration: Duration, defaultClusterRefreshInterval: Duration) {
