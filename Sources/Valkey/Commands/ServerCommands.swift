@@ -2227,7 +2227,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.0
     /// - History:
     ///     * 7.0.0: Added the `NOW`, `FORCE` and `ABORT` modifiers.
-    /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
+    /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data; otherwise, O(1)
     /// - Response: "OK": OK if ABORT was specified and shutdown was aborted. On successful shutdown, nothing is returned since the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
     public func shutdown(abortSelector: SHUTDOWN.AbortSelector? = nil) async throws {

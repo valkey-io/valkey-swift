@@ -100,7 +100,7 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     /// another node description to determine if they refer to the same logical node.
     ///
     /// - Parameter other: The `ValkeyClusterDescription.Node` to compare against.
-    /// - Returns: `true` if the nodes match (refer to the same logical node), otherwise `false`.
+    /// - Returns: `true` if the nodes match (refer to the same logical node); otherwise, `false`.
     func matches(_ other: ValkeyClusterDescription.Node) -> Bool {
         self.endpoint == other.endpoint
             && self.port == other.tlsPort ?? other.port ?? 6379

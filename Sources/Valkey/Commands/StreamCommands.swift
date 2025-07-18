@@ -934,7 +934,7 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added support for the `<ms>-*` explicit ID form.
     /// - Complexity: O(1) when adding a new entry, O(N) when trimming where N being the number of entries evicted.
     /// - Response: One of the following
-    ///     * [String]: The ID of the added entry. The ID is the one auto-generated if * is passed as ID argument, otherwise the command just returns the same ID specified by the user during insertion.
+    ///     * [String]: The ID of the added entry. The ID is the one auto-generated if * is passed as ID argument; otherwise, the command just returns the same ID specified by the user during insertion.
     ///     * [Null]: The NOMKSTREAM option is given and the key doesn't exist.
     @inlinable
     @discardableResult

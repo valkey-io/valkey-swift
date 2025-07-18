@@ -512,7 +512,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.0
     /// - History:
     ///     * 3.2.0: Added the `count` argument.
-    /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the value of the passed count.
+    /// - Complexity: Without the count argument O(1); otherwise, O(N) where N is the value of the passed count.
     /// - Response: One of the following
     ///     * [Null]: The key does not exist.
     ///     * [String]: The removed member when 'COUNT' is not given.
@@ -529,7 +529,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.0
     /// - History:
     ///     * 2.6.0: Added the optional `count` argument.
-    /// - Complexity: Without the count argument O(1), otherwise O(N) where N is the absolute value of the passed count.
+    /// - Complexity: Without the count argument O(1); otherwise, O(N) where N is the absolute value of the passed count.
     /// - Response: One of the following
     ///     * [Null]: In case `count` is not given and key doesn't exist
     ///     * [String]: In case `count` is not given, randomly selected element

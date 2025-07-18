@@ -79,7 +79,7 @@ package struct HashSlotShardMap: Sendable {
 
     /// Determines the appropriate shard node information for a collection of hash slots.
     ///
-    /// All slots must map to the same shard, otherwise an error is thrown.
+    /// All slots must map to the same shard; otherwise, an error is thrown.
     /// If no slots are provided, a random shard is returned.
     ///
     /// - Parameter slots: A collection of hash slots that should map to the same shard
