@@ -523,7 +523,7 @@ extension PoolStateMachine {
             }
 
             if index < self.minimumConcurrentConnections {
-                // because of a race a connection might receive a idle timeout after it was moved into
+                // because of a race a connection might receive an idle timeout after it was moved into
                 // the persisted connections. If a connection is now persisted, we now need to ignore
                 // the trigger
                 return nil
