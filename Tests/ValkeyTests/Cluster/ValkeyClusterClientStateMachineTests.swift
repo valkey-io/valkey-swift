@@ -37,7 +37,7 @@ struct ValkeyClusterClientStateMachineTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func runDiscorveryAfterStartup() {
+    func runDiscoveryAfterStartup() {
         let factory = MockClientFactory()
         let clock = MockClock()
         var stateMachine = TestStateMachine(configuration: testConfiguration, poolFactory: factory, clock: clock)
@@ -83,7 +83,7 @@ struct ValkeyClusterClientStateMachineTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func runCircuitBreakerWillOpenIfDiscoeryIsntSuccessfulWithinCircuitBreakerDuration() {
+    func runCircuitBreakerWillOpenIfDiscoveryIsntSuccessfulWithinCircuitBreakerDuration() {
         let factory = MockClientFactory()
         let clock = MockClock()
         var stateMachine = TestStateMachine(configuration: testConfiguration, poolFactory: factory, clock: clock)
