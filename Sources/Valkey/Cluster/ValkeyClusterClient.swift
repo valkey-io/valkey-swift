@@ -157,24 +157,20 @@ public final class ValkeyClusterClient: Sendable {
             try await self.client(for: hashSlots)
         }
 
-        while true {
+        while !Task.isCancelled {
             do {
-                while !Task.isCancelled {
-                    do {
-                        let client = try await clientSelector()
-                        return try await client.send(command: command)
-                    } catch ValkeyClusterError.noNodeToTalkTo {
-                        // TODO: Rerun node discovery!
-                    } catch let error as ValkeyClientError where error.errorCode == .commandError {
-                        guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
-                            throw error
-                        }
-                        clientSelector = { try await self.client(for: movedError) }
-                    }
+                let client = try await clientSelector()
+                return try await client.send(command: command)
+            } catch ValkeyClusterError.noNodeToTalkTo {
+                // TODO: Rerun node discovery!
+            } catch let error as ValkeyClientError where error.errorCode == .commandError {
+                guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
+                    throw error
                 }
-                throw CancellationError()
+                clientSelector = { try await self.client(for: movedError) }
             }
         }
+        throw CancellationError()
     }
 
     /// Get connection from cluster and run operation using connection
