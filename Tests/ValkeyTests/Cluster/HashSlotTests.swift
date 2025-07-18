@@ -57,7 +57,7 @@ struct HashSlotTests {
     }
 
     @Test
-    func isStridable() {
+    func isStrideable() {
         let value: HashSlot = 123
         #expect(value.advanced(by: 12) == 135)
     }
