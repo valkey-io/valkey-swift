@@ -78,7 +78,7 @@ package struct ValkeyClusterClientStateMachine<
         case unavailable(UnavailableContext)
 
         /// The cluster was healthy before, but we received a MOVED error to an unknown host
-        /// In this state we have about a minute to become healthy again. Otherwise we mark
+        /// In this state we have about a minute to become healthy again. Otherwise, we mark
         /// the cluster as unavailable.
         case degraded(DegradedContext)
 
