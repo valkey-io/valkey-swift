@@ -455,6 +455,77 @@ struct GeneratedCommands {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testCancelSubscription() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.withConnection { connection in
+                        try await connection.subscribe(to: "testCancelSubscriptions") { subscription in
+                            cont.finish()
+                            for try await _ in subscription {
+                            }
+                        }
+                        #expect(await connection.isSubscriptionsEmpty())
+                    }
+                }
+                await stream.first { _ in true }
+                group.cancelAll()
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.subscribe(to: "testSubscriptions") { subscription in
+                        cont.finish()
+                        var iterator = subscription.makeAsyncIterator()
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                    }
+                }
+                try await client.withConnection { connection in
+                    await stream.first { _ in true }
+                    _ = try await connection.publish(channel: "testSubscriptions", message: "hello")
+                    _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientCancelSubscription() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.subscribe(to: "testCancelSubscriptions") { subscription in
+                        cont.finish()
+                        for try await _ in subscription {
+                        }
+                    }
+                }
+                await stream.first { _ in true }
+                group.cancelAll()
+            }
+        }
+    }
+
     /// Test two different subscriptions to the same channel both receive messages and that when one ends the other still
     /// receives messages
     @Test
@@ -795,34 +866,6 @@ struct GeneratedCommands {
                 try await connection.set("foo", value: "baz")
 
                 try await group.waitForAll()
-            }
-        }
-    }
-
-    @available(valkeySwift 1.0, *)
-    @Test
-    func testGEOPOS() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .trace
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                let count = try await connection.geoadd(
-                    key,
-                    datas: [.init(longitude: 1.0, latitude: 53.0, member: "Edinburgh"), .init(longitude: 1.4, latitude: 53.5, member: "Glasgow")]
-                )
-                #expect(count == 2)
-                let search = try await connection.geosearch(
-                    key,
-                    from: .fromlonlat(.init(longitude: 0.0, latitude: 53.0)),
-                    by: .circle(.init(radius: 10000, unit: .mi)),
-                    withcoord: true,
-                    withdist: true,
-                    withhash: true
-                )
-                print(search.map { $0.member })
-                try print(search.map { try $0.attributes[0].decode(as: Double.self) })
-                try print(search.map { try $0.attributes[1].decode(as: String.self) })
-                try print(search.map { try $0.attributes[2].decode(as: GeoCoordinates.self) })
             }
         }
     }

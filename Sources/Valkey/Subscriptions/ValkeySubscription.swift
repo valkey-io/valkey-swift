@@ -35,11 +35,14 @@ public struct ValkeySubscriptionMessage: Sendable, Equatable {
 public struct ValkeySubscription: AsyncSequence, Sendable {
     public typealias Element = ValkeySubscriptionMessage
 
+    @usableFromInline
     typealias BaseAsyncSequence = AsyncThrowingStream<ValkeySubscriptionMessage, Error>
+    @usableFromInline
     typealias Continuation = BaseAsyncSequence.Continuation
 
     let base: BaseAsyncSequence
 
+    @usableFromInline
     static func makeStream() -> (Self, Self.Continuation) {
         let (stream, continuation) = BaseAsyncSequence.makeStream()
         return (.init(base: stream), continuation)
