@@ -595,8 +595,8 @@ struct CommandTests {
             )
             let result = try await asyncResult
             #expect(result.streamID == "0-0")
-            #expect(result.messsages.count == 1)
-            #expect(result.messsages[0].id == "1749460498430-0")
+            #expect(result.messages.count == 1)
+            #expect(result.messages[0].id == "1749460498430-0")
             #expect(result.deletedMessages.count == 1)
             #expect(result.deletedMessages[0] == "1749460498428-0")
         }

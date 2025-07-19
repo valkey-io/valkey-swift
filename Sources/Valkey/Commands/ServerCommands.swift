@@ -585,14 +585,14 @@ public enum CONFIG {
                 RESPBulkString(value).encode(into: &commandEncoder)
             }
         }
-        public var datas: [Data]
+        public var data: [Data]
 
-        @inlinable public init(datas: [Data]) {
-            self.datas = datas
+        @inlinable public init(data: [Data]) {
+            self.data = data
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CONFIG", "SET", datas)
+            commandEncoder.encodeArray("CONFIG", "SET", data)
         }
     }
 
@@ -865,17 +865,17 @@ public enum MODULE {
             }
         }
         public var path: Path
-        public var configss: [Configs]
-        public var argss: [String]
+        public var configs: [Configs]
+        public var args: [String]
 
-        @inlinable public init(path: Path, configss: [Configs] = [], argss: [String] = []) {
+        @inlinable public init(path: Path, configs: [Configs] = [], args: [String] = []) {
             self.path = path
-            self.configss = configss
-            self.argss = argss
+            self.configs = configs
+            self.args = args
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPWithToken("CONFIG", configss), RESPWithToken("ARGS", argss))
+            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
         }
     }
 
@@ -1871,8 +1871,8 @@ extension ValkeyConnectionProtocol {
     ///     * 7.0.0: Added the ability to set multiple parameters in one call.
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     @inlinable
-    public func configSet<Parameter: RESPStringRenderable, Value: RESPStringRenderable>(datas: [CONFIG.SET<Parameter, Value>.Data]) async throws {
-        _ = try await send(command: CONFIG.SET(datas: datas))
+    public func configSet<Parameter: RESPStringRenderable, Value: RESPStringRenderable>(data: [CONFIG.SET<Parameter, Value>.Data]) async throws {
+        _ = try await send(command: CONFIG.SET(data: data))
     }
 
     /// Returns the number of keys in the database.
@@ -2153,9 +2153,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 7.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configss: [MODULE.LOADEX<Path>.Configs] = [], argss: [String] = []) async throws
-    {
-        _ = try await send(command: MODULE.LOADEX(path: path, configss: configss, argss: argss))
+    public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configs: [MODULE.LOADEX<Path>.Configs] = [], args: [String] = []) async throws {
+        _ = try await send(command: MODULE.LOADEX(path: path, configs: configs, args: args))
     }
 
     /// Unloads a module.

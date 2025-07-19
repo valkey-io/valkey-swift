@@ -278,16 +278,16 @@ public enum JSON {
                 RESPBulkString(json).encode(into: &commandEncoder)
             }
         }
-        public var datas: [Data]
+        public var data: [Data]
 
-        @inlinable public init(datas: [Data]) {
-            self.datas = datas
+        @inlinable public init(data: [Data]) {
+            self.data = data
         }
 
-        public var keysAffected: [ValkeyKey] { datas.map { $0.key } }
+        public var keysAffected: [ValkeyKey] { data.map { $0.key } }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("JSON.MSET", datas)
+            commandEncoder.encodeArray("JSON.MSET", data)
         }
     }
 
@@ -629,8 +629,8 @@ extension ValkeyConnectionProtocol {
     /// - Complexity: O(N) where N is the number of keys
     @inlinable
     @discardableResult
-    public func jsonMset<Path: RESPStringRenderable, Json: RESPStringRenderable>(datas: [JSON.MSET<Path, Json>.Data]) async throws -> RESPToken {
-        try await send(command: JSON.MSET(datas: datas))
+    public func jsonMset<Path: RESPStringRenderable, Json: RESPStringRenderable>(data: [JSON.MSET<Path, Json>.Data]) async throws -> RESPToken {
+        try await send(command: JSON.MSET(data: data))
     }
 
     /// Increment the number values at the path by a given number.

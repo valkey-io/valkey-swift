@@ -395,7 +395,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
     public var copy: Bool
     public var replace: Bool
     public var authentication: Authentication?
-    public var keyss: [ValkeyKey]
+    public var keys: [ValkeyKey]
 
     @inlinable public init(
         host: Host,
@@ -406,7 +406,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         copy: Bool = false,
         replace: Bool = false,
         authentication: Authentication? = nil,
-        keyss: [ValkeyKey] = []
+        keys: [ValkeyKey] = []
     ) {
         self.host = host
         self.port = port
@@ -416,10 +416,10 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         self.copy = copy
         self.replace = replace
         self.authentication = authentication
-        self.keyss = keyss
+        self.keys = keys
     }
 
-    public var keysAffected: [ValkeyKey] { keyss }
+    public var keysAffected: [ValkeyKey] { keys }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray(
@@ -432,7 +432,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
             RESPPureToken("COPY", copy),
             RESPPureToken("REPLACE", replace),
             authentication,
-            RESPWithToken("KEYS", keyss)
+            RESPWithToken("KEYS", keys)
         )
     }
 }
@@ -1133,7 +1133,7 @@ extension ValkeyConnectionProtocol {
         copy: Bool = false,
         replace: Bool = false,
         authentication: MIGRATE<Host>.Authentication? = nil,
-        keyss: [ValkeyKey] = []
+        keys: [ValkeyKey] = []
     ) async throws -> String? {
         try await send(
             command: MIGRATE(
@@ -1145,7 +1145,7 @@ extension ValkeyConnectionProtocol {
                 copy: copy,
                 replace: replace,
                 authentication: authentication,
-                keyss: keyss
+                keys: keys
             )
         )
     }

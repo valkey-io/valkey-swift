@@ -822,7 +822,13 @@ extension ValkeyCommand.Argument {
     /// Name we use for rendered variable. Appends an "s" for array arguments
     var renderedName: String {
         if self.multiple {
-            "\(self.name)s"
+            if self.name == "data" || self.name.last == "s" {
+                name
+            } else if self.name.last == "y", self.name.dropLast().last != "e" {
+                "\(self.name.dropLast())ies"
+            } else {
+                "\(self.name)s"
+            }
         } else {
             name
         }

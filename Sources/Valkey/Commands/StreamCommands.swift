@@ -425,20 +425,20 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     public var nomkstream: Bool
     public var trim: Trim?
     public var idSelector: IdSelector
-    public var datas: [Data]
+    public var data: [Data]
 
-    @inlinable public init(_ key: ValkeyKey, nomkstream: Bool = false, trim: Trim? = nil, idSelector: IdSelector, datas: [Data]) {
+    @inlinable public init(_ key: ValkeyKey, nomkstream: Bool = false, trim: Trim? = nil, idSelector: IdSelector, data: [Data]) {
         self.key = key
         self.nomkstream = nomkstream
         self.trim = trim
         self.idSelector = idSelector
-        self.datas = datas
+        self.data = data
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XADD", key, RESPPureToken("NOMKSTREAM", nomkstream), trim, idSelector, datas)
+        commandEncoder.encodeArray("XADD", key, RESPPureToken("NOMKSTREAM", nomkstream), trim, idSelector, data)
     }
 }
 
@@ -943,9 +943,9 @@ extension ValkeyConnectionProtocol {
         nomkstream: Bool = false,
         trim: XADD<Field, Value>.Trim? = nil,
         idSelector: XADD<Field, Value>.IdSelector,
-        datas: [XADD<Field, Value>.Data]
+        data: [XADD<Field, Value>.Data]
     ) async throws -> ByteBuffer? {
-        try await send(command: XADD(key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, datas: datas))
+        try await send(command: XADD(key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.

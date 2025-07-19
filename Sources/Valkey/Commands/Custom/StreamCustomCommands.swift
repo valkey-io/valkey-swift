@@ -115,13 +115,13 @@ public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message:
 @_documentation(visibility: internal)
 public struct XAUTOCLAIMResponse: RESPTokenDecodable, Sendable {
     public let streamID: String
-    public let messsages: [XREADMessage]
+    public let messages: [XREADMessage]
     public let deletedMessages: [String]
 
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let array):
-            (self.streamID, self.messsages, self.deletedMessages) = try array.decodeElements()
+            (self.streamID, self.messages, self.deletedMessages) = try array.decodeElements()
         default:
             throw RESPParsingError(code: .unexpectedType, buffer: token.base)
         }
