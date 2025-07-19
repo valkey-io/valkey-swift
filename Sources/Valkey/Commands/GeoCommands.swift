@@ -68,19 +68,19 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
     public var key: ValkeyKey
     public var condition: Condition?
     public var change: Bool
-    public var datas: [Data]
+    public var data: [Data]
 
-    @inlinable public init(_ key: ValkeyKey, condition: Condition? = nil, change: Bool = false, datas: [Data]) {
+    @inlinable public init(_ key: ValkeyKey, condition: Condition? = nil, change: Bool = false, data: [Data]) {
         self.key = key
         self.condition = condition
         self.change = change
-        self.datas = datas
+        self.data = data
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GEOADD", key, condition, RESPPureToken("CH", change), datas)
+        commandEncoder.encodeArray("GEOADD", key, condition, RESPPureToken("CH", change), data)
     }
 }
 
@@ -1117,9 +1117,9 @@ extension ValkeyConnectionProtocol {
         _ key: ValkeyKey,
         condition: GEOADD<Member>.Condition? = nil,
         change: Bool = false,
-        datas: [GEOADD<Member>.Data]
+        data: [GEOADD<Member>.Data]
     ) async throws -> Int {
-        try await send(command: GEOADD(key, condition: condition, change: change, datas: datas))
+        try await send(command: GEOADD(key, condition: condition, change: change, data: data))
     }
 
     /// Returns the distance between two members of a geospatial index.

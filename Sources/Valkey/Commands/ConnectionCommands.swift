@@ -55,14 +55,14 @@ extension CLIENT {
     /// A client claims its capability.
     @_documentation(visibility: internal)
     public struct CAPA<Capability: RESPStringRenderable>: ValkeyCommand {
-        public var capabilitys: [Capability]
+        public var capabilities: [Capability]
 
-        @inlinable public init(capabilitys: [Capability]) {
-            self.capabilitys = capabilitys
+        @inlinable public init(capabilities: [Capability]) {
+            self.capabilities = capabilities
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "CAPA", capabilitys.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("CLIENT", "CAPA", capabilities.map { RESPBulkString($0) })
         }
     }
 
@@ -829,8 +829,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 8.0.0
     /// - Complexity: O(1)
     @inlinable
-    public func clientCapa<Capability: RESPStringRenderable>(capabilitys: [Capability]) async throws {
-        _ = try await send(command: CLIENT.CAPA(capabilitys: capabilitys))
+    public func clientCapa<Capability: RESPStringRenderable>(capabilities: [Capability]) async throws {
+        _ = try await send(command: CLIENT.CAPA(capabilities: capabilities))
     }
 
     /// Returns the name of the connection.
