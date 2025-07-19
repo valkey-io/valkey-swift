@@ -44,7 +44,7 @@ struct NIOLockedValueBox<Value> {
 
     /// Provides an unsafe view over the lock and its value.
     ///
-    /// This can be beneficial when you require fine grained control over the lock in some
+    /// This can be beneficial when you require fine-grained control over the lock in some
     /// situations but don't want lose the benefits of ``withLockedValue(_:)`` in others by
     /// switching to ``NIOLock``.
     var unsafe: Unsafe {

@@ -618,7 +618,7 @@ public final class ValkeyClusterClient: Sendable {
                         return electionWinner
                     }
 
-                    // ensure that we have pools for all returned nodes so that we can reach concensus
+                    // ensure that we have pools for all returned nodes so that we can reach consensus
                     let actions = self.stateLock.withLock { $0.updateValkeyServiceNodes(description) }
                     self.runUpdateValkeyNodesAction(actions)
 

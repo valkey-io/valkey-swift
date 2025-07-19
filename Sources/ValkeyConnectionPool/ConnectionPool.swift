@@ -429,7 +429,7 @@ where
                 self.connectionEstablished(bundle)
 
                 // after the connection has been established, we keep the task open. This ensures
-                // that the pools run method can not be exited before all connections have been
+                // that the pools run method cannot be exited before all connections have been
                 // closed.
                 await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
                     bundle.connection.onClose {

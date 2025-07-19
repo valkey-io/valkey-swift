@@ -47,7 +47,7 @@ extension Data: RESPStringRenderable {}
 
 /// Internal type used to render RESPStringRenderable conforming type.
 ///
-/// Unforunately we cannot conform RESPStringRenderable to RESPRenderable if we want
+/// Unfortunately we cannot conform RESPStringRenderable to RESPRenderable if we want
 /// Collections to conform to RESPStringRenderable, as there is already a conformance
 /// to Collection when all the elements conform to RESPRenderable.
 @usableFromInline
