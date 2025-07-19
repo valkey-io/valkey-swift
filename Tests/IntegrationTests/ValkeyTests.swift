@@ -490,6 +490,30 @@ struct GeneratedCommands {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testCancelSubscription() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.withConnection { connection in
+                        try await connection.subscribe(to: "testCancelSubscriptions") { subscription in
+                            cont.finish()
+                            for try await _ in subscription {
+                            }
+                        }
+                        #expect(await connection.isSubscriptionsEmpty())
+                    }
+                }
+                await stream.first { _ in true }
+                group.cancelAll()
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testClientSubscriptions() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "Subscriptions")
@@ -510,6 +534,27 @@ struct GeneratedCommands {
                     _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
                 }
                 try await group.waitForAll()
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientCancelSubscription() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.subscribe(to: "testCancelSubscriptions") { subscription in
+                        cont.finish()
+                        for try await _ in subscription {
+                        }
+                    }
+                }
+                await stream.first { _ in true }
+                group.cancelAll()
             }
         }
     }
