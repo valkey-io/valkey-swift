@@ -23,6 +23,80 @@ import Valkey
 /// Generally the commands being tested here are ones we have written custom responses for
 struct CommandTests {
     struct ServerCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func role() async throws {
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+            try await channel.processHello()
+
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    var role = try await connection.role()
+                    guard case .primary(let primary) = role else {
+                        Issue.record()
+                        return
+                    }
+                    #expect(primary.replicationOffset == 10)
+                    #expect(primary.replicas.count == 2)
+                    #expect(primary.replicas[0].ip == "127.0.0.1")
+                    #expect(primary.replicas[0].port == 9001)
+                    #expect(primary.replicas[0].replicationOffset == 1)
+                    #expect(primary.replicas[1].ip == "127.0.0.1")
+                    #expect(primary.replicas[1].port == 9002)
+                    #expect(primary.replicas[1].replicationOffset == 6)
+
+                    role = try await connection.role()
+                    guard case .replica(let replica) = role else {
+                        Issue.record()
+                        return
+                    }
+                    #expect(replica.primaryIP == "127.0.0.1")
+                    #expect(replica.primaryPort == 9000)
+                    #expect(replica.state == .connected)
+                    #expect(replica.replicationOffset == 6)
+                }
+                group.addTask {
+                    var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["ROLE"])).base)
+                    try await channel.writeInbound(
+                        RESPToken(
+                            .array([
+                                .bulkString("master"),
+                                .number(10),
+                                .array([
+                                    .array([
+                                        .bulkString("127.0.0.1"),
+                                        .bulkString("9001"),
+                                        .bulkString("1"),
+                                    ]),
+                                    .array([
+                                        .bulkString("127.0.0.1"),
+                                        .bulkString("9002"),
+                                        .bulkString("6"),
+                                    ]),
+                                ]),
+                            ])
+                        ).base
+                    )
+                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                    #expect(outbound == RESPToken(.command(["ROLE"])).base)
+                    try await channel.writeInbound(
+                        RESPToken(
+                            .array([
+                                .bulkString("slave"),
+                                .bulkString("127.0.0.1"),
+                                .number(9000),
+                                .bulkString("connected"),
+                                .number(6),
+                            ])
+                        ).base
+                    )
+                }
+                try await group.waitForAll()
+            }
+        }
         /// Test non-optional tokens render correctly
         @Test
         @available(valkeySwift 1.0, *)

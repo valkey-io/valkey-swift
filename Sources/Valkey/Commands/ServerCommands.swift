@@ -1271,8 +1271,6 @@ public struct REPLICAOF: ValkeyCommand {
 /// Returns the replication role.
 @_documentation(visibility: internal)
 public struct ROLE: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public init() {
     }
 
@@ -2205,8 +2203,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.12
     /// - Complexity: O(1)
     @inlinable
-    @discardableResult
-    public func role() async throws -> RESPToken.Array {
+    public func role() async throws -> ROLE.Response {
         try await send(command: ROLE())
     }
 

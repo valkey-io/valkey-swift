@@ -146,8 +146,13 @@ extension Int64: RESPTokenDecodable {
         case .number(let value):
             self = value
 
-        case .bulkString,
-            .simpleString,
+        case .bulkString(let buffer):
+            guard let value = Int64(String(buffer: buffer)) else {
+                throw RESPParsingError(code: .canNotParseInteger, buffer: token.base)
+            }
+            self = value
+
+        case .simpleString,
             .bulkError,
             .simpleError,
             .verbatimString,
