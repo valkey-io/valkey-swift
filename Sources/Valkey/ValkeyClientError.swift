@@ -58,7 +58,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         /// Connection closed because it timed out.
         public static var timeout: Self { .init(.timeout) }
     }
-    
+
     /// The error code
     public let errorCode: ErrorCode
     /// An optional message associated with the error code
@@ -71,7 +71,7 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         self.errorCode = errorCode
         self.message = message
     }
-    
+
     /// The string representation of the error.
     public var description: String {
         switch self.errorCode.value {

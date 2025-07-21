@@ -107,7 +107,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
                 self.base = base
             }
         }
-        
+
         /// The ID of the node
         public var id: String
         /// The port
@@ -126,7 +126,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
         public var replicationOffset: Int
         /// The health of the node
         public var health: Health
-        
+
         /// Creates a new node
         /// - Parameters:
         ///   - id: The node ID
@@ -160,14 +160,14 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.health = health
         }
     }
-    
+
     /// A portion of a valkey cluster
     public struct Shard: Hashable, Sendable {
         /// The slots represented in the shard.
         public var slots: HashSlots
         /// The nodes that make up the shard.
         public var nodes: [Node]
-        
+
         /// Create a new shard.
         /// - Parameters:
         ///   - slots: The slots in the shard.
@@ -177,10 +177,10 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             self.nodes = nodes
         }
     }
-    
+
     /// The individual portions of a valkey cluster, known as shards.
     public var shards: [Shard]
-    
+
     /// Creates a cluster description from the response token you provide.
     /// - Parameter respToken: The response token.
     public init(fromRESP respToken: RESPToken) throws {
@@ -190,7 +190,7 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
             throw ValkeyClusterParseError(reason: error, token: respToken)
         }
     }
-    
+
     /// Creates a cluster description from a list of shards you provide.
     /// - Parameter shards: The shards that make up the cluster.
     public init(_ shards: [ValkeyClusterDescription.Shard]) {

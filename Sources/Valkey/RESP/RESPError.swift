@@ -41,7 +41,7 @@ public struct RESPParsingError: Error {
         private init(_ base: Base) {
             self.base = base
         }
-        
+
         /// The leading byte is invalid.
         public static let invalidLeadingByte = Self.init(.invalidLeadingByte)
         /// The data is invalid.
@@ -84,10 +84,10 @@ public struct RESPParsingError: Error {
             }
         }
     }
-    
+
     /// The error code
     public var code: Code
-    
+
     /// The byte buffer that failed to parse.
     public var buffer: ByteBuffer
 

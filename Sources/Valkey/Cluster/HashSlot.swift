@@ -71,28 +71,28 @@ extension HashSlot: Comparable {
 extension HashSlot: RawRepresentable {
     /// The type that represents the raw value of a hash slot.
     public typealias RawValue = UInt16
-    
+
     /// Creates a hash slot based on the raw value you provide for valid hash slot values.
     /// - Parameter rawValue: The raw value of the hash slot.
     public init?(rawValue: UInt16) {
         guard rawValue <= HashSlot.max.rawValue else { return nil }
         self._raw = rawValue
     }
-    
+
     /// Creates a hash slot based on the raw value you provide for valid hash slot values.
     /// - Parameter rawValue: The raw value of the hash slot.
     public init?(rawValue: Int) {
         guard HashSlot.min.rawValue <= rawValue, rawValue <= HashSlot.max.rawValue else { return nil }
         self._raw = UInt16(rawValue)
     }
-    
+
     /// Creates a hash slot based on the raw value you provide for valid hash slot values.
     /// - Parameter rawValue: The raw value of the hash slot.
     public init?(rawValue: Int64) {
         guard HashSlot.min.rawValue <= rawValue, rawValue <= HashSlot.max.rawValue else { return nil }
         self._raw = UInt16(rawValue)
     }
-    
+
     /// The raw value of a hash slot.
     public var rawValue: UInt16 { self._raw }
 }

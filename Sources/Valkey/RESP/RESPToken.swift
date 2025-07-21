@@ -19,7 +19,7 @@ public struct RESPToken: Hashable, Sendable {
     /// A list of response tokens.
     public struct Array: Sequence, Sendable, Hashable {
         public typealias Element = RESPToken
-        
+
         /// The count of items in the list.
         public let count: Int
         let buffer: ByteBuffer
@@ -47,7 +47,7 @@ public struct RESPToken: Hashable, Sendable {
             return Map(count: self.count / 2, buffer: self.buffer)
         }
     }
-    
+
     /// A dictionary of response tokens mapped by a response token.
     public struct Map: Sequence, Sendable, Hashable {
         public typealias Element = (key: RESPToken, value: RESPToken)
@@ -83,7 +83,7 @@ public struct RESPToken: Hashable, Sendable {
             }
         }
     }
-    
+
     /// A response token value.
     public enum Value: Hashable, Sendable {
         /// A simple string

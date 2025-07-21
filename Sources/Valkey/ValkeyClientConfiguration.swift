@@ -25,7 +25,7 @@ public struct ValkeyClientConfiguration: Sendable {
             case enable(TLSConfiguration, String?)
         }
         let base: Base
-        
+
         /// Creates a disabled TLS client configuration.
         public static var disable: Self { .init(base: .disable) }
         /// Creates a TLS enabled client configuration.
@@ -41,7 +41,7 @@ public struct ValkeyClientConfiguration: Sendable {
     public struct Authentication: Sendable {
         public var username: String
         public var password: String
-        
+
         /// Creates authentication credentials with the username and password you provide.
         /// - Parameters:
         ///   - username: The username for the Valkey server.
@@ -67,7 +67,7 @@ public struct ValkeyClientConfiguration: Sendable {
             self.frequency = frequency
         }
     }
-    
+
     /// The connection pool definition for Valkey connections.
     public struct ConnectionPool: Hashable, Sendable {
         /// The minimum number of connections to preserve in the pool.
@@ -89,7 +89,7 @@ public struct ValkeyClientConfiguration: Sendable {
         /// The time that a _preserved_ idle connection stays in the
         /// pool before it is closed.
         public var idleTimeout: Duration
-        
+
         /// Creates the configuration for a Valkey client connection pool.
         /// - Parameters:
         ///   - minimumConnectionCount: The minimum number of connections to maintain.

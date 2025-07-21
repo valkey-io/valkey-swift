@@ -47,12 +47,12 @@ public struct ValkeySubscription: AsyncSequence, Sendable {
         let (stream, continuation) = BaseAsyncSequence.makeStream()
         return (.init(base: stream), continuation)
     }
-    
+
     /// Creates a sequence of subscription messages.
     public func makeAsyncIterator() -> AsyncIterator {
         AsyncIterator(base: self.base.makeAsyncIterator())
     }
-    
+
     /// An iterator that provides subscription messages.
     public struct AsyncIterator: AsyncIteratorProtocol {
         var base: BaseAsyncSequence.AsyncIterator
