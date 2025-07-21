@@ -1,7 +1,7 @@
 {
   "JSON.ARRAPPEND": {
     "summary": "Append one or more values to the array values at the path.",
-    "complexity": "O(N) where N is the number of vaules",
+    "complexity": "O(N) where N is the number of values",
     "group": "json",
     "module_since": "1.0.0",
     "arity": -4,

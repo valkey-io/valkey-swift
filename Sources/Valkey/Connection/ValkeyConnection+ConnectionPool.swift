@@ -102,7 +102,7 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
         )
     }
 
-    /// The utlization of the connection changed; a stream may have been used, returned or the
+    /// The utilization of the connection changed; a stream may have been used, returned or the
     /// maximum number of concurrent streams available on the connection changed.
     func connectionLeased(id: ConnectionID) {
         self.logger.debug(

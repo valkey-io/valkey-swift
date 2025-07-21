@@ -159,7 +159,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             }
         }
         let requestID = Self.requestIDGenerator.next()
-        // this currently allocates a promise for every command. We could collpase this down to one promise
+        // this currently allocates a promise for every command. We could collapse this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
         for command in repeat each commands {
@@ -235,12 +235,12 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         case .hostname(let host, let port):
             future = connect.connect(host: host, port: port)
             future.whenSuccess { _ in
-                logger.debug("Client connnected to \(host):\(port)")
+                logger.debug("Client connected to \(host):\(port)")
             }
         case .unixDomainSocket(let path):
             future = connect.connect(unixDomainSocketPath: path)
             future.whenSuccess { _ in
-                logger.debug("Client connnected to socket path \(path)")
+                logger.debug("Client connected to socket path \(path)")
             }
         }
 

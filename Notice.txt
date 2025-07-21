@@ -36,7 +36,7 @@ It contains a derivation of RediStack's 'RedisHashSlot.swift' and RESP3 implemen
 
 ---
 
-This product contains a a derivation of Georges Menie's crc16 algorithm that was adopted
+This product contains a derivation of Georges Menie's crc16 algorithm that was adopted
 to Redis coding style by Salvatore Sanfilippo.
 
   * LICENSE:

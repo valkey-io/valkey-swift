@@ -51,7 +51,7 @@ echo ""
 echo "extension ValkeyCommandEncoder {"
 
 # note:
-# - widening the inverval below (eg. going from {1..15} to {1..25}) is Semver minor
+# - widening the interval below (eg. going from {1..15} to {1..25}) is Semver minor
 # - narrowing the interval below is SemVer _MAJOR_!
 for n in {1..15}; do
     genWithoutContextParameter "$n"

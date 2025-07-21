@@ -517,13 +517,13 @@ extension PoolStateMachine {
         @inlinable
         mutating func closeConnectionIfIdle(_ connectionID: Connection.ID) -> CloseAction? {
             guard let index = self.connections.firstIndex(where: { $0.id == connectionID }) else {
-                // because of a race this connection (connection close runs against trigger of timeout)
+                // because of a race, this connection (connection close runs against trigger of timeout)
                 // was already removed from the state machine.
                 return nil
             }
 
             if index < self.minimumConcurrentConnections {
-                // because of a race a connection might receive a idle timeout after it was moved into
+                // because of a race, a connection might receive an idle timeout after it was moved into
                 // the persisted connections. If a connection is now persisted, we now need to ignore
                 // the trigger
                 return nil
