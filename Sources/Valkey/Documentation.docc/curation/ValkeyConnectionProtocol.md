@@ -28,8 +28,8 @@ bf.reserve
 ### Valkey cluster management commands
 
 - ``asking()``
-cluster?_
-- ``clusterAddslots(slot:)``
+
+- ``clusterAddslots(slots:)``
 - ``clusterAddslotsrange(range:)``
 - ``clusterBumpepoch()``
 - ``clusterCountFailureReports(nodeId:)``
@@ -103,7 +103,7 @@ cluster_save-config-epoch?
 - ``keys(pattern:)``
 - ``migrate(host:port:keySelector:destinationDb:timeout:copy:replace:authentication:keys:)``
 - ``move(key:db:)``
-object?
+
 - ``objectEncoding(key:)``
 - ``objectFreq(key:)``
 - ``objectHelp()``
@@ -231,7 +231,7 @@ json.type
 
 psubscribe
 - ``publish(channel:message:)``
-pubsub?
+
 - ``pubsubChannels(pattern:)``
 - ``pubsubHelp()``
 - ``pubsubNumpat()``
@@ -253,7 +253,7 @@ unsubscribe
 - ``evalRo(script:key:arg:)``
 - ``fcall(function:key:arg:)``
 - ``fcallRo(function:key:arg:)``
-function?
+
 - ``functionDelete(libraryName:)``
 - ``functionDump()``
 - ``functionFlush(flushType:)``
@@ -263,7 +263,7 @@ function?
 - ``functionLoad(replace:functionCode:)``
 - ``functionRestore(serializedValue:policy:)``
 - ``functionStats()``
-script?
+
 - ``scriptDebug(mode:)``
 - ``scriptExists(sha1:)``
 - ``scriptHelp()``
@@ -281,7 +281,6 @@ ft.list
 
 ### Server Management Commands
 
-acl
 - ``aclCat(category:)``
 - ``aclDeluser(username:)``
 - ``aclDryrun(username:command:arg:)``
@@ -305,12 +304,12 @@ acl
 - ``commandHelp()``
 - ``commandInfo(commandName:)``
 - ``commandList(filterby:)``
-commandlog?
+
 - ``commandlogGet(count:type:)``
 - ``commandlogHelp()``
 - ``commandlogLen(type:)``
 - ``commandlogReset(type:)``
-config?
+
 - ``configGet(parameter:)``
 - ``configHelp()``
 - ``configResetstat()``
@@ -322,7 +321,7 @@ debug
 - ``flushall(flushType:)``
 - ``info(section:)``
 - ``lastsave()``
-latency
+
 - ``latencyDoctor()``
 - ``latencyGraph(event:)``
 - ``latencyHelp()``
@@ -331,13 +330,13 @@ latency
 - ``latencyLatest()``
 - ``latencyReset(event:)``
 - ``lolwut(version:)``
-memory
+
 - ``memoryDoctor()``
 - ``memoryHelp()``
 - ``memoryMallocStats()``
 - ``memoryPurge()``
 - ``memoryUsage(key:count:)``
-module
+
 - ``moduleHelp()``
 - ``moduleList()``
 - ``moduleLoad(path:arg:)``
