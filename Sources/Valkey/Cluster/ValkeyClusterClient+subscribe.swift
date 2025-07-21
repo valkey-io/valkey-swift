@@ -206,6 +206,9 @@ extension ValkeyClusterClient {
                         case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
                             break
                         case .commandError:
+                            // Question: Does subscribe return a MOVED error for a sharded subscribe if the
+                            // cluster topology changes?
+                            // TODO: Do we need to refresh the cluster discovery here?
                             if let errorMessage = error.message, let _ = ValkeyMovedError(errorMessage) {
                                 break
                             } else {
