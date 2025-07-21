@@ -43,7 +43,7 @@
 
 ### Watching transactions
 
-- ``watch(key:)``
+- ``watch(keys:)``
 - ``unwatch()``
 
 ### Closing a connection

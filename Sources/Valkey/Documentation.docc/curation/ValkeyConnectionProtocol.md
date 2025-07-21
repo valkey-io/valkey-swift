@@ -4,14 +4,14 @@
 <!-- Created these sets following the ordering at https://valkey.io/commands/ -->
 
 ### Operations on the bitmap data type
-
-- ``bitcount(key:range:)``
-- ``bitfield(key:operation:)``
-- ``bitfieldRo(key:getBlock:)``
-- ``bitop(operation:destkey:key:)``
-- ``bitpos(key:bit:range:)``
-- ``getbit(key:offset:)``
-- ``setbit(key:offset:value:)``
+- ``bitcount(_:range:)``
+- ``bitcount(_:range:)``
+- ``bitfield(_:operations:)``
+- ``bitfieldRo(_:getBlocks:)``
+- ``bitop(operation:destkey:keys:)``
+- ``bitpos(_:bit:range:)``
+- ``getbit(_:offset:)``
+- ``setbit(_:offset:value:)``
 
 ### Operations on the Bloom filter data type
 
@@ -30,12 +30,12 @@ bf.reserve
 - ``asking()``
 
 - ``clusterAddslots(slots:)``
-- ``clusterAddslotsrange(range:)``
+- ``clusterAddslotsrange(ranges:)``
 - ``clusterBumpepoch()``
 - ``clusterCountFailureReports(nodeId:)``
 - ``clusterCountkeysinslot(slot:)``
-- ``clusterDelslots(slot:)``
-- ``clusterDelslotsrange(range:)``
+- ``clusterDelslots(slots:)``
+- ``clusterDelslotsrange(ranges:)``
 - ``clusterFailover(options:)``
 - ``clusterFlushslots()``
 - ``clusterForget(nodeId:)``
@@ -51,7 +51,7 @@ bf.reserve
 - ``clusterReplicate(nodeId:)``
 - ``clusterReset(resetType:)``
 - ``clusterSaveconfig()``
-cluster_save-config-epoch?
+<!-- cluster_save-config-epoch? -->
 - ``clusterSetslot(slot:subcommand:timeout:)``
 - ``clusterShards()``
 - ``clusterSlaves(nodeId:)``
@@ -65,7 +65,7 @@ cluster_save-config-epoch?
 - ``auth(username:password:)``
 - ``client()``
 - ``clientCaching(mode:)``
-- ``clientCapa(capability:)``
+- ``clientCapa(capabilities:)``
 - ``clientGetname()``
 - ``clientGetredir()``
 - ``clientHelp()``
@@ -73,14 +73,14 @@ cluster_save-config-epoch?
 - ``clientImportSource(enabled:)``
 - ``clientInfo()``
 - ``clientKill(filter:)``
-- ``clientList(clientType:clientId:username:addr:laddr:skipme:maxage:)``
+- ``clientList(clientType:clientIds:username:addr:laddr:skipme:maxage:)``
 - ``clientNoEvict(enabled:)``
 - ``clientNoTouch(enabled:)``
 - ``clientPause(timeout:mode:)``
 - ``clientReply(action:)``
 - ``clientSetinfo(attr:)``
 - ``clientSetname(connectionName:)``
-- ``clientTracking(status:clientId:prefix:bcast:optin:optout:noloop:)``
+- ``clientTracking(status:clientId:prefixs:bcast:optin:optout:noloop:)``
 - ``clientTrackinginfo()``
 - ``clientUnblock(clientId:unblockType:)``
 - ``clientUnpause()``
@@ -94,79 +94,79 @@ cluster_save-config-epoch?
 ### Generic Commands
 
 - ``copy(source:destination:destinationDb:replace:)``
-- ``del(key:)``
-- ``dump(key:)``
-- ``exists(key:)``
-- ``expire(key:seconds:condition:)``
-- ``expireat(key:unixTimeSeconds:condition:)``
-- ``expiretime(key:)``
+- ``del(keys:)``
+- ``dump(_:)``
+- ``exists(keys:)``
+- ``expire(_:seconds:condition:)``
+- ``expireat(_:unixTimeSeconds:condition:)``
+- ``expiretime(_:)``
 - ``keys(pattern:)``
 - ``migrate(host:port:keySelector:destinationDb:timeout:copy:replace:authentication:keys:)``
-- ``move(key:db:)``
+- ``move(_:db:)``
 
-- ``objectEncoding(key:)``
-- ``objectFreq(key:)``
+- ``objectEncoding(_:)``
+- ``objectFreq(_:)``
 - ``objectHelp()``
-- ``objectIdletime(key:)``
-- ``objectRefcount(key:)``
-- ``persist(key:)``
-- ``pexpire(key:milliseconds:condition:)``
-- ``pexpireat(key:unixTimeMilliseconds:condition:)``
-- ``pexpiretime(key:)``
-- ``pttl(key:)``
+- ``objectIdletime(_:)``
+- ``objectRefcount(_:)``
+- ``persist(_:)``
+- ``pexpire(_:milliseconds:condition:)``
+- ``pexpireat(_:unixTimeMilliseconds:condition:)``
+- ``pexpiretime(_:)``
+- ``pttl(_:)``
 - ``randomkey()``
-- ``rename(key:newkey:)``
-- ``renamenx(key:newkey:)``
-- ``restore(key:ttl:serializedValue:replace:absttl:seconds:frequency:)``
+- ``rename(_:newkey:)``
+- ``renamenx(_:newkey:)``
+- ``restore(_:ttl:serializedValue:replace:absttl:seconds:frequency:)``
 - ``scan(cursor:pattern:count:type:)``
-- ``sort(key:byPattern:limit:getPattern:order:sorting:destination:)``
-- ``sortRo(key:byPattern:limit:getPattern:order:sorting:)``
-- ``touch(key:)``
-- ``ttl(key:)``
-- ``type(key:)``
-- ``unlink(key:)``
+- ``sort(_:byPattern:limit:getPatterns:order:sorting:destination:)``
+- ``sortRo(_:byPattern:limit:getPatterns:order:sorting:)``
+- ``touch(keys:)``
+- ``ttl(_:)``
+- ``type(_:)``
+- ``unlink(keys:)``
 - ``wait(numreplicas:timeout:)``
 - ``waitaof(numlocal:numreplicas:timeout:)``
 
 ### Geospatial Indices
 
-- ``geoadd(key:condition:change:data:)``
-- ``geodist(key:member1:member2:unit:)``
-- ``geohash(key:member:)``
-- ``geopos(key:member:)``
-- ``georadius(key:longitude:latitude:radius:unit:withcoord:withdist:withhash:countBlock:order:store:)``
-- ``georadiusbymember(key:member:radius:unit:withcoord:withdist:withhash:countBlock:order:store:)``
-- ``georadiusbymemberRo(key:member:radius:unit:withcoord:withdist:withhash:countBlock:order:)``
-- ``georadiusRo(key:longitude:latitude:radius:unit:withcoord:withdist:withhash:countBlock:order:)``
-- ``geosearch(key:from:by:order:countBlock:withcoord:withdist:withhash:)``
+- ``geoadd(_:condition:change:data:)``
+- ``geodist(_:member1:member2:unit:)``
+- ``geohash(_:members:)``
+- ``geopos(_:members:)``
+- ``georadius(_:longitude:latitude:radius:unit:withcoord:withdist:withhash:countBlock:order:store:)``
+- ``georadiusbymember(_:member:radius:unit:withcoord:withdist:withhash:countBlock:order:store:)``
+- ``georadiusbymemberRo(_:member:radius:unit:withcoord:withdist:withhash:countBlock:order:)``
+- ``georadiusRo(_:longitude:latitude:radius:unit:withcoord:withdist:withhash:countBlock:order:)``
+- ``geosearch(_:from:by:order:countBlock:withcoord:withdist:withhash:)``
 - ``geosearchstore(destination:source:from:by:order:countBlock:storedist:)``
 
 ### Hash Operations
 
-- ``hdel(key:field:)``
-- ``hexists(key:field:)``
-- ``hget(key:field:)``
-- ``hgetall(key:)``
-- ``hincrby(key:field:increment:)``
-- ``hincrbyfloat(key:field:increment:)``
-- ``hkeys(key:)``
-- ``hlen(key:)``
-- ``hmget(key:field:)``
-- ``hmset(key:data:)``
-- ``hrandfield(key:options:)``
-- ``hscan(key:cursor:pattern:count:novalues:)``
-- ``hset(key:data:)``
-- ``hsetnx(key:field:value:)``
-- ``hstrlen(key:field:)``
-- ``hvals(key:)``
+- ``hdel(_:fields:)``
+- ``hexists(_:field:)``
+- ``hget(_:field:)``
+- ``hgetall(_:)``
+- ``hincrby(_:field:increment:)``
+- ``hincrbyfloat(_:field:increment:)``
+- ``hkeys(_:)``
+- ``hlen(_:)``
+- ``hmget(_:fields:)``
+- ``hmset(_:data:)``
+- ``hrandfield(_:options:)``
+- ``hscan(_:cursor:pattern:count:novalues:)``
+- ``hset(_:data:)``
+- ``hsetnx(_:field:value:)``
+- ``hstrlen(_:field:)``
+- ``hvals(_:)``
 
 ### Operations on the Hyperlog Data Type
 
-- ``pfadd(key:element:)``
-- ``pfcount(key:)``
-pfdebug
-- ``pfmerge(destkey:sourcekey:)``
-pfselftest
+- ``pfadd(_:elements:)``
+- ``pfcount(keys:)``
+<!--pfdebug-->
+- ``pfmerge(destkey:sourcekeys:)``
+<!--pfselftest-->
 
 ### Operations on the JSON data type
 
@@ -197,35 +197,35 @@ json.type
 ### Operations on the List data type
 
 - ``blmove(source:destination:wherefrom:whereto:timeout:)``
-- ``blmpop(timeout:key:where:count:)``
-- ``blpop(key:timeout:)``
-- ``brpop(key:timeout:)``
+- ``blmpop(timeout:keys:where:count:)``
+- ``blpop(keys:timeout:)``
+- ``brpop(keys:timeout:)``
 - ``brpoplpush(source:destination:timeout:)``
-- ``lindex(key:index:)``
-- ``linsert(key:where:pivot:element:)``
-- ``llen(key:)``
+- ``lindex(_:index:)``
+- ``linsert(_:where:pivot:element:)``
+- ``llen(_:)``
 - ``lmove(source:destination:wherefrom:whereto:)``
-- ``lmpop(key:where:count:)``
-- ``lpop(key:count:)``
-- ``lpos(key:element:rank:numMatches:len:)``
-- ``lpush(key:element:)``
-- ``lpushx(key:element:)``
-- ``lrange(key:start:stop:)``
-- ``lrem(key:count:element:)``
-- ``lset(key:index:element:)``
-- ``ltrim(key:start:stop:)``
-- ``rpop(key:count:)``
+- ``lmpop(keys:where:count:)``
+- ``lpop(_:count:)``
+- ``lpos(_:element:rank:numMatches:len:)``
+- ``lpush(_:elements:)``
+- ``lpushx(_:elements:)``
+- ``lrange(_:start:stop:)``
+- ``lrem(_:count:element:)``
+- ``lset(_:index:element:)``
+- ``ltrim(_:start:stop:)``
+- ``rpop(_:count:)``
 - ``rpoplpush(source:destination:)``
-- ``lpush(key:element:)``
-- ``lpushx(key:element:)``
-- ``lrange(key:start:stop:)``
-- ``lrem(key:count:element:)``
-- ``lset(key:index:element:)``
-- ``ltrim(key:start:stop:)``
-- ``rpop(key:count:)``
+- ``lpush(_:elements:)``
+- ``lpushx(_:elements:)``
+- ``lrange(_:start:stop:)``
+- ``lrem(_:count:element:)``
+- ``lset(_:index:element:)``
+- ``ltrim(_:start:stop:)``
+- ``rpop(_:count:)``
 - ``rpoplpush(source:destination:)``
-- ``rpush(key:element:)``
-- ``rpushx(key:element:)``
+- ``rpush(_:elements:)``
+- ``rpushx(_:elements:)``
 
 ### PUB/SUB commands
 
@@ -235,24 +235,24 @@ psubscribe
 - ``pubsubChannels(pattern:)``
 - ``pubsubHelp()``
 - ``pubsubNumpat()``
-- ``pubsubNumsub(channel:)``
+- ``pubsubNumsub(channels:)``
 - ``pubsubShardchannels(pattern:)``
-- ``pubsubShardnumsub(shardchannel:)``
-punsubscribe
+- ``pubsubShardnumsub(shardchannels:)``
+<!--punsubscribe-->
 - ``spublish(shardchannel:message:)``
-ssubscribe
-subscribe
-sunsubscribe
-unsubscribe
+<!--ssubscribe-->
+<!--subscribe-->
+<!--sunsubscribe-->
+<!--unsubscribe-->
 
 ### Server side Scripting and Functions
 
-- ``eval(script:key:arg:)``
-- ``evalsha(sha1:key:arg:)``
-- ``evalshaRo(sha1:key:arg:)``
-- ``evalRo(script:key:arg:)``
-- ``fcall(function:key:arg:)``
-- ``fcallRo(function:key:arg:)``
+- ``eval(script:keys:args:)``
+- ``evalsha(sha1:keys:args:)``
+- ``evalshaRo(sha1:keys:args:)``
+- ``evalRo(script:keys:args:)``
+- ``fcall(function:keys:args:)``
+- ``fcallRo(function:keys:args:)``
 
 - ``functionDelete(libraryName:)``
 - ``functionDump()``
@@ -265,7 +265,7 @@ unsubscribe
 - ``functionStats()``
 
 - ``scriptDebug(mode:)``
-- ``scriptExists(sha1:)``
+- ``scriptExists(sha1s:)``
 - ``scriptHelp()``
 - ``scriptKill()``
 - ``scriptLoad(script:)``
@@ -282,8 +282,8 @@ ft.list
 ### Server Management Commands
 
 - ``aclCat(category:)``
-- ``aclDeluser(username:)``
-- ``aclDryrun(username:command:arg:)``
+- ``aclDeluser(usernames:)``
+- ``aclDryrun(username:command:args:)``
 - ``aclGenpass(bits:)``
 - ``aclGetuser(username:)``
 - ``aclHelp()``
@@ -291,18 +291,18 @@ ft.list
 - ``aclLoad()``
 - ``aclLog(operation:)``
 - ``aclSave()``
-- ``aclSetuser(username:rule:)``
+- ``aclSetuser(username:rules:)``
 - ``aclUsers()``
 - ``aclWhoami()``
 - ``bgrewriteaof()``
 - ``bgsave(operation:)``
 - ``command()``
 - ``commandCount()``
-- ``commandDocs(commandName:)``
-- ``commandGetkeys(command:arg:)``
-- ``commandGetkeysandflags(command:arg:)``
+- ``commandDocs(commandNames:)``
+- ``commandGetkeys(command:args:)``
+- ``commandGetkeysandflags(command:args:)``
 - ``commandHelp()``
-- ``commandInfo(commandName:)``
+- ``commandInfo(commandNames:)``
 - ``commandList(filterby:)``
 
 - ``commandlogGet(count:type:)``
@@ -310,48 +310,48 @@ ft.list
 - ``commandlogLen(type:)``
 - ``commandlogReset(type:)``
 
-- ``configGet(parameter:)``
+- ``configGet(parameters:)``
 - ``configHelp()``
 - ``configResetstat()``
 - ``configRewrite()``
 - ``configSet(data:)``
 - ``dbsize()``
-debug
+<!--debug-->
 - ``failover(target:abort:milliseconds:)``
 - ``flushall(flushType:)``
-- ``info(section:)``
+- ``info(sections:)``
 - ``lastsave()``
 
 - ``latencyDoctor()``
 - ``latencyGraph(event:)``
 - ``latencyHelp()``
-- ``latencyHistogram(command:)``
+- ``latencyHistogram(commands:)``
 - ``latencyHistory(event:)``
 - ``latencyLatest()``
-- ``latencyReset(event:)``
+- ``latencyReset(events:)``
 - ``lolwut(version:)``
 
 - ``memoryDoctor()``
 - ``memoryHelp()``
 - ``memoryMallocStats()``
 - ``memoryPurge()``
-- ``memoryUsage(key:count:)``
+- ``memoryUsage(_:count:)``
 
 - ``moduleHelp()``
 - ``moduleList()``
-- ``moduleLoad(path:arg:)``
+- ``moduleLoad(path:args:)``
 - ``moduleLoadex(path:configs:args:)``
 - ``moduleUnload(name:)``
 - ``monitor()``
 - ``psync(replicationid:offset:)``
-replconf
+<!--replconf-->
 - ``replicaof(args:)``
-restore-asking
+<!--restore-asking-->
 - ``role()``
 - ``save()``
 - ``shutdown(abortSelector:)``
 - ``slaveof(args:)``
-slowlog
+<!--slowlog-->
 - ``slowlogGet(count:)``
 - ``slowlogHelp()``
 - ``slowlogLen()``
@@ -362,115 +362,115 @@ slowlog
 
 ### Operations on the SET data tyoe
 
-- ``sadd(key:member:)``
-- ``scard(key:)``
-- ``sdiff(key:)``
-- ``sdiffstore(destination:key:)``
-- ``sinter(key:)``
-- ``sintercard(key:limit:)``
-- ``sinterstore(destination:key:)``
-- ``sismember(key:member:)``
-- ``smembers(key:)``
-- ``smismember(key:member:)``
+- ``sadd(_:members:)``
+- ``scard(_:)``
+- ``sdiff(keys:)``
+- ``sdiffstore(destination:keys:)``
+- ``sinter(keys:)``
+- ``sintercard(keys:limit:)``
+- ``sinterstore(destination:keys:)``
+- ``sismember(_:member:)``
+- ``smembers(_:)``
+- ``smismember(_:members:)``
 - ``smove(source:destination:member:)``
-- ``spop(key:count:)``
-- ``srandmember(key:count:)``
-- ``srem(key:member:)``
-- ``sscan(key:cursor:pattern:count:)``
-- ``sunion(key:)``
-- ``sunionstore(destination:key:)``
+- ``spop(_:count:)``
+- ``srandmember(_:count:)``
+- ``srem(_:members:)``
+- ``sscan(_:cursor:pattern:count:)``
+- ``sunion(keys:)``
+- ``sunionstore(destination:keys:)``
 
 ### operations on the sorted set data type
 
-- ``bzmpop(timeout:key:where:count:)``
-- ``bzpopmax(key:timeout:)``
-- ``bzpopmin(key:timeout:)``
-- ``zadd(key:condition:comparison:change:increment:data:)``
-- ``zcard(key:)``
-- ``zcount(key:min:max:)``
-- ``zdiff(key:withscores:)``
-- ``zdiffstore(destination:key:)``
-- ``zincrby(key:increment:member:)``
-- ``zinter(key:weight:aggregate:withscores:)``
-- ``zintercard(key:limit:)``
-- ``zinterstore(destination:key:weight:aggregate:)``
-- ``zlexcount(key:min:max:)
-- ``zmpop(key:where:count:)``
-- ``zmscore(key:member:)``
-- ``zpopmax(key:count:)``
-- ``zpopmin(key:count:)``
-- ``zrandmember(key:options:)``
-- ``zrange(key:start:stop:sortby:rev:limit:withscores:)``
-- ``zrangebylex(key:min:max:limit:)``
-- ``zrangebyscore(key:min:max:withscores:limit:)``
+- ``bzmpop(timeout:keys:where:count:)``
+- ``bzpopmax(keys:timeout:)``
+- ``bzpopmin(keys:timeout:)``
+- ``zadd(_:condition:comparison:change:increment:data:)``
+- ``zcard(_:)``
+- ``zcount(_:min:max:)``
+- ``zdiff(keys:withscores:)``
+- ``zdiffstore(destination:keys:)``
+- ``zincrby(_:increment:member:)``
+- ``zinter(keys:weights:aggregate:withscores:)``
+- ``zintercard(keys:limit:)``
+- ``zinterstore(destination:keys:weights:aggregate:)``
+- ``zlexcount(_:min:max:)``
+- ``zmpop(keys:where:count:)``
+- ``zmscore(_:members:)``
+- ``zpopmax(_:count:)``
+- ``zpopmin(_:count:)``
+- ``zrandmember(_:options:)``
+- ``zrange(_:start:stop:sortby:rev:limit:withscores:)``
+- ``zrangebylex(_:min:max:limit:)``
+- ``zrangebyscore(_:min:max:withscores:limit:)``
 - ``zrangestore(dst:src:min:max:sortby:rev:limit:)``
-- ``zrank(key:member:withscore:)``
-- ``zrem(key:member:)``
-- ``zremrangebylex(key:min:max:)``
-- ``zremrangebyrank(key:start:stop:)``
-- ``zremrangebyscore(key:min:max:)``
-- ``zrevrange(key:start:stop:withscores:)``
-- ``zrevrangebylex(key:max:min:limit:)``
-- ``zrevrangebyscore(key:max:min:withscores:limit:)``
-- ``zrevrank(key:member:withscore:)``
-- ``zscan(key:cursor:pattern:count:noscores:)``
-- ``zscore(key:member:)``
-- ``zunion(key:weight:aggregate:withscores:)``
-- ``zunionstore(destination:key:weight:aggregate:)``
+- ``zrank(_:member:withscore:)``
+- ``zrem(_:members:)``
+- ``zremrangebylex(_:min:max:)``
+- ``zremrangebyrank(_:start:stop:)``
+- ``zremrangebyscore(_:min:max:)``
+- ``zrevrange(_:start:stop:withscores:)``
+- ``zrevrangebylex(_:max:min:limit:)``
+- ``zrevrangebyscore(_:max:min:withscores:limit:)``
+- ``zrevrank(_:member:withscore:)``
+- ``zscan(_:cursor:pattern:count:noscores:)``
+- ``zscore(_:member:)``
+- ``zunion(keys:weights:aggregate:withscores:)``
+- ``zunionstore(destination:keys:weights:aggregate:)``
 
 ### Operations on the Stream data type
 
-- ``xack(key:group:id:)``
-- ``xadd(key:nomkstream:trim:idSelector:data:)``
-- ``xautoclaim(key:group:consumer:minIdleTime:start:count:justid:)``
-- ``xclaim(key:group:consumer:minIdleTime:id:ms:unixTimeMilliseconds:count:force:justid:lastid:)``
-- ``xdel(key:id:)``
-xgroup
-- ``xgroupCreate(key:group:idSelector:mkstream:entriesread:)``
-- ``xgroupCreateconsumer(key:group:consumer:)``
-- ``xgroupDelconsumer(key:group:consumer:)``
-- ``xgroupDestroy(key:group:)``
+- ``xack(_:group:ids:)``
+- ``xadd(_:nomkstream:trim:idSelector:data:)``
+- ``xautoclaim(_:group:consumer:minIdleTime:start:count:justid:)``
+- ``xclaim(_:group:consumer:minIdleTime:ids:ms:unixTimeMilliseconds:count:force:justid:lastid:)``
+- ``xdel(_:ids:)``
+
+- ``xgroupCreate(_:group:idSelector:mkstream:entriesread:)``
+- ``xgroupCreateconsumer(_:group:consumer:)``
+- ``xgroupDelconsumer(_:group:consumer:)``
+- ``xgroupDestroy(_:group:)``
 - ``xgroupHelp()``
-- ``xgroupSetid(key:group:idSelector:entriesread:)``
-xinfo
-- ``xinfoConsumers(key:group:)``
-- ``xinfoGroups(key:)``
+- ``xgroupSetid(_:group:idSelector:entriesread:)``
+
+- ``xinfoConsumers(_:group:)``
+- ``xinfoGroups(_:)``
 - ``xinfoHelp()``
-- ``xinfoStream(key:fullBlock:)``
-- ``xlen(key:)``
-- ``xpending(key:group:filters:)``
-- ``xrange(key:start:end:count:)``
+- ``xinfoStream(_:fullBlock:)``
+- ``xlen(_:)``
+- ``xpending(_:group:filters:)``
+- ``xrange(_:start:end:count:)``
 - ``xread(count:milliseconds:streams:)``
 - ``xreadgroup(groupBlock:count:milliseconds:noack:streams:)``
-- ``xrevrange(key:end:start:count:)``
-- ``xsetid(key:lastId:entriesAdded:maxDeletedId:)``
-- ``xtrim(key:trim:)``
+- ``xrevrange(_:end:start:count:)``
+- ``xsetid(_:lastId:entriesAdded:maxDeletedId:)``
+- ``xtrim(_:trim:)``
 
 ### Operations on the String Data type
 
-- ``append(key:value:)``
-- ``decr(key:)``
-- ``decrby(key:decrement:)``
-delifeq
-- ``get(key:)``
-- ``getdel(key:)``
-- ``getex(key:expiration:)``
-- ``getrange(key:start:end:)``
-- ``getset(key:value:)``
-- ``incr(key:)``
-- ``incrby(key:increment:)``
-- ``incrbyfloat(key:increment:)``
+- ``append(_:value:)``
+- ``decr(_:)``
+- ``decrby(_:decrement:)``
+<!--delifeq-->
+- ``get(_:)``
+- ``getdel(_:)``
+- ``getex(_:expiration:)``
+- ``getrange(_:start:end:)``
+- ``getset(_:value:)``
+- ``incr(_:)``
+- ``incrby(_:increment:)``
+- ``incrbyfloat(_:increment:)``
 - ``lcs(key1:key2:len:idx:minMatchLen:withmatchlen:)``
-- ``mget(key:)``
+- ``mget(keys:)``
 - ``mset(data:)``
 - ``msetnx(data:)``
-- ``psetex(key:milliseconds:value:)``
-- ``set(key:value:condition:get:expiration:)``
-- ``setex(key:seconds:value:)``
-- ``setnx(key:value:)``
-- ``setrange(key:offset:value:)``
-- ``strlen(key:)``
-- ``substr(key:start:end:)``
+- ``psetex(_:milliseconds:value:)``
+- ``set(_:value:condition:get:expiration:)``
+- ``setex(_:seconds:value:)``
+- ``setnx(_:value:)``
+- ``setrange(_:offset:value:)``
+- ``strlen(_:)``
+- ``substr(_:start:end:)``
 
 ### Transaction management
 https://valkey.io/commands/#transactions
