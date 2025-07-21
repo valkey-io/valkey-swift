@@ -236,17 +236,17 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
         }
     }
     public var key: ValkeyKey
-    public var datas: [Data]
+    public var data: [Data]
 
-    @inlinable public init(_ key: ValkeyKey, datas: [Data]) {
+    @inlinable public init(_ key: ValkeyKey, data: [Data]) {
         self.key = key
-        self.datas = datas
+        self.data = data
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HMSET", key, datas)
+        commandEncoder.encodeArray("HMSET", key, data)
     }
 }
 
@@ -353,17 +353,17 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     public typealias Response = Int
 
     public var key: ValkeyKey
-    public var datas: [Data]
+    public var data: [Data]
 
-    @inlinable public init(_ key: ValkeyKey, datas: [Data]) {
+    @inlinable public init(_ key: ValkeyKey, data: [Data]) {
         self.key = key
-        self.datas = datas
+        self.data = data
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("HSET", key, datas)
+        commandEncoder.encodeArray("HSET", key, data)
     }
 }
 
@@ -547,8 +547,8 @@ extension ValkeyConnectionProtocol {
     /// - Deprecated since: 4.0.0. Replaced by `HSET` with multiple field-value pairs.
     /// - Complexity: O(N) where N is the number of fields being set.
     @inlinable
-    public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, datas: [HMSET<Field, Value>.Data]) async throws {
-        _ = try await send(command: HMSET(key, datas: datas))
+    public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, data: [HMSET<Field, Value>.Data]) async throws {
+        _ = try await send(command: HMSET(key, data: data))
     }
 
     /// Returns one or more random fields from a hash.
@@ -593,9 +593,9 @@ extension ValkeyConnectionProtocol {
     /// - Response: [Integer]: The number of fields that were added
     @inlinable
     @discardableResult
-    public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, datas: [HSET<Field, Value>.Data]) async throws -> Int
+    public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, data: [HSET<Field, Value>.Data]) async throws -> Int
     {
-        try await send(command: HSET(key, datas: datas))
+        try await send(command: HSET(key, data: data))
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.

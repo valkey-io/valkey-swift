@@ -122,14 +122,14 @@ public enum SENTINEL {
         }
         public typealias Response = RESPToken.Map?
 
-        public var datas: [Data]
+        public var data: [Data]
 
-        @inlinable public init(datas: [Data] = []) {
-            self.datas = datas
+        @inlinable public init(data: [Data] = []) {
+            self.data = data
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "DEBUG", datas)
+            commandEncoder.encodeArray("SENTINEL", "DEBUG", data)
         }
     }
 
@@ -453,15 +453,15 @@ public enum SENTINEL {
             }
         }
         public var primaryName: PrimaryName
-        public var datas: [Data]
+        public var data: [Data]
 
-        @inlinable public init(primaryName: PrimaryName, datas: [Data]) {
+        @inlinable public init(primaryName: PrimaryName, data: [Data]) {
             self.primaryName = primaryName
-            self.datas = datas
+            self.data = data
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "SET", RESPBulkString(primaryName), datas)
+            commandEncoder.encodeArray("SENTINEL", "SET", RESPBulkString(primaryName), data)
         }
     }
 
@@ -554,8 +554,8 @@ extension ValkeyConnectionProtocol {
     ///     * [Map]: List of configurable time parameters and their values (milliseconds).
     @inlinable
     @discardableResult
-    public func sentinelDebug(datas: [SENTINEL.DEBUG.Data] = []) async throws -> RESPToken.Map? {
-        try await send(command: SENTINEL.DEBUG(datas: datas))
+    public func sentinelDebug(data: [SENTINEL.DEBUG.Data] = []) async throws -> RESPToken.Map? {
+        try await send(command: SENTINEL.DEBUG(data: data))
     }
 
     /// Forces a Sentinel failover.
@@ -804,9 +804,9 @@ extension ValkeyConnectionProtocol {
     @inlinable
     public func sentinelSet<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>(
         primaryName: PrimaryName,
-        datas: [SENTINEL.SET<PrimaryName, Option, Value>.Data]
+        data: [SENTINEL.SET<PrimaryName, Option, Value>.Data]
     ) async throws {
-        _ = try await send(command: SENTINEL.SET(primaryName: primaryName, datas: datas))
+        _ = try await send(command: SENTINEL.SET(primaryName: primaryName, data: data))
     }
 
     /// Simulates failover scenarios.

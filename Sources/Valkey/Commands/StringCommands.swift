@@ -358,16 +358,16 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
             RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
-    public var datas: [Data]
+    public var data: [Data]
 
-    @inlinable public init(datas: [Data]) {
-        self.datas = datas
+    @inlinable public init(data: [Data]) {
+        self.data = data
     }
 
-    public var keysAffected: [ValkeyKey] { datas.map { $0.key } }
+    public var keysAffected: [ValkeyKey] { data.map { $0.key } }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("MSET", datas)
+        commandEncoder.encodeArray("MSET", data)
     }
 }
 
@@ -396,16 +396,16 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
     }
     public typealias Response = Int
 
-    public var datas: [Data]
+    public var data: [Data]
 
-    @inlinable public init(datas: [Data]) {
-        self.datas = datas
+    @inlinable public init(data: [Data]) {
+        self.data = data
     }
 
-    public var keysAffected: [ValkeyKey] { datas.map { $0.key } }
+    public var keysAffected: [ValkeyKey] { data.map { $0.key } }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("MSETNX", datas)
+        commandEncoder.encodeArray("MSETNX", data)
     }
 }
 
@@ -794,8 +794,8 @@ extension ValkeyConnectionProtocol {
     /// - Available: 1.0.1
     /// - Complexity: O(N) where N is the number of keys to set.
     @inlinable
-    public func mset<Value: RESPStringRenderable>(datas: [MSET<Value>.Data]) async throws {
-        _ = try await send(command: MSET(datas: datas))
+    public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws {
+        _ = try await send(command: MSET(data: data))
     }
 
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
@@ -808,8 +808,8 @@ extension ValkeyConnectionProtocol {
     ///     * 1: All the keys were set.
     @inlinable
     @discardableResult
-    public func msetnx<Value: RESPStringRenderable>(datas: [MSETNX<Value>.Data]) async throws -> Int {
-        try await send(command: MSETNX(datas: datas))
+    public func msetnx<Value: RESPStringRenderable>(data: [MSETNX<Value>.Data]) async throws -> Int {
+        try await send(command: MSETNX(data: data))
     }
 
     /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.

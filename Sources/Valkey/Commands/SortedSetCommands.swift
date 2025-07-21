@@ -161,7 +161,7 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
     public var comparison: Comparison?
     public var change: Bool
     public var increment: Bool
-    public var datas: [Data]
+    public var data: [Data]
 
     @inlinable public init(
         _ key: ValkeyKey,
@@ -169,20 +169,20 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
         comparison: Comparison? = nil,
         change: Bool = false,
         increment: Bool = false,
-        datas: [Data]
+        data: [Data]
     ) {
         self.key = key
         self.condition = condition
         self.comparison = comparison
         self.change = change
         self.increment = increment
-        self.datas = datas
+        self.data = data
     }
 
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ZADD", key, condition, comparison, RESPPureToken("CH", change), RESPPureToken("INCR", increment), datas)
+        commandEncoder.encodeArray("ZADD", key, condition, comparison, RESPPureToken("CH", change), RESPPureToken("INCR", increment), data)
     }
 }
 
@@ -1299,9 +1299,9 @@ extension ValkeyConnectionProtocol {
         comparison: ZADD<Member>.Comparison? = nil,
         change: Bool = false,
         increment: Bool = false,
-        datas: [ZADD<Member>.Data]
+        data: [ZADD<Member>.Data]
     ) async throws -> RESPToken? {
-        try await send(command: ZADD(key, condition: condition, comparison: comparison, change: change, increment: increment, datas: datas))
+        try await send(command: ZADD(key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 
     /// Returns the number of members in a sorted set.

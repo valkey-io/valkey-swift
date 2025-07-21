@@ -732,7 +732,7 @@ struct GeneratedCommands {
         logger.logLevel = .trace
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
-                _ = try await connection.configSet(datas: [.init(parameter: "notify-keyspace-events", value: "KE$")])
+                _ = try await connection.configSet(data: [.init(parameter: "notify-keyspace-events", value: "KE$")])
                 try await connection.subscribe(to: ["__keyspace@0__:\(key)"]) { subscription in
                     try await connection.set(key, value: "1")
                     try await connection.incrby(key, increment: 20)
@@ -808,7 +808,7 @@ struct GeneratedCommands {
             try await withKey(connection: connection) { key in
                 let count = try await connection.geoadd(
                     key,
-                    datas: [.init(longitude: 1.0, latitude: 53.0, member: "Edinburgh"), .init(longitude: 1.4, latitude: 53.5, member: "Glasgow")]
+                    data: [.init(longitude: 1.0, latitude: 53.0, member: "Edinburgh"), .init(longitude: 1.4, latitude: 53.5, member: "Glasgow")]
                 )
                 #expect(count == 2)
                 let search = try await connection.geosearch(
