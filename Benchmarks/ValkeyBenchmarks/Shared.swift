@@ -18,7 +18,6 @@ import NIOCore
 import NIOPosix
 import Valkey
 
-
 let defaultMetrics: [BenchmarkMetric] =
     // There is no point comparing wallClock, cpuTotal or throughput on CI as they are too inconsistent
     ProcessInfo.processInfo.environment["CI"] != nil

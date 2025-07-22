@@ -22,9 +22,7 @@ import Valkey
 @available(valkeySwift 1.0, *)
 func clientBenchmarks() {
     makeClientGETSequentialBenchmark()
-
     makeClient20ConcurrentGETBenchmark()
-
     makeClient50Concurrent20ConnectionGETBenchmark()
 }
 

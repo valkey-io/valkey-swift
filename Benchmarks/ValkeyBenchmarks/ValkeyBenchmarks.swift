@@ -20,8 +20,6 @@ import NIOPosix
 import Valkey
 
 let benchmarks: @Sendable () -> Void = {
-
-
     if #available(valkeySwift 1.0, *) {
         connectionBenchmarks()
 
