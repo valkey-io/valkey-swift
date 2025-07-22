@@ -32,6 +32,8 @@ public struct ValkeyClientConfiguration: Sendable {
         /// - Parameters:
         ///   - tlsConfiguration: The TLS configuration to use with the Valkey connection.
         ///   - tlsServerName: The Valkey server name.
+        ///
+        /// The Valkey client uses the server name you provide for validation.
         public static func enable(_ tlsConfiguration: TLSConfiguration, tlsServerName: String?) throws -> Self {
             .init(base: .enable(tlsConfiguration, tlsServerName))
         }

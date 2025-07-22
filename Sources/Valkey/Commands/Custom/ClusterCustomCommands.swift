@@ -41,12 +41,15 @@ package struct ValkeyClusterParseError: Error, Equatable {
     }
 }
 
+/// A description of a Valkey cluster.
+///
+/// A description is return when you call ``ValkeyConnectionProtocol/clusterShards()``.
 public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
-    /// Details for a node within a cluster shard
+    /// Details for a node within a cluster shard.
     public struct Node: Hashable, Sendable {
-        /// Replication role of a given node within a shard (primary or replica)
+        /// Replication role of a given node within a shard (primary or replica).
         public struct Role: Sendable, Hashable, RawRepresentable {
-            /// The node is primary
+            /// The node is primary.
             public static let primary = Role(base: .primary)
             /// The node is a replica.
             public static let replica = Role(base: .replica)

@@ -79,8 +79,11 @@ extension HashSlot: RawRepresentable {
         self._raw = rawValue
     }
 
-    /// Creates a hash slot based on the raw value you provide for valid hash slot values.
+    /// Creates a hash slot based on the raw value you provide for valid hash slot values, or returns nil if the raw value isn't within the valid range.
     /// - Parameter rawValue: The raw value of the hash slot.
+    ///
+    /// The raw value must be within ``HashSlot/min`` (`0`) to ``HashSlot/max`` (`16383`) to initialize.
+    /// If you pass in an Int value beyond that range, the initializer returns `nil`.
     public init?(rawValue: Int) {
         guard HashSlot.min.rawValue <= rawValue, rawValue <= HashSlot.max.rawValue else { return nil }
         self._raw = UInt16(rawValue)
@@ -170,7 +173,7 @@ extension HashSlot {
     /// - Only the first occurrence of "{...}" is considered.
     ///
     /// - Parameter keyUTF8View: The UTF-8 view of key for your operation.
-    /// - Returns: A substring UTF-8 view to use in the CRC16 computation to compute a hash slot.
+    /// - Returns: A UTF-8 sequence  to use in the CRC16 computation to compute a hash slot.
     @inlinable
     package static func hashTag<Bytes: BidirectionalCollection<UInt8>>(forKey keyUTF8View: Bytes) -> Bytes.SubSequence {
         var firstOpenCurly: Bytes.Index?
