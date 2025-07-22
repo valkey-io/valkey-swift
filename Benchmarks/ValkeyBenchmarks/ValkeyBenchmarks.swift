@@ -40,9 +40,11 @@ let benchmarks: @Sendable () -> Void = {
     if #available(valkeySwift 1.0, *) {
         makeConnectionGETBenchmark()
 
-        makeClientGETBenchmark()
+        makeClientGETSequentialBenchmark()
 
         makeClient20ConcurrentGETBenchmark()
+
+        makeClient50Concurrent20ConnectionGETBenchmark()
 
         Benchmark("ValkeyCommandEncoder – Simple GET", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
             let command = GET("foo")
