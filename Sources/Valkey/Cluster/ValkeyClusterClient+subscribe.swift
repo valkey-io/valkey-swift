@@ -206,11 +206,13 @@ extension ValkeyClusterClient {
                         case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
                             break
                         case .commandError:
-                            // Question: Does subscribe return a MOVED error for a sharded subscribe if the
+                            // Question: Does ssubscribe return a MOVED error for a sharded subscribe if the
                             // cluster topology changes?
-                            // TODO: Do we need to refresh the cluster discovery here?
-                            if let errorMessage = error.message, let _ = ValkeyMovedError(errorMessage) {
-                                break
+                            if let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) {
+                                // trigger rediscovery if needed. Can't just use the client provided as we may
+                                // have subscribed to multiple channels and we should verify they are all in the
+                                // same shard before continuing
+                                _ = try await self.client(for: movedError)
                             } else {
                                 fallthrough
                             }
