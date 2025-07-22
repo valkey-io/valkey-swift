@@ -19,76 +19,30 @@ import NIOCore
 import NIOPosix
 import Valkey
 
-let benchmarks: @Sendable () -> Void = {
-    let defaultMetrics: [BenchmarkMetric] =
-        // There is no point comparing wallClock, cpuTotal or throughput on CI as they are too inconsistent
-        ProcessInfo.processInfo.environment["CI"] != nil
-        ? [
-            .instructions,
-            .mallocCountTotal,
-        ]
-        : [
-            .wallClock,
-            .cpuTotal,
-            .instructions,
-            .mallocCountTotal,
-            .throughput,
-        ]
+let defaultMetrics: [BenchmarkMetric] =
+    // There is no point comparing wallClock, cpuTotal or throughput on CI as they are too inconsistent
+    ProcessInfo.processInfo.environment["CI"] != nil
+    ? [
+        .instructions,
+        .mallocCountTotal,
+    ]
+    : [
+        .wallClock,
+        .cpuTotal,
+        .instructions,
+        .mallocCountTotal,
+        .throughput,
+    ]
 
-    var server: (any Channel)?
+let benchmarks: @Sendable () -> Void = {
+
 
     if #available(valkeySwift 1.0, *) {
-        Benchmark("GET benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-            let port = server!.localAddress!.port!
-            let logger = Logger(label: "test")
-            let client = ValkeyClient(.hostname("127.0.0.1", port: port), logger: logger)
+        makeConnectionGETBenchmark()
 
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                group.addTask {
-                    await client.run()
-                }
-                await Task.yield()
-                try await client.withConnection { connection in
-                    benchmark.startMeasurement()
+        makeClientGETBenchmark()
 
-                    for _ in benchmark.scaledIterations {
-                        let foo = try await connection.get("foo")
-                        precondition(foo.map { String(buffer: $0) } == "Bar")
-                    }
-
-                    benchmark.stopMeasurement()
-                }
-                group.cancelAll()
-            }
-        } setup: {
-            struct GetHandler: BenchmarkCommandHandler {
-                static let expectedCommand = RESPToken.Value.bulkString(ByteBuffer(string: "GET"))
-                static let response = ByteBuffer(string: "$3\r\nBar\r\n")
-                func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
-                    switch command {
-                    case Self.expectedCommand:
-                        write(Self.response)
-                    default:
-                        fatalError()
-                    }
-                }
-            }
-            server = try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
-                .childChannelInitializer { channel in
-                    do {
-                        try channel.pipeline.syncOperations.addHandler(
-                            ValkeyServerChannelHandler(commandHandler: GetHandler())
-                        )
-                        return channel.eventLoop.makeSucceededVoidFuture()
-                    } catch {
-                        return channel.eventLoop.makeFailedFuture(error)
-                    }
-                }
-                .bind(host: "127.0.0.1", port: 0)
-                .get()
-        } teardown: {
-            try await server?.close().get()
-        }
+        makeClient20ConcurrentGETBenchmark()
 
         Benchmark("ValkeyCommandEncoder – Simple GET", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
             let command = GET("foo")
