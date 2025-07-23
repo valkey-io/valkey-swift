@@ -97,7 +97,8 @@ public final class ValkeyNode: AnyObject, Sendable, ValkeyNodeConnectionPool {
 @available(valkeySwift 1.0, *)
 extension ValkeyNode {
     /// Run ValkeyNode connection pool
-    public func run() async {
+    @usableFromInline
+    package func run() async {
         await self.connectionPool.run()
     }
 

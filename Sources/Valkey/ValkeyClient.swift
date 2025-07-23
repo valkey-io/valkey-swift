@@ -33,6 +33,7 @@ import ServiceLifecycle
 public final class ValkeyClient: Sendable {
     let nodeFactory: ValkeyNodeFactory
     /// single node
+    @usableFromInline
     let node: ValkeyNode
     /// configuration
     var configuration: ValkeyClientConfiguration { self.nodeFactory.configuration }
@@ -109,6 +110,7 @@ extension ValkeyClient {
     ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
+    @inlinable
     public func withConnection<Value>(
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value

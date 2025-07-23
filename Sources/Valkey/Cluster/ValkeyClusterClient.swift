@@ -168,7 +168,7 @@ public final class ValkeyClusterClient: Sendable {
                     throw error
                 }
                 self.logger.trace("Received move error", metadata: ["error": "\(movedError)"])
-                clientSelector = { try await self.client(for: movedError) }
+                clientSelector = { try await self.node(for: movedError) }
             }
         }
         throw CancellationError()
@@ -188,8 +188,8 @@ public final class ValkeyClusterClient: Sendable {
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         let hashSlots = keys.map { HashSlot(key: $0) }
-        let client = try await self.node(for: hashSlots)
-        return try await client.withConnection(isolation: isolation, operation: operation)
+        let node = try await self.node(for: hashSlots)
+        return try await node.withConnection(isolation: isolation, operation: operation)
     }
 
     /// Starts running the cluster client.
@@ -361,13 +361,13 @@ public final class ValkeyClusterClient: Sendable {
     /// MOVED responses from Valkey nodes.
     ///
     /// - Parameter moveError: The MOVED error response from a Valkey node.
-    /// - Returns: A client connected to the node that can handle the request.
+    /// - Returns: A ``ValkeyNode`` connected to the node that can handle the request.
     /// - Throws:
     ///   - `ValkeyClusterError.waitedForDiscoveryAfterMovedErrorThreeTimes` if unable to resolve
     ///     the MOVED error after multiple attempts
     ///   - `ValkeyClusterError.clientRequestCancelled` if the request is cancelled
     @usableFromInline
-    /* private */ func client(for moveError: ValkeyMovedError) async throws -> ValkeyNode {
+    /* private */ func node(for moveError: ValkeyMovedError) async throws -> ValkeyNode {
         var counter = 0
         while counter < 3 {
             defer { counter += 1 }
@@ -376,8 +376,8 @@ public final class ValkeyClusterClient: Sendable {
             }
 
             switch action {
-            case .connectionPool(let client):
-                return client
+            case .connectionPool(let node):
+                return node
 
             case .waitForDiscovery:
                 break
@@ -414,7 +414,7 @@ public final class ValkeyClusterClient: Sendable {
         throw ValkeyClusterError.waitedForDiscoveryAfterMovedErrorThreeTimes
     }
 
-    /// Retrieves a client for communicating with nodes that manage the given hash slots.
+    /// Retrieves a ``ValkeyNode`` for communicating with nodes that manage the given hash slots.
     ///
     /// This is a lower-level method that can be used when you need direct access to a
     /// specific `ValkeyNode` instance for nodes managing particular hash slots. Most users
