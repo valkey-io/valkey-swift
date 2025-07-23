@@ -125,7 +125,6 @@ extension ValkeyNode {
     private func leaseConnection() async throws -> ValkeyConnection {
         try await self.connectionPool.leaseConnection()
     }
-
 }
 
 /// Extend ValkeyNode so we can call commands directly from it

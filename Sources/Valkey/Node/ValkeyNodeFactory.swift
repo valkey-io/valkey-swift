@@ -74,4 +74,19 @@ package struct ValkeyNodeFactory: ValkeyNodeConnectionPoolFactory {
             logger: self.logger
         )
     }
+
+    /// Creates a connection pool (client) for a specific node in the cluster.
+    ///
+    /// - Parameter nodeDescription: Description of the node to connect to.
+    /// - Returns: A configured `ValkeyNode` instance ready to connect to the specified node.
+    @usableFromInline
+    package func makeConnectionPool(serverAddress: ValkeyServerAddress) -> ValkeyNode {
+        ValkeyNode(
+            serverAddress,
+            connectionIDGenerator: self.connectionIDGenerator,
+            connectionFactory: self.connectionFactory,
+            eventLoopGroup: self.eventLoopGroup,
+            logger: self.logger
+        )
+    }
 }
