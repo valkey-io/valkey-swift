@@ -92,7 +92,7 @@ public struct ValkeyClientConfiguration: Sendable {
     /// authentication details
     public var authentication: Authentication?
     /// connection pool configuration
-    public var connectionPool: ConnectionPoolConfiguration
+    public var connectionPool: ConnectionPool
     /// keep alive behavior
     public var keepAliveBehavior: KeepAliveBehavior
     /// A connection is considered dead if a response isn't received within this time amount.
@@ -113,7 +113,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - tlsConfiguration: TLS configuration
     public init(
         authentication: Authentication? = nil,
-        connectionPool: ConnectionPoolConfiguration = .init(),
+        connectionPool: ConnectionPool = .init(),
         keepAliveBehavior: KeepAliveBehavior = .init(),
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
