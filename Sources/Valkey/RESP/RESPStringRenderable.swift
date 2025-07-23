@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-/// Type that can be rendered as a single bulk string
+/// A type that can be rendered as a single bulk string.
 public protocol RESPStringRenderable: Sendable, Hashable {
     func encode(into commandEncoder: inout ValkeyCommandEncoder)
 }

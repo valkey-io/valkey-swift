@@ -50,9 +50,10 @@ try await valkeyClient.withConnection { connection in
 
 - ``ValkeyClient``
 - ``ValkeyClientConfiguration``
+- ``ValkeyConnectionProtocol``
 - ``ValkeyServerAddress``
 - ``ValkeyConnection``
-- ``ValkeyConnectionProtocol``
+- ``ValkeyConnectionConfiguration``
 
 ### Commands
 

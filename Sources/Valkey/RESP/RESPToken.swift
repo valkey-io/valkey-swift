@@ -14,10 +14,15 @@
 
 import NIOCore
 
+/// The response from a Valkey server.
+///
+/// A response token is a type that provides a view into the underlying byte buffer returned from the Valkey server.
 public struct RESPToken: Hashable, Sendable {
+    /// A list of response tokens.
     public struct Array: Sequence, Sendable, Hashable {
         public typealias Element = RESPToken
 
+        /// The count of items in the list.
         public let count: Int
         let buffer: ByteBuffer
 
@@ -45,6 +50,7 @@ public struct RESPToken: Hashable, Sendable {
         }
     }
 
+    /// A dictionary of response tokens mapped by a response token.
     public struct Map: Sequence, Sendable, Hashable {
         public typealias Element = (key: RESPToken, value: RESPToken)
 
@@ -80,21 +86,37 @@ public struct RESPToken: Hashable, Sendable {
         }
     }
 
+    /// A response token value.
     public enum Value: Hashable, Sendable {
+        /// A simple string
         case simpleString(ByteBuffer)
+        /// A simple error
         case simpleError(ByteBuffer)
+        /// A bulk string
         case bulkString(ByteBuffer)
+        /// A bulk error
         case bulkError(ByteBuffer)
+        /// A verbatim string
         case verbatimString(ByteBuffer)
+        /// An integer number
         case number(Int64)
+        /// A floating point number
         case double(Double)
+        /// A Boolean value
         case boolean(Bool)
+        /// Null
         case null
+        /// A big number
         case bigNumber(ByteBuffer)
+        /// An array
         case array(Array)
+        /// An attribute
         case attribute(Map)
+        /// A map
         case map(Map)
+        /// A set
         case set(Array)
+        /// A pushed value
         case push(Array)
     }
 

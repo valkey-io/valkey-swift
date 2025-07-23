@@ -52,7 +52,7 @@ public struct HashSlot: Hashable, Sendable {
     /// The minimum valid hash slot value (0).
     public static let min = HashSlot(.hashSlotMin)
 
-    /// The total number of hash slots in a Valkey cluster (16,384).
+    /// The total number of hash slots allowed in a Valkey cluster (16,384).
     public static let count: Int = 16384
 
     private var _raw: UInt16
@@ -69,23 +69,34 @@ extension HashSlot: Comparable {
 }
 
 extension HashSlot: RawRepresentable {
+    /// The type that represents the raw value of a hash slot.
     public typealias RawValue = UInt16
 
+    /// Creates a hash slot based on the raw value you provide for valid hash slot values.
+    /// - Parameter rawValue: The raw value of the hash slot.
     public init?(rawValue: UInt16) {
         guard rawValue <= HashSlot.max.rawValue else { return nil }
         self._raw = rawValue
     }
 
+    /// Creates a hash slot based on the raw value you provide for valid hash slot values, or returns nil if the raw value isn't within the valid range.
+    /// - Parameter rawValue: The raw value of the hash slot.
+    ///
+    /// The raw value must be within ``HashSlot/min`` (`0`) to ``HashSlot/max`` (`16383`) to initialize.
+    /// If you pass in an Int value beyond that range, the initializer returns `nil`.
     public init?(rawValue: Int) {
         guard HashSlot.min.rawValue <= rawValue, rawValue <= HashSlot.max.rawValue else { return nil }
         self._raw = UInt16(rawValue)
     }
 
+    /// Creates a hash slot based on the raw value you provide for valid hash slot values.
+    /// - Parameter rawValue: The raw value of the hash slot.
     public init?(rawValue: Int64) {
         guard HashSlot.min.rawValue <= rawValue, rawValue <= HashSlot.max.rawValue else { return nil }
         self._raw = UInt16(rawValue)
     }
 
+    /// The raw value of a hash slot.
     public var rawValue: UInt16 { self._raw }
 }
 
@@ -130,8 +141,8 @@ extension HashSlot {
     /// The algorithm calculates the CRC16 of either the entire key or a specific part of the key
     /// enclosed in curly braces (`{...}`), then performs modulo 16384 to get the slot number.
     ///
-    /// - Parameter key: The key used in a Valkey command
-    /// - Returns: A HashSlot representing where this key would be stored in the cluster
+    /// - Parameter key: The key used in a Valkey command.
+    /// - Returns: A HashSlot representing where this key would be stored in the cluster.
     @inlinable
     public init(key: some BidirectionalCollection<UInt8>) {
         // Banging is safe because the modulo ensures we are in range
@@ -140,8 +151,8 @@ extension HashSlot {
 
     /// Creates a hash slot for a Valkey key.
     ///
-    /// - Parameter key: The Valkey key for which to calculate the hash slot
-    /// - Returns: A HashSlot representing where this key would be stored in the cluster
+    /// - Parameter key: The Valkey key for which to calculate the hash slot.
+    /// - Returns: A HashSlot instance that represents where this key would be stored in the cluster.
     @inlinable
     public init(key: ValkeyKey) {
         switch key._storage {
@@ -157,12 +168,12 @@ extension HashSlot {
     /// Computes the portion of the key that should be used for hash slot calculation.
     ///
     /// Follows the Valkey hash tag specification:
-    /// - If the key contains a pattern like "{...}", only the content between the braces is used for hashing
-    /// - If the pattern is empty "{}", or doesn't exist, the entire key is used
-    /// - Only the first occurrence of "{...}" is considered
+    /// - If the key contains a pattern like "{...}", only the content between the braces is used for hashing.
+    /// - If the pattern is empty "{}", or doesn't exist, the entire key is used.
+    /// - Only the first occurrence of "{...}" is considered.
     ///
-    /// - Parameter keyUTF8View: The UTF8 view of key for your operation
-    /// - Returns: A substring UTF8 view that will be used in the CRC16 computation
+    /// - Parameter keyUTF8View: The UTF-8 view of key for your operation.
+    /// - Returns: A UTF-8 sequence  to use in the CRC16 computation to compute a hash slot.
     @inlinable
     package static func hashTag<Bytes: BidirectionalCollection<UInt8>>(forKey keyUTF8View: Bytes) -> Bytes.SubSequence {
         var firstOpenCurly: Bytes.Index?
@@ -278,8 +289,8 @@ extension HashSlot {
     ///
     /// This is the specific CRC16 implementation used by Valkey/Redis for hash slot calculation.
     ///
-    /// - Parameter bytes: A sequence of bytes to compute the CRC16 value for
-    /// - Returns: The computed CRC16 value
+    /// - Parameter bytes: A sequence of bytes used to compute the CRC16 value.
+    /// - Returns: The computed CRC16 value.
     @inlinable
     package static func crc16<Bytes: Sequence>(_ bytes: Bytes) -> UInt16 where Bytes.Element == UInt8 {
         var crc: UInt16 = 0

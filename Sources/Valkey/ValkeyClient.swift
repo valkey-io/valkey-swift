@@ -56,7 +56,7 @@ public final class ValkeyClient: Sendable {
     /// running atomic
     let runningAtomic: Atomic<Bool>
 
-    /// Initialize Valkey client
+    /// Creates a new Valkey client
     ///
     /// - Parameters:
     ///   - address: Valkey database address
