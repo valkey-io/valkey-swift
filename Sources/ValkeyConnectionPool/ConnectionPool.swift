@@ -148,10 +148,11 @@ where
     ObservabilityDelegate.ConnectionID == ConnectionID,
     Clock.Duration == Duration
 {
-    public typealias ConnectionFactory = @Sendable (
-        ConnectionID,
-        ConnectionPool<Connection, ConnectionID, ConnectionIDGenerator, Request, RequestID, KeepAliveBehavior, ObservabilityDelegate, Clock>
-    ) async throws -> ConnectionAndMetadata<Connection>
+    public typealias ConnectionFactory =
+        @Sendable (
+            ConnectionID,
+            ConnectionPool<Connection, ConnectionID, ConnectionIDGenerator, Request, RequestID, KeepAliveBehavior, ObservabilityDelegate, Clock>
+        ) async throws -> ConnectionAndMetadata<Connection>
 
     @usableFromInline
     typealias StateMachine = PoolStateMachine<Connection, ConnectionIDGenerator, ConnectionID, Request, Request.ID, CheckedContinuation<Void, Never>>
