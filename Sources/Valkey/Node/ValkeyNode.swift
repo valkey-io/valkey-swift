@@ -30,7 +30,7 @@ import ServiceLifecycle
 ///
 /// Supports TLS via both NIOSSL and Network framework.
 @available(valkeySwift 1.0, *)
-public final class ValkeyNode: AnyObject, Sendable, ValkeyNodeConnectionPool {
+public final class ValkeyNode: Sendable {
     typealias Pool = ConnectionPool<
         ValkeyConnection,
         ValkeyConnection.ID,
