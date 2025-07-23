@@ -30,7 +30,7 @@ func makeConnectionGETBenchmark() -> Benchmark? {
     let serverMutex = Mutex<(any Channel)?>(nil)
 
     return Benchmark("Connection: GET benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let port = serverMutex.withLock{ $0 }!.localAddress!.port!
+        let port = serverMutex.withLock { $0 }!.localAddress!.port!
         let logger = Logger(label: "test")
         let connection = try await ValkeyConnection.connect(
             address: .hostname("127.0.0.1", port: port),

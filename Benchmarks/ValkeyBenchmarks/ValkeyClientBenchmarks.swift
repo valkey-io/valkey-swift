@@ -32,7 +32,7 @@ func makeClientGETSequentialBenchmark() -> Benchmark? {
     let serverMutex = Mutex<(any Channel)?>(nil)
 
     return Benchmark("Client: GET benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let port = serverMutex.withLock{ $0 }!.localAddress!.port!
+        let port = serverMutex.withLock { $0 }!.localAddress!.port!
         let logger = Logger(label: "test")
         let client = ValkeyClient(.hostname("127.0.0.1", port: port), logger: logger)
 
@@ -65,8 +65,11 @@ func makeClient20ConcurrentGETBenchmark() -> Benchmark? {
     let serverMutex = Mutex<(any Channel)?>(nil)
 
     let concurrency = 20
-    return Benchmark("Client: GET benchmark | parallel 20 | 20 concurrent connections", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let port = serverMutex.withLock{ $0 }!.localAddress!.port!
+    return Benchmark(
+        "Client: GET benchmark | parallel 20 | 20 concurrent connections",
+        configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)
+    ) { benchmark in
+        let port = serverMutex.withLock { $0 }!.localAddress!.port!
         let logger = Logger(label: "test")
         let client = ValkeyClient(
             .hostname("127.0.0.1", port: port),
@@ -113,8 +116,11 @@ func makeClient50Concurrent20ConnectionGETBenchmark() -> Benchmark? {
     let serverMutex = Mutex<(any Channel)?>(nil)
 
     let concurrency = 50
-    return Benchmark("Client: GET benchmark | parallel 50 | 20 concurrent connections", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
-        let port = serverMutex.withLock{ $0 }!.localAddress!.port!
+    return Benchmark(
+        "Client: GET benchmark | parallel 50 | 20 concurrent connections",
+        configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)
+    ) { benchmark in
+        let port = serverMutex.withLock { $0 }!.localAddress!.port!
         let logger = Logger(label: "test")
         let client = ValkeyClient(
             .hostname("127.0.0.1", port: port),
