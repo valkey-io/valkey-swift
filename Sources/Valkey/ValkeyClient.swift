@@ -103,10 +103,6 @@ extension ValkeyClient {
         #endif
     }
 
-    func triggerForceShutdown() {
-        self.node.triggerForceShutdown()
-    }
-
     /// Get connection from connection pool and run operation using connection
     ///
     /// - Parameters:
