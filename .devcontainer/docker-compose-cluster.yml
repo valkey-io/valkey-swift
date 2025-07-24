@@ -18,6 +18,10 @@ services:
     depends_on:
       - cluster_initiator
       - valkey
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
     environment:
       - VALKEY_NODE1_HOSTNAME=localhost
       - VALKEY_NODE1_PORT=36001
