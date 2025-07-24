@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+
+  # Here we have six Valkey containers with Cluster mode enabled,
+  # three of them will work as primary nodes and each one of
+  # will have a replica, so in case of failures, the replica becomes the primary.
+  # They are configured by the `cluster_initiator` container.
+
+  # To make Docker compatible with Valkey Cluster, you need to use Docker's host
+  # networking mode. Please see the --net=host option in the Docker documentation
+  # for more information.
+  app:
+    image: swift:6.1
+    network_mode: "host"
+    volumes:
+      - ..:/workspace
+    depends_on:
+      - cluster_initiator
+      - valkey
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
+    environment:
+      - VALKEY_NODE1_HOSTNAME=localhost
+      - VALKEY_NODE1_PORT=36001
+    command: sleep infinity
+
+  valkey:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    command: valkey-server --port 6379
+
+  valkey_cluster_1:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    command: valkey-server --port 36001 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_cluster_2:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    command: valkey-server --port 36002 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_cluster_3:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    command: valkey-server --port 36003 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_cluster_4:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    command: valkey-server --port 36004 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_cluster_5:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    command: valkey-server --port 36005 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  valkey_cluster_6:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    command: valkey-server --port 36006 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+
+  # Ephemeral container to create the valkey cluster connections.
+  # Once the setup is done, this container shuts down
+  # and the cluster can be used by the service app container
+  cluster_initiator:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    container_name: cluster_initiator
+    command: valkey-cli --cluster create localhost:36001 localhost:36002 localhost:36003 localhost:36004 localhost:36005 localhost:36006 --cluster-replicas 1 --cluster-yes
+    tty: true
+    depends_on:
+      - valkey_cluster_1
+      - valkey_cluster_2
+      - valkey_cluster_3
+      - valkey_cluster_4
+      - valkey_cluster_5
+      - valkey_cluster_6

@@ -87,10 +87,12 @@ public struct ValkeyConnectionConfiguration: Sendable {
     }
 
     /// Optional authentication credentials for accessing the Valkey server.
+    ///
     /// Set this property when connecting to a server that requires authentication.
     public var authentication: Authentication?
 
     /// TLS configuration for the connection.
+    ///
     /// Use `.disable` for unencrypted connections or `.enable(...)` for secure connections.
     public var tls: TLS
 

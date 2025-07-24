@@ -20,16 +20,16 @@ import Synchronization
 
 /// A client for interacting with a Valkey cluster.
 ///
-/// ``ValkeyClusterClient`` provides a high-level interface for communicating with a Valkey cluster.
+/// `ValkeyClusterClient` provides a high-level interface for communicating with a Valkey cluster.
 /// It handles cluster topology discovery, command routing, and automatic connection management
 /// across multiple Valkey server nodes.
 ///
 /// The client supports:
-/// - Automatic cluster topology discovery and maintenance
-/// - Command routing to the appropriate node based on key hash slots
-/// - Handling of MOVED responses for proper cluster resharding
-/// - Connection pooling and failover
-/// - Circuit breaking during cluster disruptions
+/// - Automatic cluster topology discovery and maintenance.
+/// - Command routing to the appropriate node based on key hash slots.
+/// - Handling of MOVED responses for proper cluster resharding.
+/// - Connection pooling and failover.
+/// - Circuit breaking during cluster disruptions.
 ///
 /// Example usage:
 /// ```swift
@@ -167,6 +167,7 @@ public final class ValkeyClusterClient: Sendable {
                 guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
                     throw error
                 }
+                self.logger.trace("Received move error", metadata: ["error": "\(movedError)"])
                 clientSelector = { try await self.client(for: movedError) }
             }
         }

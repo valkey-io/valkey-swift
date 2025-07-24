@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+
+  # Here we have four Valkey containers. A primary, two replicas replicating from
+  # the primary and an additinal replica replicating from one of the replicas
+
+  # To make Docker compatible with Valkey replicas, you need to use Docker's host
+  # networking mode. Please see the --net=host option in the Docker documentation
+  # for more information.
+  app:
+    image: swift:6.1
+    network_mode: "host"
+    volumes:
+      - ..:/workspace
+    depends_on:
+      - valkey
+      - valkey_replica_1
+      - valkey_replica_2
+      - valkey_replica_3
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
+    command: sleep infinity
+
+  valkey:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    command: valkey-server --port 6379
+
+  valkey_replica_1:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    depends_on:
+      - valkey
+    command: valkey-server --port 36001 --replicaof 127.0.0.1 6379
+
+  valkey_replica_2:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    depends_on:
+      - valkey
+    command: valkey-server --port 36002 --replicaof 127.0.0.1 6379
+
+  valkey_replica_3:
+    image: 'valkey/valkey:latest'
+    network_mode: "host"
+    depends_on:
+      - valkey_replica_2
+    command: valkey-server --port 36003 --replicaof 127.0.0.1 36002

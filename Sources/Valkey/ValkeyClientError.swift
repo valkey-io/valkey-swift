@@ -12,8 +12,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Errors returned by ``ValkeyClient``
+/// Errors returned by a Valkey client.
 public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
+
+    /// Valkey client error codes
     public struct ErrorCode: Equatable, Sendable {
         fileprivate enum _Internal: Equatable, Sendable {
             case connectionClosing
@@ -33,35 +35,44 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             self.value = value
         }
 
-        /// Connection is closing
+        /// The connection is closing.
         public static var connectionClosing: Self { .init(.connectionClosing) }
-        /// Connection is closed
+        /// The connection is closed.
         public static var connectionClosed: Self { .init(.connectionClosed) }
-        /// Error returned by Valkey command
+        /// An rrror returned by Valkey command.
         public static var commandError: Self { .init(.commandError) }
-        /// Error returned by Valkey subscription
+        /// An error returned by Valkey subscription.
         public static var subscriptionError: Self { .init(.subscriptionError) }
-        /// Received an unsolicited token from the server
+        /// Received an unsolicited token from the server.
         public static var unsolicitedToken: Self { .init(.unsolicitedToken) }
-        /// Transaction was aborted because a watched key was touched
+        /// Transaction aborted because a watched key was touched.
         public static var transactionAborted: Self { .init(.transactionAborted) }
-        /// Expected token to exist. Throw when iterating an array of tokens that is too short
+        /// Expected token to exist.
+        ///
+        /// Thrown when iterating an array of tokens that is too short.
         public static var tokenDoesNotExist: Self { .init(.tokenDoesNotExist) }
-        /// Task was cancelled
+        /// Task cancelled.
         public static var cancelled: Self { .init(.cancelled) }
-        /// Connection was closed because another command was cancelled
+        /// Connection closed because another command was cancelled.
         public static var connectionClosedDueToCancellation: Self { .init(.connectionClosedDueToCancellation) }
-        /// Connection was closed because it timed out
+        /// Connection closed because it timed out.
         public static var timeout: Self { .init(.timeout) }
     }
 
+    /// The error code
     public let errorCode: ErrorCode
+    /// An optional message associated with the error code
     public let message: String?
+    /// Create a new error code.
+    /// - Parameters:
+    ///   - errorCode: The error code.
+    ///   - message: The message to include.
     public init(_ errorCode: ErrorCode, message: String? = nil) {
         self.errorCode = errorCode
         self.message = message
     }
 
+    /// The string representation of the error.
     public var description: String {
         switch self.errorCode.value {
         case .connectionClosing: "Connection is closing"

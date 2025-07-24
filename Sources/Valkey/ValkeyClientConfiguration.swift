@@ -18,6 +18,7 @@ import _ValkeyConnectionPool
 /// Configuration for the Valkey client
 @available(valkeySwift 1.0, *)
 public struct ValkeyClientConfiguration: Sendable {
+    /// The TLS setting connecting to a Valkey Server.
     public struct TLS: Sendable {
         enum Base {
             case disable
@@ -25,25 +26,37 @@ public struct ValkeyClientConfiguration: Sendable {
         }
         let base: Base
 
+        /// Creates a disabled TLS client configuration.
         public static var disable: Self { .init(base: .disable) }
+        /// Creates a TLS enabled client configuration.
+        /// - Parameters:
+        ///   - tlsConfiguration: The TLS configuration to use with the Valkey connection.
+        ///   - tlsServerName: The Valkey server name.
+        ///
+        /// The Valkey client uses the server name you provide for validation.
         public static func enable(_ tlsConfiguration: TLSConfiguration, tlsServerName: String?) throws -> Self {
             .init(base: .enable(tlsConfiguration, tlsServerName))
         }
     }
 
-    /// Authentication details
+    /// Authentication credentials.
     public struct Authentication: Sendable {
         public var username: String
         public var password: String
 
+        /// Creates authentication credentials with the username and password you provide.
+        /// - Parameters:
+        ///   - username: The username for the Valkey server.
+        ///   - password: The password for the Valkey server.
         public init(username: String, password: String) {
             self.username = username
             self.password = password
         }
     }
 
-    /// A keep-alive behavior for Valkey connections. The ``frequency`` defines after which time an idle
-    /// connection shall run a keep-alive ``ValkeyConnectionProtocol/ping(message:)``.
+    /// A keep-alive behavior for Valkey connections.
+    ///
+    /// The ``frequency`` defines after which time an idle connection shall run a keep-alive ``ValkeyConnectionProtocol/ping(message:)``.
     public struct KeepAliveBehavior: Sendable {
         /// The amount of time that shall pass before an idle connection runs a keep-alive query.
         public var frequency: Duration
@@ -57,6 +70,7 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
+    /// The connection pool definition for Valkey connections.
     public struct ConnectionPool: Hashable, Sendable {
         /// The minimum number of connections to preserve in the pool.
         ///
@@ -78,6 +92,11 @@ public struct ValkeyClientConfiguration: Sendable {
         /// pool before it is closed.
         public var idleTimeout: Duration
 
+        /// Creates the configuration for a Valkey client connection pool.
+        /// - Parameters:
+        ///   - minimumConnectionCount: The minimum number of connections to maintain.
+        ///   - maximumConnectionCount: The maximum number of connections to allow.
+        ///   - idleTimeout: The duration to allow a connect to be idle, that defaults to 60 seconds.
         public init(
             minimumConnectionCount: Int = 0,
             maximumConnectionCount: Int = 20,
@@ -89,31 +108,34 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
-    /// authentication details
+    /// The authentication credentials for the connection.
     public var authentication: Authentication?
-    /// connection pool configuration
-    public var connectionPool: ConnectionPoolConfiguration
-    /// keep alive behavior
+    /// The connection pool configuration.
+    public var connectionPool: ConnectionPool
+    /// The keep alive behavior for the connection.
     public var keepAliveBehavior: KeepAliveBehavior
-    /// A connection is considered dead if a response isn't received within this time amount.
+    /// The timeout the client uses to determine if a connection is considered dead.
+    ///
+    /// The connection is considered dead if a response isn't received within this time.
     public var commandTimeout: Duration
-    /// global timeout for blocking commands
+    /// The global timeout for blocking commands.
     public var blockingCommandTimeout: Duration
 
-    /// TLS setup
+    /// The TLS to use for the Valkey connection.
     public var tls: TLS
 
-    ///  Initialize ValkeyClientConfiguration
-    /// - Parameters
-    ///   - authentication: Authentication details
-    ///   - connectionPool: Connection pool configuration
-    ///   - keepAliveBehavior: Connection keep alive behavior
-    ///   - connectionTimeout: Timeout for connection response
-    ///   - blockingCommandTimeout: Blocking command response timeout
-    ///   - tlsConfiguration: TLS configuration
+    /// Creates a Valkey client connection configuration.
+    ///
+    /// - Parameters:
+    ///   - authentication: The authentication credentials.
+    ///   - connectionPool: The connection pool configuration.
+    ///   - keepAliveBehavior: The connection keep alive behavior.
+    ///   - commandTimeout: The timeout for a connection response.
+    ///   - blockingCommandTimeout: The timeout for a blocking command response.
+    ///   - tls: The TLS configuration.
     public init(
         authentication: Authentication? = nil,
-        connectionPool: ConnectionPoolConfiguration = .init(),
+        connectionPool: ConnectionPool = .init(),
         keepAliveBehavior: KeepAliveBehavior = .init(),
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),

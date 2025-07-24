@@ -68,6 +68,7 @@ struct GeneratedCommands {
             }
         }
     }
+
     @Test
     @available(valkeySwift 1.0, *)
     func testValkeyCommand() async throws {
@@ -91,6 +92,22 @@ struct GeneratedCommands {
                 try await connection.set(key, value: "Hello")
                 let response = try await connection.send(command: GET(key: key))
                 #expect(response == "Hello")
+            }
+        }
+    }
+
+    @Test("Test ValkeyConnection.withConnection()")
+    @available(valkeySwift 1.0, *)
+    func testWithConnectionSetGet() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await ValkeyConnection.withConnection(address: .hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                try await connection.set(key, value: "Hello")
+                let response = try await connection.get(key).map { String(buffer: $0) }
+                #expect(response == "Hello")
+                let response2 = try await connection.get("sdf65fsdf").map { String(buffer: $0) }
+                #expect(response2 == nil)
             }
         }
     }
@@ -308,9 +325,12 @@ struct GeneratedCommands {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                let role = try await connection.role()
-                print(role)
+            let role = try await connection.role()
+            switch role {
+            case .primary:
+                break
+            case .replica, .sentinel:
+                Issue.record()
             }
         }
     }

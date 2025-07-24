@@ -50,3 +50,7 @@ let value = try getResponse.get()
 ## Redis compatibility
 
 As Valkey is a fork of Redis v7.2.4, valkey-swift is compatible with Redis databases up to v7.2.4. There is a chance that v7.2.4 features will still be compatible in later versions of Redis, but these are now considered two different projects and they will diverge. valkey-swift uses the RESP3 protocol.
+
+## Documentation
+
+User guides and reference documentation for valkey-swift can be found on the [Swift Package Index](https://swiftpackageindex.com/valkey-io/valkey-swift/main/documentation/valkey).

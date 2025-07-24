@@ -56,7 +56,7 @@ public final class ValkeyClient: Sendable {
     /// running atomic
     let runningAtomic: Atomic<Bool>
 
-    /// Initialize Valkey client
+    /// Creates a new Valkey client
     ///
     /// - Parameters:
     ///   - address: Valkey database address
@@ -86,8 +86,14 @@ public final class ValkeyClient: Sendable {
         logger: Logger
     ) {
         self.serverAddress = address
+
+        var poolConfiguration = _ValkeyConnectionPool.ConnectionPoolConfiguration()
+        poolConfiguration.minimumConnectionCount = connectionFactory.configuration.connectionPool.minimumConnectionCount
+        poolConfiguration.maximumConnectionSoftLimit = connectionFactory.configuration.connectionPool.maximumConnectionCount
+        poolConfiguration.maximumConnectionHardLimit = connectionFactory.configuration.connectionPool.maximumConnectionCount
+
         self.connectionPool = .init(
-            configuration: connectionFactory.configuration.connectionPool,
+            configuration: poolConfiguration,
             idGenerator: connectionIDGenerator,
             requestType: ConnectionRequest<ValkeyConnection>.self,
             keepAliveBehavior: .init(connectionFactory.configuration.keepAliveBehavior),

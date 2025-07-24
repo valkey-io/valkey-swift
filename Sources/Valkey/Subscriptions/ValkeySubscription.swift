@@ -14,9 +14,11 @@
 
 import NIOCore
 
-/// Message received from subscription
+/// A message received from a subscription.
 public struct ValkeySubscriptionMessage: Sendable, Equatable {
+    /// The messages channel.
     public let channel: String
+    /// The byte buffer of the message.
     public let message: ByteBuffer
 
     package init(channel: String, message: ByteBuffer) {
@@ -31,8 +33,9 @@ public struct ValkeySubscriptionMessage: Sendable, Equatable {
     }
 }
 
-/// Sequence of messages from Valkey subscription
+/// Sequence of messages from Valkey subscription.
 public struct ValkeySubscription: AsyncSequence, Sendable {
+    /// The type that the sequence produces.
     public typealias Element = ValkeySubscriptionMessage
 
     @usableFromInline
@@ -48,10 +51,12 @@ public struct ValkeySubscription: AsyncSequence, Sendable {
         return (.init(base: stream), continuation)
     }
 
+    /// Creates a sequence of subscription messages.
     public func makeAsyncIterator() -> AsyncIterator {
         AsyncIterator(base: self.base.makeAsyncIterator())
     }
 
+    /// An iterator that provides subscription messages.
     public struct AsyncIterator: AsyncIteratorProtocol {
         var base: BaseAsyncSequence.AsyncIterator
 
