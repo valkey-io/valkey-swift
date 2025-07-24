@@ -308,9 +308,12 @@ struct GeneratedCommands {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                let role = try await connection.role()
-                print(role)
+            let role = try await connection.role()
+            switch role {
+            case .primary:
+                break
+            case .replica, .sentinel:
+                Issue.record()
             }
         }
     }

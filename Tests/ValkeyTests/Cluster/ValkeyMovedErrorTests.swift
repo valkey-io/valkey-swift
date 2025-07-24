@@ -32,8 +32,8 @@ struct ValkeyMovedErrorTests {
         #expect(movedError?.port == 6379)
     }
 
-    @Test("parseMovedError parses valid MOVED error from bulkError")
-    func testParseValidMovedErrorFromBulkError() async throws {
+    @Test("parseMovedError parses valid MOVED error with IPv4")
+    func testParseValidMovedErrorWithIPv4() async throws {
         // Create a RESPToken with a MOVED error
         let errorMessage = "MOVED 5000 10.0.0.1:6380"
 
@@ -45,6 +45,21 @@ struct ValkeyMovedErrorTests {
         #expect(movedError?.slot.rawValue == 5000)
         #expect(movedError?.endpoint == "10.0.0.1")
         #expect(movedError?.port == 6380)
+    }
+
+    @Test("parseMovedError parses valid MOVED error with IPv6")
+    func testParseValidMovedErrorWithIPv6() async throws {
+        // Create a RESPToken with a MOVED error
+        let errorMessage = "MOVED 5000 ::1:9000"
+
+        // Parse the moved error
+        let movedError = ValkeyMovedError(errorMessage)
+
+        // Verify the moved error is parsed correctly
+        #expect(movedError != nil)
+        #expect(movedError?.slot.rawValue == 5000)
+        #expect(movedError?.endpoint == "::1")
+        #expect(movedError?.port == 9000)
     }
 
     @Test("parseMovedError returns nil for error tokens without MOVED prefix")
