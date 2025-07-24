@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Logging
 import NIOCore
 
 @available(valkeySwift 1.0, *)
@@ -204,6 +205,7 @@ extension ValkeyClient {
                         // if connection closes for some reason don't exit loop so it opens a new connection
                         switch error.errorCode {
                         case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
+                            self.logger.trace("Restarting subscription due to error", metadata: ["error": "\(error)"])
                             break
                         default:
                             cont.finish(throwing: error)

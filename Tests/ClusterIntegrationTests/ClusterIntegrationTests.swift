@@ -89,6 +89,47 @@ struct ClusterIntegrationTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testFailoverDuringSubscribe() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { clusterClient in
+            let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+            let channel = "testFailoverDuringSubscribe"
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await clusterClient.subscribe(to: channel) { subscription in
+                        var iterator = subscription.makeAsyncIterator()
+                        var message = try #require(try await iterator.next())
+                        #expect(String(buffer: message.message) == "one")
+                        cont.yield()
+                        message = try #require(try await iterator.next())
+                        #expect(String(buffer: message.message) == "two")
+                    }
+                }
+                try await clusterClient.publish(channel: channel, message: "one")
+                await stream.first { _ in true }
+                let cluster = try await clusterClient.clusterShards()
+                let shard = try #require(
+                    cluster.shards.first { shard in
+                        let hashSlot = HashSlot(key: .init(channel))
+                        return shard.slots[0].lowerBound <= hashSlot && shard.slots[0].upperBound >= hashSlot
+                    }
+                )
+                let replica = try #require(shard.nodes.first { $0.role == .replica })
+                let port = try #require(replica.port)
+                // connect to replica and call CLUSTER FAILOVER
+                try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
+                    try await client.clusterFailover()
+                }
+                try await clusterClient.publish(channel: channel, message: "two")
+            }
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     static func withKey<Value>(
         connection: some ValkeyClientProtocol,
