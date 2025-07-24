@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   # Here we have four Valkey containers. A primary, two replicas replicating from
-  # the primary and an additinal replica replicating from one of the replicas 
+  # the primary and an additinal replica replicating from one of the replicas
 
   # To make Docker compatible with Valkey replicas, you need to use Docker's host
   # networking mode. Please see the --net=host option in the Docker documentation
