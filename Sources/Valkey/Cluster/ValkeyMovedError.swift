@@ -75,7 +75,7 @@ extension ValkeyMovedError {
 
         let firstEndpointIndex = msg.index(after: spaceAfterSlotIndex)
 
-        guard let colonIndex = msg[spaceAfterSlotIndex...].firstIndex(where: { $0 == ":" }) else {
+        guard let colonIndex = msg[spaceAfterSlotIndex...].lastIndex(of: ":") else {
             return nil
         }
 

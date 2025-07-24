@@ -9,6 +9,5 @@ DerivedData/
 .vscode
 Package.resolved
 .benchmarkBaselines/
-.devcontainer
 .swift-version
 .docc-build
