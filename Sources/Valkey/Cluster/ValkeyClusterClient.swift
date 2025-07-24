@@ -167,7 +167,7 @@ public final class ValkeyClusterClient: Sendable {
                 guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
                     throw error
                 }
-                self.logger.trace("Received move error \(movedError)")
+                self.logger.trace("Received move error", metadata: ["error": "\(movedError)"])
                 clientSelector = { try await self.client(for: movedError) }
             }
         }
