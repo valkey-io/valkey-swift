@@ -16,16 +16,18 @@ import Foundation
 import Logging
 import Testing
 import Valkey
+import XCTest
 
+@Suite("Cluster", .disabled(if: clusterFirstNodeHostname == nil, "VALKEY_NODE1_HOSTNAME environment variable is not set."))
 struct ClusterIntegrationTests {
 
-    @Test(.disabled(if: ClusterIntegrationTests.firstNodeHostname == nil, "VALKEY_NODE1_HOSTNAME environment variable is not set."))
+    @Test
     @available(valkeySwift 1.0, *)
     func testSetGet() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
-        let firstNodeHostname = ClusterIntegrationTests.firstNodeHostname!
-        let firstNodePort = ClusterIntegrationTests.firstNodePort ?? 6379
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
         try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)]) { (client, logger) in
             try await Self.withKey(connection: client) { key in
                 try await client.set(key, value: "Hello")
@@ -36,12 +38,13 @@ struct ClusterIntegrationTests {
         }
     }
 
+    @Test
     @available(valkeySwift 1.0, *)
     func testWithConnection() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
-        let firstNodeHostname = ClusterIntegrationTests.firstNodeHostname!
-        let firstNodePort = ClusterIntegrationTests.firstNodePort ?? 6379
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
         try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)]) { (client, logger) in
             try await Self.withKey(connection: client) { key in
                 try await client.withConnection(forKeys: [key]) { connection in
@@ -49,6 +52,30 @@ struct ClusterIntegrationTests {
                     let response = try await connection.get(key)
                     #expect(response.map { String(buffer: $0) } == "Hello")
                 }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testFailover() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)]) { (clusterClient, logger) in
+            try await Self.withKey(connection: clusterClient) { key in
+                try await clusterClient.set(key, value: "bar")
+                let cluster = try await clusterClient.clusterShards()
+                let replica = try #require(cluster.shards[0].nodes.first { $0.role == .replica })
+                let port = try #require(replica.port)
+                try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
+                    try await client.clusterFailover()
+                }
+                try await clusterClient.set(key, value: "baz")
+                let response = try await clusterClient.get(key)
+                #expect(response.map { String(buffer: $0) } == "baz")
+
             }
         }
     }
@@ -102,14 +129,26 @@ struct ClusterIntegrationTests {
         return try result.get()
     }
 
+    @available(valkeySwift 1.0, *)
+    func withValkeyClient(
+        _ address: ValkeyServerAddress,
+        configuration: ValkeyClientConfiguration = .init(),
+        logger: Logger,
+        operation: @escaping @Sendable (ValkeyClient) async throws -> Void
+    ) async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let client = ValkeyClient(address, configuration: configuration, logger: logger)
+            group.addTask {
+                await client.run()
+            }
+            group.addTask {
+                try await operation(client)
+            }
+            try await group.next()
+            group.cancelAll()
+        }
+    }
 }
 
-extension ClusterIntegrationTests {
-    static var firstNodeHostname: String? {
-        ProcessInfo.processInfo.environment["VALKEY_NODE1_HOSTNAME"]
-    }
-
-    static var firstNodePort: Int? {
-        ProcessInfo.processInfo.environment["VALKEY_NODE1_PORT"].flatMap { Int($0) }
-    }
-}
+private let clusterFirstNodeHostname: String? = ProcessInfo.processInfo.environment["VALKEY_NODE1_HOSTNAME"]
+private let clusterFirstNodePort: Int? = ProcessInfo.processInfo.environment["VALKEY_NODE1_PORT"].flatMap { Int($0) }
