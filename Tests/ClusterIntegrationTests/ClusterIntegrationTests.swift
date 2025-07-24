@@ -18,9 +18,12 @@ import Testing
 import Valkey
 import XCTest
 
-@Suite("Cluster", .disabled(if: clusterFirstNodeHostname == nil, "VALKEY_NODE1_HOSTNAME environment variable is not set."))
+@Suite(
+    "Cluster Integration Tests",
+    .serialized,
+    .disabled(if: clusterFirstNodeHostname == nil, "VALKEY_NODE1_HOSTNAME environment variable is not set.")
+)
 struct ClusterIntegrationTests {
-
     @Test
     @available(valkeySwift 1.0, *)
     func testSetGet() async throws {
@@ -28,7 +31,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)]) { (client, logger) in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
             try await Self.withKey(connection: client) { key in
                 try await client.set(key, value: "Hello")
 
@@ -45,7 +48,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)]) { (client, logger) in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
             try await Self.withKey(connection: client) { key in
                 try await client.withConnection(forKeys: [key]) { connection in
                     _ = try await connection.set(key, value: "Hello")
@@ -63,19 +66,25 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)]) { (clusterClient, logger) in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { clusterClient in
             try await Self.withKey(connection: clusterClient) { key in
                 try await clusterClient.set(key, value: "bar")
                 let cluster = try await clusterClient.clusterShards()
-                let replica = try #require(cluster.shards[0].nodes.first { $0.role == .replica })
+                let shard = try #require(
+                    cluster.shards.first { shard in
+                        let hashSlot = HashSlot(key: key)
+                        return shard.slots[0].lowerBound <= hashSlot && shard.slots[0].upperBound >= hashSlot
+                    }
+                )
+                let replica = try #require(shard.nodes.first { $0.role == .replica })
                 let port = try #require(replica.port)
+                // connect to replica and call CLUSTER FAILOVER
                 try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
                     try await client.clusterFailover()
                 }
                 try await clusterClient.set(key, value: "baz")
                 let response = try await clusterClient.get(key)
                 #expect(response.map { String(buffer: $0) } == "baz")
-
             }
         }
     }
@@ -100,10 +109,9 @@ struct ClusterIntegrationTests {
     static func withValkeyCluster<T>(
         _ nodeAddresses: [(host: String, port: Int, tls: Bool)],
         nodeClientConfiguration: ValkeyClientConfiguration = .init(),
-        _ body: (ValkeyClusterClient, Logger) async throws -> sending T
+        logger: Logger,
+        _ body: (ValkeyClusterClient) async throws -> sending T
     ) async throws -> T {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
         let client = ValkeyClusterClient(
             clientConfiguration: nodeClientConfiguration,
             nodeDiscovery: ValkeyStaticNodeDiscovery(nodeAddresses.map { .init(host: $0.host, port: $0.port, useTLS: $0.tls) }),
@@ -117,7 +125,7 @@ struct ClusterIntegrationTests {
 
             let result: Result<T, any Error>
             do {
-                result = try await .success(body(client, logger))
+                result = try await .success(body(client))
             } catch {
                 result = .failure(error)
             }
