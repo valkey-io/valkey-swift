@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Logging
 import NIOCore
 
 @available(valkeySwift 1.0, *)
@@ -180,18 +181,8 @@ extension ValkeyClusterClient {
                         // if connection closes for some reason don't exit loop so it opens a new connection
                         switch error.errorCode {
                         case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
+                            self.logger.trace("Restarting subscription due to error", metadata: ["error": "\(error)"])
                             break
-                        case .commandError:
-                            // Question: Does ssubscribe return a MOVED error for a sharded subscribe if the
-                            // cluster topology changes?
-                            if let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) {
-                                // trigger rediscovery if needed. Can't just use the client provided as we may
-                                // have subscribed to multiple channels and we should verify they are all in the
-                                // same shard before continuing
-                                _ = try await self.client(for: movedError)
-                            } else {
-                                fallthrough
-                            }
                         default:
                             cont.finish(throwing: error)
                             return
