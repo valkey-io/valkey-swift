@@ -68,7 +68,6 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     ///
     /// - Parameters:
     ///   - address: Internet address of database
-    ///   - name: Name of connection. The connection name is used in many of the `CLIENT` commands.
     ///   - configuration: Configuration of Valkey connection
     ///   - eventLoop: EventLoop to run connection on
     ///   - logger: Logger for connection
@@ -101,7 +100,6 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// - Parameters:
     ///   - address: Internet address of database
     ///   - connectionID: Connection identifier
-    ///   - name: Name of connection. The connection name is used in many of the `CLIENT` commands.
     ///   - configuration: Configuration of Valkey connection
     ///   - eventLoop: EventLoop to run connection on
     ///   - logger: Logger for connection
