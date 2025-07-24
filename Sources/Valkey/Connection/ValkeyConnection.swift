@@ -59,6 +59,45 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         self.isClosed = .init(false)
     }
 
+    /// Connect to Valkey database and run operation using connection and then close
+    /// connection.
+    ///
+    /// To avoid the cost of acquiring the connection and then closing it, it is always
+    /// preferable to use ``ValkeyClient/withConnection(isolation:operation:)`` which
+    /// uses a persistent connection pool to provide connections to your Valkey database.
+    ///
+    /// - Parameters:
+    ///   - address: Internet address of database
+    ///   - name: Name of connection. The connection name is used in many of the `CLIENT` commands.
+    ///   - configuration: Configuration of Valkey connection
+    ///   - eventLoop: EventLoop to run connection on
+    ///   - logger: Logger for connection
+    ///   - isolation: Actor isolation
+    ///   - operation: Closure handling Valkey connection
+    /// - Returns: Return value of operation closure
+    public static func withConnection<Value>(
+        address: ValkeyServerAddress,
+        name: String? = nil,
+        configuration: ValkeyConnectionConfiguration = .init(),
+        eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
+        logger: Logger,
+        isolation: isolated (any Actor)? = #isolation,
+        operation: (ValkeyConnection) async throws -> sending Value
+    ) async throws -> Value {
+        let connection = try await connect(
+            address: address,
+            connectionID: 0,
+            name: name,
+            configuration: configuration,
+            eventLoop: eventLoop,
+            logger: logger
+        )
+        defer {
+            connection.close()
+        }
+        return try await operation(connection)
+    }
+
     /// Connect to Valkey database and return connection
     ///
     /// - Parameters:
@@ -69,7 +108,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     ///   - eventLoop: EventLoop to run connection on
     ///   - logger: Logger for connection
     /// - Returns: ValkeyConnection
-    public static func connect(
+    static func connect(
         address: ValkeyServerAddress,
         connectionID: ID,
         name: String? = nil,
@@ -79,7 +118,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     ) async throws -> ValkeyConnection {
         let future =
             if eventLoop.inEventLoop {
-                self._makeClient(
+                self._makeConnection(
                     address: address,
                     connectionID: connectionID,
                     eventLoop: eventLoop,
@@ -89,7 +128,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                 )
             } else {
                 eventLoop.flatSubmit {
-                    self._makeClient(
+                    self._makeConnection(
                         address: address,
                         connectionID: connectionID,
                         eventLoop: eventLoop,
@@ -195,7 +234,7 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     }
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
-    private static func _makeClient(
+    private static func _makeConnection(
         address: ValkeyServerAddress,
         connectionID: ID,
         eventLoop: EventLoop,

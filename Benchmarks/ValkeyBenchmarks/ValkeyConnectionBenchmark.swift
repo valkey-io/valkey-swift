@@ -32,21 +32,18 @@ func makeConnectionGETBenchmark() -> Benchmark? {
     return Benchmark("Connection: GET benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
         let port = serverMutex.withLock { $0 }!.localAddress!.port!
         let logger = Logger(label: "test")
-        let connection = try await ValkeyConnection.connect(
+        try await ValkeyConnection.withConnection(
             address: .hostname("127.0.0.1", port: port),
-            connectionID: 1,
             configuration: .init(),
             logger: logger
-        )
-
-        benchmark.startMeasurement()
-        for _ in benchmark.scaledIterations {
-            let foo = try await connection.get("foo")
-            precondition(foo.map { String(buffer: $0) } == "Bar")
+        ) { connection in
+            benchmark.startMeasurement()
+            for _ in benchmark.scaledIterations {
+                let foo = try await connection.get("foo")
+                precondition(foo.map { String(buffer: $0) } == "Bar")
+            }
+            benchmark.stopMeasurement()
         }
-        benchmark.stopMeasurement()
-
-        connection.close()
     } setup: {
         let server = try await makeLocalServer()
         serverMutex.withLock { $0 = server }
