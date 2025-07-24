@@ -77,17 +77,15 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// - Returns: Return value of operation closure
     public static func withConnection<Value>(
         address: ValkeyServerAddress,
-        name: String? = nil,
         configuration: ValkeyConnectionConfiguration = .init(),
         eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger,
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         let connection = try await connect(
             address: address,
             connectionID: 0,
-            name: name,
             configuration: configuration,
             eventLoop: eventLoop,
             logger: logger
@@ -111,7 +109,6 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     static func connect(
         address: ValkeyServerAddress,
         connectionID: ID,
-        name: String? = nil,
         configuration: ValkeyConnectionConfiguration,
         eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger
@@ -123,7 +120,6 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                     connectionID: connectionID,
                     eventLoop: eventLoop,
                     configuration: configuration,
-                    clientName: name,
                     logger: logger
                 )
             } else {
@@ -133,7 +129,6 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
                         connectionID: connectionID,
                         eventLoop: eventLoop,
                         configuration: configuration,
-                        clientName: name,
                         logger: logger
                     )
                 }
@@ -239,7 +234,6 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         connectionID: ID,
         eventLoop: EventLoop,
         configuration: ValkeyConnectionConfiguration,
-        clientName: String?,
         logger: Logger
     ) -> EventLoopFuture<ValkeyConnection> {
         eventLoop.assertInEventLoop()
