@@ -25,7 +25,7 @@ import NIOTransportServices
 
 /// Single connection to a Valkey database
 @available(valkeySwift 1.0, *)
-public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
+public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     nonisolated public let unownedExecutor: UnownedSerialExecutor
 
     /// Request ID generator

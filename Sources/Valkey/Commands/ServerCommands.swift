@@ -1474,7 +1474,7 @@ public struct TIME: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Lists the ACL categories, or the commands inside a category.
     ///
     /// - Documentation: [ACL CAT](https://valkey.io/commands/acl-cat)
@@ -2203,6 +2203,7 @@ extension ValkeyConnectionProtocol {
     /// - Available: 2.8.12
     /// - Complexity: O(1)
     @inlinable
+    @discardableResult
     public func role() async throws -> ROLE.Response {
         try await send(command: ROLE())
     }

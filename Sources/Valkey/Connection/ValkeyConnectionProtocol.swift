@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 /// Protocol for a Valkey connection that can send a command and get a response
-public protocol ValkeyConnectionProtocol {
+public protocol ValkeyClientProtocol {
     /// Send RESP command to Valkey connection
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand

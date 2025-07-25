@@ -128,7 +128,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
         string.append("@available(valkeySwift 1.0, *)\n")
         string.append("extension ValkeyConnection {\n")
     } else {
-        string.append("extension ValkeyConnectionProtocol {\n")
+        string.append("extension ValkeyClientProtocol {\n")
     }
     for key in keys {
         let command = commands[key]!

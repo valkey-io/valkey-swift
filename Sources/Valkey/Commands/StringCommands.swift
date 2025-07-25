@@ -616,7 +616,7 @@ public struct SUBSTR: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [APPEND](https://valkey.io/commands/append)

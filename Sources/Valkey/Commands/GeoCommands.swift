@@ -1102,7 +1102,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
     ///
     /// - Documentation: [GEOADD](https://valkey.io/commands/geoadd)
