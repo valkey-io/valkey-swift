@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// Type that can decoded from a RESPToken
+/// A type that can decode from a response token.
 public protocol RESPTokenDecodable {
     init(fromRESP: RESPToken) throws
 }

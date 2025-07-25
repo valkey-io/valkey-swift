@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// Server address to connect to
+/// A Valkey server address to connect to.
 public struct ValkeyServerAddress: Sendable, Equatable {
     enum _Internal: Equatable {
         case hostname(_ host: String, port: Int)
