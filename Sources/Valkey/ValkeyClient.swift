@@ -24,11 +24,9 @@ import _ValkeyConnectionPool
 import ServiceLifecycle
 #endif
 
-/// Valkey client
+/// A client that connects to a single Valkey server.
 ///
-/// Connect to Valkey server.
-///
-/// Supports TLS via both NIOSSL and Network framework.
+/// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
     let nodeClientFactory: ValkeyNodeClientFactory
