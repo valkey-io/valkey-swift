@@ -23,7 +23,7 @@ import Network
 import NIOTransportServices
 #endif
 
-/// Single connection to a Valkey database
+/// A single connection to a Valkey database.
 @available(valkeySwift 1.0, *)
 public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     nonisolated public let unownedExecutor: UnownedSerialExecutor

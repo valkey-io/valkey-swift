@@ -15,7 +15,7 @@
 import NIOSSL
 import _ValkeyConnectionPool
 
-/// Configuration for the Valkey client
+/// Configuration for the Valkey client.
 @available(valkeySwift 1.0, *)
 public struct ValkeyClientConfiguration: Sendable {
     /// The TLS setting connecting to a Valkey Server.

@@ -14,12 +14,12 @@
 
 import NIOCore
 
-/// This error is thrown if a RESP3 package could not be decoded.
+/// An error that Valkey client throws if a RESP3 package can't be decoded.
 ///
 /// If you see this error, there a two potential reasons this might happen:
 ///
-///   1. The Swift RESP3 implementation is wrong
-///   2. You are contacting an untrusted backend
+///   1. The Swift RESP3 implementation is wrong.
+///   2. You are contacting an untrusted backend.
 ///
 public struct RESPParsingError: Error {
     /// The error code associated with an error parsing a response.
