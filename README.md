@@ -53,4 +53,4 @@ As Valkey is a fork of Redis v7.2.4, valkey-swift is compatible with Redis datab
 
 ## Documentation
 
-User guides and reference documentation for valkey-swift can be found on the [Swift Package Index](https://swiftpackageindex.com/valkey-io/valkey-swift/main/documentation/valkey).
+User guides and reference documentation for valkey-swift can be found on the [Swift Package Index](https://swiftpackageindex.com/valkey-io/valkey-swift/documentation/valkey).
