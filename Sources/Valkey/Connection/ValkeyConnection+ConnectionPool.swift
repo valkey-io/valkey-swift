@@ -29,17 +29,21 @@ extension ValkeyConnection: PooledConnection {
 
 /// Keep alive behavior for Valkey connection
 @available(valkeySwift 1.0, *)
+@usableFromInline
 struct ValkeyKeepAliveBehavior: ConnectionKeepAliveBehavior {
+    @usableFromInline
     let behavior: ValkeyClientConfiguration.KeepAliveBehavior?
 
     init(_ behavior: ValkeyClientConfiguration.KeepAliveBehavior?) {
         self.behavior = behavior
     }
 
+    @inlinable
     var keepAliveFrequency: Duration? {
         self.behavior?.frequency
     }
 
+    @inlinable
     func runKeepAlive(for connection: ValkeyConnection) async throws {
         _ = try await connection.ping()
     }
@@ -47,15 +51,17 @@ struct ValkeyKeepAliveBehavior: ConnectionKeepAliveBehavior {
 
 /// Connection id generator for Valkey connection pool
 @available(valkeySwift 1.0, *)
+@usableFromInline
 package final class ConnectionIDGenerator: ConnectionIDGeneratorProtocol {
     static let globalGenerator = ConnectionIDGenerator()
-
-    private let atomic: Atomic<Int>
+    @usableFromInline
+    let atomic: Atomic<Int>
 
     init() {
         self.atomic = .init(0)
     }
 
+    @inlinable
     package func next() -> Int {
         self.atomic.wrappingAdd(1, ordering: .relaxed).oldValue
     }
@@ -63,15 +69,18 @@ package final class ConnectionIDGenerator: ConnectionIDGeneratorProtocol {
 
 /// Valkey client connection pool metrics
 @available(valkeySwift 1.0, *)
+@usableFromInline
 final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
+    @usableFromInline
     typealias ConnectionID = ValkeyConnection.ID
-
+    @usableFromInline
     let logger: Logger
 
     init(logger: Logger) {
         self.logger = logger
     }
 
+    @inlinable
     func startedConnecting(id: ConnectionID) {
         self.logger.debug(
             "Creating new connection",
@@ -83,6 +92,7 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
 
     /// A connection attempt failed with the given error. After some period of
     /// time ``startedConnecting(id:)`` may be called again.
+    @inlinable
     func connectFailed(id: ConnectionID, error: Error) {
         self.logger.debug(
             "Connection creation failed",
@@ -122,6 +132,7 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
         )
     }
 
+    @inlinable
     func keepAliveTriggered(id: ConnectionID) {
         self.logger.debug(
             "run ping pong",
@@ -131,12 +142,15 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
         )
     }
 
+    @inlinable
     func keepAliveSucceeded(id: ConnectionID) {}
 
+    @inlinable
     func keepAliveFailed(id: ValkeyConnection.ID, error: Error) {}
 
     /// The remote peer is quiescing the connection: no new streams will be created on it. The
     /// connection will eventually be closed and removed from the pool.
+    @inlinable
     func connectionClosing(id: ConnectionID) {
         self.logger.debug(
             "Close connection",
@@ -148,6 +162,7 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
 
     /// The connection was closed. The connection may be established again in the future (notified
     /// via ``startedConnecting(id:)``).
+    @inlinable
     func connectionClosed(id: ConnectionID, error: Error?) {
         self.logger.debug(
             "Connection closed",
@@ -157,14 +172,17 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
         )
     }
 
+    @inlinable
     func requestQueueDepthChanged(_ newDepth: Int) {
 
     }
 
+    @inlinable
     func connectSucceeded(id: ValkeyConnection.ID, streamCapacity: UInt16) {
 
     }
 
+    @inlinable
     func connectionUtilizationChanged(id: ValkeyConnection.ID, streamsUsed: UInt16, streamCapacity: UInt16) {
 
     }

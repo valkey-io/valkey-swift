@@ -31,12 +31,13 @@ import ServiceLifecycle
 /// Supports TLS via both NIOSSL and Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
+    @usableFromInline
     typealias Pool = ConnectionPool<
         ValkeyConnection,
         ValkeyConnection.ID,
         ConnectionIDGenerator,
-        ConnectionRequest<ValkeyConnection>,
-        ConnectionRequest.ID,
+        ValkeyConnectionRequest<RESPToken>,
+        Int,
         ValkeyKeepAliveBehavior,
         ValkeyClientMetrics,
         ContinuousClock
@@ -44,6 +45,7 @@ public final class ValkeyClient: Sendable {
     /// Server address
     let serverAddress: ValkeyServerAddress
     /// Connection pool
+    @usableFromInline
     let connectionPool: Pool
 
     let connectionFactory: ValkeyConnectionFactory
@@ -56,7 +58,10 @@ public final class ValkeyClient: Sendable {
     /// running atomic
     let runningAtomic: Atomic<Bool>
 
-    /// Creates a new Valkey client
+    @usableFromInline
+    let requestIDGenerator = IDGenerator()
+
+    /// Initialize Valkey client
     ///
     /// - Parameters:
     ///   - address: Valkey database address
@@ -95,7 +100,7 @@ public final class ValkeyClient: Sendable {
         self.connectionPool = .init(
             configuration: poolConfiguration,
             idGenerator: connectionIDGenerator,
-            requestType: ConnectionRequest<ValkeyConnection>.self,
+            requestType: ValkeyConnectionRequest.self,
             keepAliveBehavior: .init(connectionFactory.configuration.keepAliveBehavior),
             observabilityDelegate: ValkeyClientMetrics(logger: logger),
             clock: .continuous
@@ -148,19 +153,20 @@ extension ValkeyClient {
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let connection = try await self.leaseConnection()
-
-        defer { self.connectionPool.releaseConnection(connection) }
-
-        return try await operation(connection)
+        fatalError()
+//        let connection = try await self.leaseConnection()
+//
+//        defer { self.connectionPool.releaseConnection(connection) }
+//
+//        return try await operation(connection)
     }
 
-    private func leaseConnection() async throws -> ValkeyConnection {
-        if !self.runningAtomic.load(ordering: .relaxed) {
-            self.logger.warning("Trying to lease connection from `ValkeyClient`, but `ValkeyClient.run()` hasn't been called yet.")
-        }
-        return try await self.connectionPool.leaseConnection()
-    }
+//    private func leaseConnection() async throws -> ValkeyConnection {
+//        if !self.runningAtomic.load(ordering: .relaxed) {
+//            self.logger.warning("Trying to lease connection from `ValkeyClient`, but `ValkeyClient.run()` hasn't been called yet.")
+//        }
+//        return try await self.connectionPool.leaseConnection()
+//    }
 
 }
 
@@ -178,8 +184,17 @@ extension ValkeyClient: ValkeyConnectionProtocol {
 
     @inlinable
     func _send<Command: ValkeyCommand>(_ command: Command) async throws -> RESPToken {
-        try await self.withConnection { connection in
-            try await connection._send(command: command)
+        let id = self.requestIDGenerator.next()
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<RESPToken, any Error>) in
+            let request = ValkeyConnectionRequest(
+                id: id,
+                pool: self.connectionPool,
+                continuation: continuation
+            ) { connection, request in
+                connection._write(command: command, request: request)
+            }
+
+            self.connectionPool.leaseConnection(request)
         }
     }
 }
@@ -209,3 +224,112 @@ extension ValkeyClient {
 @available(valkeySwift 1.0, *)
 extension ValkeyClient: Service {}
 #endif  // ServiceLifecycle
+
+@available(valkeySwift 1.0, *)
+@usableFromInline
+enum RequestState: AtomicRepresentable, Sendable {
+    @usableFromInline
+    typealias AtomicRepresentation = Unmanaged<ValkeyConnection>?
+
+    case waitingForConnection
+    case onConnection(ValkeyConnection)
+
+    @usableFromInline
+    static func decodeAtomicRepresentation(_ storage: consuming Unmanaged<ValkeyConnection>?) -> RequestState {
+        if let storage {
+            return .onConnection(storage.takeRetainedValue())
+        } else {
+            return .waitingForConnection
+        }
+    }
+
+    @usableFromInline
+    static func encodeAtomicRepresentation(_ value: consuming RequestState) -> Unmanaged<ValkeyConnectionRequest.Connection>? {
+        switch value {
+        case .onConnection(let connection):
+            return Unmanaged.passRetained(connection)
+        case .waitingForConnection:
+            return nil
+        }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+@usableFromInline
+final class ValkeyConnectionRequest<T: Sendable>: Sendable, ConnectionRequestProtocol {
+    @usableFromInline
+    typealias Connection = ValkeyConnection
+
+    @usableFromInline
+    let id: Int
+    @usableFromInline
+    let pool: ValkeyClient.Pool
+    @usableFromInline
+    let continuation: CheckedContinuation<T, any Error>
+    @usableFromInline
+    let lock: Mutex<RequestState>
+    @usableFromInline
+    let onConnection: @Sendable (Connection, ValkeyConnectionRequest<T>) -> ()
+
+    @inlinable
+    init(
+        id: Int,
+        pool: ValkeyClient.Pool,
+        continuation: CheckedContinuation<RESPToken, any Error>,
+        _ onConnection: @escaping @Sendable (Connection, ValkeyConnectionRequest<T>) -> ()
+    ) where T == RESPToken {
+        self.id = id
+        self.pool = pool
+        self.continuation = continuation
+        self.onConnection = onConnection
+        self.lock = .init(.waitingForConnection)
+    }
+
+    @inlinable
+    func complete(with result: Result<Connection, ConnectionPoolError>) {
+        switch result {
+        case .success(let connection):
+            self.lock.withLock { state in
+                state = .onConnection(connection)
+            }
+            self.onConnection(connection, self)
+        case .failure(let error):
+            continuation.resume(throwing: error)
+
+        }
+    }
+
+    @inlinable
+    func succeed(_ t: T) {
+        self.continuation.resume(returning: t)
+        let connection = self.lock.withLock { state -> ValkeyConnection? in
+            switch state {
+            case .onConnection(let connection):
+                return connection
+            case .waitingForConnection:
+                return nil
+            }
+        }
+        if let connection {
+            self.pool.releaseConnection(connection, streams: 1)
+        }
+    }
+
+    @inlinable
+    func fail(_ error: any Error) {
+        self.continuation.resume(throwing: error)
+    }
+
+    func cancel() {
+        self.lock.withLock { state in
+            switch state {
+            case .onConnection(let connection):
+                connection.cancel(requestID: self.id)
+
+            case .waitingForConnection:
+                self.pool.cancelLeaseConnection(self.id)
+            }
+        }
+    }
+
+}

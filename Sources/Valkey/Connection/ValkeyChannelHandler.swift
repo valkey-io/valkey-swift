@@ -16,10 +16,12 @@ import DequeModule
 import Logging
 import NIOCore
 
+@available(valkeySwift 1.0, *)
 @usableFromInline
 enum ValkeyPromise<T: Sendable>: Sendable {
     case nio(EventLoopPromise<T>)
     case swift(CheckedContinuation<T, any Error>)
+    case request(ValkeyConnectionRequest<T>)
 
     func succeed(_ t: T) {
         switch self {
@@ -27,6 +29,8 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.succeed(t)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(returning: t)
+        case .request(let request):
+            request.succeed(t)
         }
     }
 
@@ -36,10 +40,13 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.fail(e)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(throwing: e)
+        case .request(let request):
+            request.fail(e)
         }
     }
 }
 
+@available(valkeySwift 1.0, *)
 @usableFromInline
 enum ValkeyRequest: Sendable {
     case single(buffer: ByteBuffer, promise: ValkeyPromise<RESPToken>, id: Int)
@@ -124,6 +131,36 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.stateMachine = .init()
         self.logger = logger
     }
+
+    /// Write valkey command/commands to channel
+    /// - Parameters:
+    ///   - request: Valkey command request
+    ///   - promise: Promise to fulfill when command is complete
+    @inlinable
+    func write<Command: ValkeyCommand>(command: Command, request: ValkeyConnectionRequest<RESPToken>) {
+        self.eventLoop.assertInEventLoop()
+        let deadline: NIODeadline =
+            command.isBlocking ? .now() + self.configuration.blockingCommandTimeout : .now() + self.configuration.commandTimeout
+        let pendingCommand = PendingCommand(
+            promise: .request(request),
+            requestID: request.id,
+            deadline: deadline
+        )
+        switch self.stateMachine.sendCommand(pendingCommand) {
+        case .sendCommand(let context):
+            self.encoder.reset()
+            command.encode(into: &self.encoder)
+            let buffer = self.encoder.buffer
+            context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+            if self.deadlineCallback == nil {
+                self.scheduleDeadlineCallback(deadline: deadline)
+            }
+
+        case .throwError(let error):
+            request.fail(error)
+        }
+    }
+
 
     /// Write valkey command/commands to channel
     /// - Parameters:
