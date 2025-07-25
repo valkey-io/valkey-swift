@@ -36,7 +36,9 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
     /// Logger used by Server
     let logger: Logger
     @usableFromInline
-    let channel: any Channel
+    nonisolated let executor: any NIOSerialEventLoopExecutor
+    @usableFromInline
+    nonisolated let channel: any Channel
     @usableFromInline
     let channelHandler: ValkeyChannelHandler
     let configuration: ValkeyConnectionConfiguration
@@ -50,7 +52,11 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         configuration: ValkeyConnectionConfiguration,
         logger: Logger
     ) {
-        self.unownedExecutor = channel.eventLoop.executor.asUnownedSerialExecutor()
+        guard let executor = channel.eventLoop as? any NIOSerialEventLoopExecutor else {
+            fatalError()
+        }
+        self.executor = executor
+        self.unownedExecutor = executor.asUnownedSerialExecutor()
         self.channel = channel
         self.channelHandler = channelHandler
         self.configuration = configuration
@@ -172,6 +178,21 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         }
     }
 
+    @inlinable
+    nonisolated func _write<Command: ValkeyCommand>(command: Command, request: ValkeyConnectionRequest<RESPToken>) {
+        if self.executor.inEventLoop {
+            self.assumeIsolated { connection in
+                connection.channelHandler.write(command: command, request: request)
+            }
+        } else {
+            self.executor.execute {
+                self.assumeIsolated { connection in
+                    connection.channelHandler.write(command: command, request: request)
+                }
+            }
+        }
+    }
+
     /// Pipeline a series of commands to Valkey connection
     ///
     /// This function will only return once it has the results of all the commands sent
@@ -261,10 +282,13 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
             }
         }
 
+
+
         let future: EventLoopFuture<Channel>
         switch address.value {
         case .hostname(let host, let port):
-            future = connect.connect(host: host, port: port)
+            let socketAddress = try! SocketAddress(ipAddress: host, port: port)
+            future = connect.connect(to: socketAddress)
             future.whenSuccess { _ in
                 logger.debug("Client connected to \(host):\(port)")
             }
