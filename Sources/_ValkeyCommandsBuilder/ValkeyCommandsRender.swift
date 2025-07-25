@@ -120,7 +120,8 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
     }
 
     /// Remove subscribe functions as we implement our own versions in code
-    let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE", "UNSUBSCRIBE", "PUNSUBSCRIBE", "SUNSUBSCRIBE"]
+    /// Remove watch functions as they are only valid on a single connection
+    let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE", "UNSUBSCRIBE", "PUNSUBSCRIBE", "SUNSUBSCRIBE", "UNWATCH", "WATCH"]
     keys.removeAll { subscribeFunctions.contains($0) }
 
     // transaction commands should be added to ValkeyConnection as they require a single connection.
