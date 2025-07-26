@@ -22,7 +22,7 @@ Valkey does not support rollbacks of transactions for simplicity and performance
 
 The transaction command `WATCH` is used to add a check-and-set behaviour to Valkey transactions. This sets up a list of keys to WATCH, and if any changes to them are detected before the next transaction is executed on the same connection, then that transaction will fail.
 
-For instance imagine we wanted to atomically increment a counter (assuming we don't have the INCR command). A simple implementation might look like this.
+For instance, imagine we wanted to atomically increment a counter (assuming we don't have the INCR command). A simple implementation might look like this:
 
 ```swift
 // get value, otherwise default to 0
