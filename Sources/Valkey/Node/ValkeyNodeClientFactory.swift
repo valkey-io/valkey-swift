@@ -21,9 +21,9 @@ import NIOCore
 /// for each node in the cluster as needed.
 @available(valkeySwift 1.0, *)
 @usableFromInline
-package struct ValkeyNodeFactory: ValkeyNodeConnectionPoolFactory {
+package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
     @usableFromInline
-    package typealias ConnectionPool = ValkeyNode
+    package typealias ConnectionPool = ValkeyNodeClient
 
     var logger: Logger
     var configuration: ValkeyClientConfiguration
@@ -54,7 +54,7 @@ package struct ValkeyNodeFactory: ValkeyNodeConnectionPoolFactory {
     /// - Parameter nodeDescription: Description of the node to connect to.
     /// - Returns: A configured `ValkeyNode` instance ready to connect to the specified node.
     @usableFromInline
-    package func makeConnectionPool(nodeDescription: ValkeyNodeDescription) -> ValkeyNode {
+    package func makeConnectionPool(nodeDescription: ValkeyNodeDescription) -> ValkeyNodeClient {
         let serverAddress = ValkeyServerAddress.hostname(
             nodeDescription.endpoint,
             port: nodeDescription.port
@@ -66,7 +66,7 @@ package struct ValkeyNodeFactory: ValkeyNodeConnectionPoolFactory {
             clientConfiguration.tls = .disable
         }
 
-        return ValkeyNode(
+        return ValkeyNodeClient(
             serverAddress,
             connectionIDGenerator: self.connectionIDGenerator,
             connectionFactory: self.connectionFactory,
@@ -80,8 +80,8 @@ package struct ValkeyNodeFactory: ValkeyNodeConnectionPoolFactory {
     /// - Parameter nodeDescription: Description of the node to connect to.
     /// - Returns: A configured `ValkeyNode` instance ready to connect to the specified node.
     @usableFromInline
-    package func makeConnectionPool(serverAddress: ValkeyServerAddress) -> ValkeyNode {
-        ValkeyNode(
+    package func makeConnectionPool(serverAddress: ValkeyServerAddress) -> ValkeyNodeClient {
+        ValkeyNodeClient(
             serverAddress,
             connectionIDGenerator: self.connectionIDGenerator,
             connectionFactory: self.connectionFactory,

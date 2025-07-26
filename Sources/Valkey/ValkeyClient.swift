@@ -31,12 +31,12 @@ import ServiceLifecycle
 /// Supports TLS via both NIOSSL and Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
-    let nodeFactory: ValkeyNodeFactory
+    let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
-    let node: ValkeyNode
+    let node: ValkeyNodeClient
     /// configuration
-    var configuration: ValkeyClientConfiguration { self.nodeFactory.configuration }
+    var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
     /// Logger
@@ -73,7 +73,7 @@ public final class ValkeyClient: Sendable {
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
-        self.nodeFactory = ValkeyNodeFactory(
+        self.nodeClientFactory = ValkeyNodeClientFactory(
             logger: logger,
             configuration: connectionFactory.configuration,
             connectionFactory: ValkeyConnectionFactory(
@@ -85,7 +85,7 @@ public final class ValkeyClient: Sendable {
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
         self.runningAtomic = .init(false)
-        self.node = self.nodeFactory.makeConnectionPool(serverAddress: address)
+        self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
     }
 }
 

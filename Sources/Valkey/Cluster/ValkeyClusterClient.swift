@@ -64,8 +64,8 @@ public final class ValkeyClusterClient: Sendable {
 
     @usableFromInline
     typealias StateMachine = ValkeyClusterClientStateMachine<
-        ValkeyNode,
-        ValkeyNodeFactory,
+        ValkeyNodeClient,
+        ValkeyNodeClientFactory,
         ContinuousClock,
         CheckedContinuation<Void, any Error>,
         AsyncStream<Void>.Continuation
@@ -82,7 +82,7 @@ public final class ValkeyClusterClient: Sendable {
 
     private enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
-        case runClient(ValkeyNode)
+        case runClient(ValkeyNodeClient)
         case runTimer(ValkeyClusterTimer)
     }
 
@@ -113,7 +113,7 @@ public final class ValkeyClusterClient: Sendable {
         self.actionStream = stream
         self.actionStreamContinuation = continuation
 
-        let factory = ValkeyNodeFactory(
+        let factory = ValkeyNodeClientFactory(
             logger: logger,
             configuration: clientConfiguration,
             connectionFactory: ValkeyConnectionFactory(
@@ -153,8 +153,8 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let hashSlots = command.keysAffected.map { HashSlot(key: $0) }
-        var clientSelector: () async throws -> ValkeyNode = {
-            try await self.node(for: hashSlots)
+        var clientSelector: () async throws -> ValkeyNodeClient = {
+            try await self.nodeClient(for: hashSlots)
         }
 
         while !Task.isCancelled {
@@ -168,7 +168,7 @@ public final class ValkeyClusterClient: Sendable {
                     throw error
                 }
                 self.logger.trace("Received move error", metadata: ["error": "\(movedError)"])
-                clientSelector = { try await self.node(for: movedError) }
+                clientSelector = { try await self.nodeClient(for: movedError) }
             }
         }
         throw CancellationError()
@@ -188,7 +188,7 @@ public final class ValkeyClusterClient: Sendable {
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         let hashSlots = keys.map { HashSlot(key: $0) }
-        let node = try await self.node(for: hashSlots)
+        let node = try await self.nodeClient(for: hashSlots)
         return try await node.withConnection(isolation: isolation, operation: operation)
     }
 
@@ -367,7 +367,7 @@ public final class ValkeyClusterClient: Sendable {
     ///     the MOVED error after multiple attempts
     ///   - `ValkeyClusterError.clientRequestCancelled` if the request is cancelled
     @usableFromInline
-    /* private */ func node(for moveError: ValkeyMovedError) async throws -> ValkeyNode {
+    /* private */ func nodeClient(for moveError: ValkeyMovedError) async throws -> ValkeyNodeClient {
         var counter = 0
         while counter < 3 {
             defer { counter += 1 }
@@ -426,13 +426,13 @@ public final class ValkeyClusterClient: Sendable {
     ///   - `ValkeyClusterError.clusterIsUnavailable` if no healthy nodes are available
     ///   - `ValkeyClusterError.clusterIsMissingSlotAssignment` if the slot assignment cannot be determined
     @inlinable
-    func node(for slots: some (Collection<HashSlot> & Sendable)) async throws -> ValkeyNode {
+    func nodeClient(for slots: some (Collection<HashSlot> & Sendable)) async throws -> ValkeyNodeClient {
         var retries = 0
         while retries < 3 {
             defer { retries += 1 }
 
             do {
-                return try self.stateLock.withLock { state -> ValkeyNode in
+                return try self.stateLock.withLock { state -> ValkeyNodeClient in
                     try state.poolFastPath(for: slots)
                 }
             } catch ValkeyClusterError.clusterIsUnavailable {
@@ -539,7 +539,7 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// - Returns: A list of voters that can participate in cluster topology election.
     /// - Throws: Any error encountered during node discovery.
-    private func runNodeDiscovery() async throws -> [ValkeyClusterVoter<ValkeyNode>] {
+    private func runNodeDiscovery() async throws -> [ValkeyClusterVoter<ValkeyNodeClient>] {
         do {
             self.logger.trace("Running node discovery")
             let nodes = try await self.nodeDiscovery.lookupNodes()
@@ -577,7 +577,7 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameter voters: The list of nodes that can vote on cluster topology.
     /// - Returns: The agreed-upon cluster description.
     /// - Throws: `ValkeyClusterError.clusterIsUnavailable` if consensus cannot be reached.
-    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyNode>]) async throws -> ValkeyClusterDescription {
+    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyNodeClient>]) async throws -> ValkeyClusterDescription {
         try await withThrowingTaskGroup(of: (ValkeyClusterDescription, ValkeyNodeID).self) { taskGroup in
             for voter in voters {
                 taskGroup.addTask {

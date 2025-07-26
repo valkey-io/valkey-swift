@@ -30,7 +30,7 @@ import ServiceLifecycle
 ///
 /// Supports TLS via both NIOSSL and Network framework.
 @available(valkeySwift 1.0, *)
-public final class ValkeyNode: Sendable {
+public final class ValkeyNodeClient: Sendable {
     typealias Pool = ConnectionPool<
         ValkeyConnection,
         ValkeyConnection.ID,
@@ -95,7 +95,7 @@ public final class ValkeyNode: Sendable {
 }
 
 @available(valkeySwift 1.0, *)
-extension ValkeyNode {
+extension ValkeyNodeClient {
     /// Run ValkeyNode connection pool
     @usableFromInline
     package func run() async {
@@ -130,7 +130,7 @@ extension ValkeyNode {
 
 /// Extend ValkeyNode so we can call commands directly from it
 @available(valkeySwift 1.0, *)
-extension ValkeyNode {
+extension ValkeyNodeClient {
     /// Send command to Valkey connection from connection pool
     /// - Parameter command: Valkey command
     /// - Returns: Response from Valkey command
@@ -149,7 +149,7 @@ extension ValkeyNode {
 }
 
 @available(valkeySwift 1.0, *)
-extension ValkeyNode {
+extension ValkeyNodeClient {
     /// Pipeline a series of commands to Valkey connection
     ///
     /// This function will only return once it has the results of all the commands sent
@@ -173,7 +173,7 @@ extension ValkeyNode {
 ///
 /// This enables the ``ValkeyClusterClient`` to manage individual ``ValkeyNode`` instances.
 @available(valkeySwift 1.0, *)
-extension ValkeyNode: ValkeyNodeConnectionPool {
+extension ValkeyNodeClient: ValkeyNodeConnectionPool {
     /// Initiates a graceful shutdown of the client.
     ///
     /// This method attempts to cleanly shut down the client's connections.
