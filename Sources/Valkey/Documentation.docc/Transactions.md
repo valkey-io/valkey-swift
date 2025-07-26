@@ -30,7 +30,7 @@ let value = try await connection.get("counter").map { Int(String(buffer: $0)) } 
 try await connection.set("counter", String(value + 1))
 ```
 
-Unfortunately this would not be a reliable solution as another client could attempt to increment the key "counter" inbetween the GET and SET commands and the increment would be applied to the wrong value. Using WATCH we can avoid this. If the key is edited between the WATCH and SET the transaction will fail and throw a `ValkeyClientError(.transactionAborted)` error. If this occurs we know the key was edited between these two commands and we need to update the "counter" value before trying to call SET again, so we run the operation again.
+Unfortunately this isn't a reliable solution as another client could attempt to increment the key "counter" in between the GET and SET commands, then the increment would be applied to the wrong value. By using WATCH and executing the SET inside a transaction we can avoid this. If the key is edited between the WATCH and SET, the transaction fails and throws a `ValkeyClientError(.transactionAborted)` error. When this occurs we know the key was edited between these two commands and we need to update the "counter" value before trying to call SET again, so we run the operation again.
 
 ```swift
 while true {
