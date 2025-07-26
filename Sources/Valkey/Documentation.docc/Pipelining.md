@@ -46,7 +46,7 @@ async let asyncResult = connection.lpush("fooList", elements: ["bar"])
 let result = try await asyncResult
 ```
 
-Be careful when using a single connection across multiple Tasks though. The result of a command will only become available when the result of any previous command queued has been made available. So a command that either blocks the connection or takes a long time could affect the response time of commands that follow it.
+Be careful when using a single connection across multiple Tasks though. The result of a command only becomes available when the server makes available the result of the command previously queued. Because of this, a command that either blocks the connection or takes a long time can affect the response time of commands that follow it.
 
 You can find out more about pipelining of commands in the [Valkey documentation](https://valkey.io/topics/pipelining/).
 
