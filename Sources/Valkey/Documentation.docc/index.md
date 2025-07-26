@@ -45,6 +45,7 @@ try await valkeyClient.withConnection { connection in
 ### Articles
 
 - <doc:Pipelining>
+- <doc:Transactions>
 
 ### Client
 

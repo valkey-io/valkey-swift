@@ -1,6 +1,6 @@
-# Pipelining Commands
+# Pipelining
 
-Sending multiple commands at once without waiting for the response of each command
+Send multiple commands at once without waiting for the response of each command.
 
 Valkey pipelining is a technique for improving performance by issuing multiple commands at once without waiting for the response to each individual command. Pipelining not only reduces the latency cost of waiting for the result of each command it also reduces the cost to the server as it reduces I/O costs. Multiple commands can be read with a single syscall, and multiple results are delivered with a single syscall. 
 
@@ -10,9 +10,9 @@ In valkey-swift each command has its own type conforming to the protocol ``Valke
 
 ```swift
 let (_,_, getResult) = await valkeyClient.pipeline(
-    SET(key: "foo", value: "100"),
-    INCR(key: "foo")
-    GET(key: "foo")
+    SET("foo", value: "100"),
+    INCR("foo")
+    GET("foo")
 )
 // get returns an optional ByteBuffer
 if let result = try getResult.get().map({ String(buffer: $0) }) {
@@ -28,10 +28,10 @@ Being able to have multiple requests in transit on a single connection means we 
 try await client.withConnection { connection in
     try await withThrowingTaskGroup(of: Void.self) { group in
         group.addTask {
-            _ = try await connection.lpush(key: "fooList", element: ["bar"])
+            _ = try await connection.lpush("fooList", elements: ["bar"])
         }
         group.addTask {
-            _ = try await connection.rpush(key: "fooList2", element: ["baz"])
+            _ = try await connection.rpush("fooList2", elements: ["baz"])
         }
         try await group.waitForAll()
     }
@@ -41,9 +41,12 @@ try await client.withConnection { connection in
 You can also use `async let` to run commands without waiting for their results immediately.
 
 ```swift
-async let asyncResult = connection.lpush(key: "fooList", element: ["bar"])
+async let asyncResult = connection.lpush("fooList", elements: ["bar"])
 // do something else
 let result = try await asyncResult
 ```
 
-Be careful when using a single connection across multiple Tasks though. The result of a command will only become available when the result of any previous command queued has been made available. So a command that either blocks the connection or takes a long time could affect the response time of commands that follow it.
+Be careful when using a single connection across multiple Tasks though. The result of a command only becomes available when the server makes available the result of the command previously queued. Because of this, a command that either blocks the connection or takes a long time can affect the response time of commands that follow it.
+
+You can find out more about pipelining of commands in the [Valkey documentation](https://valkey.io/topics/pipelining/).
+
