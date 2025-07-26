@@ -22,7 +22,7 @@ import Valkey
 
 struct GeneratedCommands {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
-    func withKey<Value>(connection: some ValkeyConnectionProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
+    func withKey<Value>(connection: some ValkeyClientProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
         let key = ValkeyKey(UUID().uuidString)
         let value: Value
         do {

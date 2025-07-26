@@ -56,7 +56,7 @@ public struct ValkeyClientConfiguration: Sendable {
 
     /// A keep-alive behavior for Valkey connections.
     ///
-    /// The ``frequency`` defines after which time an idle connection shall run a keep-alive ``ValkeyConnectionProtocol/ping(message:)``.
+    /// The ``frequency`` defines after which time an idle connection shall run a keep-alive ``ValkeyClientProtocol/ping(message:)``.
     public struct KeepAliveBehavior: Sendable {
         /// The amount of time that shall pass before an idle connection runs a keep-alive query.
         public var frequency: Duration

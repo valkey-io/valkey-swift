@@ -1,7 +1,6 @@
 // swift-tools-version: 6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
-import Foundation
 import PackageDescription
 
 let defaultSwiftSettings: [SwiftSetting] =
@@ -98,7 +97,7 @@ let package = Package(
     ]
 )
 
-if ProcessInfo.processInfo.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
+if Context.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
     package.dependencies.append(
         .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0")
     )

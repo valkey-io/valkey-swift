@@ -80,7 +80,7 @@ public struct PFMERGE: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [PFADD](https://valkey.io/commands/pfadd)

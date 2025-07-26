@@ -789,7 +789,7 @@ public struct SELECT: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Authenticates the connection.
     ///
     /// - Documentation: [AUTH](https://valkey.io/commands/auth)

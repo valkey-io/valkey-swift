@@ -91,7 +91,7 @@ struct ClusterIntegrationTests {
 
     @available(valkeySwift 1.0, *)
     static func withKey<Value>(
-        connection: some ValkeyConnectionProtocol,
+        connection: some ValkeyClientProtocol,
         _ operation: (ValkeyKey) async throws -> Value
     ) async throws -> Value {
         let key = ValkeyKey(UUID().uuidString)
