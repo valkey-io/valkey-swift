@@ -1,6 +1,6 @@
 # Pipelining
 
-Sending multiple commands at once without waiting for the response of each command.
+Send multiple commands at once without waiting for the response of each command.
 
 Valkey pipelining is a technique for improving performance by issuing multiple commands at once without waiting for the response to each individual command. Pipelining not only reduces the latency cost of waiting for the result of each command it also reduces the cost to the server as it reduces I/O costs. Multiple commands can be read with a single syscall, and multiple results are delivered with a single syscall. 
 
