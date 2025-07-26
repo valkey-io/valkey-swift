@@ -2,7 +2,7 @@
 
 Perform atomic operations.
 
-Transactions allow you to group multiple commands into an atomic operation. A request sent by another client will not be processed in the middle of the execution of a transaction. Valkey uses the commands `MULTI` and `EXEC` to setup and execute a transaction. After having initiated a transaction with `MULTI`, commands just return a simple string `QUEUED` to indicate the command has been queued. When the `EXEC` command is sent all the queued commands are executed and an array is returned with their results. 
+Transactions allow you to group multiple commands into an atomic operation. A request sent by another client isn't processed in the middle of the execution of a transaction. Valkey uses the commands `MULTI` and `EXEC` to setup and execute a transaction. After initiating a transaction with `MULTI`, commands return a simple string `QUEUED` to indicate the server queued the commands. When the client sends the `EXEC` command, the server executes all the queued commands and returns an array with their results. 
 
 Because of this custom behaviour valkey-swift provides extra support for executing transactions. The API is very similar to the pipelining function which accepts a parameter pack of commands, detailed in <doc:Pipelining>.
 
