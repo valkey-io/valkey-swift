@@ -64,8 +64,8 @@ public final class ValkeyClusterClient: Sendable {
 
     @usableFromInline
     typealias StateMachine = ValkeyClusterClientStateMachine<
-        ValkeyClient,
-        ValkeyClientFactory,
+        ValkeyNodeClient,
+        ValkeyNodeClientFactory,
         ContinuousClock,
         CheckedContinuation<Void, any Error>,
         AsyncStream<Void>.Continuation
@@ -82,7 +82,7 @@ public final class ValkeyClusterClient: Sendable {
 
     private enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
-        case runClient(ValkeyClient)
+        case runClient(ValkeyNodeClient)
         case runTimer(ValkeyClusterTimer)
     }
 
@@ -113,7 +113,7 @@ public final class ValkeyClusterClient: Sendable {
         self.actionStream = stream
         self.actionStreamContinuation = continuation
 
-        let factory = ValkeyClientFactory(
+        let factory = ValkeyNodeClientFactory(
             logger: logger,
             configuration: clientConfiguration,
             connectionFactory: ValkeyConnectionFactory(
@@ -153,8 +153,8 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let hashSlots = command.keysAffected.map { HashSlot(key: $0) }
-        var clientSelector: () async throws -> ValkeyClient = {
-            try await self.client(for: hashSlots)
+        var clientSelector: () async throws -> ValkeyNodeClient = {
+            try await self.nodeClient(for: hashSlots)
         }
 
         while !Task.isCancelled {
@@ -168,7 +168,7 @@ public final class ValkeyClusterClient: Sendable {
                     throw error
                 }
                 self.logger.trace("Received move error", metadata: ["error": "\(movedError)"])
-                clientSelector = { try await self.client(for: movedError) }
+                clientSelector = { try await self.nodeClient(for: movedError) }
             }
         }
         throw CancellationError()
@@ -188,8 +188,8 @@ public final class ValkeyClusterClient: Sendable {
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         let hashSlots = keys.map { HashSlot(key: $0) }
-        let client = try await self.client(for: hashSlots)
-        return try await client.withConnection(isolation: isolation, operation: operation)
+        let node = try await self.nodeClient(for: hashSlots)
+        return try await node.withConnection(isolation: isolation, operation: operation)
     }
 
     /// Starts running the cluster client.
@@ -361,13 +361,13 @@ public final class ValkeyClusterClient: Sendable {
     /// MOVED responses from Valkey nodes.
     ///
     /// - Parameter moveError: The MOVED error response from a Valkey node.
-    /// - Returns: A client connected to the node that can handle the request.
+    /// - Returns: A ``ValkeyNode`` connected to the node that can handle the request.
     /// - Throws:
     ///   - `ValkeyClusterError.waitedForDiscoveryAfterMovedErrorThreeTimes` if unable to resolve
     ///     the MOVED error after multiple attempts
     ///   - `ValkeyClusterError.clientRequestCancelled` if the request is cancelled
     @usableFromInline
-    /* private */ func client(for moveError: ValkeyMovedError) async throws -> ValkeyClient {
+    /* private */ func nodeClient(for moveError: ValkeyMovedError) async throws -> ValkeyNodeClient {
         var counter = 0
         while counter < 3 {
             defer { counter += 1 }
@@ -376,8 +376,8 @@ public final class ValkeyClusterClient: Sendable {
             }
 
             switch action {
-            case .connectionPool(let client):
-                return client
+            case .connectionPool(let node):
+                return node
 
             case .waitForDiscovery:
                 break
@@ -414,25 +414,25 @@ public final class ValkeyClusterClient: Sendable {
         throw ValkeyClusterError.waitedForDiscoveryAfterMovedErrorThreeTimes
     }
 
-    /// Retrieves a client for communicating with nodes that manage the given hash slots.
+    /// Retrieves a ``ValkeyNode`` for communicating with nodes that manage the given hash slots.
     ///
     /// This is a lower-level method that can be used when you need direct access to a
-    /// specific `ValkeyClient` instance for nodes managing particular hash slots. Most users
+    /// specific `ValkeyNode` instance for nodes managing particular hash slots. Most users
     /// should prefer the higher-level `send(command:)` method.
     ///
     /// - Parameter slots: The collection of hash slots to determine which node to connect to.
-    /// - Returns: A `ValkeyClient` instance connected to the appropriate node.
+    /// - Returns: A `ValkeyNode` instance connected to the appropriate node.
     /// - Throws:
     ///   - `ValkeyClusterError.clusterIsUnavailable` if no healthy nodes are available
     ///   - `ValkeyClusterError.clusterIsMissingSlotAssignment` if the slot assignment cannot be determined
     @inlinable
-    func client(for slots: some (Collection<HashSlot> & Sendable)) async throws -> ValkeyClient {
+    func nodeClient(for slots: some (Collection<HashSlot> & Sendable)) async throws -> ValkeyNodeClient {
         var retries = 0
         while retries < 3 {
             defer { retries += 1 }
 
             do {
-                return try self.stateLock.withLock { state -> ValkeyClient in
+                return try self.stateLock.withLock { state -> ValkeyNodeClient in
                     try state.poolFastPath(for: slots)
                 }
             } catch ValkeyClusterError.clusterIsUnavailable {
@@ -539,7 +539,7 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// - Returns: A list of voters that can participate in cluster topology election.
     /// - Throws: Any error encountered during node discovery.
-    private func runNodeDiscovery() async throws -> [ValkeyClusterVoter<ValkeyClient>] {
+    private func runNodeDiscovery() async throws -> [ValkeyClusterVoter<ValkeyNodeClient>] {
         do {
             self.logger.trace("Running node discovery")
             let nodes = try await self.nodeDiscovery.lookupNodes()
@@ -577,11 +577,11 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameter voters: The list of nodes that can vote on cluster topology.
     /// - Returns: The agreed-upon cluster description.
     /// - Throws: `ValkeyClusterError.clusterIsUnavailable` if consensus cannot be reached.
-    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyClient>]) async throws -> ValkeyClusterDescription {
+    private func runClusterDiscoveryFindingConsensus(voters: [ValkeyClusterVoter<ValkeyNodeClient>]) async throws -> ValkeyClusterDescription {
         try await withThrowingTaskGroup(of: (ValkeyClusterDescription, ValkeyNodeID).self) { taskGroup in
             for voter in voters {
                 taskGroup.addTask {
-                    (try await voter.client.clusterShards(), voter.nodeID)
+                    (try await voter.client.send(command: CLUSTER.SHARDS()), voter.nodeID)
                 }
             }
 
@@ -625,7 +625,7 @@ public final class ValkeyClusterClient: Sendable {
 
                     for voter in actions.voters {
                         taskGroup.addTask {
-                            (try await voter.client.clusterShards(), voter.nodeID)
+                            (try await voter.client.send(command: CLUSTER.SHARDS()), voter.nodeID)
                         }
                     }
 
@@ -650,80 +650,3 @@ public final class ValkeyClusterClient: Sendable {
 /// This allows the cluster client to be used anywhere a `ValkeyClientProtocol` is expected.
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient: ValkeyClientProtocol {}
-
-/// Extension that makes ``ValkeyClient`` conform to ``ValkeyNodeConnectionPool``.
-///
-/// This enables the ``ValkeyClusterClient`` to manage individual ``ValkeyClient`` instances.
-@available(valkeySwift 1.0, *)
-extension ValkeyClient: ValkeyNodeConnectionPool {
-    /// Initiates a graceful shutdown of the client.
-    ///
-    /// This method attempts to cleanly shut down the client's connections.
-    /// If not implemented, it falls back to force shutdown.
-    @usableFromInline
-    package func triggerGracefulShutdown() {
-        // TODO: Implement graceful shutdown
-        self.triggerForceShutdown()
-    }
-}
-
-/// A factory for creating ``ValkeyClient`` instances to connect to specific nodes.
-///
-/// This factory is used by the ``ValkeyClusterClient`` to create client instances
-/// for each node in the cluster as needed.
-@available(valkeySwift 1.0, *)
-@usableFromInline
-package struct ValkeyClientFactory: ValkeyNodeConnectionPoolFactory {
-    @usableFromInline
-    package typealias ConnectionPool = ValkeyClient
-
-    var logger: Logger
-    var configuration: ValkeyClientConfiguration
-    var eventLoopGroup: any EventLoopGroup
-    let connectionIDGenerator = ConnectionIDGenerator()
-    let connectionFactory: ValkeyConnectionFactory
-
-    /// Creates a new `ValkeyClientFactory` instance.
-    ///
-    /// - Parameters:
-    ///   - logger: The logger used for diagnostic information.
-    ///   - configuration: Configuration for the Valkey clients created by this factory.
-    ///   - eventLoopGroup: The event loop group to use for client connections.
-    package init(
-        logger: Logger,
-        configuration: ValkeyClientConfiguration,
-        connectionFactory: ValkeyConnectionFactory,
-        eventLoopGroup: any EventLoopGroup
-    ) {
-        self.logger = logger
-        self.configuration = configuration
-        self.connectionFactory = connectionFactory
-        self.eventLoopGroup = eventLoopGroup
-    }
-
-    /// Creates a connection pool (client) for a specific node in the cluster.
-    ///
-    /// - Parameter nodeDescription: Description of the node to connect to.
-    /// - Returns: A configured `ValkeyClient` instance ready to connect to the specified node.
-    @usableFromInline
-    package func makeConnectionPool(nodeDescription: ValkeyNodeDescription) -> ValkeyClient {
-        let serverAddress = ValkeyServerAddress.hostname(
-            nodeDescription.endpoint,
-            port: nodeDescription.port
-        )
-
-        var clientConfiguration = self.configuration
-        if !nodeDescription.useTLS {
-            // TODO: Should this throw? What about the other way around?
-            clientConfiguration.tls = .disable
-        }
-
-        return ValkeyClient(
-            serverAddress,
-            connectionIDGenerator: self.connectionIDGenerator,
-            connectionFactory: self.connectionFactory,
-            eventLoopGroup: self.eventLoopGroup,
-            logger: self.logger
-        )
-    }
-}

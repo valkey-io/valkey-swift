@@ -31,24 +31,12 @@ import ServiceLifecycle
 /// Supports TLS via both NIOSSL and Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
-    typealias Pool = ConnectionPool<
-        ValkeyConnection,
-        ValkeyConnection.ID,
-        ConnectionIDGenerator,
-        ConnectionRequest<ValkeyConnection>,
-        ConnectionRequest.ID,
-        ValkeyKeepAliveBehavior,
-        ValkeyClientMetrics,
-        ContinuousClock
-    >
-    /// Server address
-    let serverAddress: ValkeyServerAddress
-    /// Connection pool
-    let connectionPool: Pool
-
-    let connectionFactory: ValkeyConnectionFactory
+    let nodeClientFactory: ValkeyNodeClientFactory
+    /// single node
+    @usableFromInline
+    let node: ValkeyNodeClient
     /// configuration
-    var configuration: ValkeyClientConfiguration { self.connectionFactory.configuration }
+    var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
     /// Logger
@@ -85,37 +73,19 @@ public final class ValkeyClient: Sendable {
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
-        self.serverAddress = address
-
-        var poolConfiguration = _ValkeyConnectionPool.ConnectionPoolConfiguration()
-        poolConfiguration.minimumConnectionCount = connectionFactory.configuration.connectionPool.minimumConnectionCount
-        poolConfiguration.maximumConnectionSoftLimit = connectionFactory.configuration.connectionPool.maximumConnectionCount
-        poolConfiguration.maximumConnectionHardLimit = connectionFactory.configuration.connectionPool.maximumConnectionCount
-
-        self.connectionPool = .init(
-            configuration: poolConfiguration,
-            idGenerator: connectionIDGenerator,
-            requestType: ConnectionRequest<ValkeyConnection>.self,
-            keepAliveBehavior: .init(connectionFactory.configuration.keepAliveBehavior),
-            observabilityDelegate: ValkeyClientMetrics(logger: logger),
-            clock: .continuous
-        ) { (connectionID, pool) in
-            var logger = logger
-            logger[metadataKey: "valkey_connection_id"] = "\(connectionID)"
-
-            let connection = try await connectionFactory.makeConnection(
-                address: address,
-                connectionID: connectionID,
-                eventLoop: eventLoopGroup.any(),
-                logger: logger
-            )
-
-            return ConnectionAndMetadata(connection: connection, maximalStreamsOnConnection: 1)
-        }
-        self.connectionFactory = connectionFactory
+        self.nodeClientFactory = ValkeyNodeClientFactory(
+            logger: logger,
+            configuration: connectionFactory.configuration,
+            connectionFactory: ValkeyConnectionFactory(
+                configuration: connectionFactory.configuration,
+                customHandler: nil
+            ),
+            eventLoopGroup: eventLoopGroup
+        )
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
         self.runningAtomic = .init(false)
+        self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
     }
 }
 
@@ -127,15 +97,11 @@ extension ValkeyClient {
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
-            await self.connectionPool.run()
+            await self.node.run()
         }
         #else
-        await self.connectionPool.run()
+        await self.node.run()
         #endif
-    }
-
-    func triggerForceShutdown() {
-        self.connectionPool.triggerForceShutdown()
     }
 
     /// Get connection from connection pool and run operation using connection
@@ -144,24 +110,13 @@ extension ValkeyClient {
     ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
+    @inlinable
     public func withConnection<Value>(
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let connection = try await self.leaseConnection()
-
-        defer { self.connectionPool.releaseConnection(connection) }
-
-        return try await operation(connection)
+        try await self.node.withConnection(isolation: isolation, operation: operation)
     }
-
-    private func leaseConnection() async throws -> ValkeyConnection {
-        if !self.runningAtomic.load(ordering: .relaxed) {
-            self.logger.warning("Trying to lease connection from `ValkeyClient`, but `ValkeyClient.run()` hasn't been called yet.")
-        }
-        return try await self.connectionPool.leaseConnection()
-    }
-
 }
 
 /// Extend ValkeyClient so we can call commands directly from it
