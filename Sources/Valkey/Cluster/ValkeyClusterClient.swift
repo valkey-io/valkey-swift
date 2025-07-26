@@ -645,11 +645,11 @@ public final class ValkeyClusterClient: Sendable {
     }
 }
 
-/// Extension that makes `ValkeyClusterClient` conform to `ValkeyConnectionProtocol`.
+/// Extension that makes `ValkeyClusterClient` conform to `ValkeyClientProtocol`.
 ///
-/// This allows the cluster client to be used anywhere a `ValkeyConnectionProtocol` is expected.
+/// This allows the cluster client to be used anywhere a `ValkeyClientProtocol` is expected.
 @available(valkeySwift 1.0, *)
-extension ValkeyClusterClient: ValkeyConnectionProtocol {}
+extension ValkeyClusterClient: ValkeyClientProtocol {}
 
 /// Extension that makes ``ValkeyClient`` conform to ``ValkeyNodeConnectionPool``.
 ///

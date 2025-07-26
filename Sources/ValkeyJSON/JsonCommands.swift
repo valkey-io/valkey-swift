@@ -483,7 +483,7 @@ public enum JSON {
 
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Append one or more values to the array values at the path.
     ///
     /// - Documentation: [JSON.ARRAPPEND](https://valkey.io/commands/json.arrappend)

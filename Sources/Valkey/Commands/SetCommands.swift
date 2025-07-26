@@ -374,7 +374,7 @@ public struct SUNIONSTORE: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Adds one or more members to a set. Creates the key if it doesn't exist.
     ///
     /// - Documentation: [SADD](https://valkey.io/commands/sadd)

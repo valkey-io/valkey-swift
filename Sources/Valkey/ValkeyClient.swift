@@ -166,7 +166,7 @@ extension ValkeyClient {
 
 /// Extend ValkeyClient so we can call commands directly from it
 @available(valkeySwift 1.0, *)
-extension ValkeyClient: ValkeyConnectionProtocol {
+extension ValkeyClient: ValkeyClientProtocol {
     /// Send command to Valkey connection from connection pool
     /// - Parameter command: Valkey command
     /// - Returns: Response from Valkey command
