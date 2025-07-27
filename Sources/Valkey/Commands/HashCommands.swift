@@ -443,7 +443,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func hdel<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws -> Int {
-        try await execute(command: HDEL(key, fields: fields))
+        try await execute(HDEL(key, fields: fields))
     }
 
     /// Determines whether a field exists in a hash.
@@ -456,7 +456,7 @@ extension ValkeyClientProtocol {
     ///     * 1: The hash contains the field.
     @inlinable
     public func hexists<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws -> Int {
-        try await execute(command: HEXISTS(key, field: field))
+        try await execute(HEXISTS(key, field: field))
     }
 
     /// Returns the value of a field in a hash.
@@ -469,7 +469,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: If the field is not present in the hash or key does not exist.
     @inlinable
     public func hget<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws -> ByteBuffer? {
-        try await execute(command: HGET(key, field: field))
+        try await execute(HGET(key, field: field))
     }
 
     /// Returns all fields and values in a hash.
@@ -480,7 +480,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Map]: Map of fields and their values stored in the hash, or an empty list when key does not exist. In RESP2 this is returned as a flat array.
     @inlinable
     public func hgetall(_ key: ValkeyKey) async throws -> RESPToken.Map {
-        try await execute(command: HGETALL(key))
+        try await execute(HGETALL(key))
     }
 
     /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
@@ -492,7 +492,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func hincrby<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field, increment: Int) async throws -> Int {
-        try await execute(command: HINCRBY(key, field: field, increment: increment))
+        try await execute(HINCRBY(key, field: field, increment: increment))
     }
 
     /// Increments the floating point value of a field by a number. Uses 0 as initial value if the field doesn't exist.
@@ -504,7 +504,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func hincrbyfloat<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field, increment: Double) async throws -> ByteBuffer {
-        try await execute(command: HINCRBYFLOAT(key, field: field, increment: increment))
+        try await execute(HINCRBYFLOAT(key, field: field, increment: increment))
     }
 
     /// Returns all fields in a hash.
@@ -515,7 +515,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of fields in the hash, or an empty list when the key does not exist.
     @inlinable
     public func hkeys(_ key: ValkeyKey) async throws -> RESPToken.Array {
-        try await execute(command: HKEYS(key))
+        try await execute(HKEYS(key))
     }
 
     /// Returns the number of fields in a hash.
@@ -526,7 +526,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of the fields in the hash, or 0 when the key does not exist.
     @inlinable
     public func hlen(_ key: ValkeyKey) async throws -> Int {
-        try await execute(command: HLEN(key))
+        try await execute(HLEN(key))
     }
 
     /// Returns the values of all fields in a hash.
@@ -537,7 +537,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of values associated with the given fields, in the same order as they are requested.
     @inlinable
     public func hmget<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: [Field]) async throws -> RESPToken.Array {
-        try await execute(command: HMGET(key, fields: fields))
+        try await execute(HMGET(key, fields: fields))
     }
 
     /// Sets the values of multiple fields.
@@ -548,7 +548,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of fields being set.
     @inlinable
     public func hmset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, data: [HMSET<Field, Value>.Data]) async throws {
-        _ = try await execute(command: HMSET(key, data: data))
+        _ = try await execute(HMSET(key, data: data))
     }
 
     /// Returns one or more random fields from a hash.
@@ -563,7 +563,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: Fields and their values. Returned in case `COUNT` and `WITHVALUES` were used. In RESP2 this is returned as a flat array.
     @inlinable
     public func hrandfield(_ key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws -> RESPToken? {
-        try await execute(command: HRANDFIELD(key, options: options))
+        try await execute(HRANDFIELD(key, options: options))
     }
 
     /// Iterates over fields and values of a hash.
@@ -580,7 +580,7 @@ extension ValkeyClientProtocol {
         count: Int? = nil,
         novalues: Bool = false
     ) async throws -> RESPToken.Array {
-        try await execute(command: HSCAN(key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
+        try await execute(HSCAN(key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
     }
 
     /// Creates or modifies the value of a field in a hash.
@@ -595,7 +595,7 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func hset<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, data: [HSET<Field, Value>.Data]) async throws -> Int
     {
-        try await execute(command: HSET(key, data: data))
+        try await execute(HSET(key, data: data))
     }
 
     /// Sets the value of a field in a hash only when the field doesn't exist.
@@ -609,7 +609,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func hsetnx<Field: RESPStringRenderable, Value: RESPStringRenderable>(_ key: ValkeyKey, field: Field, value: Value) async throws -> Int {
-        try await execute(command: HSETNX(key, field: field, value: value))
+        try await execute(HSETNX(key, field: field, value: value))
     }
 
     /// Returns the length of the value of a field.
@@ -620,7 +620,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: String length of the value associated with the field, or zero when the field is not present in the hash or key does not exist at all.
     @inlinable
     public func hstrlen<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws -> Int {
-        try await execute(command: HSTRLEN(key, field: field))
+        try await execute(HSTRLEN(key, field: field))
     }
 
     /// Returns all values in a hash.
@@ -631,7 +631,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of values in the hash, or an empty list when the key does not exist.
     @inlinable
     public func hvals(_ key: ValkeyKey) async throws -> RESPToken.Array {
-        try await execute(command: HVALS(key))
+        try await execute(HVALS(key))
     }
 
 }

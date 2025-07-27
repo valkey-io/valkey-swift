@@ -1119,7 +1119,7 @@ extension ValkeyClientProtocol {
         change: Bool = false,
         data: [GEOADD<Member>.Data]
     ) async throws -> Int {
-        try await execute(command: GEOADD(key, condition: condition, change: change, data: data))
+        try await execute(GEOADD(key, condition: condition, change: change, data: data))
     }
 
     /// Returns the distance between two members of a geospatial index.
@@ -1137,7 +1137,7 @@ extension ValkeyClientProtocol {
         member2: Member2,
         unit: GEODIST<Member1, Member2>.Unit? = nil
     ) async throws -> GEODISTResponse {
-        try await execute(command: GEODIST(key, member1: member1, member2: member2, unit: unit))
+        try await execute(GEODIST(key, member1: member1, member2: member2, unit: unit))
     }
 
     /// Returns members from a geospatial index as geohash strings.
@@ -1148,7 +1148,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
     @inlinable
     public func geohash(_ key: ValkeyKey, members: [String] = []) async throws -> RESPToken.Array {
-        try await execute(command: GEOHASH(key, members: members))
+        try await execute(GEOHASH(key, members: members))
     }
 
     /// Returns the longitude and latitude of members from a geospatial index.
@@ -1159,7 +1159,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
     public func geopos(_ key: ValkeyKey, members: [String] = []) async throws -> GEOPOS.Response {
-        try await execute(command: GEOPOS(key, members: members))
+        try await execute(GEOPOS(key, members: members))
     }
 
     /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
@@ -1188,7 +1188,7 @@ extension ValkeyClientProtocol {
         store: GEORADIUS.Store? = nil
     ) async throws -> GEORADIUS.Response {
         try await execute(
-            command: GEORADIUS(
+            GEORADIUS(
                 key,
                 longitude: longitude,
                 latitude: latitude,
@@ -1229,7 +1229,7 @@ extension ValkeyClientProtocol {
         store: GEORADIUSBYMEMBER<Member>.Store? = nil
     ) async throws -> RESPToken {
         try await execute(
-            command: GEORADIUSBYMEMBER(
+            GEORADIUSBYMEMBER(
                 key,
                 member: member,
                 radius: radius,
@@ -1267,7 +1267,7 @@ extension ValkeyClientProtocol {
         order: GEORADIUSBYMEMBERRO<Member>.Order? = nil
     ) async throws -> RESPToken.Array {
         try await execute(
-            command: GEORADIUSBYMEMBERRO(
+            GEORADIUSBYMEMBERRO(
                 key,
                 member: member,
                 radius: radius,
@@ -1305,7 +1305,7 @@ extension ValkeyClientProtocol {
         order: GEORADIUSRO.Order? = nil
     ) async throws -> RESPToken.Array {
         try await execute(
-            command: GEORADIUSRO(
+            GEORADIUSRO(
                 key,
                 longitude: longitude,
                 latitude: latitude,
@@ -1340,16 +1340,7 @@ extension ValkeyClientProtocol {
         withhash: Bool = false
     ) async throws -> GEOSEARCH.Response {
         try await execute(
-            command: GEOSEARCH(
-                key,
-                from: from,
-                by: by,
-                order: order,
-                countBlock: countBlock,
-                withcoord: withcoord,
-                withdist: withdist,
-                withhash: withhash
-            )
+            GEOSEARCH(key, from: from, by: by, order: order, countBlock: countBlock, withcoord: withcoord, withdist: withdist, withhash: withhash)
         )
     }
 
@@ -1373,15 +1364,7 @@ extension ValkeyClientProtocol {
         storedist: Bool = false
     ) async throws -> Int {
         try await execute(
-            command: GEOSEARCHSTORE(
-                destination: destination,
-                source: source,
-                from: from,
-                by: by,
-                order: order,
-                countBlock: countBlock,
-                storedist: storedist
-            )
+            GEOSEARCHSTORE(destination: destination, source: source, from: from, by: by, order: order, countBlock: countBlock, storedist: storedist)
         )
     }
 

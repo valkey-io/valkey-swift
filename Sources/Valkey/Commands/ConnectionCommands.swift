@@ -799,7 +799,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of passwords defined for the user
     @inlinable
     public func auth<Password: RESPStringRenderable>(username: String? = nil, password: Password) async throws {
-        _ = try await execute(command: AUTH(username: username, password: password))
+        _ = try await execute(AUTH(username: username, password: password))
     }
 
     /// A container for client connection commands.
@@ -810,7 +810,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func client() async throws -> CLIENT.Response {
-        try await execute(command: CLIENT())
+        try await execute(CLIENT())
     }
 
     /// Instructs the server whether to track the keys in the next request.
@@ -820,7 +820,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clientCaching(mode: CLIENT.CACHING.Mode) async throws {
-        _ = try await execute(command: CLIENT.CACHING(mode: mode))
+        _ = try await execute(CLIENT.CACHING(mode: mode))
     }
 
     /// A client claims its capability.
@@ -830,7 +830,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clientCapa<Capability: RESPStringRenderable>(capabilities: [Capability]) async throws {
-        _ = try await execute(command: CLIENT.CAPA(capabilities: capabilities))
+        _ = try await execute(CLIENT.CAPA(capabilities: capabilities))
     }
 
     /// Returns the name of the connection.
@@ -844,7 +844,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clientGetname() async throws -> ByteBuffer? {
-        try await execute(command: CLIENT.GETNAME())
+        try await execute(CLIENT.GETNAME())
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
@@ -859,7 +859,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clientGetredir() async throws -> Int {
-        try await execute(command: CLIENT.GETREDIR())
+        try await execute(CLIENT.GETREDIR())
     }
 
     /// Returns helpful text about the different subcommands.
@@ -871,7 +871,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clientHelp() async throws -> RESPToken.Array {
-        try await execute(command: CLIENT.HELP())
+        try await execute(CLIENT.HELP())
     }
 
     /// Returns the unique client ID of the connection.
@@ -883,7 +883,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clientId() async throws -> Int {
-        try await execute(command: CLIENT.ID())
+        try await execute(CLIENT.ID())
     }
 
     /// Mark this client as an import source when server is in import mode.
@@ -893,7 +893,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clientImportSource(enabled: CLIENT.IMPORTSOURCE.Enabled) async throws {
-        _ = try await execute(command: CLIENT.IMPORTSOURCE(enabled: enabled))
+        _ = try await execute(CLIENT.IMPORTSOURCE(enabled: enabled))
     }
 
     /// Returns information about the connection.
@@ -905,7 +905,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clientInfo() async throws -> ByteBuffer {
-        try await execute(command: CLIENT.INFO())
+        try await execute(CLIENT.INFO())
     }
 
     /// Terminates open connections.
@@ -928,7 +928,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clientKill(filter: CLIENT.KILL.Filter) async throws -> Int? {
-        try await execute(command: CLIENT.KILL(filter: filter))
+        try await execute(CLIENT.KILL(filter: filter))
     }
 
     /// Lists open connections.
@@ -958,15 +958,7 @@ extension ValkeyClientProtocol {
         maxage: Int? = nil
     ) async throws -> ByteBuffer {
         try await execute(
-            command: CLIENT.LIST(
-                clientType: clientType,
-                clientIds: clientIds,
-                username: username,
-                addr: addr,
-                laddr: laddr,
-                skipme: skipme,
-                maxage: maxage
-            )
+            CLIENT.LIST(clientType: clientType, clientIds: clientIds, username: username, addr: addr, laddr: laddr, skipme: skipme, maxage: maxage)
         )
     }
 
@@ -977,7 +969,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clientNoEvict(enabled: CLIENT.NOEVICT.Enabled) async throws {
-        _ = try await execute(command: CLIENT.NOEVICT(enabled: enabled))
+        _ = try await execute(CLIENT.NOEVICT(enabled: enabled))
     }
 
     /// Controls whether commands sent by the client affect the LRU/LFU of accessed keys.
@@ -987,7 +979,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clientNoTouch(enabled: CLIENT.NOTOUCH.Enabled) async throws {
-        _ = try await execute(command: CLIENT.NOTOUCH(enabled: enabled))
+        _ = try await execute(CLIENT.NOTOUCH(enabled: enabled))
     }
 
     /// Suspends commands processing.
@@ -999,7 +991,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clientPause(timeout: Int, mode: CLIENT.PAUSE.Mode? = nil) async throws {
-        _ = try await execute(command: CLIENT.PAUSE(timeout: timeout, mode: mode))
+        _ = try await execute(CLIENT.PAUSE(timeout: timeout, mode: mode))
     }
 
     /// Instructs the server whether to reply to commands.
@@ -1010,7 +1002,7 @@ extension ValkeyClientProtocol {
     /// - Response: "OK": When called with either OFF or SKIP subcommands, no reply is made. When called with ON, reply is OK.
     @inlinable
     public func clientReply(action: CLIENT.REPLY.Action) async throws {
-        _ = try await execute(command: CLIENT.REPLY(action: action))
+        _ = try await execute(CLIENT.REPLY(action: action))
     }
 
     /// Sets information specific to the client or connection.
@@ -1020,7 +1012,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clientSetinfo(attr: CLIENT.SETINFO.Attr) async throws {
-        _ = try await execute(command: CLIENT.SETINFO(attr: attr))
+        _ = try await execute(CLIENT.SETINFO(attr: attr))
     }
 
     /// Sets the connection name.
@@ -1030,7 +1022,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clientSetname<ConnectionName: RESPStringRenderable>(connectionName: ConnectionName) async throws {
-        _ = try await execute(command: CLIENT.SETNAME(connectionName: connectionName))
+        _ = try await execute(CLIENT.SETNAME(connectionName: connectionName))
     }
 
     /// Controls server-assisted client-side caching for the connection.
@@ -1050,15 +1042,7 @@ extension ValkeyClientProtocol {
         noloop: Bool = false
     ) async throws {
         _ = try await execute(
-            command: CLIENT.TRACKING(
-                status: status,
-                clientId: clientId,
-                prefixes: prefixes,
-                bcast: bcast,
-                optin: optin,
-                optout: optout,
-                noloop: noloop
-            )
+            CLIENT.TRACKING(status: status, clientId: clientId, prefixes: prefixes, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
         )
     }
 
@@ -1070,7 +1054,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clientTrackinginfo() async throws -> RESPToken.Map {
-        try await execute(command: CLIENT.TRACKINGINFO())
+        try await execute(CLIENT.TRACKINGINFO())
     }
 
     /// Unblocks a client blocked by a blocking command from a different connection.
@@ -1084,7 +1068,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clientUnblock(clientId: Int, unblockType: CLIENT.UNBLOCK.UnblockType? = nil) async throws -> Int {
-        try await execute(command: CLIENT.UNBLOCK(clientId: clientId, unblockType: unblockType))
+        try await execute(CLIENT.UNBLOCK(clientId: clientId, unblockType: unblockType))
     }
 
     /// Resumes processing commands from paused clients.
@@ -1094,7 +1078,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) Where N is the number of paused clients
     @inlinable
     public func clientUnpause() async throws {
-        _ = try await execute(command: CLIENT.UNPAUSE())
+        _ = try await execute(CLIENT.UNPAUSE())
     }
 
     /// Returns the given string.
@@ -1106,7 +1090,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ByteBuffer {
-        try await execute(command: ECHO(message: message))
+        try await execute(ECHO(message: message))
     }
 
     /// Handshakes with the server.
@@ -1120,7 +1104,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func hello(arguments: HELLO.Arguments? = nil) async throws -> RESPToken.Map {
-        try await execute(command: HELLO(arguments: arguments))
+        try await execute(HELLO(arguments: arguments))
     }
 
     /// Returns the server's liveliness response.
@@ -1134,7 +1118,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func ping(message: String? = nil) async throws -> PING.Response {
-        try await execute(command: PING(message: message))
+        try await execute(PING(message: message))
     }
 
     /// Closes the connection.
@@ -1145,7 +1129,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func quit() async throws {
-        _ = try await execute(command: QUIT())
+        _ = try await execute(QUIT())
     }
 
     /// Resets the connection.
@@ -1156,7 +1140,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func reset() async throws -> String {
-        try await execute(command: RESET())
+        try await execute(RESET())
     }
 
     /// Changes the selected database.
@@ -1166,7 +1150,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func select(index: Int) async throws {
-        _ = try await execute(command: SELECT(index: index))
+        _ = try await execute(SELECT(index: index))
     }
 
 }

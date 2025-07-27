@@ -1242,7 +1242,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bzmpop(timeout: Double, keys: [ValkeyKey], where: BZMPOP.Where, count: Int? = nil) async throws -> BZMPOP.Response {
-        try await execute(command: BZMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
+        try await execute(BZMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
     }
 
     /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
@@ -1258,7 +1258,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bzpopmax(keys: [ValkeyKey], timeout: Double) async throws -> BZPOPMAX.Response {
-        try await execute(command: BZPOPMAX(keys: keys, timeout: timeout))
+        try await execute(BZPOPMAX(keys: keys, timeout: timeout))
     }
 
     /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
@@ -1274,7 +1274,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bzpopmin(keys: [ValkeyKey], timeout: Double) async throws -> BZPOPMIN.Response {
-        try await execute(command: BZPOPMIN(keys: keys, timeout: timeout))
+        try await execute(BZPOPMIN(keys: keys, timeout: timeout))
     }
 
     /// Adds one or more members to a sorted set, or updates their scores. Creates the key if it doesn't exist.
@@ -1301,7 +1301,7 @@ extension ValkeyClientProtocol {
         increment: Bool = false,
         data: [ZADD<Member>.Data]
     ) async throws -> RESPToken? {
-        try await execute(command: ZADD(key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
+        try await execute(ZADD(key, condition: condition, comparison: comparison, change: change, increment: increment, data: data))
     }
 
     /// Returns the number of members in a sorted set.
@@ -1312,7 +1312,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The cardinality (number of elements) of the sorted set, or 0 if key does not exist
     @inlinable
     public func zcard(_ key: ValkeyKey) async throws -> Int {
-        try await execute(command: ZCARD(key))
+        try await execute(ZCARD(key))
     }
 
     /// Returns the count of members in a sorted set that have scores within a range.
@@ -1323,7 +1323,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of elements in the specified score range
     @inlinable
     public func zcount(_ key: ValkeyKey, min: Double, max: Double) async throws -> Int {
-        try await execute(command: ZCOUNT(key, min: min, max: max))
+        try await execute(ZCOUNT(key, min: min, max: max))
     }
 
     /// Returns the difference between multiple sorted sets.
@@ -1336,7 +1336,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: Members and their scores. Returned in case `WITHSCORES` was used. In RESP2 this is returned as a flat array
     @inlinable
     public func zdiff(keys: [ValkeyKey], withscores: Bool = false) async throws -> RESPToken.Array {
-        try await execute(command: ZDIFF(keys: keys, withscores: withscores))
+        try await execute(ZDIFF(keys: keys, withscores: withscores))
     }
 
     /// Stores the difference of multiple sorted sets in a key.
@@ -1348,7 +1348,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zdiffstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
-        try await execute(command: ZDIFFSTORE(destination: destination, keys: keys))
+        try await execute(ZDIFFSTORE(destination: destination, keys: keys))
     }
 
     /// Increments the score of a member in a sorted set.
@@ -1360,7 +1360,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zincrby<Member: RESPStringRenderable>(_ key: ValkeyKey, increment: Int, member: Member) async throws -> Double {
-        try await execute(command: ZINCRBY(key, increment: increment, member: member))
+        try await execute(ZINCRBY(key, increment: increment, member: member))
     }
 
     /// Returns the intersect of multiple sorted sets.
@@ -1378,7 +1378,7 @@ extension ValkeyClientProtocol {
         aggregate: ZINTER.Aggregate? = nil,
         withscores: Bool = false
     ) async throws -> RESPToken.Array {
-        try await execute(command: ZINTER(keys: keys, weights: weights, aggregate: aggregate, withscores: withscores))
+        try await execute(ZINTER(keys: keys, weights: weights, aggregate: aggregate, withscores: withscores))
     }
 
     /// Returns the number of members of the intersect of multiple sorted sets.
@@ -1389,7 +1389,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of elements in the resulting intersection.
     @inlinable
     public func zintercard(keys: [ValkeyKey], limit: Int? = nil) async throws -> Int {
-        try await execute(command: ZINTERCARD(keys: keys, limit: limit))
+        try await execute(ZINTERCARD(keys: keys, limit: limit))
     }
 
     /// Stores the intersect of multiple sorted sets in a key.
@@ -1406,7 +1406,7 @@ extension ValkeyClientProtocol {
         weights: [Int] = [],
         aggregate: ZINTERSTORE.Aggregate? = nil
     ) async throws -> Int {
-        try await execute(command: ZINTERSTORE(destination: destination, keys: keys, weights: weights, aggregate: aggregate))
+        try await execute(ZINTERSTORE(destination: destination, keys: keys, weights: weights, aggregate: aggregate))
     }
 
     /// Returns the number of members in a sorted set within a lexicographical range.
@@ -1417,7 +1417,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of elements in the specified score range.
     @inlinable
     public func zlexcount<Min: RESPStringRenderable, Max: RESPStringRenderable>(_ key: ValkeyKey, min: Min, max: Max) async throws -> Int {
-        try await execute(command: ZLEXCOUNT(key, min: min, max: max))
+        try await execute(ZLEXCOUNT(key, min: min, max: max))
     }
 
     /// Returns the highest- or lowest-scoring members from one or more sorted sets after removing them. Deletes the sorted set if the last member was popped.
@@ -1431,7 +1431,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zmpop(keys: [ValkeyKey], where: ZMPOP.Where, count: Int? = nil) async throws -> ZMPOP.Response {
-        try await execute(command: ZMPOP(keys: keys, where: `where`, count: count))
+        try await execute(ZMPOP(keys: keys, where: `where`, count: count))
     }
 
     /// Returns the score of one or more members in a sorted set.
@@ -1444,7 +1444,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: Member does not exist in the sorted set.
     @inlinable
     public func zmscore<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> RESPToken.Array {
-        try await execute(command: ZMSCORE(key, members: members))
+        try await execute(ZMSCORE(key, members: members))
     }
 
     /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -1458,7 +1458,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zpopmax(_ key: ValkeyKey, count: Int? = nil) async throws -> ZPOPMAX.Response {
-        try await execute(command: ZPOPMAX(key, count: count))
+        try await execute(ZPOPMAX(key, count: count))
     }
 
     /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
@@ -1472,7 +1472,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zpopmin(_ key: ValkeyKey, count: Int? = nil) async throws -> ZPOPMIN.Response {
-        try await execute(command: ZPOPMIN(key, count: count))
+        try await execute(ZPOPMIN(key, count: count))
     }
 
     /// Returns one or more random members from a sorted set.
@@ -1487,7 +1487,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: Randomly selected elements when 'COUNT' and 'WITHSCORES' modifiers are used.
     @inlinable
     public func zrandmember(_ key: ValkeyKey, options: ZRANDMEMBER.Options? = nil) async throws -> RESPToken? {
-        try await execute(command: ZRANDMEMBER(key, options: options))
+        try await execute(ZRANDMEMBER(key, options: options))
     }
 
     /// Returns members in a sorted set within a range of indexes.
@@ -1510,7 +1510,7 @@ extension ValkeyClientProtocol {
         limit: ZRANGE<Start, Stop>.Limit? = nil,
         withscores: Bool = false
     ) async throws -> RESPToken.Array {
-        try await execute(command: ZRANGE(key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
+        try await execute(ZRANGE(key, start: start, stop: stop, sortby: sortby, rev: rev, limit: limit, withscores: withscores))
     }
 
     /// Returns members in a sorted set within a lexicographical range.
@@ -1527,7 +1527,7 @@ extension ValkeyClientProtocol {
         max: Max,
         limit: ZRANGEBYLEX<Min, Max>.Limit? = nil
     ) async throws -> RESPToken.Array {
-        try await execute(command: ZRANGEBYLEX(key, min: min, max: max, limit: limit))
+        try await execute(ZRANGEBYLEX(key, min: min, max: max, limit: limit))
     }
 
     /// Returns members in a sorted set within a range of scores.
@@ -1549,7 +1549,7 @@ extension ValkeyClientProtocol {
         withscores: Bool = false,
         limit: ZRANGEBYSCORE.Limit? = nil
     ) async throws -> RESPToken.Array {
-        try await execute(command: ZRANGEBYSCORE(key, min: min, max: max, withscores: withscores, limit: limit))
+        try await execute(ZRANGEBYSCORE(key, min: min, max: max, withscores: withscores, limit: limit))
     }
 
     /// Stores a range of members from sorted set in a key.
@@ -1569,7 +1569,7 @@ extension ValkeyClientProtocol {
         rev: Bool = false,
         limit: ZRANGESTORE<Min, Max>.Limit? = nil
     ) async throws -> Int {
-        try await execute(command: ZRANGESTORE(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
+        try await execute(ZRANGESTORE(dst: dst, src: src, min: min, max: max, sortby: sortby, rev: rev, limit: limit))
     }
 
     /// Returns the index of a member in a sorted set ordered by ascending scores.
@@ -1585,7 +1585,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: The rank and score of the member when 'WITHSCORE' is used.
     @inlinable
     public func zrank<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member, withscore: Bool = false) async throws -> RESPToken? {
-        try await execute(command: ZRANK(key, member: member, withscore: withscore))
+        try await execute(ZRANK(key, member: member, withscore: withscore))
     }
 
     /// Removes one or more members from a sorted set. Deletes the sorted set if all members were removed.
@@ -1599,7 +1599,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zrem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
-        try await execute(command: ZREM(key, members: members))
+        try await execute(ZREM(key, members: members))
     }
 
     /// Removes members in a sorted set within a lexicographical range. Deletes the sorted set if all members were removed.
@@ -1611,7 +1611,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zremrangebylex<Min: RESPStringRenderable, Max: RESPStringRenderable>(_ key: ValkeyKey, min: Min, max: Max) async throws -> Int {
-        try await execute(command: ZREMRANGEBYLEX(key, min: min, max: max))
+        try await execute(ZREMRANGEBYLEX(key, min: min, max: max))
     }
 
     /// Removes members in a sorted set within a range of indexes. Deletes the sorted set if all members were removed.
@@ -1623,7 +1623,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zremrangebyrank(_ key: ValkeyKey, start: Int, stop: Int) async throws -> Int {
-        try await execute(command: ZREMRANGEBYRANK(key, start: start, stop: stop))
+        try await execute(ZREMRANGEBYRANK(key, start: start, stop: stop))
     }
 
     /// Removes members in a sorted set within a range of scores. Deletes the sorted set if all members were removed.
@@ -1635,7 +1635,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func zremrangebyscore(_ key: ValkeyKey, min: Double, max: Double) async throws -> Int {
-        try await execute(command: ZREMRANGEBYSCORE(key, min: min, max: max))
+        try await execute(ZREMRANGEBYSCORE(key, min: min, max: max))
     }
 
     /// Returns members in a sorted set within a range of indexes in reverse order.
@@ -1649,7 +1649,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: List of the members and their scores. Returned in case `WITHSCORES` was used.
     @inlinable
     public func zrevrange(_ key: ValkeyKey, start: Int, stop: Int, withscores: Bool = false) async throws -> RESPToken.Array {
-        try await execute(command: ZREVRANGE(key, start: start, stop: stop, withscores: withscores))
+        try await execute(ZREVRANGE(key, start: start, stop: stop, withscores: withscores))
     }
 
     /// Returns members in a sorted set within a lexicographical range in reverse order.
@@ -1666,7 +1666,7 @@ extension ValkeyClientProtocol {
         min: Min,
         limit: ZREVRANGEBYLEX<Max, Min>.Limit? = nil
     ) async throws -> RESPToken.Array {
-        try await execute(command: ZREVRANGEBYLEX(key, max: max, min: min, limit: limit))
+        try await execute(ZREVRANGEBYLEX(key, max: max, min: min, limit: limit))
     }
 
     /// Returns members in a sorted set within a range of scores in reverse order.
@@ -1688,7 +1688,7 @@ extension ValkeyClientProtocol {
         withscores: Bool = false,
         limit: ZREVRANGEBYSCORE.Limit? = nil
     ) async throws -> RESPToken.Array {
-        try await execute(command: ZREVRANGEBYSCORE(key, max: max, min: min, withscores: withscores, limit: limit))
+        try await execute(ZREVRANGEBYSCORE(key, max: max, min: min, withscores: withscores, limit: limit))
     }
 
     /// Returns the index of a member in a sorted set ordered by descending scores.
@@ -1704,7 +1704,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: The rank and score of the member when 'WITHSCORE' is used.
     @inlinable
     public func zrevrank<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member, withscore: Bool = false) async throws -> RESPToken? {
-        try await execute(command: ZREVRANK(key, member: member, withscore: withscore))
+        try await execute(ZREVRANK(key, member: member, withscore: withscore))
     }
 
     /// Iterates over members and scores of a sorted set.
@@ -1723,7 +1723,7 @@ extension ValkeyClientProtocol {
         count: Int? = nil,
         noscores: Bool = false
     ) async throws -> RESPToken.Array {
-        try await execute(command: ZSCAN(key, cursor: cursor, pattern: pattern, count: count, noscores: noscores))
+        try await execute(ZSCAN(key, cursor: cursor, pattern: pattern, count: count, noscores: noscores))
     }
 
     /// Returns the score of a member in a sorted set.
@@ -1736,7 +1736,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Member does not exist in the sorted set, or key does not exist.
     @inlinable
     public func zscore<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws -> Double? {
-        try await execute(command: ZSCORE(key, member: member))
+        try await execute(ZSCORE(key, member: member))
     }
 
     /// Returns the union of multiple sorted sets.
@@ -1754,7 +1754,7 @@ extension ValkeyClientProtocol {
         aggregate: ZUNION.Aggregate? = nil,
         withscores: Bool = false
     ) async throws -> RESPToken.Array {
-        try await execute(command: ZUNION(keys: keys, weights: weights, aggregate: aggregate, withscores: withscores))
+        try await execute(ZUNION(keys: keys, weights: weights, aggregate: aggregate, withscores: withscores))
     }
 
     /// Stores the union of multiple sorted sets in a key.
@@ -1771,7 +1771,7 @@ extension ValkeyClientProtocol {
         weights: [Int] = [],
         aggregate: ZUNIONSTORE.Aggregate? = nil
     ) async throws -> Int {
-        try await execute(command: ZUNIONSTORE(destination: destination, keys: keys, weights: weights, aggregate: aggregate))
+        try await execute(ZUNIONSTORE(destination: destination, keys: keys, weights: weights, aggregate: aggregate))
     }
 
 }
