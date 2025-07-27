@@ -204,7 +204,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             //   But it would be cool to build the subscribe command based on what filters we aren't subscribed to
             self.subscriptions.pushCommand(filters: subscription.filters)
             let subscriptionID = subscription.id
-            return self._send(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
+            return self._execute(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
                 switch result {
                 case .success:
                     promise.succeed(subscriptionID)
@@ -261,7 +261,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         requestID: Int
     ) {
         self.subscriptions.pushCommand(filters: filters)
-        self._send(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
+        self._execute(command: command, requestID: requestID).assumeIsolated().whenComplete { result in
             switch result {
             case .success:
                 promise.succeed(())
@@ -484,7 +484,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     }
 
     // Function used internally by subscribe
-    func _send<Command: ValkeyCommand>(command: Command, requestID: Int) -> EventLoopFuture<RESPToken> {
+    func _execute<Command: ValkeyCommand>(command: Command, requestID: Int) -> EventLoopFuture<RESPToken> {
         self.eventLoop.assertInEventLoop()
         self.encoder.reset()
         command.encode(into: &self.encoder)

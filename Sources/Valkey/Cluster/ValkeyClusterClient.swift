@@ -160,7 +160,7 @@ public final class ValkeyClusterClient: Sendable {
         while !Task.isCancelled {
             do {
                 let client = try await clientSelector()
-                return try await client.send(command: command)
+                return try await client.execute(command: command)
             } catch ValkeyClusterError.noNodeToTalkTo {
                 // TODO: Rerun node discovery!
             } catch let error as ValkeyClientError where error.errorCode == .commandError {
@@ -581,7 +581,7 @@ public final class ValkeyClusterClient: Sendable {
         try await withThrowingTaskGroup(of: (ValkeyClusterDescription, ValkeyNodeID).self) { taskGroup in
             for voter in voters {
                 taskGroup.addTask {
-                    (try await voter.client.send(command: CLUSTER.SHARDS()), voter.nodeID)
+                    (try await voter.client.execute(command: CLUSTER.SHARDS()), voter.nodeID)
                 }
             }
 
@@ -625,7 +625,7 @@ public final class ValkeyClusterClient: Sendable {
 
                     for voter in actions.voters {
                         taskGroup.addTask {
-                            (try await voter.client.send(command: CLUSTER.SHARDS()), voter.nodeID)
+                            (try await voter.client.execute(command: CLUSTER.SHARDS()), voter.nodeID)
                         }
                     }
 

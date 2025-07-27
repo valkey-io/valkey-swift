@@ -153,12 +153,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
     public func execute<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
-        let result = try await self._send(command: command)
+        let result = try await self._execute(command: command)
         return try .init(fromRESP: result)
     }
 
     @inlinable
-    func _send<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
+    func _execute<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
         let requestID = Self.requestIDGenerator.next()
         return try await withTaskCancellationHandler {
             if Task.isCancelled {
