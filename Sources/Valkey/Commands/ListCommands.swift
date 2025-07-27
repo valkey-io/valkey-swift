@@ -638,7 +638,7 @@ extension ValkeyClientProtocol {
         whereto: BLMOVE.Whereto,
         timeout: Double
     ) async throws -> ByteBuffer? {
-        try await send(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
+        try await execute(command: BLMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto, timeout: timeout))
     }
 
     /// Pops the first element from one of multiple lists. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -652,7 +652,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func blmpop(timeout: Double, keys: [ValkeyKey], where: BLMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
-        try await send(command: BLMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
+        try await execute(command: BLMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
     }
 
     /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -668,7 +668,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func blpop(keys: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
-        try await send(command: BLPOP(keys: keys, timeout: timeout))
+        try await execute(command: BLPOP(keys: keys, timeout: timeout))
     }
 
     /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
@@ -684,7 +684,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func brpop(keys: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
-        try await send(command: BRPOP(keys: keys, timeout: timeout))
+        try await execute(command: BRPOP(keys: keys, timeout: timeout))
     }
 
     /// Pops an element from a list, pushes it to another list and returns it. Block until an element is available otherwise. Deletes the list if the last element was popped.
@@ -701,7 +701,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func brpoplpush(source: ValkeyKey, destination: ValkeyKey, timeout: Double) async throws -> ByteBuffer? {
-        try await send(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
+        try await execute(command: BRPOPLPUSH(source: source, destination: destination, timeout: timeout))
     }
 
     /// Returns an element from a list by its index.
@@ -714,7 +714,7 @@ extension ValkeyClientProtocol {
     ///     * [String]: The requested element
     @inlinable
     public func lindex(_ key: ValkeyKey, index: Int) async throws -> ByteBuffer? {
-        try await send(command: LINDEX(key, index: index))
+        try await execute(command: LINDEX(key, index: index))
     }
 
     /// Inserts an element before or after another element in a list.
@@ -734,7 +734,7 @@ extension ValkeyClientProtocol {
         pivot: Pivot,
         element: Element
     ) async throws -> Int {
-        try await send(command: LINSERT(key, where: `where`, pivot: pivot, element: element))
+        try await execute(command: LINSERT(key, where: `where`, pivot: pivot, element: element))
     }
 
     /// Returns the length of a list.
@@ -745,7 +745,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: List length.
     @inlinable
     public func llen(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: LLEN(key))
+        try await execute(command: LLEN(key))
     }
 
     /// Returns an element after popping it from one list and pushing it to another. Deletes the list if the last element was moved.
@@ -757,7 +757,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> ByteBuffer {
-        try await send(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
+        try await execute(command: LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
     /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
@@ -771,7 +771,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func lmpop(keys: [ValkeyKey], where: LMPOP.Where, count: Int? = nil) async throws -> LMPOP.Response {
-        try await send(command: LMPOP(keys: keys, where: `where`, count: count))
+        try await execute(command: LMPOP(keys: keys, where: `where`, count: count))
     }
 
     /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
@@ -788,7 +788,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func lpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
-        try await send(command: LPOP(key, count: count))
+        try await execute(command: LPOP(key, count: count))
     }
 
     /// Returns the index of matching elements in a list.
@@ -808,7 +808,7 @@ extension ValkeyClientProtocol {
         numMatches: Int? = nil,
         len: Int? = nil
     ) async throws -> [Int]? {
-        try await send(command: LPOS(key, element: element, rank: rank, numMatches: numMatches, len: len))
+        try await execute(command: LPOS(key, element: element, rank: rank, numMatches: numMatches, len: len))
     }
 
     /// Prepends one or more elements to a list. Creates the key if it doesn't exist.
@@ -822,7 +822,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func lpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
-        try await send(command: LPUSH(key, elements: elements))
+        try await execute(command: LPUSH(key, elements: elements))
     }
 
     /// Prepends one or more elements to a list only when the list exists.
@@ -836,7 +836,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func lpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
-        try await send(command: LPUSHX(key, elements: elements))
+        try await execute(command: LPUSHX(key, elements: elements))
     }
 
     /// Returns a range of elements from a list.
@@ -847,7 +847,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of elements in the specified range
     @inlinable
     public func lrange(_ key: ValkeyKey, start: Int, stop: Int) async throws -> RESPToken.Array {
-        try await send(command: LRANGE(key, start: start, stop: stop))
+        try await execute(command: LRANGE(key, start: start, stop: stop))
     }
 
     /// Removes elements from a list. Deletes the list if the last element was removed.
@@ -859,7 +859,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func lrem<Element: RESPStringRenderable>(_ key: ValkeyKey, count: Int, element: Element) async throws -> Int {
-        try await send(command: LREM(key, count: count, element: element))
+        try await execute(command: LREM(key, count: count, element: element))
     }
 
     /// Sets the value of an element in a list by its index.
@@ -869,7 +869,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the length of the list. Setting either the first or the last element of the list is O(1).
     @inlinable
     public func lset<Element: RESPStringRenderable>(_ key: ValkeyKey, index: Int, element: Element) async throws {
-        _ = try await send(command: LSET(key, index: index, element: element))
+        _ = try await execute(command: LSET(key, index: index, element: element))
     }
 
     /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
@@ -879,7 +879,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of elements to be removed by the operation.
     @inlinable
     public func ltrim(_ key: ValkeyKey, start: Int, stop: Int) async throws {
-        _ = try await send(command: LTRIM(key, start: start, stop: stop))
+        _ = try await execute(command: LTRIM(key, start: start, stop: stop))
     }
 
     /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
@@ -896,7 +896,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func rpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
-        try await send(command: RPOP(key, count: count))
+        try await execute(command: RPOP(key, count: count))
     }
 
     /// Returns the last element of a list after removing and pushing it to another list. Deletes the list if the last element was popped.
@@ -911,7 +911,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func rpoplpush(source: ValkeyKey, destination: ValkeyKey) async throws -> ByteBuffer? {
-        try await send(command: RPOPLPUSH(source: source, destination: destination))
+        try await execute(command: RPOPLPUSH(source: source, destination: destination))
     }
 
     /// Appends one or more elements to a list. Creates the key if it doesn't exist.
@@ -925,7 +925,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func rpush<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
-        try await send(command: RPUSH(key, elements: elements))
+        try await execute(command: RPUSH(key, elements: elements))
     }
 
     /// Appends an element to a list only when the list exists.
@@ -939,7 +939,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func rpushx<Element: RESPStringRenderable>(_ key: ValkeyKey, elements: [Element]) async throws -> Int {
-        try await send(command: RPUSHX(key, elements: elements))
+        try await execute(command: RPUSHX(key, elements: elements))
     }
 
 }

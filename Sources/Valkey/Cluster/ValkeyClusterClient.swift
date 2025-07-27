@@ -151,7 +151,7 @@ public final class ValkeyClusterClient: Sendable {
     ///   - `ValkeyClusterError.clientRequestCancelled` if the request is cancelled
     ///   - Other errors if the command execution or parsing fails
     @inlinable
-    public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
+    public func execute<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let hashSlots = command.keysAffected.map { HashSlot(key: $0) }
         var clientSelector: () async throws -> ValkeyNodeClient = {
             try await self.nodeClient(for: hashSlots)

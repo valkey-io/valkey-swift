@@ -126,7 +126,7 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Parameter command: Valkey command
     /// - Returns: Response from Valkey command
     @inlinable
-    public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
+    public func execute<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
         let token = try await self._send(command)
         return try Command.Response(fromRESP: token)
     }
@@ -147,12 +147,12 @@ extension ValkeyClient {
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the results of all the commands
     @inlinable
-    public func pipeline<each Command: ValkeyCommand>(
+    public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
         do {
             return try await self.withConnection { connection in
-                await connection.pipeline(repeat (each commands))
+                await connection.execute(repeat (each commands))
             }
         } catch {
             return (repeat Result<(each Command).Response, Error>.failure(error))

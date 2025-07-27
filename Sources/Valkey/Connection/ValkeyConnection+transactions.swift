@@ -7,7 +7,7 @@ extension ValkeyConnection {
 
     @inlinable
     public func transaction<C0: ValkeyCommand>(_ c0: C0) async throws -> (Result<C0.Response, Error>) {
-        guard let responses = try await self.pipeline(MULTI(), ValkeyRawResponseCommand(c0), EXEC()).2.get() else {
+        guard let responses = try await self.execute(MULTI(), ValkeyRawResponseCommand(c0), EXEC()).2.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
         return responses.decodeElementResults()
@@ -18,7 +18,7 @@ extension ValkeyConnection {
         _ c0: C0,
         _ c1: C1
     ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>) {
-        guard let responses = try await self.pipeline(MULTI(), ValkeyRawResponseCommand(c0), ValkeyRawResponseCommand(c1), EXEC()).3.get() else {
+        guard let responses = try await self.execute(MULTI(), ValkeyRawResponseCommand(c0), ValkeyRawResponseCommand(c1), EXEC()).3.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
         return responses.decodeElementResults()
@@ -31,7 +31,7 @@ extension ValkeyConnection {
         _ c2: C2
     ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>) {
         guard
-            let responses = try await self.pipeline(
+            let responses = try await self.execute(
                 MULTI(),
                 ValkeyRawResponseCommand(c0),
                 ValkeyRawResponseCommand(c1),
@@ -50,7 +50,7 @@ extension ValkeyConnection {
         _ c3: C3
     ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>) {
         guard
-            let responses = try await self.pipeline(
+            let responses = try await self.execute(
                 MULTI(),
                 ValkeyRawResponseCommand(c0),
                 ValkeyRawResponseCommand(c1),
@@ -73,7 +73,7 @@ extension ValkeyConnection {
         Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>, Result<C4.Response, Error>
     ) {
         guard
-            let responses = try await self.pipeline(
+            let responses = try await self.execute(
                 MULTI(),
                 ValkeyRawResponseCommand(c0),
                 ValkeyRawResponseCommand(c1),
@@ -99,7 +99,7 @@ extension ValkeyConnection {
         Result<C5.Response, Error>
     ) {
         guard
-            let responses = try await self.pipeline(
+            let responses = try await self.execute(
                 MULTI(),
                 ValkeyRawResponseCommand(c0),
                 ValkeyRawResponseCommand(c1),
@@ -135,7 +135,7 @@ extension ValkeyConnection {
         Result<C5.Response, Error>, Result<C6.Response, Error>
     ) {
         guard
-            let responses = try await self.pipeline(
+            let responses = try await self.execute(
                 MULTI(),
                 ValkeyRawResponseCommand(c0),
                 ValkeyRawResponseCommand(c1),
@@ -174,7 +174,7 @@ extension ValkeyConnection {
         Result<C5.Response, Error>, Result<C6.Response, Error>, Result<C7.Response, Error>
     ) {
         guard
-            let responses = try await self.pipeline(
+            let responses = try await self.execute(
                 MULTI(),
                 ValkeyRawResponseCommand(c0),
                 ValkeyRawResponseCommand(c1),
@@ -216,7 +216,7 @@ extension ValkeyConnection {
         Result<C5.Response, Error>, Result<C6.Response, Error>, Result<C7.Response, Error>, Result<C8.Response, Error>
     ) {
         guard
-            let responses = try await self.pipeline(
+            let responses = try await self.execute(
                 MULTI(),
                 ValkeyRawResponseCommand(c0),
                 ValkeyRawResponseCommand(c1),
@@ -261,7 +261,7 @@ extension ValkeyConnection {
         Result<C5.Response, Error>, Result<C6.Response, Error>, Result<C7.Response, Error>, Result<C8.Response, Error>, Result<C9.Response, Error>
     ) {
         guard
-            let responses = try await self.pipeline(
+            let responses = try await self.execute(
                 MULTI(),
                 ValkeyRawResponseCommand(c0),
                 ValkeyRawResponseCommand(c1),
