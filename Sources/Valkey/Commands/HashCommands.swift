@@ -431,7 +431,7 @@ public struct HVALS: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
     ///
     /// - Documentation: [HDEL](https://valkey.io/commands/hdel)

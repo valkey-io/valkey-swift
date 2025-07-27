@@ -647,7 +647,7 @@ public struct READWRITE: ValkeyCommand {
     }
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Signals that a cluster client is following an -ASK redirect.
     ///
     /// - Documentation: [ASKING](https://valkey.io/commands/asking)

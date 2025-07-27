@@ -43,7 +43,7 @@ package struct ValkeyClusterParseError: Error, Equatable {
 
 /// A description of a Valkey cluster.
 ///
-/// A description is return when you call ``ValkeyConnectionProtocol/clusterShards()``.
+/// A description is return when you call ``ValkeyClientProtocol/clusterShards()``.
 public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     /// Details for a node within a cluster shard.
     public struct Node: Hashable, Sendable {

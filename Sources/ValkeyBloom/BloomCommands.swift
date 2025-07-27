@@ -264,7 +264,7 @@ public enum BF {
 
 }
 
-extension ValkeyConnectionProtocol {
+extension ValkeyClientProtocol {
     /// Add a single item to a bloom filter. The bloom filter is created if it doesn't exist
     ///
     /// - Documentation: [BF.ADD](https://valkey.io/commands/bf.add)

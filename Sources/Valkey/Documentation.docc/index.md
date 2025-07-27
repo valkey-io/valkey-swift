@@ -51,7 +51,8 @@ try await valkeyClient.withConnection { connection in
 
 - ``ValkeyClient``
 - ``ValkeyClientConfiguration``
-- ``ValkeyConnectionProtocol``
+- ``ValkeyClientProtocol``
+- ``ValkeyNodeClient``
 - ``ValkeyServerAddress``
 - ``ValkeyConnection``
 - ``ValkeyConnectionConfiguration``

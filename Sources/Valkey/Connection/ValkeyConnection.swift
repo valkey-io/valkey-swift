@@ -25,7 +25,7 @@ import NIOTransportServices
 
 /// Single connection to a Valkey database
 @available(valkeySwift 1.0, *)
-public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
+public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     nonisolated public let unownedExecutor: UnownedSerialExecutor
 
     /// Request ID generator
@@ -377,6 +377,30 @@ public final actor ValkeyConnection: ValkeyConnectionProtocol, Sendable {
         return bootstrap
     }
     #endif
+}
+
+/// Add WATCH, UNWATCH commands to ValkeyConnection.
+@available(valkeySwift 1.0, *)
+extension ValkeyConnection {
+    /// Forgets about watched keys of a transaction.
+    ///
+    /// - Documentation: [UNWATCH](https://valkey.io/commands/unwatch)
+    /// - Available: 2.2.0
+    /// - Complexity: O(1)
+    @inlinable
+    public func unwatch() async throws {
+        _ = try await send(command: UNWATCH())
+    }
+
+    /// Monitors changes to keys to determine the execution of a transaction.
+    ///
+    /// - Documentation: [WATCH](https://valkey.io/commands/watch)
+    /// - Available: 2.2.0
+    /// - Complexity: O(1) for every key.
+    @inlinable
+    public func watch(keys: [ValkeyKey]) async throws {
+        _ = try await send(command: WATCH(keys: keys))
+    }
 }
 
 // Used in ValkeyConnection.pipeline
