@@ -1119,7 +1119,7 @@ extension ValkeyClientProtocol {
         change: Bool = false,
         data: [GEOADD<Member>.Data]
     ) async throws -> Int {
-        try await send(command: GEOADD(key, condition: condition, change: change, data: data))
+        try await execute(command: GEOADD(key, condition: condition, change: change, data: data))
     }
 
     /// Returns the distance between two members of a geospatial index.
@@ -1137,7 +1137,7 @@ extension ValkeyClientProtocol {
         member2: Member2,
         unit: GEODIST<Member1, Member2>.Unit? = nil
     ) async throws -> GEODISTResponse {
-        try await send(command: GEODIST(key, member1: member1, member2: member2, unit: unit))
+        try await execute(command: GEODIST(key, member1: member1, member2: member2, unit: unit))
     }
 
     /// Returns members from a geospatial index as geohash strings.
@@ -1148,7 +1148,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array where each element is the Geohash corresponding to each member name passed as argument to the command.
     @inlinable
     public func geohash(_ key: ValkeyKey, members: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: GEOHASH(key, members: members))
+        try await execute(command: GEOHASH(key, members: members))
     }
 
     /// Returns the longitude and latitude of members from a geospatial index.
@@ -1159,7 +1159,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array where each element is a two elements array representing longitude and latitude (x,y) of each member name passed as argument to the command
     @inlinable
     public func geopos(_ key: ValkeyKey, members: [String] = []) async throws -> GEOPOS.Response {
-        try await send(command: GEOPOS(key, members: members))
+        try await execute(command: GEOPOS(key, members: members))
     }
 
     /// Queries a geospatial index for members within a distance from a coordinate, optionally stores the result.
@@ -1187,7 +1187,7 @@ extension ValkeyClientProtocol {
         order: GEORADIUS.Order? = nil,
         store: GEORADIUS.Store? = nil
     ) async throws -> GEORADIUS.Response {
-        try await send(
+        try await execute(
             command: GEORADIUS(
                 key,
                 longitude: longitude,
@@ -1228,7 +1228,7 @@ extension ValkeyClientProtocol {
         order: GEORADIUSBYMEMBER<Member>.Order? = nil,
         store: GEORADIUSBYMEMBER<Member>.Store? = nil
     ) async throws -> RESPToken {
-        try await send(
+        try await execute(
             command: GEORADIUSBYMEMBER(
                 key,
                 member: member,
@@ -1266,7 +1266,7 @@ extension ValkeyClientProtocol {
         countBlock: GEORADIUSBYMEMBERRO<Member>.CountBlock? = nil,
         order: GEORADIUSBYMEMBERRO<Member>.Order? = nil
     ) async throws -> RESPToken.Array {
-        try await send(
+        try await execute(
             command: GEORADIUSBYMEMBERRO(
                 key,
                 member: member,
@@ -1304,7 +1304,7 @@ extension ValkeyClientProtocol {
         countBlock: GEORADIUSRO.CountBlock? = nil,
         order: GEORADIUSRO.Order? = nil
     ) async throws -> RESPToken.Array {
-        try await send(
+        try await execute(
             command: GEORADIUSRO(
                 key,
                 longitude: longitude,
@@ -1339,7 +1339,7 @@ extension ValkeyClientProtocol {
         withdist: Bool = false,
         withhash: Bool = false
     ) async throws -> GEOSEARCH.Response {
-        try await send(
+        try await execute(
             command: GEOSEARCH(
                 key,
                 from: from,
@@ -1372,7 +1372,7 @@ extension ValkeyClientProtocol {
         countBlock: GEOSEARCHSTORE.CountBlock? = nil,
         storedist: Bool = false
     ) async throws -> Int {
-        try await send(
+        try await execute(
             command: GEOSEARCHSTORE(
                 destination: destination,
                 source: source,

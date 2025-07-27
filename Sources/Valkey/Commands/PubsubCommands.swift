@@ -247,7 +247,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func publish<Channel: RESPStringRenderable, Message: RESPStringRenderable>(channel: Channel, message: Message) async throws -> Int {
-        try await send(command: PUBLISH(channel: channel, message: message))
+        try await execute(command: PUBLISH(channel: channel, message: message))
     }
 
     /// Returns the active channels.
@@ -259,7 +259,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func pubsubChannels(pattern: String? = nil) async throws -> RESPToken.Array {
-        try await send(command: PUBSUB.CHANNELS(pattern: pattern))
+        try await execute(command: PUBSUB.CHANNELS(pattern: pattern))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -271,7 +271,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func pubsubHelp() async throws -> RESPToken.Array {
-        try await send(command: PUBSUB.HELP())
+        try await execute(command: PUBSUB.HELP())
     }
 
     /// Returns a count of unique pattern subscriptions.
@@ -283,7 +283,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func pubsubNumpat() async throws -> Int {
-        try await send(command: PUBSUB.NUMPAT())
+        try await execute(command: PUBSUB.NUMPAT())
     }
 
     /// Returns a count of subscribers to channels.
@@ -295,7 +295,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func pubsubNumsub(channels: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: PUBSUB.NUMSUB(channels: channels))
+        try await execute(command: PUBSUB.NUMSUB(channels: channels))
     }
 
     /// Returns the active shard channels.
@@ -307,7 +307,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func pubsubShardchannels(pattern: String? = nil) async throws -> RESPToken.Array {
-        try await send(command: PUBSUB.SHARDCHANNELS(pattern: pattern))
+        try await execute(command: PUBSUB.SHARDCHANNELS(pattern: pattern))
     }
 
     /// Returns the count of subscribers of shard channels.
@@ -319,7 +319,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func pubsubShardnumsub(shardchannels: [String] = []) async throws -> RESPToken.Array {
-        try await send(command: PUBSUB.SHARDNUMSUB(shardchannels: shardchannels))
+        try await execute(command: PUBSUB.SHARDNUMSUB(shardchannels: shardchannels))
     }
 
     /// Post a message to a shard channel
@@ -334,7 +334,7 @@ extension ValkeyClientProtocol {
         shardchannel: Shardchannel,
         message: Message
     ) async throws -> Int {
-        try await send(command: SPUBLISH(shardchannel: shardchannel, message: message))
+        try await execute(command: SPUBLISH(shardchannel: shardchannel, message: message))
     }
 
 }

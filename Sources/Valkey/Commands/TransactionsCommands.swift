@@ -93,7 +93,7 @@ extension ValkeyConnection {
     /// - Complexity: O(N), when N is the number of queued commands
     @inlinable
     public func discard() async throws {
-        _ = try await send(command: DISCARD())
+        _ = try await execute(command: DISCARD())
     }
 
     /// Executes all commands in a transaction.
@@ -107,7 +107,7 @@ extension ValkeyConnection {
     @inlinable
     @discardableResult
     public func exec() async throws -> RESPToken.Array? {
-        try await send(command: EXEC())
+        try await execute(command: EXEC())
     }
 
     /// Starts a transaction.
@@ -117,7 +117,7 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     @inlinable
     public func multi() async throws {
-        _ = try await send(command: MULTI())
+        _ = try await execute(command: MULTI())
     }
 
 }

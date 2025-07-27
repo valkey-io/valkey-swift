@@ -200,7 +200,7 @@ struct ConnectionTests {
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
         try await channel.processHello()
 
-        async let results = connection.pipeline(
+        async let results = connection.execute(
             SET("foo", value: "bar"),
             GET("foo")
         )
@@ -222,7 +222,7 @@ struct ConnectionTests {
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
         try await channel.processHello()
 
-        async let asyncResults = connection.pipeline(
+        async let asyncResults = connection.execute(
             SET("foo", value: "bar"),
             GET("foo")
         )
@@ -401,7 +401,7 @@ struct ConnectionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                let results = await connection.pipeline(
+                let results = await connection.execute(
                     SET("foo", value: "bar"),
                     GET("foo")
                 )
@@ -430,7 +430,7 @@ struct ConnectionTests {
         await withThrowingTaskGroup(of: Void.self) { group in
             group.cancelAll()
             group.addTask {
-                let results = await connection.pipeline(
+                let results = await connection.execute(
                     SET("foo", value: "bar"),
                     GET("foo")
                 )

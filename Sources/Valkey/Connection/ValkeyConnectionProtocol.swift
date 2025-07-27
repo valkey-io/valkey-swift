@@ -17,5 +17,5 @@ public protocol ValkeyClientProtocol {
     /// Send RESP command to Valkey connection
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand
-    func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response
+    func execute<Command: ValkeyCommand>(command: Command) async throws -> Command.Response
 }

@@ -24,7 +24,7 @@ function genWithoutContextParameter() {
         echo -n ", Result<C$((n)).Response, Error>"
     done
     echo ") {"
-    echo -n "        guard let responses = try await self.pipeline(MULTI(), "
+    echo -n "        guard let responses = try await self.execute(MULTI(), "
     for ((n = 0; n<how_many; n +=1)); do
         echo -n "ValkeyRawResponseCommand(c$((n))), "
     done

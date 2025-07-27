@@ -460,7 +460,7 @@ extension String {
                 }
             let argumentsString = commandArguments.joined(separator: ", ")
             self.append(
-                "        \(ignoreSendResponse)try await send(command: \(name.commandTypeName)(\(argumentsString)))\n"
+                "        \(ignoreSendResponse)try await execute(command: \(name.commandTypeName)(\(argumentsString)))\n"
             )
             self.append("    }\n\n")
         }
