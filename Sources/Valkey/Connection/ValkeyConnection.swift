@@ -152,7 +152,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
-    public func execute<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
+    public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
         let result = try await self._execute(command: command)
         return try .init(fromRESP: result)
     }
@@ -389,7 +389,7 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     @inlinable
     public func unwatch() async throws {
-        _ = try await execute(command: UNWATCH())
+        _ = try await execute(UNWATCH())
     }
 
     /// Monitors changes to keys to determine the execution of a transaction.
@@ -399,7 +399,7 @@ extension ValkeyConnection {
     /// - Complexity: O(1) for every key.
     @inlinable
     public func watch(keys: [ValkeyKey]) async throws {
-        _ = try await execute(command: WATCH(keys: keys))
+        _ = try await execute(WATCH(keys: keys))
     }
 }
 

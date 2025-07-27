@@ -480,7 +480,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of bits set to 1.
     @inlinable
     public func bitcount(_ key: ValkeyKey, range: BITCOUNT.Range? = nil) async throws -> Int {
-        try await execute(command: BITCOUNT(key, range: range))
+        try await execute(BITCOUNT(key, range: range))
     }
 
     /// Performs arbitrary bitfield integer operations on strings.
@@ -494,7 +494,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bitfield(_ key: ValkeyKey, operations: [BITFIELD.Operation] = []) async throws -> RESPToken.Array {
-        try await execute(command: BITFIELD(key, operations: operations))
+        try await execute(BITFIELD(key, operations: operations))
     }
 
     /// Performs arbitrary read-only bitfield integer operations on strings.
@@ -505,7 +505,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: The result of the subcommand at the same position
     @inlinable
     public func bitfieldRo(_ key: ValkeyKey, getBlocks: [BITFIELDRO.GetBlock] = []) async throws -> [Int] {
-        try await execute(command: BITFIELDRO(key, getBlocks: getBlocks))
+        try await execute(BITFIELDRO(key, getBlocks: getBlocks))
     }
 
     /// Performs bitwise operations on multiple strings, and stores the result.
@@ -517,7 +517,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bitop(operation: BITOP.Operation, destkey: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
-        try await execute(command: BITOP(operation: operation, destkey: destkey, keys: keys))
+        try await execute(BITOP(operation: operation, destkey: destkey, keys: keys))
     }
 
     /// Finds the first set (1) or clear (0) bit in a string.
@@ -532,7 +532,7 @@ extension ValkeyClientProtocol {
     ///     * -1: In case the `bit` argument is 1 and the string is empty or composed of just zero bytes.
     @inlinable
     public func bitpos(_ key: ValkeyKey, bit: Int, range: BITPOS.Range? = nil) async throws -> Int {
-        try await execute(command: BITPOS(key, bit: bit, range: range))
+        try await execute(BITPOS(key, bit: bit, range: range))
     }
 
     /// Returns a bit value by offset.
@@ -543,7 +543,7 @@ extension ValkeyClientProtocol {
     /// - Response: The bit value stored at offset.
     @inlinable
     public func getbit(_ key: ValkeyKey, offset: Int) async throws -> Int {
-        try await execute(command: GETBIT(key, offset: offset))
+        try await execute(GETBIT(key, offset: offset))
     }
 
     /// Sets or clears the bit at offset of the string value. Creates the key if it doesn't exist.
@@ -555,7 +555,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func setbit(_ key: ValkeyKey, offset: Int, value: Int) async throws -> Int {
-        try await execute(command: SETBIT(key, offset: offset, value: value))
+        try await execute(SETBIT(key, offset: offset, value: value))
     }
 
 }

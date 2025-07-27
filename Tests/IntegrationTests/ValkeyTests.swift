@@ -90,7 +90,7 @@ struct GeneratedCommands {
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await connection.set(key, value: "Hello")
-                let response = try await connection.execute(command: GET(key: key))
+                let response = try await connection.execute(GET(key: key))
                 #expect(response == "Hello")
             }
         }

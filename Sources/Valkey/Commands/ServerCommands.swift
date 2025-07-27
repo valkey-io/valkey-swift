@@ -1486,7 +1486,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclCat(category: String? = nil) async throws -> RESPToken.Array {
-        try await execute(command: ACL.CAT(category: category))
+        try await execute(ACL.CAT(category: category))
     }
 
     /// Deletes ACL users, and terminates their connections.
@@ -1498,7 +1498,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclDeluser<Username: RESPStringRenderable>(usernames: [Username]) async throws -> Int {
-        try await execute(command: ACL.DELUSER(usernames: usernames))
+        try await execute(ACL.DELUSER(usernames: usernames))
     }
 
     /// Simulates the execution of a command by a user, without executing the command.
@@ -1516,7 +1516,7 @@ extension ValkeyClientProtocol {
         command: Command,
         args: [String] = []
     ) async throws -> ByteBuffer? {
-        try await execute(command: ACL.DRYRUN(username: username, command: command, args: args))
+        try await execute(ACL.DRYRUN(username: username, command: command, args: args))
     }
 
     /// Generates a pseudorandom, secure password that can be used to identify ACL users.
@@ -1528,7 +1528,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclGenpass(bits: Int? = nil) async throws -> ByteBuffer {
-        try await execute(command: ACL.GENPASS(bits: bits))
+        try await execute(ACL.GENPASS(bits: bits))
     }
 
     /// Lists the ACL rules of a user.
@@ -1545,7 +1545,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclGetuser<Username: RESPStringRenderable>(username: Username) async throws -> RESPToken.Map? {
-        try await execute(command: ACL.GETUSER(username: username))
+        try await execute(ACL.GETUSER(username: username))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1557,7 +1557,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclHelp() async throws -> RESPToken.Array {
-        try await execute(command: ACL.HELP())
+        try await execute(ACL.HELP())
     }
 
     /// Dumps the effective rules in ACL file format.
@@ -1569,7 +1569,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclList() async throws -> RESPToken.Array {
-        try await execute(command: ACL.LIST())
+        try await execute(ACL.LIST())
     }
 
     /// Reloads the rules from the configured ACL file.
@@ -1579,7 +1579,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N). Where N is the number of configured users.
     @inlinable
     public func aclLoad() async throws {
-        _ = try await execute(command: ACL.LOAD())
+        _ = try await execute(ACL.LOAD())
     }
 
     /// Lists recent security events generated due to ACL rules.
@@ -1595,7 +1595,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclLog(operation: ACL.LOG.Operation? = nil) async throws -> RESPToken.Array? {
-        try await execute(command: ACL.LOG(operation: operation))
+        try await execute(ACL.LOG(operation: operation))
     }
 
     /// Saves the effective ACL rules in the configured ACL file.
@@ -1605,7 +1605,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N). Where N is the number of configured users.
     @inlinable
     public func aclSave() async throws {
-        _ = try await execute(command: ACL.SAVE())
+        _ = try await execute(ACL.SAVE())
     }
 
     /// Creates and modifies an ACL user and its rules.
@@ -1618,7 +1618,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N). Where N is the number of rules provided.
     @inlinable
     public func aclSetuser<Username: RESPStringRenderable>(username: Username, rules: [String] = []) async throws {
-        _ = try await execute(command: ACL.SETUSER(username: username, rules: rules))
+        _ = try await execute(ACL.SETUSER(username: username, rules: rules))
     }
 
     /// Lists all ACL users.
@@ -1630,7 +1630,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclUsers() async throws -> RESPToken.Array {
-        try await execute(command: ACL.USERS())
+        try await execute(ACL.USERS())
     }
 
     /// Returns the authenticated username of the current connection.
@@ -1642,7 +1642,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func aclWhoami() async throws -> ByteBuffer {
-        try await execute(command: ACL.WHOAMI())
+        try await execute(ACL.WHOAMI())
     }
 
     /// Asynchronously rewrites the append-only file to disk.
@@ -1654,7 +1654,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bgrewriteaof() async throws -> ByteBuffer {
-        try await execute(command: BGREWRITEAOF())
+        try await execute(BGREWRITEAOF())
     }
 
     /// Asynchronously saves the database(s) to disk.
@@ -1668,7 +1668,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bgsave(operation: BGSAVE.Operation? = nil) async throws -> String {
-        try await execute(command: BGSAVE(operation: operation))
+        try await execute(BGSAVE(operation: operation))
     }
 
     /// Returns detailed information about all commands.
@@ -1679,7 +1679,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func command() async throws -> COMMAND.Response {
-        try await execute(command: COMMAND())
+        try await execute(COMMAND())
     }
 
     /// Returns a count of commands.
@@ -1691,7 +1691,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandCount() async throws -> Int {
-        try await execute(command: COMMAND.COUNT())
+        try await execute(COMMAND.COUNT())
     }
 
     /// Returns documentary information about one, multiple or all commands.
@@ -1703,7 +1703,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandDocs(commandNames: [String] = []) async throws -> RESPToken.Map {
-        try await execute(command: COMMAND.DOCS(commandNames: commandNames))
+        try await execute(COMMAND.DOCS(commandNames: commandNames))
     }
 
     /// Extracts the key names from an arbitrary command.
@@ -1715,7 +1715,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandGetkeys<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
-        try await execute(command: COMMAND.GETKEYS(command: command, args: args))
+        try await execute(COMMAND.GETKEYS(command: command, args: args))
     }
 
     /// Extracts the key names and access flags for an arbitrary command.
@@ -1727,7 +1727,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandGetkeysandflags<Command: RESPStringRenderable>(command: Command, args: [String] = []) async throws -> RESPToken.Array {
-        try await execute(command: COMMAND.GETKEYSANDFLAGS(command: command, args: args))
+        try await execute(COMMAND.GETKEYSANDFLAGS(command: command, args: args))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1739,7 +1739,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandHelp() async throws -> RESPToken.Array {
-        try await execute(command: COMMAND.HELP())
+        try await execute(COMMAND.HELP())
     }
 
     /// Returns information about one, multiple or all commands.
@@ -1755,7 +1755,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandInfo(commandNames: [String] = []) async throws -> RESPToken.Array {
-        try await execute(command: COMMAND.INFO(commandNames: commandNames))
+        try await execute(COMMAND.INFO(commandNames: commandNames))
     }
 
     /// Returns a list of command names.
@@ -1767,7 +1767,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandList(filterby: COMMAND.LIST.Filterby? = nil) async throws -> RESPToken.Array {
-        try await execute(command: COMMAND.LIST(filterby: filterby))
+        try await execute(COMMAND.LIST(filterby: filterby))
     }
 
     /// Returns the specified command log's entries.
@@ -1779,7 +1779,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandlogGet(count: Int, type: COMMANDLOG.GET._Type) async throws -> RESPToken.Array {
-        try await execute(command: COMMANDLOG.GET(count: count, type: type))
+        try await execute(COMMANDLOG.GET(count: count, type: type))
     }
 
     /// Show helpful text about the different subcommands
@@ -1791,7 +1791,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandlogHelp() async throws -> RESPToken.Array {
-        try await execute(command: COMMANDLOG.HELP())
+        try await execute(COMMANDLOG.HELP())
     }
 
     /// Returns the number of entries in the specified type of command log.
@@ -1803,7 +1803,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func commandlogLen(type: COMMANDLOG.LEN._Type) async throws -> Int {
-        try await execute(command: COMMANDLOG.LEN(type: type))
+        try await execute(COMMANDLOG.LEN(type: type))
     }
 
     /// Clears all entries from the specified type of command log.
@@ -1813,7 +1813,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of entries in the commandlog
     @inlinable
     public func commandlogReset(type: COMMANDLOG.RESET._Type) async throws {
-        _ = try await execute(command: COMMANDLOG.RESET(type: type))
+        _ = try await execute(COMMANDLOG.RESET(type: type))
     }
 
     /// Returns the effective values of configuration parameters.
@@ -1826,7 +1826,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func configGet<Parameter: RESPStringRenderable>(parameters: [Parameter]) async throws -> RESPToken.Map {
-        try await execute(command: CONFIG.GET(parameters: parameters))
+        try await execute(CONFIG.GET(parameters: parameters))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1838,7 +1838,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func configHelp() async throws -> RESPToken.Array {
-        try await execute(command: CONFIG.HELP())
+        try await execute(CONFIG.HELP())
     }
 
     /// Resets the server's statistics.
@@ -1848,7 +1848,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func configResetstat() async throws {
-        _ = try await execute(command: CONFIG.RESETSTAT())
+        _ = try await execute(CONFIG.RESETSTAT())
     }
 
     /// Persists the effective configuration to file.
@@ -1858,7 +1858,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func configRewrite() async throws {
-        _ = try await execute(command: CONFIG.REWRITE())
+        _ = try await execute(CONFIG.REWRITE())
     }
 
     /// Sets configuration parameters in-flight.
@@ -1870,7 +1870,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) when N is the number of configuration parameters provided
     @inlinable
     public func configSet<Parameter: RESPStringRenderable, Value: RESPStringRenderable>(data: [CONFIG.SET<Parameter, Value>.Data]) async throws {
-        _ = try await execute(command: CONFIG.SET(data: data))
+        _ = try await execute(CONFIG.SET(data: data))
     }
 
     /// Returns the number of keys in the database.
@@ -1881,7 +1881,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of keys in the currently-selected database.
     @inlinable
     public func dbsize() async throws -> Int {
-        try await execute(command: DBSIZE())
+        try await execute(DBSIZE())
     }
 
     /// Starts a coordinated failover from a server to one of its replicas.
@@ -1891,7 +1891,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func failover(target: FAILOVER.Target? = nil, abort: Bool = false, milliseconds: Int? = nil) async throws {
-        _ = try await execute(command: FAILOVER(target: target, abort: abort, milliseconds: milliseconds))
+        _ = try await execute(FAILOVER(target: target, abort: abort, milliseconds: milliseconds))
     }
 
     /// Removes all keys from all databases.
@@ -1904,7 +1904,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the total number of keys in all databases
     @inlinable
     public func flushall(flushType: FLUSHALL.FlushType? = nil) async throws {
-        _ = try await execute(command: FLUSHALL(flushType: flushType))
+        _ = try await execute(FLUSHALL(flushType: flushType))
     }
 
     /// Remove all keys from the current database.
@@ -1917,7 +1917,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of keys in the selected database
     @inlinable
     public func flushdb(flushType: FLUSHDB.FlushType? = nil) async throws {
-        _ = try await execute(command: FLUSHDB(flushType: flushType))
+        _ = try await execute(FLUSHDB(flushType: flushType))
     }
 
     /// Returns information and statistics about the server.
@@ -1931,7 +1931,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func info(sections: [String] = []) async throws -> ByteBuffer {
-        try await execute(command: INFO(sections: sections))
+        try await execute(INFO(sections: sections))
     }
 
     /// Returns the Unix timestamp of the last successful save to disk.
@@ -1943,7 +1943,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func lastsave() async throws -> Int {
-        try await execute(command: LASTSAVE())
+        try await execute(LASTSAVE())
     }
 
     /// Returns a human-readable latency analysis report.
@@ -1955,7 +1955,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func latencyDoctor() async throws -> ByteBuffer {
-        try await execute(command: LATENCY.DOCTOR())
+        try await execute(LATENCY.DOCTOR())
     }
 
     /// Returns a latency graph for an event.
@@ -1967,7 +1967,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func latencyGraph<Event: RESPStringRenderable>(event: Event) async throws -> ByteBuffer {
-        try await execute(command: LATENCY.GRAPH(event: event))
+        try await execute(LATENCY.GRAPH(event: event))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1979,7 +1979,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func latencyHelp() async throws -> RESPToken.Array {
-        try await execute(command: LATENCY.HELP())
+        try await execute(LATENCY.HELP())
     }
 
     /// Returns the cumulative distribution of latencies of a subset or all commands.
@@ -1991,7 +1991,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func latencyHistogram(commands: [String] = []) async throws -> RESPToken.Map {
-        try await execute(command: LATENCY.HISTOGRAM(commands: commands))
+        try await execute(LATENCY.HISTOGRAM(commands: commands))
     }
 
     /// Returns timestamp-latency samples for an event.
@@ -2003,7 +2003,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func latencyHistory<Event: RESPStringRenderable>(event: Event) async throws -> RESPToken.Array {
-        try await execute(command: LATENCY.HISTORY(event: event))
+        try await execute(LATENCY.HISTORY(event: event))
     }
 
     /// Returns the latest latency samples for all events.
@@ -2015,7 +2015,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func latencyLatest() async throws -> RESPToken.Array {
-        try await execute(command: LATENCY.LATEST())
+        try await execute(LATENCY.LATEST())
     }
 
     /// Resets the latency data for one or more events.
@@ -2027,7 +2027,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func latencyReset(events: [String] = []) async throws -> Int {
-        try await execute(command: LATENCY.RESET(events: events))
+        try await execute(LATENCY.RESET(events: events))
     }
 
     /// Displays computer art and the server version
@@ -2037,7 +2037,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: String containing the generative computer art, and a text with the server version.
     @inlinable
     public func lolwut(version: Int? = nil) async throws -> ByteBuffer {
-        try await execute(command: LOLWUT(version: version))
+        try await execute(LOLWUT(version: version))
     }
 
     /// Outputs a memory problems report.
@@ -2049,7 +2049,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func memoryDoctor() async throws -> ByteBuffer {
-        try await execute(command: MEMORY.DOCTOR())
+        try await execute(MEMORY.DOCTOR())
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2061,7 +2061,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func memoryHelp() async throws -> RESPToken.Array {
-        try await execute(command: MEMORY.HELP())
+        try await execute(MEMORY.HELP())
     }
 
     /// Returns the allocator statistics.
@@ -2073,7 +2073,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func memoryMallocStats() async throws -> ByteBuffer {
-        try await execute(command: MEMORY.MALLOCSTATS())
+        try await execute(MEMORY.MALLOCSTATS())
     }
 
     /// Asks the allocator to release memory.
@@ -2083,7 +2083,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: Depends on how much memory is allocated, could be slow
     @inlinable
     public func memoryPurge() async throws {
-        _ = try await execute(command: MEMORY.PURGE())
+        _ = try await execute(MEMORY.PURGE())
     }
 
     /// Returns details about memory usage.
@@ -2095,7 +2095,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func memoryStats() async throws -> RESPToken.Map {
-        try await execute(command: MEMORY.STATS())
+        try await execute(MEMORY.STATS())
     }
 
     /// Estimates the memory usage of a key.
@@ -2108,7 +2108,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Key does not exist.
     @inlinable
     public func memoryUsage(_ key: ValkeyKey, count: Int? = nil) async throws -> Int? {
-        try await execute(command: MEMORY.USAGE(key, count: count))
+        try await execute(MEMORY.USAGE(key, count: count))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -2120,7 +2120,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func moduleHelp() async throws -> RESPToken.Array {
-        try await execute(command: MODULE.HELP())
+        try await execute(MODULE.HELP())
     }
 
     /// Returns all loaded modules.
@@ -2132,7 +2132,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func moduleList() async throws -> RESPToken.Array {
-        try await execute(command: MODULE.LIST())
+        try await execute(MODULE.LIST())
     }
 
     /// Loads a module.
@@ -2142,7 +2142,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func moduleLoad<Path: RESPStringRenderable>(path: Path, args: [String] = []) async throws {
-        _ = try await execute(command: MODULE.LOAD(path: path, args: args))
+        _ = try await execute(MODULE.LOAD(path: path, args: args))
     }
 
     /// Loads a module using extended parameters.
@@ -2152,7 +2152,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func moduleLoadex<Path: RESPStringRenderable>(path: Path, configs: [MODULE.LOADEX<Path>.Configs] = [], args: [String] = []) async throws {
-        _ = try await execute(command: MODULE.LOADEX(path: path, configs: configs, args: args))
+        _ = try await execute(MODULE.LOADEX(path: path, configs: configs, args: args))
     }
 
     /// Unloads a module.
@@ -2162,7 +2162,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func moduleUnload<Name: RESPStringRenderable>(name: Name) async throws {
-        _ = try await execute(command: MODULE.UNLOAD(name: name))
+        _ = try await execute(MODULE.UNLOAD(name: name))
     }
 
     /// Listens for all requests received by the server in real-time.
@@ -2172,7 +2172,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func monitor() async throws -> MONITOR.Response {
-        try await execute(command: MONITOR())
+        try await execute(MONITOR())
     }
 
     /// An internal command used in replication.
@@ -2182,7 +2182,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func psync<Replicationid: RESPStringRenderable>(replicationid: Replicationid, offset: Int) async throws -> RESPToken {
-        try await execute(command: PSYNC(replicationid: replicationid, offset: offset))
+        try await execute(PSYNC(replicationid: replicationid, offset: offset))
     }
 
     /// Configures a server as replica of another, or promotes it to a primary.
@@ -2194,7 +2194,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func replicaof(args: REPLICAOF.Args) async throws -> ByteBuffer {
-        try await execute(command: REPLICAOF(args: args))
+        try await execute(REPLICAOF(args: args))
     }
 
     /// Returns the replication role.
@@ -2205,7 +2205,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func role() async throws -> ROLE.Response {
-        try await execute(command: ROLE())
+        try await execute(ROLE())
     }
 
     /// Synchronously saves the database(s) to disk.
@@ -2215,7 +2215,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the total number of keys in all databases
     @inlinable
     public func save() async throws {
-        _ = try await execute(command: SAVE())
+        _ = try await execute(SAVE())
     }
 
     /// Synchronously saves the database(s) to disk and shuts down the server.
@@ -2228,7 +2228,7 @@ extension ValkeyClientProtocol {
     /// - Response: "OK": OK if ABORT was specified and shutdown was aborted. On successful shutdown, nothing is returned since the server quits and the connection is closed. On failure, an error is returned.
     @inlinable
     public func shutdown(abortSelector: SHUTDOWN.AbortSelector? = nil) async throws {
-        _ = try await execute(command: SHUTDOWN(abortSelector: abortSelector))
+        _ = try await execute(SHUTDOWN(abortSelector: abortSelector))
     }
 
     /// Sets a server as a replica of another, or promotes it to being a primary.
@@ -2241,7 +2241,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func slaveof(args: SLAVEOF.Args) async throws -> ByteBuffer {
-        try await execute(command: SLAVEOF(args: args))
+        try await execute(SLAVEOF(args: args))
     }
 
     /// Returns the slow log's entries.
@@ -2256,7 +2256,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func slowlogGet(count: Int? = nil) async throws -> RESPToken.Array {
-        try await execute(command: SLOWLOG.GET(count: count))
+        try await execute(SLOWLOG.GET(count: count))
     }
 
     /// Show helpful text about the different subcommands
@@ -2269,7 +2269,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func slowlogHelp() async throws -> RESPToken.Array {
-        try await execute(command: SLOWLOG.HELP())
+        try await execute(SLOWLOG.HELP())
     }
 
     /// Returns the number of entries in the slow log.
@@ -2282,7 +2282,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func slowlogLen() async throws -> Int {
-        try await execute(command: SLOWLOG.LEN())
+        try await execute(SLOWLOG.LEN())
     }
 
     /// Clears all entries from the slow log.
@@ -2293,7 +2293,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of entries in the slowlog
     @inlinable
     public func slowlogReset() async throws {
-        _ = try await execute(command: SLOWLOG.RESET())
+        _ = try await execute(SLOWLOG.RESET())
     }
 
     /// Swaps two databases.
@@ -2303,7 +2303,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the count of clients watching or blocking on keys from both databases.
     @inlinable
     public func swapdb(index1: Int, index2: Int) async throws {
-        _ = try await execute(command: SWAPDB(index1: index1, index2: index2))
+        _ = try await execute(SWAPDB(index1: index1, index2: index2))
     }
 
     /// An internal command used in replication.
@@ -2313,7 +2313,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func sync() async throws -> SYNC.Response {
-        try await execute(command: SYNC())
+        try await execute(SYNC())
     }
 
     /// Returns the server time.
@@ -2325,7 +2325,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func time() async throws -> RESPToken.Array {
-        try await execute(command: TIME())
+        try await execute(TIME())
     }
 
 }
