@@ -403,7 +403,7 @@ extension ValkeyConnection {
     }
 }
 
-// Used in ValkeyConnection.pipeline
+// Used in ValkeyConnection.execute(_:)
 @usableFromInline
 struct AutoIncrementingInteger {
     @usableFromInline
