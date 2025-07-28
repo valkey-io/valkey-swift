@@ -30,7 +30,6 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 - ``ValkeyCommand``
 - ``ValkeyCommandEncoder``
 - ``ValkeyKey``
-- ``GeoCoordinates``
 
 ### RESP Protocol
 
@@ -39,6 +38,7 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 - ``RESPStringRenderable``
 - ``RESPTokenDecodable``
 - ``RESPTypeIdentifier``
+- ``GeoCoordinates``
 - ``GEODISTResponse``
 
 ### Subscriptions
