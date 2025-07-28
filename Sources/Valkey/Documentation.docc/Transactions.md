@@ -7,11 +7,13 @@ Transactions allow you to group multiple commands into an atomic operation. A re
 Because of this custom behaviour valkey-swift provides extra support for executing transactions. The API is very similar to the pipelining function which accepts a parameter pack of commands, detailed in <doc:Pipelining>.
 
 ```swift
-let results = try await valkeyClient.transaction(
-    SET("foo", value: "100"),
-    LPUSH("queue", elements: ["foo"])
-)
-let lpushResponse = try results.1.get()
+try await valkeyClient.withConnection { connection in
+    let results = try await connection.transaction(
+        SET("foo", value: "100"),
+        LPUSH("queue", elements: ["foo"])
+    )
+    let lpushResponse = try results.1.get()
+}
 ```
 
 ### Rollbacks
