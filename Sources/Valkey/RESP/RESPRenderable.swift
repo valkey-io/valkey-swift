@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// A type that the command encoder can render to send as a Valkey command.
+/// A type that the command encoder can render as part of a Valkey command.
 public protocol RESPRenderable {
     var respEntries: Int { get }
 
