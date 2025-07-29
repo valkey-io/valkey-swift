@@ -97,7 +97,7 @@ try await connection.subscribeKeyInvalidations { keys in
 
 #### Redirecting Invalidation Events
 
-With RESP3 it is possible to perform data operations and receive the invalidation events on the same connection, but Valkey client tracking also allows you to redirect invalidation events to another connection. Given valkey-swift uses a persistent connection pool it is probably preferable to use a single connection for invalidation message if you want to implement a system wide cache.
+With RESP3 it is possible to perform data operations and receive the invalidation events on the same connection, but Valkey client tracking also allows you to redirect invalidation events to another connection. Given that the Valkey client uses a persistent connection pool, it is preferable to use a single connection for invalidation message to implement a system wide cache.
 
 For this to work you need to know the id of the connection that is subscribed to the key invalidation events. Get the connection id using ``ValkeyClientProtocol/clientId()`` and use it when you set up tracking. 
 
