@@ -378,14 +378,10 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func cancel(requestID: Int) {
         self.eventLoop.assertInEventLoop()
         switch self.stateMachine.cancel(requestID: requestID) {
-        case .failPendingCommandsAndClose(let context, let cancelled, let closeConnectionDueToCancel):
+        case .cancelPendingCommands(let cancelled):
             for command in cancelled {
                 command.promise.fail(ValkeyClientError.init(.cancelled))
             }
-            for command in closeConnectionDueToCancel {
-                command.promise.fail(ValkeyClientError.init(.connectionClosedDueToCancellation))
-            }
-            self.closeSubscriptionsAndConnection(context: context, error: ValkeyClientError(.cancelled))
 
         case .doNothing:
             break

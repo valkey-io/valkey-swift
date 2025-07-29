@@ -286,30 +286,51 @@ struct ValkeyChannelHandlerStateMachineTests {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()  // set active
         stateMachine.setConnected(context: "testCancel")
         stateMachine.receiveHelloResponse()
-        let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
-        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 23, deadline: .now())) {
+        let promise1 = EmbeddedEventLoop().makePromise(of: RESPToken.self)
+        let promise2 = EmbeddedEventLoop().makePromise(of: RESPToken.self)
+        switch stateMachine.sendCommand(.init(promise: .nio(promise1), requestID: 23, deadline: .now())) {
         case .sendCommand:
             break
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        switch stateMachine.sendCommand(.init(promise: .nio(promise), requestID: 48, deadline: .now())) {
+        switch stateMachine.sendCommand(.init(promise: .nio(promise2), requestID: 48, deadline: .now())) {
         case .sendCommand:
             break
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
         switch stateMachine.cancel(requestID: 23) {
-        case .failPendingCommandsAndClose(let context, let cancel, let closeConnectionDueToCancel):
-            #expect(context == "testCancel")
-            #expect(cancel.map { $0.requestID } == [23])
-            #expect(closeConnectionDueToCancel.map { $0.requestID } == [48])
-            break
+        case .cancelPendingCommands(let cancelled):
+            for commands in cancelled {
+                commands.promise.fail(ValkeyClientError(.cancelled))
+            }
+            #expect(cancelled.map { $0.requestID } == [23])
         default:
             Issue.record("Invalid cancel action")
         }
-        expect(stateMachine.state == .closed(CancellationError()))
-        promise.fail(CancellationError())
+        switch stateMachine.receivedResponse(token: .ok) {
+        case .respond(let command, let deadlineAction):
+            #expect(command.requestID == 23)
+            #expect(deadlineAction == .doNothing)
+            switch command.promise {
+            case .forget:
+                break
+            case .swift, .nio:
+                Issue.record("Promise should be set to cancelled")
+            }
+        case .closeWithError, .respondAndClose:
+            Issue.record("Invalid receivedResponse action")
+        }
+        switch stateMachine.receivedResponse(token: .ok) {
+        case .respond(let command, let deadlineAction):
+            #expect(command.requestID == 48)
+            #expect(deadlineAction == .cancel)
+            command.promise.succeed(RESPToken(validated: ByteBuffer(string: "+OK\r\n")))
+        case .closeWithError, .respondAndClose:
+            Issue.record("Invalid receivedResponse action")
+        }
+        expect(stateMachine.state == .active(.init(context: "testCancel", pendingCommands: [])))
     }
 
     @Test
@@ -319,7 +340,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         stateMachine.setConnected(context: "testCancel")
         stateMachine.receiveHelloResponse()
         switch stateMachine.cancel(requestID: 23) {
-        case .failPendingCommandsAndClose:
+        case .cancelPendingCommands:
             Issue.record("Invalid cancel action")
         case .doNothing:
             break
@@ -342,15 +363,29 @@ struct ValkeyChannelHandlerStateMachineTests {
         }
         _ = stateMachine.gracefulShutdown()
         switch stateMachine.cancel(requestID: 23) {
-        case .failPendingCommandsAndClose(let context, let cancel, let closeConnectionDueToCancel):
-            #expect(context == "testCancelGracefulShutdown")
-            #expect(cancel.map { $0.requestID } == [23])
-            #expect(closeConnectionDueToCancel.count == 0)
+        case .cancelPendingCommands(let cancelled):
+            for commands in cancelled {
+                commands.promise.fail(ValkeyClientError(.cancelled))
+            }
+            #expect(cancelled.map { $0.requestID } == [23])
         default:
             Issue.record("Invalid cancel action")
         }
-        expect(stateMachine.state == .closed(CancellationError()))
-        promise.fail(CancellationError())
+        switch stateMachine.receivedResponse(token: .ok) {
+        case .respondAndClose(let command, let error):
+            #expect(command.requestID == 23)
+            #expect(error == nil)
+            switch command.promise {
+            case .forget:
+                break
+            case .swift, .nio:
+                Issue.record("Promise should be set to cancelled")
+            }
+
+        case .closeWithError, .respond:
+            Issue.record("Invalid receivedResponse action")
+        }
+        expect(stateMachine.state == .closed(nil))
     }
 
     @Test

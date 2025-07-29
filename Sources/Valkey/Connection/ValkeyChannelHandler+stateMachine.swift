@@ -48,17 +48,15 @@ extension ValkeyChannelHandler {
             let context: Context
             var pendingCommands: Deque<PendingCommand>
 
-            func cancel(requestID: Int) -> (cancel: [PendingCommand], connectionClosedDueToCancellation: [PendingCommand]) {
+            mutating func cancel(requestID: Int) -> [PendingCommand] {
                 var withRequestID = [PendingCommand]()
-                var withoutRequestID = [PendingCommand]()
-                for command in pendingCommands {
-                    if command.requestID == requestID {
-                        withRequestID.append(command)
-                    } else {
-                        withoutRequestID.append(command)
+                for index in pendingCommands.indices {
+                    if pendingCommands[index].requestID == requestID {
+                        withRequestID.append(pendingCommands[index])
+                        pendingCommands[index].promise = .forget
                     }
                 }
-                return (withRequestID, withoutRequestID)
+                return withRequestID
             }
         }
 
@@ -225,6 +223,9 @@ extension ValkeyChannelHandler {
                     return .waitForPromise(promise)
                 case .swift, .forget:
                     preconditionFailure("Connected state cannot be setup with a Swift continuation")
+                case .forget:
+                    self = .connected(state)
+                    return .done
                 }
             case .active(let state):
                 self = .active(state)
@@ -292,7 +293,7 @@ extension ValkeyChannelHandler {
 
         @usableFromInline
         enum CancelAction {
-            case failPendingCommandsAndClose(Context, cancel: [PendingCommand], closeConnectionDueToCancel: [PendingCommand])
+            case cancelPendingCommands(cancel: [PendingCommand])
             case doNothing
         }
 
@@ -302,29 +303,25 @@ extension ValkeyChannelHandler {
             switch consume self.state {
             case .initialized:
                 preconditionFailure("Cannot cancel when initialized")
-            case .connected:
+            case .connected(let state):
                 preconditionFailure("Cannot cancel while in connected state")
-            case .active(let state):
-                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
-                if cancel.count > 0 {
-                    self = .closed(CancellationError())
-                    return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: cancel,
-                        closeConnectionDueToCancel: closeConnectionDueToCancel
+            case .active(var state):
+                let cancelled = state.cancel(requestID: requestID)
+                if cancelled.count > 0 {
+                    self = .active(state)
+                    return .cancelPendingCommands(
+                        cancel: cancelled
                     )
                 } else {
                     self = .active(state)
                     return .doNothing
                 }
-            case .closing(let state):
-                let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
-                if cancel.count > 0 {
-                    self = .closed(CancellationError())
-                    return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: cancel,
-                        closeConnectionDueToCancel: closeConnectionDueToCancel
+            case .closing(var state):
+                let cancelled = state.cancel(requestID: requestID)
+                if cancelled.count > 0 {
+                    self = .closing(state)
+                    return .cancelPendingCommands(
+                        cancel: cancelled
                     )
                 } else {
                     self = .closing(state)

@@ -344,8 +344,8 @@ struct ConnectionTests {
             _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
             group.cancelAll()
         }
-        // verify connection has been closed
-        #expect(channel.isActive == false)
+        // verify connection is still open
+        #expect(channel.isActive == true)
     }
 
     @Test
@@ -378,9 +378,8 @@ struct ConnectionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                await #expect(throws: ValkeyClientError(.connectionClosedDueToCancellation)) {
-                    _ = try await connection.get("foo").map { String(buffer: $0) }
-                }
+                let value = try await connection.get("foo").map { String(buffer: $0) }
+                #expect(value == "NotCancelled")
             }
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
@@ -392,6 +391,7 @@ struct ConnectionTests {
                 _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 group.cancelAll()
+                try await channel.writeInbound(RESPToken(.bulkString("NotCancelled")).base)
             }
         }
     }

@@ -26,7 +26,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case transactionAborted
             case tokenDoesNotExist
             case cancelled
-            case connectionClosedDueToCancellation
             case timeout
         }
 
@@ -53,8 +52,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var tokenDoesNotExist: Self { .init(.tokenDoesNotExist) }
         /// Task cancelled.
         public static var cancelled: Self { .init(.cancelled) }
-        /// Connection closed because another command was cancelled.
-        public static var connectionClosedDueToCancellation: Self { .init(.connectionClosedDueToCancellation) }
         /// Connection closed because it timed out.
         public static var timeout: Self { .init(.timeout) }
     }
@@ -83,7 +80,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         case .transactionAborted: self.message ?? "Transaction was aborted because a watched key was touched"
         case .tokenDoesNotExist: self.message ?? "Expected token does not exist."
         case .cancelled: self.message ?? "Task was cancelled."
-        case .connectionClosedDueToCancellation: self.message ?? "Connection was closed because another command was cancelled."
         case .timeout: self.message ?? "Connection was closed because it timed out."
         }
     }
