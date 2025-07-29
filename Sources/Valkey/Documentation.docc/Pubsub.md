@@ -67,7 +67,7 @@ Client side caching is a way to improve performance of a service using Valkey. C
 
 #### Enabling Tracking
 
-Connections start without invalidation tracking enabled. To enable receiving invalidation events on a connection, call ``ValkeyClientProtocol/clientTracking(status:clientId:prefixs:bcast:optin:optout:noloop:)``. For example:
+Connections start without invalidation tracking enabled. To enable receiving invalidation events on a connection, call ``ValkeyConnection/clientTracking(status:clientId:prefixs:bcast:optin:optout:noloop:)``. For example:
 
 ```swift
 try await connection.clientTracking(status: .on)
@@ -99,7 +99,7 @@ try await connection.subscribeKeyInvalidations { keys in
 
 With RESP3 it is possible to perform data operations and receive the invalidation events on the same connection, but Valkey client tracking also allows you to redirect invalidation events to another connection. Given that the Valkey client uses a persistent connection pool, it is preferable to use a single connection for invalidation message to implement a system wide cache.
 
-For this to work you need to know the id of the connection that is subscribed to the key invalidation events. Get the connection id using ``ValkeyClientProtocol/clientId()`` and use it when you set up tracking. 
+For this to work you need to know the id of the connection that is subscribed to the key invalidation events. Get the connection id using ``ValkeyConnection/clientId()`` and use it when you set up tracking. 
 
 ```swift
 try await connection.clientTracking(status: .on, clientId: id)
