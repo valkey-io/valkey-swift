@@ -12,30 +12,58 @@
 //
 //===----------------------------------------------------------------------===//
 
+/// List of functions where the Response calculation has been disabled because we want
+/// to override the response in the Valkey library
+private let disableResponseCalculationCommands: Set<String> = [
+    "BZMPOP",
+    "BZPOPMAX",
+    "BZPOPMIN",
+    "CLUSTER SHARDS",
+    "GEODIST",
+    "GEOPOS",
+    "GEOSEARCH",
+    "ROLE",
+    "LMPOP",
+    "SPOP",
+    "SSCAN",
+    "XAUTOCLAIM",
+    "XCLAIM",
+    "XPENDING",
+    "XRANGE",
+    "XREAD",
+    "XREADGROUP",
+    "XREVRANGE",
+    "ZMPOP",
+    "ZPOPMAX",
+    "ZPOPMIN",
+]
+/// List of subscribe commands, which have their own implementation in code
+let subscribeFunctions: Set<String> = [
+    "SUBSCRIBE",
+    "PSUBSCRIBE",
+    "SSUBSCRIBE",
+    "UNSUBSCRIBE",
+    "PUNSUBSCRIBE",
+    "SUNSUBSCRIBE",
+]
+/// List of commands that should only be available from ValkeyConnection
+let connectionOnlyFunctionNames: Set<String> = [
+    "MULTI",
+    "EXEC",
+    "WATCH",
+    "UNWATCH",
+    "DISCARD",
+    "CLIENT ID",
+    "CLIENT TRACKING",
+    "CLIENT CACHING",
+    "CLIENT GETNAME",
+    "CLIENT INFO",
+    "CLIENT SETNAME",
+    "CLIENT SETINFO",
+    "CLIENT TRACKINGINFO",
+]
+
 func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: ValkeyCommands, module: Bool) -> String {
-    let disableResponseCalculationCommands: Set<String> = [
-        "BZMPOP",
-        "BZPOPMAX",
-        "BZPOPMIN",
-        "CLUSTER SHARDS",
-        "GEODIST",
-        "GEOPOS",
-        "GEOSEARCH",
-        "ROLE",
-        "LMPOP",
-        "SPOP",
-        "SSCAN",
-        "XAUTOCLAIM",
-        "XCLAIM",
-        "XPENDING",
-        "XRANGE",
-        "XREAD",
-        "XREADGROUP",
-        "XREVRANGE",
-        "ZMPOP",
-        "ZPOPMAX",
-        "ZPOPMIN",
-    ]
     var string = """
         //===----------------------------------------------------------------------===//
         //
@@ -121,32 +149,52 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
 
     /// Remove subscribe functions as we implement our own versions in code
     /// Remove watch functions as they are only valid on a single connection
-    let subscribeFunctions = ["SUBSCRIBE", "PSUBSCRIBE", "SSUBSCRIBE", "UNSUBSCRIBE", "PUNSUBSCRIBE", "SUNSUBSCRIBE", "UNWATCH", "WATCH"]
     keys.removeAll { subscribeFunctions.contains($0) }
 
-    // transaction commands should be added to ValkeyConnection as they require a single connection.
-    if commands.first?.value.group == "transactions" {
+    let connectionOnlyFunctions = commands.filter { connectionOnlyFunctionNames.contains($0.key) }
+    let clientProtocolFunctions = commands.filter { connectionOnlyFunctions[$0.key] == nil }
+
+    if clientProtocolFunctions.count > 0 {
+        string.append("extension ValkeyClientProtocol {\n")
+        string.appendValkeyFunctions(
+            commands: clientProtocolFunctions,
+            keys: keys,
+            namespaces: namespaces
+        )
+        string.append("}\n\n")
+    }
+    if connectionOnlyFunctions.count > 0 {
         string.append("@available(valkeySwift 1.0, *)\n")
         string.append("extension ValkeyConnection {\n")
-    } else {
-        string.append("extension ValkeyClientProtocol {\n")
-    }
-    for key in keys {
-        let command = commands[key]!
-        // if there is no function assume command is a container command
-        guard !namespaces.contains(key) || command.function != nil else { continue }
-        guard command.docFlags?.contains("SYSCMD") != true else { continue }
-        string.appendFunction(
-            command: command,
-            name: key,
-            disableResponseCalculation: disableResponseCalculationCommands.contains(key)
+        string.appendValkeyFunctions(
+            commands: connectionOnlyFunctions,
+            keys: keys,
+            namespaces: namespaces
         )
+        string.append("}\n")
     }
-    string.append("}\n")
     return string
 }
 
 extension String {
+    mutating func appendValkeyFunctions(
+        commands: [String: ValkeyCommand],
+        keys: [String],
+        namespaces: Set<String>
+    ) {
+        for key in keys {
+            guard let command = commands[key] else { continue }
+            // if there is no function assume command is a container command
+            guard !namespaces.contains(key) || command.function != nil else { continue }
+            guard command.docFlags?.contains("SYSCMD") != true else { continue }
+            self.appendFunction(
+                command: command,
+                name: key,
+                disableResponseCalculation: disableResponseCalculationCommands.contains(key)
+            )
+        }
+    }
+
     mutating func appendDeprecatedMessage(command: ValkeyCommand, name: String, tab: String) {
         guard let deprecatedSince = command.deprecatedSince else { return }
         self.append("\(tab)@available(*, deprecated, message: \"Since \(deprecatedSince)")
