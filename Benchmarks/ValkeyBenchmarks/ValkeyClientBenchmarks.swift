@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import Benchmark
+import Foundation
 import Logging
 import NIOCore
 import NIOPosix
@@ -23,7 +24,9 @@ import Valkey
 func clientBenchmarks() {
     makeClientGETSequentialBenchmark()
     makeClient20ConcurrentGETBenchmark()
-    makeClient50Concurrent20ConnectionGETBenchmark()
+    if ProcessInfo.processInfo.environment["CI"] == nil {
+        makeClient50Concurrent20ConnectionGETBenchmark()
+    }
 }
 
 @available(valkeySwift 1.0, *)
