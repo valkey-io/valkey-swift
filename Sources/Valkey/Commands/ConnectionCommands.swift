@@ -537,7 +537,7 @@ extension CLIENT {
         }
         public var status: Status
         public var clientId: Int?
-        public var prefixs: [String]
+        public var prefixes: [String]
         public var bcast: Bool
         public var optin: Bool
         public var optout: Bool
@@ -546,7 +546,7 @@ extension CLIENT {
         @inlinable public init(
             status: Status,
             clientId: Int? = nil,
-            prefixs: [String] = [],
+            prefixes: [String] = [],
             bcast: Bool = false,
             optin: Bool = false,
             optout: Bool = false,
@@ -554,7 +554,7 @@ extension CLIENT {
         ) {
             self.status = status
             self.clientId = clientId
-            self.prefixs = prefixs
+            self.prefixes = prefixes
             self.bcast = bcast
             self.optin = optin
             self.optout = optout
@@ -567,7 +567,7 @@ extension CLIENT {
                 "TRACKING",
                 status,
                 RESPWithToken("REDIRECT", clientId),
-                RESPWithToken("PREFIX", prefixs),
+                RESPWithToken("PREFIX", prefixes),
                 RESPPureToken("BCAST", bcast),
                 RESPPureToken("OPTIN", optin),
                 RESPPureToken("OPTOUT", optout),
@@ -1043,14 +1043,22 @@ extension ValkeyClientProtocol {
     public func clientTracking(
         status: CLIENT.TRACKING.Status,
         clientId: Int? = nil,
-        prefixs: [String] = [],
+        prefixes: [String] = [],
         bcast: Bool = false,
         optin: Bool = false,
         optout: Bool = false,
         noloop: Bool = false
     ) async throws {
         _ = try await send(
-            command: CLIENT.TRACKING(status: status, clientId: clientId, prefixs: prefixs, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
+            command: CLIENT.TRACKING(
+                status: status,
+                clientId: clientId,
+                prefixes: prefixes,
+                bcast: bcast,
+                optin: optin,
+                optout: optout,
+                noloop: noloop
+            )
         )
     }
 

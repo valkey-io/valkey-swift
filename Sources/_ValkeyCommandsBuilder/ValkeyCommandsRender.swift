@@ -828,6 +828,8 @@ extension ValkeyCommand.Argument {
                 name
             } else if self.name.last == "y", self.name.dropLast().last != "e" {
                 "\(self.name.dropLast())ies"
+            } else if self.name.last == "x" {
+                "\(self.name)es"
             } else {
                 "\(self.name)s"
             }
