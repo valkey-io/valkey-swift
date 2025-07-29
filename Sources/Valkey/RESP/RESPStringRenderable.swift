@@ -20,7 +20,7 @@ import FoundationEssentials
 import Foundation
 #endif
 
-/// A type that the Valkey client can render as a single bulk string.
+/// A string-like type that the command encoder can render to send as a Valkey command.
 public protocol RESPStringRenderable: Sendable, Hashable {
     func encode(into commandEncoder: inout ValkeyCommandEncoder)
 }
