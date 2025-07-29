@@ -16,7 +16,7 @@ try await valkeyClient.publish(channel: "channel1", message: "Hello, World!")
 
 ### Subscribing
 
-Using ``ValkeyConnection/subscribe(to:isolation:process:)-(String...,_,_)`` we can subscribe to a single or multiple channels and receive every message published to the channel via an AsyncSequence. When we exit the closure provided the relevant `UNSUBSCRIBE` calls will be made.
+Use ``ValkeyConnection/subscribe(to:isolation:process:)-(String...,_,_)`` to subscribe to a single or multiple channels and receive every message published to the channel via an AsyncSequence. When you exit the closure provided, the Valkey client sends the relevant `UNSUBSCRIBE` messages.
 
 ```swift
 try await valkeyClient.withConnection { connection in
