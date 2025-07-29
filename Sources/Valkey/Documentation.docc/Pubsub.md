@@ -8,7 +8,7 @@ Valkey provides publish/subscribe messaging support via the PUBLISH, SUBSCRIBE a
 
 ### Publishing
 
-Valkey has one function for publishing to a channel ``ValkeyClientProtocol/publish(channel:message:)``. As this is a member function of ``ValkeyClientProtocol`` it is available from ``ValkeyConnection``, ``ValkeyClient`` and ``ValkeyClusterClient``.
+Valkey has one function for publishing to a channel ``ValkeyClientProtocol/publish(channel:message:)``. As a member function of ``ValkeyClientProtocol``, it is available from the types that conform to it which include ``ValkeyConnection``, ``ValkeyClient`` and ``ValkeyClusterClient``.
 
 ```swift
 try await valkeyClient.publish(channel: "channel1", message: "Hello, World!")
