@@ -813,16 +813,6 @@ extension ValkeyClientProtocol {
         try await execute(CLIENT())
     }
 
-    /// Instructs the server whether to track the keys in the next request.
-    ///
-    /// - Documentation: [CLIENT CACHING](https://valkey.io/commands/client-caching)
-    /// - Available: 6.0.0
-    /// - Complexity: O(1)
-    @inlinable
-    public func clientCaching(mode: CLIENT.CACHING.Mode) async throws {
-        _ = try await execute(CLIENT.CACHING(mode: mode))
-    }
-
     /// A client claims its capability.
     ///
     /// - Documentation: [CLIENT CAPA](https://valkey.io/commands/client-capa)
@@ -831,20 +821,6 @@ extension ValkeyClientProtocol {
     @inlinable
     public func clientCapa<Capability: RESPStringRenderable>(capabilities: [Capability]) async throws {
         _ = try await execute(CLIENT.CAPA(capabilities: capabilities))
-    }
-
-    /// Returns the name of the connection.
-    ///
-    /// - Documentation: [CLIENT GETNAME](https://valkey.io/commands/client-getname)
-    /// - Available: 2.6.9
-    /// - Complexity: O(1)
-    /// - Response: One of the following
-    ///     * [String]: The connection name of the current connection
-    ///     * [Null]: Connection name was not set
-    @inlinable
-    @discardableResult
-    public func clientGetname() async throws -> ByteBuffer? {
-        try await execute(CLIENT.GETNAME())
     }
 
     /// Returns the client ID to which the connection's tracking notifications are redirected.
@@ -874,18 +850,6 @@ extension ValkeyClientProtocol {
         try await execute(CLIENT.HELP())
     }
 
-    /// Returns the unique client ID of the connection.
-    ///
-    /// - Documentation: [CLIENT ID](https://valkey.io/commands/client-id)
-    /// - Available: 5.0.0
-    /// - Complexity: O(1)
-    /// - Response: [Integer]: The id of the client
-    @inlinable
-    @discardableResult
-    public func clientId() async throws -> Int {
-        try await execute(CLIENT.ID())
-    }
-
     /// Mark this client as an import source when server is in import mode.
     ///
     /// - Documentation: [CLIENT IMPORT-SOURCE](https://valkey.io/commands/client-import-source)
@@ -894,18 +858,6 @@ extension ValkeyClientProtocol {
     @inlinable
     public func clientImportSource(enabled: CLIENT.IMPORTSOURCE.Enabled) async throws {
         _ = try await execute(CLIENT.IMPORTSOURCE(enabled: enabled))
-    }
-
-    /// Returns information about the connection.
-    ///
-    /// - Documentation: [CLIENT INFO](https://valkey.io/commands/client-info)
-    /// - Available: 6.2.0
-    /// - Complexity: O(1)
-    /// - Response: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
-    @inlinable
-    @discardableResult
-    public func clientInfo() async throws -> ByteBuffer {
-        try await execute(CLIENT.INFO())
     }
 
     /// Terminates open connections.
@@ -1005,58 +957,6 @@ extension ValkeyClientProtocol {
         _ = try await execute(CLIENT.REPLY(action: action))
     }
 
-    /// Sets information specific to the client or connection.
-    ///
-    /// - Documentation: [CLIENT SETINFO](https://valkey.io/commands/client-setinfo)
-    /// - Available: 7.2.0
-    /// - Complexity: O(1)
-    @inlinable
-    public func clientSetinfo(attr: CLIENT.SETINFO.Attr) async throws {
-        _ = try await execute(CLIENT.SETINFO(attr: attr))
-    }
-
-    /// Sets the connection name.
-    ///
-    /// - Documentation: [CLIENT SETNAME](https://valkey.io/commands/client-setname)
-    /// - Available: 2.6.9
-    /// - Complexity: O(1)
-    @inlinable
-    public func clientSetname<ConnectionName: RESPStringRenderable>(connectionName: ConnectionName) async throws {
-        _ = try await execute(CLIENT.SETNAME(connectionName: connectionName))
-    }
-
-    /// Controls server-assisted client-side caching for the connection.
-    ///
-    /// - Documentation: [CLIENT TRACKING](https://valkey.io/commands/client-tracking)
-    /// - Available: 6.0.0
-    /// - Complexity: O(1). Some options may introduce additional complexity.
-    /// - Response: "OK": If the client was successfully put into or taken out of tracking mode.
-    @inlinable
-    public func clientTracking(
-        status: CLIENT.TRACKING.Status,
-        clientId: Int? = nil,
-        prefixes: [String] = [],
-        bcast: Bool = false,
-        optin: Bool = false,
-        optout: Bool = false,
-        noloop: Bool = false
-    ) async throws {
-        _ = try await execute(
-            CLIENT.TRACKING(status: status, clientId: clientId, prefixes: prefixes, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
-        )
-    }
-
-    /// Returns information about server-assisted client-side caching for the connection.
-    ///
-    /// - Documentation: [CLIENT TRACKINGINFO](https://valkey.io/commands/client-trackinginfo)
-    /// - Available: 6.2.0
-    /// - Complexity: O(1)
-    @inlinable
-    @discardableResult
-    public func clientTrackinginfo() async throws -> RESPToken.Map {
-        try await execute(CLIENT.TRACKINGINFO())
-    }
-
     /// Unblocks a client blocked by a blocking command from a different connection.
     ///
     /// - Documentation: [CLIENT UNBLOCK](https://valkey.io/commands/client-unblock)
@@ -1151,6 +1051,110 @@ extension ValkeyClientProtocol {
     @inlinable
     public func select(index: Int) async throws {
         _ = try await execute(SELECT(index: index))
+    }
+
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyConnection {
+    /// Instructs the server whether to track the keys in the next request.
+    ///
+    /// - Documentation: [CLIENT CACHING](https://valkey.io/commands/client-caching)
+    /// - Available: 6.0.0
+    /// - Complexity: O(1)
+    @inlinable
+    public func clientCaching(mode: CLIENT.CACHING.Mode) async throws {
+        _ = try await execute(CLIENT.CACHING(mode: mode))
+    }
+
+    /// Returns the name of the connection.
+    ///
+    /// - Documentation: [CLIENT GETNAME](https://valkey.io/commands/client-getname)
+    /// - Available: 2.6.9
+    /// - Complexity: O(1)
+    /// - Response: One of the following
+    ///     * [String]: The connection name of the current connection
+    ///     * [Null]: Connection name was not set
+    @inlinable
+    @discardableResult
+    public func clientGetname() async throws -> ByteBuffer? {
+        try await execute(CLIENT.GETNAME())
+    }
+
+    /// Returns the unique client ID of the connection.
+    ///
+    /// - Documentation: [CLIENT ID](https://valkey.io/commands/client-id)
+    /// - Available: 5.0.0
+    /// - Complexity: O(1)
+    /// - Response: [Integer]: The id of the client
+    @inlinable
+    @discardableResult
+    public func clientId() async throws -> Int {
+        try await execute(CLIENT.ID())
+    }
+
+    /// Returns information about the connection.
+    ///
+    /// - Documentation: [CLIENT INFO](https://valkey.io/commands/client-info)
+    /// - Available: 6.2.0
+    /// - Complexity: O(1)
+    /// - Response: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
+    @inlinable
+    @discardableResult
+    public func clientInfo() async throws -> ByteBuffer {
+        try await execute(CLIENT.INFO())
+    }
+
+    /// Sets information specific to the client or connection.
+    ///
+    /// - Documentation: [CLIENT SETINFO](https://valkey.io/commands/client-setinfo)
+    /// - Available: 7.2.0
+    /// - Complexity: O(1)
+    @inlinable
+    public func clientSetinfo(attr: CLIENT.SETINFO.Attr) async throws {
+        _ = try await execute(CLIENT.SETINFO(attr: attr))
+    }
+
+    /// Sets the connection name.
+    ///
+    /// - Documentation: [CLIENT SETNAME](https://valkey.io/commands/client-setname)
+    /// - Available: 2.6.9
+    /// - Complexity: O(1)
+    @inlinable
+    public func clientSetname<ConnectionName: RESPStringRenderable>(connectionName: ConnectionName) async throws {
+        _ = try await execute(CLIENT.SETNAME(connectionName: connectionName))
+    }
+
+    /// Controls server-assisted client-side caching for the connection.
+    ///
+    /// - Documentation: [CLIENT TRACKING](https://valkey.io/commands/client-tracking)
+    /// - Available: 6.0.0
+    /// - Complexity: O(1). Some options may introduce additional complexity.
+    /// - Response: "OK": If the client was successfully put into or taken out of tracking mode.
+    @inlinable
+    public func clientTracking(
+        status: CLIENT.TRACKING.Status,
+        clientId: Int? = nil,
+        prefixes: [String] = [],
+        bcast: Bool = false,
+        optin: Bool = false,
+        optout: Bool = false,
+        noloop: Bool = false
+    ) async throws {
+        _ = try await execute(
+            CLIENT.TRACKING(status: status, clientId: clientId, prefixes: prefixes, bcast: bcast, optin: optin, optout: optout, noloop: noloop)
+        )
+    }
+
+    /// Returns information about server-assisted client-side caching for the connection.
+    ///
+    /// - Documentation: [CLIENT TRACKINGINFO](https://valkey.io/commands/client-trackinginfo)
+    /// - Available: 6.2.0
+    /// - Complexity: O(1)
+    @inlinable
+    @discardableResult
+    public func clientTrackinginfo() async throws -> RESPToken.Map {
+        try await execute(CLIENT.TRACKINGINFO())
     }
 
 }
