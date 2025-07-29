@@ -4,7 +4,7 @@ Implementing Pub/Sub using valkey-swift
 
 ## Overview
 
-Valkey provides publish/subscribe messaging support via the PUBLISH, SUBSCRIBE and UNSUBSCRIBE commands. It has a concept of a channel that a client can either publish to or subscribe to. Any messages published to a channel are then sent to the current list of clients subscribed to that channel. Valkey pub/sub channels are not persisted. If a message is published to a channel and no one is subscribed to the channel, that message is lost. 
+Valkey provides publish and subscribe (Pub/Sub) messaging support using the `PUBLISH`, `SUBSCRIBE` and `UNSUBSCRIBE` commands. It has the concept of a channel that a client can both publish to and subscribe to. The server sends any messages published to a channel to clients subscribed to that channel. Valkey channels are not persisted, for instance if a message is published to a channel that has no subscribers, that message is lost. 
 
 ### Publishing
 
