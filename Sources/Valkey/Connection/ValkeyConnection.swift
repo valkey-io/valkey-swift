@@ -174,9 +174,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     /// Pipeline a series of commands to Valkey connection
     ///
-    /// Once all the responses for the commands have been received the function returns 
+    /// Once all the responses for the commands have been received the function returns
     /// a parameter pack of Results, one for each command.
-    /// 
+    ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the responses of all the commands
     @inlinable
