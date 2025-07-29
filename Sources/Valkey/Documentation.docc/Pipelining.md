@@ -8,7 +8,7 @@ Valkey pipelining is a technique for improving performance by issuing multiple c
 
 ## Implementation
 
-In valkey-swift each command has its own type conforming to the protocol ``ValkeyCommand``. This type is initialized with the parameters of the command and has an `associatedtype` ``ValkeyCommand/Response`` which is the expected response type of the command. The ``ValkeyClient/execute(_:)`` command takes a parameter pack of types conforming to ``ValkeyCommand`` and returns a parameter pack containing the results holding the corresponding responses of each command.
+In valkey-swift each command has its own type conforming to the protocol ``ValkeyCommand``. This type is initialized with the parameters of the command and has an `associatedtype` ``ValkeyCommand/Response`` which is the expected response type of the command. The ``ValkeyClient/execute(_:)->(_,_)`` command takes a parameter pack of types conforming to ``ValkeyCommand`` and returns a parameter pack containing the results holding the corresponding responses of each command.
 
 ```swift
 let (_,_, getResult) = await valkeyClient.execute(
