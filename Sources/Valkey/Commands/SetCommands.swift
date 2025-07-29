@@ -386,7 +386,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func sadd<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
-        try await send(command: SADD(key, members: members))
+        try await execute(SADD(key, members: members))
     }
 
     /// Returns the number of members in a set.
@@ -397,7 +397,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The cardinality (number of elements) of the set, or 0 if key does not exist.
     @inlinable
     public func scard(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: SCARD(key))
+        try await execute(SCARD(key))
     }
 
     /// Returns the difference of multiple sets.
@@ -408,7 +408,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
     public func sdiff(keys: [ValkeyKey]) async throws -> RESPToken.Array {
-        try await send(command: SDIFF(keys: keys))
+        try await execute(SDIFF(keys: keys))
     }
 
     /// Stores the difference of multiple sets in a key.
@@ -420,7 +420,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func sdiffstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
-        try await send(command: SDIFFSTORE(destination: destination, keys: keys))
+        try await execute(SDIFFSTORE(destination: destination, keys: keys))
     }
 
     /// Returns the intersect of multiple sets.
@@ -431,7 +431,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
     public func sinter(keys: [ValkeyKey]) async throws -> RESPToken.Array {
-        try await send(command: SINTER(keys: keys))
+        try await execute(SINTER(keys: keys))
     }
 
     /// Returns the number of members of the intersect of multiple sets.
@@ -442,7 +442,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: Number of the elements in the resulting intersection.
     @inlinable
     public func sintercard(keys: [ValkeyKey], limit: Int? = nil) async throws -> Int {
-        try await send(command: SINTERCARD(keys: keys, limit: limit))
+        try await execute(SINTERCARD(keys: keys, limit: limit))
     }
 
     /// Stores the intersect of multiple sets in a key.
@@ -454,7 +454,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func sinterstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
-        try await send(command: SINTERSTORE(destination: destination, keys: keys))
+        try await execute(SINTERSTORE(destination: destination, keys: keys))
     }
 
     /// Determines whether a member belongs to a set.
@@ -467,7 +467,7 @@ extension ValkeyClientProtocol {
     ///     * 1: The element is a member of the set.
     @inlinable
     public func sismember<Member: RESPStringRenderable>(_ key: ValkeyKey, member: Member) async throws -> Int {
-        try await send(command: SISMEMBER(key, member: member))
+        try await execute(SISMEMBER(key, member: member))
     }
 
     /// Returns all members of a set.
@@ -478,7 +478,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: All elements of the set.
     @inlinable
     public func smembers(_ key: ValkeyKey) async throws -> RESPToken.Array {
-        try await send(command: SMEMBERS(key))
+        try await execute(SMEMBERS(key))
     }
 
     /// Determines whether multiple members belong to a set.
@@ -489,7 +489,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List representing the membership of the given elements, in the same order as they are requested.
     @inlinable
     public func smismember<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> RESPToken.Array {
-        try await send(command: SMISMEMBER(key, members: members))
+        try await execute(SMISMEMBER(key, members: members))
     }
 
     /// Moves a member from one set to another.
@@ -503,7 +503,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func smove<Member: RESPStringRenderable>(source: ValkeyKey, destination: ValkeyKey, member: Member) async throws -> Int {
-        try await send(command: SMOVE(source: source, destination: destination, member: member))
+        try await execute(SMOVE(source: source, destination: destination, member: member))
     }
 
     /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
@@ -520,7 +520,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func spop(_ key: ValkeyKey, count: Int? = nil) async throws -> SPOP.Response {
-        try await send(command: SPOP(key, count: count))
+        try await execute(SPOP(key, count: count))
     }
 
     /// Get one or multiple random members from a set
@@ -537,7 +537,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: In case `count` is given and key doesn't exist
     @inlinable
     public func srandmember(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
-        try await send(command: SRANDMEMBER(key, count: count))
+        try await execute(SRANDMEMBER(key, count: count))
     }
 
     /// Removes one or more members from a set. Deletes the set if the last member was removed.
@@ -551,7 +551,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func srem<Member: RESPStringRenderable>(_ key: ValkeyKey, members: [Member]) async throws -> Int {
-        try await send(command: SREM(key, members: members))
+        try await execute(SREM(key, members: members))
     }
 
     /// Iterates over members of a set.
@@ -562,7 +562,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
     public func sscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil) async throws -> SSCAN.Response {
-        try await send(command: SSCAN(key, cursor: cursor, pattern: pattern, count: count))
+        try await execute(SSCAN(key, cursor: cursor, pattern: pattern, count: count))
     }
 
     /// Returns the union of multiple sets.
@@ -573,7 +573,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List with the members of the resulting set.
     @inlinable
     public func sunion(keys: [ValkeyKey]) async throws -> RESPToken.Array {
-        try await send(command: SUNION(keys: keys))
+        try await execute(SUNION(keys: keys))
     }
 
     /// Stores the union of multiple sets in a key.
@@ -585,7 +585,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func sunionstore(destination: ValkeyKey, keys: [ValkeyKey]) async throws -> Int {
-        try await send(command: SUNIONSTORE(destination: destination, keys: keys))
+        try await execute(SUNIONSTORE(destination: destination, keys: keys))
     }
 
 }

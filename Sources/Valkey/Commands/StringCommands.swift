@@ -626,7 +626,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func append<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
-        try await send(command: APPEND(key, value: value))
+        try await execute(APPEND(key, value: value))
     }
 
     /// Decrements the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
@@ -638,7 +638,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func decr(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: DECR(key))
+        try await execute(DECR(key))
     }
 
     /// Decrements a number from the integer value of a key. Uses 0 as initial value if the key doesn't exist.
@@ -650,7 +650,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func decrby(_ key: ValkeyKey, decrement: Int) async throws -> Int {
-        try await send(command: DECRBY(key, decrement: decrement))
+        try await execute(DECRBY(key, decrement: decrement))
     }
 
     /// Returns the string value of a key.
@@ -663,7 +663,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Key does not exist.
     @inlinable
     public func get(_ key: ValkeyKey) async throws -> ByteBuffer? {
-        try await send(command: GET(key))
+        try await execute(GET(key))
     }
 
     /// Returns the string value of a key after deleting the key.
@@ -677,7 +677,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func getdel(_ key: ValkeyKey) async throws -> ByteBuffer? {
-        try await send(command: GETDEL(key))
+        try await execute(GETDEL(key))
     }
 
     /// Returns the string value of a key after setting its expiration time.
@@ -691,7 +691,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> ByteBuffer? {
-        try await send(command: GETEX(key, expiration: expiration))
+        try await execute(GETEX(key, expiration: expiration))
     }
 
     /// Returns a substring of the string stored at a key.
@@ -702,7 +702,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     public func getrange(_ key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
-        try await send(command: GETRANGE(key, start: start, end: end))
+        try await execute(GETRANGE(key, start: start, end: end))
     }
 
     /// Returns the previous string value of a key after setting it to a new value.
@@ -717,7 +717,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> ByteBuffer? {
-        try await send(command: GETSET(key, value: value))
+        try await execute(GETSET(key, value: value))
     }
 
     /// Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist.
@@ -729,7 +729,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func incr(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: INCR(key))
+        try await execute(INCR(key))
     }
 
     /// Increments the integer value of a key by a number. Uses 0 as initial value if the key doesn't exist.
@@ -741,7 +741,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func incrby(_ key: ValkeyKey, increment: Int) async throws -> Int {
-        try await send(command: INCRBY(key, increment: increment))
+        try await execute(INCRBY(key, increment: increment))
     }
 
     /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
@@ -753,7 +753,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws -> ByteBuffer {
-        try await send(command: INCRBYFLOAT(key, increment: increment))
+        try await execute(INCRBYFLOAT(key, increment: increment))
     }
 
     /// Finds the longest common substring.
@@ -774,7 +774,7 @@ extension ValkeyClientProtocol {
         minMatchLen: Int? = nil,
         withmatchlen: Bool = false
     ) async throws -> LCS.Response {
-        try await send(command: LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
+        try await execute(LCS(key1: key1, key2: key2, len: len, idx: idx, minMatchLen: minMatchLen, withmatchlen: withmatchlen))
     }
 
     /// Atomically returns the string values of one or more keys.
@@ -785,7 +785,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: List of values at the specified keys.
     @inlinable
     public func mget(keys: [ValkeyKey]) async throws -> RESPToken.Array {
-        try await send(command: MGET(keys: keys))
+        try await execute(MGET(keys: keys))
     }
 
     /// Atomically creates or modifies the string values of one or more keys.
@@ -795,7 +795,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of keys to set.
     @inlinable
     public func mset<Value: RESPStringRenderable>(data: [MSET<Value>.Data]) async throws {
-        _ = try await send(command: MSET(data: data))
+        _ = try await execute(MSET(data: data))
     }
 
     /// Atomically modifies the string values of one or more keys only when all keys don't exist.
@@ -809,7 +809,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func msetnx<Value: RESPStringRenderable>(data: [MSETNX<Value>.Data]) async throws -> Int {
-        try await send(command: MSETNX(data: data))
+        try await execute(MSETNX(data: data))
     }
 
     /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
@@ -820,7 +820,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func psetex<Value: RESPStringRenderable>(_ key: ValkeyKey, milliseconds: Int, value: Value) async throws {
-        _ = try await send(command: PSETEX(key, milliseconds: milliseconds, value: value))
+        _ = try await execute(PSETEX(key, milliseconds: milliseconds, value: value))
     }
 
     /// Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
@@ -848,7 +848,7 @@ extension ValkeyClientProtocol {
         get: Bool = false,
         expiration: SET<Value>.Expiration? = nil
     ) async throws -> ByteBuffer? {
-        try await send(command: SET(key, value: value, condition: condition, get: get, expiration: expiration))
+        try await execute(SET(key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
     /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
@@ -859,7 +859,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func setex<Value: RESPStringRenderable>(_ key: ValkeyKey, seconds: Int, value: Value) async throws {
-        _ = try await send(command: SETEX(key, seconds: seconds, value: value))
+        _ = try await execute(SETEX(key, seconds: seconds, value: value))
     }
 
     /// Set the string value of a key only when the key doesn't exist.
@@ -874,7 +874,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func setnx<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
-        try await send(command: SETNX(key, value: value))
+        try await execute(SETNX(key, value: value))
     }
 
     /// Overwrites a part of a string value with another by an offset. Creates the key if it doesn't exist.
@@ -886,7 +886,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func setrange<Value: RESPStringRenderable>(_ key: ValkeyKey, offset: Int, value: Value) async throws -> Int {
-        try await send(command: SETRANGE(key, offset: offset, value: value))
+        try await execute(SETRANGE(key, offset: offset, value: value))
     }
 
     /// Returns the length of a string value.
@@ -897,7 +897,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The length of the string value stored at key, or 0 when key does not exist.
     @inlinable
     public func strlen(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: STRLEN(key))
+        try await execute(STRLEN(key))
     }
 
     /// Returns a substring from a string value.
@@ -909,7 +909,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
     public func substr(_ key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
-        try await send(command: SUBSTR(key, start: start, end: end))
+        try await execute(SUBSTR(key, start: start, end: end))
     }
 
 }

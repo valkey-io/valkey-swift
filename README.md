@@ -37,10 +37,10 @@ All the Valkey commands are in the Commands folder of the Valkey target. These a
 
 ### Pipelining commands
 
-In some cases it is desirable to send multiple commands at one time, without waiting for the response after each command. This is called pipelining. You can do this using the function `pipeline(_:)`. This takes a parameter pack of commands and returns a parameter pack with the responses once all the commands have executed.
+In some cases it is desirable to send multiple commands at one time, without waiting for the response after each command. This is called pipelining. You can do this using the function `execute(_:)`. This function takes multiple commands in the form of a parameter pack. It sends all the commands off at the same time and once it has received all the responses, returns a parameter pack containing the responses.
 
 ```swift
-let (setResponse, getResponse) = await connection.pipeline(
+let (setResponse, getResponse) = await connection.execute(
     SET(key: "MyKey", value: "TestString"),
     GET(key: "MyKey")
 )

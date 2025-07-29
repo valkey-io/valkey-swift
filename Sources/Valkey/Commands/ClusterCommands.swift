@@ -655,7 +655,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func asking() async throws {
-        _ = try await send(command: ASKING())
+        _ = try await execute(ASKING())
     }
 
     /// Assigns new hash slots to a node.
@@ -665,7 +665,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the total number of hash slot arguments
     @inlinable
     public func clusterAddslots(slots: [Int]) async throws {
-        _ = try await send(command: CLUSTER.ADDSLOTS(slots: slots))
+        _ = try await execute(CLUSTER.ADDSLOTS(slots: slots))
     }
 
     /// Assigns new hash slot ranges to a node.
@@ -675,7 +675,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
     @inlinable
     public func clusterAddslotsrange(ranges: [CLUSTER.ADDSLOTSRANGE.Range]) async throws {
-        _ = try await send(command: CLUSTER.ADDSLOTSRANGE(ranges: ranges))
+        _ = try await execute(CLUSTER.ADDSLOTSRANGE(ranges: ranges))
     }
 
     /// Advances the cluster config epoch.
@@ -689,7 +689,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterBumpepoch() async throws -> ByteBuffer {
-        try await send(command: CLUSTER.BUMPEPOCH())
+        try await execute(CLUSTER.BUMPEPOCH())
     }
 
     /// Returns the number of active failure reports active for a node.
@@ -701,7 +701,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterCountFailureReports<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> Int {
-        try await send(command: CLUSTER.COUNTFAILUREREPORTS(nodeId: nodeId))
+        try await execute(CLUSTER.COUNTFAILUREREPORTS(nodeId: nodeId))
     }
 
     /// Returns the number of keys in a hash slot.
@@ -713,7 +713,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterCountkeysinslot(slot: Int) async throws -> Int {
-        try await send(command: CLUSTER.COUNTKEYSINSLOT(slot: slot))
+        try await execute(CLUSTER.COUNTKEYSINSLOT(slot: slot))
     }
 
     /// Sets hash slots as unbound for a node.
@@ -723,7 +723,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the total number of hash slot arguments
     @inlinable
     public func clusterDelslots(slots: [Int]) async throws {
-        _ = try await send(command: CLUSTER.DELSLOTS(slots: slots))
+        _ = try await execute(CLUSTER.DELSLOTS(slots: slots))
     }
 
     /// Sets hash slot ranges as unbound for a node.
@@ -733,7 +733,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the total number of the slots between the start slot and end slot arguments.
     @inlinable
     public func clusterDelslotsrange(ranges: [CLUSTER.DELSLOTSRANGE.Range]) async throws {
-        _ = try await send(command: CLUSTER.DELSLOTSRANGE(ranges: ranges))
+        _ = try await execute(CLUSTER.DELSLOTSRANGE(ranges: ranges))
     }
 
     /// Forces a replica to perform a manual failover of its primary.
@@ -743,7 +743,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clusterFailover(options: CLUSTER.FAILOVER.Options? = nil) async throws {
-        _ = try await send(command: CLUSTER.FAILOVER(options: options))
+        _ = try await execute(CLUSTER.FAILOVER(options: options))
     }
 
     /// Deletes all slots information from a node.
@@ -753,7 +753,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clusterFlushslots() async throws {
-        _ = try await send(command: CLUSTER.FLUSHSLOTS())
+        _ = try await execute(CLUSTER.FLUSHSLOTS())
     }
 
     /// Removes a node from the nodes table.
@@ -763,7 +763,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clusterForget<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws {
-        _ = try await send(command: CLUSTER.FORGET(nodeId: nodeId))
+        _ = try await execute(CLUSTER.FORGET(nodeId: nodeId))
     }
 
     /// Returns the key names in a hash slot.
@@ -775,7 +775,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESPToken.Array {
-        try await send(command: CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
+        try await execute(CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -787,7 +787,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterHelp() async throws -> RESPToken.Array {
-        try await send(command: CLUSTER.HELP())
+        try await execute(CLUSTER.HELP())
     }
 
     /// Returns information about the state of a node.
@@ -799,7 +799,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterInfo() async throws -> ByteBuffer {
-        try await send(command: CLUSTER.INFO())
+        try await execute(CLUSTER.INFO())
     }
 
     /// Returns the hash slot for a key.
@@ -811,7 +811,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterKeyslot<Key: RESPStringRenderable>(_ key: Key) async throws -> Int {
-        try await send(command: CLUSTER.KEYSLOT(key))
+        try await execute(CLUSTER.KEYSLOT(key))
     }
 
     /// Returns a list of all TCP links to and from peer nodes.
@@ -823,7 +823,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterLinks() async throws -> RESPToken.Array {
-        try await send(command: CLUSTER.LINKS())
+        try await execute(CLUSTER.LINKS())
     }
 
     /// Forces a node to handshake with another node.
@@ -835,7 +835,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clusterMeet<Ip: RESPStringRenderable>(ip: Ip, port: Int, clusterBusPort: Int? = nil) async throws {
-        _ = try await send(command: CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
+        _ = try await execute(CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
     }
 
     /// Returns the ID of a node.
@@ -847,7 +847,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterMyid() async throws -> ByteBuffer {
-        try await send(command: CLUSTER.MYID())
+        try await execute(CLUSTER.MYID())
     }
 
     /// Returns the shard ID of a node.
@@ -859,7 +859,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterMyshardid() async throws -> ByteBuffer {
-        try await send(command: CLUSTER.MYSHARDID())
+        try await execute(CLUSTER.MYSHARDID())
     }
 
     /// Returns the cluster configuration for a node.
@@ -871,7 +871,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterNodes() async throws -> ByteBuffer {
-        try await send(command: CLUSTER.NODES())
+        try await execute(CLUSTER.NODES())
     }
 
     /// Lists the replica nodes of a primary node.
@@ -883,7 +883,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterReplicas<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
-        try await send(command: CLUSTER.REPLICAS(nodeId: nodeId))
+        try await execute(CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
     /// Configure a node as replica of a primary node.
@@ -893,7 +893,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clusterReplicate<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws {
-        _ = try await send(command: CLUSTER.REPLICATE(nodeId: nodeId))
+        _ = try await execute(CLUSTER.REPLICATE(nodeId: nodeId))
     }
 
     /// Resets a node.
@@ -903,7 +903,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of known nodes. The command may execute a FLUSHALL as a side effect.
     @inlinable
     public func clusterReset(resetType: CLUSTER.RESET.ResetType? = nil) async throws {
-        _ = try await send(command: CLUSTER.RESET(resetType: resetType))
+        _ = try await execute(CLUSTER.RESET(resetType: resetType))
     }
 
     /// Forces a node to save the cluster configuration to disk.
@@ -913,7 +913,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clusterSaveconfig() async throws {
-        _ = try await send(command: CLUSTER.SAVECONFIG())
+        _ = try await execute(CLUSTER.SAVECONFIG())
     }
 
     /// Sets the configuration epoch for a new node.
@@ -923,7 +923,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clusterSetConfigEpoch(configEpoch: Int) async throws {
-        _ = try await send(command: CLUSTER.SETCONFIGEPOCH(configEpoch: configEpoch))
+        _ = try await execute(CLUSTER.SETCONFIGEPOCH(configEpoch: configEpoch))
     }
 
     /// Binds a hash slot to a node.
@@ -935,7 +935,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func clusterSetslot(slot: Int, subcommand: CLUSTER.SETSLOT.Subcommand, timeout: Int? = nil) async throws {
-        _ = try await send(command: CLUSTER.SETSLOT(slot: slot, subcommand: subcommand, timeout: timeout))
+        _ = try await execute(CLUSTER.SETSLOT(slot: slot, subcommand: subcommand, timeout: timeout))
     }
 
     /// Returns the mapping of cluster slots to shards.
@@ -947,7 +947,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterShards() async throws -> CLUSTER.SHARDS.Response {
-        try await send(command: CLUSTER.SHARDS())
+        try await execute(CLUSTER.SHARDS())
     }
 
     /// Lists the replica nodes of a primary node.
@@ -960,7 +960,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterSlaves<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws -> RESPToken.Array {
-        try await send(command: CLUSTER.SLAVES(nodeId: nodeId))
+        try await execute(CLUSTER.SLAVES(nodeId: nodeId))
     }
 
     /// Return an array of slot usage statistics for slots assigned to the current node.
@@ -972,7 +972,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterSlotStats(filter: CLUSTER.SLOTSTATS.Filter) async throws -> RESPToken.Array {
-        try await send(command: CLUSTER.SLOTSTATS(filter: filter))
+        try await execute(CLUSTER.SLOTSTATS(filter: filter))
     }
 
     /// Returns the mapping of cluster slots to nodes.
@@ -987,7 +987,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func clusterSlots() async throws -> RESPToken.Array {
-        try await send(command: CLUSTER.SLOTS())
+        try await execute(CLUSTER.SLOTS())
     }
 
     /// Enables read-only queries for a connection to a Valkey replica node.
@@ -997,7 +997,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func readonly() async throws {
-        _ = try await send(command: READONLY())
+        _ = try await execute(READONLY())
     }
 
     /// Enables read-write queries for a connection to a Valkey replica node.
@@ -1007,7 +1007,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func readwrite() async throws {
-        _ = try await send(command: READWRITE())
+        _ = try await execute(READWRITE())
     }
 
 }

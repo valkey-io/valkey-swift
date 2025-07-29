@@ -462,7 +462,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func eval<Script: RESPStringRenderable>(script: Script, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
-        try await send(command: EVAL(script: script, keys: keys, args: args))
+        try await execute(EVAL(script: script, keys: keys, args: args))
     }
 
     /// Executes a server-side Lua script by SHA1 digest.
@@ -474,7 +474,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func evalsha<Sha1: RESPStringRenderable>(sha1: Sha1, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
-        try await send(command: EVALSHA(sha1: sha1, keys: keys, args: args))
+        try await execute(EVALSHA(sha1: sha1, keys: keys, args: args))
     }
 
     /// Executes a read-only server-side Lua script by SHA1 digest.
@@ -485,7 +485,7 @@ extension ValkeyClientProtocol {
     /// - Response: Return value depends on the script that is executed
     @inlinable
     public func evalshaRo<Sha1: RESPStringRenderable>(sha1: Sha1, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
-        try await send(command: EVALSHARO(sha1: sha1, keys: keys, args: args))
+        try await execute(EVALSHARO(sha1: sha1, keys: keys, args: args))
     }
 
     /// Executes a read-only server-side Lua script.
@@ -496,7 +496,7 @@ extension ValkeyClientProtocol {
     /// - Response: Return value depends on the script that is executed
     @inlinable
     public func evalRo<Script: RESPStringRenderable>(script: Script, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
-        try await send(command: EVALRO(script: script, keys: keys, args: args))
+        try await execute(EVALRO(script: script, keys: keys, args: args))
     }
 
     /// Invokes a function.
@@ -508,7 +508,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func fcall<Function: RESPStringRenderable>(function: Function, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
-        try await send(command: FCALL(function: function, keys: keys, args: args))
+        try await execute(FCALL(function: function, keys: keys, args: args))
     }
 
     /// Invokes a read-only function.
@@ -519,7 +519,7 @@ extension ValkeyClientProtocol {
     /// - Response: Return value depends on the function that is executed
     @inlinable
     public func fcallRo<Function: RESPStringRenderable>(function: Function, keys: [ValkeyKey] = [], args: [String] = []) async throws -> RESPToken {
-        try await send(command: FCALLRO(function: function, keys: keys, args: args))
+        try await execute(FCALLRO(function: function, keys: keys, args: args))
     }
 
     /// Deletes a library and its functions.
@@ -529,7 +529,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func functionDelete<LibraryName: RESPStringRenderable>(libraryName: LibraryName) async throws {
-        _ = try await send(command: FUNCTION.DELETE(libraryName: libraryName))
+        _ = try await execute(FUNCTION.DELETE(libraryName: libraryName))
     }
 
     /// Dumps all libraries into a serialized binary payload.
@@ -541,7 +541,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func functionDump() async throws -> ByteBuffer {
-        try await send(command: FUNCTION.DUMP())
+        try await execute(FUNCTION.DUMP())
     }
 
     /// Deletes all libraries and functions.
@@ -551,7 +551,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of functions deleted
     @inlinable
     public func functionFlush(flushType: FUNCTION.FLUSH.FlushType? = nil) async throws {
-        _ = try await send(command: FUNCTION.FLUSH(flushType: flushType))
+        _ = try await execute(FUNCTION.FLUSH(flushType: flushType))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -563,7 +563,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func functionHelp() async throws -> RESPToken.Array {
-        try await send(command: FUNCTION.HELP())
+        try await execute(FUNCTION.HELP())
     }
 
     /// Terminates a function during execution.
@@ -573,7 +573,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func functionKill() async throws {
-        _ = try await send(command: FUNCTION.KILL())
+        _ = try await execute(FUNCTION.KILL())
     }
 
     /// Returns information about all libraries.
@@ -584,7 +584,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
-        try await send(command: FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
+        try await execute(FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
     }
 
     /// Creates a library.
@@ -596,7 +596,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func functionLoad<FunctionCode: RESPStringRenderable>(replace: Bool = false, functionCode: FunctionCode) async throws -> ByteBuffer {
-        try await send(command: FUNCTION.LOAD(replace: replace, functionCode: functionCode))
+        try await execute(FUNCTION.LOAD(replace: replace, functionCode: functionCode))
     }
 
     /// Restores all libraries from a payload.
@@ -609,7 +609,7 @@ extension ValkeyClientProtocol {
         serializedValue: SerializedValue,
         policy: FUNCTION.RESTORE<SerializedValue>.Policy? = nil
     ) async throws {
-        _ = try await send(command: FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
+        _ = try await execute(FUNCTION.RESTORE(serializedValue: serializedValue, policy: policy))
     }
 
     /// Returns information about a function during execution.
@@ -620,7 +620,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func functionStats() async throws -> RESPToken.Map {
-        try await send(command: FUNCTION.STATS())
+        try await execute(FUNCTION.STATS())
     }
 
     /// Sets the debug mode of server-side Lua scripts.
@@ -630,7 +630,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func scriptDebug(mode: SCRIPT.DEBUG.Mode) async throws {
-        _ = try await send(command: SCRIPT.DEBUG(mode: mode))
+        _ = try await execute(SCRIPT.DEBUG(mode: mode))
     }
 
     /// Determines whether server-side Lua scripts exist in the script cache.
@@ -642,7 +642,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws -> RESPToken.Array {
-        try await send(command: SCRIPT.EXISTS(sha1s: sha1s))
+        try await execute(SCRIPT.EXISTS(sha1s: sha1s))
     }
 
     /// Removes all server-side Lua scripts from the script cache.
@@ -654,7 +654,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) with N being the number of scripts in cache
     @inlinable
     public func scriptFlush(flushType: SCRIPT.FLUSH.FlushType? = nil) async throws {
-        _ = try await send(command: SCRIPT.FLUSH(flushType: flushType))
+        _ = try await execute(SCRIPT.FLUSH(flushType: flushType))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -666,7 +666,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func scriptHelp() async throws -> RESPToken.Array {
-        try await send(command: SCRIPT.HELP())
+        try await execute(SCRIPT.HELP())
     }
 
     /// Terminates a server-side Lua script during execution.
@@ -676,7 +676,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func scriptKill() async throws {
-        _ = try await send(command: SCRIPT.KILL())
+        _ = try await execute(SCRIPT.KILL())
     }
 
     /// Loads a server-side Lua script to the script cache.
@@ -688,7 +688,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> ByteBuffer {
-        try await send(command: SCRIPT.LOAD(script: script))
+        try await execute(SCRIPT.LOAD(script: script))
     }
 
     /// Show server-side Lua script in the script cache.
@@ -700,7 +700,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> ByteBuffer {
-        try await send(command: SCRIPT.SHOW(sha1: sha1))
+        try await execute(SCRIPT.SHOW(sha1: sha1))
     }
 
 }

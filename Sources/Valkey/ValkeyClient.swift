@@ -126,15 +126,15 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Parameter command: Valkey command
     /// - Returns: Response from Valkey command
     @inlinable
-    public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
-        let token = try await self._send(command)
+    public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
+        let token = try await self._execute(command)
         return try Command.Response(fromRESP: token)
     }
 
     @inlinable
-    func _send<Command: ValkeyCommand>(_ command: Command) async throws -> RESPToken {
+    func _execute<Command: ValkeyCommand>(_ command: Command) async throws -> RESPToken {
         try await self.withConnection { connection in
-            try await connection._send(command: command)
+            try await connection._execute(command: command)
         }
     }
 }
@@ -143,16 +143,18 @@ extension ValkeyClient: ValkeyClientProtocol {
 extension ValkeyClient {
     /// Pipeline a series of commands to Valkey connection
     ///
-    /// This function will only return once it has the results of all the commands sent
+    /// Once all the responses for the commands have been received the function returns
+    /// a parameter pack of Results, one for each command.
+    ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the results of all the commands
     @inlinable
-    public func pipeline<each Command: ValkeyCommand>(
+    public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
         do {
             return try await self.withConnection { connection in
-                await connection.pipeline(repeat (each commands))
+                await connection.execute(repeat (each commands))
             }
         } catch {
             return (repeat Result<(each Command).Response, Error>.failure(error))

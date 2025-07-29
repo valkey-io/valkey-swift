@@ -92,7 +92,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func pfadd(_ key: ValkeyKey, elements: [String] = []) async throws -> Int {
-        try await send(command: PFADD(key, elements: elements))
+        try await execute(PFADD(key, elements: elements))
     }
 
     /// Returns the approximated cardinality of the set(s) observed by the HyperLogLog key(s).
@@ -103,7 +103,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The approximated number of unique elements observed via PFADD
     @inlinable
     public func pfcount(keys: [ValkeyKey]) async throws -> Int {
-        try await send(command: PFCOUNT(keys: keys))
+        try await execute(PFCOUNT(keys: keys))
     }
 
     /// Merges one or more HyperLogLog values into a single key.
@@ -113,7 +113,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) to merge N HyperLogLogs, but with high constant times.
     @inlinable
     public func pfmerge(destkey: ValkeyKey, sourcekeys: [ValkeyKey] = []) async throws {
-        _ = try await send(command: PFMERGE(destkey: destkey, sourcekeys: sourcekeys))
+        _ = try await execute(PFMERGE(destkey: destkey, sourcekeys: sourcekeys))
     }
 
 }

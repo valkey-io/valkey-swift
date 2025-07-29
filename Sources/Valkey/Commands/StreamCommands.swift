@@ -922,7 +922,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func xack<Group: RESPStringRenderable, Id: RESPStringRenderable>(_ key: ValkeyKey, group: Group, ids: [Id]) async throws -> Int {
-        try await send(command: XACK(key, group: group, ids: ids))
+        try await execute(XACK(key, group: group, ids: ids))
     }
 
     /// Appends a new message to a stream. Creates the key if it doesn't exist.
@@ -945,7 +945,7 @@ extension ValkeyClientProtocol {
         idSelector: XADD<Field, Value>.IdSelector,
         data: [XADD<Field, Value>.Data]
     ) async throws -> ByteBuffer? {
-        try await send(command: XADD(key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
+        try await execute(XADD(key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
     /// Changes, or acquires, ownership of messages in a consumer group, as if the messages were delivered to as consumer group member.
@@ -974,9 +974,7 @@ extension ValkeyClientProtocol {
         count: Int? = nil,
         justid: Bool = false
     ) async throws -> XAUTOCLAIMResponse {
-        try await send(
-            command: XAUTOCLAIM(key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid)
-        )
+        try await execute(XAUTOCLAIM(key, group: group, consumer: consumer, minIdleTime: minIdleTime, start: start, count: count, justid: justid))
     }
 
     /// Changes, or acquires, ownership of a message in a consumer group, as if the message was delivered a consumer group member.
@@ -1000,8 +998,8 @@ extension ValkeyClientProtocol {
         justid: Bool = false,
         lastid: String? = nil
     ) async throws -> XCLAIMResponse {
-        try await send(
-            command: XCLAIM(
+        try await execute(
+            XCLAIM(
                 key,
                 group: group,
                 consumer: consumer,
@@ -1026,7 +1024,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func xdel<Id: RESPStringRenderable>(_ key: ValkeyKey, ids: [Id]) async throws -> Int {
-        try await send(command: XDEL(key, ids: ids))
+        try await execute(XDEL(key, ids: ids))
     }
 
     /// Creates a consumer group.
@@ -1044,7 +1042,7 @@ extension ValkeyClientProtocol {
         mkstream: Bool = false,
         entriesread: Int? = nil
     ) async throws {
-        _ = try await send(command: XGROUP.CREATE(key, group: group, idSelector: idSelector, mkstream: mkstream, entriesread: entriesread))
+        _ = try await execute(XGROUP.CREATE(key, group: group, idSelector: idSelector, mkstream: mkstream, entriesread: entriesread))
     }
 
     /// Creates a consumer in a consumer group.
@@ -1060,7 +1058,7 @@ extension ValkeyClientProtocol {
         group: Group,
         consumer: Consumer
     ) async throws -> Int {
-        try await send(command: XGROUP.CREATECONSUMER(key, group: group, consumer: consumer))
+        try await execute(XGROUP.CREATECONSUMER(key, group: group, consumer: consumer))
     }
 
     /// Deletes a consumer from a consumer group.
@@ -1076,7 +1074,7 @@ extension ValkeyClientProtocol {
         group: Group,
         consumer: Consumer
     ) async throws -> Int {
-        try await send(command: XGROUP.DELCONSUMER(key, group: group, consumer: consumer))
+        try await execute(XGROUP.DELCONSUMER(key, group: group, consumer: consumer))
     }
 
     /// Destroys a consumer group.
@@ -1088,7 +1086,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func xgroupDestroy<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> Int {
-        try await send(command: XGROUP.DESTROY(key, group: group))
+        try await execute(XGROUP.DESTROY(key, group: group))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1100,7 +1098,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func xgroupHelp() async throws -> RESPToken.Array {
-        try await send(command: XGROUP.HELP())
+        try await execute(XGROUP.HELP())
     }
 
     /// Sets the last-delivered ID of a consumer group.
@@ -1117,7 +1115,7 @@ extension ValkeyClientProtocol {
         idSelector: XGROUP.SETID<Group>.IdSelector,
         entriesread: Int? = nil
     ) async throws {
-        _ = try await send(command: XGROUP.SETID(key, group: group, idSelector: idSelector, entriesread: entriesread))
+        _ = try await execute(XGROUP.SETID(key, group: group, idSelector: idSelector, entriesread: entriesread))
     }
 
     /// Returns a list of the consumers in a consumer group.
@@ -1130,7 +1128,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Array list of consumers
     @inlinable
     public func xinfoConsumers<Group: RESPStringRenderable>(_ key: ValkeyKey, group: Group) async throws -> RESPToken.Array {
-        try await send(command: XINFO.CONSUMERS(key, group: group))
+        try await execute(XINFO.CONSUMERS(key, group: group))
     }
 
     /// Returns a list of the consumer groups of a stream.
@@ -1142,7 +1140,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     public func xinfoGroups(_ key: ValkeyKey) async throws -> RESPToken.Array {
-        try await send(command: XINFO.GROUPS(key))
+        try await execute(XINFO.GROUPS(key))
     }
 
     /// Returns helpful text about the different subcommands.
@@ -1154,7 +1152,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func xinfoHelp() async throws -> RESPToken.Array {
-        try await send(command: XINFO.HELP())
+        try await execute(XINFO.HELP())
     }
 
     /// Returns information about a stream.
@@ -1171,7 +1169,7 @@ extension ValkeyClientProtocol {
     ///     * [Map]: Extended form, in case `FULL` was given.
     @inlinable
     public func xinfoStream(_ key: ValkeyKey, fullBlock: XINFO.STREAM.FullBlock? = nil) async throws -> RESPToken.Map {
-        try await send(command: XINFO.STREAM(key, fullBlock: fullBlock))
+        try await execute(XINFO.STREAM(key, fullBlock: fullBlock))
     }
 
     /// Return the number of messages in a stream.
@@ -1182,7 +1180,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Integer]: The number of entries of the stream at key
     @inlinable
     public func xlen(_ key: ValkeyKey) async throws -> Int {
-        try await send(command: XLEN(key))
+        try await execute(XLEN(key))
     }
 
     /// Returns the information and entries from a stream consumer group's pending entries list.
@@ -1201,7 +1199,7 @@ extension ValkeyClientProtocol {
         group: Group,
         filters: XPENDING<Group>.Filters? = nil
     ) async throws -> XPENDINGResponse {
-        try await send(command: XPENDING(key, group: group, filters: filters))
+        try await execute(XPENDING(key, group: group, filters: filters))
     }
 
     /// Returns the messages from a stream within a range of IDs.
@@ -1219,7 +1217,7 @@ extension ValkeyClientProtocol {
         end: End,
         count: Int? = nil
     ) async throws -> XRANGEResponse {
-        try await send(command: XRANGE(key, start: start, end: end, count: count))
+        try await execute(XRANGE(key, start: start, end: end, count: count))
     }
 
     /// Returns messages from multiple streams with IDs greater than the ones requested. Blocks until a message is available otherwise.
@@ -1232,7 +1230,7 @@ extension ValkeyClientProtocol {
     @inlinable
     public func xread<Id: RESPStringRenderable>(count: Int? = nil, milliseconds: Int? = nil, streams: XREAD<Id>.Streams) async throws -> XREADResponse
     {
-        try await send(command: XREAD(count: count, milliseconds: milliseconds, streams: streams))
+        try await execute(XREAD(count: count, milliseconds: milliseconds, streams: streams))
     }
 
     /// Returns new or historical messages from a stream for a consumer in a group. Blocks until a message is available otherwise.
@@ -1252,7 +1250,7 @@ extension ValkeyClientProtocol {
         noack: Bool = false,
         streams: XREADGROUP<Group, Consumer, Id>.Streams
     ) async throws -> XREADGROUPResponse {
-        try await send(command: XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
+        try await execute(XREADGROUP(groupBlock: groupBlock, count: count, milliseconds: milliseconds, noack: noack, streams: streams))
     }
 
     /// Returns the messages from a stream within a range of IDs in reverse order.
@@ -1270,7 +1268,7 @@ extension ValkeyClientProtocol {
         start: Start,
         count: Int? = nil
     ) async throws -> XREVRANGEResponse {
-        try await send(command: XREVRANGE(key, end: end, start: start, count: count))
+        try await execute(XREVRANGE(key, end: end, start: start, count: count))
     }
 
     /// An internal command for replicating stream values.
@@ -1287,7 +1285,7 @@ extension ValkeyClientProtocol {
         entriesAdded: Int? = nil,
         maxDeletedId: String? = nil
     ) async throws {
-        _ = try await send(command: XSETID(key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
+        _ = try await execute(XSETID(key, lastId: lastId, entriesAdded: entriesAdded, maxDeletedId: maxDeletedId))
     }
 
     /// Deletes messages from the beginning of a stream.
@@ -1301,7 +1299,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func xtrim<Threshold: RESPStringRenderable>(_ key: ValkeyKey, trim: XTRIM<Threshold>.Trim) async throws -> Int {
-        try await send(command: XTRIM(key, trim: trim))
+        try await execute(XTRIM(key, trim: trim))
     }
 
 }

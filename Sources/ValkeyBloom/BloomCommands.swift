@@ -272,7 +272,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bfAdd<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPToken {
-        try await send(command: BF.ADD(key, value: value))
+        try await execute(BF.ADD(key, value: value))
     }
 
     /// Returns the cardinality of a bloom filter
@@ -282,7 +282,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bfCard(_ key: ValkeyKey) async throws -> BF.CARD.Response {
-        try await send(command: BF.CARD(key))
+        try await execute(BF.CARD(key))
     }
 
     /// Determines if the bloom filter contains the specified item
@@ -292,7 +292,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bfExists<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPToken {
-        try await send(command: BF.EXISTS(key, value: value))
+        try await execute(BF.EXISTS(key, value: value))
     }
 
     /// Returns usage information and properties of a specific bloom filter
@@ -302,7 +302,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bfInfo(_ key: ValkeyKey, sortby: BF.INFO.Sortby? = nil) async throws -> BF.INFO.Response {
-        try await send(command: BF.INFO(key, sortby: sortby))
+        try await execute(BF.INFO(key, sortby: sortby))
     }
 
     /// Creates a bloom filter with 0 or more items or adds items to an existing bloom filter
@@ -323,8 +323,8 @@ extension ValkeyClientProtocol {
         nocreate: Bool = false,
         values: [String] = []
     ) async throws -> BF.INSERT.Response {
-        try await send(
-            command: BF.INSERT(
+        try await execute(
+            BF.INSERT(
                 key,
                 capacity: capacity,
                 error: error,
@@ -346,7 +346,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bfLoad<Dump: RESPStringRenderable>(_ key: ValkeyKey, dump: Dump) async throws -> RESPToken {
-        try await send(command: BF.LOAD(key, dump: dump))
+        try await execute(BF.LOAD(key, dump: dump))
     }
 
     /// Adds one or more items to a bloom filter. The bloom filter is created if it doesn't exist
@@ -356,7 +356,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bfMadd<Value: RESPStringRenderable>(_ key: ValkeyKey, values: [Value]) async throws -> RESPToken {
-        try await send(command: BF.MADD(key, values: values))
+        try await execute(BF.MADD(key, values: values))
     }
 
     /// Determines if the bloom filter contains one or more items
@@ -366,7 +366,7 @@ extension ValkeyClientProtocol {
     @inlinable
     @discardableResult
     public func bfMexists<Value: RESPStringRenderable>(_ key: ValkeyKey, values: [Value]) async throws -> RESPToken {
-        try await send(command: BF.MEXISTS(key, values: values))
+        try await execute(BF.MEXISTS(key, values: values))
     }
 
     /// Creates an empty bloom filter with the specified properties
@@ -382,7 +382,7 @@ extension ValkeyClientProtocol {
         expansion: Int? = nil,
         nonscaling: Bool = false
     ) async throws -> BF.RESERVE.Response {
-        try await send(command: BF.RESERVE(key, errorRate: errorRate, capacity: capacity, expansion: expansion, nonscaling: nonscaling))
+        try await execute(BF.RESERVE(key, errorRate: errorRate, capacity: capacity, expansion: expansion, nonscaling: nonscaling))
     }
 
 }

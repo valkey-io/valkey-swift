@@ -152,13 +152,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
-    public func send<Command: ValkeyCommand>(command: Command) async throws -> Command.Response {
-        let result = try await self._send(command: command)
+    public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
+        let result = try await self._execute(command: command)
         return try .init(fromRESP: result)
     }
 
     @inlinable
-    func _send<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
+    func _execute<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
         let requestID = Self.requestIDGenerator.next()
         return try await withTaskCancellationHandler {
             if Task.isCancelled {
@@ -174,11 +174,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     /// Pipeline a series of commands to Valkey connection
     ///
-    /// This function will only return once it has the results of all the commands sent
+    /// Once all the responses for the commands have been received the function returns
+    /// a parameter pack of Results, one for each command.
+    ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the responses of all the commands
     @inlinable
-    public func pipeline<each Command: ValkeyCommand>(
+    public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
@@ -389,7 +391,7 @@ extension ValkeyConnection {
     /// - Complexity: O(1)
     @inlinable
     public func unwatch() async throws {
-        _ = try await send(command: UNWATCH())
+        _ = try await execute(UNWATCH())
     }
 
     /// Monitors changes to keys to determine the execution of a transaction.
@@ -399,11 +401,11 @@ extension ValkeyConnection {
     /// - Complexity: O(1) for every key.
     @inlinable
     public func watch(keys: [ValkeyKey]) async throws {
-        _ = try await send(command: WATCH(keys: keys))
+        _ = try await execute(WATCH(keys: keys))
     }
 }
 
-// Used in ValkeyConnection.pipeline
+// Used in ValkeyConnection.execute(_:)
 @usableFromInline
 struct AutoIncrementingInteger {
     @usableFromInline
