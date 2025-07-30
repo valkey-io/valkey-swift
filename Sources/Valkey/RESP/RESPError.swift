@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// An error that Valkey client throws if a RESP3 package can't be decoded.
+/// An error that Valkey client throws if a RESP3 packet can't be decoded.
 ///
 /// If you see this error, there a two potential reasons this might happen:
 ///
