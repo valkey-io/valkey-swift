@@ -44,7 +44,7 @@ dependencies: [
 > For example, you may want to add a minimum platform requirement to your project:
 >
 > ```swift
-> platforms: [.macOS(.v13)],
+> platforms: [.macOS(.v15)],
 > ```
 
 Import Valkey in the swift files to use it:
