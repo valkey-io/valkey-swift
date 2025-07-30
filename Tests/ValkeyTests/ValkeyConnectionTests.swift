@@ -46,8 +46,9 @@ struct ConnectionTests {
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
 
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
     }
 
     @Test
@@ -57,8 +58,9 @@ struct ConnectionTests {
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
 
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
         await #expect(throws: ValkeyClientError(.commandError, message: "Not supported")) {
             try await channel.writeInbound(RESPToken(.bulkError("Not supported")).base)
         }
@@ -79,8 +81,9 @@ struct ConnectionTests {
             logger: logger
         )
 
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3", "AUTH", "john", "smith"])).base)
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3", "AUTH", "john", "smith"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
     }
 
     @Test
@@ -95,8 +98,9 @@ struct ConnectionTests {
             logger: logger
         )
 
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3", "SETNAME", "Testing"])).base)
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3", "SETNAME", "Testing"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
     }
 
     @Test

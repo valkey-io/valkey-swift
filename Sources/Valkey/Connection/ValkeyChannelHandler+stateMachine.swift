@@ -65,11 +65,11 @@ extension ValkeyChannelHandler {
         @usableFromInline
         struct ConnectedState {
             let context: Context
-            var pendingHelloCommand: PendingCommand
+            var pendingCommands: Deque<PendingCommand>
 
-            func cancel(requestID: Int) -> PendingCommand? {
-                if pendingHelloCommand.requestID == requestID {
-                    return pendingHelloCommand
+            func cancel(requestID: Int) -> Deque<PendingCommand>? {
+                if pendingCommands.first?.requestID == requestID {
+                    return pendingCommands
                 }
                 return nil
             }
@@ -85,11 +85,11 @@ extension ValkeyChannelHandler {
 
         /// handler has become active
         @usableFromInline
-        mutating func setConnected(context: Context, pendingHelloCommand: PendingCommand) {
+        mutating func setConnected(context: Context, pendingCommands: Deque<PendingCommand>) {
             switch consume self.state {
             case .initialized:
                 self = .connected(
-                    .init(context: context, pendingHelloCommand: pendingHelloCommand)
+                    .init(context: context, pendingCommands: pendingCommands)
                 )
             case .connected:
                 preconditionFailure("Cannot set connected state when state is connected")
@@ -155,15 +155,18 @@ extension ValkeyChannelHandler {
             switch consume self.state {
             case .initialized:
                 preconditionFailure("Cannot send command when initialized")
-            case .connected(let state):
+            case .connected(var state):
+                guard let helloCommand = state.pendingCommands.popFirst() else {
+                    preconditionFailure("Cannot be in connected state with no pending commands")
+                }
                 switch token.value {
                 case .bulkError(let message), .simpleError(let message):
                     let error = ValkeyClientError(.commandError, message: String(buffer: message))
                     self = .closed(error)
-                    return .respondAndClose(state.pendingHelloCommand, error)
+                    return .respondAndClose(helloCommand, error)
                 default:
-                    self = .active(.init(context: state.context, pendingCommands: .init()))
-                    return .respond(state.pendingHelloCommand, .cancel)
+                    self = .active(.init(context: state.context, pendingCommands: state.pendingCommands))
+                    return .respond(helloCommand, .cancel)
                 }
             case .active(var state):
                 guard let command = state.pendingCommands.popFirst() else {
@@ -204,8 +207,12 @@ extension ValkeyChannelHandler {
                     self = .closed(nil)
                     return .respondAndClose(command, nil)
                 }
-            case .closed:
-                preconditionFailure("Cannot receive command on closed connection")
+            case .closed(let error):
+                guard let error else {
+                    preconditionFailure("Cannot receive command on closed connection with no error")
+                }
+                self = .closed(error)
+                return .closeWithError(error)
             }
         }
 
@@ -221,11 +228,14 @@ extension ValkeyChannelHandler {
             case .initialized:
                 preconditionFailure("Cannot wait until connection has succeeded")
             case .connected(let state):
-                switch state.pendingHelloCommand.promise {
+                guard let helloCommand = state.pendingCommands.first else {
+                    preconditionFailure("Cannot be in connected state with no pending commands")
+                }
+                switch helloCommand.promise {
                 case .nio(let promise):
                     self = .connected(state)
                     return .waitForPromise(promise)
-                case .swift:
+                case .swift, .ignore:
                     preconditionFailure("Connected state cannot be setup with a Swift continuation")
                 }
             case .active(let state):
@@ -233,7 +243,7 @@ extension ValkeyChannelHandler {
                 return .done
             case .closing(let state):
                 self = .closing(state)
-                return .done
+                return .reportedClosed(nil)
             case .closed(let error):
                 self = .closed(error)
                 return .reportedClosed(error)
@@ -253,12 +263,15 @@ extension ValkeyChannelHandler {
             case .initialized:
                 preconditionFailure("Cannot cancel when initialized")
             case .connected(let state):
-                if state.pendingHelloCommand.deadline <= now {
+                guard let helloCommand = state.pendingCommands.first else {
+                    preconditionFailure("Cannot be in connected state with no pending commands")
+                }
+                if helloCommand.deadline <= now {
                     self = .closed(ValkeyClientError(.timeout))
-                    return .failPendingCommandsAndClose(state.context, [state.pendingHelloCommand])
+                    return .failPendingCommandsAndClose(state.context, state.pendingCommands)
                 } else {
                     self = .connected(state)
-                    return .reschedule(state.pendingHelloCommand.deadline)
+                    return .reschedule(helloCommand.deadline)
                 }
             case .active(let state):
                 if let firstCommand = state.pendingCommands.first {
@@ -303,11 +316,11 @@ extension ValkeyChannelHandler {
             case .initialized:
                 preconditionFailure("Cannot cancel when initialized")
             case .connected(let state):
-                if let command = state.cancel(requestID: requestID) {
+                if let commands = state.cancel(requestID: requestID) {
                     self = .closed(CancellationError())
                     return .failPendingCommandsAndClose(
                         state.context,
-                        cancel: [command],
+                        cancel: .init(commands),
                         closeConnectionDueToCancel: []
                     )
                 } else {
@@ -360,7 +373,7 @@ extension ValkeyChannelHandler {
                 self = .closed(nil)
                 return .doNothing
             case .connected(let state):
-                self = .closing(.init(context: state.context, pendingCommands: [state.pendingHelloCommand]))
+                self = .closing(.init(context: state.context, pendingCommands: state.pendingCommands))
                 return .waitForPendingCommands(state.context)
             case .active(let state):
                 if state.pendingCommands.count > 0 {
@@ -393,7 +406,7 @@ extension ValkeyChannelHandler {
                 return .doNothing
             case .connected(let state):
                 self = .closed(nil)
-                return .failPendingCommandsAndClose(state.context, [state.pendingHelloCommand])
+                return .failPendingCommandsAndClose(state.context, state.pendingCommands)
             case .active(let state):
                 self = .closed(nil)
                 return .failPendingCommandsAndClose(state.context, state.pendingCommands)
@@ -421,7 +434,7 @@ extension ValkeyChannelHandler {
                 return .doNothing
             case .connected(let state):
                 self = .closed(nil)
-                return .failPendingCommandsAndSubscriptions([state.pendingHelloCommand])
+                return .failPendingCommandsAndSubscriptions(state.pendingCommands)
             case .active(let state):
                 self = .closed(nil)
                 return .failPendingCommandsAndSubscriptions(state.pendingCommands)
