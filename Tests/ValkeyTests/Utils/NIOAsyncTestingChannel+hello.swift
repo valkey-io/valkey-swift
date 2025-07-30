@@ -24,10 +24,10 @@ extension NIOAsyncTestingChannel {
         var expectedBuffer = ByteBuffer()
         expectedBuffer.writeImmutableBuffer(RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
         expectedBuffer.writeImmutableBuffer(
-            RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-name"), .bulkString("valkey-swift")])).base
+            RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-name"), .bulkString(ValkeyClient.libraryName)])).base
         )
         expectedBuffer.writeImmutableBuffer(
-            RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-ver"), .bulkString("0.1.0")])).base
+            RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-ver"), .bulkString(ValkeyClient.libraryVersion)])).base
         )
         #expect(hello == expectedBuffer)
         try await self.writeInbound(

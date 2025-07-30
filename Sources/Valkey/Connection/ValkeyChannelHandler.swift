@@ -288,8 +288,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             )
         )
         // set client info
-        let clientInfoLibName = CLIENT.SETINFO(attr: .libname("valkey-swift"))
-        let clientInfoLibVersion = CLIENT.SETINFO(attr: .libver("0.1.0"))
+        let clientInfoLibName = CLIENT.SETINFO(attr: .libname(ValkeyClient.libraryName))
+        let clientInfoLibVersion = CLIENT.SETINFO(attr: .libver(ValkeyClient.libraryVersion))
 
         self.encoder.reset()
         helloCommand.encode(into: &self.encoder)
@@ -306,8 +306,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             context: context,
             pendingCommands: [
                 .init(promise: .nio(promise), requestID: 0, deadline: deadline),  // HELLO
-                .init(promise: .ignore, requestID: 0, deadline: deadline),  // CLIENT.SETINFO
-                .init(promise: .ignore, requestID: 0, deadline: deadline),  // CLIENT.SETINFO
+                .init(promise: .ignore, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libname
+                .init(promise: .ignore, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libver
             ]
         )
     }
