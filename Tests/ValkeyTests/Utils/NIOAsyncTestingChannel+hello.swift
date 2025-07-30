@@ -21,7 +21,15 @@ import Testing
 extension NIOAsyncTestingChannel {
     func processHello() async throws {
         let hello = try await self.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(hello == RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
+        var expectedBuffer = ByteBuffer()
+        expectedBuffer.writeImmutableBuffer(RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
+        expectedBuffer.writeImmutableBuffer(
+            RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-name"), .bulkString("valkey-swift")])).base
+        )
+        expectedBuffer.writeImmutableBuffer(
+            RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-ver"), .bulkString("0.1.0")])).base
+        )
+        #expect(hello == expectedBuffer)
         try await self.writeInbound(
             RESPToken(
                 .map([
@@ -35,5 +43,7 @@ extension NIOAsyncTestingChannel {
                 ])
             ).base
         )
+        try await self.writeInbound(RESPToken.ok.base)
+        try await self.writeInbound(RESPToken.ok.base)
     }
 }

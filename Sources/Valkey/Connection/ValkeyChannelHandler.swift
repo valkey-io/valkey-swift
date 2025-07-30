@@ -20,6 +20,7 @@ import NIOCore
 enum ValkeyPromise<T: Sendable>: Sendable {
     case nio(EventLoopPromise<T>)
     case swift(CheckedContinuation<T, any Error>)
+    case ignore
 
     func succeed(_ t: T) {
         switch self {
@@ -27,6 +28,8 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.succeed(t)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(returning: t)
+        case .ignore:
+            break
         }
     }
 
@@ -36,6 +39,8 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.fail(e)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(throwing: e)
+        case .ignore:
+            break
         }
     }
 }
@@ -275,25 +280,35 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func setConnected(context: ChannelHandlerContext) {
         // Send initial HELLO command
-        let command = HELLO(
+        let helloCommand = HELLO(
             arguments: .init(
                 protover: 3,
                 auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
                 clientname: configuration.clientName
             )
         )
+        // set client info
+        let clientInfoLibName = CLIENT.SETINFO(attr: .libname("valkey-swift"))
+        let clientInfoLibVersion = CLIENT.SETINFO(attr: .libver("0.1.0"))
+
         self.encoder.reset()
-        command.encode(into: &self.encoder)
-        let buffer = self.encoder.buffer
+        helloCommand.encode(into: &self.encoder)
+        clientInfoLibName.encode(into: &self.encoder)
+        clientInfoLibVersion.encode(into: &self.encoder)
 
         let promise = eventLoop.makePromise(of: RESPToken.self)
+
         let deadline = .now() + self.configuration.commandTimeout
-        context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
+        context.writeAndFlush(self.wrapOutboundOut(self.encoder.buffer), promise: nil)
         scheduleDeadlineCallback(deadline: deadline)
 
         self.stateMachine.setConnected(
             context: context,
-            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: deadline)
+            pendingCommands: [
+                .init(promise: .nio(promise), requestID: 0, deadline: deadline),  // HELLO
+                .init(promise: .ignore, requestID: 0, deadline: deadline),  // CLIENT.SETINFO
+                .init(promise: .ignore, requestID: 0, deadline: deadline),  // CLIENT.SETINFO
+            ]
         )
     }
 

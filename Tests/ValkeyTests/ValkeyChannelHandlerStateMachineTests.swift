@@ -183,7 +183,12 @@ struct ValkeyChannelHandlerStateMachineTests {
         }
         expect(
             stateMachine.state
-                == .closing(.init(context: "testGracefulShutdown", pendingCommands: [.init(promise: .nio(promise), requestID: 23, deadline: .now())]))
+                == .closing(
+                    .init(
+                        context: "testGracefulShutdown",
+                        pendingCommands: [.init(promise: .nio(promise), requestID: 23, deadline: .now())]
+                    )
+                )
         )
         switch stateMachine.receivedResponse(token: .ok) {
         case .respondAndClose(let command, let error):
@@ -218,7 +223,10 @@ struct ValkeyChannelHandlerStateMachineTests {
         expect(
             stateMachine.state
                 == .closing(
-                    .init(context: "testClosedClosingState", pendingCommands: [.init(promise: .nio(promise), requestID: 17, deadline: .now())])
+                    .init(
+                        context: "testClosedClosingState",
+                        pendingCommands: [.init(promise: .nio(promise), requestID: 17, deadline: .now())]
+                    )
                 )
         )
         switch stateMachine.setClosed() {
@@ -460,7 +468,7 @@ extension ValkeyChannelHandler.StateMachine<String>.State {
         case .connected(let lhs):
             switch rhs {
             case .connected(let rhs):
-                return lhs.context == rhs.context && lhs.pendingHelloCommand.requestID == rhs.pendingHelloCommand.requestID
+                return lhs.context == rhs.context && lhs.pendingCommands.map { $0.requestID } == rhs.pendingCommands.map { $0.requestID }
             default:
                 return false
             }
@@ -535,7 +543,7 @@ extension ValkeyChannelHandler.StateMachine {
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         self.setConnected(
             context: context,
-            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: .now() + .seconds(30))
+            pendingCommands: [.init(promise: .nio(promise), requestID: 0, deadline: .now() + .seconds(30))]
         )
     }
 
