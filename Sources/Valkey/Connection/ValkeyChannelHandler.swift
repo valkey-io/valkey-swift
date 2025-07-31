@@ -20,7 +20,7 @@ import NIOCore
 enum ValkeyPromise<T: Sendable>: Sendable {
     case nio(EventLoopPromise<T>)
     case swift(CheckedContinuation<T, any Error>)
-    case ignore
+    case forget
 
     func succeed(_ t: T) {
         switch self {
@@ -28,7 +28,7 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.succeed(t)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(returning: t)
-        case .ignore:
+        case .forget:
             break
         }
     }
@@ -39,7 +39,7 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.fail(e)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(throwing: e)
-        case .ignore:
+        case .forget:
             break
         }
     }
@@ -167,7 +167,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     func writeAndForget<Command: ValkeyCommand>(command: Command, requestID: Int) {
         self.eventLoop.assertInEventLoop()
         let pendingCommand = PendingCommand(
-            promise: .ignore,
+            promise: .forget,
             requestID: requestID,
             deadline: .now() + self.configuration.commandTimeout
         )

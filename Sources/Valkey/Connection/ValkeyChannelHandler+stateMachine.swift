@@ -225,7 +225,7 @@ extension ValkeyChannelHandler {
                 case .nio(let promise):
                     self = .connected(state)
                     return .waitForPromise(promise)
-                case .swift, .ignore:
+                case .swift, .forget:
                     preconditionFailure("Connected state cannot be setup with a Swift continuation")
                 }
             case .active(let state):
