@@ -146,8 +146,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     func initialHandshake() async throws {
         try await self.channelHandler.waitOnActive().get()
-        self.executeAndForget(command: CLIENT.SETINFO(attr: .libname("valkey-swift")))
-        self.executeAndForget(command: CLIENT.SETINFO(attr: .libver("0.1.0")))
+        self.executeAndForget(command: CLIENT.SETINFO(attr: .libname(valkeySwiftLibraryName)))
+        self.executeAndForget(command: CLIENT.SETINFO(attr: .libver(valkeySwiftLibraryVersion)))
     }
 
     /// Send RESP command to Valkey connection
