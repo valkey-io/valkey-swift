@@ -41,8 +41,6 @@ func makeLocalServer() async throws -> Channel {
             switch command {
             case Self.expectedCommand:
                 write(Self.response)
-            case .bulkString(ByteBuffer(string: "PING")):
-                write(ByteBuffer(string: "$4\r\nPONG\r\n"))
             case .bulkString(let string):
                 fatalError("Unexpected command: \(String(buffer: string))")
             default:
@@ -78,6 +76,11 @@ final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: Channe
     private var decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
     private let helloCommand = RESPToken.Value.bulkString(ByteBuffer(string: "HELLO"))
     private let helloResponse = ByteBuffer(string: "%1\r\n+server\r\n+fake\r\n")
+    private let pingCommand = RESPToken.Value.bulkString(ByteBuffer(string: "PING"))
+    private let pongResponse = ByteBuffer(string: "$4\r\nPONG\r\n")
+    private let clientCommand = RESPToken.Value.bulkString(ByteBuffer(string: "CLIENT"))
+    private let setInfoSubCommand = RESPToken.Value.bulkString(ByteBuffer(string: "SETINFO"))
+    private let okResponse = ByteBuffer(string: "+2OK\r\n")
     private let commandHandler: Handler
 
     init(commandHandler: Handler) {
@@ -101,6 +104,20 @@ final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: Channe
         switch command {
         case helloCommand:
             context.writeAndFlush(self.wrapOutboundOut(helloResponse), promise: nil)
+
+        case pingCommand:
+            context.writeAndFlush(self.wrapOutboundOut(pongResponse), promise: nil)
+
+        case clientCommand:
+            var subCommandIterator = iterator
+            switch subCommandIterator.next()?.value {
+            case setInfoSubCommand:
+                context.writeAndFlush(self.wrapOutboundOut(okResponse), promise: nil)
+            default:
+                commandHandler.handle(command: command, parameters: iterator) {
+                    context.writeAndFlush(self.wrapOutboundOut($0), promise: nil)
+                }
+            }
 
         default:
             commandHandler.handle(command: command, parameters: iterator) {
