@@ -132,7 +132,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 }
             }
         let connection = try await future.get()
-        try await connection.waitOnActive()
+        try await connection.initialHandshake()
         return connection
     }
 
@@ -144,8 +144,10 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         self.channel.close(mode: .all, promise: nil)
     }
 
-    func waitOnActive() async throws {
+    func initialHandshake() async throws {
         try await self.channelHandler.waitOnActive().get()
+        self.executeAndForget(command: CLIENT.SETINFO(attr: .libname(valkeySwiftLibraryName)))
+        self.executeAndForget(command: CLIENT.SETINFO(attr: .libver(valkeySwiftLibraryVersion)))
     }
 
     /// Send RESP command to Valkey connection
@@ -170,6 +172,10 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         } onCancel: {
             self.cancel(requestID: requestID)
         }
+    }
+
+    func executeAndForget<Command: ValkeyCommand>(command: Command) {
+        self.channelHandler.writeAndForget(command: command, requestID: Self.requestIDGenerator.next())
     }
 
     /// Pipeline a series of commands to Valkey connection
