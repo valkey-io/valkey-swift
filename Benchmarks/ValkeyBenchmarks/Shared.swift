@@ -33,27 +33,27 @@ let defaultMetrics: [BenchmarkMetric] =
         .throughput,
     ]
 
-func makeLocalServer() async throws -> Channel {
-    struct GetHandler: BenchmarkCommandHandler {
-        static let expectedCommand = RESPToken.Value.bulkString(ByteBuffer(string: "GET"))
-        static let response = ByteBuffer(string: "$3\r\nBar\r\n")
-        func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
-            switch command {
-            case Self.expectedCommand:
-                write(Self.response)
-            case .bulkString(let string):
-                fatalError("Unexpected command: \(String(buffer: string))")
-            default:
-                fatalError("Unexpected value: \(command)")
-            }
+struct BenchmarkGetHandler: BenchmarkCommandHandler {
+    static let expectedCommand = RESPToken.Value.bulkString(ByteBuffer(string: "GET"))
+    static let response = ByteBuffer(string: "$3\r\nBar\r\n")
+    func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
+        switch command {
+        case Self.expectedCommand:
+            write(Self.response)
+        case .bulkString(let string):
+            fatalError("Unexpected command: \(String(buffer: string))")
+        default:
+            fatalError("Unexpected value: \(command)")
         }
     }
-    return try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
+}
+func makeLocalServer(commandHandler: some BenchmarkCommandHandler = BenchmarkGetHandler()) async throws -> Channel {
+    try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
         .serverChannelOption(.socketOption(.so_reuseaddr), value: 1)
         .childChannelInitializer { channel in
             do {
                 try channel.pipeline.syncOperations.addHandler(
-                    ValkeyServerChannelHandler(commandHandler: GetHandler())
+                    ValkeyServerChannelHandler(commandHandler: commandHandler)
                 )
                 return channel.eventLoop.makeSucceededVoidFuture()
             } catch {
@@ -64,7 +64,7 @@ func makeLocalServer() async throws -> Channel {
         .get()
 }
 
-protocol BenchmarkCommandHandler {
+protocol BenchmarkCommandHandler: Sendable {
     func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void)
 }
 
