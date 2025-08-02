@@ -859,4 +859,16 @@ struct GeneratedCommands {
             }
         }
     }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testClientInfo() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            let clients = try await String(buffer: client.clientList())
+            #expect(clients.firstRange(of: "lib-name=\(valkeySwiftLibraryName)") != nil)
+            #expect(clients.firstRange(of: "lib-ver=\(valkeySwiftLibraryVersion)") != nil)
+        }
+    }
 }
