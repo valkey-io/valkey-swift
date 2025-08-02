@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// Type representing a Valkey Key
+/// A type that represnts a Valkey Key.
 public struct ValkeyKey: Sendable, Equatable, Hashable {
     @usableFromInline
     enum _Storage: Sendable {

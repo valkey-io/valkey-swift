@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// The response from a Valkey server.
+/// A response from a Valkey server.
 ///
 /// A response token is a type that provides a view into the underlying byte buffer returned from the Valkey server.
 public struct RESPToken: Hashable, Sendable {

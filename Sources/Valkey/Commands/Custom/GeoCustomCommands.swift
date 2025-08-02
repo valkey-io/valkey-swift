@@ -12,6 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+/// A type that represents geographic coordinates.
+@_documentation(visibility: internal)
 public struct GeoCoordinates: RESPTokenDecodable, Sendable {
     public let longitude: Double
     public let latitude: Double
@@ -21,6 +23,8 @@ public struct GeoCoordinates: RESPTokenDecodable, Sendable {
     }
 }
 
+/// A type that represents a coordinate value for a geographic location.
+@_documentation(visibility: internal)
 public typealias GEODISTResponse = Double?
 extension GEODIST {
     public typealias Response = GEODISTResponse

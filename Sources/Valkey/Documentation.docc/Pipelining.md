@@ -1,8 +1,9 @@
 # Pipelining
 
-Send multiple commands at once without waiting for the response of each command.
+Sending multiple commands at once without waiting for the response of each command.
 
 ## Overview
+=======
 
 Valkey pipelining is a technique for improving performance by issuing multiple commands at once without waiting for the response to each individual command. Pipelining not only reduces the latency cost of waiting for the result of each command it also reduces the cost to the server as it reduces I/O costs. Multiple commands can be read with a single syscall, and multiple results are delivered with a single syscall. 
 
@@ -48,7 +49,6 @@ async let asyncResult = connection.lpush("fooList", elements: ["bar"])
 let result = try await asyncResult
 ```
 
-Be careful when using a single connection across multiple Tasks though. The result of a command only becomes available when the server makes available the result of the command previously queued. Because of this, a command that either blocks the connection or takes a long time can affect the response time of commands that follow it.
-
-You can find out more about pipelining of commands in the [Valkey documentation](https://valkey.io/topics/pipelining/).
-
+Be careful when using a single connection across multiple Tasks though. 
+The result of a command will only become available when the result of any previous command queued has been made available. 
+So a command that either blocks the connection or takes a long time could affect the response time of commands that follow it.

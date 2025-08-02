@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Protocol for a Valkey connection that can send a command and get a response
+/// A type that provides the ability to send a Valkey command and get a response.
 public protocol ValkeyClientProtocol {
     /// Send RESP command to Valkey connection
     /// - Parameter command: ValkeyCommand structure
