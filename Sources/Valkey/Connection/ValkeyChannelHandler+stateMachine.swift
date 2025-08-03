@@ -222,10 +222,7 @@ extension ValkeyChannelHandler {
                     self = .connected(state)
                     return .waitForPromise(promise)
                 case .swift, .forget:
-                    preconditionFailure("Connected state cannot be setup with a Swift continuation")
-                case .forget:
-                    self = .connected(state)
-                    return .done
+                    preconditionFailure("Connected state hello command must setup with a NIO EventLoopPromise")
                 }
             case .active(let state):
                 self = .active(state)
