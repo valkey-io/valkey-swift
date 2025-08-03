@@ -20,7 +20,6 @@ import NIOCore
 enum ValkeyPromise<T: Sendable>: Sendable {
     case nio(EventLoopPromise<T>)
     case swift(CheckedContinuation<T, any Error>)
-    case forget
 
     func succeed(_ t: T) {
         switch self {
@@ -28,8 +27,6 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.succeed(t)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(returning: t)
-        case .forget:
-            break
         }
     }
 
@@ -39,8 +36,6 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.fail(e)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(throwing: e)
-        case .forget:
-            break
         }
     }
 }
@@ -156,33 +151,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
         case .throwError(let error):
             continuation.resume(throwing: error)
-        }
-    }
-
-    /// Write valkey command/commands to channel
-    /// - Parameters:
-    ///   - request: Valkey command request
-    ///   - promise: Promise to fulfill when command is complete
-    @inlinable
-    func writeAndForget<Command: ValkeyCommand>(command: Command, requestID: Int) {
-        self.eventLoop.assertInEventLoop()
-        let pendingCommand = PendingCommand(
-            promise: .forget,
-            requestID: requestID,
-            deadline: .now() + self.configuration.commandTimeout
-        )
-        switch self.stateMachine.sendCommand(pendingCommand) {
-        case .sendCommand(let context):
-            self.encoder.reset()
-            command.encode(into: &self.encoder)
-            let buffer = self.encoder.buffer
-            context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
-            if self.deadlineCallback == nil {
-                self.scheduleDeadlineCallback(deadline: .now() + self.configuration.commandTimeout)
-            }
-
-        case .throwError:
-            break
         }
     }
 

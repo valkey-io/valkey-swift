@@ -33,27 +33,29 @@ let defaultMetrics: [BenchmarkMetric] =
         .throughput,
     ]
 
-struct BenchmarkGetHandler: BenchmarkCommandHandler {
-    static let expectedCommand = RESPToken.Value.bulkString(ByteBuffer(string: "GET"))
-    static let response = ByteBuffer(string: "$3\r\nBar\r\n")
-    func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
-        switch command {
-        case Self.expectedCommand:
-            write(Self.response)
-        case .bulkString(let string):
-            fatalError("Unexpected command: \(String(buffer: string))")
-        default:
-            fatalError("Unexpected value: \(command)")
+func makeLocalServer() async throws -> Channel {
+    struct GetHandler: BenchmarkCommandHandler {
+        static let expectedCommand = RESPToken.Value.bulkString(ByteBuffer(string: "GET"))
+        static let response = ByteBuffer(string: "$3\r\nBar\r\n")
+        func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void) {
+            switch command {
+            case Self.expectedCommand:
+                write(Self.response)
+            case .bulkString(ByteBuffer(string: "PING")):
+                write(ByteBuffer(string: "$4\r\nPONG\r\n"))
+            case .bulkString(let string):
+                fatalError("Unexpected command: \(String(buffer: string))")
+            default:
+                fatalError("Unexpected value: \(command)")
+            }
         }
     }
-}
-func makeLocalServer(commandHandler: some BenchmarkCommandHandler = BenchmarkGetHandler()) async throws -> Channel {
-    try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
+    return try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
         .serverChannelOption(.socketOption(.so_reuseaddr), value: 1)
         .childChannelInitializer { channel in
             do {
                 try channel.pipeline.syncOperations.addHandler(
-                    ValkeyServerChannelHandler(commandHandler: commandHandler)
+                    ValkeyServerChannelHandler(commandHandler: GetHandler())
                 )
                 return channel.eventLoop.makeSucceededVoidFuture()
             } catch {
@@ -64,7 +66,7 @@ func makeLocalServer(commandHandler: some BenchmarkCommandHandler = BenchmarkGet
         .get()
 }
 
-protocol BenchmarkCommandHandler: Sendable {
+protocol BenchmarkCommandHandler {
     func handle(command: RESPToken.Value, parameters: RESPToken.Array.Iterator, write: (ByteBuffer) -> Void)
 }
 
@@ -76,11 +78,6 @@ final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: Channe
     private var decoder = NIOSingleStepByteToMessageProcessor(RESPTokenDecoder())
     private let helloCommand = RESPToken.Value.bulkString(ByteBuffer(string: "HELLO"))
     private let helloResponse = ByteBuffer(string: "%1\r\n+server\r\n+fake\r\n")
-    private let pingCommand = RESPToken.Value.bulkString(ByteBuffer(string: "PING"))
-    private let pongResponse = ByteBuffer(string: "$4\r\nPONG\r\n")
-    private let clientCommand = RESPToken.Value.bulkString(ByteBuffer(string: "CLIENT"))
-    private let setInfoSubCommand = RESPToken.Value.bulkString(ByteBuffer(string: "SETINFO"))
-    private let okResponse = ByteBuffer(string: "+2OK\r\n")
     private let commandHandler: Handler
 
     init(commandHandler: Handler) {
@@ -104,20 +101,6 @@ final class ValkeyServerChannelHandler<Handler: BenchmarkCommandHandler>: Channe
         switch command {
         case helloCommand:
             context.writeAndFlush(self.wrapOutboundOut(helloResponse), promise: nil)
-
-        case pingCommand:
-            context.writeAndFlush(self.wrapOutboundOut(pongResponse), promise: nil)
-
-        case clientCommand:
-            var subCommandIterator = iterator
-            switch subCommandIterator.next()?.value {
-            case setInfoSubCommand:
-                context.writeAndFlush(self.wrapOutboundOut(okResponse), promise: nil)
-            default:
-                commandHandler.handle(command: command, parameters: iterator) {
-                    context.writeAndFlush(self.wrapOutboundOut($0), promise: nil)
-                }
-            }
 
         default:
             commandHandler.handle(command: command, parameters: iterator) {
