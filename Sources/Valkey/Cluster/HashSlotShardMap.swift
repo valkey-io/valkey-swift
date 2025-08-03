@@ -35,6 +35,17 @@ package struct ValkeyShardNodeIDs: Hashable, Sendable {
         self.primary = primary
         self.replicas = replicas
     }
+
+    /// Return random node from shard
+    @usableFromInline
+    package var randomNode: ValkeyNodeID {
+        let value = Int.random(in: 0...replicas.count)
+        if value == 0 {
+            return self.primary
+        } else {
+            return self.replicas[value - 1]
+        }
+    }
 }
 
 extension ValkeyShardNodeIDs: ExpressibleByArrayLiteral {
@@ -88,7 +99,7 @@ package struct HashSlotShardMap: Sendable {
     ///           `ValkeyClusterError.clusterIsMissingSlotAssignment` if any slot is unassigned
     ///           `ValkeyClusterError.keysInCommandRequireMultipleNodes` if slots map to different shards
     @usableFromInline
-    package func nodeID(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ValkeyShardNodeIDs {
+    package func nodeIDs(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ValkeyShardNodeIDs {
         guard let firstSlot = slots.first else {
             if let shardID = self.shardIDToShard.randomElement() {
                 return shardID

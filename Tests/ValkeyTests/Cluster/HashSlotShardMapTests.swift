@@ -88,7 +88,7 @@ struct HashSlotShardMapTests {
         #expect(map[HashSlot.max] == nil)
 
         // Attempting to get a nodeID for a slot should throw
-        #expect(throws: ValkeyClusterError.clusterIsMissingSlotAssignment) { try map.nodeID(for: [0]) }
+        #expect(throws: ValkeyClusterError.clusterIsMissingSlotAssignment) { try map.nodeIDs(for: [0]) }
     }
 
     @Test
@@ -115,11 +115,11 @@ struct HashSlotShardMapTests {
         map.updateCluster([shard])
 
         // When we pass an empty collection of slots to nodeID(for:), it should choose a random node
-        #expect(throws: Never.self) { try map.nodeID(for: [] as [HashSlot]) }
+        #expect(throws: Never.self) { try map.nodeIDs(for: [] as [HashSlot]) }
 
         // Now with an empty cluster, it should throw clusterHasNoNodes
         map.updateCluster([])
-        #expect(throws: ValkeyClusterError.clusterHasNoNodes) { try map.nodeID(for: [] as [HashSlot]) }
+        #expect(throws: ValkeyClusterError.clusterHasNoNodes) { try map.nodeIDs(for: [] as [HashSlot]) }
     }
 
     @Test
@@ -194,13 +194,13 @@ struct HashSlotShardMapTests {
 
         // Test slots from the same shard
         let sameShardSlots: [HashSlot] = [5, 50, 250]
-        let nodeID = try map.nodeID(for: sameShardSlots)
+        let nodeID = try map.nodeIDs(for: sameShardSlots)
         #expect(nodeID.primary.endpoint == "node1.example.com")
 
         // Test slots from different shards - should throw
         let differentShardSlots: [HashSlot] = [5, 150]  // 5 from shard1, 150 from shard2
         #expect(throws: ValkeyClusterError.keysInCommandRequireMultipleNodes) {
-            try map.nodeID(for: differentShardSlots)
+            try map.nodeIDs(for: differentShardSlots)
         }
     }
 
@@ -229,12 +229,12 @@ struct HashSlotShardMapTests {
 
         // Requesting an unassigned slot should throw
         #expect(throws: ValkeyClusterError.clusterIsMissingSlotAssignment) {
-            _ = try map.nodeID(for: [500])
+            _ = try map.nodeIDs(for: [500])
         }
 
         // Requesting a mix of assigned and unassigned slots should throw for the first unassigned slot
         #expect(throws: ValkeyClusterError.clusterIsMissingSlotAssignment) {
-            _ = try map.nodeID(for: [50, 500])
+            _ = try map.nodeIDs(for: [50, 500])
         }
     }
 
@@ -351,7 +351,7 @@ struct HashSlotShardMapTests {
         #expect(shardNodes.replicas.contains(expectedReplica2))
 
         // Test nodeID(for:) continues to return correct primary when replicas exist
-        let nodeID = try! map.nodeID(for: [50, 75])
+        let nodeID = try! map.nodeIDs(for: [50, 75])
         #expect(nodeID.primary == expectedPrimary)
         #expect(nodeID.replicas.count == 2)
     }
@@ -457,7 +457,7 @@ struct HashSlotShardMapTests {
 
         // Verify that nodeID(for:) still throws when slots span multiple shards
         #expect(throws: ValkeyClusterError.keysInCommandRequireMultipleNodes) {
-            _ = try map.nodeID(for: [1000, 10000])
+            _ = try map.nodeIDs(for: [1000, 10000])
         }
     }
 
@@ -721,10 +721,10 @@ struct HashSlotShardMapTests {
         var map = HashSlotShardMap()
         map.updateCluster(clusterDescription.shards)
 
-        let ogShard = try map.nodeID(for: CollectionOfOne(2))
+        let ogShard = try map.nodeIDs(for: CollectionOfOne(2))
         let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: ogShard.primary.endpoint, port: ogShard.primary.port))
         #expect(update == .updatedSlotToExistingNode)
-        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        let updatedShard = try map.nodeIDs(for: CollectionOfOne(2))
         #expect(updatedShard == ogShard)
     }
 
@@ -735,18 +735,18 @@ struct HashSlotShardMapTests {
         var map = HashSlotShardMap()
         map.updateCluster(clusterDescription.shards)
 
-        let ogShard = try map.nodeID(for: CollectionOfOne(2))
+        let ogShard = try map.nodeIDs(for: CollectionOfOne(2))
         let luckyReplica = ogShard.replicas.randomElement()!
 
         let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: luckyReplica.endpoint, port: luckyReplica.port))
         #expect(update == .updatedSlotToExistingNode)
-        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        let updatedShard = try map.nodeIDs(for: CollectionOfOne(2))
         #expect(updatedShard.primary == luckyReplica)
         #expect(updatedShard != ogShard)
 
         // test neighboring hashes have seen an update as well
-        let updatedShard1 = try map.nodeID(for: CollectionOfOne(1))
-        let updatedShard3 = try map.nodeID(for: CollectionOfOne(3))
+        let updatedShard1 = try map.nodeIDs(for: CollectionOfOne(1))
+        let updatedShard3 = try map.nodeIDs(for: CollectionOfOne(3))
 
         #expect(updatedShard == updatedShard1)
         #expect(updatedShard == updatedShard3)
@@ -759,18 +759,18 @@ struct HashSlotShardMapTests {
         var map = HashSlotShardMap()
         map.updateCluster(clusterDescription.shards)
 
-        let ogShard = try map.nodeID(for: CollectionOfOne(2))
-        let otherShard = try map.nodeID(for: CollectionOfOne(.max))
+        let ogShard = try map.nodeIDs(for: CollectionOfOne(2))
+        let otherShard = try map.nodeIDs(for: CollectionOfOne(.max))
         let newPrimary = otherShard.primary
 
         let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
         #expect(update == .updatedSlotToExistingNode)
-        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        let updatedShard = try map.nodeIDs(for: CollectionOfOne(2))
         #expect(updatedShard == otherShard)
 
         // test neighboring hashes have not been updated
-        let updatedShard1 = try map.nodeID(for: CollectionOfOne(1))
-        let updatedShard3 = try map.nodeID(for: CollectionOfOne(3))
+        let updatedShard1 = try map.nodeIDs(for: CollectionOfOne(1))
+        let updatedShard3 = try map.nodeIDs(for: CollectionOfOne(3))
 
         #expect(ogShard == updatedShard1)
         #expect(ogShard == updatedShard3)
@@ -783,26 +783,26 @@ struct HashSlotShardMapTests {
         var map = HashSlotShardMap()
         map.updateCluster(clusterDescription.shards)
 
-        let ogShard = try map.nodeID(for: CollectionOfOne(2))
-        let otherShard = try map.nodeID(for: CollectionOfOne(.max))
+        let ogShard = try map.nodeIDs(for: CollectionOfOne(2))
+        let otherShard = try map.nodeIDs(for: CollectionOfOne(.max))
         let newPrimary = otherShard.replicas.randomElement()!
 
         let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
         #expect(update == .updatedSlotToExistingNode)
-        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        let updatedShard = try map.nodeIDs(for: CollectionOfOne(2))
         #expect(updatedShard.primary == newPrimary)
         #expect(updatedShard.replicas.isEmpty)
         #expect(updatedShard != ogShard)
 
         // test neighboring hashes have not been updated
-        let updatedShard1 = try map.nodeID(for: CollectionOfOne(1))
-        let updatedShard3 = try map.nodeID(for: CollectionOfOne(3))
+        let updatedShard1 = try map.nodeIDs(for: CollectionOfOne(1))
+        let updatedShard3 = try map.nodeIDs(for: CollectionOfOne(3))
 
         #expect(ogShard == updatedShard1)
         #expect(ogShard == updatedShard3)
 
         // test other shard has been updated and new primary replica has been removed there
-        let otherShardUpdated = try map.nodeID(for: CollectionOfOne(.max))
+        let otherShardUpdated = try map.nodeIDs(for: CollectionOfOne(.max))
         #expect(!otherShardUpdated.replicas.contains(newPrimary))
     }
 
@@ -813,25 +813,25 @@ struct HashSlotShardMapTests {
         var map = HashSlotShardMap()
         map.updateCluster(clusterDescription.shards)
 
-        let ogShard = try map.nodeID(for: CollectionOfOne(2))
+        let ogShard = try map.nodeIDs(for: CollectionOfOne(2))
         let newPrimary = ValkeyNodeID(endpoint: "new.valkey.io", port: 6379)
 
         let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
         #expect(update == .updatedSlotToUnknownNode)
-        let updatedShard = try map.nodeID(for: CollectionOfOne(2))
+        let updatedShard = try map.nodeIDs(for: CollectionOfOne(2))
         #expect(updatedShard.primary == newPrimary)
         #expect(updatedShard.replicas.isEmpty)
         #expect(updatedShard != ogShard)
 
         // test neighboring hashes have not been updated
-        let updatedShard1 = try map.nodeID(for: CollectionOfOne(1))
-        let updatedShard3 = try map.nodeID(for: CollectionOfOne(3))
+        let updatedShard1 = try map.nodeIDs(for: CollectionOfOne(1))
+        let updatedShard3 = try map.nodeIDs(for: CollectionOfOne(3))
 
         #expect(ogShard == updatedShard1)
         #expect(ogShard == updatedShard3)
 
         // test other shard has been updated and new primary replica has been removed there
-        let otherShardUpdated = try map.nodeID(for: CollectionOfOne(.max))
+        let otherShardUpdated = try map.nodeIDs(for: CollectionOfOne(.max))
         #expect(!otherShardUpdated.replicas.contains(newPrimary))
     }
 }

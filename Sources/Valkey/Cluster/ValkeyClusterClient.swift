@@ -123,7 +123,8 @@ public final class ValkeyClusterClient: Sendable {
         let stateMachine = StateMachine(
             configuration: .init(
                 circuitBreakerDuration: .seconds(30),
-                defaultClusterRefreshInterval: .seconds(30)
+                defaultClusterRefreshInterval: .seconds(30),
+                readOnlyReplicaSelection: clientConfiguration.readOnlyReplicaSelection.stateMachineConfiguration
             ),
             poolFactory: factory,
             clock: self.clock
@@ -648,3 +649,15 @@ public final class ValkeyClusterClient: Sendable {
 /// This allows the cluster client to be used anywhere a `ValkeyClientProtocol` is expected.
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient: ValkeyClientProtocol {}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClientConfiguration.ReadOnlyReplicaSelection {
+    var stateMachineConfiguration: ValkeyClusterClientStateMachineConfiguration.ReadOnlyReplicaSelection {
+        switch self.base {
+        case .random:
+            .random
+        case .usePrimary:
+            .usePrimary
+        }
+    }
+}

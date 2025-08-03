@@ -44,6 +44,10 @@ package struct ValkeyClusterTimer: Sendable, Hashable {
 
 @usableFromInline
 package struct ValkeyClusterClientStateMachineConfiguration {
+    package enum ReadOnlyReplicaSelection {
+        case usePrimary
+        case random
+    }
     /// The duration after which the cluster client rejects all requests, because it can't find a cluster consensus
     @usableFromInline
     package var circuitBreakerDuration: Duration
@@ -51,9 +55,12 @@ package struct ValkeyClusterClientStateMachineConfiguration {
     /// The default duration between starts of cluster refreshes, if the previous refresh was successful
     package var defaultClusterRefreshInterval: Duration
 
-    package init(circuitBreakerDuration: Duration, defaultClusterRefreshInterval: Duration) {
+    package var readOnlyReplicaSelection: ReadOnlyReplicaSelection
+
+    package init(circuitBreakerDuration: Duration, defaultClusterRefreshInterval: Duration, readOnlyReplicaSelection: ReadOnlyReplicaSelection) {
         self.circuitBreakerDuration = circuitBreakerDuration
         self.defaultClusterRefreshInterval = defaultClusterRefreshInterval
+        self.readOnlyReplicaSelection = readOnlyReplicaSelection
     }
 }
 
@@ -538,7 +545,7 @@ package struct ValkeyClusterClientStateMachine<
             throw ValkeyClusterError.clusterIsUnavailable
 
         case .degraded(let context):
-            let shardID = try context.hashSlotShardMap.nodeID(for: slots)
+            let shardID = try context.hashSlotShardMap.nodeIDs(for: slots)
             if let pool = self.runningClients[shardID.primary]?.pool {
                 return pool
             }
@@ -548,7 +555,7 @@ package struct ValkeyClusterClientStateMachine<
             throw ValkeyClusterError.clusterIsMissingMovedErrorNode
 
         case .healthy(let context):
-            let shardID = try context.hashSlotShardMap.nodeID(for: slots)
+            let shardID = try context.hashSlotShardMap.nodeIDs(for: slots)
             if let pool = self.runningClients[shardID.primary]?.pool {
                 return pool
             }

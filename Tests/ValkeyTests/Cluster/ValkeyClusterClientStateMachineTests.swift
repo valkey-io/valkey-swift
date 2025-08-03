@@ -32,7 +32,8 @@ struct ValkeyClusterClientStateMachineTests {
 
     let testConfiguration = ValkeyClusterClientStateMachineConfiguration(
         circuitBreakerDuration: .seconds(30),
-        defaultClusterRefreshInterval: .seconds(60)
+        defaultClusterRefreshInterval: .seconds(60),
+        readOnlyReplicaSelection: .usePrimary
     )
 
     @Test

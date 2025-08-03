@@ -108,12 +108,29 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
+    /// Should client run read-only commands from replicas and how it should select the replica
+    public struct ReadOnlyReplicaSelection: Sendable {
+        internal enum Base: Sendable {
+            case usePrimary
+            case random
+        }
+
+        internal let base: Base
+
+        /// Only read from primary node
+        public static var usePrimary: Self { .init(base: .usePrimary) }
+        /// Read from random replica node
+        public static var random: Self { .init(base: .random) }
+    }
+
     /// The authentication credentials for the connection.
     public var authentication: Authentication?
     /// The connection pool configuration.
     public var connectionPool: ConnectionPool
     /// The keep alive behavior for the connection.
     public var keepAliveBehavior: KeepAliveBehavior
+    /// Should client read from replicas
+    public var readOnlyReplicaSelection: ReadOnlyReplicaSelection
     /// The timeout the client uses to determine if a connection is considered dead.
     ///
     /// The connection is considered dead if a response isn't received within this time.
@@ -130,6 +147,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - authentication: The authentication credentials.
     ///   - connectionPool: The connection pool configuration.
     ///   - keepAliveBehavior: The connection keep alive behavior.
+    ///   - readOnlyReplicaSelection: Should client read from replicas
     ///   - commandTimeout: The timeout for a connection response.
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
@@ -137,6 +155,7 @@ public struct ValkeyClientConfiguration: Sendable {
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
         keepAliveBehavior: KeepAliveBehavior = .init(),
+        readOnlyReplicaSelection: ReadOnlyReplicaSelection = .usePrimary,
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable
@@ -144,6 +163,7 @@ public struct ValkeyClientConfiguration: Sendable {
         self.authentication = authentication
         self.connectionPool = connectionPool
         self.keepAliveBehavior = keepAliveBehavior
+        self.readOnlyReplicaSelection = readOnlyReplicaSelection
         self.commandTimeout = commandTimeout
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
