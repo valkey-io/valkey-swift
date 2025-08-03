@@ -20,7 +20,7 @@ import NIOCore
 enum ValkeyPromise<T: Sendable>: Sendable {
     case nio(EventLoopPromise<T>)
     case swift(CheckedContinuation<T, any Error>)
-    case ignore
+    case forget
 
     func succeed(_ t: T) {
         switch self {
@@ -28,7 +28,7 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.succeed(t)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(returning: t)
-        case .ignore:
+        case .forget:
             break
         }
     }
@@ -39,7 +39,7 @@ enum ValkeyPromise<T: Sendable>: Sendable {
             eventLoopPromise.fail(e)
         case .swift(let checkedContinuation):
             checkedContinuation.resume(throwing: e)
-        case .ignore:
+        case .forget:
             break
         }
     }
@@ -288,8 +288,8 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             )
         )
         // set client info
-        let clientInfoLibName = CLIENT.SETINFO(attr: .libname(ValkeyClient.libraryName))
-        let clientInfoLibVersion = CLIENT.SETINFO(attr: .libver(ValkeyClient.libraryVersion))
+        let clientInfoLibName = CLIENT.SETINFO(attr: .libname(valkeySwiftLibraryName))
+        let clientInfoLibVersion = CLIENT.SETINFO(attr: .libver(valkeySwiftLibraryVersion))
 
         self.encoder.reset()
         helloCommand.encode(into: &self.encoder)
@@ -304,10 +304,10 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
         self.stateMachine.setConnected(
             context: context,
+            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: deadline),
             pendingCommands: [
-                .init(promise: .nio(promise), requestID: 0, deadline: deadline),  // HELLO
-                .init(promise: .ignore, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libname
-                .init(promise: .ignore, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libver
+                .init(promise: .forget, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libname
+                .init(promise: .forget, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libver
             ]
         )
     }

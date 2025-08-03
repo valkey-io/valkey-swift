@@ -162,14 +162,6 @@ extension ValkeyClient {
     }
 }
 
-@available(valkeySwift 1.0, *)
-extension ValkeyClient {
-    /// library name reported to server using CLIENT SETINFO
-    package static var libraryName: String { "valkey-swift" }
-    /// library version reported to server using CLIENT SETINFO
-    package static var libraryVersion: String { "0.1.0" }
-}
-
 #if ServiceLifecycleSupport
 @available(valkeySwift 1.0, *)
 extension ValkeyClient: Service {}

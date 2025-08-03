@@ -543,7 +543,8 @@ extension ValkeyChannelHandler.StateMachine {
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         self.setConnected(
             context: context,
-            pendingCommands: [.init(promise: .nio(promise), requestID: 0, deadline: .now() + .seconds(30))]
+            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: .now() + .seconds(30)),
+            pendingCommands: []
         )
     }
 
