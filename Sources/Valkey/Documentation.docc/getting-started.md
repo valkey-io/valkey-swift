@@ -12,18 +12,16 @@ You can use the `add-dependency` command:
 
 ```bash
 swift package add-dependency \
-    https://github.com/valkey-io/valkey-swift --branch main
+    https://github.com/valkey-io/valkey-swift --from: 0.1.0
 ```
-<!-- switch above to `--from: 0.1.0` after tagging an initial release -->
 
 or edit Package.swift directly:
 ```swift
 dependencies: [
     .package(url: "https://github.com/valkey-io/valkey-swift",
-             branch: "main"),
+             from: "0.1.0"),
 ]
 ```
-<!-- switch above to `from: "0.1.0"` after tagging an initial release -->
 
 And for the relevant target or targets.
 The following example shows how to add to Valkey as a dependency to the target `MyApp`:
