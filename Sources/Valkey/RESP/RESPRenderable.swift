@@ -14,7 +14,7 @@
 
 import NIOCore
 
-/// A type that can be rendered into a RESP buffer.
+/// A type that the command encoder can render as part of a Valkey command.
 public protocol RESPRenderable {
     var respEntries: Int { get }
 

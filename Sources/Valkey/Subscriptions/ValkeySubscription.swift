@@ -33,7 +33,7 @@ public struct ValkeySubscriptionMessage: Sendable, Equatable {
     }
 }
 
-/// Sequence of messages from Valkey subscription.
+/// A sequence of messages from Valkey subscription.
 public struct ValkeySubscription: AsyncSequence, Sendable {
     /// The type that the sequence produces.
     public typealias Element = ValkeySubscriptionMessage

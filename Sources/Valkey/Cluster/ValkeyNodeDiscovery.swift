@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-/// Allows the cluster client to initially find at least one node in the cluster or find the
+/// A type that allows the cluster client to initially find at least one node in the cluster, or find the
 /// nodes again if connection to them has been lost.
 public protocol ValkeyNodeDiscovery: Sendable {
     /// A type that describes a single node in a valkey cluster
