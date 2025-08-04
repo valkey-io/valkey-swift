@@ -44,10 +44,6 @@ package struct ValkeyClusterTimer: Sendable, Hashable {
 
 @usableFromInline
 package struct ValkeyClusterClientStateMachineConfiguration {
-    package enum ReadOnlyReplicaSelection {
-        case usePrimary
-        case random
-    }
     /// The duration after which the cluster client rejects all requests, because it can't find a cluster consensus
     @usableFromInline
     package var circuitBreakerDuration: Duration
@@ -55,9 +51,14 @@ package struct ValkeyClusterClientStateMachineConfiguration {
     /// The default duration between starts of cluster refreshes, if the previous refresh was successful
     package var defaultClusterRefreshInterval: Duration
 
-    package var readOnlyReplicaSelection: ReadOnlyReplicaSelection
+    @usableFromInline
+    package var readOnlyReplicaSelection: ValkeyClientConfiguration.ReadOnlyReplicaSelection
 
-    package init(circuitBreakerDuration: Duration, defaultClusterRefreshInterval: Duration, readOnlyReplicaSelection: ReadOnlyReplicaSelection) {
+    package init(
+        circuitBreakerDuration: Duration,
+        defaultClusterRefreshInterval: Duration,
+        readOnlyReplicaSelection: ValkeyClientConfiguration.ReadOnlyReplicaSelection
+    ) {
         self.circuitBreakerDuration = circuitBreakerDuration
         self.defaultClusterRefreshInterval = defaultClusterRefreshInterval
         self.readOnlyReplicaSelection = readOnlyReplicaSelection
@@ -539,7 +540,7 @@ package struct ValkeyClusterClientStateMachine<
     }
 
     @inlinable
-    package func poolFastPath(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ConnectionPool {
+    package func poolFastPath(for slots: some Collection<HashSlot>, readOnly: Bool) throws(ValkeyClusterError) -> ConnectionPool {
         switch self.clusterState {
         case .unavailable:
             throw ValkeyClusterError.clusterIsUnavailable
@@ -556,8 +557,14 @@ package struct ValkeyClusterClientStateMachine<
 
         case .healthy(let context):
             let shardID = try context.hashSlotShardMap.nodeIDs(for: slots)
-            if let pool = self.runningClients[shardID.primary]?.pool {
-                return pool
+            if readOnly {
+                if let pool = self.runningClients[shardID.readOnlyNode(self.configuration.readOnlyReplicaSelection)]?.pool {
+                    return pool
+                }
+            } else {
+                if let pool = self.runningClients[shardID.primary]?.pool {
+                    return pool
+                }
             }
             // If we don't have a node for a shard, that means that this shard got created from
             // a MOVED error. It might be that we are missing info about this node, which is why

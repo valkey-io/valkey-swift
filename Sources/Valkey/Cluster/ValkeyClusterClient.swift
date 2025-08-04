@@ -124,7 +124,7 @@ public final class ValkeyClusterClient: Sendable {
             configuration: .init(
                 circuitBreakerDuration: .seconds(30),
                 defaultClusterRefreshInterval: .seconds(30),
-                readOnlyReplicaSelection: clientConfiguration.readOnlyReplicaSelection.stateMachineConfiguration
+                readOnlyReplicaSelection: clientConfiguration.readOnlyReplicaSelection
             ),
             poolFactory: factory,
             clock: self.clock
@@ -152,7 +152,7 @@ public final class ValkeyClusterClient: Sendable {
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
         let hashSlots = command.keysAffected.map { HashSlot(key: $0) }
         var clientSelector: () async throws -> ValkeyNodeClient = {
-            try await self.nodeClient(for: hashSlots)
+            try await self.nodeClient(for: hashSlots, readOnly: command.isReadOnly)
         }
 
         while !Task.isCancelled {
@@ -182,11 +182,12 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func withConnection<Value>(
         forKeys keys: some Collection<ValkeyKey>,
+        readOnly: Bool = false,
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         let hashSlots = keys.map { HashSlot(key: $0) }
-        let node = try await self.nodeClient(for: hashSlots)
+        let node = try await self.nodeClient(for: hashSlots, readOnly: readOnly)
         return try await node.withConnection(isolation: isolation, operation: operation)
     }
 
@@ -425,14 +426,14 @@ public final class ValkeyClusterClient: Sendable {
     ///   - `ValkeyClusterError.clusterIsUnavailable` if no healthy nodes are available
     ///   - `ValkeyClusterError.clusterIsMissingSlotAssignment` if the slot assignment cannot be determined
     @inlinable
-    func nodeClient(for slots: some (Collection<HashSlot> & Sendable)) async throws -> ValkeyNodeClient {
+    func nodeClient(for slots: some (Collection<HashSlot> & Sendable), readOnly: Bool) async throws -> ValkeyNodeClient {
         var retries = 0
         while retries < 3 {
             defer { retries += 1 }
 
             do {
                 return try self.stateLock.withLock { state -> ValkeyNodeClient in
-                    try state.poolFastPath(for: slots)
+                    try state.poolFastPath(for: slots, readOnly: readOnly)
                 }
             } catch ValkeyClusterError.clusterIsUnavailable {
                 let waiterID = self.nextRequestID()
@@ -649,15 +650,3 @@ public final class ValkeyClusterClient: Sendable {
 /// This allows the cluster client to be used anywhere a `ValkeyClientProtocol` is expected.
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient: ValkeyClientProtocol {}
-
-@available(valkeySwift 1.0, *)
-extension ValkeyClientConfiguration.ReadOnlyReplicaSelection {
-    var stateMachineConfiguration: ValkeyClusterClientStateMachineConfiguration.ReadOnlyReplicaSelection {
-        switch self.base {
-        case .random:
-            .random
-        case .usePrimary:
-            .usePrimary
-        }
-    }
-}

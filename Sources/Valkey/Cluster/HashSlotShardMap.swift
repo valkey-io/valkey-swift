@@ -36,14 +36,19 @@ package struct ValkeyShardNodeIDs: Hashable, Sendable {
         self.replicas = replicas
     }
 
-    /// Return random node from shard
+    /// Return readonly node from shard
     @usableFromInline
-    package var randomNode: ValkeyNodeID {
-        let value = Int.random(in: 0...replicas.count)
-        if value == 0 {
+    package func readOnlyNode(_ readOnlySelection: ValkeyClientConfiguration.ReadOnlyReplicaSelection) -> ValkeyNodeID {
+        switch readOnlySelection.base {
+        case .usePrimary:
             return self.primary
-        } else {
-            return self.replicas[value - 1]
+        case .random:
+            let value = Int.random(in: 0...replicas.count)
+            if value == 0 {
+                return self.primary
+            } else {
+                return self.replicas[value - 1]
+            }
         }
     }
 }
