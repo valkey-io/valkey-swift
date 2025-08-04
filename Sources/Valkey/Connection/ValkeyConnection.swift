@@ -17,6 +17,10 @@ import Network
 import NIOTransportServices
 #endif
 
+#if DistributedTracingSupport
+import Tracing
+#endif
+
 /// A single connection to a Valkey database.
 @available(valkeySwift 1.0, *)
 public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
@@ -153,16 +157,20 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     @inlinable
     func _execute<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
-        let requestID = Self.requestIDGenerator.next()
-        return try await withTaskCancellationHandler {
-            if Task.isCancelled {
-                throw ValkeyClientError(.cancelled)
+        try await withSpan(Command.name, ofKind: .client) { span in
+            span.attributes["db.system.name"] = "valkey"
+
+            let requestID = Self.requestIDGenerator.next()
+            return try await withTaskCancellationHandler {
+                if Task.isCancelled {
+                    throw ValkeyClientError(.cancelled)
+                }
+                return try await withCheckedThrowingContinuation { continuation in
+                    self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
+                }
+            } onCancel: {
+                self.cancel(requestID: requestID)
             }
-            return try await withCheckedThrowingContinuation { continuation in
-                self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
-            }
-        } onCancel: {
-            self.cancel(requestID: requestID)
         }
     }
 
