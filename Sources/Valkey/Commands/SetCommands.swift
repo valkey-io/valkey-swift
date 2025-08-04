@@ -27,6 +27,8 @@ import Foundation
 public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "SADD" }
+
     public var key: ValkeyKey
     public var members: [Member]
 
@@ -46,6 +48,8 @@ public struct SADD<Member: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SCARD: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "SCARD" }
 
     public var key: ValkeyKey
 
@@ -67,6 +71,8 @@ public struct SCARD: ValkeyCommand {
 public struct SDIFF: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "SDIFF" }
+
     public var keys: [ValkeyKey]
 
     @inlinable public init(keys: [ValkeyKey]) {
@@ -86,6 +92,8 @@ public struct SDIFF: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SDIFFSTORE: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "SDIFFSTORE" }
 
     public var destination: ValkeyKey
     public var keys: [ValkeyKey]
@@ -107,6 +115,8 @@ public struct SDIFFSTORE: ValkeyCommand {
 public struct SINTER: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "SINTER" }
+
     public var keys: [ValkeyKey]
 
     @inlinable public init(keys: [ValkeyKey]) {
@@ -126,6 +136,8 @@ public struct SINTER: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SINTERCARD: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "SINTERCARD" }
 
     public var keys: [ValkeyKey]
     public var limit: Int?
@@ -149,6 +161,8 @@ public struct SINTERCARD: ValkeyCommand {
 public struct SINTERSTORE: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "SINTERSTORE" }
+
     public var destination: ValkeyKey
     public var keys: [ValkeyKey]
 
@@ -168,6 +182,8 @@ public struct SINTERSTORE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "SISMEMBER" }
 
     public var key: ValkeyKey
     public var member: Member
@@ -191,6 +207,8 @@ public struct SISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 public struct SMEMBERS: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "SMEMBERS" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -210,6 +228,8 @@ public struct SMEMBERS: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "SMISMEMBER" }
 
     public var key: ValkeyKey
     public var members: [Member]
@@ -233,6 +253,8 @@ public struct SMISMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
 public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "SMOVE" }
+
     public var source: ValkeyKey
     public var destination: ValkeyKey
     public var member: Member
@@ -253,6 +275,8 @@ public struct SMOVE<Member: RESPStringRenderable>: ValkeyCommand {
 /// Returns one or more random members from a set after removing them. Deletes the set if the last member was popped.
 @_documentation(visibility: internal)
 public struct SPOP: ValkeyCommand {
+    @inlinable public static var name: String { "SPOP" }
+
     public var key: ValkeyKey
     public var count: Int?
 
@@ -272,6 +296,8 @@ public struct SPOP: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SRANDMEMBER: ValkeyCommand {
     public typealias Response = RESPToken?
+
+    @inlinable public static var name: String { "SRANDMEMBER" }
 
     public var key: ValkeyKey
     public var count: Int?
@@ -295,6 +321,8 @@ public struct SRANDMEMBER: ValkeyCommand {
 public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "SREM" }
+
     public var key: ValkeyKey
     public var members: [Member]
 
@@ -313,6 +341,8 @@ public struct SREM<Member: RESPStringRenderable>: ValkeyCommand {
 /// Iterates over members of a set.
 @_documentation(visibility: internal)
 public struct SSCAN: ValkeyCommand {
+    @inlinable public static var name: String { "SSCAN" }
+
     public var key: ValkeyKey
     public var cursor: Int
     public var pattern: String?
@@ -339,6 +369,8 @@ public struct SSCAN: ValkeyCommand {
 public struct SUNION: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "SUNION" }
+
     public var keys: [ValkeyKey]
 
     @inlinable public init(keys: [ValkeyKey]) {
@@ -358,6 +390,8 @@ public struct SUNION: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SUNIONSTORE: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "SUNIONSTORE" }
 
     public var destination: ValkeyKey
     public var keys: [ValkeyKey]

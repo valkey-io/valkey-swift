@@ -30,6 +30,8 @@ public enum SENTINEL {
     public struct CKQUORUM<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "SENTINEL CKQUORUM" }
+
         public var primaryName: PrimaryName
 
         @inlinable public init(primaryName: PrimaryName) {
@@ -86,6 +88,8 @@ public enum SENTINEL {
         }
         public typealias Response = RESPToken.Map?
 
+        @inlinable public static var name: String { "SENTINEL CONFIG" }
+
         public var action: Action
 
         @inlinable public init(action: Action) {
@@ -122,6 +126,8 @@ public enum SENTINEL {
         }
         public typealias Response = RESPToken.Map?
 
+        @inlinable public static var name: String { "SENTINEL DEBUG" }
+
         public var data: [Data]
 
         @inlinable public init(data: [Data] = []) {
@@ -136,6 +142,8 @@ public enum SENTINEL {
     /// Forces a Sentinel failover.
     @_documentation(visibility: internal)
     public struct FAILOVER<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "SENTINEL FAILOVER" }
+
         public var primaryName: PrimaryName
 
         @inlinable public init(primaryName: PrimaryName) {
@@ -150,6 +158,8 @@ public enum SENTINEL {
     /// Rewrites the Sentinel configuration file.
     @_documentation(visibility: internal)
     public struct FLUSHCONFIG: ValkeyCommand {
+        @inlinable public static var name: String { "SENTINEL FLUSHCONFIG" }
+
         @inlinable public init() {
         }
 
@@ -162,6 +172,8 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct GETMASTERADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "SENTINEL GET-MASTER-ADDR-BY-NAME" }
 
         public var primaryName: PrimaryName
 
@@ -179,6 +191,8 @@ public enum SENTINEL {
     public struct GETPRIMARYADDRBYNAME<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "SENTINEL GET-PRIMARY-ADDR-BY-NAME" }
+
         public var primaryName: PrimaryName
 
         @inlinable public init(primaryName: PrimaryName) {
@@ -195,6 +209,8 @@ public enum SENTINEL {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "SENTINEL HELP" }
+
         @inlinable public init() {
         }
 
@@ -207,6 +223,8 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct INFOCACHE<Nodename: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "SENTINEL INFO-CACHE" }
 
         public var nodenames: [Nodename]
 
@@ -223,6 +241,8 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct ISMASTERDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "SENTINEL IS-MASTER-DOWN-BY-ADDR" }
 
         public var ip: Ip
         public var port: Int
@@ -246,6 +266,8 @@ public enum SENTINEL {
     public struct ISPRIMARYDOWNBYADDR<Ip: RESPStringRenderable, Runid: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "SENTINEL IS-PRIMARY-DOWN-BY-ADDR" }
+
         public var ip: Ip
         public var port: Int
         public var currentEpoch: Int
@@ -268,6 +290,8 @@ public enum SENTINEL {
     public struct MASTER<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
+        @inlinable public static var name: String { "SENTINEL MASTER" }
+
         public var primaryName: PrimaryName
 
         @inlinable public init(primaryName: PrimaryName) {
@@ -284,6 +308,8 @@ public enum SENTINEL {
     public struct MASTERS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "SENTINEL MASTERS" }
+
         @inlinable public init() {
         }
 
@@ -295,6 +321,8 @@ public enum SENTINEL {
     /// Starts monitoring.
     @_documentation(visibility: internal)
     public struct MONITOR<Name: RESPStringRenderable, Ip: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "SENTINEL MONITOR" }
+
         public var name: Name
         public var ip: Ip
         public var port: Int
@@ -317,6 +345,8 @@ public enum SENTINEL {
     public struct MYID: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "SENTINEL MYID" }
+
         @inlinable public init() {
         }
 
@@ -329,6 +359,8 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct PENDINGSCRIPTS: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "SENTINEL PENDING-SCRIPTS" }
 
         @inlinable public init() {
         }
@@ -343,6 +375,8 @@ public enum SENTINEL {
     public struct PRIMARIES: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "SENTINEL PRIMARIES" }
+
         @inlinable public init() {
         }
 
@@ -355,6 +389,8 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct PRIMARY<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
+
+        @inlinable public static var name: String { "SENTINEL PRIMARY" }
 
         public var primaryName: PrimaryName
 
@@ -370,6 +406,8 @@ public enum SENTINEL {
     /// Stops monitoring.
     @_documentation(visibility: internal)
     public struct REMOVE<PrimaryName: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "SENTINEL REMOVE" }
+
         public var primaryName: PrimaryName
 
         @inlinable public init(primaryName: PrimaryName) {
@@ -385,6 +423,8 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct REPLICAS<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "SENTINEL REPLICAS" }
 
         public var primaryName: PrimaryName
 
@@ -402,6 +442,8 @@ public enum SENTINEL {
     public struct RESET: ValkeyCommand {
         public typealias Response = Int
 
+        @inlinable public static var name: String { "SENTINEL RESET" }
+
         public var pattern: String
 
         @inlinable public init(pattern: String) {
@@ -417,6 +459,8 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct SENTINELS<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "SENTINEL SENTINELS" }
 
         public var primaryName: PrimaryName
 
@@ -452,6 +496,8 @@ public enum SENTINEL {
                 RESPBulkString(value).encode(into: &commandEncoder)
             }
         }
+        @inlinable public static var name: String { "SENTINEL SET" }
+
         public var primaryName: PrimaryName
         public var data: [Data]
 
@@ -487,6 +533,8 @@ public enum SENTINEL {
         }
         public typealias Response = RESPToken.Array?
 
+        @inlinable public static var name: String { "SENTINEL SIMULATE-FAILURE" }
+
         public var modes: [Mode]
 
         @inlinable public init(modes: [Mode] = []) {
@@ -502,6 +550,8 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct SLAVES<PrimaryName: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "SENTINEL SLAVES" }
 
         public var primaryName: PrimaryName
 

@@ -41,6 +41,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT CACHING" }
+
         public var mode: Mode
 
         @inlinable public init(mode: Mode) {
@@ -55,6 +57,8 @@ extension CLIENT {
     /// A client claims its capability.
     @_documentation(visibility: internal)
     public struct CAPA<Capability: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLIENT CAPA" }
+
         public var capabilities: [Capability]
 
         @inlinable public init(capabilities: [Capability]) {
@@ -71,6 +75,8 @@ extension CLIENT {
     public struct GETNAME: ValkeyCommand {
         public typealias Response = ByteBuffer?
 
+        @inlinable public static var name: String { "CLIENT GETNAME" }
+
         @inlinable public init() {
         }
 
@@ -83,6 +89,8 @@ extension CLIENT {
     @_documentation(visibility: internal)
     public struct GETREDIR: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "CLIENT GETREDIR" }
 
         @inlinable public init() {
         }
@@ -97,6 +105,8 @@ extension CLIENT {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLIENT HELP" }
+
         @inlinable public init() {
         }
 
@@ -109,6 +119,8 @@ extension CLIENT {
     @_documentation(visibility: internal)
     public struct ID: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "CLIENT ID" }
 
         @inlinable public init() {
         }
@@ -136,6 +148,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT IMPORT-SOURCE" }
+
         public var enabled: Enabled
 
         @inlinable public init(enabled: Enabled) {
@@ -151,6 +165,8 @@ extension CLIENT {
     @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "CLIENT INFO" }
 
         @inlinable public init() {
         }
@@ -258,6 +274,8 @@ extension CLIENT {
         }
         public typealias Response = Int?
 
+        @inlinable public static var name: String { "CLIENT KILL" }
+
         public var filter: Filter
 
         @inlinable public init(filter: Filter) {
@@ -307,6 +325,8 @@ extension CLIENT {
             }
         }
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "CLIENT LIST" }
 
         public var clientType: ClientType?
         public var clientIds: [Int]
@@ -367,6 +387,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT NO-EVICT" }
+
         public var enabled: Enabled
 
         @inlinable public init(enabled: Enabled) {
@@ -396,6 +418,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT NO-TOUCH" }
+
         public var enabled: Enabled
 
         @inlinable public init(enabled: Enabled) {
@@ -425,6 +449,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT PAUSE" }
+
         public var timeout: Int
         public var mode: Mode?
 
@@ -458,6 +484,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT REPLY" }
+
         public var action: Action
 
         @inlinable public init(action: Action) {
@@ -492,6 +520,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT SETINFO" }
+
         public var attr: Attr
 
         @inlinable public init(attr: Attr) {
@@ -506,6 +536,8 @@ extension CLIENT {
     /// Sets the connection name.
     @_documentation(visibility: internal)
     public struct SETNAME<ConnectionName: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLIENT SETNAME" }
+
         public var connectionName: ConnectionName
 
         @inlinable public init(connectionName: ConnectionName) {
@@ -535,6 +567,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT TRACKING" }
+
         public var status: Status
         public var clientId: Int?
         public var prefixes: [String]
@@ -581,6 +615,8 @@ extension CLIENT {
     public struct TRACKINGINFO: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
+        @inlinable public static var name: String { "CLIENT TRACKINGINFO" }
+
         @inlinable public init() {
         }
 
@@ -609,6 +645,8 @@ extension CLIENT {
         }
         public typealias Response = Int
 
+        @inlinable public static var name: String { "CLIENT UNBLOCK" }
+
         public var clientId: Int
         public var unblockType: UnblockType?
 
@@ -625,6 +663,8 @@ extension CLIENT {
     /// Resumes processing commands from paused clients.
     @_documentation(visibility: internal)
     public struct UNPAUSE: ValkeyCommand {
+        @inlinable public static var name: String { "CLIENT UNPAUSE" }
+
         @inlinable public init() {
         }
 
@@ -638,6 +678,8 @@ extension CLIENT {
 /// Authenticates the connection.
 @_documentation(visibility: internal)
 public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "AUTH" }
+
     public var username: String?
     public var password: Password
 
@@ -654,6 +696,8 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
 /// A container for client connection commands.
 @_documentation(visibility: internal)
 public struct CLIENT: ValkeyCommand {
+    @inlinable public static var name: String { "CLIENT" }
+
     @inlinable public init() {
     }
 
@@ -666,6 +710,8 @@ public struct CLIENT: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = ByteBuffer
+
+    @inlinable public static var name: String { "ECHO" }
 
     public var message: Message
 
@@ -726,6 +772,8 @@ public struct HELLO: ValkeyCommand {
     }
     public typealias Response = RESPToken.Map
 
+    @inlinable public static var name: String { "HELLO" }
+
     public var arguments: Arguments?
 
     @inlinable public init(arguments: Arguments? = nil) {
@@ -740,6 +788,8 @@ public struct HELLO: ValkeyCommand {
 /// Returns the server's liveliness response.
 @_documentation(visibility: internal)
 public struct PING: ValkeyCommand {
+    @inlinable public static var name: String { "PING" }
+
     public var message: String?
 
     @inlinable public init(message: String? = nil) {
@@ -754,6 +804,8 @@ public struct PING: ValkeyCommand {
 /// Closes the connection.
 @_documentation(visibility: internal)
 public struct QUIT: ValkeyCommand {
+    @inlinable public static var name: String { "QUIT" }
+
     @inlinable public init() {
     }
 
@@ -767,6 +819,8 @@ public struct QUIT: ValkeyCommand {
 public struct RESET: ValkeyCommand {
     public typealias Response = String
 
+    @inlinable public static var name: String { "RESET" }
+
     @inlinable public init() {
     }
 
@@ -778,6 +832,8 @@ public struct RESET: ValkeyCommand {
 /// Changes the selected database.
 @_documentation(visibility: internal)
 public struct SELECT: ValkeyCommand {
+    @inlinable public static var name: String { "SELECT" }
+
     public var index: Int
 
     @inlinable public init(index: Int) {

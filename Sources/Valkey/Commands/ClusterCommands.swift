@@ -28,6 +28,8 @@ public enum CLUSTER {
     /// Assigns new hash slots to a node.
     @_documentation(visibility: internal)
     public struct ADDSLOTS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER ADDSLOTS" }
+
         public var slots: [Int]
 
         @inlinable public init(slots: [Int]) {
@@ -62,6 +64,8 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
+        @inlinable public static var name: String { "CLUSTER ADDSLOTSRANGE" }
+
         public var ranges: [Range]
 
         @inlinable public init(ranges: [Range]) {
@@ -78,6 +82,8 @@ public enum CLUSTER {
     public struct BUMPEPOCH: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "CLUSTER BUMPEPOCH" }
+
         @inlinable public init() {
         }
 
@@ -90,6 +96,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "CLUSTER COUNT-FAILURE-REPORTS" }
 
         public var nodeId: NodeId
 
@@ -107,6 +115,8 @@ public enum CLUSTER {
     public struct COUNTKEYSINSLOT: ValkeyCommand {
         public typealias Response = Int
 
+        @inlinable public static var name: String { "CLUSTER COUNTKEYSINSLOT" }
+
         public var slot: Int
 
         @inlinable public init(slot: Int) {
@@ -121,6 +131,8 @@ public enum CLUSTER {
     /// Sets hash slots as unbound for a node.
     @_documentation(visibility: internal)
     public struct DELSLOTS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER DELSLOTS" }
+
         public var slots: [Int]
 
         @inlinable public init(slots: [Int]) {
@@ -155,6 +167,8 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
+        @inlinable public static var name: String { "CLUSTER DELSLOTSRANGE" }
+
         public var ranges: [Range]
 
         @inlinable public init(ranges: [Range]) {
@@ -184,6 +198,8 @@ public enum CLUSTER {
                 }
             }
         }
+        @inlinable public static var name: String { "CLUSTER FAILOVER" }
+
         public var options: Options?
 
         @inlinable public init(options: Options? = nil) {
@@ -198,6 +214,8 @@ public enum CLUSTER {
     /// Deletes all slots information from a node.
     @_documentation(visibility: internal)
     public struct FLUSHSLOTS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER FLUSHSLOTS" }
+
         @inlinable public init() {
         }
 
@@ -209,6 +227,8 @@ public enum CLUSTER {
     /// Removes a node from the nodes table.
     @_documentation(visibility: internal)
     public struct FORGET<NodeId: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER FORGET" }
+
         public var nodeId: NodeId
 
         @inlinable public init(nodeId: NodeId) {
@@ -224,6 +244,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct GETKEYSINSLOT: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "CLUSTER GETKEYSINSLOT" }
 
         public var slot: Int
         public var count: Int
@@ -243,6 +265,8 @@ public enum CLUSTER {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER HELP" }
+
         @inlinable public init() {
         }
 
@@ -256,6 +280,8 @@ public enum CLUSTER {
     public struct INFO: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "CLUSTER INFO" }
+
         @inlinable public init() {
         }
 
@@ -268,6 +294,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct KEYSLOT<Key: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "CLUSTER KEYSLOT" }
 
         public var key: Key
 
@@ -285,6 +313,8 @@ public enum CLUSTER {
     public struct LINKS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER LINKS" }
+
         @inlinable public init() {
         }
 
@@ -296,6 +326,8 @@ public enum CLUSTER {
     /// Forces a node to handshake with another node.
     @_documentation(visibility: internal)
     public struct MEET<Ip: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER MEET" }
+
         public var ip: Ip
         public var port: Int
         public var clusterBusPort: Int?
@@ -316,6 +348,8 @@ public enum CLUSTER {
     public struct MYID: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "CLUSTER MYID" }
+
         @inlinable public init() {
         }
 
@@ -328,6 +362,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct MYSHARDID: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "CLUSTER MYSHARDID" }
 
         @inlinable public init() {
         }
@@ -342,6 +378,8 @@ public enum CLUSTER {
     public struct NODES: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "CLUSTER NODES" }
+
         @inlinable public init() {
         }
 
@@ -354,6 +392,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct REPLICAS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "CLUSTER REPLICAS" }
 
         public var nodeId: NodeId
 
@@ -369,6 +409,8 @@ public enum CLUSTER {
     /// Configure a node as replica of a primary node.
     @_documentation(visibility: internal)
     public struct REPLICATE<NodeId: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER REPLICATE" }
+
         public var nodeId: NodeId
 
         @inlinable public init(nodeId: NodeId) {
@@ -398,6 +440,8 @@ public enum CLUSTER {
                 }
             }
         }
+        @inlinable public static var name: String { "CLUSTER RESET" }
+
         public var resetType: ResetType?
 
         @inlinable public init(resetType: ResetType? = nil) {
@@ -412,6 +456,8 @@ public enum CLUSTER {
     /// Forces a node to save the cluster configuration to disk.
     @_documentation(visibility: internal)
     public struct SAVECONFIG: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER SAVECONFIG" }
+
         @inlinable public init() {
         }
 
@@ -423,6 +469,8 @@ public enum CLUSTER {
     /// Sets the configuration epoch for a new node.
     @_documentation(visibility: internal)
     public struct SETCONFIGEPOCH: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER SET-CONFIG-EPOCH" }
+
         public var configEpoch: Int
 
         @inlinable public init(configEpoch: Int) {
@@ -463,6 +511,8 @@ public enum CLUSTER {
                 }
             }
         }
+        @inlinable public static var name: String { "CLUSTER SETSLOT" }
+
         public var slot: Int
         public var subcommand: Subcommand
         public var timeout: Int?
@@ -481,6 +531,8 @@ public enum CLUSTER {
     /// Returns the mapping of cluster slots to shards.
     @_documentation(visibility: internal)
     public struct SHARDS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER SHARDS" }
+
         @inlinable public init() {
         }
 
@@ -493,6 +545,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "CLUSTER SLAVES" }
 
         public var nodeId: NodeId
 
@@ -588,6 +642,8 @@ public enum CLUSTER {
         }
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER SLOT-STATS" }
+
         public var filter: Filter
 
         @inlinable public init(filter: Filter) {
@@ -604,6 +660,8 @@ public enum CLUSTER {
     public struct SLOTS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER SLOTS" }
+
         @inlinable public init() {
         }
 
@@ -617,6 +675,8 @@ public enum CLUSTER {
 /// Signals that a cluster client is following an -ASK redirect.
 @_documentation(visibility: internal)
 public struct ASKING: ValkeyCommand {
+    @inlinable public static var name: String { "ASKING" }
+
     @inlinable public init() {
     }
 
@@ -628,6 +688,8 @@ public struct ASKING: ValkeyCommand {
 /// Enables read-only queries for a connection to a Valkey replica node.
 @_documentation(visibility: internal)
 public struct READONLY: ValkeyCommand {
+    @inlinable public static var name: String { "READONLY" }
+
     @inlinable public init() {
     }
 
@@ -639,6 +701,8 @@ public struct READONLY: ValkeyCommand {
 /// Enables read-write queries for a connection to a Valkey replica node.
 @_documentation(visibility: internal)
 public struct READWRITE: ValkeyCommand {
+    @inlinable public static var name: String { "READWRITE" }
+
     @inlinable public init() {
     }
 
