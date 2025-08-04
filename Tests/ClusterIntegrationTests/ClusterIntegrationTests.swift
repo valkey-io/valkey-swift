@@ -15,8 +15,9 @@
 import Foundation
 import Logging
 import Testing
-import Valkey
 import XCTest
+
+@testable import Valkey
 
 @Suite(
     "Cluster Integration Tests",
@@ -37,6 +38,42 @@ struct ClusterIntegrationTests {
 
                 let response = try await client.get(key)
                 #expect(response.map { String(buffer: $0) } == "Hello")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testGetFromReplica() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster(
+            [(host: firstNodeHostname, port: firstNodePort, tls: false)],
+            nodeClientConfiguration: .init(readOnlyReplicaSelection: .random),
+            logger: logger
+        ) { client in
+            try await Self.withKey(connection: client) { key in
+                try await client.set(key, value: "Hello")
+                let hashSlot = HashSlot(key: key)
+                let nodeClient = try client.stateLock.withLock { state in
+                    if case .healthy(let context) = state.clusterState {
+                        let shardID = try context.hashSlotShardMap.nodeIDs(for: [hashSlot])
+                        if let pool = state.runningClients[shardID.replicas[0]]?.pool {
+                            return pool
+                        }
+                    }
+                    throw ValkeyClusterError.clusterIsMissingMovedErrorNode
+                }
+                _ = try await nodeClient.withConnection { connection in
+                    // TODO: Currently we have to send a READONLY command to a connection before
+                    // calling a command that is readonly on a replica, otherwise it'll redirect the user
+                    // to the primary. This should be done automatically for the user
+                    try await connection.readonly()
+                    let response = try await connection.get(key)
+                    #expect(response.map { String(buffer: $0) } == "Hello")
+                }
             }
         }
     }
