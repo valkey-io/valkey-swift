@@ -70,6 +70,7 @@ struct ClientIntegratedTests {
     func testValkeyCommand() async throws {
         struct GET: ValkeyCommand {
             typealias Response = String?
+            static let name = "GET"
 
             static let name = "GET"
 

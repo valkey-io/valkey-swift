@@ -38,6 +38,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @usableFromInline
     let channelHandler: ValkeyChannelHandler
     let configuration: ValkeyConnectionConfiguration
+    @usableFromInline
+    let address: (hostOrSocketPath: String, port: Int?)?
     let isClosed: Atomic<Bool>
 
     /// Initialize connection
@@ -46,6 +48,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         connectionID: ID,
         channelHandler: ValkeyChannelHandler,
         configuration: ValkeyConnectionConfiguration,
+        address: ValkeyServerAddress?,
         logger: Logger
     ) {
         self.unownedExecutor = channel.eventLoop.executor.asUnownedSerialExecutor()
@@ -54,6 +57,14 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         self.configuration = configuration
         self.id = connectionID
         self.logger = logger
+        switch address?.value {
+        case let .hostname(host, port):
+            self.address = (host, port)
+        case let .unixDomainSocket(path):
+            self.address = (path, nil)
+        case nil:
+            self.address = nil
+        }
         self.isClosed = .init(false)
     }
 
@@ -157,10 +168,19 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     @inlinable
     func _execute<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
-        try await withSpan(Command.name, ofKind: .client) { span in
-            span.attributes["db.system.name"] = "valkey"
+        #if DistributedTracingSupport
+        let span = startSpan(Command.name, ofKind: .client)
+        defer { span.end() }
 
-            let requestID = Self.requestIDGenerator.next()
+        span.updateAttributes { attributes in
+            attributes["db.operation.name"] = Command.name
+            applyCommonAttributes(to: &attributes)
+        }
+        #endif
+
+        let requestID = Self.requestIDGenerator.next()
+
+        do {
             return try await withTaskCancellationHandler {
                 if Task.isCancelled {
                     throw ValkeyClientError(.cancelled)
@@ -171,6 +191,25 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             } onCancel: {
                 self.cancel(requestID: requestID)
             }
+        } catch let error as ValkeyClientError {
+            #if DistributedTracingSupport
+            span.recordError(error)
+            if let message = error.message {
+                var prefixEndIndex = message.startIndex
+                while prefixEndIndex < message.endIndex, message[prefixEndIndex] != " " {
+                    message.formIndex(after: &prefixEndIndex)
+                }
+                let prefix = message[message.startIndex ..< prefixEndIndex]
+                span.attributes["db.response.status_code"] = "\(prefix)"
+                span.setStatus(SpanStatus(code: .error))
+            }
+            #endif
+            throw error
+        } catch {
+            #if DistributedTracingSupport
+            span.recordError(error)
+            #endif
+            throw error
         }
     }
 
@@ -185,8 +224,42 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
+        #if DistributedTracingSupport
+        let span = startSpan("MULTI", ofKind: .client)
+        defer { span.end() }
+
+        // We want to suffix the `db.operation.name` if all pipelined commands are of the same type.
+        var commandName: String?
+        var operationNameSuffix: String?
+        var commandCount = 0
+
+        for command in repeat each commands {
+            commandCount += 1
+            if commandName == nil {
+                commandName = Swift.type(of: command).name
+                operationNameSuffix = commandName
+            } else if commandName != Swift.type(of: command).name {
+                // We should only add a suffix if all commands in the transaction are the same.
+                operationNameSuffix = nil
+            }
+        }
+        let operationName = operationNameSuffix.map { "MULTI \($0)" } ?? "MULTI"
+
+        span.updateAttributes { attributes in
+            attributes["db.operation.name"] = operationName
+            attributes["db.operation.batch.size"] = commandCount > 1 ? commandCount : nil
+            applyCommonAttributes(to: &attributes)
+        }
+        #endif
+
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
-            result.flatMap {
+            #if DistributedTracingSupport
+            if case .failure(let error) = result {
+                span.recordError(error)
+            }
+            #endif
+
+            return result.flatMap {
                 do {
                     return try .success(Response(fromRESP: $0))
                 } catch {
@@ -219,6 +292,16 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         } onCancel: {
             self.cancel(requestID: requestID)
         }
+    }
+
+    @usableFromInline
+    func applyCommonAttributes(to attributes: inout SpanAttributes) {
+        // TODO: Should this be redis as recommended by OTel semconv or valkey as seen in valkey-go?
+        attributes["db.system.name"] = "valkey"
+        attributes["network.peer.address"] = channel.remoteAddress?.ipAddress
+        attributes["network.peer.port"] = channel.remoteAddress?.port
+        attributes["server.address"] = address?.hostOrSocketPath
+        attributes["server.port"] = address?.port == 6379 ? nil : address?.port
     }
 
     @usableFromInline
@@ -286,6 +369,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 connectionID: connectionID,
                 channelHandler: handler,
                 configuration: configuration,
+                address: address,
                 logger: logger
             )
         }
@@ -321,6 +405,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 connectionID: 0,
                 channelHandler: handler,
                 configuration: configuration,
+                address: .hostname("127.0.0.1", port: 6379),
                 logger: logger
             )
             return channel.connect(to: try SocketAddress(ipAddress: "127.0.0.1", port: 6379)).map {
