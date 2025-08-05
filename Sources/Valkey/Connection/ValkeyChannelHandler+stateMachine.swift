@@ -67,13 +67,6 @@ extension ValkeyChannelHandler {
             let context: Context
             let pendingHelloCommand: PendingCommand
             var pendingCommands: Deque<PendingCommand>
-
-            func cancel(requestID: Int) -> [PendingCommand]? {
-                if pendingHelloCommand.requestID == requestID {
-                    return [pendingHelloCommand] + pendingCommands
-                }
-                return nil
-            }
         }
 
         init() {
@@ -303,24 +296,14 @@ extension ValkeyChannelHandler {
             case doNothing
         }
 
-        /// handler wants to send a command
+        /// handler wants to cancel a command
         @usableFromInline
         mutating func cancel(requestID: Int) -> CancelAction {
             switch consume self.state {
             case .initialized:
                 preconditionFailure("Cannot cancel when initialized")
-            case .connected(let state):
-                if let commands = state.cancel(requestID: requestID) {
-                    self = .closed(CancellationError())
-                    return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: .init(commands),
-                        closeConnectionDueToCancel: []
-                    )
-                } else {
-                    self = .connected(state)
-                    return .doNothing
-                }
+            case .connected:
+                preconditionFailure("Cannot cancel while in connected state")
             case .active(let state):
                 let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
                 if cancel.count > 0 {
