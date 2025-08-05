@@ -18,74 +18,93 @@ import Synchronization
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
     @usableFromInline
-    actor SubscriptionConnection {
+    struct SubscriptionConnection: ~Copyable, Sendable {
+        enum Action {
+            case useConnection(ValkeyConnection)
+            case acquireConnection
+        }
+
         enum State {
             case noConnection
-            case acquiringConnection([CheckedContinuation<ValkeyConnection, any Error>])
+            case acquiringConnection([CheckedContinuation<Action, any Error>])
             case connectionOpen(ValkeyConnection, Int)
         }
-        var state: State
+        let state: Mutex<State>
 
         init() {
-            self.state = .noConnection
+            self.state = .init(.noConnection)
         }
 
         @usableFromInline
         func acquire(_ operation: () async throws -> ValkeyConnection) async throws -> ValkeyConnection {
-            switch self.state {
-            case .noConnection:
-                state = .acquiringConnection([])
+            let action: Action = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Action, any Error>) in
+                self.state.withLock { state in
+                    switch state {
+                    case .noConnection:
+                        state = .acquiringConnection([])
+                        cont.resume(returning: .acquireConnection)
+                    case .acquiringConnection(var continuations):
+                        continuations.append(cont)
+                        state = .acquiringConnection(continuations)
+                    case .connectionOpen(let connection, let count):
+                        state = .connectionOpen(connection, count + 1)
+                        cont.resume(returning: .useConnection(connection))
+                    }
+                }
+            }
+            switch action {
+            case .acquireConnection:
                 do {
                     let connection = try await operation()
-                    guard case .acquiringConnection(let continuations) = state else {
-                        preconditionFailure("State should still be acquiring")
+                    return self.state.withLock { state in
+                        guard case .acquiringConnection(let continuations) = state else {
+                            preconditionFailure("State should still be acquiring")
+                        }
+                        for cont in continuations {
+                            cont.resume(returning: .useConnection(connection))
+                        }
+                        state = .connectionOpen(connection, continuations.count + 1)
+                        return connection
                     }
-                    for cont in continuations {
-                        cont.resume(returning: connection)
-                    }
-                    state = .connectionOpen(connection, continuations.count + 1)
-                    return connection
                 } catch {
-                    guard case .acquiringConnection(let continuations) = state else {
-                        preconditionFailure("Can't have state set to none, while acquiring connection")
+                    return try self.state.withLock { state in
+                        guard case .acquiringConnection(let continuations) = state else {
+                            preconditionFailure("Can't have state set to none, while acquiring connection")
+                        }
+                        for cont in continuations {
+                            cont.resume(throwing: error)
+                        }
+                        state = .noConnection
+                        throw error
                     }
-                    for cont in continuations {
-                        cont.resume(throwing: error)
-                    }
-                    state = .noConnection
-                    throw error
                 }
-            case .acquiringConnection(var continuations):
-                return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, any Error>) in
-                    continuations.append(cont)
-                    self.state = .acquiringConnection(continuations)
-                }
-            case .connectionOpen(let connection, let count):
-                state = .connectionOpen(connection, count + 1)
+            case .useConnection(let connection):
                 return connection
             }
         }
 
         @usableFromInline
         func release(id: ValkeyConnection.ID, _ operation: (ValkeyConnection) -> Void) {
-            switch self.state {
-            case .noConnection, .acquiringConnection:
-                break
-            case .connectionOpen(let connection, let count):
-                guard connection.id == id else { return }
-                assert(count > 0, "Cannot have a count of active references to connection less than one")
-                if count == 1 {
-                    state = .noConnection
-                    operation(connection)
-                } else {
-                    state = .connectionOpen(connection, count - 1)
+            self.state.withLock { state in
+                switch state {
+                case .noConnection, .acquiringConnection:
+                    break
+                case .connectionOpen(let connection, let count):
+                    guard connection.id == id else { return }
+                    assert(count > 0, "Cannot have a count of active references to connection less than one")
+                    if count == 1 {
+                        state = .noConnection
+                        operation(connection)
+                    } else {
+                        state = .connectionOpen(connection, count - 1)
+                    }
                 }
             }
         }
 
         @usableFromInline
         func connectionClosed() {
-            self.state = .noConnection
+            self.state.withLock { $0 = .noConnection }
         }
     }
 
@@ -97,10 +116,10 @@ extension ValkeyClient {
         let connection = try await self.subscriptionConnection.acquire { try await self.node.leaseConnection() }
         do {
             let value = try await operation(connection)
-            await self.subscriptionConnection.release(id: connection.id) { self.node.releaseConnection($0) }
+            self.subscriptionConnection.release(id: connection.id) { self.node.releaseConnection($0) }
             return value
         } catch {
-            await self.subscriptionConnection.release(id: connection.id) { self.node.releaseConnection($0) }
+            self.subscriptionConnection.release(id: connection.id) { self.node.releaseConnection($0) }
             throw error
         }
 
@@ -248,7 +267,7 @@ extension ValkeyClient {
                         // if connection closes for some reason don't exit loop so it opens a new connection
                         switch error.errorCode {
                         case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
-                            await self.subscriptionConnection.connectionClosed()
+                            self.subscriptionConnection.connectionClosed()
                             break
                         default:
                             cont.finish(throwing: error)
