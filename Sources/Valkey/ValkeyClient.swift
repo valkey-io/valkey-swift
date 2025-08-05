@@ -41,6 +41,9 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
+    /// subscription state
+    @usableFromInline
+    let subscriptionConnection: SubscriptionConnection
 
     private enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
@@ -90,6 +93,7 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        self.subscriptionConnection = .init()
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runNodeClient(self.node))
     }

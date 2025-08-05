@@ -123,8 +123,14 @@ extension ValkeyNodeClient {
         return try await operation(connection)
     }
 
-    private func leaseConnection() async throws -> ValkeyConnection {
+    @usableFromInline
+    func leaseConnection() async throws -> ValkeyConnection {
         try await self.connectionPool.leaseConnection()
+    }
+
+    @usableFromInline
+    func releaseConnection(_ connection: ValkeyConnection) {
+        self.connectionPool.releaseConnection(connection)
     }
 }
 
