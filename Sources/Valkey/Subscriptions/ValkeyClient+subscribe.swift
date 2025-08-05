@@ -13,9 +13,99 @@
 //===----------------------------------------------------------------------===//
 
 import NIOCore
+import Synchronization
 
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
+    @usableFromInline
+    actor SubscriptionConnection {
+        enum State {
+            case none
+            case acquiringConnection([CheckedContinuation<ValkeyConnection, any Error>])
+            case connectionOpen(ValkeyConnection, Int)
+        }
+        var state: State
+
+        init() {
+            self.state = .none
+        }
+
+        @usableFromInline
+        func acquire(_ operation: () async throws -> ValkeyConnection) async throws -> ValkeyConnection {
+            switch self.state {
+            case .none:
+                state = .acquiringConnection([])
+                do {
+                    let connection = try await operation()
+                    guard case .acquiringConnection(let continuations) = state else {
+                        preconditionFailure("State should still be acquiring")
+                    }
+                    for cont in continuations {
+                        cont.resume(returning: connection)
+                    }
+                    state = .connectionOpen(connection, continuations.count + 1)
+                    return connection
+                } catch {
+                    guard case .acquiringConnection(let continuations) = state else {
+                        preconditionFailure("Can't have state set to none, while acquiring connection")
+                    }
+                    for cont in continuations {
+                        cont.resume(throwing: error)
+                    }
+                    state = .none
+                    throw error
+                }
+            case .acquiringConnection(var continuations):
+                return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, any Error>) in
+                    continuations.append(cont)
+                    self.state = .acquiringConnection(continuations)
+                }
+            case .connectionOpen(let connection, let count):
+                state = .connectionOpen(connection, count + 1)
+                return connection
+            }
+        }
+
+        @usableFromInline
+        func release(id: ValkeyConnection.ID, _ operation: (ValkeyConnection) -> Void) {
+            switch self.state {
+            case .none, .acquiringConnection:
+                break
+            case .connectionOpen(let connection, let count):
+                guard connection.id == id else { return }
+                assert(count > 0, "Cannot have a count of active references to connection less than one")
+                if count == 1 {
+                    state = .none
+                    operation(connection)
+                } else {
+                    state = .connectionOpen(connection, count - 1)
+                }
+            }
+        }
+
+        @usableFromInline
+        func connectionClosed() {
+            self.state = .none
+        }
+    }
+
+    @inlinable
+    func withSubscriptionConnection<Value>(
+        isolation: isolated (any Actor)? = #isolation,
+        operation: (ValkeyConnection) async throws -> sending Value
+    ) async throws -> sending Value {
+        let connection = try await self.subscriptionConnection.acquire { try await self.node.leaseConnection() }
+        do {
+            let value = try await operation(connection)
+            await self.subscriptionConnection.release(id: connection.id) { self.node.releaseConnection($0) }
+            return value
+        } catch {
+            await self.subscriptionConnection.release(id: connection.id) { self.node.releaseConnection($0) }
+            throw error
+        }
+
+    }
+
     /// Subscribe to list of channels and run closure with subscription
     ///
     /// When the closure is exited the channels are automatically unsubscribed from. It is
@@ -108,52 +198,6 @@ extension ValkeyClient {
         )
     }
 
-    /// Subscribe to list of shard channels and run closure with subscription
-    ///
-    /// When the closure is exited the shard channels are automatically unsubscribed from. It is
-    /// possible to have multiple subscriptions running on the same connection and unsubscribe
-    /// commands will only be sent to Valkey when there are no subscriptions active for that
-    /// pattern
-    ///
-    /// - Parameters:
-    ///   - shardchannels: list of shard channels to subscribe to
-    ///   - isolation: Actor isolation
-    ///   - process: Closure that is called with subscription async sequence
-    /// - Returns: Return value of closure
-    @inlinable
-    public func ssubscribe<Value>(
-        to shardchannels: String...,
-        isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
-        try await self.ssubscribe(to: shardchannels, process: process)
-    }
-
-    /// Subscribe to list of shard channels and run closure with subscription
-    ///
-    /// When the closure is exited the shard channels are automatically unsubscribed from. It is
-    /// possible to have multiple subscriptions running on the same connection and unsubscribe
-    /// commands will only be sent to Valkey when there are no subscriptions active for that
-    /// pattern
-    ///
-    /// - Parameters:
-    ///   - shardchannels: list of shard channels to subscribe to
-    ///   - isolation: Actor isolation
-    ///   - process: Closure that is called with subscription async sequence
-    /// - Returns: Return value of closure
-    @inlinable
-    public func ssubscribe<Value>(
-        to shardchannels: [String],
-        isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
-        try await self.subscribe(
-            command: SSUBSCRIBE(shardchannels: shardchannels),
-            filters: shardchannels.map { .shardChannel($0) },
-            process: process
-        )
-    }
-
     /// Subscribe to key invalidation channel required for client-side caching
     ///
     /// See https://valkey.io/topics/client-side-caching/ for more details
@@ -191,7 +235,7 @@ extension ValkeyClient {
                 while true {
                     do {
                         try Task.checkCancellation()
-                        return try await self.withConnection { connection in
+                        return try await self.withSubscriptionConnection { connection in
                             try await connection.subscribe(command: command, filters: filters) { subscription in
                                 // push messages on connection subscription to client subscription
                                 for try await message in subscription {
@@ -204,6 +248,7 @@ extension ValkeyClient {
                         // if connection closes for some reason don't exit loop so it opens a new connection
                         switch error.errorCode {
                         case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
+                            await self.subscriptionConnection.connectionClosed()
                             break
                         default:
                             cont.finish(throwing: error)
