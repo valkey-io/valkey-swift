@@ -33,7 +33,7 @@ try await valkeyClient.withConnection { connection in
 }
 ```
 
-All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files Valkey supplies in [valkey](https://github.com/valkey-io/valkey/src/commands). In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible we have either added a custom return type or a `RESPToken` is returned and you'll need to convert it manually.
+All the Valkey commands are in the Commands folder of the Valkey target. These are generated from the model files Valkey supplies in the [valkey](https://github.com/valkey-io/valkey/tree/unstable/src/commands) repository. In many cases where it was possible to ascertain the return type of a command these functions will return that expected type. In situations where this is not possible we have either added a custom return type or a `RESPToken` is returned and you'll need to convert it manually.
 
 ### Pipelining commands
 
