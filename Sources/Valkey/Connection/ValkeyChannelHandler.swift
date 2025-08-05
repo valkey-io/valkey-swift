@@ -300,7 +300,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
         let deadline = .now() + self.configuration.commandTimeout
         context.writeAndFlush(self.wrapOutboundOut(self.encoder.buffer), promise: nil)
-        scheduleDeadlineCallback(deadline: deadline)
+        self.scheduleDeadlineCallback(deadline: deadline)
 
         self.stateMachine.setConnected(
             context: context,
