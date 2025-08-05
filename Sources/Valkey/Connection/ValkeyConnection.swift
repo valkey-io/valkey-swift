@@ -296,7 +296,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     @usableFromInline
     func applyCommonAttributes(to attributes: inout SpanAttributes) {
-        // TODO: Should this be redis as recommended by OTel semconv or valkey as seen in valkey-go?
         attributes["db.system.name"] = "valkey"
         attributes["network.peer.address"] = channel.remoteAddress?.ipAddress
         attributes["network.peer.port"] = channel.remoteAddress?.port
