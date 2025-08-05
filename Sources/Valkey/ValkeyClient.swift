@@ -28,7 +28,10 @@ import ServiceLifecycle
 ///
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
-public final class ValkeyClient: Sendable {
+public final class ValkeyClient: ActionRunner, Sendable {
+    enum Action: Sendable {
+        case runClient(ValkeyNodeClient)
+    }
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
@@ -41,6 +44,8 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
+    /// Action stream
+    let actionStream: ActionStream<Action>
 
     /// Creates a new Valkey client
     ///
@@ -84,6 +89,8 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        self.actionStream = .init()
+        self.queueAction(.runClient(self.node))
     }
 }
 
@@ -95,10 +102,10 @@ extension ValkeyClient {
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
-            await self.node.run()
+            await self.runActionTaskGroup()
         }
         #else
-        await self.node.run()
+        await self.runActionTaskGroup()
         #endif
     }
 
@@ -114,6 +121,16 @@ extension ValkeyClient {
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         try await self.node.withConnection(isolation: isolation, operation: operation)
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClient {
+    func runAction(_ action: Action) async {
+        switch action {
+        case .runClient(let nodeClient):
+            await nodeClient.run()
+        }
     }
 }
 
