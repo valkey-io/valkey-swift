@@ -12,11 +12,11 @@ import NIOEmbedded
 import NIOPosix
 import Testing
 
+@testable import Valkey
+
 #if DistributedTracingSupport
 @testable import Instrumentation
 #endif
-
-@testable import Valkey
 
 @Suite
 struct ConnectionTests {
@@ -491,7 +491,7 @@ struct ConnectionTests {
         try await channel.close()
     }
 
-    #if DistributedTracingSupport && compiler(>=6.2) // Swift Testing exit tests only added in 6.2
+    #if DistributedTracingSupport && compiler(>=6.2)  // Swift Testing exit tests only added in 6.2
     @Suite(.serialized)
     struct DistributedTracingTests {
         @Test
@@ -519,13 +519,15 @@ struct ConnectionTests {
                 #expect(span.operationName == "GET")
                 #expect(span.kind == .client)
                 #expect(span.recordedErrors.isEmpty)
-                #expect(span.attributes == [
-                    "db.system.name": "valkey",
-                    "db.operation.name": "GET",
-                    "server.address": "127.0.0.1",
-                    "network.peer.address": "127.0.0.1",
-                    "network.peer.port": 6379
-                ])
+                #expect(
+                    span.attributes == [
+                        "db.system.name": "valkey",
+                        "db.operation.name": "GET",
+                        "server.address": "127.0.0.1",
+                        "network.peer.address": "127.0.0.1",
+                        "network.peer.port": 6379,
+                    ]
+                )
                 #expect(span.recordedErrors.isEmpty)
                 #expect(span.status == nil)
             }
@@ -562,14 +564,16 @@ struct ConnectionTests {
                 #expect(span.recordedErrors.count == 1)
                 let error = try #require(span.recordedErrors.first)
                 #expect(error.0 as? ValkeyClientError == ValkeyClientError(.commandError, message: "ERR Error!"))
-                #expect(span.attributes == [
-                    "db.system.name": "valkey",
-                    "db.operation.name": "GET",
-                    "db.response.status_code": "ERR",
-                    "server.address": "127.0.0.1",
-                    "network.peer.address": "127.0.0.1",
-                    "network.peer.port": 6379
-                ])
+                #expect(
+                    span.attributes == [
+                        "db.system.name": "valkey",
+                        "db.operation.name": "GET",
+                        "db.response.status_code": "ERR",
+                        "server.address": "127.0.0.1",
+                        "network.peer.address": "127.0.0.1",
+                        "network.peer.port": 6379,
+                    ]
+                )
                 #expect(span.status?.code == .error)
             }
         }
@@ -604,14 +608,16 @@ struct ConnectionTests {
                 #expect(span.operationName == "MULTI")
                 #expect(span.kind == .client)
                 #expect(span.recordedErrors.isEmpty)
-                #expect(span.attributes == [
-                    "db.system.name": "valkey",
-                    "db.operation.name": "MULTI SET",
-                    "db.operation.batch.size": 2,
-                    "server.address": "127.0.0.1",
-                    "network.peer.address": "127.0.0.1",
-                    "network.peer.port": 6379
-                ])
+                #expect(
+                    span.attributes == [
+                        "db.system.name": "valkey",
+                        "db.operation.name": "MULTI SET",
+                        "db.operation.batch.size": 2,
+                        "server.address": "127.0.0.1",
+                        "network.peer.address": "127.0.0.1",
+                        "network.peer.port": 6379,
+                    ]
+                )
                 #expect(span.recordedErrors.isEmpty)
                 #expect(span.status == nil)
             }
@@ -647,14 +653,16 @@ struct ConnectionTests {
                 #expect(span.operationName == "MULTI")
                 #expect(span.kind == .client)
                 #expect(span.recordedErrors.isEmpty)
-                #expect(span.attributes == [
-                    "db.system.name": "valkey",
-                    "db.operation.name": "MULTI",
-                    "db.operation.batch.size": 2,
-                    "server.address": "127.0.0.1",
-                    "network.peer.address": "127.0.0.1",
-                    "network.peer.port": 6379
-                ])
+                #expect(
+                    span.attributes == [
+                        "db.system.name": "valkey",
+                        "db.operation.name": "MULTI",
+                        "db.operation.batch.size": 2,
+                        "server.address": "127.0.0.1",
+                        "network.peer.address": "127.0.0.1",
+                        "network.peer.port": 6379,
+                    ]
+                )
                 #expect(span.recordedErrors.isEmpty)
                 #expect(span.status == nil)
             }
@@ -689,14 +697,16 @@ struct ConnectionTests {
                 #expect(span.recordedErrors.count == 1)
                 let error = try #require(span.recordedErrors.first)
                 #expect(error.0 as? ValkeyClientError == ValkeyClientError(.commandError, message: "WRONGTYPE Error!"))
-                #expect(span.attributes == [
-                    "db.system.name": "valkey",
-                    "db.operation.name": "MULTI",
-                    "db.operation.batch.size": 2,
-                    "server.address": "127.0.0.1",
-                    "network.peer.address": "127.0.0.1",
-                    "network.peer.port": 6379
-                ])
+                #expect(
+                    span.attributes == [
+                        "db.system.name": "valkey",
+                        "db.operation.name": "MULTI",
+                        "db.operation.batch.size": 2,
+                        "server.address": "127.0.0.1",
+                        "network.peer.address": "127.0.0.1",
+                        "network.peer.port": 6379,
+                    ]
+                )
                 #expect(span.status == nil)
             }
         }

@@ -199,7 +199,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 while prefixEndIndex < message.endIndex, message[prefixEndIndex] != " " {
                     message.formIndex(after: &prefixEndIndex)
                 }
-                let prefix = message[message.startIndex ..< prefixEndIndex]
+                let prefix = message[message.startIndex..<prefixEndIndex]
                 span.attributes["db.response.status_code"] = "\(prefix)"
                 span.setStatus(SpanStatus(code: .error))
             }
