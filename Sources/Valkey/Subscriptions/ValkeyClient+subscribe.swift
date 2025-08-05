@@ -20,20 +20,20 @@ extension ValkeyClient {
     @usableFromInline
     actor SubscriptionConnection {
         enum State {
-            case none
+            case noConnection
             case acquiringConnection([CheckedContinuation<ValkeyConnection, any Error>])
             case connectionOpen(ValkeyConnection, Int)
         }
         var state: State
 
         init() {
-            self.state = .none
+            self.state = .noConnection
         }
 
         @usableFromInline
         func acquire(_ operation: () async throws -> ValkeyConnection) async throws -> ValkeyConnection {
             switch self.state {
-            case .none:
+            case .noConnection:
                 state = .acquiringConnection([])
                 do {
                     let connection = try await operation()
@@ -52,7 +52,7 @@ extension ValkeyClient {
                     for cont in continuations {
                         cont.resume(throwing: error)
                     }
-                    state = .none
+                    state = .noConnection
                     throw error
                 }
             case .acquiringConnection(var continuations):
@@ -69,13 +69,13 @@ extension ValkeyClient {
         @usableFromInline
         func release(id: ValkeyConnection.ID, _ operation: (ValkeyConnection) -> Void) {
             switch self.state {
-            case .none, .acquiringConnection:
+            case .noConnection, .acquiringConnection:
                 break
             case .connectionOpen(let connection, let count):
                 guard connection.id == id else { return }
                 assert(count > 0, "Cannot have a count of active references to connection less than one")
                 if count == 1 {
-                    state = .none
+                    state = .noConnection
                     operation(connection)
                 } else {
                     state = .connectionOpen(connection, count - 1)
@@ -85,7 +85,7 @@ extension ValkeyClient {
 
         @usableFromInline
         func connectionClosed() {
-            self.state = .none
+            self.state = .noConnection
         }
     }
 

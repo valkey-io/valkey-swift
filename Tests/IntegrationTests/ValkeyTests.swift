@@ -570,7 +570,7 @@ struct GeneratedCommands {
                     client.logger.info("Published \(i)")
                 }
                 try await group.waitForAll()
-                if case .none = await client.subscriptionConnection.state {
+                if case .noConnection = await client.subscriptionConnection.state {
                 } else {
                     Issue.record("Subscription channel should have been relesed")
                 }
