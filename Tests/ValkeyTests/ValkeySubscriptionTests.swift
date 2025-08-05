@@ -812,4 +812,53 @@ struct SubscriptionTests {
             try await group.waitForAll()
         }
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientSubscriptionConnection() async throws {
+        final class SubscriptionWrapper: Sendable {
+            let sub = ValkeyClient.SubscriptionConnection()
+        }
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let wrapper = SubscriptionWrapper()
+            for _ in 0..<500 {
+                group.addTask {
+                    let connection = try await wrapper.sub.acquire {
+                        let channel = NIOAsyncTestingChannel()
+                        let logger = Logger(label: "test")
+                        return try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+                    }
+                    let connection2 = try await wrapper.sub.acquire {
+                        let channel = NIOAsyncTestingChannel()
+                        let logger = Logger(label: "test")
+                        return try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+                    }
+                    let connectionID = await connection.id
+                    let connection2ID = await connection2.id
+                    #expect(connectionID == connection2ID)
+
+                    await wrapper.sub.release(id: connection.id) { $0.close() }
+                    await wrapper.sub.release(id: connection2.id) { $0.close() }
+                }
+            }
+            for _ in 0..<100 {
+
+                group.addTask {
+                    let connection = try await wrapper.sub.acquire {
+                        let channel = NIOAsyncTestingChannel()
+                        let logger = Logger(label: "test")
+                        return try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+                    }
+                    await wrapper.sub.release(id: connection.id) { $0.close() }
+                }
+            }
+            try await group.waitForAll()
+            wrapper.sub.state.withLock { state in
+                if case .noConnection = state {
+                } else {
+                    Issue.record("Subscription channel should have been relesed")
+                }
+            }
+        }
+    }
 }
