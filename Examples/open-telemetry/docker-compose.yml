@@ -11,8 +11,8 @@ services:
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
-      - 4318:4318 # OTLP/HTTP receiver
-      - 16686:16686 # Jaeger Web UI
+      - 4318:4318  # OTLP/HTTP receiver
+      - 16686:16686  # Jaeger Web UI
 
 volumes:
   valkey_data:
