@@ -564,7 +564,7 @@ struct GeneratedCommands {
                     await iterator.next()
                 }
 
-                try await Task.sleep(for: .milliseconds(50))
+                try await Task.sleep(for: .milliseconds(200))
                 for i in 0..<(count + 1) {
                     try await client.publish(channel: "sub\(i)", message: "\(i)")
                     client.logger.info("Published \(i)")
