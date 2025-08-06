@@ -637,7 +637,7 @@ struct ConnectionTests {
 
                 async let results = connection.execute(
                     SET("foo", value: "bar"),
-                    GET("foo"),
+                    GET("foo")
                 )
                 var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
                 let set = RESPToken(.command(["SET", "foo", "bar"])).base
@@ -682,7 +682,7 @@ struct ConnectionTests {
 
                 async let results = connection.execute(
                     SET("foo", value: "bar"),
-                    GET("foo"),
+                    GET("foo")
                 )
                 _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
 
