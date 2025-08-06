@@ -57,8 +57,7 @@ struct Example {
         }
 
         var app = Application(router: router)
-        app.addServices(observability)
-        app.addServices(valkeyClient)
+        app.addServices(observability, valkeyClient)
 
         try await app.runService()
     }
