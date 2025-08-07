@@ -85,7 +85,7 @@ try await connection.clientTracking(
 
 #### Subscribing to Invalidation Events
 
-Once tracking is enabled you can subscribe to invalidation events using ``ValkeyConnection/subscribeKeyInvalidations(process:)``. The AsyncSequence passed to the `process` closure is a list of keys that have been invalidated.
+Once tracking is enabled you can subscribe to invalidation events using ``ValkeyConnection/subscribeKeyInvalidations(isolation:process:)``. The AsyncSequence passed to the `process` closure is a list of keys that have been invalidated.
 
 ```swift
 try await connection.subscribeKeyInvalidations { keys in
