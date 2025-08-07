@@ -571,7 +571,7 @@ struct GeneratedCommands {
                 }
                 try await group.waitForAll()
                 client.subscriptionConnection.state.withLock { state in
-                    if case .noConnection = state {
+                    if case .uninitialized = state {
                     } else {
                         Issue.record("Subscription channel should have been relesed")
                     }
