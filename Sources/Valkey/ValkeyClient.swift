@@ -43,7 +43,7 @@ public final class ValkeyClient: Sendable {
     let runningAtomic: Atomic<Bool>
     /// subscription state
     @usableFromInline
-    let subscriptionConnection: SubscriptionConnection
+    let subscriptionConnection: AsyncInitializedReferencedObject<ValkeyConnection>
 
     private enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
