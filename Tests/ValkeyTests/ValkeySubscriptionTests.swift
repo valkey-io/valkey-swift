@@ -15,6 +15,7 @@
 import Logging
 import NIOCore
 import NIOEmbedded
+import Synchronization
 import Testing
 
 @testable import Valkey
@@ -858,6 +859,68 @@ struct SubscriptionTests {
                 } else {
                     Issue.record("Subscription channel should have been relesed")
                 }
+            }
+        }
+    }
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientSubscriptionConnectionCancellation() async throws {
+        final class SubscriptionWrapper: Sendable {
+            let sub = ValkeyClient.SubscriptionConnection()
+        }
+        let wrapper = SubscriptionWrapper()
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            let (stream1, cont1) = AsyncStream.makeStream(of: Void.self)
+            let (stream2, cont2) = AsyncStream.makeStream(of: Void.self)
+            // Run acquire three times, with the first one throwing a cancellation error. Use
+            // AsyncStream to ensure all acquires are active at the same time
+            group.addTask {
+                _ = try await wrapper.sub.acquire {
+                    cont1.finish()
+                    await stream2.first { _ in true }
+                    throw CancellationError()
+                }
+            }
+            await stream1.first { _ in true }
+            group.addTask {
+                _ = try await wrapper.sub.acquire {
+                    let channel = NIOAsyncTestingChannel()
+                    let logger = Logger(label: "test")
+                    return try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+                }
+            }
+            group.addTask {
+                _ = try await wrapper.sub.acquire {
+                    let channel = NIOAsyncTestingChannel()
+                    let logger = Logger(label: "test")
+                    return try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+                }
+            }
+            try await Task.sleep(for: .milliseconds(50))
+            cont2.finish()
+        }
+        // Verify we have two connections
+        let connection: ValkeyConnection = try #require(
+            wrapper.sub.state.withLock { state in
+                switch state {
+                case .connectionOpen(let connection, let count):
+                    #expect(count == 2)
+                    return connection
+                case .acquiringConnection, .noConnection:
+                    Issue.record("Should have a connection")
+                    return nil
+                }
+            }
+        )
+        // Verify once we run release twice we have no connection
+        await wrapper.sub.release(id: connection.id) { $0.close() }
+        await wrapper.sub.release(id: connection.id) { $0.close() }
+        wrapper.sub.state.withLock { state in
+            switch state {
+            case .noConnection:
+                break
+            case .acquiringConnection, .connectionOpen:
+                Issue.record("Should have a connection")
             }
         }
     }

@@ -66,6 +66,19 @@ extension ValkeyClient {
                         state = .connectionOpen(connection, continuations.count + 1)
                         return connection
                     }
+                } catch is CancellationError {
+                    self.state.withLock { state in
+                        guard case .acquiringConnection(var continuations) = state else {
+                            preconditionFailure("Can't have state set to none, while acquiring connection")
+                        }
+                        if let firstContinuation = continuations.popLast() {
+                            state = .acquiringConnection(continuations)
+                            firstContinuation.resume(returning: .acquireConnection)
+                        } else {
+                            state = .noConnection
+                        }
+                    }
+                    throw CancellationError()
                 } catch {
                     return try self.state.withLock { state in
                         guard case .acquiringConnection(let continuations) = state else {
