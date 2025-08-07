@@ -15,6 +15,7 @@
 import Logging
 import NIOCore
 import NIOEmbedded
+import Synchronization
 import Testing
 
 @testable import Valkey
@@ -729,9 +730,16 @@ struct SubscriptionTests {
                 try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
                 // push message
                 try await channel.writeInbound(RESPToken(.push([.bulkString("message"), .bulkString("test"), .bulkString("Testing!")])).base)
+
             }
             try await group.next()
             group.cancelAll()
+
+            // respond to unsubscribe after cancellation
+            let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
+            // push unsubcribe
+            try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(1)])).base)
         }
         #expect(await connection.isSubscriptionsEmpty())
     }

@@ -41,6 +41,9 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
+    /// subscription state
+    @usableFromInline
+    let subscriptionConnection: AsyncInitializedReferencedObject<ValkeyConnection>
 
     /// Creates a new Valkey client
     ///
@@ -84,6 +87,7 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        self.subscriptionConnection = .init()
     }
 }
 

@@ -13,9 +13,24 @@
 //===----------------------------------------------------------------------===//
 
 import NIOCore
+import Synchronization
 
 @available(valkeySwift 1.0, *)
-extension ValkeyConnection {
+extension ValkeyClient {
+    @inlinable
+    func withSubscriptionConnection<Value>(
+        isolation: isolated (any Actor)? = #isolation,
+        operation: (ValkeyConnection) async throws -> sending Value
+    ) async throws -> sending Value {
+        try await self.subscriptionConnection.withValue {
+            try await operation($0)
+        } acquire: {
+            try await self.node.leaseConnection()
+        } release: {
+            self.node.releaseConnection($0)
+        }
+    }
+
     /// Subscribe to list of channels and run closure with subscription
     ///
     /// When the closure is exited the channels are automatically unsubscribed from. It is
@@ -33,7 +48,7 @@ extension ValkeyConnection {
         to channels: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
+    ) async throws -> Value {
         try await self.subscribe(to: channels, process: process)
     }
 
@@ -54,11 +69,10 @@ extension ValkeyConnection {
         to channels: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
+    ) async throws -> Value {
         try await self.subscribe(
             command: SUBSCRIBE(channels: channels),
             filters: channels.map { .channel($0) },
-            isolation: isolation,
             process: process
         )
     }
@@ -80,7 +94,7 @@ extension ValkeyConnection {
         to patterns: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
+    ) async throws -> Value {
         try await self.psubscribe(to: patterns, process: process)
     }
 
@@ -101,58 +115,10 @@ extension ValkeyConnection {
         to patterns: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
+    ) async throws -> Value {
         try await self.subscribe(
             command: PSUBSCRIBE(patterns: patterns),
             filters: patterns.map { .pattern($0) },
-            isolation: isolation,
-            process: process
-        )
-    }
-
-    /// Subscribe to list of shard channels and run closure with subscription
-    ///
-    /// When the closure is exited the shard channels are automatically unsubscribed from. It is
-    /// possible to have multiple subscriptions running on the same connection and unsubscribe
-    /// commands will only be sent to Valkey when there are no subscriptions active for that
-    /// pattern
-    ///
-    /// - Parameters:
-    ///   - shardchannels: list of shard channels to subscribe to
-    ///   - isolation: Actor isolation
-    ///   - process: Closure that is called with subscription async sequence
-    /// - Returns: Return value of closure
-    @inlinable
-    public func ssubscribe<Value>(
-        to shardchannels: String...,
-        isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
-        try await self.ssubscribe(to: shardchannels, process: process)
-    }
-
-    /// Subscribe to list of shard channels and run closure with subscription
-    ///
-    /// When the closure is exited the shard channels are automatically unsubscribed from. It is
-    /// possible to have multiple subscriptions running on the same connection and unsubscribe
-    /// commands will only be sent to Valkey when there are no subscriptions active for that
-    /// pattern
-    ///
-    /// - Parameters:
-    ///   - shardchannels: list of shard channels to subscribe to
-    ///   - isolation: Actor isolation
-    ///   - process: Closure that is called with subscription async sequence
-    /// - Returns: Return value of closure
-    @inlinable
-    public func ssubscribe<Value>(
-        to shardchannels: [String],
-        isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
-        try await self.subscribe(
-            command: SSUBSCRIBE(shardchannels: shardchannels),
-            filters: shardchannels.map { .shardChannel($0) },
-            isolation: isolation,
             process: process
         )
     }
@@ -174,8 +140,8 @@ extension ValkeyConnection {
     public func subscribeKeyInvalidations<Value>(
         isolation: isolated (any Actor)? = #isolation,
         process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> sending Value
-    ) async throws -> sending Value {
-        try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel], isolation: isolation) { subscription in
+    ) async throws -> Value {
+        try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
             let keys = subscription.map { ValkeyKey($0.message) }
             return try await process(keys)
         }
@@ -187,66 +153,41 @@ extension ValkeyConnection {
         filters: [ValkeySubscriptionFilter],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
-        let (id, stream) = try await subscribe(command: command, filters: filters)
-        let value: Value
-        do {
-            value = try await process(stream)
-            try Task.checkCancellation()
-        } catch {
-            // call unsubscrobe to avoid it being cancelled
-            _ = await Task {
-                try await unsubscribe(id: id)
-            }.result
-            throw error
+    ) async throws -> Value {
+        try await withThrowingTaskGroup(of: Void.self, isolation: isolation) { group in
+            let (stream, cont) = ValkeySubscription.makeStream()
+            group.addTask {
+                while true {
+                    do {
+                        try Task.checkCancellation()
+                        return try await self.withSubscriptionConnection { connection in
+                            try await connection.subscribe(command: command, filters: filters) { subscription in
+                                // push messages on connection subscription to client subscription
+                                for try await message in subscription {
+                                    cont.yield(message)
+                                }
+                            }
+                            cont.finish()
+                        }
+                    } catch let error as ValkeyClientError {
+                        // if connection closes for some reason don't exit loop so it opens a new connection
+                        switch error.errorCode {
+                        case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
+                            self.subscriptionConnection.reset()
+                            break
+                        default:
+                            cont.finish(throwing: error)
+                            return
+                        }
+                    } catch {
+                        cont.finish(throwing: error)
+                        return
+                    }
+                }
+            }
+            let value = try await process(stream)
+            group.cancelAll()
+            return value
         }
-        _ = try await unsubscribe(id: id)
-        return value
-    }
-
-    @usableFromInline
-    func subscribe(
-        command: some ValkeyCommand,
-        filters: [ValkeySubscriptionFilter]
-    ) async throws -> (Int, ValkeySubscription) {
-        let requestID = Self.requestIDGenerator.next()
-        let (stream, streamContinuation) = ValkeySubscription.makeStream()
-        return try await withTaskCancellationHandler {
-            if Task.isCancelled {
-                throw ValkeyClientError(.cancelled)
-            }
-            let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
-                self.channelHandler.subscribe(
-                    command: command,
-                    streamContinuation: streamContinuation,
-                    filters: filters,
-                    promise: .swift(continuation),
-                    requestID: requestID
-                )
-            }
-            return (subscriptionID, stream)
-        } onCancel: {
-            self.cancel(requestID: requestID)
-        }
-    }
-
-    @usableFromInline
-    func unsubscribe(id: Int) async throws {
-        let requestID = Self.requestIDGenerator.next()
-        try await withTaskCancellationHandler {
-            if Task.isCancelled {
-                throw ValkeyClientError(.cancelled)
-            }
-            try await withCheckedThrowingContinuation { continuation in
-                self.channelHandler.unsubscribe(id: id, promise: .swift(continuation), requestID: requestID)
-            }
-        } onCancel: {
-            self.cancel(requestID: requestID)
-        }
-    }
-
-    /// DEBUG function to check if the internal subscription state machine is empty
-    package func isSubscriptionsEmpty() -> Bool {
-        self.channelHandler.subscriptions.isEmpty
     }
 }
