@@ -29,7 +29,7 @@ struct ValkeyRunningClients<
     let poolFactory: ConnectionPoolFactory
     @usableFromInline
     var clientMap: [ValkeyNodeID: NodeBundle]
-
+    @inlinable
     var clients: some Collection<NodeBundle> { clientMap.values }
 
     init(poolFactory: ConnectionPoolFactory) {
