@@ -30,6 +30,8 @@ public enum PUBSUB {
     public struct CHANNELS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "PUBSUB CHANNELS" }
+
         public var pattern: String?
 
         @inlinable public init(pattern: String? = nil) {
@@ -46,6 +48,8 @@ public enum PUBSUB {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "PUBSUB HELP" }
+
         @inlinable public init() {
         }
 
@@ -59,6 +63,8 @@ public enum PUBSUB {
     public struct NUMPAT: ValkeyCommand {
         public typealias Response = Int
 
+        @inlinable public static var name: String { "PUBSUB NUMPAT" }
+
         @inlinable public init() {
         }
 
@@ -71,6 +77,8 @@ public enum PUBSUB {
     @_documentation(visibility: internal)
     public struct NUMSUB: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "PUBSUB NUMSUB" }
 
         public var channels: [String]
 
@@ -88,6 +96,8 @@ public enum PUBSUB {
     public struct SHARDCHANNELS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "PUBSUB SHARDCHANNELS" }
+
         public var pattern: String?
 
         @inlinable public init(pattern: String? = nil) {
@@ -103,6 +113,8 @@ public enum PUBSUB {
     @_documentation(visibility: internal)
     public struct SHARDNUMSUB: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "PUBSUB SHARDNUMSUB" }
 
         public var shardchannels: [String]
 
@@ -120,6 +132,8 @@ public enum PUBSUB {
 /// Listens for messages published to channels that match one or more patterns.
 @_documentation(visibility: internal)
 public struct PSUBSCRIBE: ValkeyCommand {
+    @inlinable public static var name: String { "PSUBSCRIBE" }
+
     public var patterns: [String]
 
     @inlinable public init(patterns: [String]) {
@@ -135,6 +149,8 @@ public struct PSUBSCRIBE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "PUBLISH" }
 
     public var channel: Channel
     public var message: Message
@@ -152,6 +168,8 @@ public struct PUBLISH<Channel: RESPStringRenderable, Message: RESPStringRenderab
 /// Stops listening to messages published to channels that match one or more patterns.
 @_documentation(visibility: internal)
 public struct PUNSUBSCRIBE: ValkeyCommand {
+    @inlinable public static var name: String { "PUNSUBSCRIBE" }
+
     public var patterns: [String]
 
     @inlinable public init(patterns: [String] = []) {
@@ -167,6 +185,8 @@ public struct PUNSUBSCRIBE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "SPUBLISH" }
 
     public var shardchannel: Shardchannel
     public var message: Message
@@ -184,6 +204,8 @@ public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRe
 /// Listens for messages published to shard channels.
 @_documentation(visibility: internal)
 public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "SSUBSCRIBE" }
+
     public var shardchannels: [Shardchannel]
 
     @inlinable public init(shardchannels: [Shardchannel]) {
@@ -198,6 +220,8 @@ public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
 /// Listens for messages published to channels.
 @_documentation(visibility: internal)
 public struct SUBSCRIBE<Channel: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "SUBSCRIBE" }
+
     public var channels: [Channel]
 
     @inlinable public init(channels: [Channel]) {
@@ -212,6 +236,8 @@ public struct SUBSCRIBE<Channel: RESPStringRenderable>: ValkeyCommand {
 /// Stops listening to messages posted to shard channels.
 @_documentation(visibility: internal)
 public struct SUNSUBSCRIBE: ValkeyCommand {
+    @inlinable public static var name: String { "SUNSUBSCRIBE" }
+
     public var shardchannels: [String]
 
     @inlinable public init(shardchannels: [String] = []) {
@@ -226,6 +252,8 @@ public struct SUNSUBSCRIBE: ValkeyCommand {
 /// Stops listening to messages posted to channels.
 @_documentation(visibility: internal)
 public struct UNSUBSCRIBE: ValkeyCommand {
+    @inlinable public static var name: String { "UNSUBSCRIBE" }
+
     public var channels: [String]
 
     @inlinable public init(channels: [String] = []) {

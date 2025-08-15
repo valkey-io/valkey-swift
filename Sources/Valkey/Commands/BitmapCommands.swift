@@ -82,6 +82,8 @@ public struct BITCOUNT: ValkeyCommand {
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "BITCOUNT" }
+
     public var key: ValkeyKey
     public var range: Range?
 
@@ -247,6 +249,8 @@ public struct BITFIELD: ValkeyCommand {
     }
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "BITFIELD" }
+
     public var key: ValkeyKey
     public var operations: [Operation]
 
@@ -286,6 +290,8 @@ public struct BITFIELDRO: ValkeyCommand {
         }
     }
     public typealias Response = [Int]
+
+    @inlinable public static var name: String { "BITFIELD_RO" }
 
     public var key: ValkeyKey
     public var getBlocks: [GetBlock]
@@ -327,6 +333,8 @@ public struct BITOP: ValkeyCommand {
         }
     }
     public typealias Response = Int
+
+    @inlinable public static var name: String { "BITOP" }
 
     public var operation: Operation
     public var destkey: ValkeyKey
@@ -405,6 +413,8 @@ public struct BITPOS: ValkeyCommand {
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "BITPOS" }
+
     public var key: ValkeyKey
     public var bit: Int
     public var range: Range?
@@ -429,6 +439,8 @@ public struct BITPOS: ValkeyCommand {
 public struct GETBIT: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "GETBIT" }
+
     public var key: ValkeyKey
     public var offset: Int
 
@@ -450,6 +462,8 @@ public struct GETBIT: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SETBIT: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "SETBIT" }
 
     public var key: ValkeyKey
     public var offset: Int
