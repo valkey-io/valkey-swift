@@ -29,8 +29,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.23.0"),
         .package(url: "https://github.com/swift-server/swift-service-lifecycle.git", from: "2.8.0"),
-
-        //.package(url: "https://github.com/swiftlang/swift-docc-plugin.git", from: "1.4.5"),
     ],
     targets: [
         .target(
