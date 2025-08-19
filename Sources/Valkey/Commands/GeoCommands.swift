@@ -677,7 +677,7 @@ public struct GEORADIUSRO: ValkeyCommand {
     }
 }
 
-/// Queries a geospatial index for members inside an area of a box or a circle.
+/// Queries a geospatial index for members inside an area of a box, circle, or a polygon.
 @_documentation(visibility: internal)
 public struct GEOSEARCH: ValkeyCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
@@ -801,15 +801,57 @@ public struct GEOSEARCH: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
+    public struct ByPolygonVertices: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let longitude: Double
+        @usableFromInline let latitude: Double
+
+        @inlinable public init(longitude: Double, latitude: Double) {
+            self.longitude = longitude
+            self.latitude = latitude
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            longitude.respEntries + latitude.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            longitude.encode(into: &commandEncoder)
+            latitude.encode(into: &commandEncoder)
+        }
+    }
+    public struct ByPolygon: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numVertices: Int
+        @usableFromInline let vertices: [ByPolygonVertices]
+
+        @inlinable public init(numVertices: Int, vertices: [ByPolygonVertices]) {
+            self.numVertices = numVertices
+            self.vertices = vertices
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPWithToken("BYPOLYGON", numVertices).respEntries + vertices.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPWithToken("BYPOLYGON", numVertices).encode(into: &commandEncoder)
+            vertices.encode(into: &commandEncoder)
+        }
+    }
     public enum By: RESPRenderable, Sendable, Hashable {
         case circle(ByCircle)
         case box(ByBox)
+        case polygon(ByPolygon)
 
         @inlinable
         public var respEntries: Int {
             switch self {
             case .circle(let circle): circle.respEntries
             case .box(let box): box.respEntries
+            case .polygon(let polygon): polygon.respEntries
             }
         }
 
@@ -818,6 +860,7 @@ public struct GEOSEARCH: ValkeyCommand {
             switch self {
             case .circle(let circle): circle.encode(into: &commandEncoder)
             case .box(let box): box.encode(into: &commandEncoder)
+            case .polygon(let polygon): polygon.encode(into: &commandEncoder)
             }
         }
     }
@@ -859,7 +902,7 @@ public struct GEOSEARCH: ValkeyCommand {
     @inlinable public static var name: String { "GEOSEARCH" }
 
     public var key: ValkeyKey
-    public var from: From
+    public var from: From?
     public var by: By
     public var order: Order?
     public var countBlock: CountBlock?
@@ -869,7 +912,7 @@ public struct GEOSEARCH: ValkeyCommand {
 
     @inlinable public init(
         _ key: ValkeyKey,
-        from: From,
+        from: From? = nil,
         by: By,
         order: Order? = nil,
         countBlock: CountBlock? = nil,
@@ -906,7 +949,7 @@ public struct GEOSEARCH: ValkeyCommand {
     }
 }
 
-/// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
+/// Queries a geospatial index for members inside an area of a box, a circle, or a polygon, optionally stores the result.
 @_documentation(visibility: internal)
 public struct GEOSEARCHSTORE: ValkeyCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
@@ -1030,15 +1073,57 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
+    public struct ByPolygonVertices: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let longitude: Double
+        @usableFromInline let latitude: Double
+
+        @inlinable public init(longitude: Double, latitude: Double) {
+            self.longitude = longitude
+            self.latitude = latitude
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            longitude.respEntries + latitude.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            longitude.encode(into: &commandEncoder)
+            latitude.encode(into: &commandEncoder)
+        }
+    }
+    public struct ByPolygon: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numVertices: Int
+        @usableFromInline let vertices: [ByPolygonVertices]
+
+        @inlinable public init(numVertices: Int, vertices: [ByPolygonVertices]) {
+            self.numVertices = numVertices
+            self.vertices = vertices
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPWithToken("BYPOLYGON", numVertices).respEntries + vertices.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPWithToken("BYPOLYGON", numVertices).encode(into: &commandEncoder)
+            vertices.encode(into: &commandEncoder)
+        }
+    }
     public enum By: RESPRenderable, Sendable, Hashable {
         case circle(ByCircle)
         case box(ByBox)
+        case polygon(ByPolygon)
 
         @inlinable
         public var respEntries: Int {
             switch self {
             case .circle(let circle): circle.respEntries
             case .box(let box): box.respEntries
+            case .polygon(let polygon): polygon.respEntries
             }
         }
 
@@ -1047,6 +1132,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             switch self {
             case .circle(let circle): circle.encode(into: &commandEncoder)
             case .box(let box): box.encode(into: &commandEncoder)
+            case .polygon(let polygon): polygon.encode(into: &commandEncoder)
             }
         }
     }
@@ -1091,7 +1177,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
 
     public var destination: ValkeyKey
     public var source: ValkeyKey
-    public var from: From
+    public var from: From?
     public var by: By
     public var order: Order?
     public var countBlock: CountBlock?
@@ -1100,7 +1186,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
     @inlinable public init(
         destination: ValkeyKey,
         source: ValkeyKey,
-        from: From,
+        from: From? = nil,
         by: By,
         order: Order? = nil,
         countBlock: CountBlock? = nil,
@@ -1340,18 +1426,19 @@ extension ValkeyClientProtocol {
         )
     }
 
-    /// Queries a geospatial index for members inside an area of a box or a circle.
+    /// Queries a geospatial index for members inside an area of a box, circle, or a polygon.
     ///
     /// - Documentation: [GEOSEARCH](https://valkey.io/commands/geosearch)
     /// - Available: 6.2.0
     /// - History:
     ///     * 7.0.0: Added support for uppercase unit names.
+    ///     * 9.0.0: Added support for the BYPOLYGON option.
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Response: Array of matched members information.
     @inlinable
     public func geosearch(
         _ key: ValkeyKey,
-        from: GEOSEARCH.From,
+        from: GEOSEARCH.From? = nil,
         by: GEOSEARCH.By,
         order: GEOSEARCH.Order? = nil,
         countBlock: GEOSEARCH.CountBlock? = nil,
@@ -1364,12 +1451,13 @@ extension ValkeyClientProtocol {
         )
     }
 
-    /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
+    /// Queries a geospatial index for members inside an area of a box, a circle, or a polygon, optionally stores the result.
     ///
     /// - Documentation: [GEOSEARCHSTORE](https://valkey.io/commands/geosearchstore)
     /// - Available: 6.2.0
     /// - History:
     ///     * 7.0.0: Added support for uppercase unit names.
+    ///     * 9.0.0: Added support for the BYPOLYGON option.
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Response: [Integer]: The number of elements in the resulting set.
     @inlinable
@@ -1377,7 +1465,7 @@ extension ValkeyClientProtocol {
     public func geosearchstore(
         destination: ValkeyKey,
         source: ValkeyKey,
-        from: GEOSEARCHSTORE.From,
+        from: GEOSEARCHSTORE.From? = nil,
         by: GEOSEARCHSTORE.By,
         order: GEOSEARCHSTORE.Order? = nil,
         countBlock: GEOSEARCHSTORE.CountBlock? = nil,

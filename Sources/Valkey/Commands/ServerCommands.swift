@@ -420,25 +420,19 @@ public enum COMMANDLOG {
     @_documentation(visibility: internal)
     public struct GET: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
-            case slow(String)
-            case largeRequest(String)
-            case largeReply(String)
+            case slow
+            case largeRequest
+            case largeReply
 
             @inlinable
-            public var respEntries: Int {
-                switch self {
-                case .slow(let slow): slow.respEntries
-                case .largeRequest(let largeRequest): largeRequest.respEntries
-                case .largeReply(let largeReply): largeReply.respEntries
-                }
-            }
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .slow(let slow): slow.encode(into: &commandEncoder)
-                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
-                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                case .slow: "slow".encode(into: &commandEncoder)
+                case .largeRequest: "large-request".encode(into: &commandEncoder)
+                case .largeReply: "large-reply".encode(into: &commandEncoder)
                 }
             }
         }
@@ -478,25 +472,19 @@ public enum COMMANDLOG {
     @_documentation(visibility: internal)
     public struct LEN: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
-            case slow(String)
-            case largeRequest(String)
-            case largeReply(String)
+            case slow
+            case largeRequest
+            case largeReply
 
             @inlinable
-            public var respEntries: Int {
-                switch self {
-                case .slow(let slow): slow.respEntries
-                case .largeRequest(let largeRequest): largeRequest.respEntries
-                case .largeReply(let largeReply): largeReply.respEntries
-                }
-            }
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .slow(let slow): slow.encode(into: &commandEncoder)
-                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
-                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                case .slow: "slow".encode(into: &commandEncoder)
+                case .largeRequest: "large-request".encode(into: &commandEncoder)
+                case .largeReply: "large-reply".encode(into: &commandEncoder)
                 }
             }
         }
@@ -519,25 +507,19 @@ public enum COMMANDLOG {
     @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
-            case slow(String)
-            case largeRequest(String)
-            case largeReply(String)
+            case slow
+            case largeRequest
+            case largeReply
 
             @inlinable
-            public var respEntries: Int {
-                switch self {
-                case .slow(let slow): slow.respEntries
-                case .largeRequest(let largeRequest): largeRequest.respEntries
-                case .largeReply(let largeReply): largeReply.respEntries
-                }
-            }
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .slow(let slow): slow.encode(into: &commandEncoder)
-                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
-                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                case .slow: "slow".encode(into: &commandEncoder)
+                case .largeRequest: "large-request".encode(into: &commandEncoder)
+                case .largeReply: "large-reply".encode(into: &commandEncoder)
                 }
             }
         }
@@ -1444,16 +1426,27 @@ public struct SHUTDOWN: ValkeyCommand {
         @usableFromInline let saveSelector: AbortSelectorSaveSelectorBlockSaveSelector?
         @usableFromInline let now: Bool
         @usableFromInline let force: Bool
+        @usableFromInline let safe: Bool
+        @usableFromInline let failover: Bool
 
-        @inlinable public init(saveSelector: AbortSelectorSaveSelectorBlockSaveSelector? = nil, now: Bool = false, force: Bool = false) {
+        @inlinable public init(
+            saveSelector: AbortSelectorSaveSelectorBlockSaveSelector? = nil,
+            now: Bool = false,
+            force: Bool = false,
+            safe: Bool = false,
+            failover: Bool = false
+        ) {
             self.saveSelector = saveSelector
             self.now = now
             self.force = force
+            self.safe = safe
+            self.failover = failover
         }
 
         @inlinable
         public var respEntries: Int {
             saveSelector.respEntries + RESPPureToken("NOW", now).respEntries + RESPPureToken("FORCE", force).respEntries
+                + RESPPureToken("SAFE", safe).respEntries + RESPPureToken("FAILOVER", failover).respEntries
         }
 
         @inlinable
@@ -1461,6 +1454,8 @@ public struct SHUTDOWN: ValkeyCommand {
             saveSelector.encode(into: &commandEncoder)
             RESPPureToken("NOW", now).encode(into: &commandEncoder)
             RESPPureToken("FORCE", force).encode(into: &commandEncoder)
+            RESPPureToken("SAFE", safe).encode(into: &commandEncoder)
+            RESPPureToken("FAILOVER", failover).encode(into: &commandEncoder)
         }
     }
     public enum AbortSelector: RESPRenderable, Sendable, Hashable {
@@ -2366,6 +2361,7 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.0
     /// - History:
     ///     * 7.0.0: Added the `NOW`, `FORCE` and `ABORT` modifiers.
+    ///     * 9.0.0: Added the `SAFE` and `FAILOVER` modifiers.
     /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
     /// - Response: "OK": OK if ABORT was specified and shutdown was aborted. On successful shutdown, nothing is returned since the server quits and the connection is closed. On failure, an error is returned.
     @inlinable

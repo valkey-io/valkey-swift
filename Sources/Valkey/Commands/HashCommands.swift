@@ -68,6 +68,180 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
+/// Set expiry time on hash fields.
+@_documentation(visibility: internal)
+public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
+        case gt
+        case lt
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HEXPIRE" }
+
+    public var key: ValkeyKey
+    public var seconds: Int
+    public var condition: Condition?
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, seconds: Int, condition: Condition? = nil, fields: Fields) {
+        self.key = key
+        self.seconds = seconds
+        self.condition = condition
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HEXPIRE", key, seconds, condition, RESPWithToken("FIELDS", fields))
+    }
+}
+
+/// Set expiry time on hash fields.
+@_documentation(visibility: internal)
+public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
+        case gt
+        case lt
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HEXPIREAT" }
+
+    public var key: ValkeyKey
+    public var unixTimeSeconds: Int
+    public var condition: Condition?
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, unixTimeSeconds: Int, condition: Condition? = nil, fields: Fields) {
+        self.key = key
+        self.unixTimeSeconds = unixTimeSeconds
+        self.condition = condition
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HEXPIREAT", key, unixTimeSeconds, condition, RESPWithToken("FIELDS", fields))
+    }
+}
+
+/// Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire
+@_documentation(visibility: internal)
+public struct HEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HEXPIRETIME" }
+
+    public var key: ValkeyKey
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+        self.key = key
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HEXPIRETIME", key, RESPWithToken("FIELDS", fields))
+    }
+}
+
 /// Returns the value of a field in a hash.
 @_documentation(visibility: internal)
 public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
@@ -111,6 +285,82 @@ public struct HGETALL: ValkeyCommand {
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HGETALL", key)
+    }
+}
+
+/// Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).
+@_documentation(visibility: internal)
+public struct HGETEX<Field: RESPStringRenderable>: ValkeyCommand {
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
+        case seconds(Int)
+        case milliseconds(Int)
+        case unixTimeSeconds(Date)
+        case unixTimeMilliseconds(Date)
+        case persist
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .persist: "PERSIST".respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds):
+                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .persist: "PERSIST".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HGETEX" }
+
+    public var key: ValkeyKey
+    public var expiration: Expiration?
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, expiration: Expiration? = nil, fields: Fields) {
+        self.key = key
+        self.expiration = expiration
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HGETEX", key, expiration, RESPWithToken("FIELDS", fields))
     }
 }
 
@@ -270,6 +520,266 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
     }
 }
 
+/// Remove the existing expiration on a hash key's field(s).
+@_documentation(visibility: internal)
+public struct HPERSIST<Field: RESPStringRenderable>: ValkeyCommand {
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HPERSIST" }
+
+    public var key: ValkeyKey
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+        self.key = key
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HPERSIST", key, RESPWithToken("FIELDS", fields))
+    }
+}
+
+/// Set expiry time on hash object.
+@_documentation(visibility: internal)
+public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
+        case gt
+        case lt
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HPEXPIRE" }
+
+    public var key: ValkeyKey
+    public var milliseconds: Int
+    public var condition: Condition?
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, milliseconds: Int, condition: Condition? = nil, fields: Fields) {
+        self.key = key
+        self.milliseconds = milliseconds
+        self.condition = condition
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HPEXPIRE", key, milliseconds, condition, RESPWithToken("FIELDS", fields))
+    }
+}
+
+/// Set expiration time on hash field.
+@_documentation(visibility: internal)
+public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
+    public enum Condition: RESPRenderable, Sendable, Hashable {
+        case nx
+        case xx
+        case gt
+        case lt
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .nx: "NX".encode(into: &commandEncoder)
+            case .xx: "XX".encode(into: &commandEncoder)
+            case .gt: "GT".encode(into: &commandEncoder)
+            case .lt: "LT".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HPEXPIREAT" }
+
+    public var key: ValkeyKey
+    public var unixTimeMilliseconds: Int
+    public var condition: Condition?
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, unixTimeMilliseconds: Int, condition: Condition? = nil, fields: Fields) {
+        self.key = key
+        self.unixTimeMilliseconds = unixTimeMilliseconds
+        self.condition = condition
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HPEXPIREAT", key, unixTimeMilliseconds, condition, RESPWithToken("FIELDS", fields))
+    }
+}
+
+/// Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire
+@_documentation(visibility: internal)
+public struct HPEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HPEXPIRETIME" }
+
+    public var key: ValkeyKey
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+        self.key = key
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HPEXPIRETIME", key, RESPWithToken("FIELDS", fields))
+    }
+}
+
+/// Returns the remaining time to live in milliseconds of a hash key's field(s) that have an associated expiration.
+@_documentation(visibility: internal)
+public struct HPTTL<Field: RESPStringRenderable>: ValkeyCommand {
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HPTTL" }
+
+    public var key: ValkeyKey
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+        self.key = key
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HPTTL", key, RESPWithToken("FIELDS", fields))
+    }
+}
+
 /// Returns one or more random fields from a hash.
 @_documentation(visibility: internal)
 public struct HRANDFIELD: ValkeyCommand {
@@ -393,6 +903,119 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     }
 }
 
+/// Set the value of one or more fields of a given hash key, and optionally set their expiration time.
+@_documentation(visibility: internal)
+public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
+    public enum FieldsCondition: RESPRenderable, Sendable, Hashable {
+        case fnx
+        case fxx
+
+        @inlinable
+        public var respEntries: Int { 1 }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .fnx: "FNX".encode(into: &commandEncoder)
+            case .fxx: "FXX".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public enum Expiration: RESPRenderable, Sendable, Hashable {
+        case seconds(Int)
+        case milliseconds(Int)
+        case unixTimeSeconds(Date)
+        case unixTimeMilliseconds(Date)
+        case keepttl
+
+        @inlinable
+        public var respEntries: Int {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("EX", seconds).respEntries
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).respEntries
+            case .unixTimeSeconds(let unixTimeSeconds): RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).respEntries
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).respEntries
+            case .keepttl: "KEEPTTL".respEntries
+            }
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            switch self {
+            case .seconds(let seconds): RESPWithToken("EX", seconds).encode(into: &commandEncoder)
+            case .milliseconds(let milliseconds): RESPWithToken("PX", milliseconds).encode(into: &commandEncoder)
+            case .unixTimeSeconds(let unixTimeSeconds):
+                RESPWithToken("EXAT", Int(unixTimeSeconds.timeIntervalSince1970)).encode(into: &commandEncoder)
+            case .unixTimeMilliseconds(let unixTimeMilliseconds):
+                RESPWithToken("PXAT", Int(unixTimeMilliseconds.timeIntervalSince1970 * 1000)).encode(into: &commandEncoder)
+            case .keepttl: "KEEPTTL".encode(into: &commandEncoder)
+            }
+        }
+    }
+    public struct FieldsData: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let field: Field
+        @usableFromInline let value: Value
+
+        @inlinable public init(field: Field, value: Value) {
+            self.field = field
+            self.value = value
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPBulkString(field).respEntries + RESPBulkString(value).respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPBulkString(field).encode(into: &commandEncoder)
+            RESPBulkString(value).encode(into: &commandEncoder)
+        }
+    }
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let data: [FieldsData]
+
+        @inlinable public init(numfields: Int, data: [FieldsData]) {
+            self.numfields = numfields
+            self.data = data
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + data.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            data.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = Int
+
+    @inlinable public static var name: String { "HSETEX" }
+
+    public var key: ValkeyKey
+    public var fieldsCondition: FieldsCondition?
+    public var expiration: Expiration?
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, fieldsCondition: FieldsCondition? = nil, expiration: Expiration? = nil, fields: Fields) {
+        self.key = key
+        self.fieldsCondition = fieldsCondition
+        self.expiration = expiration
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HSETEX", key, fieldsCondition, expiration, RESPWithToken("FIELDS", fields))
+    }
+}
+
 /// Sets the value of a field in a hash only when the field doesn't exist.
 @_documentation(visibility: internal)
 public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
@@ -438,6 +1061,50 @@ public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray("HSTRLEN", key, RESPBulkString(field))
+    }
+}
+
+/// Returns the remaining time to live (in seconds) of a hash key's field(s) that have an associated expiration.
+@_documentation(visibility: internal)
+public struct HTTL<Field: RESPStringRenderable>: ValkeyCommand {
+    public struct Fields: RESPRenderable, Sendable, Hashable {
+        @usableFromInline let numfields: Int
+        @usableFromInline let fields: [Field]
+
+        @inlinable public init(numfields: Int, fields: [Field]) {
+            self.numfields = numfields
+            self.fields = fields
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            numfields.respEntries + fields.map { RESPBulkString($0) }.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            numfields.encode(into: &commandEncoder)
+            fields.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+        }
+    }
+    public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HTTL" }
+
+    public var key: ValkeyKey
+    public var fields: Fields
+
+    @inlinable public init(_ key: ValkeyKey, fields: Fields) {
+        self.key = key
+        self.fields = fields
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    public var isReadOnly: Bool { true }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("HTTL", key, RESPWithToken("FIELDS", fields))
     }
 }
 
@@ -491,6 +1158,51 @@ extension ValkeyClientProtocol {
         try await execute(HEXISTS(key, field: field))
     }
 
+    /// Set expiry time on hash fields.
+    ///
+    /// - Documentation: [HEXPIRE](https://valkey.io/commands/hexpire)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the number of specified fields.
+    /// - Response: [Array]: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
+    @inlinable
+    @discardableResult
+    public func hexpire<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        seconds: Int,
+        condition: HEXPIRE<Field>.Condition? = nil,
+        fields: HEXPIRE<Field>.Fields
+    ) async throws -> RESPToken.Array {
+        try await execute(HEXPIRE(key, seconds: seconds, condition: condition, fields: fields))
+    }
+
+    /// Set expiry time on hash fields.
+    ///
+    /// - Documentation: [HEXPIREAT](https://valkey.io/commands/hexpireat)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the number of specified fields.
+    /// - Response: [Array]: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
+    @inlinable
+    @discardableResult
+    public func hexpireat<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        unixTimeSeconds: Int,
+        condition: HEXPIREAT<Field>.Condition? = nil,
+        fields: HEXPIREAT<Field>.Fields
+    ) async throws -> RESPToken.Array {
+        try await execute(HEXPIREAT(key, unixTimeSeconds: unixTimeSeconds, condition: condition, fields: fields))
+    }
+
+    /// Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire
+    ///
+    /// - Documentation: [HEXPIRETIME](https://valkey.io/commands/hexpiretime)
+    /// - Available: 9.0.0
+    /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
+    /// - Response: [Array]: List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.
+    @inlinable
+    public func hexpiretime<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HEXPIRETIME<Field>.Fields) async throws -> RESPToken.Array {
+        try await execute(HEXPIRETIME(key, fields: fields))
+    }
+
     /// Returns the value of a field in a hash.
     ///
     /// - Documentation: [HGET](https://valkey.io/commands/hget)
@@ -513,6 +1225,22 @@ extension ValkeyClientProtocol {
     @inlinable
     public func hgetall(_ key: ValkeyKey) async throws -> RESPToken.Map {
         try await execute(HGETALL(key))
+    }
+
+    /// Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).
+    ///
+    /// - Documentation: [HGETEX](https://valkey.io/commands/hgetex)
+    /// - Available: 9.0.0
+    /// - Complexity: O(1)
+    /// - Response: [Array]: List of values associated with the given fields, in the same order as they are requested.
+    @inlinable
+    @discardableResult
+    public func hgetex<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        expiration: HGETEX<Field>.Expiration? = nil,
+        fields: HGETEX<Field>.Fields
+    ) async throws -> RESPToken.Array {
+        try await execute(HGETEX(key, expiration: expiration, fields: fields))
     }
 
     /// Increments the integer value of a field in a hash by a number. Uses 0 as initial value if the field doesn't exist.
@@ -583,6 +1311,74 @@ extension ValkeyClientProtocol {
         _ = try await execute(HMSET(key, data: data))
     }
 
+    /// Remove the existing expiration on a hash key's field(s).
+    ///
+    /// - Documentation: [HPERSIST](https://valkey.io/commands/hpersist)
+    /// - Available: 9.0.0
+    /// - Complexity: O(1) for each field assigned with TTL, so O(N) to persist N items when the command is called with multiple fields.
+    /// - Response: [Array]: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
+    @inlinable
+    @discardableResult
+    public func hpersist<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPERSIST<Field>.Fields) async throws -> RESPToken.Array {
+        try await execute(HPERSIST(key, fields: fields))
+    }
+
+    /// Set expiry time on hash object.
+    ///
+    /// - Documentation: [HPEXPIRE](https://valkey.io/commands/hpexpire)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the number of specified fields.
+    /// - Response: [Array]: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
+    @inlinable
+    @discardableResult
+    public func hpexpire<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        milliseconds: Int,
+        condition: HPEXPIRE<Field>.Condition? = nil,
+        fields: HPEXPIRE<Field>.Fields
+    ) async throws -> RESPToken.Array {
+        try await execute(HPEXPIRE(key, milliseconds: milliseconds, condition: condition, fields: fields))
+    }
+
+    /// Set expiration time on hash field.
+    ///
+    /// - Documentation: [HPEXPIREAT](https://valkey.io/commands/hpexpireat)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the number of specified fields.
+    /// - Response: [Array]: List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.
+    @inlinable
+    @discardableResult
+    public func hpexpireat<Field: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        unixTimeMilliseconds: Int,
+        condition: HPEXPIREAT<Field>.Condition? = nil,
+        fields: HPEXPIREAT<Field>.Fields
+    ) async throws -> RESPToken.Array {
+        try await execute(HPEXPIREAT(key, unixTimeMilliseconds: unixTimeMilliseconds, condition: condition, fields: fields))
+    }
+
+    /// Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire
+    ///
+    /// - Documentation: [HPEXPIRETIME](https://valkey.io/commands/hpexpiretime)
+    /// - Available: 9.0.0
+    /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
+    /// - Response: [Array]: List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.
+    @inlinable
+    public func hpexpiretime<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPEXPIRETIME<Field>.Fields) async throws -> RESPToken.Array {
+        try await execute(HPEXPIRETIME(key, fields: fields))
+    }
+
+    /// Returns the remaining time to live in milliseconds of a hash key's field(s) that have an associated expiration.
+    ///
+    /// - Documentation: [HPTTL](https://valkey.io/commands/hpttl)
+    /// - Available: 9.0.0
+    /// - Complexity: O(1) for each field assigned with TTL, so O(N) for N items when the command is called with multiple fields.
+    /// - Response: [Array]: List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.
+    @inlinable
+    public func hpttl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HPTTL<Field>.Fields) async throws -> RESPToken.Array {
+        try await execute(HPTTL(key, fields: fields))
+    }
+
     /// Returns one or more random fields from a hash.
     ///
     /// - Documentation: [HRANDFIELD](https://valkey.io/commands/hrandfield)
@@ -630,6 +1426,25 @@ extension ValkeyClientProtocol {
         try await execute(HSET(key, data: data))
     }
 
+    /// Set the value of one or more fields of a given hash key, and optionally set their expiration time.
+    ///
+    /// - Documentation: [HSETEX](https://valkey.io/commands/hsetex)
+    /// - Available: 9.0.0
+    /// - Complexity: O(1)
+    /// - Response: One of the following
+    ///     * 0: None of the provided fields value and or expiration time was set.
+    ///     * 1: All the fields value and or expiration time was set.
+    @inlinable
+    @discardableResult
+    public func hsetex<Field: RESPStringRenderable, Value: RESPStringRenderable>(
+        _ key: ValkeyKey,
+        fieldsCondition: HSETEX<Field, Value>.FieldsCondition? = nil,
+        expiration: HSETEX<Field, Value>.Expiration? = nil,
+        fields: HSETEX<Field, Value>.Fields
+    ) async throws -> Int {
+        try await execute(HSETEX(key, fieldsCondition: fieldsCondition, expiration: expiration, fields: fields))
+    }
+
     /// Sets the value of a field in a hash only when the field doesn't exist.
     ///
     /// - Documentation: [HSETNX](https://valkey.io/commands/hsetnx)
@@ -653,6 +1468,17 @@ extension ValkeyClientProtocol {
     @inlinable
     public func hstrlen<Field: RESPStringRenderable>(_ key: ValkeyKey, field: Field) async throws -> Int {
         try await execute(HSTRLEN(key, field: field))
+    }
+
+    /// Returns the remaining time to live (in seconds) of a hash key's field(s) that have an associated expiration.
+    ///
+    /// - Documentation: [HTTL](https://valkey.io/commands/httl)
+    /// - Available: 9.0.0
+    /// - Complexity: O(1) for each field, so O(N) for N items when the command is called with multiple fields.
+    /// - Response: [Array]: List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.
+    @inlinable
+    public func httl<Field: RESPStringRenderable>(_ key: ValkeyKey, fields: HTTL<Field>.Fields) async throws -> RESPToken.Array {
+        try await execute(HTTL(key, fields: fields))
     }
 
     /// Returns all values in a hash.

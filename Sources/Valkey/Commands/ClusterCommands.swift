@@ -92,6 +92,19 @@ public enum CLUSTER {
         }
     }
 
+    /// Cancel all current ongoing slot migration operations.
+    @_documentation(visibility: internal)
+    public struct CANCELSLOTMIGRATIONS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER CANCELSLOTMIGRATIONS" }
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "CANCELSLOTMIGRATIONS")
+        }
+    }
+
     /// Returns the number of active failure reports active for a node.
     @_documentation(visibility: internal)
     public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: ValkeyCommand {
@@ -211,6 +224,39 @@ public enum CLUSTER {
         }
     }
 
+    /// Remove all keys from the target slot.
+    @_documentation(visibility: internal)
+    public struct FLUSHSLOT: ValkeyCommand {
+        public enum FlushType: RESPRenderable, Sendable, Hashable {
+            case async
+            case sync
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .async: "ASYNC".encode(into: &commandEncoder)
+                case .sync: "SYNC".encode(into: &commandEncoder)
+                }
+            }
+        }
+        @inlinable public static var name: String { "CLUSTER FLUSHSLOT" }
+
+        public var slot: Int
+        public var flushType: FlushType?
+
+        @inlinable public init(slot: Int, flushType: FlushType? = nil) {
+            self.slot = slot
+            self.flushType = flushType
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "FLUSHSLOT", slot, flushType)
+        }
+    }
+
     /// Deletes all slots information from a node.
     @_documentation(visibility: internal)
     public struct FLUSHSLOTS: ValkeyCommand {
@@ -257,6 +303,21 @@ public enum CLUSTER {
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             commandEncoder.encodeArray("CLUSTER", "GETKEYSINSLOT", slot, count)
+        }
+    }
+
+    /// Get the status of ongoing and recently finished slot import and export operations.
+    @_documentation(visibility: internal)
+    public struct GETSLOTMIGRATIONS: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "CLUSTER GETSLOTMIGRATIONS" }
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "GETSLOTMIGRATIONS")
         }
     }
 
@@ -343,6 +404,64 @@ public enum CLUSTER {
         }
     }
 
+    /// Migrate the given slots from this node to the specified nodes.
+    @_documentation(visibility: internal)
+    public struct MIGRATESLOTS<NodeId: RESPStringRenderable>: ValkeyCommand {
+        public struct MigrationGroupRange: RESPRenderable, Sendable, Hashable {
+            @usableFromInline let startSlot: Int
+            @usableFromInline let endSlot: Int
+
+            @inlinable public init(startSlot: Int, endSlot: Int) {
+                self.startSlot = startSlot
+                self.endSlot = endSlot
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                startSlot.respEntries + endSlot.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                startSlot.encode(into: &commandEncoder)
+                endSlot.encode(into: &commandEncoder)
+            }
+        }
+        public struct MigrationGroup: RESPRenderable, Sendable, Hashable {
+            @usableFromInline let ranges: [MigrationGroupRange]
+            @usableFromInline let nodeId: NodeId
+
+            @inlinable public init(ranges: [MigrationGroupRange], nodeId: NodeId) {
+                self.ranges = ranges
+                self.nodeId = nodeId
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "SLOTSRANGE".respEntries + ranges.respEntries + "NODE".respEntries + RESPBulkString(nodeId).respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "SLOTSRANGE".encode(into: &commandEncoder)
+                ranges.encode(into: &commandEncoder)
+                "NODE".encode(into: &commandEncoder)
+                RESPBulkString(nodeId).encode(into: &commandEncoder)
+            }
+        }
+        @inlinable public static var name: String { "CLUSTER MIGRATESLOTS" }
+
+        public var migrationGroups: [MigrationGroup]
+
+        @inlinable public init(migrationGroups: [MigrationGroup]) {
+            self.migrationGroups = migrationGroups
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "MIGRATESLOTS", migrationGroups)
+        }
+    }
+
     /// Returns the ID of a node.
     @_documentation(visibility: internal)
     public struct MYID: ValkeyCommand {
@@ -406,19 +525,55 @@ public enum CLUSTER {
         }
     }
 
-    /// Configure a node as replica of a primary node.
+    /// Configure a node as replica of a primary node or detach a replica from its primary.
     @_documentation(visibility: internal)
-    public struct REPLICATE<NodeId: RESPStringRenderable>: ValkeyCommand {
+    public struct REPLICATE: ValkeyCommand {
+        public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
+
+            @inlinable public init() {
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "NO".respEntries + "ONE".respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "NO".encode(into: &commandEncoder)
+                "ONE".encode(into: &commandEncoder)
+            }
+        }
+        public enum Args: RESPRenderable, Sendable, Hashable {
+            case nodeId(String)
+            case noOne
+
+            @inlinable
+            public var respEntries: Int {
+                switch self {
+                case .nodeId(let nodeId): nodeId.respEntries
+                case .noOne: ArgsNoOne().respEntries
+                }
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .nodeId(let nodeId): nodeId.encode(into: &commandEncoder)
+                case .noOne: ArgsNoOne().encode(into: &commandEncoder)
+                }
+            }
+        }
         @inlinable public static var name: String { "CLUSTER REPLICATE" }
 
-        public var nodeId: NodeId
+        public var args: Args
 
-        @inlinable public init(nodeId: NodeId) {
-            self.nodeId = nodeId
+        @inlinable public init(args: Args) {
+            self.args = args
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICATE", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "REPLICATE", args)
         }
     }
 
@@ -756,6 +911,16 @@ extension ValkeyClientProtocol {
         try await execute(CLUSTER.BUMPEPOCH())
     }
 
+    /// Cancel all current ongoing slot migration operations.
+    ///
+    /// - Documentation: [CLUSTER CANCELSLOTMIGRATIONS](https://valkey.io/commands/cluster-cancelslotmigrations)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N), where N is the number of slot migration operations being cancelled.
+    @inlinable
+    public func clusterCancelslotmigrations() async throws {
+        _ = try await execute(CLUSTER.CANCELSLOTMIGRATIONS())
+    }
+
     /// Returns the number of active failure reports active for a node.
     ///
     /// - Documentation: [CLUSTER COUNT-FAILURE-REPORTS](https://valkey.io/commands/cluster-count-failure-reports)
@@ -810,6 +975,16 @@ extension ValkeyClientProtocol {
         _ = try await execute(CLUSTER.FAILOVER(options: options))
     }
 
+    /// Remove all keys from the target slot.
+    ///
+    /// - Documentation: [CLUSTER FLUSHSLOT](https://valkey.io/commands/cluster-flushslot)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the number of keys in the target slot
+    @inlinable
+    public func clusterFlushslot(slot: Int, flushType: CLUSTER.FLUSHSLOT.FlushType? = nil) async throws {
+        _ = try await execute(CLUSTER.FLUSHSLOT(slot: slot, flushType: flushType))
+    }
+
     /// Deletes all slots information from a node.
     ///
     /// - Documentation: [CLUSTER FLUSHSLOTS](https://valkey.io/commands/cluster-flushslots)
@@ -840,6 +1015,18 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESPToken.Array {
         try await execute(CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
+    }
+
+    /// Get the status of ongoing and recently finished slot import and export operations.
+    ///
+    /// - Documentation: [CLUSTER GETSLOTMIGRATIONS](https://valkey.io/commands/cluster-getslotmigrations)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N), where N is the number of active slot import and export jobs.
+    /// - Response: [Array]: A nested list of maps, one for each migration, with keys and values representing migration fields.
+    @inlinable
+    @discardableResult
+    public func clusterGetslotmigrations() async throws -> RESPToken.Array {
+        try await execute(CLUSTER.GETSLOTMIGRATIONS())
     }
 
     /// Returns helpful text about the different subcommands.
@@ -902,6 +1089,16 @@ extension ValkeyClientProtocol {
         _ = try await execute(CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
     }
 
+    /// Migrate the given slots from this node to the specified nodes.
+    ///
+    /// - Documentation: [CLUSTER MIGRATESLOTS](https://valkey.io/commands/cluster-migrateslots)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the total number of the slots between all start slot and end slot arguments.
+    @inlinable
+    public func clusterMigrateslots<NodeId: RESPStringRenderable>(migrationGroups: [CLUSTER.MIGRATESLOTS<NodeId>.MigrationGroup]) async throws {
+        _ = try await execute(CLUSTER.MIGRATESLOTS(migrationGroups: migrationGroups))
+    }
+
     /// Returns the ID of a node.
     ///
     /// - Documentation: [CLUSTER MYID](https://valkey.io/commands/cluster-myid)
@@ -950,14 +1147,16 @@ extension ValkeyClientProtocol {
         try await execute(CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
-    /// Configure a node as replica of a primary node.
+    /// Configure a node as replica of a primary node or detach a replica from its primary.
     ///
     /// - Documentation: [CLUSTER REPLICATE](https://valkey.io/commands/cluster-replicate)
     /// - Available: 3.0.0
+    /// - History:
+    ///     * 9.0.0: Added support of 'NO ONE' arg instead of <node-id> resulting into detaching replica from primary node.
     /// - Complexity: O(1)
     @inlinable
-    public func clusterReplicate<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws {
-        _ = try await execute(CLUSTER.REPLICATE(nodeId: nodeId))
+    public func clusterReplicate(args: CLUSTER.REPLICATE.Args) async throws {
+        _ = try await execute(CLUSTER.REPLICATE(args: args))
     }
 
     /// Resets a node.

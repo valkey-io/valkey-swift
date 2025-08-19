@@ -145,13 +145,15 @@ public enum SENTINEL {
         @inlinable public static var name: String { "SENTINEL FAILOVER" }
 
         public var primaryName: PrimaryName
+        public var coordinated: Bool
 
-        @inlinable public init(primaryName: PrimaryName) {
+        @inlinable public init(primaryName: PrimaryName, coordinated: Bool = false) {
             self.primaryName = primaryName
+            self.coordinated = coordinated
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("SENTINEL", "FAILOVER", RESPBulkString(primaryName))
+            commandEncoder.encodeArray("SENTINEL", "FAILOVER", RESPBulkString(primaryName), RESPPureToken("COORDINATED", coordinated))
         }
     }
 
@@ -612,10 +614,12 @@ extension ValkeyClientProtocol {
     ///
     /// - Documentation: [SENTINEL FAILOVER](https://valkey.io/commands/sentinel-failover)
     /// - Available: 2.8.4
-    /// - Response: "OK": Force a fail over as if the primary was not reachable, and without asking for agreement to other Sentinels.
+    /// - History:
+    ///     * 9.0.0: `COORDINATED` option.
+    /// - Response: "OK": Force a fail over of the primary. Without options, the fail over is executed immediately as if the primary was not reachable. Using `COORDINATED`, fail over seeking agreement from other Sentinels and using coordinated fail over.
     @inlinable
-    public func sentinelFailover<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName) async throws {
-        _ = try await execute(SENTINEL.FAILOVER(primaryName: primaryName))
+    public func sentinelFailover<PrimaryName: RESPStringRenderable>(primaryName: PrimaryName, coordinated: Bool = false) async throws {
+        _ = try await execute(SENTINEL.FAILOVER(primaryName: primaryName, coordinated: coordinated))
     }
 
     /// Rewrites the Sentinel configuration file.
