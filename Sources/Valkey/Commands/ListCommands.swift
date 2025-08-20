@@ -303,7 +303,7 @@ public struct LMOVE: ValkeyCommand {
             }
         }
     }
-    public typealias Response = ByteBuffer
+    public typealias Response = ByteBuffer?
 
     public var source: ValkeyKey
     public var destination: ValkeyKey
@@ -753,11 +753,11 @@ extension ValkeyClientProtocol {
     /// - Documentation: [LMOVE](https://valkey.io/commands/lmove)
     /// - Available: 6.2.0
     /// - Complexity: O(1)
-    /// - Response: [String]: The element being popped and pushed.
+    /// - Response: [String]: The element being popped and pushed. If the source array was empty, an empty buffer is returned.
     @inlinable
     @discardableResult
     public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> ByteBuffer {
-        try await execute(LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
+        try await execute(LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto)) ?? ByteBuffer()
     }
 
     /// Returns multiple elements from a list after removing them. Deletes the list if the last element was popped.
