@@ -194,13 +194,16 @@ extension ValkeyConnection {
             value = try await process(stream)
             try Task.checkCancellation()
         } catch {
-            // call unsubscrobe to avoid it being cancelled
+            // call unsubscribe in unstructured Task to avoid it being cancelled
             _ = await Task {
                 try await unsubscribe(id: id)
             }.result
             throw error
         }
-        _ = try await unsubscribe(id: id)
+        // call unsubscribe in unstructured Task to avoid it being cancelled
+        _ = try await Task {
+            try await unsubscribe(id: id)
+        }.value
         return value
     }
 

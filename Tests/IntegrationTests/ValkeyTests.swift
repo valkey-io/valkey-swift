@@ -530,6 +530,7 @@ struct GeneratedCommands {
                 }
                 try await client.withConnection { connection in
                     await stream.first { _ in true }
+                    try await Task.sleep(for: .milliseconds(100))
                     _ = try await connection.publish(channel: "testSubscriptions", message: "hello")
                     _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
                 }
