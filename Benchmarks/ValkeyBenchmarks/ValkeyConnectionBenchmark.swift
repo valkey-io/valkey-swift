@@ -37,7 +37,7 @@ func makeConnectionCreateAndDropBenchmark() -> Benchmark? {
         benchmark.startMeasurement()
         for _ in benchmark.scaledIterations {
             try await ValkeyConnection.withConnection(
-                address: .hostname("127.0.0.1", port: port),
+                address: .socketAddress(.init(ipAddress: "127.0.0.1", port: port)),
                 configuration: .init(),
                 logger: logger
             ) { _ in

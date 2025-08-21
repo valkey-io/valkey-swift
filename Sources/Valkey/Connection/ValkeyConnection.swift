@@ -276,6 +276,11 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             future.whenSuccess { _ in
                 logger.debug("Client connected to \(host):\(port)")
             }
+        case .socketAddress(let socketAddress):
+            future = connect.connect(to: socketAddress)
+            future.whenSuccess { _ in
+                logger.debug("Client connected to \(socketAddress)")
+            }
         case .unixDomainSocket(let path):
             future = connect.connect(unixDomainSocketPath: path)
             future.whenSuccess { _ in
