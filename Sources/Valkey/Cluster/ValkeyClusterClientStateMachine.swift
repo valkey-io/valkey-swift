@@ -163,7 +163,7 @@ package struct ValkeyClusterClientStateMachine<
     @usableFromInline
     /* private */ var clusterState: ClusterState
     @usableFromInline
-    /* private */ var runningClients: [ValkeyNodeID: NodeBundle] = [:]
+    /* private */ var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
     @usableFromInline
     /* private */ var configuration: ValkeyClusterClientStateMachineConfiguration
 
@@ -182,7 +182,7 @@ package struct ValkeyClusterClientStateMachine<
             )
         )
         self.refreshState = .notRefreshing
-        self.runningClients = [:]
+        self.runningClients = .init(poolFactory: poolFactory)
         self.configuration = configuration
         self.clock = clock
         self.poolFactory = poolFactory
@@ -231,8 +231,8 @@ package struct ValkeyClusterClientStateMachine<
         case .refreshing:
             switch self.clusterState {
             case .unavailable, .degraded, .healthy:
-                let action = self.updateNodes(newNodes, removeUnmentionedPools: false)
-                let voters = self.allNodeClients().map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
+                let action = self.runningClients.updateNodes(newNodes, removeUnmentionedPools: false)
+                let voters = self.runningClients.clients.map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
                 return .init(
                     clientsToRun: action.poolsToRun.map(\.0),
                     clientsToShutdown: action.poolsToShutdown,
@@ -246,7 +246,7 @@ package struct ValkeyClusterClientStateMachine<
     }
 
     package func getInitialVoters() -> [ValkeyClusterVoter<ConnectionPool>] {
-        self.allNodeClients().map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
+        self.runningClients.clients.map { ValkeyClusterVoter(client: $0.pool, nodeID: $0.nodeID) }
     }
 
     package struct ClusterDiscoverySucceededAction {
@@ -278,7 +278,7 @@ package struct ValkeyClusterClientStateMachine<
             self.refreshState = .waitingForRefresh(.init(id: refreshTimerID), previousRefresh: .init(consecutiveFailures: 0))
 
             let newShards = description.shards
-            let poolUpdate = self.updateNodes(
+            let poolUpdate = self.runningClients.updateNodes(
                 newShards.lazy.flatMap { $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) } },
                 removeUnmentionedPools: true
             )
@@ -694,7 +694,7 @@ package struct ValkeyClusterClientStateMachine<
 
             case .refreshing:
                 let newShards = description.shards
-                let poolActions = self.updateNodes(
+                let poolActions = self.runningClients.updateNodes(
                     newShards.lazy.flatMap { $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) } },
                     removeUnmentionedPools: false
                 )
@@ -719,78 +719,16 @@ package struct ValkeyClusterClientStateMachine<
         case .unavailable, .degraded, .healthy:
             self.clusterState = .shutdown
             let existingNodes = self.runningClients
-            self.runningClients.removeAll(keepingCapacity: false)
-            return existingNodes.values.lazy.map { $0.pool }
+            self.runningClients.removeAll()
+            return existingNodes.clients.lazy.map { $0.pool }
 
         case .shutdown:
             return []
         }
     }
 
-    private struct PoolUpdateAction {
-        var poolsToShutdown: [ConnectionPool]
-        var poolsToRun: [(ConnectionPool, ValkeyNodeID)]
-
-        static func empty() -> PoolUpdateAction { PoolUpdateAction(poolsToShutdown: [], poolsToRun: []) }
-    }
-
-    private mutating func updateNodes(
-        _ newNodes: some Collection<ValkeyNodeDescription>,
-        removeUnmentionedPools: Bool
-    ) -> PoolUpdateAction {
-        var previousNodes = self.runningClients
-        self.runningClients.removeAll(keepingCapacity: true)
-        var newPools = [(ConnectionPool, ValkeyNodeID)]()
-        newPools.reserveCapacity(16)
-        var poolsToShutdown = [ConnectionPool]()
-
-        for newNodeDescription in newNodes {
-            // if we had a pool previously, let's continue to use it!
-            if let existingPool = previousNodes.removeValue(forKey: newNodeDescription.id) {
-                if newNodeDescription == existingPool.nodeDescription {
-                    // the existing pool matches the new node description. nothing todo
-                    self.runningClients[newNodeDescription.id] = existingPool
-                } else {
-                    // the existing pool does not match new node description. For example tls may now be required.
-                    // shutdown the old pool and create a new one
-                    poolsToShutdown.append(existingPool.pool)
-                    let newPool = self.makePool(for: newNodeDescription)
-                    self.runningClients[newNodeDescription.id] = NodeBundle(pool: newPool, nodeDescription: newNodeDescription)
-                    newPools.append((newPool, newNodeDescription.id))
-                }
-            } else {
-                let newPool = self.makePool(for: newNodeDescription)
-                self.runningClients[newNodeDescription.id] = NodeBundle(pool: newPool, nodeDescription: newNodeDescription)
-                newPools.append((newPool, newNodeDescription.id))
-            }
-        }
-
-        if removeUnmentionedPools {
-            poolsToShutdown.append(contentsOf: previousNodes.values.lazy.map { $0.pool })
-
-            return PoolUpdateAction(
-                poolsToShutdown: poolsToShutdown,
-                poolsToRun: newPools
-            )
-        }
-
-        // re-add pools that were not part of the node list.
-        for (nodeID, poolDescription) in previousNodes {
-            self.runningClients[nodeID] = poolDescription
-        }
-
-        return PoolUpdateAction(
-            poolsToShutdown: poolsToShutdown,
-            poolsToRun: newPools
-        )
-    }
-
     private func makePool(for description: ValkeyNodeDescription) -> ConnectionPool {
         self.poolFactory.makeConnectionPool(nodeDescription: description)
-    }
-
-    private func allNodeClients() -> some Collection<NodeBundle> {
-        self.runningClients.values
     }
 
     private mutating func nextTimerID() -> Int {
