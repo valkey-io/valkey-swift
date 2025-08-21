@@ -80,13 +80,13 @@ public final class ValkeyClusterClient: Sendable {
     @usableFromInline
     /* private */ let nextRequestIDGenerator = Atomic(0)
 
-    enum RunAction {
+    private enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
         case runClient(ValkeyNodeClient)
         case runTimer(ValkeyClusterTimer)
     }
     private let actionStream: AsyncStream<RunAction>
-    private let actionContinuation: AsyncStream<RunAction>.Continuation
+    private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
     /// Creates a new ``ValkeyClusterClient`` instance.
     ///
@@ -108,7 +108,7 @@ public final class ValkeyClusterClient: Sendable {
     ) {
         self.logger = logger
 
-        (self.actionStream, self.actionContinuation) = AsyncStream.makeStream(of: RunAction.self)
+        (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
         let factory = ValkeyNodeClientFactory(
             logger: logger,
@@ -241,7 +241,7 @@ public final class ValkeyClusterClient: Sendable {
     // MARK: - Private methods -
 
     private func queueAction(_ action: RunAction) {
-        self.actionContinuation.yield(action)
+        self.actionStreamContinuation.yield(action)
     }
 
     /// Manages the primary task group that handles all client operations.

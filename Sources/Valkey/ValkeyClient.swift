@@ -29,9 +29,6 @@ import ServiceLifecycle
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
-    enum RunAction: Sendable {
-        case runNodeClient(ValkeyNodeClient)
-    }
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
@@ -45,8 +42,11 @@ public final class ValkeyClient: Sendable {
     /// running atomic
     let runningAtomic: Atomic<Bool>
 
+    private enum RunAction: Sendable {
+        case runNodeClient(ValkeyNodeClient)
+    }
     private let actionStream: AsyncStream<RunAction>
-    private let actionContinuation: AsyncStream<RunAction>.Continuation
+    private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
     /// Creates a new Valkey client
     ///
@@ -90,7 +90,7 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
-        (self.actionStream, self.actionContinuation) = AsyncStream.makeStream(of: RunAction.self)
+        (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runNodeClient(self.node))
     }
 }
@@ -135,7 +135,7 @@ extension ValkeyClient {
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
     private func queueAction(_ action: RunAction) {
-        self.actionContinuation.yield(action)
+        self.actionStreamContinuation.yield(action)
     }
 
     private func runAction(_ action: RunAction) async {
