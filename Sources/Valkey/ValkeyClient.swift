@@ -28,9 +28,9 @@ import ServiceLifecycle
 ///
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
-public final class ValkeyClient: ActionRunner, Sendable {
-    enum Action: Sendable {
-        case runClient(ValkeyNodeClient)
+public final class ValkeyClient: Sendable {
+    enum RunAction: Sendable {
+        case runNodeClient(ValkeyNodeClient)
     }
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
@@ -44,8 +44,9 @@ public final class ValkeyClient: ActionRunner, Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
-    /// Action stream
-    let actionStream: ActionStream<Action>
+
+    private let actionStream: AsyncStream<RunAction>
+    private let actionContinuation: AsyncStream<RunAction>.Continuation
 
     /// Creates a new Valkey client
     ///
@@ -89,8 +90,8 @@ public final class ValkeyClient: ActionRunner, Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
-        self.actionStream = .init()
-        self.queueAction(.runClient(self.node))
+        (self.actionStream, self.actionContinuation) = AsyncStream.makeStream(of: RunAction.self)
+        self.queueAction(.runNodeClient(self.node))
     }
 }
 
@@ -102,7 +103,14 @@ extension ValkeyClient {
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
-            await self.runActionTaskGroup()
+            /// Run discarding task group running actions
+            await withDiscardingTaskGroup { group in
+                for await action in self.actionStream {
+                    group.addTask {
+                        await self.runAction(action)
+                    }
+                }
+            }
         }
         #else
         await self.runActionTaskGroup()
@@ -126,9 +134,13 @@ extension ValkeyClient {
 
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
-    func runAction(_ action: Action) async {
+    private func queueAction(_ action: RunAction) {
+        self.actionContinuation.yield(action)
+    }
+
+    private func runAction(_ action: RunAction) async {
         switch action {
-        case .runClient(let nodeClient):
+        case .runNodeClient(let nodeClient):
             await nodeClient.run()
         }
     }

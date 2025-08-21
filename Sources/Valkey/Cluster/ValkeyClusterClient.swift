@@ -59,7 +59,7 @@ import Synchronization
 /// }
 /// ```
 @available(valkeySwift 1.0, *)
-public final class ValkeyClusterClient: Sendable, ActionRunner {
+public final class ValkeyClusterClient: Sendable {
     private let nodeDiscovery: any ValkeyNodeDiscovery
 
     @usableFromInline
@@ -80,12 +80,13 @@ public final class ValkeyClusterClient: Sendable, ActionRunner {
     @usableFromInline
     /* private */ let nextRequestIDGenerator = Atomic(0)
 
-    enum Action {
+    enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
         case runClient(ValkeyNodeClient)
         case runTimer(ValkeyClusterTimer)
     }
-    let actionStream: ActionStream<Action>
+    private let actionStream: AsyncStream<RunAction>
+    private let actionContinuation: AsyncStream<RunAction>.Continuation
 
     /// Creates a new ``ValkeyClusterClient`` instance.
     ///
@@ -107,7 +108,7 @@ public final class ValkeyClusterClient: Sendable, ActionRunner {
     ) {
         self.logger = logger
 
-        self.actionStream = .init()
+        (self.actionStream, self.actionContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
         let factory = ValkeyNodeClientFactory(
             logger: logger,
@@ -220,7 +221,14 @@ public final class ValkeyClusterClient: Sendable, ActionRunner {
         self.queueAction(.runClusterDiscovery(runNodeDiscovery: true))
 
         await withTaskCancellationHandler {
-            await self.runActionTaskGroup()
+            /// Run discarding task group running actions
+            await withDiscardingTaskGroup { group in
+                for await action in self.actionStream {
+                    group.addTask {
+                        await self.runAction(action)
+                    }
+                }
+            }
         } onCancel: {
             _ = self.stateLock.withLock {
                 $0.shutdown()
@@ -232,10 +240,14 @@ public final class ValkeyClusterClient: Sendable, ActionRunner {
 
     // MARK: - Private methods -
 
+    private func queueAction(_ action: RunAction) {
+        self.actionContinuation.yield(action)
+    }
+
     /// Manages the primary task group that handles all client operations.
     ///
     /// - Parameter taskGroup: The task group to add tasks to.
-    func runAction(_ action: Action) async {
+    private func runAction(_ action: RunAction) async {
         switch action {
         case .runClusterDiscovery(let runNodeDiscovery):
             await self.runClusterDiscovery(runNodeDiscoveryFirst: runNodeDiscovery)
