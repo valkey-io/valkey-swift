@@ -429,6 +429,8 @@ extension String {
         if returnType != "RESPToken" {
             self.append("\(tab)    public typealias Response = \(returnType)\n\n")
         }
+        let name = subCommand.map { "\(commandName) \($0)" } ?? commandName
+        self.append("\(tab)    @inlinable public static var name: String { \"\(name)\" }\n\n")
         if arguments.count > 0 {
             for arg in arguments {
                 self.append(

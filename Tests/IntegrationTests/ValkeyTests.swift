@@ -75,6 +75,8 @@ struct GeneratedCommands {
         struct GET: ValkeyCommand {
             typealias Response = String?
 
+            static let name = "GET"
+
             var key: ValkeyKey
 
             init(key: ValkeyKey) {

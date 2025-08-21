@@ -27,6 +27,8 @@ import Foundation
 public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "APPEND" }
+
     public var key: ValkeyKey
     public var value: Value
 
@@ -47,6 +49,8 @@ public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
 public struct DECR: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "DECR" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -64,6 +68,8 @@ public struct DECR: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct DECRBY: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "DECRBY" }
 
     public var key: ValkeyKey
     public var decrement: Int
@@ -85,6 +91,8 @@ public struct DECRBY: ValkeyCommand {
 public struct GET: ValkeyCommand {
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "GET" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -104,6 +112,8 @@ public struct GET: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct GETDEL: ValkeyCommand {
     public typealias Response = ByteBuffer?
+
+    @inlinable public static var name: String { "GETDEL" }
 
     public var key: ValkeyKey
 
@@ -155,6 +165,8 @@ public struct GETEX: ValkeyCommand {
     }
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "GETEX" }
+
     public var key: ValkeyKey
     public var expiration: Expiration?
 
@@ -174,6 +186,8 @@ public struct GETEX: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct GETRANGE: ValkeyCommand {
     public typealias Response = ByteBuffer
+
+    @inlinable public static var name: String { "GETRANGE" }
 
     public var key: ValkeyKey
     public var start: Int
@@ -199,6 +213,8 @@ public struct GETRANGE: ValkeyCommand {
 public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "GETSET" }
+
     public var key: ValkeyKey
     public var value: Value
 
@@ -219,6 +235,8 @@ public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
 public struct INCR: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "INCR" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -236,6 +254,8 @@ public struct INCR: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct INCRBY: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "INCRBY" }
 
     public var key: ValkeyKey
     public var increment: Int
@@ -257,6 +277,8 @@ public struct INCRBY: ValkeyCommand {
 public struct INCRBYFLOAT: ValkeyCommand {
     public typealias Response = ByteBuffer
 
+    @inlinable public static var name: String { "INCRBYFLOAT" }
+
     public var key: ValkeyKey
     public var increment: Double
 
@@ -275,6 +297,8 @@ public struct INCRBYFLOAT: ValkeyCommand {
 /// Finds the longest common substring.
 @_documentation(visibility: internal)
 public struct LCS: ValkeyCommand {
+    @inlinable public static var name: String { "LCS" }
+
     public var key1: ValkeyKey
     public var key2: ValkeyKey
     public var len: Bool
@@ -320,6 +344,8 @@ public struct LCS: ValkeyCommand {
 public struct MGET: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "MGET" }
+
     public var keys: [ValkeyKey]
 
     @inlinable public init(keys: [ValkeyKey]) {
@@ -358,6 +384,8 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
             RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
+    @inlinable public static var name: String { "MSET" }
+
     public var data: [Data]
 
     @inlinable public init(data: [Data]) {
@@ -396,6 +424,8 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "MSETNX" }
+
     public var data: [Data]
 
     @inlinable public init(data: [Data]) {
@@ -412,6 +442,8 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
 /// Sets both string value and expiration time in milliseconds of a key. The key is created if it doesn't exist.
 @_documentation(visibility: internal)
 public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "PSETEX" }
+
     public var key: ValkeyKey
     public var milliseconds: Int
     public var value: Value
@@ -489,6 +521,8 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
     }
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "SET" }
+
     public var key: ValkeyKey
     public var value: Value
     public var condition: Condition?
@@ -513,6 +547,8 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
 /// Sets the string value and expiration time of a key. Creates the key if it doesn't exist.
 @_documentation(visibility: internal)
 public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "SETEX" }
+
     public var key: ValkeyKey
     public var seconds: Int
     public var value: Value
@@ -535,6 +571,8 @@ public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
 public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "SETNX" }
+
     public var key: ValkeyKey
     public var value: Value
 
@@ -554,6 +592,8 @@ public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "SETRANGE" }
 
     public var key: ValkeyKey
     public var offset: Int
@@ -577,6 +617,8 @@ public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
 public struct STRLEN: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "STRLEN" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -596,6 +638,8 @@ public struct STRLEN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SUBSTR: ValkeyCommand {
     public typealias Response = ByteBuffer
+
+    @inlinable public static var name: String { "SUBSTR" }
 
     public var key: ValkeyKey
     public var start: Int

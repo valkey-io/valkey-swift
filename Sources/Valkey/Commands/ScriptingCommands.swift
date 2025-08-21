@@ -28,6 +28,8 @@ public enum FUNCTION {
     /// Deletes a library and its functions.
     @_documentation(visibility: internal)
     public struct DELETE<LibraryName: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "FUNCTION DELETE" }
+
         public var libraryName: LibraryName
 
         @inlinable public init(libraryName: LibraryName) {
@@ -43,6 +45,8 @@ public enum FUNCTION {
     @_documentation(visibility: internal)
     public struct DUMP: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "FUNCTION DUMP" }
 
         @inlinable public init() {
         }
@@ -70,6 +74,8 @@ public enum FUNCTION {
                 }
             }
         }
+        @inlinable public static var name: String { "FUNCTION FLUSH" }
+
         public var flushType: FlushType?
 
         @inlinable public init(flushType: FlushType? = nil) {
@@ -86,6 +92,8 @@ public enum FUNCTION {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "FUNCTION HELP" }
+
         @inlinable public init() {
         }
 
@@ -97,6 +105,8 @@ public enum FUNCTION {
     /// Terminates a function during execution.
     @_documentation(visibility: internal)
     public struct KILL: ValkeyCommand {
+        @inlinable public static var name: String { "FUNCTION KILL" }
+
         @inlinable public init() {
         }
 
@@ -109,6 +119,8 @@ public enum FUNCTION {
     @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "FUNCTION LIST" }
 
         public var libraryNamePattern: String?
         public var withcode: Bool
@@ -127,6 +139,8 @@ public enum FUNCTION {
     @_documentation(visibility: internal)
     public struct LOAD<FunctionCode: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "FUNCTION LOAD" }
 
         public var replace: Bool
         public var functionCode: FunctionCode
@@ -161,6 +175,8 @@ public enum FUNCTION {
                 }
             }
         }
+        @inlinable public static var name: String { "FUNCTION RESTORE" }
+
         public var serializedValue: SerializedValue
         public var policy: Policy?
 
@@ -178,6 +194,8 @@ public enum FUNCTION {
     @_documentation(visibility: internal)
     public struct STATS: ValkeyCommand {
         public typealias Response = RESPToken.Map
+
+        @inlinable public static var name: String { "FUNCTION STATS" }
 
         @inlinable public init() {
         }
@@ -212,6 +230,8 @@ public enum SCRIPT {
                 }
             }
         }
+        @inlinable public static var name: String { "SCRIPT DEBUG" }
+
         public var mode: Mode
 
         @inlinable public init(mode: Mode) {
@@ -227,6 +247,8 @@ public enum SCRIPT {
     @_documentation(visibility: internal)
     public struct EXISTS<Sha1: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "SCRIPT EXISTS" }
 
         public var sha1s: [Sha1]
 
@@ -257,6 +279,8 @@ public enum SCRIPT {
                 }
             }
         }
+        @inlinable public static var name: String { "SCRIPT FLUSH" }
+
         public var flushType: FlushType?
 
         @inlinable public init(flushType: FlushType? = nil) {
@@ -273,6 +297,8 @@ public enum SCRIPT {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "SCRIPT HELP" }
+
         @inlinable public init() {
         }
 
@@ -284,6 +310,8 @@ public enum SCRIPT {
     /// Terminates a server-side Lua script during execution.
     @_documentation(visibility: internal)
     public struct KILL: ValkeyCommand {
+        @inlinable public static var name: String { "SCRIPT KILL" }
+
         @inlinable public init() {
         }
 
@@ -296,6 +324,8 @@ public enum SCRIPT {
     @_documentation(visibility: internal)
     public struct LOAD<Script: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "SCRIPT LOAD" }
 
         public var script: Script
 
@@ -313,6 +343,8 @@ public enum SCRIPT {
     public struct SHOW<Sha1: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "SCRIPT SHOW" }
+
         public var sha1: Sha1
 
         @inlinable public init(sha1: Sha1) {
@@ -329,6 +361,8 @@ public enum SCRIPT {
 /// Executes a server-side Lua script.
 @_documentation(visibility: internal)
 public struct EVAL<Script: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "EVAL" }
+
     public var script: Script
     public var keys: [ValkeyKey]
     public var args: [String]
@@ -349,6 +383,8 @@ public struct EVAL<Script: RESPStringRenderable>: ValkeyCommand {
 /// Executes a server-side Lua script by SHA1 digest.
 @_documentation(visibility: internal)
 public struct EVALSHA<Sha1: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "EVALSHA" }
+
     public var sha1: Sha1
     public var keys: [ValkeyKey]
     public var args: [String]
@@ -369,6 +405,8 @@ public struct EVALSHA<Sha1: RESPStringRenderable>: ValkeyCommand {
 /// Executes a read-only server-side Lua script by SHA1 digest.
 @_documentation(visibility: internal)
 public struct EVALSHARO<Sha1: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "EVALSHA_RO" }
+
     public var sha1: Sha1
     public var keys: [ValkeyKey]
     public var args: [String]
@@ -391,6 +429,8 @@ public struct EVALSHARO<Sha1: RESPStringRenderable>: ValkeyCommand {
 /// Executes a read-only server-side Lua script.
 @_documentation(visibility: internal)
 public struct EVALRO<Script: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "EVAL_RO" }
+
     public var script: Script
     public var keys: [ValkeyKey]
     public var args: [String]
@@ -413,6 +453,8 @@ public struct EVALRO<Script: RESPStringRenderable>: ValkeyCommand {
 /// Invokes a function.
 @_documentation(visibility: internal)
 public struct FCALL<Function: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "FCALL" }
+
     public var function: Function
     public var keys: [ValkeyKey]
     public var args: [String]
@@ -433,6 +475,8 @@ public struct FCALL<Function: RESPStringRenderable>: ValkeyCommand {
 /// Invokes a read-only function.
 @_documentation(visibility: internal)
 public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "FCALL_RO" }
+
     public var function: Function
     public var keys: [ValkeyKey]
     public var args: [String]
