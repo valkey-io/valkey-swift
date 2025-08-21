@@ -163,7 +163,7 @@ package struct ValkeyClusterClientStateMachine<
     @usableFromInline
     /* private */ var clusterState: ClusterState
     @usableFromInline
-    /* private */ var runningClients: ValkeyRunningClients<ConnectionPool, ConnectionPoolFactory>
+    /* private */ var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
     @usableFromInline
     /* private */ var configuration: ValkeyClusterClientStateMachineConfiguration
 

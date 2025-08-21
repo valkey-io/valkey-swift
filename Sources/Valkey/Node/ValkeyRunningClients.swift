@@ -13,7 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 @usableFromInline
-struct ValkeyRunningClients<
+struct ValkeyRunningClientsStateMachine<
     ConnectionPool: Sendable,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory
 > where ConnectionPoolFactory.ConnectionPool == ConnectionPool {
