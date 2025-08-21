@@ -42,6 +42,12 @@ public final class ValkeyClient: Sendable {
     /// running atomic
     let runningAtomic: Atomic<Bool>
 
+    private enum RunAction: Sendable {
+        case runNodeClient(ValkeyNodeClient)
+    }
+    private let actionStream: AsyncStream<RunAction>
+    private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
+
     /// Creates a new Valkey client
     ///
     /// - Parameters:
@@ -84,6 +90,8 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
+        self.queueAction(.runNodeClient(self.node))
     }
 }
 
@@ -95,10 +103,17 @@ extension ValkeyClient {
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
-            await self.node.run()
+            /// Run discarding task group running actions
+            await withDiscardingTaskGroup { group in
+                for await action in self.actionStream {
+                    group.addTask {
+                        await self.runAction(action)
+                    }
+                }
+            }
         }
         #else
-        await self.node.run()
+        await self.runActionTaskGroup()
         #endif
     }
 
@@ -114,6 +129,20 @@ extension ValkeyClient {
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         try await self.node.withConnection(isolation: isolation, operation: operation)
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClient {
+    private func queueAction(_ action: RunAction) {
+        self.actionStreamContinuation.yield(action)
+    }
+
+    private func runAction(_ action: RunAction) async {
+        switch action {
+        case .runNodeClient(let nodeClient):
+            await nodeClient.run()
+        }
     }
 }
 
