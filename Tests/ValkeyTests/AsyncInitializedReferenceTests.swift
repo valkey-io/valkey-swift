@@ -42,10 +42,10 @@ struct AsyncInitializedReferenceTests {
     func testReferenceCount() async throws {
         let referencedObject = Box(AsyncInitializedReferencedObject<Test>())
         let test = try await referencedObject.value.acquire {
-            return Test()
+            Test()
         }
         let test2 = try await referencedObject.value.acquire {
-            return Test()
+            Test()
         }
         // verify we get the same object twice
         #expect(test.id == test2.id)
@@ -65,10 +65,10 @@ struct AsyncInitializedReferenceTests {
     func testReleaseGetsCalledOnce() async throws {
         let referencedObject = Box(AsyncInitializedReferencedObject<Test>())
         let test = try await referencedObject.value.acquire {
-            return Test()
+            Test()
         }
         let test2 = try await referencedObject.value.acquire {
-            return Test()
+            Test()
         }
         let called = Atomic(0)
         referencedObject.value.release(id: test.id) { _ in
