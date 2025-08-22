@@ -28,7 +28,7 @@ function genWithoutContextParameter() {
     done
     echo
     echo "        self.buffer.writeString(\"\\(count)\")"
-    printf "        self.buffer.writeStaticString(\"\\r\\n\")"
+    echo "        self.buffer.writeStaticString(\"\\r\\n\")"
     for ((n = 0; n<how_many; n +=1)); do
         echo "        t$((n)).encode(into: &self)"
     done
@@ -53,10 +53,10 @@ echo "extension ValkeyCommandEncoder {"
 # note:
 # - widening the interval below (eg. going from {1..15} to {1..25}) is Semver minor
 # - narrowing the interval below is SemVer _MAJOR_!
-for n in {1..15}; do
+for n in {1..29}; do
     genWithoutContextParameter "$n"
 done
 echo "}"
 } > "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
 
-swift format format -i "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
+#swift format format -i "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
