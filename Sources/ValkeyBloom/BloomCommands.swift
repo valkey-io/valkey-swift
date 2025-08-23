@@ -28,6 +28,8 @@ public enum BF {
     /// Add a single item to a bloom filter. The bloom filter is created if it doesn't exist
     @_documentation(visibility: internal)
     public struct ADD<Value: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "BF.ADD" }
+
         public var key: ValkeyKey
         public var value: Value
 
@@ -46,6 +48,8 @@ public enum BF {
     /// Returns the cardinality of a bloom filter
     @_documentation(visibility: internal)
     public struct CARD: ValkeyCommand {
+        @inlinable public static var name: String { "BF.CARD" }
+
         public var key: ValkeyKey
 
         @inlinable public init(_ key: ValkeyKey) {
@@ -62,6 +66,8 @@ public enum BF {
     /// Determines if the bloom filter contains the specified item
     @_documentation(visibility: internal)
     public struct EXISTS<Value: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "BF.EXISTS" }
+
         public var key: ValkeyKey
         public var value: Value
 
@@ -105,6 +111,8 @@ public enum BF {
                 }
             }
         }
+        @inlinable public static var name: String { "BF.INFO" }
+
         public var key: ValkeyKey
         public var sortby: Sortby?
 
@@ -123,6 +131,8 @@ public enum BF {
     /// Creates a bloom filter with 0 or more items or adds items to an existing bloom filter
     @_documentation(visibility: internal)
     public struct INSERT: ValkeyCommand {
+        @inlinable public static var name: String { "BF.INSERT" }
+
         public var key: ValkeyKey
         public var capacity: Int?
         public var error: Double?
@@ -180,6 +190,8 @@ public enum BF {
     /// Restores a bloom filter in a single operation. The command is only generated during AOF Rewrite of bloom filters
     @_documentation(visibility: internal)
     public struct LOAD<Dump: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "BF.LOAD" }
+
         public var key: ValkeyKey
         public var dump: Dump
 
@@ -198,6 +210,8 @@ public enum BF {
     /// Adds one or more items to a bloom filter. The bloom filter is created if it doesn't exist
     @_documentation(visibility: internal)
     public struct MADD<Value: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "BF.MADD" }
+
         public var key: ValkeyKey
         public var values: [Value]
 
@@ -216,6 +230,8 @@ public enum BF {
     /// Determines if the bloom filter contains one or more items
     @_documentation(visibility: internal)
     public struct MEXISTS<Value: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "BF.MEXISTS" }
+
         public var key: ValkeyKey
         public var values: [Value]
 
@@ -234,6 +250,8 @@ public enum BF {
     /// Creates an empty bloom filter with the specified properties
     @_documentation(visibility: internal)
     public struct RESERVE: ValkeyCommand {
+        @inlinable public static var name: String { "BF.RESERVE" }
+
         public var key: ValkeyKey
         public var errorRate: Double
         public var capacity: Int

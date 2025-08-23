@@ -27,6 +27,8 @@ import Foundation
 public struct HDEL<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "HDEL" }
+
     public var key: ValkeyKey
     public var fields: [Field]
 
@@ -46,6 +48,8 @@ public struct HDEL<Field: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "HEXISTS" }
 
     public var key: ValkeyKey
     public var field: Field
@@ -69,6 +73,8 @@ public struct HEXISTS<Field: RESPStringRenderable>: ValkeyCommand {
 public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "HGET" }
+
     public var key: ValkeyKey
     public var field: Field
 
@@ -91,6 +97,8 @@ public struct HGET<Field: RESPStringRenderable>: ValkeyCommand {
 public struct HGETALL: ValkeyCommand {
     public typealias Response = RESPToken.Map
 
+    @inlinable public static var name: String { "HGETALL" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -110,6 +118,8 @@ public struct HGETALL: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HINCRBY<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "HINCRBY" }
 
     public var key: ValkeyKey
     public var field: Field
@@ -133,6 +143,8 @@ public struct HINCRBY<Field: RESPStringRenderable>: ValkeyCommand {
 public struct HINCRBYFLOAT<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = ByteBuffer
 
+    @inlinable public static var name: String { "HINCRBYFLOAT" }
+
     public var key: ValkeyKey
     public var field: Field
     public var increment: Double
@@ -155,6 +167,8 @@ public struct HINCRBYFLOAT<Field: RESPStringRenderable>: ValkeyCommand {
 public struct HKEYS: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "HKEYS" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -175,6 +189,8 @@ public struct HKEYS: ValkeyCommand {
 public struct HLEN: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "HLEN" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -194,6 +210,8 @@ public struct HLEN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HMGET" }
 
     public var key: ValkeyKey
     public var fields: [Field]
@@ -235,6 +253,8 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
             RESPBulkString(value).encode(into: &commandEncoder)
         }
     }
+    @inlinable public static var name: String { "HMSET" }
+
     public var key: ValkeyKey
     public var data: [Data]
 
@@ -275,6 +295,8 @@ public struct HRANDFIELD: ValkeyCommand {
     }
     public typealias Response = RESPToken?
 
+    @inlinable public static var name: String { "HRANDFIELD" }
+
     public var key: ValkeyKey
     public var options: Options?
 
@@ -296,6 +318,8 @@ public struct HRANDFIELD: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HSCAN: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HSCAN" }
 
     public var key: ValkeyKey
     public var cursor: Int
@@ -352,6 +376,8 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "HSET" }
+
     public var key: ValkeyKey
     public var data: [Data]
 
@@ -371,6 +397,8 @@ public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
 @_documentation(visibility: internal)
 public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "HSETNX" }
 
     public var key: ValkeyKey
     public var field: Field
@@ -394,6 +422,8 @@ public struct HSETNX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
 public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "HSTRLEN" }
+
     public var key: ValkeyKey
     public var field: Field
 
@@ -415,6 +445,8 @@ public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HVALS: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "HVALS" }
 
     public var key: ValkeyKey
 

@@ -65,6 +65,8 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "GEOADD" }
+
     public var key: ValkeyKey
     public var condition: Condition?
     public var change: Bool
@@ -106,6 +108,8 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
             }
         }
     }
+    @inlinable public static var name: String { "GEODIST" }
+
     public var key: ValkeyKey
     public var member1: Member1
     public var member2: Member2
@@ -132,6 +136,8 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
 public struct GEOHASH: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "GEOHASH" }
+
     public var key: ValkeyKey
     public var members: [String]
 
@@ -152,6 +158,8 @@ public struct GEOHASH: ValkeyCommand {
 /// Returns the longitude and latitude of members from a geospatial index.
 @_documentation(visibility: internal)
 public struct GEOPOS: ValkeyCommand {
+    @inlinable public static var name: String { "GEOPOS" }
+
     public var key: ValkeyKey
     public var members: [String]
 
@@ -246,6 +254,8 @@ public struct GEORADIUS: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "GEORADIUS" }
+
     public var key: ValkeyKey
     public var longitude: Double
     public var latitude: Double
@@ -381,6 +391,8 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "GEORADIUSBYMEMBER" }
+
     public var key: ValkeyKey
     public var member: Member
     public var radius: Double
@@ -494,6 +506,8 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
     }
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "GEORADIUSBYMEMBER_RO" }
+
     public var key: ValkeyKey
     public var member: Member
     public var radius: Double
@@ -604,6 +618,8 @@ public struct GEORADIUSRO: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "GEORADIUS_RO" }
 
     public var key: ValkeyKey
     public var longitude: Double
@@ -840,6 +856,8 @@ public struct GEOSEARCH: ValkeyCommand {
             RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
+    @inlinable public static var name: String { "GEOSEARCH" }
+
     public var key: ValkeyKey
     public var from: From
     public var by: By
@@ -1068,6 +1086,8 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public typealias Response = Int
+
+    @inlinable public static var name: String { "GEOSEARCHSTORE" }
 
     public var destination: ValkeyKey
     public var source: ValkeyKey

@@ -27,6 +27,8 @@ import Foundation
 public struct PFADD: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "PFADD" }
+
     public var key: ValkeyKey
     public var elements: [String]
 
@@ -47,6 +49,8 @@ public struct PFADD: ValkeyCommand {
 public struct PFCOUNT: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "PFCOUNT" }
+
     public var keys: [ValkeyKey]
 
     @inlinable public init(keys: [ValkeyKey]) {
@@ -65,6 +69,8 @@ public struct PFCOUNT: ValkeyCommand {
 /// Merges one or more HyperLogLog values into a single key.
 @_documentation(visibility: internal)
 public struct PFMERGE: ValkeyCommand {
+    @inlinable public static var name: String { "PFMERGE" }
+
     public var destkey: ValkeyKey
     public var sourcekeys: [ValkeyKey]
 
