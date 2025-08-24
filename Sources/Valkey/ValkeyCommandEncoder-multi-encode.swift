@@ -35,7 +35,12 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3) {
+    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable>(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3
+    ) {
         self.encodeIdentifier(.array)
         let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries
         self.buffer.writeString("\(count)")
@@ -47,7 +52,13 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4) {
+    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable>(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4
+    ) {
         self.encodeIdentifier(.array)
         let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries
         self.buffer.writeString("\(count)")
@@ -60,7 +71,14 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable
+    >(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5) {
         self.encodeIdentifier(.array)
         let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries
         self.buffer.writeString("\(count)")
@@ -74,7 +92,15 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable
+    >(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6) {
         self.encodeIdentifier(.array)
         let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries
         self.buffer.writeString("\(count)")
@@ -89,9 +115,19 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable
+    >(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -105,9 +141,21 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable
+    >(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -122,9 +170,22 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable
+    >(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -140,9 +201,23 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable
+    >(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -159,9 +234,24 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable
+    >(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -179,9 +269,25 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable
+    >(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -200,9 +306,41 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -222,9 +360,43 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -245,9 +417,46 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -269,9 +478,48 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -294,9 +542,50 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -320,9 +609,52 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -347,9 +679,54 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -375,9 +752,56 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -404,9 +828,58 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable, T21: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20, _ t21: T21) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable,
+        T21: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20,
+        _ t21: T21
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -434,9 +907,61 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable, T21: RESPRenderable, T22: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20, _ t21: T21, _ t22: T22) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable,
+        T21: RESPRenderable,
+        T22: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20,
+        _ t21: T21,
+        _ t22: T22
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries + t22.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
+            + t22.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -465,9 +990,63 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable, T21: RESPRenderable, T22: RESPRenderable, T23: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20, _ t21: T21, _ t22: T22, _ t23: T23) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable,
+        T21: RESPRenderable,
+        T22: RESPRenderable,
+        T23: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20,
+        _ t21: T21,
+        _ t22: T22,
+        _ t23: T23
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries + t22.respEntries + t23.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
+            + t22.respEntries + t23.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -497,9 +1076,65 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable, T21: RESPRenderable, T22: RESPRenderable, T23: RESPRenderable, T24: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20, _ t21: T21, _ t22: T22, _ t23: T23, _ t24: T24) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable,
+        T21: RESPRenderable,
+        T22: RESPRenderable,
+        T23: RESPRenderable,
+        T24: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20,
+        _ t21: T21,
+        _ t22: T22,
+        _ t23: T23,
+        _ t24: T24
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries + t22.respEntries + t23.respEntries + t24.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
+            + t22.respEntries + t23.respEntries + t24.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -530,9 +1165,67 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable, T21: RESPRenderable, T22: RESPRenderable, T23: RESPRenderable, T24: RESPRenderable, T25: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20, _ t21: T21, _ t22: T22, _ t23: T23, _ t24: T24, _ t25: T25) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable,
+        T21: RESPRenderable,
+        T22: RESPRenderable,
+        T23: RESPRenderable,
+        T24: RESPRenderable,
+        T25: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20,
+        _ t21: T21,
+        _ t22: T22,
+        _ t23: T23,
+        _ t24: T24,
+        _ t25: T25
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries + t22.respEntries + t23.respEntries + t24.respEntries + t25.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
+            + t22.respEntries + t23.respEntries + t24.respEntries + t25.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -564,9 +1257,69 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable, T21: RESPRenderable, T22: RESPRenderable, T23: RESPRenderable, T24: RESPRenderable, T25: RESPRenderable, T26: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20, _ t21: T21, _ t22: T22, _ t23: T23, _ t24: T24, _ t25: T25, _ t26: T26) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable,
+        T21: RESPRenderable,
+        T22: RESPRenderable,
+        T23: RESPRenderable,
+        T24: RESPRenderable,
+        T25: RESPRenderable,
+        T26: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20,
+        _ t21: T21,
+        _ t22: T22,
+        _ t23: T23,
+        _ t24: T24,
+        _ t25: T25,
+        _ t26: T26
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries + t22.respEntries + t23.respEntries + t24.respEntries + t25.respEntries + t26.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
+            + t22.respEntries + t23.respEntries + t24.respEntries + t25.respEntries + t26.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -599,9 +1352,71 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable, T21: RESPRenderable, T22: RESPRenderable, T23: RESPRenderable, T24: RESPRenderable, T25: RESPRenderable, T26: RESPRenderable, T27: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20, _ t21: T21, _ t22: T22, _ t23: T23, _ t24: T24, _ t25: T25, _ t26: T26, _ t27: T27) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable,
+        T21: RESPRenderable,
+        T22: RESPRenderable,
+        T23: RESPRenderable,
+        T24: RESPRenderable,
+        T25: RESPRenderable,
+        T26: RESPRenderable,
+        T27: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20,
+        _ t21: T21,
+        _ t22: T22,
+        _ t23: T23,
+        _ t24: T24,
+        _ t25: T25,
+        _ t26: T26,
+        _ t27: T27
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries + t22.respEntries + t23.respEntries + t24.respEntries + t25.respEntries + t26.respEntries + t27.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
+            + t22.respEntries + t23.respEntries + t24.respEntries + t25.respEntries + t26.respEntries + t27.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)
@@ -635,9 +1450,73 @@ extension ValkeyCommandEncoder {
     }
 
     @inlinable
-    public mutating func encodeArray<T0: RESPRenderable, T1: RESPRenderable, T2: RESPRenderable, T3: RESPRenderable, T4: RESPRenderable, T5: RESPRenderable, T6: RESPRenderable, T7: RESPRenderable, T8: RESPRenderable, T9: RESPRenderable, T10: RESPRenderable, T11: RESPRenderable, T12: RESPRenderable, T13: RESPRenderable, T14: RESPRenderable, T15: RESPRenderable, T16: RESPRenderable, T17: RESPRenderable, T18: RESPRenderable, T19: RESPRenderable, T20: RESPRenderable, T21: RESPRenderable, T22: RESPRenderable, T23: RESPRenderable, T24: RESPRenderable, T25: RESPRenderable, T26: RESPRenderable, T27: RESPRenderable, T28: RESPRenderable>(_ t0: T0, _ t1: T1, _ t2: T2, _ t3: T3, _ t4: T4, _ t5: T5, _ t6: T6, _ t7: T7, _ t8: T8, _ t9: T9, _ t10: T10, _ t11: T11, _ t12: T12, _ t13: T13, _ t14: T14, _ t15: T15, _ t16: T16, _ t17: T17, _ t18: T18, _ t19: T19, _ t20: T20, _ t21: T21, _ t22: T22, _ t23: T23, _ t24: T24, _ t25: T25, _ t26: T26, _ t27: T27, _ t28: T28) {
+    public mutating func encodeArray<
+        T0: RESPRenderable,
+        T1: RESPRenderable,
+        T2: RESPRenderable,
+        T3: RESPRenderable,
+        T4: RESPRenderable,
+        T5: RESPRenderable,
+        T6: RESPRenderable,
+        T7: RESPRenderable,
+        T8: RESPRenderable,
+        T9: RESPRenderable,
+        T10: RESPRenderable,
+        T11: RESPRenderable,
+        T12: RESPRenderable,
+        T13: RESPRenderable,
+        T14: RESPRenderable,
+        T15: RESPRenderable,
+        T16: RESPRenderable,
+        T17: RESPRenderable,
+        T18: RESPRenderable,
+        T19: RESPRenderable,
+        T20: RESPRenderable,
+        T21: RESPRenderable,
+        T22: RESPRenderable,
+        T23: RESPRenderable,
+        T24: RESPRenderable,
+        T25: RESPRenderable,
+        T26: RESPRenderable,
+        T27: RESPRenderable,
+        T28: RESPRenderable
+    >(
+        _ t0: T0,
+        _ t1: T1,
+        _ t2: T2,
+        _ t3: T3,
+        _ t4: T4,
+        _ t5: T5,
+        _ t6: T6,
+        _ t7: T7,
+        _ t8: T8,
+        _ t9: T9,
+        _ t10: T10,
+        _ t11: T11,
+        _ t12: T12,
+        _ t13: T13,
+        _ t14: T14,
+        _ t15: T15,
+        _ t16: T16,
+        _ t17: T17,
+        _ t18: T18,
+        _ t19: T19,
+        _ t20: T20,
+        _ t21: T21,
+        _ t22: T22,
+        _ t23: T23,
+        _ t24: T24,
+        _ t25: T25,
+        _ t26: T26,
+        _ t27: T27,
+        _ t28: T28
+    ) {
         self.encodeIdentifier(.array)
-        let count = t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries + t22.respEntries + t23.respEntries + t24.respEntries + t25.respEntries + t26.respEntries + t27.respEntries + t28.respEntries
+        let count =
+            t0.respEntries + t1.respEntries + t2.respEntries + t3.respEntries + t4.respEntries + t5.respEntries + t6.respEntries + t7.respEntries
+            + t8.respEntries + t9.respEntries + t10.respEntries + t11.respEntries + t12.respEntries + t13.respEntries + t14.respEntries
+            + t15.respEntries + t16.respEntries + t17.respEntries + t18.respEntries + t19.respEntries + t20.respEntries + t21.respEntries
+            + t22.respEntries + t23.respEntries + t24.respEntries + t25.respEntries + t26.respEntries + t27.respEntries + t28.respEntries
         self.buffer.writeString("\(count)")
         self.buffer.writeStaticString("\r\n")
         t0.encode(into: &self)

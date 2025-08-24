@@ -59,4 +59,4 @@ done
 echo "}"
 } > "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
 
-#swift format format -i "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
+swift format format -i "$here/../Sources/Valkey/ValkeyCommandEncoder-multi-encode.swift"
