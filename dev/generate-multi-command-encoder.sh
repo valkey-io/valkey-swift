@@ -28,6 +28,7 @@ function genWithoutContextParameter() {
     done
     echo
     echo "        self.buffer.writeString(\"\\(count)\")"
+    # shellcheck disable=SC2028
     echo "        self.buffer.writeStaticString(\"\\r\\n\")"
     for ((n = 0; n<how_many; n +=1)); do
         echo "        t$((n)).encode(into: &self)"
