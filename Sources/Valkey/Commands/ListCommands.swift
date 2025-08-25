@@ -379,7 +379,7 @@ public struct LMPOP: ValkeyCommand {
     }
 }
 
-/// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
+/// Returns and removes one or more elements from the beginning of a list. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct LPOP: ValkeyCommand {
     public typealias Response = RESPToken?
@@ -576,7 +576,7 @@ public struct LTRIM: ValkeyCommand {
     }
 }
 
-/// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
+/// Returns and removes one or more elements from the end of a list. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct RPOP: ValkeyCommand {
     public typealias Response = RESPToken?
@@ -642,7 +642,7 @@ public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Appends an element to a list only when the list exists.
+/// Appends one or more elements to a list only when the list exists.
 @_documentation(visibility: internal)
 public struct RPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
@@ -818,7 +818,7 @@ extension ValkeyClientProtocol {
         try await execute(LMPOP(keys: keys, where: `where`, count: count))
     }
 
-    /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
+    /// Returns and removes one or more elements from the beginning of a list. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [LPOP](https://valkey.io/commands/lpop)
     /// - Available: 1.0.0
@@ -926,7 +926,7 @@ extension ValkeyClientProtocol {
         _ = try await execute(LTRIM(key, start: start, stop: stop))
     }
 
-    /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
+    /// Returns and removes one or more elements from the end of a list. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [RPOP](https://valkey.io/commands/rpop)
     /// - Available: 1.0.0
@@ -972,7 +972,7 @@ extension ValkeyClientProtocol {
         try await execute(RPUSH(key, elements: elements))
     }
 
-    /// Appends an element to a list only when the list exists.
+    /// Appends one or more elements to a list only when the list exists.
     ///
     /// - Documentation: [RPUSHX](https://valkey.io/commands/rpushx)
     /// - Available: 2.2.0

@@ -41,10 +41,11 @@ public struct BITCOUNT: ValkeyCommand {
         }
     }
     public struct RangeEndUnitBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let end: Int
-        @usableFromInline let unit: RangeEndUnitBlockUnit?
+        public var end: Int
+        public var unit: RangeEndUnitBlockUnit?
 
-        @inlinable public init(end: Int, unit: RangeEndUnitBlockUnit? = nil) {
+        @inlinable
+        public init(end: Int, unit: RangeEndUnitBlockUnit? = nil) {
             self.end = end
             self.unit = unit
         }
@@ -61,10 +62,11 @@ public struct BITCOUNT: ValkeyCommand {
         }
     }
     public struct Range: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let start: Int
-        @usableFromInline let endUnitBlock: RangeEndUnitBlock?
+        public var start: Int
+        public var endUnitBlock: RangeEndUnitBlock?
 
-        @inlinable public init(start: Int, endUnitBlock: RangeEndUnitBlock? = nil) {
+        @inlinable
+        public init(start: Int, endUnitBlock: RangeEndUnitBlock? = nil) {
             self.start = start
             self.endUnitBlock = endUnitBlock
         }
@@ -105,10 +107,11 @@ public struct BITCOUNT: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct BITFIELD: ValkeyCommand {
     public struct OperationGetBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let encoding: String
-        @usableFromInline let offset: Int
+        public var encoding: String
+        public var offset: Int
 
-        @inlinable public init(encoding: String, offset: Int) {
+        @inlinable
+        public init(encoding: String, offset: Int) {
             self.encoding = encoding
             self.offset = offset
         }
@@ -142,11 +145,12 @@ public struct BITFIELD: ValkeyCommand {
         }
     }
     public struct OperationWriteWriteOperationSetBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let encoding: String
-        @usableFromInline let offset: Int
-        @usableFromInline let value: Int
+        public var encoding: String
+        public var offset: Int
+        public var value: Int
 
-        @inlinable public init(encoding: String, offset: Int, value: Int) {
+        @inlinable
+        public init(encoding: String, offset: Int, value: Int) {
             self.encoding = encoding
             self.offset = offset
             self.value = value
@@ -165,11 +169,12 @@ public struct BITFIELD: ValkeyCommand {
         }
     }
     public struct OperationWriteWriteOperationIncrbyBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let encoding: String
-        @usableFromInline let offset: Int
-        @usableFromInline let increment: Int
+        public var encoding: String
+        public var offset: Int
+        public var increment: Int
 
-        @inlinable public init(encoding: String, offset: Int, increment: Int) {
+        @inlinable
+        public init(encoding: String, offset: Int, increment: Int) {
             self.encoding = encoding
             self.offset = offset
             self.increment = increment
@@ -208,10 +213,11 @@ public struct BITFIELD: ValkeyCommand {
         }
     }
     public struct OperationWrite: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let overflowBlock: OperationWriteOverflowBlock?
-        @usableFromInline let writeOperation: OperationWriteWriteOperation
+        public var overflowBlock: OperationWriteOverflowBlock?
+        public var writeOperation: OperationWriteWriteOperation
 
-        @inlinable public init(overflowBlock: OperationWriteOverflowBlock? = nil, writeOperation: OperationWriteWriteOperation) {
+        @inlinable
+        public init(overflowBlock: OperationWriteOverflowBlock? = nil, writeOperation: OperationWriteWriteOperation) {
             self.overflowBlock = overflowBlock
             self.writeOperation = writeOperation
         }
@@ -270,10 +276,11 @@ public struct BITFIELD: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct BITFIELDRO: ValkeyCommand {
     public struct GetBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let encoding: String
-        @usableFromInline let offset: Int
+        public var encoding: String
+        public var offset: Int
 
-        @inlinable public init(encoding: String, offset: Int) {
+        @inlinable
+        public init(encoding: String, offset: Int) {
             self.encoding = encoding
             self.offset = offset
         }
@@ -372,10 +379,11 @@ public struct BITPOS: ValkeyCommand {
         }
     }
     public struct RangeEndUnitBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let end: Int
-        @usableFromInline let unit: RangeEndUnitBlockUnit?
+        public var end: Int
+        public var unit: RangeEndUnitBlockUnit?
 
-        @inlinable public init(end: Int, unit: RangeEndUnitBlockUnit? = nil) {
+        @inlinable
+        public init(end: Int, unit: RangeEndUnitBlockUnit? = nil) {
             self.end = end
             self.unit = unit
         }
@@ -392,10 +400,11 @@ public struct BITPOS: ValkeyCommand {
         }
     }
     public struct Range: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let start: Int
-        @usableFromInline let endUnitBlock: RangeEndUnitBlock?
+        public var start: Int
+        public var endUnitBlock: RangeEndUnitBlock?
 
-        @inlinable public init(start: Int, endUnitBlock: RangeEndUnitBlock? = nil) {
+        @inlinable
+        public init(start: Int, endUnitBlock: RangeEndUnitBlock? = nil) {
             self.start = start
             self.endUnitBlock = endUnitBlock
         }

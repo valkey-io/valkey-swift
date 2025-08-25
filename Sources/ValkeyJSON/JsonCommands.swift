@@ -280,11 +280,12 @@ public enum JSON {
     @_documentation(visibility: internal)
     public struct MSET<Path: RESPStringRenderable, Json: RESPStringRenderable>: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let key: ValkeyKey
-            @usableFromInline let path: Path
-            @usableFromInline let json: Json
+            public var key: ValkeyKey
+            public var path: Path
+            public var json: Json
 
-            @inlinable public init(key: ValkeyKey, path: Path, json: Json) {
+            @inlinable
+            public init(key: ValkeyKey, path: Path, json: Json) {
                 self.key = key
                 self.path = path
                 self.json = json

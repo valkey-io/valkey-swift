@@ -86,6 +86,28 @@ public struct DECRBY: ValkeyCommand {
     }
 }
 
+/// Delete key if value matches string.
+@_documentation(visibility: internal)
+public struct DELIFEQ<Value: RESPStringRenderable>: ValkeyCommand {
+    public typealias Response = Int
+
+    @inlinable public static var name: String { "DELIFEQ" }
+
+    public var key: ValkeyKey
+    public var value: Value
+
+    @inlinable public init(_ key: ValkeyKey, value: Value) {
+        self.key = key
+        self.value = value
+    }
+
+    public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
+
+    @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        commandEncoder.encodeArray("DELIFEQ", key, RESPBulkString(value))
+    }
+}
+
 /// Returns the string value of a key.
 @_documentation(visibility: internal)
 public struct GET: ValkeyCommand {
@@ -365,10 +387,11 @@ public struct MGET: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let key: ValkeyKey
-        @usableFromInline let value: Value
+        public var key: ValkeyKey
+        public var value: Value
 
-        @inlinable public init(key: ValkeyKey, value: Value) {
+        @inlinable
+        public init(key: ValkeyKey, value: Value) {
             self.key = key
             self.value = value
         }
@@ -403,10 +426,11 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let key: ValkeyKey
-        @usableFromInline let value: Value
+        public var key: ValkeyKey
+        public var value: Value
 
-        @inlinable public init(key: ValkeyKey, value: Value) {
+        @inlinable
+        public init(key: ValkeyKey, value: Value) {
             self.key = key
             self.value = value
         }
@@ -695,6 +719,20 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func decrby(_ key: ValkeyKey, decrement: Int) async throws -> Int {
         try await execute(DECRBY(key, decrement: decrement))
+    }
+
+    /// Delete key if value matches string.
+    ///
+    /// - Documentation: [DELIFEQ](https://valkey.io/commands/delifeq)
+    /// - Available: 9.0.0
+    /// - Complexity: O(1)
+    /// - Response: One of the following
+    ///     * 0: The key was not deleted.
+    ///     * 1: The key was deleted.
+    @inlinable
+    @discardableResult
+    public func delifeq<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> Int {
+        try await execute(DELIFEQ(key, value: value))
     }
 
     /// Returns the string value of a key.

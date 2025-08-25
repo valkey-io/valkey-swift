@@ -278,9 +278,10 @@ public enum XINFO {
     @_documentation(visibility: internal)
     public struct STREAM: ValkeyCommand {
         public struct FullBlock: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let count: Int?
+            public var count: Int?
 
-            @inlinable public init(count: Int? = nil) {
+            @inlinable
+            public init(count: Int? = nil) {
                 self.count = count
             }
 
@@ -376,12 +377,13 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
         }
     }
     public struct Trim: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let strategy: TrimStrategy
-        @usableFromInline let `operator`: TrimOperator?
-        @usableFromInline let threshold: String
-        @usableFromInline let count: Int?
+        public var strategy: TrimStrategy
+        public var `operator`: TrimOperator?
+        public var threshold: String
+        public var count: Int?
 
-        @inlinable public init(strategy: TrimStrategy, `operator`: TrimOperator? = nil, threshold: String, count: Int? = nil) {
+        @inlinable
+        public init(strategy: TrimStrategy, `operator`: TrimOperator? = nil, threshold: String, count: Int? = nil) {
             self.strategy = strategy
             self.`operator` = `operator`
             self.threshold = threshold
@@ -422,10 +424,11 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
         }
     }
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let field: Field
-        @usableFromInline let value: Value
+        public var field: Field
+        public var value: Value
 
-        @inlinable public init(field: Field, value: Value) {
+        @inlinable
+        public init(field: Field, value: Value) {
             self.field = field
             self.value = value
         }
@@ -628,13 +631,14 @@ public struct XLEN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
     public struct Filters: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let minIdleTime: Int?
-        @usableFromInline let start: String
-        @usableFromInline let end: String
-        @usableFromInline let count: Int
-        @usableFromInline let consumer: String?
+        public var minIdleTime: Int?
+        public var start: String
+        public var end: String
+        public var count: Int
+        public var consumer: String?
 
-        @inlinable public init(minIdleTime: Int? = nil, start: String, end: String, count: Int, consumer: String? = nil) {
+        @inlinable
+        public init(minIdleTime: Int? = nil, start: String, end: String, count: Int, consumer: String? = nil) {
             self.minIdleTime = minIdleTime
             self.start = start
             self.end = end
@@ -707,10 +711,11 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: Va
 @_documentation(visibility: internal)
 public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
     public struct Streams: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let keys: [ValkeyKey]
-        @usableFromInline let ids: [Id]
+        public var keys: [ValkeyKey]
+        public var ids: [Id]
 
-        @inlinable public init(keys: [ValkeyKey], ids: [Id]) {
+        @inlinable
+        public init(keys: [ValkeyKey], ids: [Id]) {
             self.keys = keys
             self.ids = ids
         }
@@ -753,10 +758,11 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRenderable, Id: RESPStringRenderable>: ValkeyCommand {
     public struct GroupBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let group: Group
-        @usableFromInline let consumer: Consumer
+        public var group: Group
+        public var consumer: Consumer
 
-        @inlinable public init(group: Group, consumer: Consumer) {
+        @inlinable
+        public init(group: Group, consumer: Consumer) {
             self.group = group
             self.consumer = consumer
         }
@@ -773,10 +779,11 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
         }
     }
     public struct Streams: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let keys: [ValkeyKey]
-        @usableFromInline let ids: [Id]
+        public var keys: [ValkeyKey]
+        public var ids: [Id]
 
-        @inlinable public init(keys: [ValkeyKey], ids: [Id]) {
+        @inlinable
+        public init(keys: [ValkeyKey], ids: [Id]) {
             self.keys = keys
             self.ids = ids
         }
@@ -914,12 +921,13 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Trim: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let strategy: TrimStrategy
-        @usableFromInline let `operator`: TrimOperator?
-        @usableFromInline let threshold: Threshold
-        @usableFromInline let count: Int?
+        public var strategy: TrimStrategy
+        public var `operator`: TrimOperator?
+        public var threshold: Threshold
+        public var count: Int?
 
-        @inlinable public init(strategy: TrimStrategy, `operator`: TrimOperator? = nil, threshold: Threshold, count: Int? = nil) {
+        @inlinable
+        public init(strategy: TrimStrategy, `operator`: TrimOperator? = nil, threshold: Threshold, count: Int? = nil) {
             self.strategy = strategy
             self.`operator` = `operator`
             self.threshold = threshold

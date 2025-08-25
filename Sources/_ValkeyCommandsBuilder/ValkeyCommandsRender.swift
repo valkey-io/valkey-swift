@@ -343,7 +343,7 @@ extension String {
         self.append("\(tab)    public struct \(blockName): RESPRenderable, Sendable, Hashable {\n")
         for arg in argumentsWithoutNonOptionalTokens {
             self.append(
-                "\(tab)        @usableFromInline let \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: genericStrings))\n"
+                "\(tab)        public var \(arg.swiftVariable): \(variableType(arg, names: names, scope: nil, isArray: true, genericStrings: genericStrings))\n"
             )
         }
         self.append("\n")
@@ -351,7 +351,8 @@ extension String {
             argumentsWithoutNonOptionalTokens
             .map { "\($0.swiftVariable): \(parameterType($0, names: names, scope: nil, isArray: true, genericStrings: genericStrings))" }
             .joined(separator: ", ")
-        self.append("\(tab)        @inlinable public init(\(commandParametersString)) {\n")
+        self.append("\(tab)        @inlinable\n")
+        self.append("\(tab)        public init(\(commandParametersString)) {\n")
         for arg in argumentsWithoutNonOptionalTokens {
             self.append("\(tab)            self.\(arg.swiftVariable) = \(arg.swiftVariable)\n")
         }
