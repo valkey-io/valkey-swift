@@ -94,7 +94,7 @@ package final class ValkeyConnectionFactory: Sendable {
                     logger: logger
                 )
             }.get()
-            try await connection.initialHandshake()
+            try await connection.waitOnActive()
             return connection
         }
     }

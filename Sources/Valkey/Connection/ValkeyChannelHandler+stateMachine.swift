@@ -65,14 +65,8 @@ extension ValkeyChannelHandler {
         @usableFromInline
         struct ConnectedState {
             let context: Context
-            var pendingHelloCommand: PendingCommand
-
-            func cancel(requestID: Int) -> PendingCommand? {
-                if pendingHelloCommand.requestID == requestID {
-                    return pendingHelloCommand
-                }
-                return nil
-            }
+            let pendingHelloCommand: PendingCommand
+            var pendingCommands: Deque<PendingCommand>
         }
 
         init() {
@@ -85,11 +79,11 @@ extension ValkeyChannelHandler {
 
         /// handler has become active
         @usableFromInline
-        mutating func setConnected(context: Context, pendingHelloCommand: PendingCommand) {
+        mutating func setConnected(context: Context, pendingHelloCommand: PendingCommand, pendingCommands: Deque<PendingCommand>) {
             switch consume self.state {
             case .initialized:
                 self = .connected(
-                    .init(context: context, pendingHelloCommand: pendingHelloCommand)
+                    .init(context: context, pendingHelloCommand: pendingHelloCommand, pendingCommands: pendingCommands)
                 )
             case .connected:
                 preconditionFailure("Cannot set connected state when state is connected")
@@ -162,7 +156,7 @@ extension ValkeyChannelHandler {
                     self = .closed(error)
                     return .respondAndClose(state.pendingHelloCommand, error)
                 default:
-                    self = .active(.init(context: state.context, pendingCommands: .init()))
+                    self = .active(.init(context: state.context, pendingCommands: state.pendingCommands))
                     return .respond(state.pendingHelloCommand, .cancel)
                 }
             case .active(var state):
@@ -204,8 +198,12 @@ extension ValkeyChannelHandler {
                     self = .closed(nil)
                     return .respondAndClose(command, nil)
                 }
-            case .closed:
-                preconditionFailure("Cannot receive command on closed connection")
+            case .closed(let error):
+                guard let error else {
+                    preconditionFailure("Cannot receive command on closed connection with no error")
+                }
+                self = .closed(error)
+                return .closeWithError(error)
             }
         }
 
@@ -233,7 +231,7 @@ extension ValkeyChannelHandler {
                 return .done
             case .closing(let state):
                 self = .closing(state)
-                return .done
+                return .reportedClosed(nil)
             case .closed(let error):
                 self = .closed(error)
                 return .reportedClosed(error)
@@ -255,7 +253,9 @@ extension ValkeyChannelHandler {
             case .connected(let state):
                 if state.pendingHelloCommand.deadline <= now {
                     self = .closed(ValkeyClientError(.timeout))
-                    return .failPendingCommandsAndClose(state.context, [state.pendingHelloCommand])
+                    var pendingCommands = state.pendingCommands
+                    pendingCommands.prepend(state.pendingHelloCommand)
+                    return .failPendingCommandsAndClose(state.context, pendingCommands)
                 } else {
                     self = .connected(state)
                     return .reschedule(state.pendingHelloCommand.deadline)
@@ -296,24 +296,14 @@ extension ValkeyChannelHandler {
             case doNothing
         }
 
-        /// handler wants to send a command
+        /// handler wants to cancel a command
         @usableFromInline
         mutating func cancel(requestID: Int) -> CancelAction {
             switch consume self.state {
             case .initialized:
                 preconditionFailure("Cannot cancel when initialized")
-            case .connected(let state):
-                if let command = state.cancel(requestID: requestID) {
-                    self = .closed(CancellationError())
-                    return .failPendingCommandsAndClose(
-                        state.context,
-                        cancel: [command],
-                        closeConnectionDueToCancel: []
-                    )
-                } else {
-                    self = .connected(state)
-                    return .doNothing
-                }
+            case .connected:
+                preconditionFailure("Cannot cancel while in connected state")
             case .active(let state):
                 let (cancel, closeConnectionDueToCancel) = state.cancel(requestID: requestID)
                 if cancel.count > 0 {
@@ -360,7 +350,9 @@ extension ValkeyChannelHandler {
                 self = .closed(nil)
                 return .doNothing
             case .connected(let state):
-                self = .closing(.init(context: state.context, pendingCommands: [state.pendingHelloCommand]))
+                var pendingCommands = state.pendingCommands
+                pendingCommands.prepend(state.pendingHelloCommand)
+                self = .closing(.init(context: state.context, pendingCommands: pendingCommands))
                 return .waitForPendingCommands(state.context)
             case .active(let state):
                 if state.pendingCommands.count > 0 {
@@ -393,7 +385,9 @@ extension ValkeyChannelHandler {
                 return .doNothing
             case .connected(let state):
                 self = .closed(nil)
-                return .failPendingCommandsAndClose(state.context, [state.pendingHelloCommand])
+                var pendingCommands = state.pendingCommands
+                pendingCommands.prepend(state.pendingHelloCommand)
+                return .failPendingCommandsAndClose(state.context, state.pendingCommands)
             case .active(let state):
                 self = .closed(nil)
                 return .failPendingCommandsAndClose(state.context, state.pendingCommands)
@@ -421,7 +415,9 @@ extension ValkeyChannelHandler {
                 return .doNothing
             case .connected(let state):
                 self = .closed(nil)
-                return .failPendingCommandsAndSubscriptions([state.pendingHelloCommand])
+                var pendingCommands = state.pendingCommands
+                pendingCommands.prepend(state.pendingHelloCommand)
+                return .failPendingCommandsAndSubscriptions(state.pendingCommands)
             case .active(let state):
                 self = .closed(nil)
                 return .failPendingCommandsAndSubscriptions(state.pendingCommands)

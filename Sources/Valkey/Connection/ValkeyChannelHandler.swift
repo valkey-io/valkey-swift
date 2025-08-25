@@ -159,33 +159,6 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
     }
 
-    /// Write valkey command/commands to channel
-    /// - Parameters:
-    ///   - request: Valkey command request
-    ///   - promise: Promise to fulfill when command is complete
-    @inlinable
-    func writeAndForget<Command: ValkeyCommand>(command: Command, requestID: Int) {
-        self.eventLoop.assertInEventLoop()
-        let pendingCommand = PendingCommand(
-            promise: .forget,
-            requestID: requestID,
-            deadline: .now() + self.configuration.commandTimeout
-        )
-        switch self.stateMachine.sendCommand(pendingCommand) {
-        case .sendCommand(let context):
-            self.encoder.reset()
-            command.encode(into: &self.encoder)
-            let buffer = self.encoder.buffer
-            context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
-            if self.deadlineCallback == nil {
-                self.scheduleDeadlineCallback(deadline: .now() + self.configuration.commandTimeout)
-            }
-
-        case .throwError:
-            break
-        }
-    }
-
     @usableFromInline
     func write(request: ValkeyRequest) {
         self.eventLoop.assertInEventLoop()
@@ -307,25 +280,35 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     @usableFromInline
     func setConnected(context: ChannelHandlerContext) {
         // Send initial HELLO command
-        let command = HELLO(
+        let helloCommand = HELLO(
             arguments: .init(
                 protover: 3,
                 auth: configuration.authentication.map { .init(username: $0.username, password: $0.password) },
                 clientname: configuration.clientName
             )
         )
+        // set client info
+        let clientInfoLibName = CLIENT.SETINFO(attr: .libname(valkeySwiftLibraryName))
+        let clientInfoLibVersion = CLIENT.SETINFO(attr: .libver(valkeySwiftLibraryVersion))
+
         self.encoder.reset()
-        command.encode(into: &self.encoder)
-        let buffer = self.encoder.buffer
+        helloCommand.encode(into: &self.encoder)
+        clientInfoLibName.encode(into: &self.encoder)
+        clientInfoLibVersion.encode(into: &self.encoder)
 
         let promise = eventLoop.makePromise(of: RESPToken.self)
+
         let deadline = .now() + self.configuration.commandTimeout
-        context.writeAndFlush(self.wrapOutboundOut(buffer), promise: nil)
-        scheduleDeadlineCallback(deadline: deadline)
+        context.writeAndFlush(self.wrapOutboundOut(self.encoder.buffer), promise: nil)
+        self.scheduleDeadlineCallback(deadline: deadline)
 
         self.stateMachine.setConnected(
             context: context,
-            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: deadline)
+            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: deadline),
+            pendingCommands: [
+                .init(promise: .forget, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libname
+                .init(promise: .forget, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libver
+            ]
         )
     }
 
