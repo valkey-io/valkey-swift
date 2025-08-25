@@ -47,10 +47,11 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct CONFIG: ValkeyCommand {
         public struct ActionSet: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let parameter: String
-            @usableFromInline let value: String
+            public var parameter: String
+            public var value: String
 
-            @inlinable public init(parameter: String, value: String) {
+            @inlinable
+            public init(parameter: String, value: String) {
                 self.parameter = parameter
                 self.value = value
             }
@@ -105,10 +106,11 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct DEBUG: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let parameter: String
-            @usableFromInline let value: String
+            public var parameter: String
+            public var value: String
 
-            @inlinable public init(parameter: String, value: String) {
+            @inlinable
+            public init(parameter: String, value: String) {
                 self.parameter = parameter
                 self.value = value
             }
@@ -479,10 +481,11 @@ public enum SENTINEL {
     @_documentation(visibility: internal)
     public struct SET<PrimaryName: RESPStringRenderable, Option: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let option: Option
-            @usableFromInline let value: Value
+            public var option: Option
+            public var value: Value
 
-            @inlinable public init(option: Option, value: Value) {
+            @inlinable
+            public init(option: Option, value: Value) {
                 self.option = option
                 self.value = value
             }

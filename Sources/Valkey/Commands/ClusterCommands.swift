@@ -45,10 +45,11 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct ADDSLOTSRANGE: ValkeyCommand {
         public struct Range: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let startSlot: Int
-            @usableFromInline let endSlot: Int
+            public var startSlot: Int
+            public var endSlot: Int
 
-            @inlinable public init(startSlot: Int, endSlot: Int) {
+            @inlinable
+            public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
                 self.endSlot = endSlot
             }
@@ -161,10 +162,11 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct DELSLOTSRANGE: ValkeyCommand {
         public struct Range: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let startSlot: Int
-            @usableFromInline let endSlot: Int
+            public var startSlot: Int
+            public var endSlot: Int
 
-            @inlinable public init(startSlot: Int, endSlot: Int) {
+            @inlinable
+            public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
                 self.endSlot = endSlot
             }
@@ -408,10 +410,11 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct MIGRATESLOTS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public struct MigrationGroupRange: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let startSlot: Int
-            @usableFromInline let endSlot: Int
+            public var startSlot: Int
+            public var endSlot: Int
 
-            @inlinable public init(startSlot: Int, endSlot: Int) {
+            @inlinable
+            public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
                 self.endSlot = endSlot
             }
@@ -428,10 +431,11 @@ public enum CLUSTER {
             }
         }
         public struct MigrationGroup: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let ranges: [MigrationGroupRange]
-            @usableFromInline let nodeId: NodeId
+            public var ranges: [MigrationGroupRange]
+            public var nodeId: NodeId
 
-            @inlinable public init(ranges: [MigrationGroupRange], nodeId: NodeId) {
+            @inlinable
+            public init(ranges: [MigrationGroupRange], nodeId: NodeId) {
                 self.ranges = ranges
                 self.nodeId = nodeId
             }
@@ -530,7 +534,8 @@ public enum CLUSTER {
     public struct REPLICATE: ValkeyCommand {
         public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
 
-            @inlinable public init() {
+            @inlinable
+            public init() {
             }
 
             @inlinable
@@ -718,10 +723,11 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct SLOTSTATS: ValkeyCommand {
         public struct FilterSlotsrange: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let startSlot: Int
-            @usableFromInline let endSlot: Int
+            public var startSlot: Int
+            public var endSlot: Int
 
-            @inlinable public init(startSlot: Int, endSlot: Int) {
+            @inlinable
+            public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
                 self.endSlot = endSlot
             }
@@ -753,11 +759,12 @@ public enum CLUSTER {
             }
         }
         public struct FilterOrderby: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let metric: String
-            @usableFromInline let limit: Int?
-            @usableFromInline let order: FilterOrderbyOrder?
+            public var metric: String
+            public var limit: Int?
+            public var order: FilterOrderbyOrder?
 
-            @inlinable public init(metric: String, limit: Int? = nil, order: FilterOrderbyOrder? = nil) {
+            @inlinable
+            public init(metric: String, limit: Int? = nil, order: FilterOrderbyOrder? = nil) {
                 self.metric = metric
                 self.limit = limit
                 self.order = order

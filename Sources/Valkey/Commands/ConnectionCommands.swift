@@ -910,10 +910,11 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HELLO: ValkeyCommand {
     public struct ArgumentsAuth: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let username: String
-        @usableFromInline let password: String
+        public var username: String
+        public var password: String
 
-        @inlinable public init(username: String, password: String) {
+        @inlinable
+        public init(username: String, password: String) {
             self.username = username
             self.password = password
         }
@@ -930,11 +931,12 @@ public struct HELLO: ValkeyCommand {
         }
     }
     public struct Arguments: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let protover: Int
-        @usableFromInline let auth: ArgumentsAuth?
-        @usableFromInline let clientname: String?
+        public var protover: Int
+        public var auth: ArgumentsAuth?
+        public var clientname: String?
 
-        @inlinable public init(protover: Int, auth: ArgumentsAuth? = nil, clientname: String? = nil) {
+        @inlinable
+        public init(protover: Int, auth: ArgumentsAuth? = nil, clientname: String? = nil) {
             self.protover = protover
             self.auth = auth
             self.clientname = clientname

@@ -91,10 +91,11 @@ public struct HEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -156,10 +157,11 @@ public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -202,10 +204,11 @@ public struct HEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -324,10 +327,11 @@ public struct HGETEX<Field: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -484,10 +488,11 @@ public struct HMGET<Field: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let field: Field
-        @usableFromInline let value: Value
+        public var field: Field
+        public var value: Value
 
-        @inlinable public init(field: Field, value: Value) {
+        @inlinable
+        public init(field: Field, value: Value) {
             self.field = field
             self.value = value
         }
@@ -524,10 +529,11 @@ public struct HMSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: V
 @_documentation(visibility: internal)
 public struct HPERSIST<Field: RESPStringRenderable>: ValkeyCommand {
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -585,10 +591,11 @@ public struct HPEXPIRE<Field: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -650,10 +657,11 @@ public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -696,10 +704,11 @@ public struct HPEXPIREAT<Field: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HPEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -740,10 +749,11 @@ public struct HPEXPIRETIME<Field: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HPTTL<Field: RESPStringRenderable>: ValkeyCommand {
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }
@@ -784,10 +794,11 @@ public struct HPTTL<Field: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HRANDFIELD: ValkeyCommand {
     public struct Options: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let withvalues: Bool
+        public var count: Int
+        public var withvalues: Bool
 
-        @inlinable public init(count: Int, withvalues: Bool = false) {
+        @inlinable
+        public init(count: Int, withvalues: Bool = false) {
             self.count = count
             self.withvalues = withvalues
         }
@@ -865,10 +876,11 @@ public struct HSCAN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HSET<Field: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let field: Field
-        @usableFromInline let value: Value
+        public var field: Field
+        public var value: Value
 
-        @inlinable public init(field: Field, value: Value) {
+        @inlinable
+        public init(field: Field, value: Value) {
             self.field = field
             self.value = value
         }
@@ -954,10 +966,11 @@ public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
         }
     }
     public struct FieldsData: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let field: Field
-        @usableFromInline let value: Value
+        public var field: Field
+        public var value: Value
 
-        @inlinable public init(field: Field, value: Value) {
+        @inlinable
+        public init(field: Field, value: Value) {
             self.field = field
             self.value = value
         }
@@ -974,10 +987,11 @@ public struct HSETEX<Field: RESPStringRenderable, Value: RESPStringRenderable>: 
         }
     }
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let data: [FieldsData]
+        public var numfields: Int
+        public var data: [FieldsData]
 
-        @inlinable public init(numfields: Int, data: [FieldsData]) {
+        @inlinable
+        public init(numfields: Int, data: [FieldsData]) {
             self.numfields = numfields
             self.data = data
         }
@@ -1068,10 +1082,11 @@ public struct HSTRLEN<Field: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HTTL<Field: RESPStringRenderable>: ValkeyCommand {
     public struct Fields: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numfields: Int
-        @usableFromInline let fields: [Field]
+        public var numfields: Int
+        public var fields: [Field]
 
-        @inlinable public init(numfields: Int, fields: [Field]) {
+        @inlinable
+        public init(numfields: Int, fields: [Field]) {
             self.numfields = numfields
             self.fields = fields
         }

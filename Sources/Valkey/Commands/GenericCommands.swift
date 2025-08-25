@@ -372,10 +372,11 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct AuthenticationAuth2: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let username: String
-        @usableFromInline let password: String
+        public var username: String
+        public var password: String
 
-        @inlinable public init(username: String, password: String) {
+        @inlinable
+        public init(username: String, password: String) {
             self.username = username
             self.password = password
         }
@@ -773,10 +774,11 @@ public struct SCAN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SORT: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -855,10 +857,11 @@ public struct SORT: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SORTRO: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }

@@ -41,11 +41,12 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let longitude: Double
-        @usableFromInline let latitude: Double
-        @usableFromInline let member: Member
+        public var longitude: Double
+        public var latitude: Double
+        public var member: Member
 
-        @inlinable public init(longitude: Double, latitude: Double, member: Member) {
+        @inlinable
+        public init(longitude: Double, latitude: Double, member: Member) {
             self.longitude = longitude
             self.latitude = latitude
             self.member = member
@@ -200,10 +201,11 @@ public struct GEORADIUS: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -337,10 +339,11 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -470,10 +473,11 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -583,10 +587,11 @@ public struct GEORADIUSRO: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -681,10 +686,11 @@ public struct GEORADIUSRO: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct GEOSEARCH: ValkeyCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let longitude: Double
-        @usableFromInline let latitude: Double
+        public var longitude: Double
+        public var latitude: Double
 
-        @inlinable public init(longitude: Double, latitude: Double) {
+        @inlinable
+        public init(longitude: Double, latitude: Double) {
             self.longitude = longitude
             self.latitude = latitude
         }
@@ -740,10 +746,11 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct ByCircle: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let radius: Double
-        @usableFromInline let unit: ByCircleUnit
+        public var radius: Double
+        public var unit: ByCircleUnit
 
-        @inlinable public init(radius: Double, unit: ByCircleUnit) {
+        @inlinable
+        public init(radius: Double, unit: ByCircleUnit) {
             self.radius = radius
             self.unit = unit
         }
@@ -779,11 +786,12 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct ByBox: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let width: Double
-        @usableFromInline let height: Double
-        @usableFromInline let unit: ByBoxUnit
+        public var width: Double
+        public var height: Double
+        public var unit: ByBoxUnit
 
-        @inlinable public init(width: Double, height: Double, unit: ByBoxUnit) {
+        @inlinable
+        public init(width: Double, height: Double, unit: ByBoxUnit) {
             self.width = width
             self.height = height
             self.unit = unit
@@ -802,10 +810,11 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct ByPolygonVertices: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let longitude: Double
-        @usableFromInline let latitude: Double
+        public var longitude: Double
+        public var latitude: Double
 
-        @inlinable public init(longitude: Double, latitude: Double) {
+        @inlinable
+        public init(longitude: Double, latitude: Double) {
             self.longitude = longitude
             self.latitude = latitude
         }
@@ -822,10 +831,11 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct ByPolygon: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numVertices: Int
-        @usableFromInline let vertices: [ByPolygonVertices]
+        public var numVertices: Int
+        public var vertices: [ByPolygonVertices]
 
-        @inlinable public init(numVertices: Int, vertices: [ByPolygonVertices]) {
+        @inlinable
+        public init(numVertices: Int, vertices: [ByPolygonVertices]) {
             self.numVertices = numVertices
             self.vertices = vertices
         }
@@ -880,10 +890,11 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -953,10 +964,11 @@ public struct GEOSEARCH: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct GEOSEARCHSTORE: ValkeyCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let longitude: Double
-        @usableFromInline let latitude: Double
+        public var longitude: Double
+        public var latitude: Double
 
-        @inlinable public init(longitude: Double, latitude: Double) {
+        @inlinable
+        public init(longitude: Double, latitude: Double) {
             self.longitude = longitude
             self.latitude = latitude
         }
@@ -1012,10 +1024,11 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct ByCircle: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let radius: Double
-        @usableFromInline let unit: ByCircleUnit
+        public var radius: Double
+        public var unit: ByCircleUnit
 
-        @inlinable public init(radius: Double, unit: ByCircleUnit) {
+        @inlinable
+        public init(radius: Double, unit: ByCircleUnit) {
             self.radius = radius
             self.unit = unit
         }
@@ -1051,11 +1064,12 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct ByBox: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let width: Double
-        @usableFromInline let height: Double
-        @usableFromInline let unit: ByBoxUnit
+        public var width: Double
+        public var height: Double
+        public var unit: ByBoxUnit
 
-        @inlinable public init(width: Double, height: Double, unit: ByBoxUnit) {
+        @inlinable
+        public init(width: Double, height: Double, unit: ByBoxUnit) {
             self.width = width
             self.height = height
             self.unit = unit
@@ -1074,10 +1088,11 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct ByPolygonVertices: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let longitude: Double
-        @usableFromInline let latitude: Double
+        public var longitude: Double
+        public var latitude: Double
 
-        @inlinable public init(longitude: Double, latitude: Double) {
+        @inlinable
+        public init(longitude: Double, latitude: Double) {
             self.longitude = longitude
             self.latitude = latitude
         }
@@ -1094,10 +1109,11 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct ByPolygon: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let numVertices: Int
-        @usableFromInline let vertices: [ByPolygonVertices]
+        public var numVertices: Int
+        public var vertices: [ByPolygonVertices]
 
-        @inlinable public init(numVertices: Int, vertices: [ByPolygonVertices]) {
+        @inlinable
+        public init(numVertices: Int, vertices: [ByPolygonVertices]) {
             self.numVertices = numVertices
             self.vertices = vertices
         }
@@ -1152,10 +1168,11 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }

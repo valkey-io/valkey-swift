@@ -141,10 +141,11 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let score: Double
-        @usableFromInline let member: Member
+        public var score: Double
+        public var member: Member
 
-        @inlinable public init(score: Double, member: Member) {
+        @inlinable
+        public init(score: Double, member: Member) {
             self.score = score
             self.member = member
         }
@@ -567,10 +568,11 @@ public struct ZPOPMIN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZRANDMEMBER: ValkeyCommand {
     public struct Options: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let withscores: Bool
+        public var count: Int
+        public var withscores: Bool
 
-        @inlinable public init(count: Int, withscores: Bool = false) {
+        @inlinable
+        public init(count: Int, withscores: Bool = false) {
             self.count = count
             self.withscores = withscores
         }
@@ -626,10 +628,11 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
         }
     }
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -697,10 +700,11 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
 @_documentation(visibility: internal)
 public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -745,10 +749,11 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
 @_documentation(visibility: internal)
 public struct ZRANGEBYSCORE: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -810,10 +815,11 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
         }
     }
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -1019,10 +1025,11 @@ public struct ZREVRANGE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderable>: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -1067,10 +1074,11 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
 @_documentation(visibility: internal)
 public struct ZREVRANGEBYSCORE: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }

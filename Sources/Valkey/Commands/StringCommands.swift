@@ -387,10 +387,11 @@ public struct MGET: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let key: ValkeyKey
-        @usableFromInline let value: Value
+        public var key: ValkeyKey
+        public var value: Value
 
-        @inlinable public init(key: ValkeyKey, value: Value) {
+        @inlinable
+        public init(key: ValkeyKey, value: Value) {
             self.key = key
             self.value = value
         }
@@ -425,10 +426,11 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let key: ValkeyKey
-        @usableFromInline let value: Value
+        public var key: ValkeyKey
+        public var value: Value
 
-        @inlinable public init(key: ValkeyKey, value: Value) {
+        @inlinable
+        public init(key: ValkeyKey, value: Value) {
             self.key = key
             self.value = value
         }
