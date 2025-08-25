@@ -41,6 +41,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT CACHING" }
+
         public var mode: Mode
 
         @inlinable public init(mode: Mode) {
@@ -55,6 +57,8 @@ extension CLIENT {
     /// A client claims its capability.
     @_documentation(visibility: internal)
     public struct CAPA<Capability: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLIENT CAPA" }
+
         public var capabilities: [Capability]
 
         @inlinable public init(capabilities: [Capability]) {
@@ -71,6 +75,8 @@ extension CLIENT {
     public struct GETNAME: ValkeyCommand {
         public typealias Response = ByteBuffer?
 
+        @inlinable public static var name: String { "CLIENT GETNAME" }
+
         @inlinable public init() {
         }
 
@@ -83,6 +89,8 @@ extension CLIENT {
     @_documentation(visibility: internal)
     public struct GETREDIR: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "CLIENT GETREDIR" }
 
         @inlinable public init() {
         }
@@ -97,6 +105,8 @@ extension CLIENT {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLIENT HELP" }
+
         @inlinable public init() {
         }
 
@@ -109,6 +119,8 @@ extension CLIENT {
     @_documentation(visibility: internal)
     public struct ID: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "CLIENT ID" }
 
         @inlinable public init() {
         }
@@ -136,6 +148,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT IMPORT-SOURCE" }
+
         public var enabled: Enabled
 
         @inlinable public init(enabled: Enabled) {
@@ -151,6 +165,8 @@ extension CLIENT {
     @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "CLIENT INFO" }
 
         @inlinable public init() {
         }
@@ -201,6 +217,29 @@ extension CLIENT {
                 }
             }
         }
+        public enum FilterNewFormatNotClientType: RESPRenderable, Sendable, Hashable {
+            case normal
+            case master
+            case primary
+            case slave
+            case replica
+            case pubsub
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .normal: "normal".encode(into: &commandEncoder)
+                case .master: "master".encode(into: &commandEncoder)
+                case .primary: "primary".encode(into: &commandEncoder)
+                case .slave: "slave".encode(into: &commandEncoder)
+                case .replica: "replica".encode(into: &commandEncoder)
+                case .pubsub: "pubsub".encode(into: &commandEncoder)
+                }
+            }
+        }
         public enum FilterNewFormat: RESPRenderable, Sendable, Hashable {
             case clientIds([Int])
             case clientType(FilterNewFormatClientType?)
@@ -209,6 +248,26 @@ extension CLIENT {
             case laddr(String?)
             case skipme(FilterNewFormatSkipme?)
             case maxage(Int?)
+            case name(String?)
+            case idle(Int?)
+            case flags(String?)
+            case libName(String?)
+            case libVer(String?)
+            case db(Int?)
+            case capa(String?)
+            case ip(String?)
+            case notClientType(FilterNewFormatNotClientType?)
+            case notClientIds([Int])
+            case notUsername(String?)
+            case notAddr(String?)
+            case notLaddr(String?)
+            case notName(String?)
+            case notFlags(String?)
+            case notLibName(String?)
+            case notLibVer(String?)
+            case notDb(Int?)
+            case notCapa(String?)
+            case notIp(String?)
 
             @inlinable
             public var respEntries: Int {
@@ -220,6 +279,26 @@ extension CLIENT {
                 case .laddr(let laddr): RESPWithToken("LADDR", laddr).respEntries
                 case .skipme(let skipme): RESPWithToken("SKIPME", skipme).respEntries
                 case .maxage(let maxage): RESPWithToken("MAXAGE", maxage).respEntries
+                case .name(let name): RESPWithToken("NAME", name).respEntries
+                case .idle(let idle): RESPWithToken("IDLE", idle).respEntries
+                case .flags(let flags): RESPWithToken("FLAGS", flags).respEntries
+                case .libName(let libName): RESPWithToken("LIB-NAME", libName).respEntries
+                case .libVer(let libVer): RESPWithToken("LIB-VER", libVer).respEntries
+                case .db(let db): RESPWithToken("DB", db).respEntries
+                case .capa(let capa): RESPWithToken("CAPA", capa).respEntries
+                case .ip(let ip): RESPWithToken("IP", ip).respEntries
+                case .notClientType(let notClientType): RESPWithToken("NOT-TYPE", notClientType).respEntries
+                case .notClientIds(let notClientIds): RESPWithToken("NOT-ID", notClientIds).respEntries
+                case .notUsername(let notUsername): RESPWithToken("NOT-USER", notUsername).respEntries
+                case .notAddr(let notAddr): RESPWithToken("NOT-ADDR", notAddr).respEntries
+                case .notLaddr(let notLaddr): RESPWithToken("NOT-LADDR", notLaddr).respEntries
+                case .notName(let notName): RESPWithToken("NOT-NAME", notName).respEntries
+                case .notFlags(let notFlags): RESPWithToken("NOT-FLAGS", notFlags).respEntries
+                case .notLibName(let notLibName): RESPWithToken("NOT-LIB-NAME", notLibName).respEntries
+                case .notLibVer(let notLibVer): RESPWithToken("NOT-LIB-VER", notLibVer).respEntries
+                case .notDb(let notDb): RESPWithToken("NOT-DB", notDb).respEntries
+                case .notCapa(let notCapa): RESPWithToken("NOT-CAPA", notCapa).respEntries
+                case .notIp(let notIp): RESPWithToken("NOT-IP", notIp).respEntries
                 }
             }
 
@@ -233,6 +312,26 @@ extension CLIENT {
                 case .laddr(let laddr): RESPWithToken("LADDR", laddr).encode(into: &commandEncoder)
                 case .skipme(let skipme): RESPWithToken("SKIPME", skipme).encode(into: &commandEncoder)
                 case .maxage(let maxage): RESPWithToken("MAXAGE", maxage).encode(into: &commandEncoder)
+                case .name(let name): RESPWithToken("NAME", name).encode(into: &commandEncoder)
+                case .idle(let idle): RESPWithToken("IDLE", idle).encode(into: &commandEncoder)
+                case .flags(let flags): RESPWithToken("FLAGS", flags).encode(into: &commandEncoder)
+                case .libName(let libName): RESPWithToken("LIB-NAME", libName).encode(into: &commandEncoder)
+                case .libVer(let libVer): RESPWithToken("LIB-VER", libVer).encode(into: &commandEncoder)
+                case .db(let db): RESPWithToken("DB", db).encode(into: &commandEncoder)
+                case .capa(let capa): RESPWithToken("CAPA", capa).encode(into: &commandEncoder)
+                case .ip(let ip): RESPWithToken("IP", ip).encode(into: &commandEncoder)
+                case .notClientType(let notClientType): RESPWithToken("NOT-TYPE", notClientType).encode(into: &commandEncoder)
+                case .notClientIds(let notClientIds): RESPWithToken("NOT-ID", notClientIds).encode(into: &commandEncoder)
+                case .notUsername(let notUsername): RESPWithToken("NOT-USER", notUsername).encode(into: &commandEncoder)
+                case .notAddr(let notAddr): RESPWithToken("NOT-ADDR", notAddr).encode(into: &commandEncoder)
+                case .notLaddr(let notLaddr): RESPWithToken("NOT-LADDR", notLaddr).encode(into: &commandEncoder)
+                case .notName(let notName): RESPWithToken("NOT-NAME", notName).encode(into: &commandEncoder)
+                case .notFlags(let notFlags): RESPWithToken("NOT-FLAGS", notFlags).encode(into: &commandEncoder)
+                case .notLibName(let notLibName): RESPWithToken("NOT-LIB-NAME", notLibName).encode(into: &commandEncoder)
+                case .notLibVer(let notLibVer): RESPWithToken("NOT-LIB-VER", notLibVer).encode(into: &commandEncoder)
+                case .notDb(let notDb): RESPWithToken("NOT-DB", notDb).encode(into: &commandEncoder)
+                case .notCapa(let notCapa): RESPWithToken("NOT-CAPA", notCapa).encode(into: &commandEncoder)
+                case .notIp(let notIp): RESPWithToken("NOT-IP", notIp).encode(into: &commandEncoder)
                 }
             }
         }
@@ -257,6 +356,8 @@ extension CLIENT {
             }
         }
         public typealias Response = Int?
+
+        @inlinable public static var name: String { "CLIENT KILL" }
 
         public var filter: Filter
 
@@ -306,7 +407,28 @@ extension CLIENT {
                 }
             }
         }
+        public enum NotClientType: RESPRenderable, Sendable, Hashable {
+            case normal
+            case master
+            case replica
+            case pubsub
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .normal: "normal".encode(into: &commandEncoder)
+                case .master: "master".encode(into: &commandEncoder)
+                case .replica: "replica".encode(into: &commandEncoder)
+                case .pubsub: "pubsub".encode(into: &commandEncoder)
+                }
+            }
+        }
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "CLIENT LIST" }
 
         public var clientType: ClientType?
         public var clientIds: [Int]
@@ -315,6 +437,26 @@ extension CLIENT {
         public var laddr: String?
         public var skipme: Skipme?
         public var maxage: Int?
+        public var name: String?
+        public var idle: Int?
+        public var flags: String?
+        public var libName: String?
+        public var libVer: String?
+        public var db: Int?
+        public var capa: String?
+        public var ip: String?
+        public var notClientType: NotClientType?
+        public var notClientIds: [Int]
+        public var notUsername: String?
+        public var notAddr: String?
+        public var notLaddr: String?
+        public var notName: String?
+        public var notFlags: String?
+        public var notLibName: String?
+        public var notLibVer: String?
+        public var notDb: Int?
+        public var notCapa: String?
+        public var notIp: String?
 
         @inlinable public init(
             clientType: ClientType? = nil,
@@ -323,7 +465,27 @@ extension CLIENT {
             addr: String? = nil,
             laddr: String? = nil,
             skipme: Skipme? = nil,
-            maxage: Int? = nil
+            maxage: Int? = nil,
+            name: String? = nil,
+            idle: Int? = nil,
+            flags: String? = nil,
+            libName: String? = nil,
+            libVer: String? = nil,
+            db: Int? = nil,
+            capa: String? = nil,
+            ip: String? = nil,
+            notClientType: NotClientType? = nil,
+            notClientIds: [Int] = [],
+            notUsername: String? = nil,
+            notAddr: String? = nil,
+            notLaddr: String? = nil,
+            notName: String? = nil,
+            notFlags: String? = nil,
+            notLibName: String? = nil,
+            notLibVer: String? = nil,
+            notDb: Int? = nil,
+            notCapa: String? = nil,
+            notIp: String? = nil
         ) {
             self.clientType = clientType
             self.clientIds = clientIds
@@ -332,6 +494,26 @@ extension CLIENT {
             self.laddr = laddr
             self.skipme = skipme
             self.maxage = maxage
+            self.name = name
+            self.idle = idle
+            self.flags = flags
+            self.libName = libName
+            self.libVer = libVer
+            self.db = db
+            self.capa = capa
+            self.ip = ip
+            self.notClientType = notClientType
+            self.notClientIds = notClientIds
+            self.notUsername = notUsername
+            self.notAddr = notAddr
+            self.notLaddr = notLaddr
+            self.notName = notName
+            self.notFlags = notFlags
+            self.notLibName = notLibName
+            self.notLibVer = notLibVer
+            self.notDb = notDb
+            self.notCapa = notCapa
+            self.notIp = notIp
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
@@ -344,7 +526,27 @@ extension CLIENT {
                 RESPWithToken("ADDR", addr),
                 RESPWithToken("LADDR", laddr),
                 RESPWithToken("SKIPME", skipme),
-                RESPWithToken("MAXAGE", maxage)
+                RESPWithToken("MAXAGE", maxage),
+                RESPWithToken("NAME", name),
+                RESPWithToken("IDLE", idle),
+                RESPWithToken("FLAGS", flags),
+                RESPWithToken("LIB-NAME", libName),
+                RESPWithToken("LIB-VER", libVer),
+                RESPWithToken("DB", db),
+                RESPWithToken("CAPA", capa),
+                RESPWithToken("IP", ip),
+                RESPWithToken("NOT-TYPE", notClientType),
+                RESPWithToken("NOT-ID", notClientIds),
+                RESPWithToken("NOT-USER", notUsername),
+                RESPWithToken("NOT-ADDR", notAddr),
+                RESPWithToken("NOT-LADDR", notLaddr),
+                RESPWithToken("NOT-NAME", notName),
+                RESPWithToken("NOT-FLAGS", notFlags),
+                RESPWithToken("NOT-LIB-NAME", notLibName),
+                RESPWithToken("NOT-LIB-VER", notLibVer),
+                RESPWithToken("NOT-DB", notDb),
+                RESPWithToken("NOT-CAPA", notCapa),
+                RESPWithToken("NOT-IP", notIp)
             )
         }
     }
@@ -367,6 +569,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT NO-EVICT" }
+
         public var enabled: Enabled
 
         @inlinable public init(enabled: Enabled) {
@@ -396,6 +600,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT NO-TOUCH" }
+
         public var enabled: Enabled
 
         @inlinable public init(enabled: Enabled) {
@@ -425,6 +631,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT PAUSE" }
+
         public var timeout: Int
         public var mode: Mode?
 
@@ -458,6 +666,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT REPLY" }
+
         public var action: Action
 
         @inlinable public init(action: Action) {
@@ -492,6 +702,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT SETINFO" }
+
         public var attr: Attr
 
         @inlinable public init(attr: Attr) {
@@ -506,6 +718,8 @@ extension CLIENT {
     /// Sets the connection name.
     @_documentation(visibility: internal)
     public struct SETNAME<ConnectionName: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLIENT SETNAME" }
+
         public var connectionName: ConnectionName
 
         @inlinable public init(connectionName: ConnectionName) {
@@ -535,6 +749,8 @@ extension CLIENT {
                 }
             }
         }
+        @inlinable public static var name: String { "CLIENT TRACKING" }
+
         public var status: Status
         public var clientId: Int?
         public var prefixes: [String]
@@ -581,6 +797,8 @@ extension CLIENT {
     public struct TRACKINGINFO: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
+        @inlinable public static var name: String { "CLIENT TRACKINGINFO" }
+
         @inlinable public init() {
         }
 
@@ -609,6 +827,8 @@ extension CLIENT {
         }
         public typealias Response = Int
 
+        @inlinable public static var name: String { "CLIENT UNBLOCK" }
+
         public var clientId: Int
         public var unblockType: UnblockType?
 
@@ -625,6 +845,8 @@ extension CLIENT {
     /// Resumes processing commands from paused clients.
     @_documentation(visibility: internal)
     public struct UNPAUSE: ValkeyCommand {
+        @inlinable public static var name: String { "CLIENT UNPAUSE" }
+
         @inlinable public init() {
         }
 
@@ -638,6 +860,8 @@ extension CLIENT {
 /// Authenticates the connection.
 @_documentation(visibility: internal)
 public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "AUTH" }
+
     public var username: String?
     public var password: Password
 
@@ -654,6 +878,8 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
 /// A container for client connection commands.
 @_documentation(visibility: internal)
 public struct CLIENT: ValkeyCommand {
+    @inlinable public static var name: String { "CLIENT" }
+
     @inlinable public init() {
     }
 
@@ -666,6 +892,8 @@ public struct CLIENT: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = ByteBuffer
+
+    @inlinable public static var name: String { "ECHO" }
 
     public var message: Message
 
@@ -682,10 +910,11 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct HELLO: ValkeyCommand {
     public struct ArgumentsAuth: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let username: String
-        @usableFromInline let password: String
+        public var username: String
+        public var password: String
 
-        @inlinable public init(username: String, password: String) {
+        @inlinable
+        public init(username: String, password: String) {
             self.username = username
             self.password = password
         }
@@ -702,11 +931,12 @@ public struct HELLO: ValkeyCommand {
         }
     }
     public struct Arguments: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let protover: Int
-        @usableFromInline let auth: ArgumentsAuth?
-        @usableFromInline let clientname: String?
+        public var protover: Int
+        public var auth: ArgumentsAuth?
+        public var clientname: String?
 
-        @inlinable public init(protover: Int, auth: ArgumentsAuth? = nil, clientname: String? = nil) {
+        @inlinable
+        public init(protover: Int, auth: ArgumentsAuth? = nil, clientname: String? = nil) {
             self.protover = protover
             self.auth = auth
             self.clientname = clientname
@@ -726,6 +956,8 @@ public struct HELLO: ValkeyCommand {
     }
     public typealias Response = RESPToken.Map
 
+    @inlinable public static var name: String { "HELLO" }
+
     public var arguments: Arguments?
 
     @inlinable public init(arguments: Arguments? = nil) {
@@ -740,6 +972,8 @@ public struct HELLO: ValkeyCommand {
 /// Returns the server's liveliness response.
 @_documentation(visibility: internal)
 public struct PING: ValkeyCommand {
+    @inlinable public static var name: String { "PING" }
+
     public var message: String?
 
     @inlinable public init(message: String? = nil) {
@@ -754,6 +988,8 @@ public struct PING: ValkeyCommand {
 /// Closes the connection.
 @_documentation(visibility: internal)
 public struct QUIT: ValkeyCommand {
+    @inlinable public static var name: String { "QUIT" }
+
     @inlinable public init() {
     }
 
@@ -767,6 +1003,8 @@ public struct QUIT: ValkeyCommand {
 public struct RESET: ValkeyCommand {
     public typealias Response = String
 
+    @inlinable public static var name: String { "RESET" }
+
     @inlinable public init() {
     }
 
@@ -778,6 +1016,8 @@ public struct RESET: ValkeyCommand {
 /// Changes the selected database.
 @_documentation(visibility: internal)
 public struct SELECT: ValkeyCommand {
+    @inlinable public static var name: String { "SELECT" }
+
     public var index: Int
 
     @inlinable public init(index: Int) {
@@ -873,6 +1113,7 @@ extension ValkeyClientProtocol {
     ///     * 8.0.0: `MAXAGE` option.
     ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
     ///     * 8.1.0: `ID` option accepts multiple IDs.
+    ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
     /// - Complexity: O(N) where N is the number of client connections
     /// - Response: One of the following
     ///     * "OK": When called in 3 argument format.
@@ -895,7 +1136,8 @@ extension ValkeyClientProtocol {
     ///     * 7.0.0: Added `resp`, `multi-mem`, `rbs` and `rbp` fields.
     ///     * 7.0.3: Added `ssub` field.
     ///     * 8.0.0: Replaced `master` `TYPE` with `primary`. `master` still supported for backward compatibility.
-    ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE
+    ///     * 8.1.0: Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE.
+    ///     * 9.0.0: Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP.
     /// - Complexity: O(N) where N is the number of client connections
     /// - Response: [String]: Information and statistics about client connections
     @inlinable
@@ -907,10 +1149,58 @@ extension ValkeyClientProtocol {
         addr: String? = nil,
         laddr: String? = nil,
         skipme: CLIENT.LIST.Skipme? = nil,
-        maxage: Int? = nil
+        maxage: Int? = nil,
+        name: String? = nil,
+        idle: Int? = nil,
+        flags: String? = nil,
+        libName: String? = nil,
+        libVer: String? = nil,
+        db: Int? = nil,
+        capa: String? = nil,
+        ip: String? = nil,
+        notClientType: CLIENT.LIST.NotClientType? = nil,
+        notClientIds: [Int] = [],
+        notUsername: String? = nil,
+        notAddr: String? = nil,
+        notLaddr: String? = nil,
+        notName: String? = nil,
+        notFlags: String? = nil,
+        notLibName: String? = nil,
+        notLibVer: String? = nil,
+        notDb: Int? = nil,
+        notCapa: String? = nil,
+        notIp: String? = nil
     ) async throws -> ByteBuffer {
         try await execute(
-            CLIENT.LIST(clientType: clientType, clientIds: clientIds, username: username, addr: addr, laddr: laddr, skipme: skipme, maxage: maxage)
+            CLIENT.LIST(
+                clientType: clientType,
+                clientIds: clientIds,
+                username: username,
+                addr: addr,
+                laddr: laddr,
+                skipme: skipme,
+                maxage: maxage,
+                name: name,
+                idle: idle,
+                flags: flags,
+                libName: libName,
+                libVer: libVer,
+                db: db,
+                capa: capa,
+                ip: ip,
+                notClientType: notClientType,
+                notClientIds: notClientIds,
+                notUsername: notUsername,
+                notAddr: notAddr,
+                notLaddr: notLaddr,
+                notName: notName,
+                notFlags: notFlags,
+                notLibName: notLibName,
+                notLibVer: notLibVer,
+                notDb: notDb,
+                notCapa: notCapa,
+                notIp: notIp
+            )
         )
     }
 

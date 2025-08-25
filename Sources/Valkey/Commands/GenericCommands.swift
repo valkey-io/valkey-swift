@@ -30,6 +30,8 @@ public enum OBJECT {
     public struct ENCODING: ValkeyCommand {
         public typealias Response = ByteBuffer?
 
+        @inlinable public static var name: String { "OBJECT ENCODING" }
+
         public var key: ValkeyKey
 
         @inlinable public init(_ key: ValkeyKey) {
@@ -49,6 +51,8 @@ public enum OBJECT {
     @_documentation(visibility: internal)
     public struct FREQ: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "OBJECT FREQ" }
 
         public var key: ValkeyKey
 
@@ -70,6 +74,8 @@ public enum OBJECT {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "OBJECT HELP" }
+
         @inlinable public init() {
         }
 
@@ -82,6 +88,8 @@ public enum OBJECT {
     @_documentation(visibility: internal)
     public struct IDLETIME: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "OBJECT IDLETIME" }
 
         public var key: ValkeyKey
 
@@ -102,6 +110,8 @@ public enum OBJECT {
     @_documentation(visibility: internal)
     public struct REFCOUNT: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "OBJECT REFCOUNT" }
 
         public var key: ValkeyKey
 
@@ -124,6 +134,8 @@ public enum OBJECT {
 @_documentation(visibility: internal)
 public struct COPY: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "COPY" }
 
     public var source: ValkeyKey
     public var destination: ValkeyKey
@@ -149,6 +161,8 @@ public struct COPY: ValkeyCommand {
 public struct DEL: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "DEL" }
+
     public var keys: [ValkeyKey]
 
     @inlinable public init(keys: [ValkeyKey]) {
@@ -166,6 +180,8 @@ public struct DEL: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct DUMP: ValkeyCommand {
     public typealias Response = ByteBuffer?
+
+    @inlinable public static var name: String { "DUMP" }
 
     public var key: ValkeyKey
 
@@ -186,6 +202,8 @@ public struct DUMP: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct EXISTS: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "EXISTS" }
 
     public var keys: [ValkeyKey]
 
@@ -225,6 +243,8 @@ public struct EXPIRE: ValkeyCommand {
         }
     }
     public typealias Response = Int
+
+    @inlinable public static var name: String { "EXPIRE" }
 
     public var key: ValkeyKey
     public var seconds: Int
@@ -267,6 +287,8 @@ public struct EXPIREAT: ValkeyCommand {
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "EXPIREAT" }
+
     public var key: ValkeyKey
     public var unixTimeSeconds: Date
     public var condition: Condition?
@@ -289,6 +311,8 @@ public struct EXPIREAT: ValkeyCommand {
 public struct EXPIRETIME: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "EXPIRETIME" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -308,6 +332,8 @@ public struct EXPIRETIME: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct KEYS: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "KEYS" }
 
     public var pattern: String
 
@@ -346,10 +372,11 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct AuthenticationAuth2: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let username: String
-        @usableFromInline let password: String
+        public var username: String
+        public var password: String
 
-        @inlinable public init(username: String, password: String) {
+        @inlinable
+        public init(username: String, password: String) {
             self.username = username
             self.password = password
         }
@@ -386,6 +413,8 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public typealias Response = String?
+
+    @inlinable public static var name: String { "MIGRATE" }
 
     public var host: Host
     public var port: Int
@@ -442,6 +471,8 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
 public struct MOVE: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "MOVE" }
+
     public var key: ValkeyKey
     public var db: Int
 
@@ -461,6 +492,8 @@ public struct MOVE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct PERSIST: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "PERSIST" }
 
     public var key: ValkeyKey
 
@@ -498,6 +531,8 @@ public struct PEXPIRE: ValkeyCommand {
         }
     }
     public typealias Response = Int
+
+    @inlinable public static var name: String { "PEXPIRE" }
 
     public var key: ValkeyKey
     public var milliseconds: Int
@@ -540,6 +575,8 @@ public struct PEXPIREAT: ValkeyCommand {
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "PEXPIREAT" }
+
     public var key: ValkeyKey
     public var unixTimeMilliseconds: Date
     public var condition: Condition?
@@ -562,6 +599,8 @@ public struct PEXPIREAT: ValkeyCommand {
 public struct PEXPIRETIME: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "PEXPIRETIME" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -581,6 +620,8 @@ public struct PEXPIRETIME: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct PTTL: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "PTTL" }
 
     public var key: ValkeyKey
 
@@ -602,6 +643,8 @@ public struct PTTL: ValkeyCommand {
 public struct RANDOMKEY: ValkeyCommand {
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "RANDOMKEY" }
+
     @inlinable public init() {
     }
 
@@ -615,6 +658,8 @@ public struct RANDOMKEY: ValkeyCommand {
 /// Renames a key and overwrites the destination.
 @_documentation(visibility: internal)
 public struct RENAME: ValkeyCommand {
+    @inlinable public static var name: String { "RENAME" }
+
     public var key: ValkeyKey
     public var newkey: ValkeyKey
 
@@ -635,6 +680,8 @@ public struct RENAME: ValkeyCommand {
 public struct RENAMENX: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "RENAMENX" }
+
     public var key: ValkeyKey
     public var newkey: ValkeyKey
 
@@ -653,6 +700,8 @@ public struct RENAMENX: ValkeyCommand {
 /// Creates a key from the serialized representation of a value.
 @_documentation(visibility: internal)
 public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "RESTORE" }
+
     public var key: ValkeyKey
     public var ttl: Int
     public var serializedValue: SerializedValue
@@ -700,6 +749,8 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
 public struct SCAN: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "SCAN" }
+
     public var cursor: Int
     public var pattern: String?
     public var count: Int?
@@ -723,10 +774,11 @@ public struct SCAN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SORT: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -757,6 +809,8 @@ public struct SORT: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "SORT" }
+
     public var key: ValkeyKey
     public var byPattern: String?
     public var limit: Limit?
@@ -803,10 +857,11 @@ public struct SORT: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SORTRO: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -838,6 +893,8 @@ public struct SORTRO: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "SORT_RO" }
 
     public var key: ValkeyKey
     public var byPattern: String?
@@ -884,6 +941,8 @@ public struct SORTRO: ValkeyCommand {
 public struct TOUCH: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "TOUCH" }
+
     public var keys: [ValkeyKey]
 
     @inlinable public init(keys: [ValkeyKey]) {
@@ -903,6 +962,8 @@ public struct TOUCH: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct TTL: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "TTL" }
 
     public var key: ValkeyKey
 
@@ -924,6 +985,8 @@ public struct TTL: ValkeyCommand {
 public struct TYPE: ValkeyCommand {
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "TYPE" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -944,6 +1007,8 @@ public struct TYPE: ValkeyCommand {
 public struct UNLINK: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "UNLINK" }
+
     public var keys: [ValkeyKey]
 
     @inlinable public init(keys: [ValkeyKey]) {
@@ -961,6 +1026,8 @@ public struct UNLINK: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct WAIT: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "WAIT" }
 
     public var numreplicas: Int
     public var timeout: Int
@@ -981,6 +1048,8 @@ public struct WAIT: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct WAITAOF: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "WAITAOF" }
 
     public var numlocal: Int
     public var numreplicas: Int

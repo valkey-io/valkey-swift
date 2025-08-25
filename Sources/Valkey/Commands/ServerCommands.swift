@@ -30,6 +30,8 @@ public enum ACL {
     public struct CAT: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "ACL CAT" }
+
         public var category: String?
 
         @inlinable public init(category: String? = nil) {
@@ -46,6 +48,8 @@ public enum ACL {
     public struct DELUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
 
+        @inlinable public static var name: String { "ACL DELUSER" }
+
         public var usernames: [Username]
 
         @inlinable public init(usernames: [Username]) {
@@ -61,6 +65,8 @@ public enum ACL {
     @_documentation(visibility: internal)
     public struct DRYRUN<Username: RESPStringRenderable, Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = ByteBuffer?
+
+        @inlinable public static var name: String { "ACL DRYRUN" }
 
         public var username: Username
         public var command: Command
@@ -82,6 +88,8 @@ public enum ACL {
     public struct GENPASS: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "ACL GENPASS" }
+
         public var bits: Int?
 
         @inlinable public init(bits: Int? = nil) {
@@ -97,6 +105,8 @@ public enum ACL {
     @_documentation(visibility: internal)
     public struct GETUSER<Username: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map?
+
+        @inlinable public static var name: String { "ACL GETUSER" }
 
         public var username: Username
 
@@ -114,6 +124,8 @@ public enum ACL {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "ACL HELP" }
+
         @inlinable public init() {
         }
 
@@ -127,6 +139,8 @@ public enum ACL {
     public struct LIST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "ACL LIST" }
+
         @inlinable public init() {
         }
 
@@ -138,6 +152,8 @@ public enum ACL {
     /// Reloads the rules from the configured ACL file.
     @_documentation(visibility: internal)
     public struct LOAD: ValkeyCommand {
+        @inlinable public static var name: String { "ACL LOAD" }
+
         @inlinable public init() {
         }
 
@@ -171,6 +187,8 @@ public enum ACL {
         }
         public typealias Response = RESPToken.Array?
 
+        @inlinable public static var name: String { "ACL LOG" }
+
         public var operation: Operation?
 
         @inlinable public init(operation: Operation? = nil) {
@@ -185,6 +203,8 @@ public enum ACL {
     /// Saves the effective ACL rules in the configured ACL file.
     @_documentation(visibility: internal)
     public struct SAVE: ValkeyCommand {
+        @inlinable public static var name: String { "ACL SAVE" }
+
         @inlinable public init() {
         }
 
@@ -196,6 +216,8 @@ public enum ACL {
     /// Creates and modifies an ACL user and its rules.
     @_documentation(visibility: internal)
     public struct SETUSER<Username: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "ACL SETUSER" }
+
         public var username: Username
         public var rules: [String]
 
@@ -214,6 +236,8 @@ public enum ACL {
     public struct USERS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "ACL USERS" }
+
         @inlinable public init() {
         }
 
@@ -226,6 +250,8 @@ public enum ACL {
     @_documentation(visibility: internal)
     public struct WHOAMI: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "ACL WHOAMI" }
 
         @inlinable public init() {
         }
@@ -243,6 +269,8 @@ extension COMMAND {
     public struct COUNT: ValkeyCommand {
         public typealias Response = Int
 
+        @inlinable public static var name: String { "COMMAND COUNT" }
+
         @inlinable public init() {
         }
 
@@ -255,6 +283,8 @@ extension COMMAND {
     @_documentation(visibility: internal)
     public struct DOCS: ValkeyCommand {
         public typealias Response = RESPToken.Map
+
+        @inlinable public static var name: String { "COMMAND DOCS" }
 
         public var commandNames: [String]
 
@@ -271,6 +301,8 @@ extension COMMAND {
     @_documentation(visibility: internal)
     public struct GETKEYS<Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "COMMAND GETKEYS" }
 
         public var command: Command
         public var args: [String]
@@ -290,6 +322,8 @@ extension COMMAND {
     public struct GETKEYSANDFLAGS<Command: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "COMMAND GETKEYSANDFLAGS" }
+
         public var command: Command
         public var args: [String]
 
@@ -308,6 +342,8 @@ extension COMMAND {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "COMMAND HELP" }
+
         @inlinable public init() {
         }
 
@@ -320,6 +356,8 @@ extension COMMAND {
     @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "COMMAND INFO" }
 
         public var commandNames: [String]
 
@@ -360,6 +398,8 @@ extension COMMAND {
         }
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "COMMAND LIST" }
+
         public var filterby: Filterby?
 
         @inlinable public init(filterby: Filterby? = nil) {
@@ -380,29 +420,25 @@ public enum COMMANDLOG {
     @_documentation(visibility: internal)
     public struct GET: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
-            case slow(String)
-            case largeRequest(String)
-            case largeReply(String)
+            case slow
+            case largeRequest
+            case largeReply
 
             @inlinable
-            public var respEntries: Int {
-                switch self {
-                case .slow(let slow): slow.respEntries
-                case .largeRequest(let largeRequest): largeRequest.respEntries
-                case .largeReply(let largeReply): largeReply.respEntries
-                }
-            }
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .slow(let slow): slow.encode(into: &commandEncoder)
-                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
-                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                case .slow: "slow".encode(into: &commandEncoder)
+                case .largeRequest: "large-request".encode(into: &commandEncoder)
+                case .largeReply: "large-reply".encode(into: &commandEncoder)
                 }
             }
         }
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "COMMANDLOG GET" }
 
         public var count: Int
         public var type: _Type
@@ -422,6 +458,8 @@ public enum COMMANDLOG {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "COMMANDLOG HELP" }
+
         @inlinable public init() {
         }
 
@@ -434,29 +472,25 @@ public enum COMMANDLOG {
     @_documentation(visibility: internal)
     public struct LEN: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
-            case slow(String)
-            case largeRequest(String)
-            case largeReply(String)
+            case slow
+            case largeRequest
+            case largeReply
 
             @inlinable
-            public var respEntries: Int {
-                switch self {
-                case .slow(let slow): slow.respEntries
-                case .largeRequest(let largeRequest): largeRequest.respEntries
-                case .largeReply(let largeReply): largeReply.respEntries
-                }
-            }
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .slow(let slow): slow.encode(into: &commandEncoder)
-                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
-                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                case .slow: "slow".encode(into: &commandEncoder)
+                case .largeRequest: "large-request".encode(into: &commandEncoder)
+                case .largeReply: "large-reply".encode(into: &commandEncoder)
                 }
             }
         }
         public typealias Response = Int
+
+        @inlinable public static var name: String { "COMMANDLOG LEN" }
 
         public var type: _Type
 
@@ -473,28 +507,24 @@ public enum COMMANDLOG {
     @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
         public enum _Type: RESPRenderable, Sendable, Hashable {
-            case slow(String)
-            case largeRequest(String)
-            case largeReply(String)
+            case slow
+            case largeRequest
+            case largeReply
 
             @inlinable
-            public var respEntries: Int {
-                switch self {
-                case .slow(let slow): slow.respEntries
-                case .largeRequest(let largeRequest): largeRequest.respEntries
-                case .largeReply(let largeReply): largeReply.respEntries
-                }
-            }
+            public var respEntries: Int { 1 }
 
             @inlinable
             public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
                 switch self {
-                case .slow(let slow): slow.encode(into: &commandEncoder)
-                case .largeRequest(let largeRequest): largeRequest.encode(into: &commandEncoder)
-                case .largeReply(let largeReply): largeReply.encode(into: &commandEncoder)
+                case .slow: "slow".encode(into: &commandEncoder)
+                case .largeRequest: "large-request".encode(into: &commandEncoder)
+                case .largeReply: "large-reply".encode(into: &commandEncoder)
                 }
             }
         }
+        @inlinable public static var name: String { "COMMANDLOG RESET" }
+
         public var type: _Type
 
         @inlinable public init(type: _Type) {
@@ -516,6 +546,8 @@ public enum CONFIG {
     public struct GET<Parameter: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
+        @inlinable public static var name: String { "CONFIG GET" }
+
         public var parameters: [Parameter]
 
         @inlinable public init(parameters: [Parameter]) {
@@ -532,6 +564,8 @@ public enum CONFIG {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CONFIG HELP" }
+
         @inlinable public init() {
         }
 
@@ -543,6 +577,8 @@ public enum CONFIG {
     /// Resets the server's statistics.
     @_documentation(visibility: internal)
     public struct RESETSTAT: ValkeyCommand {
+        @inlinable public static var name: String { "CONFIG RESETSTAT" }
+
         @inlinable public init() {
         }
 
@@ -554,6 +590,8 @@ public enum CONFIG {
     /// Persists the effective configuration to file.
     @_documentation(visibility: internal)
     public struct REWRITE: ValkeyCommand {
+        @inlinable public static var name: String { "CONFIG REWRITE" }
+
         @inlinable public init() {
         }
 
@@ -566,10 +604,11 @@ public enum CONFIG {
     @_documentation(visibility: internal)
     public struct SET<Parameter: RESPStringRenderable, Value: RESPStringRenderable>: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let parameter: Parameter
-            @usableFromInline let value: Value
+            public var parameter: Parameter
+            public var value: Value
 
-            @inlinable public init(parameter: Parameter, value: Value) {
+            @inlinable
+            public init(parameter: Parameter, value: Value) {
                 self.parameter = parameter
                 self.value = value
             }
@@ -585,6 +624,8 @@ public enum CONFIG {
                 RESPBulkString(value).encode(into: &commandEncoder)
             }
         }
+        @inlinable public static var name: String { "CONFIG SET" }
+
         public var data: [Data]
 
         @inlinable public init(data: [Data]) {
@@ -606,6 +647,8 @@ public enum LATENCY {
     public struct DOCTOR: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "LATENCY DOCTOR" }
+
         @inlinable public init() {
         }
 
@@ -618,6 +661,8 @@ public enum LATENCY {
     @_documentation(visibility: internal)
     public struct GRAPH<Event: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "LATENCY GRAPH" }
 
         public var event: Event
 
@@ -635,6 +680,8 @@ public enum LATENCY {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "LATENCY HELP" }
+
         @inlinable public init() {
         }
 
@@ -647,6 +694,8 @@ public enum LATENCY {
     @_documentation(visibility: internal)
     public struct HISTOGRAM: ValkeyCommand {
         public typealias Response = RESPToken.Map
+
+        @inlinable public static var name: String { "LATENCY HISTOGRAM" }
 
         public var commands: [String]
 
@@ -664,6 +713,8 @@ public enum LATENCY {
     public struct HISTORY<Event: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "LATENCY HISTORY" }
+
         public var event: Event
 
         @inlinable public init(event: Event) {
@@ -680,6 +731,8 @@ public enum LATENCY {
     public struct LATEST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "LATENCY LATEST" }
+
         @inlinable public init() {
         }
 
@@ -692,6 +745,8 @@ public enum LATENCY {
     @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "LATENCY RESET" }
 
         public var events: [String]
 
@@ -714,6 +769,8 @@ public enum MEMORY {
     public struct DOCTOR: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "MEMORY DOCTOR" }
+
         @inlinable public init() {
         }
 
@@ -726,6 +783,8 @@ public enum MEMORY {
     @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "MEMORY HELP" }
 
         @inlinable public init() {
         }
@@ -740,6 +799,8 @@ public enum MEMORY {
     public struct MALLOCSTATS: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "MEMORY MALLOC-STATS" }
+
         @inlinable public init() {
         }
 
@@ -751,6 +812,8 @@ public enum MEMORY {
     /// Asks the allocator to release memory.
     @_documentation(visibility: internal)
     public struct PURGE: ValkeyCommand {
+        @inlinable public static var name: String { "MEMORY PURGE" }
+
         @inlinable public init() {
         }
 
@@ -764,6 +827,8 @@ public enum MEMORY {
     public struct STATS: ValkeyCommand {
         public typealias Response = RESPToken.Map
 
+        @inlinable public static var name: String { "MEMORY STATS" }
+
         @inlinable public init() {
         }
 
@@ -776,6 +841,8 @@ public enum MEMORY {
     @_documentation(visibility: internal)
     public struct USAGE: ValkeyCommand {
         public typealias Response = Int?
+
+        @inlinable public static var name: String { "MEMORY USAGE" }
 
         public var key: ValkeyKey
         public var count: Int?
@@ -804,6 +871,8 @@ public enum MODULE {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "MODULE HELP" }
+
         @inlinable public init() {
         }
 
@@ -817,6 +886,8 @@ public enum MODULE {
     public struct LIST: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "MODULE LIST" }
+
         @inlinable public init() {
         }
 
@@ -828,6 +899,8 @@ public enum MODULE {
     /// Loads a module.
     @_documentation(visibility: internal)
     public struct LOAD<Path: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "MODULE LOAD" }
+
         public var path: Path
         public var args: [String]
 
@@ -845,10 +918,11 @@ public enum MODULE {
     @_documentation(visibility: internal)
     public struct LOADEX<Path: RESPStringRenderable>: ValkeyCommand {
         public struct Configs: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let name: String
-            @usableFromInline let value: String
+            public var name: String
+            public var value: String
 
-            @inlinable public init(name: String, value: String) {
+            @inlinable
+            public init(name: String, value: String) {
                 self.name = name
                 self.value = value
             }
@@ -864,6 +938,8 @@ public enum MODULE {
                 value.encode(into: &commandEncoder)
             }
         }
+        @inlinable public static var name: String { "MODULE LOADEX" }
+
         public var path: Path
         public var configs: [Configs]
         public var args: [String]
@@ -882,6 +958,8 @@ public enum MODULE {
     /// Unloads a module.
     @_documentation(visibility: internal)
     public struct UNLOAD<Name: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "MODULE UNLOAD" }
+
         public var name: Name
 
         @inlinable public init(name: Name) {
@@ -903,6 +981,8 @@ public enum SLOWLOG {
     public struct GET: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "SLOWLOG GET" }
+
         public var count: Int?
 
         @inlinable public init(count: Int? = nil) {
@@ -919,6 +999,8 @@ public enum SLOWLOG {
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "SLOWLOG HELP" }
+
         @inlinable public init() {
         }
 
@@ -932,6 +1014,8 @@ public enum SLOWLOG {
     public struct LEN: ValkeyCommand {
         public typealias Response = Int
 
+        @inlinable public static var name: String { "SLOWLOG LEN" }
+
         @inlinable public init() {
         }
 
@@ -943,6 +1027,8 @@ public enum SLOWLOG {
     /// Clears all entries from the slow log.
     @_documentation(visibility: internal)
     public struct RESET: ValkeyCommand {
+        @inlinable public static var name: String { "SLOWLOG RESET" }
+
         @inlinable public init() {
         }
 
@@ -957,6 +1043,8 @@ public enum SLOWLOG {
 @_documentation(visibility: internal)
 public struct BGREWRITEAOF: ValkeyCommand {
     public typealias Response = ByteBuffer
+
+    @inlinable public static var name: String { "BGREWRITEAOF" }
 
     @inlinable public init() {
     }
@@ -986,6 +1074,8 @@ public struct BGSAVE: ValkeyCommand {
     }
     public typealias Response = String
 
+    @inlinable public static var name: String { "BGSAVE" }
+
     public var operation: Operation?
 
     @inlinable public init(operation: Operation? = nil) {
@@ -1000,6 +1090,8 @@ public struct BGSAVE: ValkeyCommand {
 /// Returns detailed information about all commands.
 @_documentation(visibility: internal)
 public struct COMMAND: ValkeyCommand {
+    @inlinable public static var name: String { "COMMAND" }
+
     @inlinable public init() {
     }
 
@@ -1012,6 +1104,8 @@ public struct COMMAND: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct DBSIZE: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "DBSIZE" }
 
     @inlinable public init() {
     }
@@ -1027,11 +1121,12 @@ public struct DBSIZE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct FAILOVER: ValkeyCommand {
     public struct Target: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let host: String
-        @usableFromInline let port: Int
-        @usableFromInline let force: Bool
+        public var host: String
+        public var port: Int
+        public var force: Bool
 
-        @inlinable public init(host: String, port: Int, force: Bool = false) {
+        @inlinable
+        public init(host: String, port: Int, force: Bool = false) {
             self.host = host
             self.port = port
             self.force = force
@@ -1049,6 +1144,8 @@ public struct FAILOVER: ValkeyCommand {
             RESPPureToken("FORCE", force).encode(into: &commandEncoder)
         }
     }
+    @inlinable public static var name: String { "FAILOVER" }
+
     public var target: Target?
     public var abort: Bool
     public var milliseconds: Int?
@@ -1082,6 +1179,8 @@ public struct FLUSHALL: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "FLUSHALL" }
+
     public var flushType: FlushType?
 
     @inlinable public init(flushType: FlushType? = nil) {
@@ -1111,6 +1210,8 @@ public struct FLUSHDB: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "FLUSHDB" }
+
     public var flushType: FlushType?
 
     @inlinable public init(flushType: FlushType? = nil) {
@@ -1126,6 +1227,8 @@ public struct FLUSHDB: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct INFO: ValkeyCommand {
     public typealias Response = ByteBuffer
+
+    @inlinable public static var name: String { "INFO" }
 
     public var sections: [String]
 
@@ -1143,6 +1246,8 @@ public struct INFO: ValkeyCommand {
 public struct LASTSAVE: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "LASTSAVE" }
+
     @inlinable public init() {
     }
 
@@ -1155,6 +1260,8 @@ public struct LASTSAVE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct LOLWUT: ValkeyCommand {
     public typealias Response = ByteBuffer
+
+    @inlinable public static var name: String { "LOLWUT" }
 
     public var version: Int?
 
@@ -1172,6 +1279,8 @@ public struct LOLWUT: ValkeyCommand {
 /// Listens for all requests received by the server in real-time.
 @_documentation(visibility: internal)
 public struct MONITOR: ValkeyCommand {
+    @inlinable public static var name: String { "MONITOR" }
+
     @inlinable public init() {
     }
 
@@ -1183,6 +1292,8 @@ public struct MONITOR: ValkeyCommand {
 /// An internal command used in replication.
 @_documentation(visibility: internal)
 public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "PSYNC" }
+
     public var replicationid: Replicationid
     public var offset: Int
 
@@ -1200,10 +1311,11 @@ public struct PSYNC<Replicationid: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct REPLICAOF: ValkeyCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let host: String
-        @usableFromInline let port: Int
+        public var host: String
+        public var port: Int
 
-        @inlinable public init(host: String, port: Int) {
+        @inlinable
+        public init(host: String, port: Int) {
             self.host = host
             self.port = port
         }
@@ -1221,7 +1333,8 @@ public struct REPLICAOF: ValkeyCommand {
     }
     public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
 
-        @inlinable public init() {
+        @inlinable
+        public init() {
         }
 
         @inlinable
@@ -1257,6 +1370,8 @@ public struct REPLICAOF: ValkeyCommand {
     }
     public typealias Response = ByteBuffer
 
+    @inlinable public static var name: String { "REPLICAOF" }
+
     public var args: Args
 
     @inlinable public init(args: Args) {
@@ -1271,6 +1386,8 @@ public struct REPLICAOF: ValkeyCommand {
 /// Returns the replication role.
 @_documentation(visibility: internal)
 public struct ROLE: ValkeyCommand {
+    @inlinable public static var name: String { "ROLE" }
+
     @inlinable public init() {
     }
 
@@ -1282,6 +1399,8 @@ public struct ROLE: ValkeyCommand {
 /// Synchronously saves the database(s) to disk.
 @_documentation(visibility: internal)
 public struct SAVE: ValkeyCommand {
+    @inlinable public static var name: String { "SAVE" }
+
     @inlinable public init() {
     }
 
@@ -1309,19 +1428,31 @@ public struct SHUTDOWN: ValkeyCommand {
         }
     }
     public struct AbortSelectorSaveSelectorBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let saveSelector: AbortSelectorSaveSelectorBlockSaveSelector?
-        @usableFromInline let now: Bool
-        @usableFromInline let force: Bool
+        public var saveSelector: AbortSelectorSaveSelectorBlockSaveSelector?
+        public var now: Bool
+        public var force: Bool
+        public var safe: Bool
+        public var failover: Bool
 
-        @inlinable public init(saveSelector: AbortSelectorSaveSelectorBlockSaveSelector? = nil, now: Bool = false, force: Bool = false) {
+        @inlinable
+        public init(
+            saveSelector: AbortSelectorSaveSelectorBlockSaveSelector? = nil,
+            now: Bool = false,
+            force: Bool = false,
+            safe: Bool = false,
+            failover: Bool = false
+        ) {
             self.saveSelector = saveSelector
             self.now = now
             self.force = force
+            self.safe = safe
+            self.failover = failover
         }
 
         @inlinable
         public var respEntries: Int {
             saveSelector.respEntries + RESPPureToken("NOW", now).respEntries + RESPPureToken("FORCE", force).respEntries
+                + RESPPureToken("SAFE", safe).respEntries + RESPPureToken("FAILOVER", failover).respEntries
         }
 
         @inlinable
@@ -1329,6 +1460,8 @@ public struct SHUTDOWN: ValkeyCommand {
             saveSelector.encode(into: &commandEncoder)
             RESPPureToken("NOW", now).encode(into: &commandEncoder)
             RESPPureToken("FORCE", force).encode(into: &commandEncoder)
+            RESPPureToken("SAFE", safe).encode(into: &commandEncoder)
+            RESPPureToken("FAILOVER", failover).encode(into: &commandEncoder)
         }
     }
     public enum AbortSelector: RESPRenderable, Sendable, Hashable {
@@ -1351,6 +1484,8 @@ public struct SHUTDOWN: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "SHUTDOWN" }
+
     public var abortSelector: AbortSelector?
 
     @inlinable public init(abortSelector: AbortSelector? = nil) {
@@ -1366,10 +1501,11 @@ public struct SHUTDOWN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct SLAVEOF: ValkeyCommand {
     public struct ArgsHostPort: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let host: String
-        @usableFromInline let port: Int
+        public var host: String
+        public var port: Int
 
-        @inlinable public init(host: String, port: Int) {
+        @inlinable
+        public init(host: String, port: Int) {
             self.host = host
             self.port = port
         }
@@ -1387,7 +1523,8 @@ public struct SLAVEOF: ValkeyCommand {
     }
     public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
 
-        @inlinable public init() {
+        @inlinable
+        public init() {
         }
 
         @inlinable
@@ -1423,6 +1560,8 @@ public struct SLAVEOF: ValkeyCommand {
     }
     public typealias Response = ByteBuffer
 
+    @inlinable public static var name: String { "SLAVEOF" }
+
     public var args: Args
 
     @inlinable public init(args: Args) {
@@ -1437,6 +1576,8 @@ public struct SLAVEOF: ValkeyCommand {
 /// Swaps two databases.
 @_documentation(visibility: internal)
 public struct SWAPDB: ValkeyCommand {
+    @inlinable public static var name: String { "SWAPDB" }
+
     public var index1: Int
     public var index2: Int
 
@@ -1453,6 +1594,8 @@ public struct SWAPDB: ValkeyCommand {
 /// An internal command used in replication.
 @_documentation(visibility: internal)
 public struct SYNC: ValkeyCommand {
+    @inlinable public static var name: String { "SYNC" }
+
     @inlinable public init() {
     }
 
@@ -1465,6 +1608,8 @@ public struct SYNC: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct TIME: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "TIME" }
 
     @inlinable public init() {
     }
@@ -2224,6 +2369,7 @@ extension ValkeyClientProtocol {
     /// - Available: 1.0.0
     /// - History:
     ///     * 7.0.0: Added the `NOW`, `FORCE` and `ABORT` modifiers.
+    ///     * 9.0.0: Added the `SAFE` and `FAILOVER` modifiers.
     /// - Complexity: O(N) when saving, where N is the total number of keys in all databases when saving data, otherwise O(1)
     /// - Response: "OK": OK if ABORT was specified and shutdown was aborted. On successful shutdown, nothing is returned since the server quits and the connection is closed. On failure, an error is returned.
     @inlinable

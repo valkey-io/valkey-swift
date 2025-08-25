@@ -40,6 +40,8 @@ public struct BZMPOP: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "BZMPOP" }
+
     public var timeout: Double
     public var keys: [ValkeyKey]
     public var `where`: Where
@@ -64,6 +66,8 @@ public struct BZMPOP: ValkeyCommand {
 /// Removes and returns the member with the highest score from one or more sorted sets. Blocks until a member available otherwise.  Deletes the sorted set if the last element was popped.
 @_documentation(visibility: internal)
 public struct BZPOPMAX: ValkeyCommand {
+    @inlinable public static var name: String { "BZPOPMAX" }
+
     public var keys: [ValkeyKey]
     public var timeout: Double
 
@@ -84,6 +88,8 @@ public struct BZPOPMAX: ValkeyCommand {
 /// Removes and returns the member with the lowest score from one or more sorted sets. Blocks until a member is available otherwise. Deletes the sorted set if the last element was popped.
 @_documentation(visibility: internal)
 public struct BZPOPMIN: ValkeyCommand {
+    @inlinable public static var name: String { "BZPOPMIN" }
+
     public var keys: [ValkeyKey]
     public var timeout: Double
 
@@ -135,10 +141,11 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let score: Double
-        @usableFromInline let member: Member
+        public var score: Double
+        public var member: Member
 
-        @inlinable public init(score: Double, member: Member) {
+        @inlinable
+        public init(score: Double, member: Member) {
             self.score = score
             self.member = member
         }
@@ -155,6 +162,8 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken?
+
+    @inlinable public static var name: String { "ZADD" }
 
     public var key: ValkeyKey
     public var condition: Condition?
@@ -191,6 +200,8 @@ public struct ZADD<Member: RESPStringRenderable>: ValkeyCommand {
 public struct ZCARD: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "ZCARD" }
+
     public var key: ValkeyKey
 
     @inlinable public init(_ key: ValkeyKey) {
@@ -210,6 +221,8 @@ public struct ZCARD: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZCOUNT: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "ZCOUNT" }
 
     public var key: ValkeyKey
     public var min: Double
@@ -235,6 +248,8 @@ public struct ZCOUNT: ValkeyCommand {
 public struct ZDIFF: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "ZDIFF" }
+
     public var keys: [ValkeyKey]
     public var withscores: Bool
 
@@ -257,6 +272,8 @@ public struct ZDIFF: ValkeyCommand {
 public struct ZDIFFSTORE: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "ZDIFFSTORE" }
+
     public var destination: ValkeyKey
     public var keys: [ValkeyKey]
 
@@ -276,6 +293,8 @@ public struct ZDIFFSTORE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZINCRBY<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Double
+
+    @inlinable public static var name: String { "ZINCRBY" }
 
     public var key: ValkeyKey
     public var increment: Int
@@ -316,6 +335,8 @@ public struct ZINTER: ValkeyCommand {
     }
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "ZINTER" }
+
     public var keys: [ValkeyKey]
     public var weights: [Int]
     public var aggregate: Aggregate?
@@ -347,6 +368,8 @@ public struct ZINTER: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZINTERCARD: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "ZINTERCARD" }
 
     public var keys: [ValkeyKey]
     public var limit: Int?
@@ -387,6 +410,8 @@ public struct ZINTERSTORE: ValkeyCommand {
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "ZINTERSTORE" }
+
     public var destination: ValkeyKey
     public var keys: [ValkeyKey]
     public var weights: [Int]
@@ -416,6 +441,8 @@ public struct ZINTERSTORE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZLEXCOUNT<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "ZLEXCOUNT" }
 
     public var key: ValkeyKey
     public var min: Min
@@ -454,6 +481,8 @@ public struct ZMPOP: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "ZMPOP" }
+
     public var keys: [ValkeyKey]
     public var `where`: Where
     public var count: Int?
@@ -476,6 +505,8 @@ public struct ZMPOP: ValkeyCommand {
 public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "ZMSCORE" }
+
     public var key: ValkeyKey
     public var members: [Member]
 
@@ -496,6 +527,8 @@ public struct ZMSCORE<Member: RESPStringRenderable>: ValkeyCommand {
 /// Returns the highest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
 @_documentation(visibility: internal)
 public struct ZPOPMAX: ValkeyCommand {
+    @inlinable public static var name: String { "ZPOPMAX" }
+
     public var key: ValkeyKey
     public var count: Int?
 
@@ -514,6 +547,8 @@ public struct ZPOPMAX: ValkeyCommand {
 /// Returns the lowest-scoring members from a sorted set after removing them. Deletes the sorted set if the last member was popped.
 @_documentation(visibility: internal)
 public struct ZPOPMIN: ValkeyCommand {
+    @inlinable public static var name: String { "ZPOPMIN" }
+
     public var key: ValkeyKey
     public var count: Int?
 
@@ -533,10 +568,11 @@ public struct ZPOPMIN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZRANDMEMBER: ValkeyCommand {
     public struct Options: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let withscores: Bool
+        public var count: Int
+        public var withscores: Bool
 
-        @inlinable public init(count: Int, withscores: Bool = false) {
+        @inlinable
+        public init(count: Int, withscores: Bool = false) {
             self.count = count
             self.withscores = withscores
         }
@@ -553,6 +589,8 @@ public struct ZRANDMEMBER: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken?
+
+    @inlinable public static var name: String { "ZRANDMEMBER" }
 
     public var key: ValkeyKey
     public var options: Options?
@@ -590,10 +628,11 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
         }
     }
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -610,6 +649,8 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "ZRANGE" }
 
     public var key: ValkeyKey
     public var start: Start
@@ -659,10 +700,11 @@ public struct ZRANGE<Start: RESPStringRenderable, Stop: RESPStringRenderable>: V
 @_documentation(visibility: internal)
 public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -679,6 +721,8 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "ZRANGEBYLEX" }
 
     public var key: ValkeyKey
     public var min: Min
@@ -705,10 +749,11 @@ public struct ZRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>:
 @_documentation(visibility: internal)
 public struct ZRANGEBYSCORE: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -725,6 +770,8 @@ public struct ZRANGEBYSCORE: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "ZRANGEBYSCORE" }
 
     public var key: ValkeyKey
     public var min: Double
@@ -768,10 +815,11 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
         }
     }
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -788,6 +836,8 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
         }
     }
     public typealias Response = Int
+
+    @inlinable public static var name: String { "ZRANGESTORE" }
 
     public var dst: ValkeyKey
     public var src: ValkeyKey
@@ -828,6 +878,8 @@ public struct ZRANGESTORE<Min: RESPStringRenderable, Max: RESPStringRenderable>:
 public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken?
 
+    @inlinable public static var name: String { "ZRANK" }
+
     public var key: ValkeyKey
     public var member: Member
     public var withscore: Bool
@@ -852,6 +904,8 @@ public struct ZRANK<Member: RESPStringRenderable>: ValkeyCommand {
 public struct ZREM<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "ZREM" }
+
     public var key: ValkeyKey
     public var members: [Member]
 
@@ -871,6 +925,8 @@ public struct ZREM<Member: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZREMRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "ZREMRANGEBYLEX" }
 
     public var key: ValkeyKey
     public var min: Min
@@ -894,6 +950,8 @@ public struct ZREMRANGEBYLEX<Min: RESPStringRenderable, Max: RESPStringRenderabl
 public struct ZREMRANGEBYRANK: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "ZREMRANGEBYRANK" }
+
     public var key: ValkeyKey
     public var start: Int
     public var stop: Int
@@ -916,6 +974,8 @@ public struct ZREMRANGEBYRANK: ValkeyCommand {
 public struct ZREMRANGEBYSCORE: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "ZREMRANGEBYSCORE" }
+
     public var key: ValkeyKey
     public var min: Double
     public var max: Double
@@ -937,6 +997,8 @@ public struct ZREMRANGEBYSCORE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZREVRANGE: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "ZREVRANGE" }
 
     public var key: ValkeyKey
     public var start: Int
@@ -963,10 +1025,11 @@ public struct ZREVRANGE: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderable>: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -983,6 +1046,8 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "ZREVRANGEBYLEX" }
 
     public var key: ValkeyKey
     public var max: Max
@@ -1009,10 +1074,11 @@ public struct ZREVRANGEBYLEX<Max: RESPStringRenderable, Min: RESPStringRenderabl
 @_documentation(visibility: internal)
 public struct ZREVRANGEBYSCORE: ValkeyCommand {
     public struct Limit: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let offset: Int
-        @usableFromInline let count: Int
+        public var offset: Int
+        public var count: Int
 
-        @inlinable public init(offset: Int, count: Int) {
+        @inlinable
+        public init(offset: Int, count: Int) {
             self.offset = offset
             self.count = count
         }
@@ -1029,6 +1095,8 @@ public struct ZREVRANGEBYSCORE: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "ZREVRANGEBYSCORE" }
 
     public var key: ValkeyKey
     public var max: Double
@@ -1058,6 +1126,8 @@ public struct ZREVRANGEBYSCORE: ValkeyCommand {
 public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = RESPToken?
 
+    @inlinable public static var name: String { "ZREVRANK" }
+
     public var key: ValkeyKey
     public var member: Member
     public var withscore: Bool
@@ -1081,6 +1151,8 @@ public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZSCAN: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "ZSCAN" }
 
     public var key: ValkeyKey
     public var cursor: Int
@@ -1116,6 +1188,8 @@ public struct ZSCAN: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct ZSCORE<Member: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Double?
+
+    @inlinable public static var name: String { "ZSCORE" }
 
     public var key: ValkeyKey
     public var member: Member
@@ -1155,6 +1229,8 @@ public struct ZUNION: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "ZUNION" }
 
     public var keys: [ValkeyKey]
     public var weights: [Int]
@@ -1204,6 +1280,8 @@ public struct ZUNIONSTORE: ValkeyCommand {
         }
     }
     public typealias Response = Int
+
+    @inlinable public static var name: String { "ZUNIONSTORE" }
 
     public var destination: ValkeyKey
     public var keys: [ValkeyKey]

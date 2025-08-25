@@ -28,6 +28,8 @@ public enum CLUSTER {
     /// Assigns new hash slots to a node.
     @_documentation(visibility: internal)
     public struct ADDSLOTS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER ADDSLOTS" }
+
         public var slots: [Int]
 
         @inlinable public init(slots: [Int]) {
@@ -43,10 +45,11 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct ADDSLOTSRANGE: ValkeyCommand {
         public struct Range: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let startSlot: Int
-            @usableFromInline let endSlot: Int
+            public var startSlot: Int
+            public var endSlot: Int
 
-            @inlinable public init(startSlot: Int, endSlot: Int) {
+            @inlinable
+            public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
                 self.endSlot = endSlot
             }
@@ -62,6 +65,8 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
+        @inlinable public static var name: String { "CLUSTER ADDSLOTSRANGE" }
+
         public var ranges: [Range]
 
         @inlinable public init(ranges: [Range]) {
@@ -78,6 +83,8 @@ public enum CLUSTER {
     public struct BUMPEPOCH: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "CLUSTER BUMPEPOCH" }
+
         @inlinable public init() {
         }
 
@@ -86,10 +93,25 @@ public enum CLUSTER {
         }
     }
 
+    /// Cancel all current ongoing slot migration operations.
+    @_documentation(visibility: internal)
+    public struct CANCELSLOTMIGRATIONS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER CANCELSLOTMIGRATIONS" }
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "CANCELSLOTMIGRATIONS")
+        }
+    }
+
     /// Returns the number of active failure reports active for a node.
     @_documentation(visibility: internal)
     public struct COUNTFAILUREREPORTS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "CLUSTER COUNT-FAILURE-REPORTS" }
 
         public var nodeId: NodeId
 
@@ -107,6 +129,8 @@ public enum CLUSTER {
     public struct COUNTKEYSINSLOT: ValkeyCommand {
         public typealias Response = Int
 
+        @inlinable public static var name: String { "CLUSTER COUNTKEYSINSLOT" }
+
         public var slot: Int
 
         @inlinable public init(slot: Int) {
@@ -121,6 +145,8 @@ public enum CLUSTER {
     /// Sets hash slots as unbound for a node.
     @_documentation(visibility: internal)
     public struct DELSLOTS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER DELSLOTS" }
+
         public var slots: [Int]
 
         @inlinable public init(slots: [Int]) {
@@ -136,10 +162,11 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct DELSLOTSRANGE: ValkeyCommand {
         public struct Range: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let startSlot: Int
-            @usableFromInline let endSlot: Int
+            public var startSlot: Int
+            public var endSlot: Int
 
-            @inlinable public init(startSlot: Int, endSlot: Int) {
+            @inlinable
+            public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
                 self.endSlot = endSlot
             }
@@ -155,6 +182,8 @@ public enum CLUSTER {
                 endSlot.encode(into: &commandEncoder)
             }
         }
+        @inlinable public static var name: String { "CLUSTER DELSLOTSRANGE" }
+
         public var ranges: [Range]
 
         @inlinable public init(ranges: [Range]) {
@@ -184,6 +213,8 @@ public enum CLUSTER {
                 }
             }
         }
+        @inlinable public static var name: String { "CLUSTER FAILOVER" }
+
         public var options: Options?
 
         @inlinable public init(options: Options? = nil) {
@@ -195,9 +226,44 @@ public enum CLUSTER {
         }
     }
 
+    /// Remove all keys from the target slot.
+    @_documentation(visibility: internal)
+    public struct FLUSHSLOT: ValkeyCommand {
+        public enum FlushType: RESPRenderable, Sendable, Hashable {
+            case async
+            case sync
+
+            @inlinable
+            public var respEntries: Int { 1 }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .async: "ASYNC".encode(into: &commandEncoder)
+                case .sync: "SYNC".encode(into: &commandEncoder)
+                }
+            }
+        }
+        @inlinable public static var name: String { "CLUSTER FLUSHSLOT" }
+
+        public var slot: Int
+        public var flushType: FlushType?
+
+        @inlinable public init(slot: Int, flushType: FlushType? = nil) {
+            self.slot = slot
+            self.flushType = flushType
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "FLUSHSLOT", slot, flushType)
+        }
+    }
+
     /// Deletes all slots information from a node.
     @_documentation(visibility: internal)
     public struct FLUSHSLOTS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER FLUSHSLOTS" }
+
         @inlinable public init() {
         }
 
@@ -209,6 +275,8 @@ public enum CLUSTER {
     /// Removes a node from the nodes table.
     @_documentation(visibility: internal)
     public struct FORGET<NodeId: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER FORGET" }
+
         public var nodeId: NodeId
 
         @inlinable public init(nodeId: NodeId) {
@@ -225,6 +293,8 @@ public enum CLUSTER {
     public struct GETKEYSINSLOT: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER GETKEYSINSLOT" }
+
         public var slot: Int
         public var count: Int
 
@@ -238,10 +308,27 @@ public enum CLUSTER {
         }
     }
 
+    /// Get the status of ongoing and recently finished slot import and export operations.
+    @_documentation(visibility: internal)
+    public struct GETSLOTMIGRATIONS: ValkeyCommand {
+        public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "CLUSTER GETSLOTMIGRATIONS" }
+
+        @inlinable public init() {
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "GETSLOTMIGRATIONS")
+        }
+    }
+
     /// Returns helpful text about the different subcommands.
     @_documentation(visibility: internal)
     public struct HELP: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "CLUSTER HELP" }
 
         @inlinable public init() {
         }
@@ -256,6 +343,8 @@ public enum CLUSTER {
     public struct INFO: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "CLUSTER INFO" }
+
         @inlinable public init() {
         }
 
@@ -268,6 +357,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct KEYSLOT<Key: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = Int
+
+        @inlinable public static var name: String { "CLUSTER KEYSLOT" }
 
         public var key: Key
 
@@ -285,6 +376,8 @@ public enum CLUSTER {
     public struct LINKS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER LINKS" }
+
         @inlinable public init() {
         }
 
@@ -296,6 +389,8 @@ public enum CLUSTER {
     /// Forces a node to handshake with another node.
     @_documentation(visibility: internal)
     public struct MEET<Ip: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER MEET" }
+
         public var ip: Ip
         public var port: Int
         public var clusterBusPort: Int?
@@ -311,10 +406,72 @@ public enum CLUSTER {
         }
     }
 
+    /// Migrate the given slots from this node to the specified nodes.
+    @_documentation(visibility: internal)
+    public struct MIGRATESLOTS<NodeId: RESPStringRenderable>: ValkeyCommand {
+        public struct MigrationGroupRange: RESPRenderable, Sendable, Hashable {
+            public var startSlot: Int
+            public var endSlot: Int
+
+            @inlinable
+            public init(startSlot: Int, endSlot: Int) {
+                self.startSlot = startSlot
+                self.endSlot = endSlot
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                startSlot.respEntries + endSlot.respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                startSlot.encode(into: &commandEncoder)
+                endSlot.encode(into: &commandEncoder)
+            }
+        }
+        public struct MigrationGroup: RESPRenderable, Sendable, Hashable {
+            public var ranges: [MigrationGroupRange]
+            public var nodeId: NodeId
+
+            @inlinable
+            public init(ranges: [MigrationGroupRange], nodeId: NodeId) {
+                self.ranges = ranges
+                self.nodeId = nodeId
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "SLOTSRANGE".respEntries + ranges.respEntries + "NODE".respEntries + RESPBulkString(nodeId).respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "SLOTSRANGE".encode(into: &commandEncoder)
+                ranges.encode(into: &commandEncoder)
+                "NODE".encode(into: &commandEncoder)
+                RESPBulkString(nodeId).encode(into: &commandEncoder)
+            }
+        }
+        @inlinable public static var name: String { "CLUSTER MIGRATESLOTS" }
+
+        public var migrationGroups: [MigrationGroup]
+
+        @inlinable public init(migrationGroups: [MigrationGroup]) {
+            self.migrationGroups = migrationGroups
+        }
+
+        @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            commandEncoder.encodeArray("CLUSTER", "MIGRATESLOTS", migrationGroups)
+        }
+    }
+
     /// Returns the ID of a node.
     @_documentation(visibility: internal)
     public struct MYID: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "CLUSTER MYID" }
 
         @inlinable public init() {
         }
@@ -329,6 +486,8 @@ public enum CLUSTER {
     public struct MYSHARDID: ValkeyCommand {
         public typealias Response = ByteBuffer
 
+        @inlinable public static var name: String { "CLUSTER MYSHARDID" }
+
         @inlinable public init() {
         }
 
@@ -341,6 +500,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct NODES: ValkeyCommand {
         public typealias Response = ByteBuffer
+
+        @inlinable public static var name: String { "CLUSTER NODES" }
 
         @inlinable public init() {
         }
@@ -355,6 +516,8 @@ public enum CLUSTER {
     public struct REPLICAS<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER REPLICAS" }
+
         public var nodeId: NodeId
 
         @inlinable public init(nodeId: NodeId) {
@@ -366,17 +529,56 @@ public enum CLUSTER {
         }
     }
 
-    /// Configure a node as replica of a primary node.
+    /// Configure a node as replica of a primary node or detach a replica from its primary.
     @_documentation(visibility: internal)
-    public struct REPLICATE<NodeId: RESPStringRenderable>: ValkeyCommand {
-        public var nodeId: NodeId
+    public struct REPLICATE: ValkeyCommand {
+        public struct ArgsNoOne: RESPRenderable, Sendable, Hashable {
 
-        @inlinable public init(nodeId: NodeId) {
-            self.nodeId = nodeId
+            @inlinable
+            public init() {
+            }
+
+            @inlinable
+            public var respEntries: Int {
+                "NO".respEntries + "ONE".respEntries
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                "NO".encode(into: &commandEncoder)
+                "ONE".encode(into: &commandEncoder)
+            }
+        }
+        public enum Args: RESPRenderable, Sendable, Hashable {
+            case nodeId(String)
+            case noOne
+
+            @inlinable
+            public var respEntries: Int {
+                switch self {
+                case .nodeId(let nodeId): nodeId.respEntries
+                case .noOne: ArgsNoOne().respEntries
+                }
+            }
+
+            @inlinable
+            public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+                switch self {
+                case .nodeId(let nodeId): nodeId.encode(into: &commandEncoder)
+                case .noOne: ArgsNoOne().encode(into: &commandEncoder)
+                }
+            }
+        }
+        @inlinable public static var name: String { "CLUSTER REPLICATE" }
+
+        public var args: Args
+
+        @inlinable public init(args: Args) {
+            self.args = args
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLUSTER", "REPLICATE", RESPBulkString(nodeId))
+            commandEncoder.encodeArray("CLUSTER", "REPLICATE", args)
         }
     }
 
@@ -398,6 +600,8 @@ public enum CLUSTER {
                 }
             }
         }
+        @inlinable public static var name: String { "CLUSTER RESET" }
+
         public var resetType: ResetType?
 
         @inlinable public init(resetType: ResetType? = nil) {
@@ -412,6 +616,8 @@ public enum CLUSTER {
     /// Forces a node to save the cluster configuration to disk.
     @_documentation(visibility: internal)
     public struct SAVECONFIG: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER SAVECONFIG" }
+
         @inlinable public init() {
         }
 
@@ -423,6 +629,8 @@ public enum CLUSTER {
     /// Sets the configuration epoch for a new node.
     @_documentation(visibility: internal)
     public struct SETCONFIGEPOCH: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER SET-CONFIG-EPOCH" }
+
         public var configEpoch: Int
 
         @inlinable public init(configEpoch: Int) {
@@ -463,6 +671,8 @@ public enum CLUSTER {
                 }
             }
         }
+        @inlinable public static var name: String { "CLUSTER SETSLOT" }
+
         public var slot: Int
         public var subcommand: Subcommand
         public var timeout: Int?
@@ -481,6 +691,8 @@ public enum CLUSTER {
     /// Returns the mapping of cluster slots to shards.
     @_documentation(visibility: internal)
     public struct SHARDS: ValkeyCommand {
+        @inlinable public static var name: String { "CLUSTER SHARDS" }
+
         @inlinable public init() {
         }
 
@@ -493,6 +705,8 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct SLAVES<NodeId: RESPStringRenderable>: ValkeyCommand {
         public typealias Response = RESPToken.Array
+
+        @inlinable public static var name: String { "CLUSTER SLAVES" }
 
         public var nodeId: NodeId
 
@@ -509,10 +723,11 @@ public enum CLUSTER {
     @_documentation(visibility: internal)
     public struct SLOTSTATS: ValkeyCommand {
         public struct FilterSlotsrange: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let startSlot: Int
-            @usableFromInline let endSlot: Int
+            public var startSlot: Int
+            public var endSlot: Int
 
-            @inlinable public init(startSlot: Int, endSlot: Int) {
+            @inlinable
+            public init(startSlot: Int, endSlot: Int) {
                 self.startSlot = startSlot
                 self.endSlot = endSlot
             }
@@ -544,11 +759,12 @@ public enum CLUSTER {
             }
         }
         public struct FilterOrderby: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let metric: String
-            @usableFromInline let limit: Int?
-            @usableFromInline let order: FilterOrderbyOrder?
+            public var metric: String
+            public var limit: Int?
+            public var order: FilterOrderbyOrder?
 
-            @inlinable public init(metric: String, limit: Int? = nil, order: FilterOrderbyOrder? = nil) {
+            @inlinable
+            public init(metric: String, limit: Int? = nil, order: FilterOrderbyOrder? = nil) {
                 self.metric = metric
                 self.limit = limit
                 self.order = order
@@ -588,6 +804,8 @@ public enum CLUSTER {
         }
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER SLOT-STATS" }
+
         public var filter: Filter
 
         @inlinable public init(filter: Filter) {
@@ -604,6 +822,8 @@ public enum CLUSTER {
     public struct SLOTS: ValkeyCommand {
         public typealias Response = RESPToken.Array
 
+        @inlinable public static var name: String { "CLUSTER SLOTS" }
+
         @inlinable public init() {
         }
 
@@ -617,6 +837,8 @@ public enum CLUSTER {
 /// Signals that a cluster client is following an -ASK redirect.
 @_documentation(visibility: internal)
 public struct ASKING: ValkeyCommand {
+    @inlinable public static var name: String { "ASKING" }
+
     @inlinable public init() {
     }
 
@@ -628,6 +850,8 @@ public struct ASKING: ValkeyCommand {
 /// Enables read-only queries for a connection to a Valkey replica node.
 @_documentation(visibility: internal)
 public struct READONLY: ValkeyCommand {
+    @inlinable public static var name: String { "READONLY" }
+
     @inlinable public init() {
     }
 
@@ -639,6 +863,8 @@ public struct READONLY: ValkeyCommand {
 /// Enables read-write queries for a connection to a Valkey replica node.
 @_documentation(visibility: internal)
 public struct READWRITE: ValkeyCommand {
+    @inlinable public static var name: String { "READWRITE" }
+
     @inlinable public init() {
     }
 
@@ -690,6 +916,16 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func clusterBumpepoch() async throws -> ByteBuffer {
         try await execute(CLUSTER.BUMPEPOCH())
+    }
+
+    /// Cancel all current ongoing slot migration operations.
+    ///
+    /// - Documentation: [CLUSTER CANCELSLOTMIGRATIONS](https://valkey.io/commands/cluster-cancelslotmigrations)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N), where N is the number of slot migration operations being cancelled.
+    @inlinable
+    public func clusterCancelslotmigrations() async throws {
+        _ = try await execute(CLUSTER.CANCELSLOTMIGRATIONS())
     }
 
     /// Returns the number of active failure reports active for a node.
@@ -746,6 +982,16 @@ extension ValkeyClientProtocol {
         _ = try await execute(CLUSTER.FAILOVER(options: options))
     }
 
+    /// Remove all keys from the target slot.
+    ///
+    /// - Documentation: [CLUSTER FLUSHSLOT](https://valkey.io/commands/cluster-flushslot)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the number of keys in the target slot
+    @inlinable
+    public func clusterFlushslot(slot: Int, flushType: CLUSTER.FLUSHSLOT.FlushType? = nil) async throws {
+        _ = try await execute(CLUSTER.FLUSHSLOT(slot: slot, flushType: flushType))
+    }
+
     /// Deletes all slots information from a node.
     ///
     /// - Documentation: [CLUSTER FLUSHSLOTS](https://valkey.io/commands/cluster-flushslots)
@@ -776,6 +1022,18 @@ extension ValkeyClientProtocol {
     @discardableResult
     public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESPToken.Array {
         try await execute(CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
+    }
+
+    /// Get the status of ongoing and recently finished slot import and export operations.
+    ///
+    /// - Documentation: [CLUSTER GETSLOTMIGRATIONS](https://valkey.io/commands/cluster-getslotmigrations)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N), where N is the number of active slot import and export jobs.
+    /// - Response: [Array]: A nested list of maps, one for each migration, with keys and values representing migration fields.
+    @inlinable
+    @discardableResult
+    public func clusterGetslotmigrations() async throws -> RESPToken.Array {
+        try await execute(CLUSTER.GETSLOTMIGRATIONS())
     }
 
     /// Returns helpful text about the different subcommands.
@@ -838,6 +1096,16 @@ extension ValkeyClientProtocol {
         _ = try await execute(CLUSTER.MEET(ip: ip, port: port, clusterBusPort: clusterBusPort))
     }
 
+    /// Migrate the given slots from this node to the specified nodes.
+    ///
+    /// - Documentation: [CLUSTER MIGRATESLOTS](https://valkey.io/commands/cluster-migrateslots)
+    /// - Available: 9.0.0
+    /// - Complexity: O(N) where N is the total number of the slots between all start slot and end slot arguments.
+    @inlinable
+    public func clusterMigrateslots<NodeId: RESPStringRenderable>(migrationGroups: [CLUSTER.MIGRATESLOTS<NodeId>.MigrationGroup]) async throws {
+        _ = try await execute(CLUSTER.MIGRATESLOTS(migrationGroups: migrationGroups))
+    }
+
     /// Returns the ID of a node.
     ///
     /// - Documentation: [CLUSTER MYID](https://valkey.io/commands/cluster-myid)
@@ -886,14 +1154,16 @@ extension ValkeyClientProtocol {
         try await execute(CLUSTER.REPLICAS(nodeId: nodeId))
     }
 
-    /// Configure a node as replica of a primary node.
+    /// Configure a node as replica of a primary node or detach a replica from its primary.
     ///
     /// - Documentation: [CLUSTER REPLICATE](https://valkey.io/commands/cluster-replicate)
     /// - Available: 3.0.0
+    /// - History:
+    ///     * 9.0.0: Added support of 'NO ONE' arg instead of <node-id> resulting into detaching replica from primary node.
     /// - Complexity: O(1)
     @inlinable
-    public func clusterReplicate<NodeId: RESPStringRenderable>(nodeId: NodeId) async throws {
-        _ = try await execute(CLUSTER.REPLICATE(nodeId: nodeId))
+    public func clusterReplicate(args: CLUSTER.REPLICATE.Args) async throws {
+        _ = try await execute(CLUSTER.REPLICATE(args: args))
     }
 
     /// Resets a node.

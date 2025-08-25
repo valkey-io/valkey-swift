@@ -57,6 +57,8 @@ public struct BLMOVE: ValkeyCommand {
     }
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "BLMOVE" }
+
     public var source: ValkeyKey
     public var destination: ValkeyKey
     public var wherefrom: Wherefrom
@@ -100,6 +102,8 @@ public struct BLMPOP: ValkeyCommand {
     }
     public typealias Response = RESPToken.Array?
 
+    @inlinable public static var name: String { "BLMPOP" }
+
     public var timeout: Double
     public var keys: [ValkeyKey]
     public var `where`: Where
@@ -126,6 +130,8 @@ public struct BLMPOP: ValkeyCommand {
 public struct BLPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
+    @inlinable public static var name: String { "BLPOP" }
+
     public var keys: [ValkeyKey]
     public var timeout: Double
 
@@ -148,6 +154,8 @@ public struct BLPOP: ValkeyCommand {
 public struct BRPOP: ValkeyCommand {
     public typealias Response = RESPToken.Array?
 
+    @inlinable public static var name: String { "BRPOP" }
+
     public var keys: [ValkeyKey]
     public var timeout: Double
 
@@ -169,6 +177,8 @@ public struct BRPOP: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct BRPOPLPUSH: ValkeyCommand {
     public typealias Response = ByteBuffer?
+
+    @inlinable public static var name: String { "BRPOPLPUSH" }
 
     public var source: ValkeyKey
     public var destination: ValkeyKey
@@ -193,6 +203,8 @@ public struct BRPOPLPUSH: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct LINDEX: ValkeyCommand {
     public typealias Response = ByteBuffer?
+
+    @inlinable public static var name: String { "LINDEX" }
 
     public var key: ValkeyKey
     public var index: Int
@@ -231,6 +243,8 @@ public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "LINSERT" }
+
     public var key: ValkeyKey
     public var `where`: Where
     public var pivot: Pivot
@@ -254,6 +268,8 @@ public struct LINSERT<Pivot: RESPStringRenderable, Element: RESPStringRenderable
 @_documentation(visibility: internal)
 public struct LLEN: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "LLEN" }
 
     public var key: ValkeyKey
 
@@ -305,6 +321,8 @@ public struct LMOVE: ValkeyCommand {
     }
     public typealias Response = ByteBuffer
 
+    @inlinable public static var name: String { "LMOVE" }
+
     public var source: ValkeyKey
     public var destination: ValkeyKey
     public var wherefrom: Wherefrom
@@ -342,6 +360,8 @@ public struct LMPOP: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "LMPOP" }
+
     public var keys: [ValkeyKey]
     public var `where`: Where
     public var count: Int?
@@ -359,10 +379,12 @@ public struct LMPOP: ValkeyCommand {
     }
 }
 
-/// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
+/// Returns and removes one or more elements from the beginning of a list. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct LPOP: ValkeyCommand {
     public typealias Response = RESPToken?
+
+    @inlinable public static var name: String { "LPOP" }
 
     public var key: ValkeyKey
     public var count: Int?
@@ -383,6 +405,8 @@ public struct LPOP: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = [Int]?
+
+    @inlinable public static var name: String { "LPOS" }
 
     public var key: ValkeyKey
     public var element: Element
@@ -419,6 +443,8 @@ public struct LPOS<Element: RESPStringRenderable>: ValkeyCommand {
 public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "LPUSH" }
+
     public var key: ValkeyKey
     public var elements: [Element]
 
@@ -439,6 +465,8 @@ public struct LPUSH<Element: RESPStringRenderable>: ValkeyCommand {
 public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "LPUSHX" }
+
     public var key: ValkeyKey
     public var elements: [Element]
 
@@ -458,6 +486,8 @@ public struct LPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
 @_documentation(visibility: internal)
 public struct LRANGE: ValkeyCommand {
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "LRANGE" }
 
     public var key: ValkeyKey
     public var start: Int
@@ -483,6 +513,8 @@ public struct LRANGE: ValkeyCommand {
 public struct LREM<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "LREM" }
+
     public var key: ValkeyKey
     public var count: Int
     public var element: Element
@@ -503,6 +535,8 @@ public struct LREM<Element: RESPStringRenderable>: ValkeyCommand {
 /// Sets the value of an element in a list by its index.
 @_documentation(visibility: internal)
 public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
+    @inlinable public static var name: String { "LSET" }
+
     public var key: ValkeyKey
     public var index: Int
     public var element: Element
@@ -523,6 +557,8 @@ public struct LSET<Element: RESPStringRenderable>: ValkeyCommand {
 /// Removes elements from both ends a list. Deletes the list if all elements were trimmed.
 @_documentation(visibility: internal)
 public struct LTRIM: ValkeyCommand {
+    @inlinable public static var name: String { "LTRIM" }
+
     public var key: ValkeyKey
     public var start: Int
     public var stop: Int
@@ -540,10 +576,12 @@ public struct LTRIM: ValkeyCommand {
     }
 }
 
-/// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
+/// Returns and removes one or more elements from the end of a list. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct RPOP: ValkeyCommand {
     public typealias Response = RESPToken?
+
+    @inlinable public static var name: String { "RPOP" }
 
     public var key: ValkeyKey
     public var count: Int?
@@ -565,6 +603,8 @@ public struct RPOP: ValkeyCommand {
 public struct RPOPLPUSH: ValkeyCommand {
     public typealias Response = ByteBuffer?
 
+    @inlinable public static var name: String { "RPOPLPUSH" }
+
     public var source: ValkeyKey
     public var destination: ValkeyKey
 
@@ -585,6 +625,8 @@ public struct RPOPLPUSH: ValkeyCommand {
 public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
 
+    @inlinable public static var name: String { "RPUSH" }
+
     public var key: ValkeyKey
     public var elements: [Element]
 
@@ -600,10 +642,12 @@ public struct RPUSH<Element: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
-/// Appends an element to a list only when the list exists.
+/// Appends one or more elements to a list only when the list exists.
 @_documentation(visibility: internal)
 public struct RPUSHX<Element: RESPStringRenderable>: ValkeyCommand {
     public typealias Response = Int
+
+    @inlinable public static var name: String { "RPUSHX" }
 
     public var key: ValkeyKey
     public var elements: [Element]
@@ -774,7 +818,7 @@ extension ValkeyClientProtocol {
         try await execute(LMPOP(keys: keys, where: `where`, count: count))
     }
 
-    /// Returns the first elements in a list after removing it. Deletes the list if the last element was popped.
+    /// Returns and removes one or more elements from the beginning of a list. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [LPOP](https://valkey.io/commands/lpop)
     /// - Available: 1.0.0
@@ -882,7 +926,7 @@ extension ValkeyClientProtocol {
         _ = try await execute(LTRIM(key, start: start, stop: stop))
     }
 
-    /// Returns and removes the last elements of a list. Deletes the list if the last element was popped.
+    /// Returns and removes one or more elements from the end of a list. Deletes the list if the last element was popped.
     ///
     /// - Documentation: [RPOP](https://valkey.io/commands/rpop)
     /// - Available: 1.0.0
@@ -928,7 +972,7 @@ extension ValkeyClientProtocol {
         try await execute(RPUSH(key, elements: elements))
     }
 
-    /// Appends an element to a list only when the list exists.
+    /// Appends one or more elements to a list only when the list exists.
     ///
     /// - Documentation: [RPUSHX](https://valkey.io/commands/rpushx)
     /// - Available: 2.2.0

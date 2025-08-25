@@ -41,11 +41,12 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct Data: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let longitude: Double
-        @usableFromInline let latitude: Double
-        @usableFromInline let member: Member
+        public var longitude: Double
+        public var latitude: Double
+        public var member: Member
 
-        @inlinable public init(longitude: Double, latitude: Double, member: Member) {
+        @inlinable
+        public init(longitude: Double, latitude: Double, member: Member) {
             self.longitude = longitude
             self.latitude = latitude
             self.member = member
@@ -64,6 +65,8 @@ public struct GEOADD<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public typealias Response = Int
+
+    @inlinable public static var name: String { "GEOADD" }
 
     public var key: ValkeyKey
     public var condition: Condition?
@@ -106,6 +109,8 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
             }
         }
     }
+    @inlinable public static var name: String { "GEODIST" }
+
     public var key: ValkeyKey
     public var member1: Member1
     public var member2: Member2
@@ -132,6 +137,8 @@ public struct GEODIST<Member1: RESPStringRenderable, Member2: RESPStringRenderab
 public struct GEOHASH: ValkeyCommand {
     public typealias Response = RESPToken.Array
 
+    @inlinable public static var name: String { "GEOHASH" }
+
     public var key: ValkeyKey
     public var members: [String]
 
@@ -152,6 +159,8 @@ public struct GEOHASH: ValkeyCommand {
 /// Returns the longitude and latitude of members from a geospatial index.
 @_documentation(visibility: internal)
 public struct GEOPOS: ValkeyCommand {
+    @inlinable public static var name: String { "GEOPOS" }
+
     public var key: ValkeyKey
     public var members: [String]
 
@@ -192,10 +201,11 @@ public struct GEORADIUS: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -246,6 +256,8 @@ public struct GEORADIUS: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "GEORADIUS" }
+
     public var key: ValkeyKey
     public var longitude: Double
     public var latitude: Double
@@ -327,10 +339,11 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -381,6 +394,8 @@ public struct GEORADIUSBYMEMBER<Member: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
+    @inlinable public static var name: String { "GEORADIUSBYMEMBER" }
+
     public var key: ValkeyKey
     public var member: Member
     public var radius: Double
@@ -458,10 +473,11 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -493,6 +509,8 @@ public struct GEORADIUSBYMEMBERRO<Member: RESPStringRenderable>: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "GEORADIUSBYMEMBER_RO" }
 
     public var key: ValkeyKey
     public var member: Member
@@ -569,10 +587,11 @@ public struct GEORADIUSRO: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -604,6 +623,8 @@ public struct GEORADIUSRO: ValkeyCommand {
         }
     }
     public typealias Response = RESPToken.Array
+
+    @inlinable public static var name: String { "GEORADIUS_RO" }
 
     public var key: ValkeyKey
     public var longitude: Double
@@ -661,14 +682,15 @@ public struct GEORADIUSRO: ValkeyCommand {
     }
 }
 
-/// Queries a geospatial index for members inside an area of a box or a circle.
+/// Queries a geospatial index for members inside an area of a box, circle, or a polygon.
 @_documentation(visibility: internal)
 public struct GEOSEARCH: ValkeyCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let longitude: Double
-        @usableFromInline let latitude: Double
+        public var longitude: Double
+        public var latitude: Double
 
-        @inlinable public init(longitude: Double, latitude: Double) {
+        @inlinable
+        public init(longitude: Double, latitude: Double) {
             self.longitude = longitude
             self.latitude = latitude
         }
@@ -724,10 +746,11 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct ByCircle: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let radius: Double
-        @usableFromInline let unit: ByCircleUnit
+        public var radius: Double
+        public var unit: ByCircleUnit
 
-        @inlinable public init(radius: Double, unit: ByCircleUnit) {
+        @inlinable
+        public init(radius: Double, unit: ByCircleUnit) {
             self.radius = radius
             self.unit = unit
         }
@@ -763,11 +786,12 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct ByBox: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let width: Double
-        @usableFromInline let height: Double
-        @usableFromInline let unit: ByBoxUnit
+        public var width: Double
+        public var height: Double
+        public var unit: ByBoxUnit
 
-        @inlinable public init(width: Double, height: Double, unit: ByBoxUnit) {
+        @inlinable
+        public init(width: Double, height: Double, unit: ByBoxUnit) {
             self.width = width
             self.height = height
             self.unit = unit
@@ -785,15 +809,59 @@ public struct GEOSEARCH: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
+    public struct ByPolygonVertices: RESPRenderable, Sendable, Hashable {
+        public var longitude: Double
+        public var latitude: Double
+
+        @inlinable
+        public init(longitude: Double, latitude: Double) {
+            self.longitude = longitude
+            self.latitude = latitude
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            longitude.respEntries + latitude.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            longitude.encode(into: &commandEncoder)
+            latitude.encode(into: &commandEncoder)
+        }
+    }
+    public struct ByPolygon: RESPRenderable, Sendable, Hashable {
+        public var numVertices: Int
+        public var vertices: [ByPolygonVertices]
+
+        @inlinable
+        public init(numVertices: Int, vertices: [ByPolygonVertices]) {
+            self.numVertices = numVertices
+            self.vertices = vertices
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPWithToken("BYPOLYGON", numVertices).respEntries + vertices.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPWithToken("BYPOLYGON", numVertices).encode(into: &commandEncoder)
+            vertices.encode(into: &commandEncoder)
+        }
+    }
     public enum By: RESPRenderable, Sendable, Hashable {
         case circle(ByCircle)
         case box(ByBox)
+        case polygon(ByPolygon)
 
         @inlinable
         public var respEntries: Int {
             switch self {
             case .circle(let circle): circle.respEntries
             case .box(let box): box.respEntries
+            case .polygon(let polygon): polygon.respEntries
             }
         }
 
@@ -802,6 +870,7 @@ public struct GEOSEARCH: ValkeyCommand {
             switch self {
             case .circle(let circle): circle.encode(into: &commandEncoder)
             case .box(let box): box.encode(into: &commandEncoder)
+            case .polygon(let polygon): polygon.encode(into: &commandEncoder)
             }
         }
     }
@@ -821,10 +890,11 @@ public struct GEOSEARCH: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -840,8 +910,10 @@ public struct GEOSEARCH: ValkeyCommand {
             RESPPureToken("ANY", any).encode(into: &commandEncoder)
         }
     }
+    @inlinable public static var name: String { "GEOSEARCH" }
+
     public var key: ValkeyKey
-    public var from: From
+    public var from: From?
     public var by: By
     public var order: Order?
     public var countBlock: CountBlock?
@@ -851,7 +923,7 @@ public struct GEOSEARCH: ValkeyCommand {
 
     @inlinable public init(
         _ key: ValkeyKey,
-        from: From,
+        from: From? = nil,
         by: By,
         order: Order? = nil,
         countBlock: CountBlock? = nil,
@@ -888,14 +960,15 @@ public struct GEOSEARCH: ValkeyCommand {
     }
 }
 
-/// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
+/// Queries a geospatial index for members inside an area of a box, a circle, or a polygon, optionally stores the result.
 @_documentation(visibility: internal)
 public struct GEOSEARCHSTORE: ValkeyCommand {
     public struct FromFromlonlat: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let longitude: Double
-        @usableFromInline let latitude: Double
+        public var longitude: Double
+        public var latitude: Double
 
-        @inlinable public init(longitude: Double, latitude: Double) {
+        @inlinable
+        public init(longitude: Double, latitude: Double) {
             self.longitude = longitude
             self.latitude = latitude
         }
@@ -951,10 +1024,11 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct ByCircle: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let radius: Double
-        @usableFromInline let unit: ByCircleUnit
+        public var radius: Double
+        public var unit: ByCircleUnit
 
-        @inlinable public init(radius: Double, unit: ByCircleUnit) {
+        @inlinable
+        public init(radius: Double, unit: ByCircleUnit) {
             self.radius = radius
             self.unit = unit
         }
@@ -990,11 +1064,12 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct ByBox: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let width: Double
-        @usableFromInline let height: Double
-        @usableFromInline let unit: ByBoxUnit
+        public var width: Double
+        public var height: Double
+        public var unit: ByBoxUnit
 
-        @inlinable public init(width: Double, height: Double, unit: ByBoxUnit) {
+        @inlinable
+        public init(width: Double, height: Double, unit: ByBoxUnit) {
             self.width = width
             self.height = height
             self.unit = unit
@@ -1012,15 +1087,59 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             unit.encode(into: &commandEncoder)
         }
     }
+    public struct ByPolygonVertices: RESPRenderable, Sendable, Hashable {
+        public var longitude: Double
+        public var latitude: Double
+
+        @inlinable
+        public init(longitude: Double, latitude: Double) {
+            self.longitude = longitude
+            self.latitude = latitude
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            longitude.respEntries + latitude.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            longitude.encode(into: &commandEncoder)
+            latitude.encode(into: &commandEncoder)
+        }
+    }
+    public struct ByPolygon: RESPRenderable, Sendable, Hashable {
+        public var numVertices: Int
+        public var vertices: [ByPolygonVertices]
+
+        @inlinable
+        public init(numVertices: Int, vertices: [ByPolygonVertices]) {
+            self.numVertices = numVertices
+            self.vertices = vertices
+        }
+
+        @inlinable
+        public var respEntries: Int {
+            RESPWithToken("BYPOLYGON", numVertices).respEntries + vertices.respEntries
+        }
+
+        @inlinable
+        public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+            RESPWithToken("BYPOLYGON", numVertices).encode(into: &commandEncoder)
+            vertices.encode(into: &commandEncoder)
+        }
+    }
     public enum By: RESPRenderable, Sendable, Hashable {
         case circle(ByCircle)
         case box(ByBox)
+        case polygon(ByPolygon)
 
         @inlinable
         public var respEntries: Int {
             switch self {
             case .circle(let circle): circle.respEntries
             case .box(let box): box.respEntries
+            case .polygon(let polygon): polygon.respEntries
             }
         }
 
@@ -1029,6 +1148,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
             switch self {
             case .circle(let circle): circle.encode(into: &commandEncoder)
             case .box(let box): box.encode(into: &commandEncoder)
+            case .polygon(let polygon): polygon.encode(into: &commandEncoder)
             }
         }
     }
@@ -1048,10 +1168,11 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
         }
     }
     public struct CountBlock: RESPRenderable, Sendable, Hashable {
-        @usableFromInline let count: Int
-        @usableFromInline let any: Bool
+        public var count: Int
+        public var any: Bool
 
-        @inlinable public init(count: Int, any: Bool = false) {
+        @inlinable
+        public init(count: Int, any: Bool = false) {
             self.count = count
             self.any = any
         }
@@ -1069,9 +1190,11 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
     }
     public typealias Response = Int
 
+    @inlinable public static var name: String { "GEOSEARCHSTORE" }
+
     public var destination: ValkeyKey
     public var source: ValkeyKey
-    public var from: From
+    public var from: From?
     public var by: By
     public var order: Order?
     public var countBlock: CountBlock?
@@ -1080,7 +1203,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
     @inlinable public init(
         destination: ValkeyKey,
         source: ValkeyKey,
-        from: From,
+        from: From? = nil,
         by: By,
         order: Order? = nil,
         countBlock: CountBlock? = nil,
@@ -1320,18 +1443,19 @@ extension ValkeyClientProtocol {
         )
     }
 
-    /// Queries a geospatial index for members inside an area of a box or a circle.
+    /// Queries a geospatial index for members inside an area of a box, circle, or a polygon.
     ///
     /// - Documentation: [GEOSEARCH](https://valkey.io/commands/geosearch)
     /// - Available: 6.2.0
     /// - History:
     ///     * 7.0.0: Added support for uppercase unit names.
+    ///     * 9.0.0: Added support for the BYPOLYGON option.
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Response: Array of matched members information.
     @inlinable
     public func geosearch(
         _ key: ValkeyKey,
-        from: GEOSEARCH.From,
+        from: GEOSEARCH.From? = nil,
         by: GEOSEARCH.By,
         order: GEOSEARCH.Order? = nil,
         countBlock: GEOSEARCH.CountBlock? = nil,
@@ -1344,12 +1468,13 @@ extension ValkeyClientProtocol {
         )
     }
 
-    /// Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.
+    /// Queries a geospatial index for members inside an area of a box, a circle, or a polygon, optionally stores the result.
     ///
     /// - Documentation: [GEOSEARCHSTORE](https://valkey.io/commands/geosearchstore)
     /// - Available: 6.2.0
     /// - History:
     ///     * 7.0.0: Added support for uppercase unit names.
+    ///     * 9.0.0: Added support for the BYPOLYGON option.
     /// - Complexity: O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape
     /// - Response: [Integer]: The number of elements in the resulting set.
     @inlinable
@@ -1357,7 +1482,7 @@ extension ValkeyClientProtocol {
     public func geosearchstore(
         destination: ValkeyKey,
         source: ValkeyKey,
-        from: GEOSEARCHSTORE.From,
+        from: GEOSEARCHSTORE.From? = nil,
         by: GEOSEARCHSTORE.By,
         order: GEOSEARCHSTORE.Order? = nil,
         countBlock: GEOSEARCHSTORE.CountBlock? = nil,

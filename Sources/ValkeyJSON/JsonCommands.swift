@@ -28,6 +28,8 @@ public enum JSON {
     /// Append one or more values to the array values at the path.
     @_documentation(visibility: internal)
     public struct ARRAPPEND<Path: RESPStringRenderable, Json: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.ARRAPPEND" }
+
         public var key: ValkeyKey
         public var path: Path
         public var jsons: [Json]
@@ -48,6 +50,8 @@ public enum JSON {
     /// Search for the first occurrence of a scalar JSON value in arrays located at the specified path. Indices out of range are adjusted.
     @_documentation(visibility: internal)
     public struct ARRINDEX<Path: RESPStringRenderable, JsonScalar: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.ARRINDEX" }
+
         public var key: ValkeyKey
         public var path: Path
         public var jsonScalar: JsonScalar
@@ -72,6 +76,8 @@ public enum JSON {
     /// Insert one or more values into an array at the given path before the specified index.
     @_documentation(visibility: internal)
     public struct ARRINSERT<Path: RESPStringRenderable, Json: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.ARRINSERT" }
+
         public var key: ValkeyKey
         public var path: Path
         public var index: Int
@@ -94,6 +100,8 @@ public enum JSON {
     /// Get length of the array at the path.
     @_documentation(visibility: internal)
     public struct ARRLEN: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.ARRLEN" }
+
         public var key: ValkeyKey
         public var path: String?
 
@@ -112,6 +120,8 @@ public enum JSON {
     /// Remove and returns the element at the given index. Popping an empty array returns null.
     @_documentation(visibility: internal)
     public struct ARRPOP: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.ARRPOP" }
+
         public var key: ValkeyKey
         public var path: String?
         public var index: Int?
@@ -132,6 +142,8 @@ public enum JSON {
     /// Trim the array at the path so that it becomes subarray [start, end], both inclusive.
     @_documentation(visibility: internal)
     public struct ARRTRIM<Path: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.ARRTRIM" }
+
         public var key: ValkeyKey
         public var path: Path
         public var start: Int
@@ -154,6 +166,8 @@ public enum JSON {
     /// Clear the arrays or an object at the specified path.
     @_documentation(visibility: internal)
     public struct CLEAR: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.CLEAR" }
+
         public var key: ValkeyKey
         public var path: String?
 
@@ -172,6 +186,8 @@ public enum JSON {
     /// Reports information. Supported subcommands are: MEMORY, DEPTH, FIELDS, HELP
     @_documentation(visibility: internal)
     public struct DEBUG<SubcommandArguments: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.DEBUG" }
+
         public var subcommandArguments: SubcommandArguments
 
         @inlinable public init(subcommandArguments: SubcommandArguments) {
@@ -186,6 +202,8 @@ public enum JSON {
     /// Delete the JSON values at the specified path in a document key.
     @_documentation(visibility: internal)
     public struct DEL: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.DEL" }
+
         public var key: ValkeyKey
         public var path: String?
 
@@ -204,6 +222,8 @@ public enum JSON {
     /// An alias of JSON.DEL.
     @_documentation(visibility: internal)
     public struct FORGET: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.FORGET" }
+
         @inlinable public init() {
         }
 
@@ -215,6 +235,8 @@ public enum JSON {
     /// Get the serialized JSON at one or multiple paths.
     @_documentation(visibility: internal)
     public struct GET: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.GET" }
+
         public var key: ValkeyKey
         public var indentNewlineSpace: String?
         public var noescape: String?
@@ -237,6 +259,8 @@ public enum JSON {
     /// Get serialized JSONs at the path from multiple document keys. Return null for non-existent key or JSON path.
     @_documentation(visibility: internal)
     public struct MGET<Path: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.MGET" }
+
         public var keys: [ValkeyKey]
         public var path: Path
 
@@ -256,11 +280,12 @@ public enum JSON {
     @_documentation(visibility: internal)
     public struct MSET<Path: RESPStringRenderable, Json: RESPStringRenderable>: ValkeyCommand {
         public struct Data: RESPRenderable, Sendable, Hashable {
-            @usableFromInline let key: ValkeyKey
-            @usableFromInline let path: Path
-            @usableFromInline let json: Json
+            public var key: ValkeyKey
+            public var path: Path
+            public var json: Json
 
-            @inlinable public init(key: ValkeyKey, path: Path, json: Json) {
+            @inlinable
+            public init(key: ValkeyKey, path: Path, json: Json) {
                 self.key = key
                 self.path = path
                 self.json = json
@@ -278,6 +303,8 @@ public enum JSON {
                 RESPBulkString(json).encode(into: &commandEncoder)
             }
         }
+        @inlinable public static var name: String { "JSON.MSET" }
+
         public var data: [Data]
 
         @inlinable public init(data: [Data]) {
@@ -294,6 +321,8 @@ public enum JSON {
     /// Increment the number values at the path by a given number.
     @_documentation(visibility: internal)
     public struct NUMINCRBY<Path: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.NUMINCRBY" }
+
         public var key: ValkeyKey
         public var path: Path
         public var number: Int
@@ -314,6 +343,8 @@ public enum JSON {
     /// Multiply the numeric values at the path by a given number.
     @_documentation(visibility: internal)
     public struct NUMMULTBY<Path: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.NUMMULTBY" }
+
         public var key: ValkeyKey
         public var path: Path
         public var number: Int
@@ -334,6 +365,8 @@ public enum JSON {
     /// Retrieve the key names from the objects at the specified path.
     @_documentation(visibility: internal)
     public struct OBJKEYS: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.OBJKEYS" }
+
         public var key: ValkeyKey
         public var path: String?
 
@@ -352,6 +385,8 @@ public enum JSON {
     /// Get the number of keys in the object at the specified path.
     @_documentation(visibility: internal)
     public struct OBJLEN: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.OBJLEN" }
+
         public var key: ValkeyKey
         public var path: String?
 
@@ -370,6 +405,8 @@ public enum JSON {
     /// Return the JSON value at the given path in Redis Serialization Protocol (RESP).
     @_documentation(visibility: internal)
     public struct RESP: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.RESP" }
+
         public var key: ValkeyKey
         public var path: String?
 
@@ -388,6 +425,8 @@ public enum JSON {
     /// Set JSON values at the specified path.
     @_documentation(visibility: internal)
     public struct SET<Path: RESPStringRenderable, Json: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.SET" }
+
         public var key: ValkeyKey
         public var path: Path
         public var json: Json
@@ -410,6 +449,8 @@ public enum JSON {
     /// Append a string to the JSON strings at the specified path.
     @_documentation(visibility: internal)
     public struct STRAPPEND<JsonString: RESPStringRenderable>: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.STRAPPEND" }
+
         public var key: ValkeyKey
         public var path: String?
         public var jsonString: JsonString
@@ -430,6 +471,8 @@ public enum JSON {
     /// Get the length of the JSON string values at the specified path.
     @_documentation(visibility: internal)
     public struct STRLEN: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.STRLEN" }
+
         public var key: ValkeyKey
         public var path: String?
 
@@ -448,6 +491,8 @@ public enum JSON {
     /// Toggle boolean values between true and false at the specified path.
     @_documentation(visibility: internal)
     public struct TOGGLE: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.TOGGLE" }
+
         public var key: ValkeyKey
         public var path: String?
 
@@ -466,6 +511,8 @@ public enum JSON {
     /// Report the type of the values at the given path.
     @_documentation(visibility: internal)
     public struct TYPE: ValkeyCommand {
+        @inlinable public static var name: String { "JSON.TYPE" }
+
         public var key: ValkeyKey
         public var path: String?
 
