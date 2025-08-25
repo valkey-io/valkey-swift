@@ -15,6 +15,7 @@
 import Logging
 import NIOCore
 import NIOEmbedded
+import NIOPosix
 import Testing
 
 @testable import Valkey
@@ -448,5 +449,47 @@ struct ConnectionTests {
         }
         // verify connection hasnt been closed
         #expect(channel.isActive == true)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testCloseOnServeClose() async throws {
+        let channel = try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
+            .serverChannelOption(.socketOption(.so_reuseaddr), value: 1)
+            .childChannelOption(ChannelOptions.allowRemoteHalfClosure, value: true)
+            .childChannelInitializer { channel in
+                channel.eventLoop.makeCompletedFuture {
+                    try channel.pipeline.syncOperations.addHandler(
+                        TestValkeyServerChannelHandler { command, _, write in
+                            switch command {
+                            case "QUIT":
+                                write(ByteBuffer(string: "+2OK\r\n"))
+                                channel.close(mode: .output, promise: nil)
+                            default:
+                                fatalError("Unexpected command: \(command)")
+                            }
+
+                        }
+                    )
+                }
+            }
+            .bind(host: "127.0.0.1", port: 0)
+            .get()
+        let port = channel.localAddress!.port!
+        try await ValkeyConnection.withConnection(
+            address: .hostname("127.0.0.1", port: port),
+            configuration: .init(),
+            eventLoop: MultiThreadedEventLoopGroup.singleton.any(),
+            logger: Logger(label: "test")
+        ) { connection in
+            let clientChannel = await connection.channel
+            try await connection.quit()
+            await withCheckedContinuation { cont in
+                clientChannel.closeFuture.whenComplete { _ in
+                    cont.resume()
+                }
+            }
+        }
+        try await channel.close()
     }
 }
