@@ -22,7 +22,7 @@ extension ValkeyClient {
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> sending Value {
-        try await self.subscriptionConnection.withValue {
+        try await self.subscriptionConnection.withConnection {
             try await operation($0)
         } acquire: {
             try await self.node.leaseConnection()
@@ -173,7 +173,6 @@ extension ValkeyClient {
                         // if connection closes for some reason don't exit loop so it opens a new connection
                         switch error.errorCode {
                         case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
-                            self.subscriptionConnection.reset()
                             break
                         default:
                             cont.finish(throwing: error)

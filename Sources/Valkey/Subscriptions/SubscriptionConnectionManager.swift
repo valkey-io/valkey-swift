@@ -14,17 +14,17 @@
 
 import Synchronization
 
-/// Stores a reference to a single instance of a type that is initialized asynchronously
+/// Stores a reference to a single connection to be used by client for subscriptions
 ///
-/// It ensures only ever one version of the object is initialized, even if it requested
+/// It ensures only ever one version of the connection is initialized, even if it requested
 /// twice during initialization. Once it is available the object includes a reference count
 /// so we can clean it up once nobody references it.
 @available(valkeySwift 1.0, *)
 @usableFromInline
-struct AsyncInitializedReferencedObject<Value: Sendable & Identifiable>: ~Copyable, Sendable {
+struct SubscriptionConnectionManager: ~Copyable, Sendable {
     @usableFromInline
     enum Action {
-        case use(Value)
+        case use(ValkeyConnection)
         case acquire
     }
 
@@ -32,7 +32,7 @@ struct AsyncInitializedReferencedObject<Value: Sendable & Identifiable>: ~Copyab
     enum State {
         case uninitialized
         case acquiring([CheckedContinuation<Action, any Error>])
-        case available(Value, Int)
+        case available(ValkeyConnection, Int)
     }
     @usableFromInline
     let state: Mutex<State>
@@ -41,8 +41,8 @@ struct AsyncInitializedReferencedObject<Value: Sendable & Identifiable>: ~Copyab
         self.state = .init(.uninitialized)
     }
 
-    @inlinable
-    func acquire(isolation: isolated (any Actor)? = #isolation, _ operation: () async throws -> Value) async throws -> Value {
+    @usableFromInline
+    func acquire(isolation: isolated (any Actor)? = #isolation, _ operation: () async throws -> ValkeyConnection) async throws -> ValkeyConnection {
         let action: Action = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Action, any Error>) in
             self.state.withLock { state in
                 switch state {
@@ -102,14 +102,14 @@ struct AsyncInitializedReferencedObject<Value: Sendable & Identifiable>: ~Copyab
         }
     }
 
-    @inlinable
-    func release(id: Value.ID, _ operation: (Value) -> Void) {
+    @usableFromInline
+    func release(connection: ValkeyConnection, _ operation: (ValkeyConnection) -> Void) {
         self.state.withLock { state in
             switch state {
             case .uninitialized, .acquiring:
                 break
-            case .available(let connection, let count):
-                guard connection.id == id else { return }
+            case .available(let storedConnection, let count):
+                guard storedConnection.id == connection.id else { return }
                 assert(count > 0, "Cannot have a count of active references to connection less than one")
                 if count == 1 {
                     state = .uninitialized
@@ -122,21 +122,16 @@ struct AsyncInitializedReferencedObject<Value: Sendable & Identifiable>: ~Copyab
     }
 
     @inlinable
-    func withValue<Returning>(
+    func withConnection<Returning>(
         isolation: isolated (any Actor)? = #isolation,
-        _ operation: (Value) async throws -> sending Returning,
-        acquire acquireOperation: () async throws -> Value,
-        release releaseOperation: (Value) -> Void
+        _ operation: (ValkeyConnection) async throws -> sending Returning,
+        acquire acquireOperation: () async throws -> ValkeyConnection,
+        release releaseOperation: (ValkeyConnection) -> Void
     ) async throws -> sending Returning {
         let value = try await self.acquire(acquireOperation)
         defer {
-            self.release(id: value.id, releaseOperation)
+            self.release(connection: value, releaseOperation)
         }
         return try await operation(value)
-    }
-
-    @usableFromInline
-    func reset() {
-        self.state.withLock { $0 = .uninitialized }
     }
 }

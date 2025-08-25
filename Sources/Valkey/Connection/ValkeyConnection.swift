@@ -322,7 +322,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable, Identifiabl
             )
             let connection = ValkeyConnection(
                 channel: channel,
-                connectionID: 0,
+                connectionID: ID.random(in: .min ... .max),
                 channelHandler: handler,
                 configuration: configuration,
                 logger: logger
