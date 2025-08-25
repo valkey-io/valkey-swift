@@ -135,3 +135,63 @@ struct SubscriptionConnectionManager: ~Copyable, Sendable {
         return try await operation(value)
     }
 }
+
+@available(valkeySwift 1.0, *)
+final class SubscriptionConnectionManagerV2: Sendable {
+    enum Event {
+        case get
+        case cancel
+        case finish
+    }
+    let stateMachine: Mutex<StateMachine>
+    let eventStream: AsyncStream<Event>
+    let eventStreamContinuation: AsyncStream<Event>.Continuation
+
+    init() {
+        (self.eventStream, self.eventStreamContinuation) = AsyncStream.makeStream()
+        self.stateMachine = .init(.init())
+    }
+
+    func run() async {
+        await withDiscardingTaskGroup { group in
+            for try await event in eventStream {
+                runAction(event, group: &group)
+            }
+        }
+    }
+
+    func runAction(_ event: Event, group: inout DiscardingTaskGroup) {
+        switch event {
+        case .get:
+            break
+        case .cancel:
+            break
+        case .finish:
+            break
+        }
+    }
+
+    struct StateMachine {
+        enum State {
+            case uninitialized
+            case acquiring([Int: CheckedContinuation<ValkeyConnection, Error>])
+            case using(ValkeyConnection, Set<Int>)
+        }
+        let state: State
+
+        init() {
+            self.state = .uninitialized
+        }
+
+        enum GetAction {
+            case startAcquire
+            case doNothing
+        }
+
+        func get(id: Int, continuation: CheckedContinuation<ValkeyConnection, Error>) -> GetAction {
+            switch self.state {
+
+            }
+        }
+    }
+}
