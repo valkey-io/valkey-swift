@@ -51,13 +51,10 @@ func makeLocalServer(commandHandler: some BenchmarkCommandHandler = BenchmarkGet
     try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
         .serverChannelOption(.socketOption(.so_reuseaddr), value: 1)
         .childChannelInitializer { channel in
-            do {
+            channel.eventLoop.makeCompletedFuture {
                 try channel.pipeline.syncOperations.addHandler(
                     ValkeyServerChannelHandler(commandHandler: commandHandler)
                 )
-                return channel.eventLoop.makeSucceededVoidFuture()
-            } catch {
-                return channel.eventLoop.makeFailedFuture(error)
             }
         }
         .bind(host: "127.0.0.1", port: 0)
