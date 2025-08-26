@@ -26,6 +26,7 @@ final class SubscriptionConnectionManager: Sendable {
     enum Event {
         case get(Int, CheckedContinuation<ValkeyConnection, Error>)
         case release(Int)
+        case cancel(Int)
     }
     let stateMachine: Mutex<StateMachine>
     let eventStream: AsyncStream<Event>
@@ -62,6 +63,17 @@ final class SubscriptionConnectionManager: Sendable {
                         }
                     }
                     break
+                case .cancel(let id):
+                    self.stateMachine.withLock { stateMachine in
+                        switch stateMachine.cancel(id: id) {
+                        case .cancel(let cont):
+                            cont.resume(throwing: CancellationError())
+                        case .releaseConnection(let connection):
+                            client.node.connectionPool.releaseConnection(connection)
+                        case .doNothing:
+                            break
+                        }
+                    }
                 }
             }
         }
@@ -71,9 +83,17 @@ final class SubscriptionConnectionManager: Sendable {
     func withConnection(_ operation: (ValkeyConnection) async throws -> Void) async throws {
         let id = Int.random(in: .min ... .max)
 
-        let connection = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
-            self.eventStreamContinuation.yield(.get(id, cont))
+        let connection = try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                throw CancellationError()
+            }
+            return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
+                self.eventStreamContinuation.yield(.get(id, cont))
+            }
+        } onCancel: {
+            self.eventStreamContinuation.yield(.cancel(id))
         }
+
         defer {
             self.eventStreamContinuation.yield(.release(id))
         }
@@ -81,20 +101,21 @@ final class SubscriptionConnectionManager: Sendable {
     }
 
     private func acquire(client: ValkeyClient) async {
+        let result: Result<ValkeyConnection, Error>
         do {
-            let connection = try await client.node.connectionPool.leaseConnection()
-            self.stateMachine.withLock { stateMachine in
-                switch stateMachine.acquired(connection: connection) {
-                case .yield(let continuations):
-                    for cont in continuations {
-                        cont.resume(returning: connection)
-                    }
-                case .doNothing:
-                    break
-                }
-            }
+            result = .success(try await client.node.connectionPool.leaseConnection())
         } catch {
-            fatalError()
+            result = .failure(error)
+        }
+        self.stateMachine.withLock { stateMachine in
+            switch stateMachine.acquired(connectionResult: result) {
+            case .yield(let continuations):
+                for cont in continuations {
+                    cont.resume(with: result)
+                }
+            case .doNothing:
+                break
+            }
         }
     }
 
@@ -131,18 +152,55 @@ final class SubscriptionConnectionManager: Sendable {
             }
         }
 
+        enum CancelAction {
+            case cancel(CheckedContinuation<ValkeyConnection, Error>)
+            case releaseConnection(ValkeyConnection)
+            case doNothing
+        }
+
+        mutating func cancel(id: Int) -> CancelAction {
+            switch self.state {
+            case .uninitialized:
+                return .doNothing
+            case .acquiring(var map):
+                guard let continuation = map.removeValue(forKey: id) else {
+                    return .doNothing
+                }
+                if map.isEmpty {
+                    self.state = .uninitialized
+                } else {
+                    self.state = .acquiring(map)
+                }
+                return .cancel(continuation)
+            case .using(let connection, var ids):
+                ids.remove(id)
+                if ids.isEmpty {
+                    self.state = .uninitialized
+                    return .releaseConnection(connection)
+                } else {
+                    self.state = .using(connection, ids)
+                    return .doNothing
+                }
+            }
+        }
+
         enum AcquiredAction {
             case yield([CheckedContinuation<ValkeyConnection, Error>])
             case doNothing
         }
 
-        mutating func acquired(connection: ValkeyConnection) -> AcquiredAction {
+        mutating func acquired(connectionResult: Result<ValkeyConnection, Error>) -> AcquiredAction {
             switch self.state {
             case .uninitialized:
-                fatalError()
+                return .doNothing
             case .acquiring(let map):
                 let continuations = map.values
-                self.state = .using(connection, .init(map.keys))
+                switch connectionResult {
+                case .success(let connection):
+                    self.state = .using(connection, .init(map.keys))
+                case .failure:
+                    self.state = .uninitialized
+                }
                 return .yield(.init(continuations))
             case .using:
                 fatalError()
