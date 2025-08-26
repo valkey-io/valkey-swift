@@ -41,9 +41,13 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
+    /// subscription state
+    @usableFromInline
+    let subscriptionConnection: SubscriptionConnectionManager
 
     private enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
+        case runSubscriptionConnectionManager(SubscriptionConnectionManager)
     }
     private let actionStream: AsyncStream<RunAction>
     private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -90,8 +94,10 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        self.subscriptionConnection = .init(logger: logger)
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runNodeClient(self.node))
+        self.queueAction(.runSubscriptionConnectionManager(self.subscriptionConnection))
     }
 }
 
@@ -113,7 +119,14 @@ extension ValkeyClient {
             }
         }
         #else
-        await self.runActionTaskGroup()
+        /// Run discarding task group running actions
+        await withDiscardingTaskGroup { group in
+            for await action in self.actionStream {
+                group.addTask {
+                    await self.runAction(action)
+                }
+            }
+        }
         #endif
     }
 
@@ -142,6 +155,8 @@ extension ValkeyClient {
         switch action {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
+        case .runSubscriptionConnectionManager(let subscriptionConnectionManager):
+            await subscriptionConnectionManager.run(client: self)
         }
     }
 }
