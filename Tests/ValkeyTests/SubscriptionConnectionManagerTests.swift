@@ -20,211 +20,310 @@ import Testing
 
 @testable import Valkey
 
-@Suite("AsyncInitializedReferencedObject Tests")
+@Suite("SubscriptionConnectionManager Tests")
 struct SubscriptionConnectionManagerTests {
-    /*    /// Box for non-Copyable type so we can pass it around more easily
-        final class Box<Value: ~Copyable & Sendable>: Sendable {
-            let value: Value
-    
-            init(_ value: consuming Value) {
-                self.value = value
-            }
-        }
-    
+    struct StateMachine {
         @Test
         @available(valkeySwift 1.0, *)
-        func testReferenceCount() async throws {
-            let referencedObject = Box(SubscriptionConnectionManager())
-            let connection = try await referencedObject.value.acquire {
-                return try await ValkeyConnection.setupChannelAndConnect(NIOAsyncTestingChannel(), configuration: .init(), logger: Logger(label: "test"))
+        func testAcquireRelease() {
+            var stateMachine = SubscriptionConnectionManager.StateMachine<String, Int>()
+            let action1 = stateMachine.get(id: 0, request: 10)
+            let action2 = stateMachine.acquired(result: .success("Connection"))
+            let action3 = stateMachine.release(id: 0)
+            #expect(action1 == .startAcquire)
+            #expect(action2 == .yield([10]))
+            #expect(action3 == .release("Connection"))
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testAcquireReleaseTwice() {
+            var stateMachine = SubscriptionConnectionManager.StateMachine<String, Int>()
+            do {
+                let action1 = stateMachine.get(id: 0, request: 10)
+                let action2 = stateMachine.acquired(result: .success("Connection"))
+                let action3 = stateMachine.release(id: 0)
+                #expect(action1 == .startAcquire)
+                #expect(action2 == .yield([10]))
+                #expect(action3 == .release("Connection"))
             }
-            let connection2 = try await referencedObject.value.acquire {
-                return try await ValkeyConnection.setupChannelAndConnect(NIOAsyncTestingChannel(), configuration: .init(), logger: Logger(label: "test"))
+            do {
+                let action1 = stateMachine.get(id: 1, request: 11)
+                let action2 = stateMachine.acquired(result: .success("Connection"))
+                let action3 = stateMachine.release(id: 1)
+                #expect(action1 == .startAcquire)
+                #expect(action2 == .yield([11]))
+                #expect(action3 == .release("Connection"))
             }
-            // verify we get the same object twice
-            #expect(connection === connection2)
-            // Verify we have two references
-            referencedObject.value.state.withLock { state in
-                switch state {
-                case .available(_, let count):
-                    #expect(count == 2)
-                case .acquiring, .uninitialized:
-                    Issue.record("Should have a connection")
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testConcurrentAcquireRelease() {
+            var stateMachine = SubscriptionConnectionManager.StateMachine<String, Int>()
+            let action1 = stateMachine.get(id: 0, request: 10)
+            let action2 = stateMachine.get(id: 1, request: 11)
+            let action3 = stateMachine.acquired(result: .success("Connection"))
+            let action4 = stateMachine.release(id: 1)
+            let action5 = stateMachine.release(id: 0)
+            #expect(action1 == .startAcquire)
+            #expect(action2 == .doNothing)
+            #expect(action3 == .yield([10, 11]))
+            #expect(action4 == .doNothing)
+            #expect(action5 == .release("Connection"))
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testGetAfterAcquire() {
+            do {
+                var stateMachine = SubscriptionConnectionManager.StateMachine<String, Int>()
+                let action1 = stateMachine.get(id: 0, request: 10)
+                let action3 = stateMachine.acquired(result: .success("Connection"))
+                let action2 = stateMachine.get(id: 1, request: 11)
+                let action4 = stateMachine.release(id: 1)
+                let action5 = stateMachine.release(id: 0)
+                #expect(action1 == .startAcquire)
+                #expect(action3 == .yield([10]))
+                #expect(action2 == .completeRequest("Connection"))
+                #expect(action4 == .doNothing)
+                #expect(action5 == .release("Connection"))
+            }
+            do {
+                var stateMachine = SubscriptionConnectionManager.StateMachine<String, Int>()
+                let action1 = stateMachine.get(id: 0, request: 10)
+                let action3 = stateMachine.acquired(result: .success("Connection"))
+                let action2 = stateMachine.get(id: 1, request: 11)
+                let action4 = stateMachine.release(id: 0)
+                let action5 = stateMachine.release(id: 1)
+                #expect(action1 == .startAcquire)
+                #expect(action3 == .yield([10]))
+                #expect(action2 == .completeRequest("Connection"))
+                #expect(action4 == .doNothing)
+                #expect(action5 == .release("Connection"))
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testCancelWhileAcquiring() {
+            var stateMachine = SubscriptionConnectionManager.StateMachine<String, Int>()
+            let action1 = stateMachine.get(id: 0, request: 10)
+            let action2 = stateMachine.cancel(id: 0)
+            let action3 = stateMachine.acquired(result: .success("Connection"))
+            #expect(action1 == .startAcquire)
+            #expect(action2 == .cancel(10))
+            #expect(action3 == .release("Connection"))
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testCancelAfterAcquiring() {
+            var stateMachine = SubscriptionConnectionManager.StateMachine<String, Int>()
+            let action1 = stateMachine.get(id: 0, request: 10)
+            let action2 = stateMachine.acquired(result: .success("Connection"))
+            let action3 = stateMachine.cancel(id: 0)
+            #expect(action1 == .startAcquire)
+            #expect(action2 == .yield([10]))
+            #expect(action3 == .release("Connection"))
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testCancelWhileMulitpleAcquiring() {
+            var stateMachine = SubscriptionConnectionManager.StateMachine<String, Int>()
+            let action1 = stateMachine.get(id: 0, request: 10)
+            let action2 = stateMachine.get(id: 1, request: 11)
+            let action3 = stateMachine.cancel(id: 0)
+            let action4 = stateMachine.acquired(result: .success("Connection"))
+            let action5 = stateMachine.release(id: 1)
+            #expect(action1 == .startAcquire)
+            #expect(action2 == .doNothing)
+            #expect(action3 == .cancel(10))
+            #expect(action4 == .yield([11]))
+            #expect(action5 == .release("Connection"))
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    func testWithSubscriptionConnectionManager(
+        delay: Duration? = nil,
+        _ operation: @Sendable (SubscriptionConnectionManager) async throws -> Void
+    ) async throws -> (Int, Int) {
+        let logger = {
+            var logger = Logger(label: "Subscriptions")
+            logger.logLevel = .trace
+            return logger
+        }()
+        let subscriptionConnectionManager = SubscriptionConnectionManager(logger: logger)
+        return try await withThrowingTaskGroup(of: Void.self) { group in
+            let leaseCount = Atomic(0)
+            let releaseCount = Atomic(0)
+            group.addTask {
+
+                await subscriptionConnectionManager.run {
+                    leaseCount.add(1, ordering: .relaxed)
+                    if let delay {
+                        try await Task.sleep(for: delay)
+                    }
+                    let channel = NIOAsyncTestingChannel()
+                    let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+                    try await channel.processHello()
+                    return connection
+                } release: { connection in
+                    releaseCount.add(1, ordering: .relaxed)
+                    Task {
+                        connection.close()
+                    }
                 }
             }
+            try await operation(subscriptionConnectionManager)
+            subscriptionConnectionManager.shutdown()
+            try await group.waitForAll()
+            return (leaseCount.load(ordering: .relaxed), releaseCount.load(ordering: .relaxed))
         }
-    
-        @Test
-        @available(valkeySwift 1.0, *)
-        func testReleaseGetsCalledOnce() async throws {
-            let referencedObject = Box(SubscriptionConnectionManager())
-            let connection = try await referencedObject.value.acquire {
-                return try await ValkeyConnection.setupChannelAndConnect(NIOAsyncTestingChannel(), configuration: .init(), logger: Logger(label: "test"))
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testWithConnection() async throws {
+        let stats = try await testWithSubscriptionConnectionManager { subscriptionConnectionManager in
+            try await subscriptionConnectionManager.withConnection { _ in
             }
-            let connection2 = try await referencedObject.value.acquire {
-                return try await ValkeyConnection.setupChannelAndConnect(NIOAsyncTestingChannel(), configuration: .init(), logger: Logger(label: "test"))
-            }
-            let called = Atomic(0)
-            referencedObject.value.release(connection: connection) { connection in
-                called.add(1, ordering: .relaxed)
-                connection.close()
-            }
-            referencedObject.value.release(connection: connection2) { connection in
-                called.add(2, ordering: .relaxed)
-                connection.close()
-            }
-            #expect(called.load(ordering: .relaxed) == 2)
         }
-    
-        @Test
-        @available(valkeySwift 1.0, *)
-        func testMultipleConcurrentAcquire() async throws {
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                let referencedObject = Box(SubscriptionConnectionManager())
-                for _ in 0..<500 {
+        #expect(stats.0 == 1)
+        #expect(stats.1 == 1)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testWithConnectionTwice() async throws {
+        let stats = try await testWithSubscriptionConnectionManager { subscriptionConnectionManager in
+            try await subscriptionConnectionManager.withConnection { _ in
+            }
+            try await subscriptionConnectionManager.withConnection { _ in
+            }
+        }
+        #expect(stats.0 == 2)
+        #expect(stats.1 == 2)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testConcurrentWithConnection() async throws {
+        let stats = try await testWithSubscriptionConnectionManager { subscriptionConnectionManager in
+            await withThrowingTaskGroup(of: Void.self) { group in
+                for _ in 0..<50 {
                     group.addTask {
-                        let connection = try await referencedObject.value.acquire {
-                            try await Task.sleep(for: .milliseconds(50))
-                            return try await ValkeyConnection.setupChannelAndConnect(
-                                NIOAsyncTestingChannel(),
-                                configuration: .init(),
-                                logger: Logger(label: "test")
-                            )
+                        try await subscriptionConnectionManager.withConnection { _ in
+                            try await Task.sleep(for: .milliseconds(2))
                         }
-                        let connection2 = try await referencedObject.value.acquire {
-                            try await Task.sleep(for: .milliseconds(50))
-                            return try await ValkeyConnection.setupChannelAndConnect(
-                                NIOAsyncTestingChannel(),
-                                configuration: .init(),
-                                logger: Logger(label: "test")
-                            )
-                        }
-                        #expect(connection === connection2)
-    
-                        referencedObject.value.release(connection: connection) { $0.close() }
-                        referencedObject.value.release(connection: connection2) { $0.close() }
-                    }
-                }
-                for _ in 0..<100 {
-                    group.addTask {
-                        let connection = try await referencedObject.value.acquire {
-                            try await Task.sleep(for: .milliseconds(50))
-                            return try await ValkeyConnection.setupChannelAndConnect(
-                                NIOAsyncTestingChannel(),
-                                configuration: .init(),
-                                logger: Logger(label: "test")
-                            )
-                        }
-                        referencedObject.value.release(connection: connection) { _ in }
-                    }
-                }
-                try await group.waitForAll()
-                referencedObject.value.state.withLock { state in
-                    if case .uninitialized = state {
-                    } else {
-                        Issue.record("Subscription channel should have been relesed")
                     }
                 }
             }
         }
-    
-        @Test
-        @available(valkeySwift 1.0, *)
-        func testCancellationWhileAcquiring() async throws {
-            let referencedObject = Box(SubscriptionConnectionManager())
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                let (stream1, cont1) = AsyncStream.makeStream(of: Void.self)
-                let (stream2, cont2) = AsyncStream.makeStream(of: Void.self)
-                // Run acquire three times, with the first one throwing a cancellation error. Use
-                // AsyncStream to ensure all acquires are active at the same time
+        #expect(stats.0 == 1)
+        #expect(stats.1 == 1)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testConcurrentWithConnectionOnceAcquired() async throws {
+        let stats = try await testWithSubscriptionConnectionManager { subscriptionConnectionManager in
+            await withThrowingTaskGroup(of: Void.self) { group in
+                let (stream, cont) = AsyncStream.makeStream(of: Void.self)
                 group.addTask {
-                    _ = try await referencedObject.value.acquire {
-                        cont1.finish()
-                        await stream2.first { _ in true }
-                        throw CancellationError()
-                    }
-                }
-                await stream1.first { _ in true }
-                group.addTask {
-                    _ = try await referencedObject.value.acquire {
-                        try await Task.sleep(for: .milliseconds(50))
-                        return try await ValkeyConnection.setupChannelAndConnect(
-                            NIOAsyncTestingChannel(),
-                            configuration: .init(),
-                            logger: Logger(label: "test")
-                        )
+                    try await subscriptionConnectionManager.withConnection { _ in
+                        cont.finish()
+                        try await Task.sleep(for: .milliseconds(2))
                     }
                 }
                 group.addTask {
-                    _ = try await referencedObject.value.acquire {
-                        try await Task.sleep(for: .milliseconds(50))
-                        return try await ValkeyConnection.setupChannelAndConnect(
-                            NIOAsyncTestingChannel(),
-                            configuration: .init(),
-                            logger: Logger(label: "test")
-                        )
+                    await stream.first { _ in true }
+                    try await subscriptionConnectionManager.withConnection { _ in
                     }
-                }
-                try await Task.sleep(for: .milliseconds(50))
-                cont2.finish()
-            }
-            // Verify we have two connections
-            let value: ValkeyConnection = try #require(
-                referencedObject.value.state.withLock { state in
-                    switch state {
-                    case .available(let value, let count):
-                        #expect(count == 2)
-                        return value
-                    case .acquiring, .uninitialized:
-                        Issue.record("Should have a connection")
-                        return nil
-                    }
-                }
-            )
-            // Verify once we run release twice we have no connection
-            referencedObject.value.release(connection: value) { _ in }
-            referencedObject.value.release(connection: value) { _ in }
-            referencedObject.value.state.withLock { state in
-                switch state {
-                case .uninitialized:
-                    break
-                case .acquiring, .available:
-                    Issue.record("Should have a connection")
                 }
             }
         }
-    
-        @Test
-        @available(valkeySwift 1.0, *)
-        func testWithValue() async throws {
-            let referencedObject = Box(SubscriptionConnectionManager())
-            let operationCalledCount = Box(Atomic(0))
-            let acquireCalledCount = Box(Atomic(0))
-            let releaseCalledCount = Box(Atomic(0))
+        #expect(stats.0 == 1)
+        #expect(stats.1 == 1)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testCancel() async throws {
+        let stats = try await testWithSubscriptionConnectionManager(delay: .seconds(1)) { subscriptionConnectionManager in
             try await withThrowingTaskGroup(of: Void.self) { group in
-                for _ in 0..<3 {
-                    group.addTask {
-                        try await referencedObject.value.withConnection { _ in
-                            try await Task.sleep(for: .milliseconds(20))
-                            operationCalledCount.value.add(1, ordering: .relaxed)
-                        } acquire: {
-                            try await Task.sleep(for: .milliseconds(20))
-                            acquireCalledCount.value.add(1, ordering: .relaxed)
-                            return try await ValkeyConnection.setupChannelAndConnect(
-                                NIOAsyncTestingChannel(),
-                                configuration: .init(),
-                                logger: Logger(label: "test")
-                            )
-                        } release: { connection in
-                            releaseCalledCount.value.add(1, ordering: .relaxed)
-                            connection.close()
-                        }
+                group.addTask {
+                    try await subscriptionConnectionManager.withConnection { _ in
+                        try await Task.sleep(for: .milliseconds(2))
                     }
                 }
-                try await group.waitForAll()
+                try await Task.sleep(for: .milliseconds(1))
+                group.cancelAll()
             }
-            #expect(operationCalledCount.value.load(ordering: .relaxed) == 3)
-            #expect(acquireCalledCount.value.load(ordering: .relaxed) == 1)
-            #expect(releaseCalledCount.value.load(ordering: .relaxed) == 1)
-        }*/
+        }
+        #expect(stats.0 == 1)
+        #expect(stats.1 == 1)
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension SubscriptionConnectionManager.StateMachine.GetAction: Equatable where Value: Equatable, Request: Equatable {
+    public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.startAcquire, .startAcquire), (.doNothing, .doNothing):
+            true
+        case (.completeRequest(let lhs), .completeRequest(let rhs)):
+            lhs == rhs
+        default:
+            false
+        }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension SubscriptionConnectionManager.StateMachine.AcquiredAction: Equatable where Value: Equatable, Request: Equatable & Comparable {
+    public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.doNothing, .doNothing):
+            true
+        case (.yield(let lhs), .yield(let rhs)):
+            lhs.sorted() == rhs.sorted()
+        case (.release(let lhs), .release(let rhs)):
+            lhs == rhs
+        default:
+            false
+        }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension SubscriptionConnectionManager.StateMachine.CancelAction: Equatable where Value: Equatable, Request: Equatable {
+    public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.doNothing, .doNothing):
+            true
+        case (.cancel(let lhs), .cancel(let rhs)):
+            lhs == rhs
+        case (.release(let lhs), .release(let rhs)):
+            lhs == rhs
+        default:
+            false
+        }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension SubscriptionConnectionManager.StateMachine.ReleaseAction: Equatable where Value: Equatable, Request: Equatable {
+    public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.doNothing, .doNothing):
+            true
+        case (.release(let lhs), .release(let rhs)):
+            lhs == rhs
+        default:
+            false
+        }
+    }
 }

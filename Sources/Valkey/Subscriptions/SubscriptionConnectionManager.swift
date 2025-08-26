@@ -28,6 +28,7 @@ final class SubscriptionConnectionManager: Sendable {
         case get(Int, CheckedContinuation<ValkeyConnection, Error>)
         case release(Int)
         case cancel(Int)
+        case close
     }
     let stateMachine: Mutex<StateMachine<ValkeyConnection, CheckedContinuation<ValkeyConnection, Error>>>
     let connectionIDGenerator: ConnectionIDGenerator
@@ -43,17 +44,26 @@ final class SubscriptionConnectionManager: Sendable {
     }
 
     func run(client: ValkeyClient) async {
+        await self.run(
+            acquire: { try await client.node.connectionPool.leaseConnection() },
+            release: { client.node.connectionPool.releaseConnection($0) }
+        )
+    }
+
+    func run(acquire: @escaping @Sendable () async throws -> ValkeyConnection, release: @escaping @Sendable (ValkeyConnection) -> Void) async {
         await withDiscardingTaskGroup { group in
             for await event in requestStream {
                 switch event {
                 case .get(let id, let continuation):
                     self.logger.trace("Get subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
                     self.stateMachine.withLock { stateMachine in
-                        switch stateMachine.get(id: id, continuation: continuation) {
+                        switch stateMachine.get(id: id, request: continuation) {
                         case .startAcquire:
                             group.addTask {
-                                await self.acquire(client: client)
+                                await self.runAcquire(acquire: acquire, release: release)
                             }
+                        case .completeRequest(let connection):
+                            continuation.resume(returning: connection)
                         case .doNothing:
                             break
                         }
@@ -62,9 +72,9 @@ final class SubscriptionConnectionManager: Sendable {
                 case .release(let id):
                     self.logger.trace("Release subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
                     self.stateMachine.withLock { stateMachine in
-                        switch stateMachine.releaseConnection(id: id) {
-                        case .releaseConnection(let connection):
-                            client.node.connectionPool.releaseConnection(connection)
+                        switch stateMachine.release(id: id) {
+                        case .release(let connection):
+                            release(connection)
                             self.logger.trace("Released connection for subscriptions")
                         case .doNothing:
                             break
@@ -77,20 +87,25 @@ final class SubscriptionConnectionManager: Sendable {
                         switch stateMachine.cancel(id: id) {
                         case .cancel(let cont):
                             cont.resume(throwing: CancellationError())
-                        case .releaseConnection(let connection):
-                            client.node.connectionPool.releaseConnection(connection)
+                        case .release(let connection):
+                            release(connection)
                             self.logger.trace("Released connection for subscriptions")
                         case .doNothing:
                             break
                         }
                     }
+                case .close:
+                    return
                 }
             }
         }
     }
 
+    /// Run operation with the valkey subscription connection
+    ///
+    /// - Parameter operation: Closure to run with subscription connection
     @usableFromInline
-    func withConnection(_ operation: (ValkeyConnection) async throws -> Void) async throws {
+    func withConnection<Value>(_ operation: (ValkeyConnection) async throws -> Value) async throws -> Value {
         let id = self.connectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
@@ -107,24 +122,33 @@ final class SubscriptionConnectionManager: Sendable {
         defer {
             self.requestStreamContinuation.yield(.release(id))
         }
-        try await operation(connection)
+        return try await operation(connection)
     }
 
-    private func acquire(client: ValkeyClient) async {
+    func shutdown() {
+        self.requestStreamContinuation.yield(.close)
+    }
+
+    private func runAcquire(
+        acquire: @escaping @Sendable () async throws -> ValkeyConnection,
+        release: @escaping @Sendable (ValkeyConnection) -> Void
+    ) async {
         let result: Result<ValkeyConnection, Error>
         do {
-            let connection = try await client.node.connectionPool.leaseConnection()
+            let connection = try await acquire()
             result = .success(connection)
             self.logger.trace("Acquired connection for subscriptions")
         } catch {
             result = .failure(error)
         }
         self.stateMachine.withLock { stateMachine in
-            switch stateMachine.acquired(connectionResult: result) {
+            switch stateMachine.acquired(result: result) {
             case .yield(let continuations):
                 for cont in continuations {
                     cont.resume(with: result)
                 }
+            case .release(let connection):
+                release(connection)
             case .doNothing:
                 break
             }
@@ -135,7 +159,7 @@ final class SubscriptionConnectionManager: Sendable {
         enum State {
             case uninitialized
             case acquiring([Int: Request])
-            case using(Value, Set<Int>)
+            case acquired(Value, Set<Int>)
         }
         var state: State
 
@@ -146,27 +170,28 @@ final class SubscriptionConnectionManager: Sendable {
         enum GetAction {
             case startAcquire
             case doNothing
+            case completeRequest(Value)
         }
 
-        mutating func get(id: Int, continuation: Request) -> GetAction {
+        mutating func get(id: Int, request: Request) -> GetAction {
             switch self.state {
             case .uninitialized:
-                self.state = .acquiring([id: continuation])
+                self.state = .acquiring([id: request])
                 return .startAcquire
             case .acquiring(var map):
-                map[id] = continuation
+                map[id] = request
                 self.state = .acquiring(map)
                 return .doNothing
-            case .using(let connection, var ids):
+            case .acquired(let connection, var ids):
                 ids.insert(id)
-                self.state = .using(connection, ids)
-                return .doNothing
+                self.state = .acquired(connection, ids)
+                return .completeRequest(connection)
             }
         }
 
         enum CancelAction {
             case cancel(Request)
-            case releaseConnection(Value)
+            case release(Value)
             case doNothing
         }
 
@@ -184,13 +209,13 @@ final class SubscriptionConnectionManager: Sendable {
                     self.state = .acquiring(map)
                 }
                 return .cancel(continuation)
-            case .using(let connection, var ids):
+            case .acquired(let connection, var ids):
                 ids.remove(id)
                 if ids.isEmpty {
                     self.state = .uninitialized
-                    return .releaseConnection(connection)
+                    return .release(connection)
                 } else {
-                    self.state = .using(connection, ids)
+                    self.state = .acquired(connection, ids)
                     return .doNothing
                 }
             }
@@ -198,45 +223,51 @@ final class SubscriptionConnectionManager: Sendable {
 
         enum AcquiredAction {
             case yield([Request])
+            case release(Value)
             case doNothing
         }
 
-        mutating func acquired(connectionResult: Result<Value, Error>) -> AcquiredAction {
+        mutating func acquired(result: Result<Value, Error>) -> AcquiredAction {
             switch self.state {
             case .uninitialized:
-                return .doNothing
+                switch result {
+                case .success(let value):
+                    return .release(value)
+                case .failure:
+                    return .doNothing
+                }
             case .acquiring(let map):
                 let continuations = map.values
-                switch connectionResult {
+                switch result {
                 case .success(let connection):
-                    self.state = .using(connection, .init(map.keys))
+                    self.state = .acquired(connection, .init(map.keys))
                 case .failure:
                     self.state = .uninitialized
                 }
                 return .yield(.init(continuations))
-            case .using:
+            case .acquired:
                 fatalError()
             }
         }
 
         enum ReleaseAction {
-            case releaseConnection(Value)
+            case release(Value)
             case doNothing
         }
 
-        mutating func releaseConnection(id: Int) -> ReleaseAction {
+        mutating func release(id: Int) -> ReleaseAction {
             switch self.state {
             case .uninitialized:
                 fatalError()
             case .acquiring:
                 fatalError()
-            case .using(let connection, var ids):
+            case .acquired(let connection, var ids):
                 ids.remove(id)
                 if ids.isEmpty {
                     self.state = .uninitialized
-                    return .releaseConnection(connection)
+                    return .release(connection)
                 } else {
-                    self.state = .using(connection, ids)
+                    self.state = .acquired(connection, ids)
                     return .doNothing
                 }
             }
