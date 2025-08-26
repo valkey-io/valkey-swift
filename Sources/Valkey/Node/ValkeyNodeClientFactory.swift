@@ -30,6 +30,7 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
     var eventLoopGroup: any EventLoopGroup
     let connectionIDGenerator = ConnectionIDGenerator()
     let connectionFactory: ValkeyConnectionFactory
+    let requestIDGenerator: ConnectionIDGenerator
 
     /// Creates a new `ValkeyClientFactory` instance.
     ///
@@ -41,11 +42,13 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
         logger: Logger,
         configuration: ValkeyClientConfiguration,
         connectionFactory: ValkeyConnectionFactory,
+        requestIDGenerator: ConnectionIDGenerator,
         eventLoopGroup: any EventLoopGroup
     ) {
         self.logger = logger
         self.configuration = configuration
         self.connectionFactory = connectionFactory
+        self.requestIDGenerator = requestIDGenerator
         self.eventLoopGroup = eventLoopGroup
     }
 
@@ -70,6 +73,7 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
             serverAddress,
             connectionIDGenerator: self.connectionIDGenerator,
             connectionFactory: self.connectionFactory,
+            requestIDGenerator: self.requestIDGenerator,
             eventLoopGroup: self.eventLoopGroup,
             logger: self.logger
         )
@@ -85,6 +89,7 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
             serverAddress,
             connectionIDGenerator: self.connectionIDGenerator,
             connectionFactory: self.connectionFactory,
+            requestIDGenerator: self.requestIDGenerator,
             eventLoopGroup: self.eventLoopGroup,
             logger: self.logger
         )

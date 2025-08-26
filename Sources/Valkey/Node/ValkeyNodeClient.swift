@@ -54,10 +54,19 @@ public final class ValkeyNodeClient: Sendable {
     /// Logger
     let logger: Logger
 
+    let subscriptionConnectionLock = Mutex<ValkeyNodeClientSubscriptionConnectionStateMachine>(.init())
+    enum ClientActions {
+        case leaseSubscriptionConnection(leaseID: Int)
+    }
+    let clientActionStream: AsyncStream<ClientActions>
+    let clientActionContinuation: AsyncStream<ClientActions>.Continuation
+    let requestIDGenerator: ConnectionIDGenerator
+
     package init(
         _ address: ValkeyServerAddress,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
+        requestIDGenerator: ConnectionIDGenerator,
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
@@ -91,6 +100,9 @@ public final class ValkeyNodeClient: Sendable {
         self.connectionFactory = connectionFactory
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
+
+        self.requestIDGenerator = requestIDGenerator
+        (self.clientActionStream, self.clientActionContinuation) = AsyncStream.makeStream(of: ClientActions.self)
     }
 }
 
@@ -99,7 +111,20 @@ extension ValkeyNodeClient {
     /// Run ValkeyNode connection pool
     @usableFromInline
     package func run() async {
-        await self.connectionPool.run()
+        await withDiscardingTaskGroup { taskGroup in
+            taskGroup.addTask {
+                await self.connectionPool.run()
+            }
+
+            for await action in self.clientActionStream {
+                switch action {
+                case .leaseSubscriptionConnection(let leaseID):
+                    taskGroup.addTask {
+                        await self.leaseAndParkConnection(leaseID: leaseID)
+                    }
+                }
+            }
+        }
     }
 
     func triggerForceShutdown() {

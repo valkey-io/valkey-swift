@@ -87,6 +87,7 @@ public final class ValkeyClusterClient: Sendable {
     }
     private let actionStream: AsyncStream<RunAction>
     private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
+    private let requestIDGenerator: ConnectionIDGenerator
 
     /// Creates a new ``ValkeyClusterClient`` instance.
     ///
@@ -109,6 +110,7 @@ public final class ValkeyClusterClient: Sendable {
         self.logger = logger
 
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
+        self.requestIDGenerator = ConnectionIDGenerator()
 
         let factory = ValkeyNodeClientFactory(
             logger: logger,
@@ -117,6 +119,7 @@ public final class ValkeyClusterClient: Sendable {
                 configuration: clientConfiguration,
                 customHandler: connectionFactory
             ),
+            requestIDGenerator: self.requestIDGenerator,
             eventLoopGroup: eventLoopGroup
         )
 

@@ -65,6 +65,7 @@ public final class ValkeyClient: Sendable {
             address,
             connectionIDGenerator: ConnectionIDGenerator(),
             connectionFactory: ValkeyConnectionFactory(configuration: configuration),
+            requestIDGenerator: ConnectionIDGenerator(),
             eventLoopGroup: eventLoopGroup,
             logger: logger
         )
@@ -74,6 +75,7 @@ public final class ValkeyClient: Sendable {
         _ address: ValkeyServerAddress,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
+        requestIDGenerator: ConnectionIDGenerator,
         eventLoopGroup: EventLoopGroup,
         logger: Logger
     ) {
@@ -84,6 +86,7 @@ public final class ValkeyClient: Sendable {
                 configuration: connectionFactory.configuration,
                 customHandler: nil
             ),
+            requestIDGenerator: requestIDGenerator,
             eventLoopGroup: eventLoopGroup
         )
         self.eventLoopGroup = eventLoopGroup
