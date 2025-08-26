@@ -156,6 +156,7 @@ final class SubscriptionConnectionManager: Sendable {
         }
     }
 
+    /// StateMachine for SubscriptionConnectionManager.
     struct StateMachine<Value, Request>: ~Copyable {
         enum State: ~Copyable {
             /// We have no connection
