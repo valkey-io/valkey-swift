@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 import Synchronization
+import _ValkeyConnectionPool
 
 /// Stores a reference to a single connection to be used by client for subscriptions
 ///
@@ -21,127 +22,10 @@ import Synchronization
 /// so we can clean it up once nobody references it.
 @available(valkeySwift 1.0, *)
 @usableFromInline
-struct SubscriptionConnectionManager: ~Copyable, Sendable {
-    @usableFromInline
-    enum Action {
-        case use(ValkeyConnection)
-        case acquire
-    }
-
-    @usableFromInline
-    enum State {
-        case uninitialized
-        case acquiring([CheckedContinuation<Action, any Error>])
-        case available(ValkeyConnection, Int)
-    }
-    @usableFromInline
-    let state: Mutex<State>
-
-    init() {
-        self.state = .init(.uninitialized)
-    }
-
-    @usableFromInline
-    func acquire(isolation: isolated (any Actor)? = #isolation, _ operation: () async throws -> ValkeyConnection) async throws -> ValkeyConnection {
-        let action: Action = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Action, any Error>) in
-            self.state.withLock { state in
-                switch state {
-                case .uninitialized:
-                    state = .acquiring([])
-                    cont.resume(returning: .acquire)
-                case .acquiring(var continuations):
-                    continuations.append(cont)
-                    state = .acquiring(continuations)
-                case .available(let connection, let count):
-                    state = .available(connection, count + 1)
-                    cont.resume(returning: .use(connection))
-                }
-            }
-        }
-        switch action {
-        case .acquire:
-            do {
-                let connection = try await operation()
-                return self.state.withLock { state in
-                    guard case .acquiring(let continuations) = state else {
-                        preconditionFailure("State should still be acquiring")
-                    }
-                    for cont in continuations {
-                        cont.resume(returning: .use(connection))
-                    }
-                    state = .available(connection, continuations.count + 1)
-                    return connection
-                }
-            } catch is CancellationError {
-                self.state.withLock { state in
-                    guard case .acquiring(var continuations) = state else {
-                        preconditionFailure("Can't have state set to none, while acquiring connection")
-                    }
-                    if let lastContinuation = continuations.popLast() {
-                        state = .acquiring(continuations)
-                        lastContinuation.resume(returning: .acquire)
-                    } else {
-                        state = .uninitialized
-                    }
-                }
-                throw CancellationError()
-            } catch {
-                return try self.state.withLock { state in
-                    guard case .acquiring(let continuations) = state else {
-                        preconditionFailure("Can't have state set to none, while acquiring connection")
-                    }
-                    for cont in continuations {
-                        cont.resume(throwing: error)
-                    }
-                    state = .uninitialized
-                    throw error
-                }
-            }
-        case .use(let connection):
-            return connection
-        }
-    }
-
-    @usableFromInline
-    func release(connection: ValkeyConnection, _ operation: (ValkeyConnection) -> Void) {
-        self.state.withLock { state in
-            switch state {
-            case .uninitialized, .acquiring:
-                break
-            case .available(let storedConnection, let count):
-                guard storedConnection.id == connection.id else { return }
-                assert(count > 0, "Cannot have a count of active references to connection less than one")
-                if count == 1 {
-                    state = .uninitialized
-                    operation(connection)
-                } else {
-                    state = .available(connection, count - 1)
-                }
-            }
-        }
-    }
-
-    @inlinable
-    func withConnection<Returning>(
-        isolation: isolated (any Actor)? = #isolation,
-        _ operation: (ValkeyConnection) async throws -> sending Returning,
-        acquire acquireOperation: () async throws -> ValkeyConnection,
-        release releaseOperation: (ValkeyConnection) -> Void
-    ) async throws -> sending Returning {
-        let value = try await self.acquire(acquireOperation)
-        defer {
-            self.release(connection: value, releaseOperation)
-        }
-        return try await operation(value)
-    }
-}
-
-@available(valkeySwift 1.0, *)
-final class SubscriptionConnectionManagerV2: Sendable {
+final class SubscriptionConnectionManager: Sendable {
     enum Event {
-        case get
-        case cancel
-        case finish
+        case get(Int, CheckedContinuation<ValkeyConnection, Error>)
+        case release(Int)
     }
     let stateMachine: Mutex<StateMachine>
     let eventStream: AsyncStream<Event>
@@ -152,22 +36,65 @@ final class SubscriptionConnectionManagerV2: Sendable {
         self.stateMachine = .init(.init())
     }
 
-    func run() async {
+    func run(client: ValkeyClient) async {
         await withDiscardingTaskGroup { group in
-            for try await event in eventStream {
-                runAction(event, group: &group)
+            for await event in eventStream {
+                switch event {
+                case .get(let id, let continuation):
+                    self.stateMachine.withLock { stateMachine in
+                        switch stateMachine.get(id: id, continuation: continuation) {
+                        case .startAcquire:
+                            group.addTask {
+                                await self.acquire(client: client)
+                            }
+                        case .doNothing:
+                            break
+                        }
+
+                    }
+                case .release(let id):
+                    self.stateMachine.withLock { stateMachine in
+                        switch stateMachine.releaseConnection(id: id) {
+                        case .releaseConnection(let connection):
+                            client.node.connectionPool.releaseConnection(connection)
+                        case .doNothing:
+                            break
+                        }
+                    }
+                    break
+                }
             }
         }
     }
 
-    func runAction(_ event: Event, group: inout DiscardingTaskGroup) {
-        switch event {
-        case .get:
-            break
-        case .cancel:
-            break
-        case .finish:
-            break
+    @usableFromInline
+    func withConnection(_ operation: (ValkeyConnection) async throws -> Void) async throws {
+        let id = Int.random(in: .min ... .max)
+
+        let connection = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
+            self.eventStreamContinuation.yield(.get(id, cont))
+        }
+        defer {
+            self.eventStreamContinuation.yield(.release(id))
+        }
+        try await operation(connection)
+    }
+
+    private func acquire(client: ValkeyClient) async {
+        do {
+            let connection = try await client.node.connectionPool.leaseConnection()
+            self.stateMachine.withLock { stateMachine in
+                switch stateMachine.acquired(connection: connection) {
+                case .yield(let continuations):
+                    for cont in continuations {
+                        cont.resume(returning: connection)
+                    }
+                case .doNothing:
+                    break
+                }
+            }
+        } catch {
+            fatalError()
         }
     }
 
@@ -177,7 +104,7 @@ final class SubscriptionConnectionManagerV2: Sendable {
             case acquiring([Int: CheckedContinuation<ValkeyConnection, Error>])
             case using(ValkeyConnection, Set<Int>)
         }
-        let state: State
+        var state: State
 
         init() {
             self.state = .uninitialized
@@ -188,9 +115,60 @@ final class SubscriptionConnectionManagerV2: Sendable {
             case doNothing
         }
 
-        func get(id: Int, continuation: CheckedContinuation<ValkeyConnection, Error>) -> GetAction {
+        mutating func get(id: Int, continuation: CheckedContinuation<ValkeyConnection, Error>) -> GetAction {
             switch self.state {
+            case .uninitialized:
+                self.state = .acquiring([id: continuation])
+                return .startAcquire
+            case .acquiring(var map):
+                map[id] = continuation
+                self.state = .acquiring(map)
+                return .doNothing
+            case .using(let connection, var ids):
+                ids.insert(id)
+                self.state = .using(connection, ids)
+                return .doNothing
+            }
+        }
 
+        enum AcquiredAction {
+            case yield([CheckedContinuation<ValkeyConnection, Error>])
+            case doNothing
+        }
+
+        mutating func acquired(connection: ValkeyConnection) -> AcquiredAction {
+            switch self.state {
+            case .uninitialized:
+                fatalError()
+            case .acquiring(let map):
+                let continuations = map.values
+                self.state = .using(connection, .init(map.keys))
+                return .yield(.init(continuations))
+            case .using:
+                fatalError()
+            }
+        }
+
+        enum ReleaseAction {
+            case releaseConnection(ValkeyConnection)
+            case doNothing
+        }
+
+        mutating func releaseConnection(id: Int) -> ReleaseAction {
+            switch self.state {
+            case .uninitialized:
+                fatalError()
+            case .acquiring:
+                fatalError()
+            case .using(let connection, var ids):
+                ids.remove(id)
+                if ids.isEmpty {
+                    self.state = .uninitialized
+                    return .releaseConnection(connection)
+                } else {
+                    self.state = .using(connection, ids)
+                    return .doNothing
+                }
             }
         }
     }

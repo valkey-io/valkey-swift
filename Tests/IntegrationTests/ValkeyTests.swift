@@ -571,10 +571,10 @@ struct GeneratedCommands {
                     client.logger.info("Published \(i)")
                 }
                 try await group.waitForAll()
-                client.subscriptionConnection.state.withLock { state in
-                    if case .uninitialized = state {
+                client.subscriptionConnection.stateMachine.withLock { state in
+                    if case .uninitialized = state.state {
                     } else {
-                        Issue.record("Subscription channel should have been relesed")
+                        Issue.record("Subscription channel should have been released")
                     }
                 }
             }

@@ -47,6 +47,7 @@ public final class ValkeyClient: Sendable {
 
     private enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
+        case runSubscriptionConnectionManager(SubscriptionConnectionManager)
     }
     private let actionStream: AsyncStream<RunAction>
     private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -96,6 +97,7 @@ public final class ValkeyClient: Sendable {
         self.subscriptionConnection = .init()
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runNodeClient(self.node))
+        self.queueAction(.runSubscriptionConnectionManager(self.subscriptionConnection))
     }
 }
 
@@ -117,7 +119,14 @@ extension ValkeyClient {
             }
         }
         #else
-        await self.runActionTaskGroup()
+        /// Run discarding task group running actions
+        await withDiscardingTaskGroup { group in
+            for await action in self.actionStream {
+                group.addTask {
+                    await self.runAction(action)
+                }
+            }
+        }
         #endif
     }
 
@@ -146,6 +155,8 @@ extension ValkeyClient {
         switch action {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
+        case .runSubscriptionConnectionManager(let subscriptionConnectionManager):
+            await subscriptionConnectionManager.run(client: self)
         }
     }
 }

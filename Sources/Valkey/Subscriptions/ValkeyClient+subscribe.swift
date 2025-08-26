@@ -17,20 +17,6 @@ import Synchronization
 
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
-    @inlinable
-    func withSubscriptionConnection<Value>(
-        isolation: isolated (any Actor)? = #isolation,
-        operation: (ValkeyConnection) async throws -> sending Value
-    ) async throws -> sending Value {
-        try await self.subscriptionConnection.withConnection {
-            try await operation($0)
-        } acquire: {
-            try await self.node.leaseConnection()
-        } release: {
-            self.node.releaseConnection($0)
-        }
-    }
-
     /// Subscribe to list of channels and run closure with subscription
     ///
     /// When the closure is exited the channels are automatically unsubscribed from. It is
@@ -160,7 +146,7 @@ extension ValkeyClient {
                 while true {
                     do {
                         try Task.checkCancellation()
-                        return try await self.withSubscriptionConnection { connection in
+                        return try await self.subscriptionConnection.withConnection { connection in
                             try await connection.subscribe(command: command, filters: filters) { subscription in
                                 // push messages on connection subscription to client subscription
                                 for try await message in subscription {
