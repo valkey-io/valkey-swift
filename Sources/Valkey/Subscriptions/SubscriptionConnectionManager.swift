@@ -23,23 +23,23 @@ import _ValkeyConnectionPool
 @available(valkeySwift 1.0, *)
 @usableFromInline
 final class SubscriptionConnectionManager: Sendable {
-    enum Event {
+    enum Request {
         case get(Int, CheckedContinuation<ValkeyConnection, Error>)
         case release(Int)
         case cancel(Int)
     }
     let stateMachine: Mutex<StateMachine>
-    let eventStream: AsyncStream<Event>
-    let eventStreamContinuation: AsyncStream<Event>.Continuation
+    let requestStream: AsyncStream<Request>
+    let requestStreamContinuation: AsyncStream<Request>.Continuation
 
     init() {
-        (self.eventStream, self.eventStreamContinuation) = AsyncStream.makeStream()
+        (self.requestStream, self.requestStreamContinuation) = AsyncStream.makeStream()
         self.stateMachine = .init(.init())
     }
 
     func run(client: ValkeyClient) async {
         await withDiscardingTaskGroup { group in
-            for await event in eventStream {
+            for await event in requestStream {
                 switch event {
                 case .get(let id, let continuation):
                     self.stateMachine.withLock { stateMachine in
@@ -88,14 +88,14 @@ final class SubscriptionConnectionManager: Sendable {
                 throw CancellationError()
             }
             return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
-                self.eventStreamContinuation.yield(.get(id, cont))
+                self.requestStreamContinuation.yield(.get(id, cont))
             }
         } onCancel: {
-            self.eventStreamContinuation.yield(.cancel(id))
+            self.requestStreamContinuation.yield(.cancel(id))
         }
 
         defer {
-            self.eventStreamContinuation.yield(.release(id))
+            self.requestStreamContinuation.yield(.release(id))
         }
         try await operation(connection)
     }
