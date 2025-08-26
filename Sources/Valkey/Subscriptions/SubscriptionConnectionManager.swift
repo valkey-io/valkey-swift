@@ -16,280 +16,228 @@ import Logging
 import Synchronization
 import _ValkeyConnectionPool
 
-/// Stores a reference to a single connection to be used by client for subscriptions
-///
-/// It ensures only ever one version of the connection is initialized, even if it requested
-/// twice during initialization. Once it is available the object includes a reference count
-/// so we can clean it up once nobody references it.
 @available(valkeySwift 1.0, *)
-@usableFromInline
-final class SubscriptionConnectionManager: Sendable {
-    enum Request {
-        case get(Int, CheckedContinuation<ValkeyConnection, Error>)
-        case release(Int)
-        case cancel(Int)
-        case close
-    }
-    let stateMachine: Mutex<StateMachine<ValkeyConnection, CheckedContinuation<ValkeyConnection, Error>>>
-    let connectionIDGenerator: ConnectionIDGenerator
-    let logger: Logger
-    let requestStream: AsyncStream<Request>
-    let requestStreamContinuation: AsyncStream<Request>.Continuation
-
-    init(logger: Logger) {
-        self.logger = logger
-        (self.requestStream, self.requestStreamContinuation) = AsyncStream.makeStream()
-        self.stateMachine = .init(.init())
-        self.connectionIDGenerator = .init()
-    }
-
-    func run(client: ValkeyClient) async {
-        await self.run(
-            acquire: { try await client.node.connectionPool.leaseConnection() },
-            release: { client.node.connectionPool.releaseConnection($0) }
-        )
-    }
-
-    func run(acquire: @escaping @Sendable () async throws -> ValkeyConnection, release: @escaping @Sendable (ValkeyConnection) -> Void) async {
-        await withDiscardingTaskGroup { group in
-            for await event in requestStream {
-                switch event {
-                case .get(let id, let continuation):
-                    self.logger.trace("Get subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
-                    self.stateMachine.withLock { stateMachine in
-                        switch stateMachine.get(id: id, request: continuation) {
-                        case .startAcquire:
-                            group.addTask {
-                                await self.runAcquire(acquire: acquire, release: release)
-                            }
-                        case .completeRequest(let connection):
-                            continuation.resume(returning: connection)
-                        case .doNothing:
-                            break
-                        }
-
-                    }
-                case .release(let id):
-                    self.logger.trace("Release subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
-                    self.stateMachine.withLock { stateMachine in
-                        switch stateMachine.release(id: id) {
-                        case .release(let connection):
-                            release(connection)
-                            self.logger.trace("Released connection for subscriptions")
-                        case .doNothing:
-                            break
-                        }
-                    }
-                    break
-                case .cancel(let id):
-                    self.logger.trace("Cancel subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
-                    self.stateMachine.withLock { stateMachine in
-                        switch stateMachine.cancel(id: id) {
-                        case .cancel(let cont):
-                            cont.resume(throwing: CancellationError())
-                        case .release(let connection):
-                            release(connection)
-                            self.logger.trace("Released connection for subscriptions")
-                        case .doNothing:
-                            break
-                        }
-                    }
-                case .close:
-                    return
-                }
-            }
-        }
-    }
-
+extension ValkeyClient {
     /// Run operation with the valkey subscription connection
     ///
     /// - Parameter operation: Closure to run with subscription connection
     @usableFromInline
-    func withConnection<Value>(_ operation: (ValkeyConnection) async throws -> Value) async throws -> Value {
-        let id = self.connectionIDGenerator.next()
+    func withSubscriptionConnection<Value>(_ operation: (ValkeyConnection) async throws -> Value) async throws -> Value {
+        let id = self.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
             if Task.isCancelled {
                 throw CancellationError()
             }
             return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
-                self.requestStreamContinuation.yield(.get(id, cont))
+                self.leaseSubscriptionConnection(id: id, request: cont)
             }
         } onCancel: {
-            self.requestStreamContinuation.yield(.cancel(id))
+            self.cancelSubscriptionConnection(id: id)
         }
 
         defer {
-            self.requestStreamContinuation.yield(.release(id))
+            self.releaseSubscriptionConnection(id: id)
         }
         return try await operation(connection)
     }
 
-    func shutdown() {
-        self.requestStreamContinuation.yield(.close)
-    }
-
-    /// lease connection from connection manager and update all the requests waiting on the connection
-    private func runAcquire(
-        acquire: @escaping @Sendable () async throws -> ValkeyConnection,
-        release: @escaping @Sendable (ValkeyConnection) -> Void
-    ) async {
-        let result: Result<ValkeyConnection, Error>
-        do {
-            let connection = try await acquire()
-            result = .success(connection)
-            self.logger.trace("Acquired connection for subscriptions")
-        } catch {
-            result = .failure(error)
-        }
-        self.stateMachine.withLock { stateMachine in
-            switch stateMachine.acquired(result: result) {
-            case .yield(let continuations):
-                for cont in continuations {
-                    cont.resume(with: result)
-                }
-            case .release(let connection):
-                release(connection)
+    func leaseSubscriptionConnection(id: Int, request: CheckedContinuation<ValkeyConnection, Error>) {
+        self.logger.trace("Get subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
+        self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            switch stateMachine.get(id: id, request: request) {
+            case .startAcquire:
+                self.queueAction(.leaseSubscriptionConnection)
+            case .completeRequest(let connection):
+                request.resume(returning: connection)
             case .doNothing:
                 break
             }
         }
     }
 
-    /// StateMachine for SubscriptionConnectionManager.
-    struct StateMachine<Value, Request>: ~Copyable {
-        enum State: ~Copyable {
-            /// We have no connection
-            case uninitialized
-            /// We are acquiring a connection
-            case acquiring([Int: Request])
-            /// We have a connection
-            case acquired(Value, Set<Int>)
-        }
-        var state: State
-
-        init() {
-            self.state = .uninitialized
-        }
-
-        init(state: consuming State) {
-            self.state = state
-        }
-
-        enum GetAction {
-            case startAcquire
-            case doNothing
-            case completeRequest(Value)
-        }
-
-        mutating func get(id: Int, request: Request) -> GetAction {
-            switch consume self.state {
-            case .uninitialized:
-                self = .acquiring([id: request])
-                return .startAcquire
-            case .acquiring(var map):
-                map[id] = request
-                self = .acquiring(map)
-                return .doNothing
-            case .acquired(let connection, var ids):
-                ids.insert(id)
-                self = .acquired(connection, ids)
-                return .completeRequest(connection)
+    func acquiredSubscriptionConnection(_ result: Result<ValkeyConnection, Error>) {
+        self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            switch stateMachine.acquired(result: result) {
+            case .yield(let continuations):
+                for cont in continuations {
+                    cont.resume(with: result)
+                }
+            case .release(let connection):
+                self.node.connectionPool.releaseConnection(connection)
+            case .doNothing:
+                break
             }
         }
+    }
 
-        enum CancelAction {
-            case cancel(Request)
-            case release(Value)
-            case doNothing
-        }
-
-        mutating func cancel(id: Int) -> CancelAction {
-            switch consume self.state {
-            case .uninitialized:
-                self = .uninitialized
-                return .doNothing
-            case .acquiring(var map):
-                guard let continuation = map.removeValue(forKey: id) else {
-                    self = .acquiring(map)
-                    return .doNothing
-                }
-                if map.isEmpty {
-                    self = .uninitialized
-                } else {
-                    self = .acquiring(map)
-                }
-                return .cancel(continuation)
-            case .acquired(let connection, var ids):
-                ids.remove(id)
-                if ids.isEmpty {
-                    self = .uninitialized
-                    return .release(connection)
-                } else {
-                    self = .acquired(connection, ids)
-                    return .doNothing
-                }
+    func releaseSubscriptionConnection(id: Int) {
+        self.logger.trace("Release subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
+        self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            switch stateMachine.release(id: id) {
+            case .release(let connection):
+                self.node.connectionPool.releaseConnection(connection)
+                self.logger.trace("Released connection for subscriptions")
+            case .doNothing:
+                break
             }
         }
+    }
 
-        enum AcquiredAction {
-            case yield([Request])
-            case release(Value)
-            case doNothing
-        }
-
-        mutating func acquired(result: Result<Value, Error>) -> AcquiredAction {
-            switch consume self.state {
-            case .uninitialized:
-                self = .uninitialized
-                switch result {
-                case .success(let value):
-                    return .release(value)
-                case .failure:
-                    return .doNothing
-                }
-            case .acquiring(let map):
-                let continuations = map.values
-                switch result {
-                case .success(let connection):
-                    self = .acquired(connection, .init(map.keys))
-                case .failure:
-                    self = .uninitialized
-                }
-                return .yield(.init(continuations))
-            case .acquired:
-                fatalError()
-            }
-        }
-
-        enum ReleaseAction {
-            case release(Value)
-            case doNothing
-        }
-
-        mutating func release(id: Int) -> ReleaseAction {
-            switch consume self.state {
-            case .uninitialized:
-                fatalError()
-            case .acquiring:
-                fatalError()
-            case .acquired(let connection, var ids):
-                ids.remove(id)
-                if ids.isEmpty {
-                    self = .uninitialized
-                    return .release(connection)
-                } else {
-                    self = .acquired(connection, ids)
-                    return .doNothing
-                }
+    func cancelSubscriptionConnection(id: Int) {
+        self.logger.trace("Cancel subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
+        self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            switch stateMachine.cancel(id: id) {
+            case .cancel(let cont):
+                cont.resume(throwing: CancellationError())
+            case .release(let connection):
+                self.node.connectionPool.releaseConnection(connection)
+                self.logger.trace("Released connection for subscriptions")
+            case .doNothing:
+                break
             }
         }
     }
 }
 
+/// StateMachine for acquiring Subscription Connection.
+@usableFromInline
+struct SubscriptionConnectionStateMachine<Value, Request>: ~Copyable {
+    enum State: ~Copyable {
+        /// We have no connection
+        case uninitialized
+        /// We are acquiring a connection
+        case acquiring([Int: Request])
+        /// We have a connection
+        case acquired(Value, Set<Int>)
+    }
+    var state: State
+
+    init() {
+        self.state = .uninitialized
+    }
+
+    init(state: consuming State) {
+        self.state = state
+    }
+
+    enum GetAction {
+        case startAcquire
+        case doNothing
+        case completeRequest(Value)
+    }
+
+    mutating func get(id: Int, request: Request) -> GetAction {
+        switch consume self.state {
+        case .uninitialized:
+            self = .acquiring([id: request])
+            return .startAcquire
+        case .acquiring(var map):
+            map[id] = request
+            self = .acquiring(map)
+            return .doNothing
+        case .acquired(let connection, var ids):
+            ids.insert(id)
+            self = .acquired(connection, ids)
+            return .completeRequest(connection)
+        }
+    }
+
+    enum CancelAction {
+        case cancel(Request)
+        case release(Value)
+        case doNothing
+    }
+
+    mutating func cancel(id: Int) -> CancelAction {
+        switch consume self.state {
+        case .uninitialized:
+            self = .uninitialized
+            return .doNothing
+        case .acquiring(var map):
+            guard let continuation = map.removeValue(forKey: id) else {
+                self = .acquiring(map)
+                return .doNothing
+            }
+            if map.isEmpty {
+                self = .uninitialized
+            } else {
+                self = .acquiring(map)
+            }
+            return .cancel(continuation)
+        case .acquired(let connection, var ids):
+            ids.remove(id)
+            if ids.isEmpty {
+                self = .uninitialized
+                return .release(connection)
+            } else {
+                self = .acquired(connection, ids)
+                return .doNothing
+            }
+        }
+    }
+
+    enum AcquiredAction {
+        case yield([Request])
+        case release(Value)
+        case doNothing
+    }
+
+    mutating func acquired(result: Result<Value, Error>) -> AcquiredAction {
+        switch consume self.state {
+        case .uninitialized:
+            self = .uninitialized
+            switch result {
+            case .success(let value):
+                return .release(value)
+            case .failure:
+                return .doNothing
+            }
+        case .acquiring(let map):
+            let continuations = map.values
+            switch result {
+            case .success(let connection):
+                self = .acquired(connection, .init(map.keys))
+            case .failure:
+                self = .uninitialized
+            }
+            return .yield(.init(continuations))
+        case .acquired:
+            fatalError()
+        }
+    }
+
+    enum ReleaseAction {
+        case release(Value)
+        case doNothing
+    }
+
+    mutating func release(id: Int) -> ReleaseAction {
+        switch consume self.state {
+        case .uninitialized:
+            fatalError()
+        case .acquiring:
+            fatalError()
+        case .acquired(let connection, var ids):
+            ids.remove(id)
+            if ids.isEmpty {
+                self = .uninitialized
+                return .release(connection)
+            } else {
+                self = .acquired(connection, ids)
+                return .doNothing
+            }
+        }
+    }
+
+    static var uninitialized: Self { .init(state: .uninitialized) }
+    static func acquiring(_ map: [Int: Request]) -> Self { .init(state: .acquiring(map)) }
+    static func acquired(_ value: Value, _ ids: Set<Int>) -> Self { .init(state: .acquired(value, ids)) }
+}
+/*
 @available(valkeySwift 1.0, *)
 extension SubscriptionConnectionManager.StateMachine {
     static var uninitialized: Self { .init(state: .uninitialized) }
     static func acquiring(_ map: [Int: Request]) -> Self { .init(state: .acquiring(map)) }
     static func acquired(_ value: Value, _ ids: Set<Int>) -> Self { .init(state: .acquired(value, ids)) }
-}
+}*/

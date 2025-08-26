@@ -43,14 +43,15 @@ public final class ValkeyClient: Sendable {
     let runningAtomic: Atomic<Bool>
     /// subscription state
     @usableFromInline
-    let subscriptionConnection: SubscriptionConnectionManager
+    let subscriptionConnectionStateMachine: Mutex<SubscriptionConnectionStateMachine<ValkeyConnection, CheckedContinuation<ValkeyConnection, Error>>>
+    let subscriptionConnectionIDGenerator: ConnectionIDGenerator
 
-    private enum RunAction: Sendable {
+    enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
-        case runSubscriptionConnectionManager(SubscriptionConnectionManager)
+        case leaseSubscriptionConnection
     }
-    private let actionStream: AsyncStream<RunAction>
-    private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
+    let actionStream: AsyncStream<RunAction>
+    let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
     /// Creates a new Valkey client
     ///
@@ -94,10 +95,10 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
-        self.subscriptionConnection = .init(logger: logger)
+        self.subscriptionConnectionStateMachine = .init(.init())
+        self.subscriptionConnectionIDGenerator = .init()
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runNodeClient(self.node))
-        self.queueAction(.runSubscriptionConnectionManager(self.subscriptionConnection))
     }
 }
 
@@ -147,7 +148,7 @@ extension ValkeyClient {
 
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
-    private func queueAction(_ action: RunAction) {
+    func queueAction(_ action: RunAction) {
         self.actionStreamContinuation.yield(action)
     }
 
@@ -155,8 +156,13 @@ extension ValkeyClient {
         switch action {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
-        case .runSubscriptionConnectionManager(let subscriptionConnectionManager):
-            await subscriptionConnectionManager.run(client: self)
+        case .leaseSubscriptionConnection:
+            do {
+                let connection = try await self.node.connectionPool.leaseConnection()
+                self.acquiredSubscriptionConnection(.success(connection))
+            } catch {
+                self.acquiredSubscriptionConnection(.failure(error))
+            }
         }
     }
 }
