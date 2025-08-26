@@ -129,6 +129,7 @@ final class SubscriptionConnectionManager: Sendable {
         self.requestStreamContinuation.yield(.close)
     }
 
+    /// lease connection from connection manager and update all the requests waiting on the connection
     private func runAcquire(
         acquire: @escaping @Sendable () async throws -> ValkeyConnection,
         release: @escaping @Sendable (ValkeyConnection) -> Void
@@ -155,16 +156,23 @@ final class SubscriptionConnectionManager: Sendable {
         }
     }
 
-    struct StateMachine<Value, Request> {
-        enum State {
+    struct StateMachine<Value, Request>: ~Copyable {
+        enum State: ~Copyable {
+            /// We have no connection
             case uninitialized
+            /// We are acquiring a connection
             case acquiring([Int: Request])
+            /// We have a connection
             case acquired(Value, Set<Int>)
         }
         var state: State
 
         init() {
             self.state = .uninitialized
+        }
+
+        init(state: consuming State) {
+            self.state = state
         }
 
         enum GetAction {
@@ -174,17 +182,17 @@ final class SubscriptionConnectionManager: Sendable {
         }
 
         mutating func get(id: Int, request: Request) -> GetAction {
-            switch self.state {
+            switch consume self.state {
             case .uninitialized:
-                self.state = .acquiring([id: request])
+                self = .acquiring([id: request])
                 return .startAcquire
             case .acquiring(var map):
                 map[id] = request
-                self.state = .acquiring(map)
+                self = .acquiring(map)
                 return .doNothing
             case .acquired(let connection, var ids):
                 ids.insert(id)
-                self.state = .acquired(connection, ids)
+                self = .acquired(connection, ids)
                 return .completeRequest(connection)
             }
         }
@@ -196,26 +204,28 @@ final class SubscriptionConnectionManager: Sendable {
         }
 
         mutating func cancel(id: Int) -> CancelAction {
-            switch self.state {
+            switch consume self.state {
             case .uninitialized:
+                self = .uninitialized
                 return .doNothing
             case .acquiring(var map):
                 guard let continuation = map.removeValue(forKey: id) else {
+                    self = .acquiring(map)
                     return .doNothing
                 }
                 if map.isEmpty {
-                    self.state = .uninitialized
+                    self = .uninitialized
                 } else {
-                    self.state = .acquiring(map)
+                    self = .acquiring(map)
                 }
                 return .cancel(continuation)
             case .acquired(let connection, var ids):
                 ids.remove(id)
                 if ids.isEmpty {
-                    self.state = .uninitialized
+                    self = .uninitialized
                     return .release(connection)
                 } else {
-                    self.state = .acquired(connection, ids)
+                    self = .acquired(connection, ids)
                     return .doNothing
                 }
             }
@@ -228,8 +238,9 @@ final class SubscriptionConnectionManager: Sendable {
         }
 
         mutating func acquired(result: Result<Value, Error>) -> AcquiredAction {
-            switch self.state {
+            switch consume self.state {
             case .uninitialized:
+                self = .uninitialized
                 switch result {
                 case .success(let value):
                     return .release(value)
@@ -240,9 +251,9 @@ final class SubscriptionConnectionManager: Sendable {
                 let continuations = map.values
                 switch result {
                 case .success(let connection):
-                    self.state = .acquired(connection, .init(map.keys))
+                    self = .acquired(connection, .init(map.keys))
                 case .failure:
-                    self.state = .uninitialized
+                    self = .uninitialized
                 }
                 return .yield(.init(continuations))
             case .acquired:
@@ -256,7 +267,7 @@ final class SubscriptionConnectionManager: Sendable {
         }
 
         mutating func release(id: Int) -> ReleaseAction {
-            switch self.state {
+            switch consume self.state {
             case .uninitialized:
                 fatalError()
             case .acquiring:
@@ -264,13 +275,20 @@ final class SubscriptionConnectionManager: Sendable {
             case .acquired(let connection, var ids):
                 ids.remove(id)
                 if ids.isEmpty {
-                    self.state = .uninitialized
+                    self = .uninitialized
                     return .release(connection)
                 } else {
-                    self.state = .acquired(connection, ids)
+                    self = .acquired(connection, ids)
                     return .doNothing
                 }
             }
         }
     }
+}
+
+@available(valkeySwift 1.0, *)
+extension SubscriptionConnectionManager.StateMachine {
+    static var uninitialized: Self { .init(state: .uninitialized) }
+    static func acquiring(_ map: [Int: Request]) -> Self { .init(state: .acquiring(map)) }
+    static func acquired(_ value: Value, _ ids: Set<Int>) -> Self { .init(state: .acquired(value, ids)) }
 }
