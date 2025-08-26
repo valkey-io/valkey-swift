@@ -571,6 +571,8 @@ struct GeneratedCommands {
                     client.logger.info("Published \(i)")
                 }
                 try await group.waitForAll()
+                // need to wait for subscription manager to catch up to ensure state is correct
+                try await Task.sleep(for: .milliseconds(10))
                 client.subscriptionConnection.stateMachine.withLock { state in
                     if case .uninitialized = state.state {
                     } else {

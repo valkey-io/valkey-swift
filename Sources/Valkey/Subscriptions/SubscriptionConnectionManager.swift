@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Logging
 import Synchronization
 import _ValkeyConnectionPool
 
@@ -28,13 +29,17 @@ final class SubscriptionConnectionManager: Sendable {
         case release(Int)
         case cancel(Int)
     }
-    let stateMachine: Mutex<StateMachine>
+    let stateMachine: Mutex<StateMachine<ValkeyConnection, CheckedContinuation<ValkeyConnection, Error>>>
+    let connectionIDGenerator: ConnectionIDGenerator
+    let logger: Logger
     let requestStream: AsyncStream<Request>
     let requestStreamContinuation: AsyncStream<Request>.Continuation
 
-    init() {
+    init(logger: Logger) {
+        self.logger = logger
         (self.requestStream, self.requestStreamContinuation) = AsyncStream.makeStream()
         self.stateMachine = .init(.init())
+        self.connectionIDGenerator = .init()
     }
 
     func run(client: ValkeyClient) async {
@@ -42,6 +47,7 @@ final class SubscriptionConnectionManager: Sendable {
             for await event in requestStream {
                 switch event {
                 case .get(let id, let continuation):
+                    self.logger.trace("Get subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
                     self.stateMachine.withLock { stateMachine in
                         switch stateMachine.get(id: id, continuation: continuation) {
                         case .startAcquire:
@@ -54,22 +60,26 @@ final class SubscriptionConnectionManager: Sendable {
 
                     }
                 case .release(let id):
+                    self.logger.trace("Release subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
                     self.stateMachine.withLock { stateMachine in
                         switch stateMachine.releaseConnection(id: id) {
                         case .releaseConnection(let connection):
                             client.node.connectionPool.releaseConnection(connection)
+                            self.logger.trace("Released connection for subscriptions")
                         case .doNothing:
                             break
                         }
                     }
                     break
                 case .cancel(let id):
+                    self.logger.trace("Cancel subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
                     self.stateMachine.withLock { stateMachine in
                         switch stateMachine.cancel(id: id) {
                         case .cancel(let cont):
                             cont.resume(throwing: CancellationError())
                         case .releaseConnection(let connection):
                             client.node.connectionPool.releaseConnection(connection)
+                            self.logger.trace("Released connection for subscriptions")
                         case .doNothing:
                             break
                         }
@@ -81,7 +91,7 @@ final class SubscriptionConnectionManager: Sendable {
 
     @usableFromInline
     func withConnection(_ operation: (ValkeyConnection) async throws -> Void) async throws {
-        let id = Int.random(in: .min ... .max)
+        let id = self.connectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
             if Task.isCancelled {
@@ -103,7 +113,9 @@ final class SubscriptionConnectionManager: Sendable {
     private func acquire(client: ValkeyClient) async {
         let result: Result<ValkeyConnection, Error>
         do {
-            result = .success(try await client.node.connectionPool.leaseConnection())
+            let connection = try await client.node.connectionPool.leaseConnection()
+            result = .success(connection)
+            self.logger.trace("Acquired connection for subscriptions")
         } catch {
             result = .failure(error)
         }
@@ -119,11 +131,11 @@ final class SubscriptionConnectionManager: Sendable {
         }
     }
 
-    struct StateMachine {
+    struct StateMachine<Value, Request> {
         enum State {
             case uninitialized
-            case acquiring([Int: CheckedContinuation<ValkeyConnection, Error>])
-            case using(ValkeyConnection, Set<Int>)
+            case acquiring([Int: Request])
+            case using(Value, Set<Int>)
         }
         var state: State
 
@@ -136,7 +148,7 @@ final class SubscriptionConnectionManager: Sendable {
             case doNothing
         }
 
-        mutating func get(id: Int, continuation: CheckedContinuation<ValkeyConnection, Error>) -> GetAction {
+        mutating func get(id: Int, continuation: Request) -> GetAction {
             switch self.state {
             case .uninitialized:
                 self.state = .acquiring([id: continuation])
@@ -153,8 +165,8 @@ final class SubscriptionConnectionManager: Sendable {
         }
 
         enum CancelAction {
-            case cancel(CheckedContinuation<ValkeyConnection, Error>)
-            case releaseConnection(ValkeyConnection)
+            case cancel(Request)
+            case releaseConnection(Value)
             case doNothing
         }
 
@@ -185,11 +197,11 @@ final class SubscriptionConnectionManager: Sendable {
         }
 
         enum AcquiredAction {
-            case yield([CheckedContinuation<ValkeyConnection, Error>])
+            case yield([Request])
             case doNothing
         }
 
-        mutating func acquired(connectionResult: Result<ValkeyConnection, Error>) -> AcquiredAction {
+        mutating func acquired(connectionResult: Result<Value, Error>) -> AcquiredAction {
             switch self.state {
             case .uninitialized:
                 return .doNothing
@@ -208,7 +220,7 @@ final class SubscriptionConnectionManager: Sendable {
         }
 
         enum ReleaseAction {
-            case releaseConnection(ValkeyConnection)
+            case releaseConnection(Value)
             case doNothing
         }
 
