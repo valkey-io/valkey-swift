@@ -109,7 +109,7 @@ package final class ValkeyConnectionFactory: Sendable {
                 try await .enable(self.cache!.getSSLContext(), tlsServerName: clientName)
             }
 
-        return ValkeyConnectionConfiguration(
+        let newConfig = ValkeyConnectionConfiguration(
             authentication: self.configuration.authentication.flatMap {
                 .init(username: $0.username, password: $0.password)
             },
@@ -118,5 +118,13 @@ package final class ValkeyConnectionFactory: Sendable {
             tls: tls,
             clientName: nil
         )
+
+        #if DistributedTracingSupport
+        var mConfig = newConfig
+        mConfig.tracing = self.configuration.tracing
+        return mConfig
+        #else
+        return newConfig
+        #endif
     }
 }
