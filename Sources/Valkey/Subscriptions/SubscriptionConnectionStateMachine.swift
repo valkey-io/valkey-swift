@@ -51,8 +51,8 @@ extension ValkeyClient {
                 request.resume(throwing: CancellationError())
             }
             switch stateMachine.get(id: id, request: request) {
-            case .startAcquire:
-                self.queueAction(.leaseSubscriptionConnection)
+            case .startAcquire(let leaseID):
+                self.queueAction(.leaseSubscriptionConnection(leaseID: leaseID))
             case .completeRequest(let connection):
                 request.resume(returning: connection)
             case .doNothing:
@@ -61,9 +61,9 @@ extension ValkeyClient {
         }
     }
 
-    func acquiredSubscriptionConnection(_ connection: ValkeyConnection, releaseContinuation: CheckedContinuation<Void, Never>) {
+    func acquiredSubscriptionConnection(leaseID: Int, connection: ValkeyConnection, releaseContinuation: CheckedContinuation<Void, Never>) {
         self.subscriptionConnectionStateMachine.withLock { stateMachine in
-            switch stateMachine.acquired(connection, releaseRequest: releaseContinuation) {
+            switch stateMachine.acquired(leaseID: leaseID, value: connection, releaseRequest: releaseContinuation) {
             case .yield(let continuations):
                 for cont in continuations {
                     cont.resume(returning: connection)
@@ -74,9 +74,9 @@ extension ValkeyClient {
         }
     }
 
-    func errorAcquiringSubscriptionConnection(_ error: Error) {
+    func errorAcquiringSubscriptionConnection(leaseID: Int, error: Error) {
         self.subscriptionConnectionStateMachine.withLock { stateMachine in
-            switch stateMachine.errorAcquiring(error) {
+            switch stateMachine.errorAcquiring(leaseID: leaseID, error: error) {
             case .yield(let continuations):
                 for cont in continuations {
                     cont.resume(throwing: error)
@@ -121,16 +121,23 @@ extension ValkeyClient {
 struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copyable {
     enum State: ~Copyable {
         /// We have no connection
-        case uninitialized
+        case uninitialized(nextLeaseID: Int)
         /// We are acquiring a connection
-        case acquiring([Int: Request])
+        case acquiring(leaseID: Int, waiters: [Int: Request])
         /// We have a connection
-        case acquired(Value, Set<Int>, ReleaseRequest)
+        case acquired(AcquiredState)
+
+        struct AcquiredState {
+            var leaseID: Int
+            var value: Value
+            var requestIDs: Set<Int>
+            var releaseRequest: ReleaseRequest
+        }
     }
     var state: State
 
     init() {
-        self.state = .uninitialized
+        self.state = .uninitialized(nextLeaseID: 0)
     }
 
     init(state: consuming State) {
@@ -138,24 +145,24 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
     }
 
     enum GetAction {
-        case startAcquire
+        case startAcquire(Int)
         case doNothing
         case completeRequest(Value)
     }
 
     mutating func get(id: Int, request: Request) -> GetAction {
         switch consume self.state {
-        case .uninitialized:
-            self = .acquiring([id: request])
-            return .startAcquire
-        case .acquiring(var map):
-            map[id] = request
-            self = .acquiring(map)
+        case .uninitialized(let leaseID):
+            self = .acquiring(leaseID: leaseID, waiters: [id: request])
+            return .startAcquire(leaseID)
+        case .acquiring(let leaseID, var waiters):
+            waiters[id] = request
+            self = .acquiring(leaseID: leaseID, waiters: waiters)
             return .doNothing
-        case .acquired(let connection, var ids, let releaseRequest):
-            ids.insert(id)
-            self = .acquired(connection, ids, releaseRequest)
-            return .completeRequest(connection)
+        case .acquired(var state):
+            state.requestIDs.insert(id)
+            self = .acquired(state)
+            return .completeRequest(state.value)
         }
     }
 
@@ -167,27 +174,27 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
 
     mutating func cancel(id: Int) -> CancelAction {
         switch consume self.state {
-        case .uninitialized:
-            self = .uninitialized
+        case .uninitialized(let leaseID):
+            self = .uninitialized(nextLeaseID: leaseID)
             return .doNothing
-        case .acquiring(var map):
-            guard let continuation = map.removeValue(forKey: id) else {
-                self = .acquiring(map)
+        case .acquiring(let leaseID, var waiters):
+            guard let continuation = waiters.removeValue(forKey: id) else {
+                self = .acquiring(leaseID: leaseID, waiters: waiters)
                 return .doNothing
             }
-            if map.isEmpty {
-                self = .uninitialized
+            if waiters.isEmpty {
+                self = .uninitialized(nextLeaseID: leaseID + 1)
             } else {
-                self = .acquiring(map)
+                self = .acquiring(leaseID: leaseID, waiters: waiters)
             }
             return .cancel(continuation)
-        case .acquired(let connection, var ids, let releaseRequest):
-            ids.remove(id)
-            if ids.isEmpty {
-                self = .uninitialized
-                return .release(releaseRequest)
+        case .acquired(var state):
+            state.requestIDs.remove(id)
+            if state.requestIDs.isEmpty {
+                self = .uninitialized(nextLeaseID: state.leaseID + 1)
+                return .release(state.releaseRequest)
             } else {
-                self = .acquired(connection, ids, releaseRequest)
+                self = .acquired(state)
                 return .doNothing
             }
         }
@@ -198,17 +205,26 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
         case release
     }
 
-    mutating func acquired(_ value: Value, releaseRequest: ReleaseRequest) -> AcquiredAction {
+    mutating func acquired(leaseID: Int, value: Value, releaseRequest: ReleaseRequest) -> AcquiredAction {
         switch consume self.state {
-        case .uninitialized:
-            self = .uninitialized
+        case .uninitialized(let leaseID):
+            self = .uninitialized(nextLeaseID: leaseID)
             return .release
-        case .acquiring(let map):
-            let continuations = map.values
-            self = .acquired(value, .init(map.keys), releaseRequest)
+        case .acquiring(let storedLeaseID, let waiters):
+            if storedLeaseID != leaseID {
+                self = .acquiring(leaseID: storedLeaseID, waiters: waiters)
+                return .release
+            }
+            let continuations = waiters.values
+            self = .acquired(.init(leaseID: leaseID, value: value, requestIDs: .init(waiters.keys), releaseRequest: releaseRequest))
             return .yield(.init(continuations))
-        case .acquired:
-            fatalError()
+        case .acquired(let state):
+            if state.leaseID != leaseID {
+                self = .acquired(state)
+                return .release
+            } else {
+                fatalError()
+            }
         }
     }
 
@@ -217,14 +233,18 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
         case doNothing
     }
 
-    mutating func errorAcquiring(_ error: Error) -> ErrorAcquiringAction {
+    mutating func errorAcquiring(leaseID: Int, error: Error) -> ErrorAcquiringAction {
         switch consume self.state {
-        case .uninitialized:
-            self = .uninitialized
+        case .uninitialized(let leaseID):
+            self = .uninitialized(nextLeaseID: leaseID)
             return .doNothing
-        case .acquiring(let map):
-            let continuations = map.values
-            self = .uninitialized
+        case .acquiring(let storedLeaseID, let waiters):
+            if storedLeaseID != leaseID {
+                self = .acquiring(leaseID: storedLeaseID, waiters: waiters)
+                return .doNothing
+            }
+            let continuations = waiters.values
+            self = .uninitialized(nextLeaseID: leaseID + 1)
             return .yield(.init(continuations))
         case .acquired:
             fatalError()
@@ -242,21 +262,19 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
             fatalError()
         case .acquiring:
             fatalError()
-        case .acquired(let connection, var ids, let releaseRequest):
-            ids.remove(id)
-            if ids.isEmpty {
-                self = .uninitialized
-                return .release(releaseRequest)
+        case .acquired(var state):
+            state.requestIDs.remove(id)
+            if state.requestIDs.isEmpty {
+                self = .uninitialized(nextLeaseID: state.leaseID + 1)
+                return .release(state.releaseRequest)
             } else {
-                self = .acquired(connection, ids, releaseRequest)
+                self = .acquired(state)
                 return .doNothing
             }
         }
     }
 
-    static private var uninitialized: Self { .init(state: .uninitialized) }
-    static private func acquiring(_ map: [Int: Request]) -> Self { .init(state: .acquiring(map)) }
-    static private func acquired(_ value: Value, _ ids: Set<Int>, _ releaseRequest: ReleaseRequest) -> Self {
-        .init(state: .acquired(value, ids, releaseRequest))
-    }
+    static private func uninitialized(nextLeaseID: Int) -> Self { .init(state: .uninitialized(nextLeaseID: nextLeaseID)) }
+    static private func acquiring(leaseID: Int, waiters: [Int: Request]) -> Self { .init(state: .acquiring(leaseID: leaseID, waiters: waiters)) }
+    static private func acquired(_ state: State.AcquiredState) -> Self { .init(state: .acquired(state)) }
 }

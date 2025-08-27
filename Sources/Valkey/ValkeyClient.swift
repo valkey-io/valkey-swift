@@ -55,7 +55,7 @@ public final class ValkeyClient: Sendable {
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
-        case leaseSubscriptionConnection
+        case leaseSubscriptionConnection(leaseID: Int)
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -160,15 +160,15 @@ extension ValkeyClient {
         switch action {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
-        case .leaseSubscriptionConnection:
+        case .leaseSubscriptionConnection(let leaseID):
             do {
                 try await self.withConnection { connection in
                     await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
-                        self.acquiredSubscriptionConnection(connection, releaseContinuation: cont)
+                        self.acquiredSubscriptionConnection(leaseID: leaseID, connection: connection, releaseContinuation: cont)
                     }
                 }
             } catch {
-                self.errorAcquiringSubscriptionConnection(error)
+                self.errorAcquiringSubscriptionConnection(leaseID: leaseID, error: error)
             }
         }
     }

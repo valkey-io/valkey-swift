@@ -28,9 +28,9 @@ struct SubscriptionConnectionManagerTests {
         func testAcquireRelease() {
             var stateMachine = SubscriptionConnectionStateMachine<String, Int, Int>()
             let action1 = stateMachine.get(id: 0, request: 10)
-            let action2 = stateMachine.acquired("Connection", releaseRequest: 100)
+            let action2 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
             let action3 = stateMachine.release(id: 0)
-            #expect(action1 == .startAcquire)
+            #expect(action1 == .startAcquire(0))
             #expect(action2 == .yield([10]))
             #expect(action3 == .release(100))
         }
@@ -41,19 +41,19 @@ struct SubscriptionConnectionManagerTests {
             var stateMachine = SubscriptionConnectionStateMachine<String, Int, Int>()
             do {
                 let action1 = stateMachine.get(id: 0, request: 10)
-                let action2 = stateMachine.acquired("Connection", releaseRequest: 100)
+                let action2 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
                 let action3 = stateMachine.release(id: 0)
-                #expect(action1 == .startAcquire)
+                #expect(action1 == .startAcquire(0))
                 #expect(action2 == .yield([10]))
                 #expect(action3 == .release(100))
             }
             do {
                 let action1 = stateMachine.get(id: 1, request: 11)
-                let action2 = stateMachine.acquired("Connection", releaseRequest: 100)
+                let action2 = stateMachine.acquired(leaseID: 1, value: "Connection", releaseRequest: 101)
                 let action3 = stateMachine.release(id: 1)
-                #expect(action1 == .startAcquire)
+                #expect(action1 == .startAcquire(1))
                 #expect(action2 == .yield([11]))
-                #expect(action3 == .release(100))
+                #expect(action3 == .release(101))
             }
         }
 
@@ -63,10 +63,10 @@ struct SubscriptionConnectionManagerTests {
             var stateMachine = SubscriptionConnectionStateMachine<String, Int, Int>()
             let action1 = stateMachine.get(id: 0, request: 10)
             let action2 = stateMachine.get(id: 1, request: 11)
-            let action3 = stateMachine.acquired("Connection", releaseRequest: 100)
+            let action3 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
             let action4 = stateMachine.release(id: 1)
             let action5 = stateMachine.release(id: 0)
-            #expect(action1 == .startAcquire)
+            #expect(action1 == .startAcquire(0))
             #expect(action2 == .doNothing)
             #expect(action3 == .yield([10, 11]))
             #expect(action4 == .doNothing)
@@ -79,11 +79,11 @@ struct SubscriptionConnectionManagerTests {
             do {
                 var stateMachine = SubscriptionConnectionStateMachine<String, Int, Int>()
                 let action1 = stateMachine.get(id: 0, request: 10)
-                let action2 = stateMachine.acquired("Connection", releaseRequest: 100)
+                let action2 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
                 let action3 = stateMachine.get(id: 1, request: 11)
                 let action4 = stateMachine.release(id: 1)
                 let action5 = stateMachine.release(id: 0)
-                #expect(action1 == .startAcquire)
+                #expect(action1 == .startAcquire(0))
                 #expect(action2 == .yield([10]))
                 #expect(action3 == .completeRequest("Connection"))
                 #expect(action4 == .doNothing)
@@ -92,11 +92,11 @@ struct SubscriptionConnectionManagerTests {
             do {
                 var stateMachine = SubscriptionConnectionStateMachine<String, Int, Int>()
                 let action1 = stateMachine.get(id: 0, request: 10)
-                let action2 = stateMachine.acquired("Connection", releaseRequest: 100)
+                let action2 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
                 let action3 = stateMachine.get(id: 1, request: 11)
                 let action4 = stateMachine.release(id: 0)
                 let action5 = stateMachine.release(id: 1)
-                #expect(action1 == .startAcquire)
+                #expect(action1 == .startAcquire(0))
                 #expect(action2 == .yield([10]))
                 #expect(action3 == .completeRequest("Connection"))
                 #expect(action4 == .doNothing)
@@ -110,8 +110,10 @@ struct SubscriptionConnectionManagerTests {
             var stateMachine = SubscriptionConnectionStateMachine<String, Int, Int>()
             let action1 = stateMachine.get(id: 0, request: 10)
             let action2 = stateMachine.cancel(id: 0)
-            #expect(action1 == .startAcquire)
+            let action3 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
+            #expect(action1 == .startAcquire(0))
             #expect(action2 == .cancel(10))
+            #expect(action3 == .release)
         }
 
         @Test
@@ -119,9 +121,9 @@ struct SubscriptionConnectionManagerTests {
         func testCancelAfterAcquiring() {
             var stateMachine = SubscriptionConnectionStateMachine<String, Int, Int>()
             let action1 = stateMachine.get(id: 0, request: 10)
-            let action2 = stateMachine.acquired("Connection", releaseRequest: 100)
+            let action2 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
             let action3 = stateMachine.cancel(id: 0)
-            #expect(action1 == .startAcquire)
+            #expect(action1 == .startAcquire(0))
             #expect(action2 == .yield([10]))
             #expect(action3 == .release(100))
         }
@@ -133,13 +135,31 @@ struct SubscriptionConnectionManagerTests {
             let action1 = stateMachine.get(id: 0, request: 10)
             let action2 = stateMachine.get(id: 1, request: 11)
             let action3 = stateMachine.cancel(id: 0)
-            let action4 = stateMachine.acquired("Connection", releaseRequest: 100)
+            let action4 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
             let action5 = stateMachine.release(id: 1)
-            #expect(action1 == .startAcquire)
+            #expect(action1 == .startAcquire(0))
             #expect(action2 == .doNothing)
             #expect(action3 == .cancel(10))
             #expect(action4 == .yield([11]))
             #expect(action5 == .release(100))
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testAcquireAfterCancel() {
+            var stateMachine = SubscriptionConnectionStateMachine<String, Int, Int>()
+            let action1 = stateMachine.get(id: 0, request: 10)
+            let action2 = stateMachine.cancel(id: 0)
+            let action3 = stateMachine.acquired(leaseID: 0, value: "Connection", releaseRequest: 100)
+            let action4 = stateMachine.get(id: 1, request: 11)
+            let action5 = stateMachine.acquired(leaseID: 1, value: "Connection", releaseRequest: 101)
+            let action6 = stateMachine.release(id: 1)
+            #expect(action1 == .startAcquire(0))
+            #expect(action2 == .cancel(10))
+            #expect(action3 == .release)
+            #expect(action4 == .startAcquire(1))
+            #expect(action5 == .yield([11]))
+            #expect(action6 == .release(101))
         }
     }
 }
@@ -148,7 +168,9 @@ struct SubscriptionConnectionManagerTests {
 extension SubscriptionConnectionStateMachine.GetAction: Equatable where Value: Equatable, Request: Equatable {
     public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
         switch (lhs, rhs) {
-        case (.startAcquire, .startAcquire), (.doNothing, .doNothing):
+        case (.startAcquire(let lhs), .startAcquire(let rhs)):
+            lhs == rhs
+        case (.doNothing, .doNothing):
             true
         case (.completeRequest(let lhs), .completeRequest(let rhs)):
             lhs == rhs
