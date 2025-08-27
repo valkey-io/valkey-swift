@@ -46,11 +46,21 @@ extension ValkeyClient {
 
     func leaseSubscriptionConnection(id: Int, request: CheckedContinuation<ValkeyConnection, Error>) {
         self.logger.trace("Get subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
-        self.subscriptionConnectionStateMachine.withLock { stateMachine in
+        enum LeaseAction {
+            case cancel
+            case action(ConnectionStateMachine.GetAction)
+        }
+        let action: LeaseAction = self.subscriptionConnectionStateMachine.withLock { stateMachine in
             if Task.isCancelled {
-                request.resume(throwing: CancellationError())
+                return .cancel
             }
-            switch stateMachine.get(id: id, request: request) {
+            return .action(stateMachine.get(id: id, request: request))
+        }
+        switch action {
+        case .cancel:
+            request.resume(throwing: CancellationError())
+        case .action(let getAction):
+            switch getAction {
             case .startAcquire(let leaseID):
                 self.queueAction(.leaseSubscriptionConnection(leaseID: leaseID))
             case .completeRequest(let connection):
@@ -62,56 +72,63 @@ extension ValkeyClient {
     }
 
     func acquiredSubscriptionConnection(leaseID: Int, connection: ValkeyConnection, releaseContinuation: CheckedContinuation<Void, Never>) {
-        self.subscriptionConnectionStateMachine.withLock { stateMachine in
-            switch stateMachine.acquired(leaseID: leaseID, value: connection, releaseRequest: releaseContinuation) {
-            case .yield(let continuations):
-                for cont in continuations {
-                    cont.resume(returning: connection)
-                }
-            case .release:
-                releaseContinuation.resume()
-            }
+        let action = self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            stateMachine.acquired(leaseID: leaseID, value: connection, releaseRequest: releaseContinuation)
         }
+        switch action {
+        case .yield(let continuations):
+            for cont in continuations {
+                cont.resume(returning: connection)
+            }
+        case .release:
+            releaseContinuation.resume()
+        }
+
     }
 
     func errorAcquiringSubscriptionConnection(leaseID: Int, error: Error) {
-        self.subscriptionConnectionStateMachine.withLock { stateMachine in
-            switch stateMachine.errorAcquiring(leaseID: leaseID, error: error) {
-            case .yield(let continuations):
-                for cont in continuations {
-                    cont.resume(throwing: error)
-                }
-            case .doNothing:
-                break
-            }
+        let action = self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            stateMachine.errorAcquiring(leaseID: leaseID, error: error)
         }
+        switch action {
+        case .yield(let continuations):
+            for cont in continuations {
+                cont.resume(throwing: error)
+            }
+        case .doNothing:
+            break
+        }
+
     }
 
     func releaseSubscriptionConnection(id: Int) {
         self.logger.trace("Release subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
-        self.subscriptionConnectionStateMachine.withLock { stateMachine in
-            switch stateMachine.release(id: id) {
-            case .release(let continuation):
-                continuation.resume()
-                self.logger.trace("Released connection for subscriptions")
-            case .doNothing:
-                break
-            }
+        let action = self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            stateMachine.release(id: id)
         }
+        switch action {
+        case .release(let continuation):
+            continuation.resume()
+            self.logger.trace("Released connection for subscriptions")
+        case .doNothing:
+            break
+        }
+
     }
 
     func cancelSubscriptionConnection(id: Int) {
         self.logger.trace("Cancel subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
-        self.subscriptionConnectionStateMachine.withLock { stateMachine in
-            switch stateMachine.cancel(id: id) {
-            case .cancel(let cont):
-                cont.resume(throwing: CancellationError())
-            case .release(let continuation):
-                continuation.resume()
-                self.logger.trace("Released connection for subscriptions")
-            case .doNothing:
-                break
-            }
+        let action = self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            stateMachine.cancel(id: id)
+        }
+        switch action {
+        case .cancel(let cont):
+            cont.resume(throwing: CancellationError())
+        case .release(let continuation):
+            continuation.resume()
+            self.logger.trace("Released connection for subscriptions")
+        case .doNothing:
+            break
         }
     }
 }
@@ -223,7 +240,7 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
                 self = .acquired(state)
                 return .release
             } else {
-                fatalError()
+                preconditionFailure("Acquired connection twice")
             }
         }
     }
@@ -246,8 +263,13 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
             let continuations = waiters.values
             self = .uninitialized(nextLeaseID: leaseID + 1)
             return .yield(.init(continuations))
-        case .acquired:
-            fatalError()
+        case .acquired(let state):
+            if state.leaseID != leaseID {
+                self = .acquired(state)
+                return .doNothing
+            } else {
+                preconditionFailure("Error acquiring connection we already have")
+            }
         }
     }
 
@@ -259,9 +281,9 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
     mutating func release(id: Int) -> ReleaseAction {
         switch consume self.state {
         case .uninitialized:
-            fatalError()
+            preconditionFailure("Cannot release connection when in an uninitialized state")
         case .acquiring:
-            fatalError()
+            preconditionFailure("Cannot release connection while acquiring a new connection")
         case .acquired(var state):
             state.requestIDs.remove(id)
             if state.requestIDs.isEmpty {
