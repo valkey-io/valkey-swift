@@ -504,15 +504,6 @@ struct GeneratedCommands {
                     try await client.withConnection { connection in
                         try await connection.subscribe(to: "testDoubleSubscription") { stream in
                             var iterator = stream.makeAsyncIterator()
-                            try await client.withConnection { connection in
-                                try await connection.subscribe(
-                                    to: "sss/events"
-                                ) { subscription in
-                                    for try await event in subscription {
-                                        print("\(String(buffer: event.message))")
-                                    }
-                                }
-                            }
                             try await connection.subscribe(to: "testDoubleSubscription") { stream2 in
                                 var iterator2 = stream2.makeAsyncIterator()
                                 cont.yield()
