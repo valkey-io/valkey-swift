@@ -31,7 +31,7 @@ extension ValkeyClient {
         let id = self.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
-            return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
+            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
                 self.leaseSubscriptionConnection(id: id, request: cont)
             }
         } onCancel: {
