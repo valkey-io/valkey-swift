@@ -33,6 +33,10 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public let id: ID
     /// Logger used by Server
     let logger: Logger
+    #if DistributedTracingSupport
+    @usableFromInline
+    let tracer: (any Tracer)?
+    #endif
     @usableFromInline
     let channel: any Channel
     @usableFromInline
@@ -57,6 +61,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         self.configuration = configuration
         self.id = connectionID
         self.logger = logger
+        #if DistributedTracingSupport
+        self.tracer = configuration.tracing.tracer
+        #endif
         switch address?.value {
         case let .hostname(host, port):
             self.address = (host, port)
@@ -169,12 +176,11 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     func _execute<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
         #if DistributedTracingSupport
-        let span = startSpan(Command.name, ofKind: .client)
-        defer { span.end() }
+        let span = self.tracer?.startSpan(Command.name, ofKind: .client)
+        defer { span?.end() }
 
-        span.updateAttributes { attributes in
-            attributes["db.operation.name"] = Command.name
-            applyCommonAttributes(to: &attributes)
+        span?.updateAttributes { attributes in
+            self.applyCommonAttributes(to: &attributes, commandName: Command.name)
         }
         #endif
 
@@ -193,21 +199,21 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
         } catch let error as ValkeyClientError {
             #if DistributedTracingSupport
-            span.recordError(error)
+            span?.recordError(error)
             if let message = error.message {
                 var prefixEndIndex = message.startIndex
                 while prefixEndIndex < message.endIndex, message[prefixEndIndex] != " " {
                     message.formIndex(after: &prefixEndIndex)
                 }
                 let prefix = message[message.startIndex..<prefixEndIndex]
-                span.attributes["db.response.status_code"] = "\(prefix)"
-                span.setStatus(SpanStatus(code: .error))
+                span?.attributes["db.response.status_code"] = "\(prefix)"
+                span?.setStatus(SpanStatus(code: .error))
             }
             #endif
             throw error
         } catch {
             #if DistributedTracingSupport
-            span.recordError(error)
+            span?.recordError(error)
             #endif
             throw error
         }
@@ -224,41 +230,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
-        #if DistributedTracingSupport
-        let span = startSpan("MULTI", ofKind: .client)
-        defer { span.end() }
-
-        // We want to suffix the `db.operation.name` if all pipelined commands are of the same type.
-        var commandName: String?
-        var operationNameSuffix: String?
-        var commandCount = 0
-
-        for command in repeat each commands {
-            commandCount += 1
-            if commandName == nil {
-                commandName = Swift.type(of: command).name
-                operationNameSuffix = commandName
-            } else if commandName != Swift.type(of: command).name {
-                // We should only add a suffix if all commands in the transaction are the same.
-                operationNameSuffix = nil
-            }
-        }
-        let operationName = operationNameSuffix.map { "MULTI \($0)" } ?? "MULTI"
-
-        span.updateAttributes { attributes in
-            attributes["db.operation.name"] = operationName
-            attributes["db.operation.batch.size"] = commandCount > 1 ? commandCount : nil
-            applyCommonAttributes(to: &attributes)
-        }
-        #endif
-
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
-            #if DistributedTracingSupport
-            if case .failure(let error) = result {
-                span.recordError(error)
-            }
-            #endif
-
             return result.flatMap {
                 do {
                     return try .success(Response(fromRESP: $0))
@@ -295,12 +267,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     }
 
     @usableFromInline
-    func applyCommonAttributes(to attributes: inout SpanAttributes) {
-        attributes["db.system.name"] = "valkey"
-        attributes["network.peer.address"] = channel.remoteAddress?.ipAddress
-        attributes["network.peer.port"] = channel.remoteAddress?.port
-        attributes["server.address"] = address?.hostOrSocketPath
-        attributes["server.port"] = address?.port == 6379 ? nil : address?.port
+    func applyCommonAttributes(to attributes: inout SpanAttributes, commandName: String) {
+        attributes[self.configuration.tracing.attributeNames.databaseOperationName] = commandName
+        attributes[self.configuration.tracing.attributeNames.databaseSystemName] = self.configuration.tracing.attributeValue.databaseSystem
+        attributes[self.configuration.tracing.attributeNames.networkPeerAddress] = channel.remoteAddress?.ipAddress
+        attributes[self.configuration.tracing.attributeNames.networkPeerPort] = channel.remoteAddress?.port
+        attributes[self.configuration.tracing.attributeNames.serverAddress] = address?.hostOrSocketPath
+        attributes[self.configuration.tracing.attributeNames.serverPort] = address?.port == 6379 ? nil : address?.port
     }
 
     @usableFromInline
