@@ -72,8 +72,6 @@ struct ClientIntegratedTests {
             typealias Response = String?
             static let name = "GET"
 
-            static let name = "GET"
-
             var key: ValkeyKey
 
             init(key: ValkeyKey) {
