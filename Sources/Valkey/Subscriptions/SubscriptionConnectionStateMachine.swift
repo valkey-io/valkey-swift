@@ -68,6 +68,8 @@ extension ValkeyClient {
                 for cont in continuations {
                     cont.resume(returning: connection)
                 }
+            case .release:
+                releaseContinuation.resume()
             }
         }
     }
@@ -193,12 +195,14 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
 
     enum AcquiredAction {
         case yield([Request])
+        case release
     }
 
     mutating func acquired(_ value: Value, releaseRequest: ReleaseRequest) -> AcquiredAction {
         switch consume self.state {
         case .uninitialized:
-            fatalError()
+            self = .uninitialized
+            return .release
         case .acquiring(let map):
             let continuations = map.values
             self = .acquired(value, .init(map.keys), releaseRequest)

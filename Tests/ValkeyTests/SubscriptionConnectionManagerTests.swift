@@ -164,6 +164,10 @@ extension SubscriptionConnectionStateMachine.AcquiredAction: Equatable where Val
         switch (lhs, rhs) {
         case (.yield(let lhs), .yield(let rhs)):
             lhs.sorted() == rhs.sorted()
+        case (.release, .release):
+            true
+        default:
+            false
         }
     }
 }
