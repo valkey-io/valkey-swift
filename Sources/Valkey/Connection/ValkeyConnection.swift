@@ -231,7 +231,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
-            return result.flatMap {
+            result.flatMap {
                 do {
                     return try .success(Response(fromRESP: $0))
                 } catch {
