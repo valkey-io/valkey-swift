@@ -43,7 +43,14 @@ public final class ValkeyClient: Sendable {
     let runningAtomic: Atomic<Bool>
     /// subscription state
     @usableFromInline
-    let subscriptionConnectionStateMachine: Mutex<SubscriptionConnectionStateMachine<ValkeyConnection, CheckedContinuation<ValkeyConnection, Error>>>
+    let subscriptionConnectionStateMachine:
+        Mutex<
+            SubscriptionConnectionStateMachine<
+                ValkeyConnection,
+                CheckedContinuation<ValkeyConnection, Error>,
+                CheckedContinuation<Void, Never>
+            >
+        >
     let subscriptionConnectionIDGenerator: ConnectionIDGenerator
 
     enum RunAction: Sendable {
@@ -110,16 +117,14 @@ extension ValkeyClient {
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
-            /// Run discarding task group running actions
-            await withDiscardingTaskGroup { group in
-                for await action in self.actionStream {
-                    group.addTask {
-                        await self.runAction(action)
-                    }
-                }
-            }
+            await self._withTaskGroup()
         }
         #else
+        await self._withTaskGroup()
+        #endif
+    }
+
+    private func _withTaskGroup() async {
         /// Run discarding task group running actions
         await withDiscardingTaskGroup { group in
             for await action in self.actionStream {
@@ -128,7 +133,6 @@ extension ValkeyClient {
                 }
             }
         }
-        #endif
     }
 
     /// Get connection from connection pool and run operation using connection
@@ -158,10 +162,13 @@ extension ValkeyClient {
             await nodeClient.run()
         case .leaseSubscriptionConnection:
             do {
-                let connection = try await self.node.connectionPool.leaseConnection()
-                self.acquiredSubscriptionConnection(.success(connection))
+                try await self.withConnection { connection in
+                    await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+                        self.acquiredSubscriptionConnection(connection, releaseContinuation: cont)
+                    }
+                }
             } catch {
-                self.acquiredSubscriptionConnection(.failure(error))
+                self.errorAcquiringSubscriptionConnection(error)
             }
         }
     }
