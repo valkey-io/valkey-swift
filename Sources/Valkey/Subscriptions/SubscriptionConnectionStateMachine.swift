@@ -22,7 +22,10 @@ extension ValkeyClient {
     ///
     /// - Parameter operation: Closure to run with subscription connection
     @usableFromInline
-    func withSubscriptionConnection<Value>(_ operation: (ValkeyConnection) async throws -> Value) async throws -> Value {
+    func withSubscriptionConnection<Value>(
+        isolation: isolated (any Actor)? = #isolation,
+        _ operation: (ValkeyConnection) async throws -> sending Value
+    ) async throws -> sending Value {
         let id = self.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
