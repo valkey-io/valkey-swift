@@ -12,10 +12,11 @@ import Logging
 import NIOCore
 import NIOPosix
 import Synchronization
+import Valkey
+
 #if DistributedTracingSupport
 import Tracing
 #endif
-import Valkey
 
 @available(valkeySwift 1.0, *)
 func connectionBenchmarks() {
