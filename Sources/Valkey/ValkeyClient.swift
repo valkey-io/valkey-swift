@@ -29,6 +29,14 @@ import ServiceLifecycle
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
+    @usableFromInline
+    typealias ConnectionStateMachine =
+        SubscriptionConnectionStateMachine<
+            ValkeyConnection,
+            CheckedContinuation<ValkeyConnection, Error>,
+            CheckedContinuation<Void, Never>
+        >
+
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
@@ -41,12 +49,17 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
+    /// subscription state
+    @usableFromInline
+    let subscriptionConnectionStateMachine: Mutex<ConnectionStateMachine>
+    let subscriptionConnectionIDGenerator: ConnectionIDGenerator
 
-    private enum RunAction: Sendable {
+    enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
+        case leaseSubscriptionConnection(leaseID: Int)
     }
-    private let actionStream: AsyncStream<RunAction>
-    private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
+    let actionStream: AsyncStream<RunAction>
+    let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
     /// Creates a new Valkey client
     ///
@@ -90,6 +103,8 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        self.subscriptionConnectionStateMachine = .init(.init())
+        self.subscriptionConnectionIDGenerator = .init()
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runNodeClient(self.node))
     }
@@ -103,18 +118,22 @@ extension ValkeyClient {
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
-            /// Run discarding task group running actions
-            await withDiscardingTaskGroup { group in
-                for await action in self.actionStream {
-                    group.addTask {
-                        await self.runAction(action)
-                    }
+            await self._withTaskGroup()
+        }
+        #else
+        await self._withTaskGroup()
+        #endif
+    }
+
+    private func _withTaskGroup() async {
+        /// Run discarding task group running actions
+        await withDiscardingTaskGroup { group in
+            for await action in self.actionStream {
+                group.addTask {
+                    await self.runAction(action)
                 }
             }
         }
-        #else
-        await self.runActionTaskGroup()
-        #endif
     }
 
     /// Get connection from connection pool and run operation using connection
@@ -134,7 +153,7 @@ extension ValkeyClient {
 
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
-    private func queueAction(_ action: RunAction) {
+    func queueAction(_ action: RunAction) {
         self.actionStreamContinuation.yield(action)
     }
 
@@ -142,6 +161,16 @@ extension ValkeyClient {
         switch action {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
+        case .leaseSubscriptionConnection(let leaseID):
+            do {
+                try await self.withConnection { connection in
+                    await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+                        self.acquiredSubscriptionConnection(leaseID: leaseID, connection: connection, releaseContinuation: cont)
+                    }
+                }
+            } catch {
+                self.errorAcquiringSubscriptionConnection(leaseID: leaseID, error: error)
+            }
         }
     }
 }
