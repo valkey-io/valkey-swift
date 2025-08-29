@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 /// State machine for a single channel/pattern subscription
+@available(valkeySwift 1.0, *)
 struct ValkeyChannelStateMachine<Value: Identifiable> where Value: AnyObject {
     enum State {
         case uninitialized

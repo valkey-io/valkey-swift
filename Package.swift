@@ -11,7 +11,6 @@ let defaultSwiftSettings: [SwiftSetting] =
 
 let package = Package(
     name: "valkey-swift",
-    platforms: [.macOS(.v13)],
     products: [
         .library(name: "Valkey", targets: ["Valkey"]),
         .library(name: "ValkeyBloom", targets: ["ValkeyBloom"]),
@@ -98,6 +97,7 @@ let package = Package(
 )
 
 if Context.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
+    package.platforms = [.macOS(.v10_15)]
     package.dependencies.append(
         .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0")
     )

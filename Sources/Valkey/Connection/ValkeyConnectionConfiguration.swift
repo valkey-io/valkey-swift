@@ -37,6 +37,7 @@ import NIOSSL
 ///     tls: .enable(sslContext, tlsServerName: "your-valkey-server.com")
 /// )
 /// ```
+@available(valkeySwift 1.0, *)
 public struct ValkeyConnectionConfiguration: Sendable {
     /// Configuration for TLS (Transport Layer Security) encryption.
     ///

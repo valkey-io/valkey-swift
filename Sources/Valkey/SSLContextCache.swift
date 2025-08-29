@@ -16,6 +16,7 @@ import NIOSSL
 import Synchronization
 
 @usableFromInline
+@available(valkeySwift 1.0, *)
 package protocol ValkeySSLContextProvider: Sendable {
 
     func getSSLContext() async throws -> NIOSSLContext

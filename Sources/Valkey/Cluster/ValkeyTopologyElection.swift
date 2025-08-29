@@ -23,6 +23,7 @@
 /// - Tracking vote counts for each topology candidate
 /// - Managing revotes (nodes changing their vote)
 /// - Determining when a winner has been elected
+@available(valkeySwift 1.0, *)
 package struct ValkeyTopologyElection {
     /// Represents a candidate in the topology election, tracking votes and thresholds.
     ///
