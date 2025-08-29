@@ -16,13 +16,27 @@ struct ValkeyMovedErrorTests {
     @Test("parseMovedError parses valid MOVED error")
     func testParseValidMovedError() async throws {
         // Parse the moved error
-        let movedError = ValkeyMovedError("MOVED 1234 redis.example.com:6379")
+        let movedError = ValkeyMovedError("MOVED 1234 valkey.example.com:6379")
 
         // Verify the moved error is parsed correctly
         #expect(movedError != nil)
         #expect(movedError?.slot.rawValue == 1234)
-        #expect(movedError?.endpoint == "redis.example.com")
+        #expect(movedError?.endpoint == "valkey.example.com")
         #expect(movedError?.port == 6379)
+        #expect(movedError?.request == .move)
+    }
+
+    @Test("parseMovedError parses valid ASK error")
+    func testParseValidAskError() async throws {
+        // Parse the ask error
+        let movedError = ValkeyMovedError("ASK 1234 valkey.example.com:6379")
+
+        // Verify the moved error is parsed correctly
+        #expect(movedError != nil)
+        #expect(movedError?.slot.rawValue == 1234)
+        #expect(movedError?.endpoint == "valkey.example.com")
+        #expect(movedError?.port == 6379)
+        #expect(movedError?.request == .ask)
     }
 
     @Test("parseMovedError parses valid MOVED error with IPv4")
@@ -65,22 +79,22 @@ struct ValkeyMovedErrorTests {
         // Test with various invalid MOVED formats
 
         // Missing slot number
-        #expect(ValkeyMovedError("MOVED redis.example.com:6379") == nil)
+        #expect(ValkeyMovedError("MOVED valkey.example.com:6379") == nil)
 
         // Missing port number
-        let missingPort = "MOVED 1234 redis.example.com"
+        let missingPort = "MOVED 1234 valkey.example.com"
         #expect(ValkeyMovedError(missingPort) == nil)
 
         // Invalid slot number
-        let invalidSlot = "MOVED abc redis.example.com:6379"
+        let invalidSlot = "MOVED abc valkey.example.com:6379"
         #expect(ValkeyMovedError(invalidSlot) == nil)
 
         // Invalid port number
-        let invalidPort = "MOVED 1234 redis.example.com:port"
+        let invalidPort = "MOVED 1234 valkey.example.com:port"
         #expect(ValkeyMovedError(invalidPort) == nil)
 
         // Slot number out of range
-        let outOfRangeSlot = "MOVED 999999 redis.example.com:6379"
+        let outOfRangeSlot = "MOVED 999999 valkey.example.com:6379"
         #expect(ValkeyMovedError(outOfRangeSlot) == nil)
     }
 
