@@ -530,6 +530,7 @@ public enum JSON {
 
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Append one or more values to the array values at the path.
     ///

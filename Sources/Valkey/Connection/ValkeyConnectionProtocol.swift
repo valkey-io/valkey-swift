@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 /// A type that provides the ability to send a Valkey command and get a response.
+@available(valkeySwift 1.0, *)
 public protocol ValkeyClientProtocol {
     /// Send RESP command to Valkey connection
     /// - Parameter command: ValkeyCommand structure

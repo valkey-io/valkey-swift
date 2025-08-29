@@ -966,6 +966,7 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Returns the number of messages that were successfully acknowledged by the consumer group member of a stream.
     ///

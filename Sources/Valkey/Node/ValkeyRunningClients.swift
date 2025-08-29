@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 @usableFromInline
+@available(valkeySwift 1.0, *)
 struct ValkeyRunningClientsStateMachine<
     ConnectionPool: Sendable,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory

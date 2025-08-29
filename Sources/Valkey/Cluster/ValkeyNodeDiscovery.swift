@@ -14,6 +14,7 @@
 
 /// A type that allows the cluster client to initially find at least one node in the cluster, or find the
 /// nodes again if connection to them has been lost.
+@available(valkeySwift 1.0, *)
 public protocol ValkeyNodeDiscovery: Sendable {
     /// A type that describes a single node in a valkey cluster
     associatedtype NodeDescription: ValkeyNodeDescriptionProtocol

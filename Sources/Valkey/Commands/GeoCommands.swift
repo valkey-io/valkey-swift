@@ -1225,6 +1225,7 @@ public struct GEOSEARCHSTORE: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Adds one or more members to a geospatial index. The key is created if it doesn't exist.
     ///

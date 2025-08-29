@@ -1029,6 +1029,7 @@ public struct SELECT: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Authenticates the connection.
     ///

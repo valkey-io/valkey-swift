@@ -496,6 +496,7 @@ public struct FCALLRO<Function: RESPStringRenderable>: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Executes a server-side Lua script.
     ///

@@ -18,6 +18,7 @@
 /// designed specifically for efficient comparison during cluster updates. It preserves
 /// only the essential properties needed to determine if a topology has changed, while
 /// maintaining consistent ordering of elements to ensure reliable equality checks.
+@available(valkeySwift 1.0, *)
 package struct ValkeyTopologyCandidate: Hashable {
     /// Represents a shard (hash slot range) within a Valkey cluster topology.
     ///
@@ -114,6 +115,7 @@ package struct ValkeyTopologyCandidate: Hashable {
     }
 }
 
+@available(valkeySwift 1.0, *)
 package struct ValkeyClusterVoter<ConnectionPool: ValkeyNodeConnectionPool> {
     package var client: ConnectionPool
     package var nodeID: ValkeyNodeID
