@@ -26,7 +26,7 @@ extension ValkeyClient {
     func withSubscriptionConnection<Value>(
         isolation: isolated (any Actor)? = #isolation,
         _ operation: (ValkeyConnection) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         let id = self.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
@@ -60,7 +60,7 @@ extension ValkeyClient {
         to channels: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.subscribe(to: channels, process: process)
     }
 
@@ -81,7 +81,7 @@ extension ValkeyClient {
         to channels: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.subscribe(
             command: SUBSCRIBE(channels: channels),
             filters: channels.map { .channel($0) },
@@ -106,7 +106,7 @@ extension ValkeyClient {
         to patterns: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.psubscribe(to: patterns, process: process)
     }
 
@@ -127,7 +127,7 @@ extension ValkeyClient {
         to patterns: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.subscribe(
             command: PSUBSCRIBE(patterns: patterns),
             filters: patterns.map { .pattern($0) },
@@ -155,7 +155,7 @@ extension ValkeyClient {
     public func subscribeKeyInvalidations<Value>(
         isolation: isolated (any Actor)? = #isolation,
         process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>, Int) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await withSubscriptionConnection { connection in
             let id = try await connection.clientId()
             return try await connection.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
@@ -171,7 +171,7 @@ extension ValkeyClient {
         filters: [ValkeySubscriptionFilter],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> Value {
+    ) async throws -> sending Value {
         try await self.withSubscriptionConnection { connection in
             try await connection.subscribe(command: command, filters: filters, process: process)
         }
