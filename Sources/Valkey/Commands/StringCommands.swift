@@ -684,6 +684,7 @@ public struct SUBSTR: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Appends a string to the value of a key. Creates the key if it doesn't exist.
     ///

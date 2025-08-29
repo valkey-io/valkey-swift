@@ -265,6 +265,7 @@ public struct UNSUBSCRIBE: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Posts a message to a channel.
     ///

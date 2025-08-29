@@ -86,6 +86,7 @@ public struct PFMERGE: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Adds elements to a HyperLogLog key. Creates the key if it doesn't exist.
     ///

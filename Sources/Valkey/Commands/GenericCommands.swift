@@ -1068,6 +1068,7 @@ public struct WAITAOF: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Copies the value of a key to a new key.
     ///

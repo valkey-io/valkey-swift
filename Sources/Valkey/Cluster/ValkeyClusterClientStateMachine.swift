@@ -23,6 +23,7 @@ import Glibc
 import Musl
 #endif
 
+@available(valkeySwift 1.0, *)
 package struct ValkeyClusterTimer: Sendable, Hashable {
     package enum UseCase: Hashable {
         case nextDiscovery
@@ -43,6 +44,7 @@ package struct ValkeyClusterTimer: Sendable, Hashable {
 }
 
 @usableFromInline
+@available(valkeySwift 1.0, *)
 package struct ValkeyClusterClientStateMachineConfiguration {
     /// The duration after which the cluster client rejects all requests, because it can't find a cluster consensus
     @usableFromInline
@@ -58,6 +60,7 @@ package struct ValkeyClusterClientStateMachineConfiguration {
 }
 
 @usableFromInline
+@available(valkeySwift 1.0, *)
 package struct ValkeyClusterClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory,
@@ -755,6 +758,7 @@ package struct ValkeyClusterClientStateMachine<
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClusterClientStateMachine {
     /// Calculates the delay for the next connection attempt after the given number of failed `attempts`.
     ///

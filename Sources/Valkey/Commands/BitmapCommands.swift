@@ -491,6 +491,7 @@ public struct SETBIT: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Counts the number of set bits (population counting) in a string.
     ///

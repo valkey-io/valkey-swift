@@ -1619,6 +1619,7 @@ public struct TIME: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Lists the ACL categories, or the commands inside a category.
     ///
