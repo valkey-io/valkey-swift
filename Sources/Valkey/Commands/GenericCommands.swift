@@ -359,7 +359,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         public var respEntries: Int {
             switch self {
             case .key(let key): key.respEntries
-            case .emptyString: "\"\"".respEntries
+            case .emptyString: "".respEntries
             }
         }
 
@@ -367,7 +367,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             switch self {
             case .key(let key): key.encode(into: &commandEncoder)
-            case .emptyString: "\"\"".encode(into: &commandEncoder)
+            case .emptyString: "".encode(into: &commandEncoder)
             }
         }
     }

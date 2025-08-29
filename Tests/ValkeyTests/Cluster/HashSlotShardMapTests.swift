@@ -722,7 +722,7 @@ struct HashSlotShardMapTests {
         map.updateCluster(clusterDescription.shards)
 
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
-        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: ogShard.primary.endpoint, port: ogShard.primary.port))
+        let update = map.updateSlots(with: ValkeyMovedError(request: .move, slot: 2, endpoint: ogShard.primary.endpoint, port: ogShard.primary.port))
         #expect(update == .updatedSlotToExistingNode)
         let updatedShard = try map.nodeID(for: CollectionOfOne(2))
         #expect(updatedShard == ogShard)
@@ -738,7 +738,7 @@ struct HashSlotShardMapTests {
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
         let luckyReplica = ogShard.replicas.randomElement()!
 
-        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: luckyReplica.endpoint, port: luckyReplica.port))
+        let update = map.updateSlots(with: ValkeyMovedError(request: .move, slot: 2, endpoint: luckyReplica.endpoint, port: luckyReplica.port))
         #expect(update == .updatedSlotToExistingNode)
         let updatedShard = try map.nodeID(for: CollectionOfOne(2))
         #expect(updatedShard.primary == luckyReplica)
@@ -763,7 +763,7 @@ struct HashSlotShardMapTests {
         let otherShard = try map.nodeID(for: CollectionOfOne(.max))
         let newPrimary = otherShard.primary
 
-        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
+        let update = map.updateSlots(with: ValkeyMovedError(request: .move, slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
         #expect(update == .updatedSlotToExistingNode)
         let updatedShard = try map.nodeID(for: CollectionOfOne(2))
         #expect(updatedShard == otherShard)
@@ -787,7 +787,7 @@ struct HashSlotShardMapTests {
         let otherShard = try map.nodeID(for: CollectionOfOne(.max))
         let newPrimary = otherShard.replicas.randomElement()!
 
-        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
+        let update = map.updateSlots(with: ValkeyMovedError(request: .move, slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
         #expect(update == .updatedSlotToExistingNode)
         let updatedShard = try map.nodeID(for: CollectionOfOne(2))
         #expect(updatedShard.primary == newPrimary)
@@ -816,7 +816,7 @@ struct HashSlotShardMapTests {
         let ogShard = try map.nodeID(for: CollectionOfOne(2))
         let newPrimary = ValkeyNodeID(endpoint: "new.valkey.io", port: 6379)
 
-        let update = map.updateSlots(with: ValkeyMovedError(slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
+        let update = map.updateSlots(with: ValkeyMovedError(request: .move, slot: 2, endpoint: newPrimary.endpoint, port: newPrimary.port))
         #expect(update == .updatedSlotToUnknownNode)
         let updatedShard = try map.nodeID(for: CollectionOfOne(2))
         #expect(updatedShard.primary == newPrimary)
