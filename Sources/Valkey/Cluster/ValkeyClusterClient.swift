@@ -148,10 +148,19 @@ public final class ValkeyClusterClient: Sendable {
             try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
         }
 
+        var asking = false
         while !Task.isCancelled {
             do {
                 let client = try await clientSelector()
-                return try await client.execute(command)
+                if asking {
+                    // if asking we need to call ASKING beforehand otherwise we will get a MOVE error
+                    return try await client.execute(
+                        ASKING(),
+                        command
+                    ).1.get()
+                } else {
+                    return try await client.execute(command)
+                }
             } catch ValkeyClusterError.noNodeToTalkTo {
                 // TODO: Rerun node discovery!
             } catch let error as ValkeyClientError where error.errorCode == .commandError {
@@ -160,6 +169,7 @@ public final class ValkeyClusterClient: Sendable {
                 }
                 self.logger.trace("Received move error", metadata: ["error": "\(movedError)"])
                 clientSelector = { try await self.nodeClient(for: movedError) }
+                asking = (movedError.request == .ask)
             }
         }
         throw CancellationError()
@@ -432,7 +442,7 @@ public final class ValkeyClusterClient: Sendable {
     ///   - `ValkeyClusterError.clusterIsUnavailable` if no healthy nodes are available
     ///   - `ValkeyClusterError.clusterIsMissingSlotAssignment` if the slot assignment cannot be determined
     @inlinable
-    func nodeClient(for slots: [HashSlot]) async throws -> ValkeyNodeClient {
+    package func nodeClient(for slots: some (Collection<HashSlot> & Sendable)) async throws -> ValkeyNodeClient {
         var retries = 0
         while retries < 3 {
             defer { retries += 1 }

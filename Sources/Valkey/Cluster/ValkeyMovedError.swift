@@ -17,6 +17,16 @@ import NIOCore
 /// request to the correct node in the cluster.
 @usableFromInline
 package struct ValkeyMovedError: Hashable, Sendable {
+    @usableFromInline
+    package enum Request: Sendable {
+        case move
+        case ask
+    }
+
+    /// Request type
+    @usableFromInline
+    package var request: Request
+
     /// The hash slot number that triggered the redirection.
     package var slot: HashSlot
 
@@ -26,7 +36,8 @@ package struct ValkeyMovedError: Hashable, Sendable {
     /// The port number of the node that owns the requested hash slot.
     package var port: Int
 
-    package init(slot: HashSlot, endpoint: String, port: Int) {
+    package init(request: Request, slot: HashSlot, endpoint: String, port: Int) {
+        self.request = request
         self.slot = slot
         self.endpoint = endpoint
         self.port = port
@@ -40,6 +51,7 @@ package struct ValkeyMovedError: Hashable, Sendable {
 
 extension ValkeyMovedError {
     static let movedPrefix = "MOVED "
+    static let askPrefix = "ASK "
 
     /// Attempts to parse a Valkey MOVED error from a String.
     ///
@@ -52,11 +64,17 @@ extension ValkeyMovedError {
     /// - Returns: A `ValkeyMovedError` if the token represents a valid MOVED error, or `nil` otherwise.
     @usableFromInline
     init?(_ errorMessage: String) {
-        guard errorMessage.hasPrefix(Self.movedPrefix) else {
+        let msg: String.SubSequence
+        let request: Request
+        if errorMessage.hasPrefix(Self.movedPrefix) {
+            msg = errorMessage.dropFirst(Self.movedPrefix.count)
+            request = .move
+        } else if errorMessage.hasPrefix(Self.askPrefix) {
+            msg = errorMessage.dropFirst(Self.askPrefix.count)
+            request = .ask
+        } else {
             return nil
         }
-
-        let msg = errorMessage.dropFirst(Self.movedPrefix.count)
         guard let spaceAfterSlotIndex = msg.firstIndex(where: { $0 == " " }) else {
             return nil
         }
@@ -79,6 +97,6 @@ extension ValkeyMovedError {
             return nil
         }
 
-        self = ValkeyMovedError(slot: slot, endpoint: Swift.String(endpoint), port: port)
+        self = ValkeyMovedError(request: request, slot: slot, endpoint: Swift.String(endpoint), port: port)
     }
 }

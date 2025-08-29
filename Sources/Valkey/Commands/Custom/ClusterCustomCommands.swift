@@ -7,6 +7,18 @@
 //
 import NIOCore
 
+extension CLUSTER.GETKEYSINSLOT {
+    public typealias Response = [ValkeyKey]
+}
+
+extension CLUSTER.MYID {
+    public typealias Response = String
+}
+
+extension CLUSTER.MYSHARDID {
+    public typealias Response = String
+}
+
 extension CLUSTER.SHARDS {
     public typealias Response = ValkeyClusterDescription
 }

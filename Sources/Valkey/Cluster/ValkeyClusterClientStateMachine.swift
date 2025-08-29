@@ -596,17 +596,24 @@ package struct ValkeyClusterClientStateMachine<
             }
 
         case .healthy(var healthyContext):
-            switch healthyContext.hashSlotShardMap.updateSlots(with: movedError) {
-            case .updatedSlotToUnknownNode:
-                break
-
-            case .updatedSlotToExistingNode:
+            // If request is ASK, don't update slots
+            if movedError.request == .ask {
                 if let pool = self.runningClients[movedError.nodeID]?.pool {
-                    self.clusterState = .healthy(healthyContext)
                     return .connectionPool(pool)
                 }
-            }
+                // TODO: need to deal with situation where node isn't in list of running clients
+            } else {
+                switch healthyContext.hashSlotShardMap.updateSlots(with: movedError) {
+                case .updatedSlotToUnknownNode:
+                    break
 
+                case .updatedSlotToExistingNode:
+                    if let pool = self.runningClients[movedError.nodeID]?.pool {
+                        self.clusterState = .healthy(healthyContext)
+                        return .connectionPool(pool)
+                    }
+                }
+            }
             let circuitBreakerTimerID = self.nextTimerID()
 
             self.clusterState = .degraded(

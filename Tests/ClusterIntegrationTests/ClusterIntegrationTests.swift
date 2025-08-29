@@ -8,8 +8,9 @@
 import Foundation
 import Logging
 import Testing
-import Valkey
 import XCTest
+
+@testable import Valkey
 
 @Suite(
     "Cluster Integration Tests",
@@ -82,12 +83,78 @@ struct ClusterIntegrationTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHashSlotMigrationAndAskRedirection() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            let keySuffix = "{\(UUID().uuidString)}"
+            try await Self.withKey(connection: client, suffix: keySuffix) { key in
+                let hashSlot = HashSlot(key: key)
+                let nodeAClient = try await client.nodeClient(for: [hashSlot])
+                // find another shard
+                var nodeBClient: ValkeyNodeClient
+                repeat {
+                    nodeBClient = try await client.nodeClient(for: [HashSlot(rawValue: Int.random(in: 0..<16384))!])
+                } while nodeAClient === nodeBClient
+
+                guard let (hostnameA, portA) = nodeAClient.serverAddress.getHostnameAndPort() else { return }
+                guard let (hostnameB, portB) = nodeBClient.serverAddress.getHostnameAndPort() else { return }
+                let clientAID = try await nodeAClient.execute(CLUSTER.MYID())
+                let clientBID = try await nodeBClient.execute(CLUSTER.MYID())
+
+                try await client.set(key, value: "Testing before import")
+
+                // start migration by setting hash slot state
+                logger.info("SETSLOT importing")
+                _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .importing(clientAID)))
+                _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .migrating(clientBID)))
+
+                // key still uses nodeA
+                var value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
+                #expect(value == "Testing before import")
+
+                // get keys associated with slot and migrate them
+                logger.info("MIGRATE")
+                let keys = try await nodeAClient.execute(CLUSTER.GETKEYSINSLOT(slot: numericCast(hashSlot.rawValue), count: 100))
+                // key doesnt exist on nodeA anymore, so we receive an ASK error
+                _ = try await nodeAClient.execute(
+                    MIGRATE(host: hostnameB, port: portB, keySelector: .emptyString, destinationDb: 0, timeout: 5000, keys: keys)
+                )
+                value = try await client.set(key, value: "After migrate", get: true).map { String(buffer: $0) }
+                #expect(value == "Testing during import")
+
+                // finalise migration
+                logger.info("SETSLOT node")
+                _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientBID)))
+                _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientBID)))
+
+                value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
+                #expect(value == "After migrate")
+
+                // revert everything
+                _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .migrating(clientAID)))
+                _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .importing(clientBID)))
+                let keys2 = try await nodeBClient.execute(CLUSTER.GETKEYSINSLOT(slot: numericCast(hashSlot.rawValue), count: 100))
+                _ = try await nodeBClient.execute(
+                    MIGRATE(host: hostnameA, port: portA, keySelector: .emptyString, destinationDb: 0, timeout: 5000, keys: keys2)
+                )
+                _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientAID)))
+                _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientAID)))
+            }
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     static func withKey<Value>(
         connection: some ValkeyClientProtocol,
+        suffix: String = "",
         _ operation: (ValkeyKey) async throws -> Value
     ) async throws -> Value {
-        let key = ValkeyKey(UUID().uuidString)
+        let key = ValkeyKey(UUID().uuidString + suffix)
         let result: Result<Value, any Error>
         do {
             result = try await .success(operation(key))
@@ -153,3 +220,14 @@ struct ClusterIntegrationTests {
 
 private let clusterFirstNodeHostname: String? = ProcessInfo.processInfo.environment["VALKEY_NODE1_HOSTNAME"]
 private let clusterFirstNodePort: Int? = ProcessInfo.processInfo.environment["VALKEY_NODE1_PORT"].flatMap { Int($0) }
+
+extension ValkeyServerAddress {
+    func getHostnameAndPort() -> (String, Int)? {
+        switch self.value {
+        case .hostname(let hostname, let port):
+            (hostname, port)
+        case .unixDomainSocket:
+            nil
+        }
+    }
+}

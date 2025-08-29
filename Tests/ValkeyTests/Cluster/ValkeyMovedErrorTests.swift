@@ -86,20 +86,24 @@ struct ValkeyMovedErrorTests {
 
     @Test("ValkeyMovedError is Hashable")
     func testHashable() async throws {
-        let error1 = ValkeyMovedError(slot: 1234, endpoint: "redis1.example.com", port: 6379)
-        let error2 = ValkeyMovedError(slot: 1234, endpoint: "redis1.example.com", port: 6379)
-        let error3 = ValkeyMovedError(slot: 5678, endpoint: "redis2.example.com", port: 6380)
+        let error1 = ValkeyMovedError(request: .move, slot: 1234, endpoint: "redis1.example.com", port: 6379)
+        let error2 = ValkeyMovedError(request: .move, slot: 1234, endpoint: "redis1.example.com", port: 6379)
+        let error3 = ValkeyMovedError(request: .move, slot: 5678, endpoint: "redis2.example.com", port: 6380)
+        let error4 = ValkeyMovedError(request: .ask, slot: 5678, endpoint: "redis2.example.com", port: 6380)
 
         #expect(error1 == error2)
         #expect(error1 != error3)
+        #expect(error3 != error4)
 
         var set = Set<ValkeyMovedError>()
         set.insert(error1)
         set.insert(error2)  // This should not increase the size as it's equal to error1
         set.insert(error3)
+        set.insert(error4)
 
-        #expect(set.count == 2)
+        #expect(set.count == 3)
         #expect(set.contains(error1))
         #expect(set.contains(error3))
+        #expect(set.contains(error4))
     }
 }
