@@ -17,6 +17,7 @@ import Logging
 import NIOCore
 
 @usableFromInline
+@available(valkeySwift 1.0, *)
 enum ValkeyPromise<T: Sendable>: Sendable {
     case nio(EventLoopPromise<T>)
     case swift(CheckedContinuation<T, any Error>)
@@ -46,6 +47,7 @@ enum ValkeyPromise<T: Sendable>: Sendable {
 }
 
 @usableFromInline
+@available(valkeySwift 1.0, *)
 enum ValkeyRequest: Sendable {
     case single(buffer: ByteBuffer, promise: ValkeyPromise<RESPToken>, id: Int)
     case multiple(buffer: ByteBuffer, promises: [ValkeyPromise<RESPToken>], id: Int)

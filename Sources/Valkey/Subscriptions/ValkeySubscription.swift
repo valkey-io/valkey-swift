@@ -34,6 +34,7 @@ public struct ValkeySubscriptionMessage: Sendable, Equatable {
 }
 
 /// A sequence of messages from Valkey subscription.
+@available(valkeySwift 1.0, *)
 public struct ValkeySubscription: AsyncSequence, Sendable {
     /// The type that the sequence produces.
     public typealias Element = ValkeySubscriptionMessage

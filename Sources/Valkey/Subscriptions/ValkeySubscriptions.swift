@@ -222,6 +222,7 @@ struct ValkeySubscriptions {
 }
 
 /// Individual subscription associated with one subscribe command
+@available(valkeySwift 1.0, *)
 final class SubscriptionRef: Identifiable {
     let id: Int
     let filters: [ValkeySubscriptionFilter]

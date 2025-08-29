@@ -22,6 +22,7 @@ extension EventLoopFuture {
     /// This function can be used to bridge an `EventLoopFuture` into the `async` world. Ie. if you're in an `async`
     /// function and want to get the result of this future.
     @inlinable
+    @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
     func _result() async -> Result<Value, Error> where Value: Sendable {
         await withUnsafeContinuation { (cont: UnsafeContinuation<Result<Value, Error>, Never>) in
             self.whenComplete { result in
