@@ -36,14 +36,14 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     #if DistributedTracingSupport
     @usableFromInline
     let tracer: (any Tracer)?
+    @usableFromInline
+    let address: (hostOrSocketPath: String, port: Int?)?
     #endif
     @usableFromInline
     let channel: any Channel
     @usableFromInline
     let channelHandler: ValkeyChannelHandler
     let configuration: ValkeyConnectionConfiguration
-    @usableFromInline
-    let address: (hostOrSocketPath: String, port: Int?)?
     let isClosed: Atomic<Bool>
 
     /// Initialize connection
