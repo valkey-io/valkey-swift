@@ -15,7 +15,7 @@ import Testing
 @testable import Valkey
 
 #if DistributedTracingSupport
-@testable import Instrumentation
+import TracingTestKit
 #endif
 
 @Suite
@@ -491,7 +491,7 @@ struct ConnectionTests {
         try await channel.close()
     }
 
-    #if DistributedTracingSupport && compiler(>=6.2)  // Swift Testing exit tests only added in 6.2
+    #if DistributedTracingSupport
     @Suite
     struct DistributedTracingTests {
         @Test
@@ -514,11 +514,11 @@ struct ConnectionTests {
             try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
             #expect(try await fooResult == "Bar")
 
-            #expect(tracer.spans.count == 1)
-            let span = try #require(tracer.spans.first)
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
             #expect(span.operationName == "GET")
             #expect(span.kind == .client)
-            #expect(span.recordedErrors.isEmpty)
+            #expect(span.errors.isEmpty)
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",
@@ -528,7 +528,6 @@ struct ConnectionTests {
                     "network.peer.port": 6379,
                 ]
             )
-            #expect(span.recordedErrors.isEmpty)
             #expect(span.status == nil)
         }
 
@@ -556,13 +555,13 @@ struct ConnectionTests {
                 #expect(error.message == "ERR Error!")
             }
 
-            #expect(tracer.spans.count == 1)
-            let span = try #require(tracer.spans.first)
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
             #expect(span.operationName == "GET")
             #expect(span.kind == .client)
-            #expect(span.recordedErrors.count == 1)
-            let error = try #require(span.recordedErrors.first)
-            #expect(error.0 as? ValkeyClientError == ValkeyClientError(.commandError, message: "ERR Error!"))
+            #expect(span.errors.count == 1)
+            let error = try #require(span.errors.first)
+            #expect(error.error as? ValkeyClientError == ValkeyClientError(.commandError, message: "ERR Error!"))
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",
@@ -601,11 +600,11 @@ struct ConnectionTests {
 
             #expect(try await results.1.get().map { String(buffer: $0) } == "OK")
 
-            #expect(tracer.spans.count == 1)
-            let span = try #require(tracer.spans.first)
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
             #expect(span.operationName == "MULTI")
             #expect(span.kind == .client)
-            #expect(span.recordedErrors.isEmpty)
+            #expect(span.errors.isEmpty)
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",
@@ -616,7 +615,6 @@ struct ConnectionTests {
                     "network.peer.port": 6379,
                 ]
             )
-            #expect(span.recordedErrors.isEmpty)
             #expect(span.status == nil)
         }
 
@@ -645,11 +643,11 @@ struct ConnectionTests {
 
             #expect(try await results.1.get().map { String(buffer: $0) } == "bar")
 
-            #expect(tracer.spans.count == 1)
-            let span = try #require(tracer.spans.first)
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
             #expect(span.operationName == "MULTI")
             #expect(span.kind == .client)
-            #expect(span.recordedErrors.isEmpty)
+            #expect(span.errors.isEmpty)
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",
@@ -660,7 +658,6 @@ struct ConnectionTests {
                     "network.peer.port": 6379,
                 ]
             )
-            #expect(span.recordedErrors.isEmpty)
             #expect(span.status == nil)
         }
 
@@ -686,13 +683,13 @@ struct ConnectionTests {
             try await channel.writeInbound(RESPToken(.simpleError("WRONGTYPE Error!")).base)
             _ = await results
 
-            #expect(tracer.spans.count == 1)
-            let span = try #require(tracer.spans.first)
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
             #expect(span.operationName == "MULTI")
             #expect(span.kind == .client)
-            #expect(span.recordedErrors.count == 1)
-            let error = try #require(span.recordedErrors.first)
-            #expect(error.0 as? ValkeyClientError == ValkeyClientError(.commandError, message: "WRONGTYPE Error!"))
+            #expect(span.errors.count == 1)
+            let error = try #require(span.errors.first)
+            #expect(error.error as? ValkeyClientError == ValkeyClientError(.commandError, message: "WRONGTYPE Error!"))
             #expect(
                 span.attributes == [
                     "db.system.name": "valkey",
