@@ -199,15 +199,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
         } catch let error as ValkeyClientError {
             #if DistributedTracingSupport
-            span?.recordError(error)
-            if let message = error.message {
-                var prefixEndIndex = message.startIndex
-                while prefixEndIndex < message.endIndex, message[prefixEndIndex] != " " {
-                    message.formIndex(after: &prefixEndIndex)
+            if let span {
+                span.recordError(error)
+                span.setStatus(SpanStatus(code: .error))
+                if let prefix = error.simpleErrorPrefix {
+                    span.attributes["db.response.status_code"] = "\(prefix)"
                 }
-                let prefix = message[message.startIndex..<prefixEndIndex]
-                span?.attributes["db.response.status_code"] = "\(prefix)"
-                span?.setStatus(SpanStatus(code: .error))
             }
             #endif
             throw error
@@ -455,3 +452,20 @@ struct AutoIncrementingInteger {
         return value - 1
     }
 }
+
+#if DistributedTracingSupport
+extension ValkeyClientError {
+    /// Extract the simple error prefix from this error.
+    ///
+    /// - SeeAlso: [](https://valkey.io/topics/protocol/#simple-errors)
+    @usableFromInline
+    var simpleErrorPrefix: Substring? {
+        guard let message else { return nil }
+        var prefixEndIndex = message.startIndex
+        while prefixEndIndex < message.endIndex, message[prefixEndIndex] != " " {
+            message.formIndex(after: &prefixEndIndex)
+        }
+        return message[message.startIndex..<prefixEndIndex]
+    }
+}
+#endif
