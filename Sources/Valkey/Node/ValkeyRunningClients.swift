@@ -96,6 +96,21 @@ struct ValkeyRunningClientsStateMachine<
         )
     }
 
+    enum AddNodeAction {
+        case useExistingConnectionPool(ConnectionPool)
+        case runNewConnectionPool(ConnectionPool)
+    }
+
+    mutating func addNode(_ nodeID: ValkeyNodeID) -> AddNodeAction {
+        if let node = self.clientMap[nodeID] {
+            return .useExistingConnectionPool(node.pool)
+        }
+        let nodeDescription = ValkeyNodeDescription(endpoint: nodeID.endpoint, port: nodeID.port)
+        let newPool = self.makePool(for: nodeDescription)
+        self.clientMap[nodeID] = NodeBundle(pool: newPool, nodeDescription: nodeDescription)
+        return .runNewConnectionPool(newPool)
+    }
+
     @inlinable
     subscript(_ index: ValkeyNodeID) -> NodeBundle? {
         self.clientMap[index]

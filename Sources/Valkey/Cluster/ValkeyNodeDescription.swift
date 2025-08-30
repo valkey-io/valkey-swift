@@ -61,7 +61,18 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     /// Indicates whether TLS/SSL should be used when connecting to this node.
     ///
     /// When `true`, the connection will use secure transport with TLS.
-    package var useTLS: Bool
+    /// When `nil` the connection will use the default from the client configuration.
+    package var useTLS: Bool?
+
+    /// Creates a node description from just a endpoint and port.
+    ///
+    package init(endpoint: String, port: Int) {
+        self.host = nil
+        self.ip = nil
+        self.endpoint = endpoint
+        self.port = port
+        self.useTLS = nil
+    }
 
     /// Creates a node description from any type conforming to the `ValkeyNodeDescriptionProtocol`.
     ///

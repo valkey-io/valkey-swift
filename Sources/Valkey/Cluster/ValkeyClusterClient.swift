@@ -387,6 +387,10 @@ public final class ValkeyClusterClient: Sendable {
             case .connectionPool(let node):
                 return node
 
+            case .newConnectionPool(let node):
+                self.queueAction(.runClient(node))
+                return node
+
             case .waitForDiscovery:
                 break
 

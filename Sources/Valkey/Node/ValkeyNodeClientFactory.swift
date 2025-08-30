@@ -61,7 +61,7 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
         )
 
         var clientConfiguration = self.configuration
-        if !nodeDescription.useTLS {
+        if nodeDescription.useTLS == false {
             // TODO: Should this throw? What about the other way around?
             clientConfiguration.tls = .disable
         }

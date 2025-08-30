@@ -568,6 +568,7 @@ package struct ValkeyClusterClientStateMachine<
     @usableFromInline
     package enum PoolForMovedErrorAction {
         case connectionPool(ConnectionPool)
+        case newConnectionPool(ConnectionPool)
         case moveToDegraded(MoveToDegraded)
         case waitForDiscovery
 
@@ -605,10 +606,12 @@ package struct ValkeyClusterClientStateMachine<
         case .healthy(var healthyContext):
             // If request is ASK, don't update slots
             if movedError.request == .ask {
-                if let pool = self.runningClients[movedError.nodeID]?.pool {
+                switch self.runningClients.addNode(movedError.nodeID) {
+                case .useExistingConnectionPool(let pool):
                     return .connectionPool(pool)
+                case .runNewConnectionPool(let pool):
+                    return .newConnectionPool(pool)
                 }
-                // TODO: need to deal with situation where node isn't in list of running clients
             } else {
                 switch healthyContext.hashSlotShardMap.updateSlots(with: movedError) {
                 case .updatedSlotToUnknownNode:
