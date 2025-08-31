@@ -11,7 +11,7 @@ let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logg
 try await withThrowingTaskgroup(of: Void.self) { group in
     group.addTask {
         // run connection pool in the background
-        try await valkeyClient.run()
+        await valkeyClient.run()
     }
     // use valkey client
 }
