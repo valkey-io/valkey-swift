@@ -155,6 +155,7 @@ func renderValkeyCommands(_ commands: [String: ValkeyCommand], fullCommandList: 
     let clientProtocolFunctions = commands.filter { connectionOnlyFunctions[$0.key] == nil }
 
     if clientProtocolFunctions.count > 0 {
+        string.append("@available(valkeySwift 1.0, *)\n")
         string.append("extension ValkeyClientProtocol {\n")
         string.appendValkeyFunctions(
             commands: clientProtocolFunctions,

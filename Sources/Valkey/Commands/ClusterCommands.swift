@@ -873,6 +873,7 @@ public struct READWRITE: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Signals that a cluster client is following an -ASK redirect.
     ///

@@ -1145,6 +1145,7 @@ public struct HVALS: ValkeyCommand {
     }
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Deletes one or more fields and their values from a hash. Deletes the hash if no fields remain.
     ///

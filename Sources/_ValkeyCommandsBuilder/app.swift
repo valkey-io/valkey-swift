@@ -15,6 +15,7 @@
 import Foundation
 
 @main
+@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 struct App {
     static func main() async throws {
         let app = App()

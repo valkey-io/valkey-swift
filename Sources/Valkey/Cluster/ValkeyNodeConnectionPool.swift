@@ -17,6 +17,7 @@ import NIOSSL
 
 /// A connection pool against a node
 @usableFromInline
+@available(valkeySwift 1.0, *)
 package protocol ValkeyNodeConnectionPool: AnyObject, Sendable {
     /// Function that process background events, cancel the task or call ``triggerShutdown`` to
     /// shutdown the server
@@ -28,6 +29,7 @@ package protocol ValkeyNodeConnectionPool: AnyObject, Sendable {
 
 /// A connection pool factory that creates `ConnectionPool`s
 @usableFromInline
+@available(valkeySwift 1.0, *)
 package protocol ValkeyNodeConnectionPoolFactory: Sendable {
     associatedtype ConnectionPool: ValkeyNodeConnectionPool
 

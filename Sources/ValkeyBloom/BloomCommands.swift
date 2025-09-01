@@ -282,6 +282,7 @@ public enum BF {
 
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Add a single item to a bloom filter. The bloom filter is created if it doesn't exist
     ///

@@ -19,6 +19,7 @@ import Valkey
 struct ValkeyTopologyCandidateTests {
 
     @Test("Ensure the same description in different order is considered equal")
+    @available(valkeySwift 1.0, *)
     func ensureOrderDoesntMatter() throws {
         let description = ValkeyClusterDescription([
             .init(
@@ -113,6 +114,7 @@ struct ValkeyTopologyCandidateTests {
     }
 
     @Test("Two primary nodes for the same shard throws")
+    @available(valkeySwift 1.0, *)
     func twoPrimaryNodesForTheSameShardThrows() {
         let description = ValkeyClusterDescription([
             .init(
@@ -159,6 +161,7 @@ struct ValkeyTopologyCandidateTests {
     }
 
     @Test("No primary node for a shard throws")
+    @available(valkeySwift 1.0, *)
     func noPrimaryNodeForAShardThrows() {
         let description = ValkeyClusterDescription([
             .init(

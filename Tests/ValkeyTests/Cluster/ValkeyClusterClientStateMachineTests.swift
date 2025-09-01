@@ -30,10 +30,13 @@ struct ValkeyClusterClientStateMachineTests {
         TimerCancellationToken
     >
 
-    let testConfiguration = ValkeyClusterClientStateMachineConfiguration(
-        circuitBreakerDuration: .seconds(30),
-        defaultClusterRefreshInterval: .seconds(60)
-    )
+    @available(valkeySwift 1.0, *)
+    var testConfiguration: ValkeyClusterClientStateMachineConfiguration {
+        .init(
+            circuitBreakerDuration: .seconds(30),
+            defaultClusterRefreshInterval: .seconds(60)
+        )
+    }
 
     @Test
     @available(valkeySwift 1.0, *)
@@ -119,6 +122,7 @@ struct ValkeyClusterClientStateMachineTests {
 
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClusterClientStateMachine.WaitForHealthyAction {
     var isNone: Bool {
         switch self {

@@ -571,6 +571,7 @@ public enum SENTINEL {
 
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClientProtocol {
     /// Checks for a Sentinel quorum.
     ///
