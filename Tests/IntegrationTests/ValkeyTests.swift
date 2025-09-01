@@ -22,6 +22,8 @@ import Valkey
 
 struct GeneratedCommands {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
+
+    @available(valkeySwift 1.0, *)
     func withKey<Value>(connection: some ValkeyClientProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
         let key = ValkeyKey(UUID().uuidString)
         let value: Value
