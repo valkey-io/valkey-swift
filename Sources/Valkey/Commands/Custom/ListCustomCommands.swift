@@ -12,6 +12,12 @@
 //
 //===----------------------------------------------------------------------===//
 
+import NIOCore
+
+extension LMOVE {
+    public typealias Response = ByteBuffer?
+}
+
 extension LMPOP {
     /// - Returns: One of the following
     ///     * [Null]: If no element could be popped.

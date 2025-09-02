@@ -23,6 +23,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "GEOPOS",
     "GEOSEARCH",
     "ROLE",
+    "LMOVE",
     "LMPOP",
     "SPOP",
     "SSCAN",

@@ -366,14 +366,14 @@ struct GeneratedCommands {
 
     @available(valkeySwift 1.0, *)
     @Test
-    func testLmove() async throws {
+    func testLMOVE() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
         try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
             try await withKey(connection: connection) { key in
                 try await withKey(connection: connection) { key2 in
                     let rtEmpty = try await connection.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left)
-                    #expect(rtEmpty == ByteBuffer())
+                    #expect(rtEmpty == nil)
                     try await connection.lpush(key, elements: ["a"])
                     try await connection.lpush(key, elements: ["b"])
                     try await connection.lpush(key, elements: ["c"])
@@ -383,7 +383,7 @@ struct GeneratedCommands {
                     let list2Before = try await connection.lrange(key2, start: 0, stop: -1).decode(as: [String].self)
                     #expect(list2Before == [])
                     for expectedValue in ["a", "b", "c", "d"] {
-                        var rt = try await connection.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left)
+                        var rt = try #require(try await connection.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left))
                         let value = rt.readString(length: 1)
                         #expect(value == expectedValue)
                     }
