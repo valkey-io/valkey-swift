@@ -362,6 +362,38 @@ struct GeneratedCommands {
     }
 
     @available(valkeySwift 1.0, *)
+    @Test
+    func testLMOVE() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                try await withKey(connection: connection) { key2 in
+                    let rtEmpty = try await connection.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left)
+                    #expect(rtEmpty == nil)
+                    try await connection.lpush(key, elements: ["a"])
+                    try await connection.lpush(key, elements: ["b"])
+                    try await connection.lpush(key, elements: ["c"])
+                    try await connection.lpush(key, elements: ["d"])
+                    let list1Before = try await connection.lrange(key, start: 0, stop: -1).decode(as: [String].self)
+                    #expect(list1Before == ["d", "c", "b", "a"])
+                    let list2Before = try await connection.lrange(key2, start: 0, stop: -1).decode(as: [String].self)
+                    #expect(list2Before == [])
+                    for expectedValue in ["a", "b", "c", "d"] {
+                        var rt = try #require(try await connection.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left))
+                        let value = rt.readString(length: 1)
+                        #expect(value == expectedValue)
+                    }
+                    let list1After = try await connection.lrange(key, start: 0, stop: -1).decode(as: [String].self)
+                    #expect(list1After == [])
+                    let list2After = try await connection.lrange(key2, start: 0, stop: -1).decode(as: [String].self)
+                    #expect(list2After == ["d", "c", "b", "a"])
+                }
+            }
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
     @Test("Test command error is thrown")
     func testCommandError() async throws {
         var logger = Logger(label: "Valkey")

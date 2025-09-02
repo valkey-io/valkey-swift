@@ -312,7 +312,6 @@ public struct LMOVE: ValkeyCommand {
             }
         }
     }
-    public typealias Response = ByteBuffer
 
     @inlinable public static var name: String { "LMOVE" }
 
@@ -794,7 +793,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The element being popped and pushed.
     @inlinable
     @discardableResult
-    public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> ByteBuffer {
+    public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> LMOVE.Response {
         try await execute(LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
