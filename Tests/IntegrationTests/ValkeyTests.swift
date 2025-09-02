@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
-// This source file is part of the valkey-swift open source project
-//
+// This source file is part of the valkey-swift project
 // Copyright (c) 2025 the valkey-swift project authors
-// Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of valkey-swift project authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import Foundation
 import Logging
 import NIOCore
@@ -22,6 +15,8 @@ import Valkey
 
 struct GeneratedCommands {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
+
+    @available(valkeySwift 1.0, *)
     func withKey<Value>(connection: some ValkeyClientProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
         let key = ValkeyKey(UUID().uuidString)
         let value: Value

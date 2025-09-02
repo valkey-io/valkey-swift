@@ -1,22 +1,16 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import DequeModule
 import Logging
 import NIOCore
 
 @usableFromInline
+@available(valkeySwift 1.0, *)
 enum ValkeyPromise<T: Sendable>: Sendable {
     case nio(EventLoopPromise<T>)
     case swift(CheckedContinuation<T, any Error>)
@@ -46,6 +40,7 @@ enum ValkeyPromise<T: Sendable>: Sendable {
 }
 
 @usableFromInline
+@available(valkeySwift 1.0, *)
 enum ValkeyRequest: Sendable {
     case single(buffer: ByteBuffer, promise: ValkeyPromise<RESPToken>, id: Int)
     case multiple(buffer: ByteBuffer, promises: [ValkeyPromise<RESPToken>], id: Int)

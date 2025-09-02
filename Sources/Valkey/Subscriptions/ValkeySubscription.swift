@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
-// This source file is part of the valkey-swift open source project
-//
+// This source file is part of the valkey-swift project
 // Copyright (c) 2025 the valkey-swift project authors
-// Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of valkey-swift project authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import NIOCore
 
 /// A message received from a subscription.
@@ -34,6 +27,7 @@ public struct ValkeySubscriptionMessage: Sendable, Equatable {
 }
 
 /// A sequence of messages from Valkey subscription.
+@available(valkeySwift 1.0, *)
 public struct ValkeySubscription: AsyncSequence, Sendable {
     /// The type that the sequence produces.
     public typealias Element = ValkeySubscriptionMessage

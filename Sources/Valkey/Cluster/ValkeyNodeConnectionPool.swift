@@ -1,22 +1,16 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import NIOCore
 import NIOSSL
 
 /// A connection pool against a node
 @usableFromInline
+@available(valkeySwift 1.0, *)
 package protocol ValkeyNodeConnectionPool: AnyObject, Sendable {
     /// Function that process background events, cancel the task or call ``triggerShutdown`` to
     /// shutdown the server
@@ -28,6 +22,7 @@ package protocol ValkeyNodeConnectionPool: AnyObject, Sendable {
 
 /// A connection pool factory that creates `ConnectionPool`s
 @usableFromInline
+@available(valkeySwift 1.0, *)
 package protocol ValkeyNodeConnectionPoolFactory: Sendable {
     associatedtype ConnectionPool: ValkeyNodeConnectionPool
 

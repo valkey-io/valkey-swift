@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 /// ``ValkeyTopologyElection`` manages the consensus process for electing a cluster topology.
 ///
 /// This struct tracks votes from cluster nodes for different topology candidates, keeping count of
@@ -23,6 +16,7 @@
 /// - Tracking vote counts for each topology candidate
 /// - Managing revotes (nodes changing their vote)
 /// - Determining when a winner has been elected
+@available(valkeySwift 1.0, *)
 package struct ValkeyTopologyElection {
     /// Represents a candidate in the topology election, tracking votes and thresholds.
     ///

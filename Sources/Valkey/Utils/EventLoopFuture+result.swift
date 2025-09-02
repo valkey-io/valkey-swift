@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import NIOCore
 
 extension EventLoopFuture {
@@ -22,6 +15,7 @@ extension EventLoopFuture {
     /// This function can be used to bridge an `EventLoopFuture` into the `async` world. Ie. if you're in an `async`
     /// function and want to get the result of this future.
     @inlinable
+    @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
     func _result() async -> Result<Value, Error> where Value: Sendable {
         await withUnsafeContinuation { (cont: UnsafeContinuation<Result<Value, Error>, Never>) in
             self.whenComplete { result in

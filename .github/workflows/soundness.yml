@@ -12,4 +12,3 @@ jobs:
       api_breakage_check_container_image: swift:latest
       docs_check_container_image: swift:latest
       unacceptable_language_check_enabled: false  # Valkey commands contain unacceptable language
-      license_header_check_enabled: false  # Temporarily disable

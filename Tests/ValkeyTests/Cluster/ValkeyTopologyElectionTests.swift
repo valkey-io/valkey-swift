@@ -1,16 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
 
 import Testing
 import Valkey
@@ -116,12 +110,14 @@ struct ValkeyTopologyElectionTests {
     }
 
     @Test("Initial state has no winner")
+    @available(valkeySwift 1.0, *)
     func initialState() {
         let election = ValkeyTopologyElection()
         #expect(election.winner == nil)
     }
 
     @Test("Single vote does not establish a winner in multi node scenario")
+    @available(valkeySwift 1.0, *)
     func singleVoteBelowThreshold() throws {
         var election = ValkeyTopologyElection()
 
@@ -139,6 +135,7 @@ struct ValkeyTopologyElectionTests {
     }
 
     @Test("Sufficient votes establish a winner")
+    @available(valkeySwift 1.0, *)
     func sufficientVotesToWin() throws {
         var election = ValkeyTopologyElection()
         let description = createSingleShardCluster()
@@ -154,6 +151,7 @@ struct ValkeyTopologyElectionTests {
     }
 
     @Test("First candidate to reach threshold becomes winner")
+    @available(valkeySwift 1.0, *)
     func firstCandidateWins() throws {
         var election = ValkeyTopologyElection()
 
@@ -185,6 +183,7 @@ struct ValkeyTopologyElectionTests {
     }
 
     @Test("The same instance voting twice for the same candidate doesn't count twice")
+    @available(valkeySwift 1.0, *)
     func sameInstanceVotingTwiceDoesntCountTwice() throws {
         var election = ValkeyTopologyElection()
 
@@ -215,6 +214,7 @@ struct ValkeyTopologyElectionTests {
     }
 
     @Test("The same instance can move its vote to another candidate")
+    @available(valkeySwift 1.0, *)
     func sameInstanceVotingTwiceRemovesCountForInitialVote() throws {
         var election = ValkeyTopologyElection()
 
@@ -249,6 +249,7 @@ struct ValkeyTopologyElectionTests {
     }
 
     @Test("Topology candidates with same structure are equal")
+    @available(valkeySwift 1.0, *)
     func topologyCandidateEquality() throws {
         // Create two descriptions with the same structure but different node IDs
         let description1 = createSingleShardCluster(id: "node1")
@@ -266,6 +267,7 @@ struct ValkeyTopologyElectionTests {
     }
 
     @Test("Different topology structures produce different candidates")
+    @available(valkeySwift 1.0, *)
     func differentTopologyStructures() throws {
         let description1 = createSingleShardCluster(slots: [0...5000])
         let description2 = createSingleShardCluster(slots: [0...8000])
