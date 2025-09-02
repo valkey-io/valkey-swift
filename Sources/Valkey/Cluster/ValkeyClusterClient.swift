@@ -1,16 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
-// This source file is part of the swift-valkey project
-//
-// Copyright (c) 2025 the swift-valkey authors
-// Licensed under Apache License v2.0
+// This source file is part of the valkey-swift project
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See swift-valkey/CONTRIBUTORS.txt for the list of swift-valkey authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
 
 import Logging
 import NIOCore
@@ -85,7 +79,6 @@ public final class ValkeyClusterClient: Sendable {
         case runClient(ValkeyNodeClient)
         case runTimer(ValkeyClusterTimer)
     }
-
     private let actionStream: AsyncStream<RunAction>
     private let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
@@ -109,9 +102,7 @@ public final class ValkeyClusterClient: Sendable {
     ) {
         self.logger = logger
 
-        let (stream, continuation) = AsyncStream.makeStream(of: RunAction.self)
-        self.actionStream = stream
-        self.actionStreamContinuation = continuation
+        (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
         let factory = ValkeyNodeClientFactory(
             logger: logger,
@@ -220,12 +211,17 @@ public final class ValkeyClusterClient: Sendable {
     public func run() async {
         let circuitBreakerTimer = self.stateLock.withLock { $0.start() }
 
-        self.actionStreamContinuation.yield(.runTimer(circuitBreakerTimer))
-        self.actionStreamContinuation.yield(.runClusterDiscovery(runNodeDiscovery: true))
+        self.queueAction(.runTimer(circuitBreakerTimer))
+        self.queueAction(.runClusterDiscovery(runNodeDiscovery: true))
 
         await withTaskCancellationHandler {
-            await withDiscardingTaskGroup { taskGroup in
-                await self.runUsingTaskGroup(&taskGroup)
+            /// Run discarding task group running actions
+            await withDiscardingTaskGroup { group in
+                for await action in self.actionStream {
+                    group.addTask {
+                        await self.runAction(action)
+                    }
+                }
             }
         } onCancel: {
             _ = self.stateLock.withLock {
@@ -238,51 +234,47 @@ public final class ValkeyClusterClient: Sendable {
 
     // MARK: - Private methods -
 
+    private func queueAction(_ action: RunAction) {
+        self.actionStreamContinuation.yield(action)
+    }
+
     /// Manages the primary task group that handles all client operations.
     ///
     /// - Parameter taskGroup: The task group to add tasks to.
-    private func runUsingTaskGroup(_ taskGroup: inout DiscardingTaskGroup) async {
-        for await action in self.actionStream {
-            switch action {
-            case .runClusterDiscovery(let runNodeDiscovery):
+    private func runAction(_ action: RunAction) async {
+        switch action {
+        case .runClusterDiscovery(let runNodeDiscovery):
+            await self.runClusterDiscovery(runNodeDiscoveryFirst: runNodeDiscovery)
+
+        case .runClient(let client):
+            await client.run()
+
+        case .runTimer(let timer):
+            await withTaskGroup(of: Void.self) { taskGroup in
                 taskGroup.addTask {
-                    await self.runClusterDiscovery(runNodeDiscoveryFirst: runNodeDiscovery)
-                }
-
-            case .runClient(let client):
-                taskGroup.addTask {
-                    await client.run()
-                }
-
-            case .runTimer(let timer):
-                taskGroup.addTask {
-                    await withTaskGroup(of: Void.self) { taskGroup in
-                        taskGroup.addTask {
-                            do {
-                                try await self.clock.sleep(for: timer.duration)
-                                // timer has hit
-                                let timerFiredAction = self.stateLock.withLock {
-                                    $0.timerFired(timer)
-                                }
-                                self.runTimerFiredAction(timerFiredAction)
-                            } catch {
-                                // do nothing
-                            }
+                    do {
+                        try await self.clock.sleep(for: timer.duration)
+                        // timer has hit
+                        let timerFiredAction = self.stateLock.withLock {
+                            $0.timerFired(timer)
                         }
-
-                        let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
-                        taskGroup.addTask {
-                            var iterator = stream.makeAsyncIterator()
-                            await iterator.next()
-                        }
-
-                        let token = self.stateLock.withLock {
-                            $0.registerTimerCancellationToken(continuation, for: timer)
-                        }
-
-                        token?.finish()
+                        self.runTimerFiredAction(timerFiredAction)
+                    } catch {
+                        // do nothing
                     }
                 }
+
+                let (stream, continuation) = AsyncStream.makeStream(of: Void.self)
+                taskGroup.addTask {
+                    var iterator = stream.makeAsyncIterator()
+                    await iterator.next()
+                }
+
+                let token = self.stateLock.withLock {
+                    $0.registerTimerCancellationToken(continuation, for: timer)
+                }
+
+                token?.finish()
             }
         }
     }
@@ -300,7 +292,7 @@ public final class ValkeyClusterClient: Sendable {
         }
 
         if let runDiscovery = action.runDiscovery {
-            self.actionStreamContinuation.yield(.runClusterDiscovery(runNodeDiscovery: runDiscovery.runNodeDiscoveryFirst))
+            self.queueAction(.runClusterDiscovery(runNodeDiscovery: runDiscovery.runNodeDiscoveryFirst))
         }
     }
 
@@ -309,7 +301,7 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameter action: The update action containing clients to run and shut down.
     private func runUpdateValkeyNodesAction(_ action: StateMachine.UpdateValkeyNodesAction) {
         for client in action.clientsToRun {
-            self.actionStreamContinuation.yield(.runClient(client))
+            self.queueAction(.runClient(client))
         }
 
         for client in action.clientsToShutdown {
@@ -328,11 +320,11 @@ public final class ValkeyClusterClient: Sendable {
         action.cancelTimer?.yield()
 
         if let newTimer = action.createTimer {
-            self.actionStreamContinuation.yield(.runTimer(newTimer))
+            self.queueAction(.runTimer(newTimer))
         }
 
         for client in action.clientsToRun {
-            self.actionStreamContinuation.yield(.runClient(client))
+            self.queueAction(.runClient(client))
         }
 
         for client in action.clientsToShutdown {
@@ -345,11 +337,11 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameter action: The action containing operations to perform after failed discovery.
     private func runClusterDiscoveryFailedAction(_ action: StateMachine.ClusterDiscoveryFailedAction) {
         if let retryTimer = action.retryTimer {
-            self.actionStreamContinuation.yield(.runTimer(retryTimer))
+            self.queueAction(.runTimer(retryTimer))
         }
 
         if let circuitBreakerTimer = action.circuitBreakerTimer {
-            self.actionStreamContinuation.yield(.runTimer(circuitBreakerTimer))
+            self.queueAction(.runTimer(circuitBreakerTimer))
         }
     }
 
@@ -489,10 +481,10 @@ public final class ValkeyClusterClient: Sendable {
     private func runMovedToDegraded(_ action: StateMachine.PoolForMovedErrorAction.MoveToDegraded) {
         if let cancelToken = action.runDiscoveryAndCancelTimer {
             cancelToken.yield()
-            self.actionStreamContinuation.yield(.runClusterDiscovery(runNodeDiscovery: false))
+            self.queueAction(.runClusterDiscovery(runNodeDiscovery: false))
         }
 
-        self.actionStreamContinuation.yield(.runTimer(action.circuitBreakerTimer))
+        self.queueAction(.runTimer(action.circuitBreakerTimer))
     }
 
     /// Runs the cluster discovery process to determine the current cluster topology.

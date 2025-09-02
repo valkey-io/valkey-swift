@@ -1,20 +1,15 @@
-//===----------------------------------------------------------------------===//
 //
-// This source file is part of the valkey-swift open source project
-//
+// This source file is part of the valkey-swift project
 // Copyright (c) 2025 the valkey-swift project authors
-// Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of valkey-swift project authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
 
 import Logging
 import NIOCore
 import NIOEmbedded
+import NIOPosix
 import Testing
 
 @testable import Valkey
@@ -46,8 +41,9 @@ struct ConnectionTests {
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
 
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
     }
 
     @Test
@@ -57,8 +53,9 @@ struct ConnectionTests {
         let logger = Logger(label: "test")
         _ = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
 
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3"])).base)
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
         await #expect(throws: ValkeyClientError(.commandError, message: "Not supported")) {
             try await channel.writeInbound(RESPToken(.bulkError("Not supported")).base)
         }
@@ -79,8 +76,9 @@ struct ConnectionTests {
             logger: logger
         )
 
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3", "AUTH", "john", "smith"])).base)
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3", "AUTH", "john", "smith"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
     }
 
     @Test
@@ -95,8 +93,9 @@ struct ConnectionTests {
             logger: logger
         )
 
-        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(outbound == RESPToken(.command(["HELLO", "3", "SETNAME", "Testing"])).base)
+        var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        let hello3 = RESPToken(.command(["HELLO", "3", "SETNAME", "Testing"])).base
+        #expect(outbound.readSlice(length: hello3.readableBytes) == hello3)
     }
 
     @Test
@@ -444,5 +443,47 @@ struct ConnectionTests {
         }
         // verify connection hasnt been closed
         #expect(channel.isActive == true)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testCloseOnServeClose() async throws {
+        let channel = try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
+            .serverChannelOption(.socketOption(.so_reuseaddr), value: 1)
+            .childChannelOption(ChannelOptions.allowRemoteHalfClosure, value: true)
+            .childChannelInitializer { channel in
+                channel.eventLoop.makeCompletedFuture {
+                    try channel.pipeline.syncOperations.addHandler(
+                        TestValkeyServerChannelHandler { command, _, write in
+                            switch command {
+                            case "QUIT":
+                                write(ByteBuffer(string: "+2OK\r\n"))
+                                channel.close(mode: .output, promise: nil)
+                            default:
+                                fatalError("Unexpected command: \(command)")
+                            }
+
+                        }
+                    )
+                }
+            }
+            .bind(host: "127.0.0.1", port: 0)
+            .get()
+        let port = channel.localAddress!.port!
+        try await ValkeyConnection.withConnection(
+            address: .hostname("127.0.0.1", port: port),
+            configuration: .init(),
+            eventLoop: MultiThreadedEventLoopGroup.singleton.any(),
+            logger: Logger(label: "test")
+        ) { connection in
+            let clientChannel = await connection.channel
+            try await connection.quit()
+            await withCheckedContinuation { cont in
+                clientChannel.closeFuture.whenComplete { _ in
+                    cont.resume()
+                }
+            }
+        }
+        try await channel.close()
     }
 }

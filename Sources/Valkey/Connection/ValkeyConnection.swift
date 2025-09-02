@@ -1,16 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
 
 import Logging
 import NIOCore
@@ -132,7 +126,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 }
             }
         let connection = try await future.get()
-        try await connection.initialHandshake()
+        try await connection.waitOnActive()
         return connection
     }
 
@@ -144,10 +138,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         self.channel.close(mode: .all, promise: nil)
     }
 
-    func initialHandshake() async throws {
+    func waitOnActive() async throws {
         try await self.channelHandler.waitOnActive().get()
-        self.executeAndForget(command: CLIENT.SETINFO(attr: .libname(valkeySwiftLibraryName)))
-        self.executeAndForget(command: CLIENT.SETINFO(attr: .libver(valkeySwiftLibraryVersion)))
     }
 
     /// Send RESP command to Valkey connection
@@ -172,10 +164,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         } onCancel: {
             self.cancel(requestID: requestID)
         }
-    }
-
-    func executeAndForget<Command: ValkeyCommand>(command: Command) {
-        self.channelHandler.writeAndForget(command: command, requestID: Self.requestIDGenerator.next())
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -367,15 +355,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// create a BSD sockets based bootstrap
     private static func createSocketsBootstrap(eventLoopGroup: EventLoopGroup) -> ClientBootstrap {
         ClientBootstrap(group: eventLoopGroup)
-            .channelOption(ChannelOptions.allowRemoteHalfClosure, value: true)
     }
 
     #if canImport(Network)
     /// create a NIOTransportServices bootstrap using Network.framework
     private static func createTSBootstrap(eventLoopGroup: EventLoopGroup, tlsOptions: NWProtocolTLS.Options?) -> NIOTSConnectionBootstrap? {
         guard
-            let bootstrap = NIOTSConnectionBootstrap(validatingGroup: eventLoopGroup)?
-                .channelOption(ChannelOptions.allowRemoteHalfClosure, value: true)
+            let bootstrap = NIOTSConnectionBootstrap(validatingGroup: eventLoopGroup)
         else {
             return nil
         }

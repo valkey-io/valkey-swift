@@ -1,23 +1,17 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 /// A simplified representation of a Valkey cluster topology.
 ///
 /// `ValkeyTopologyCandidate` provides a stripped-down version of `ValkeyClusterDescription`
 /// designed specifically for efficient comparison during cluster updates. It preserves
 /// only the essential properties needed to determine if a topology has changed, while
 /// maintaining consistent ordering of elements to ensure reliable equality checks.
+@available(valkeySwift 1.0, *)
 package struct ValkeyTopologyCandidate: Hashable {
     /// Represents a shard (hash slot range) within a Valkey cluster topology.
     ///
@@ -114,6 +108,7 @@ package struct ValkeyTopologyCandidate: Hashable {
     }
 }
 
+@available(valkeySwift 1.0, *)
 package struct ValkeyClusterVoter<ConnectionPool: ValkeyNodeConnectionPool> {
     package var client: ConnectionPool
     package var nodeID: ValkeyNodeID

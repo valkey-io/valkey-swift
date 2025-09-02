@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
-// This source file is part of the valkey-swift open source project
-//
+// This source file is part of the valkey-swift project
 // Copyright (c) 2025 the valkey-swift project authors
-// Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of valkey-swift project authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import NIOCore
 import NIOEmbedded
 import Testing
@@ -183,7 +176,12 @@ struct ValkeyChannelHandlerStateMachineTests {
         }
         expect(
             stateMachine.state
-                == .closing(.init(context: "testGracefulShutdown", pendingCommands: [.init(promise: .nio(promise), requestID: 23, deadline: .now())]))
+                == .closing(
+                    .init(
+                        context: "testGracefulShutdown",
+                        pendingCommands: [.init(promise: .nio(promise), requestID: 23, deadline: .now())]
+                    )
+                )
         )
         switch stateMachine.receivedResponse(token: .ok) {
         case .respondAndClose(let command, let error):
@@ -218,7 +216,10 @@ struct ValkeyChannelHandlerStateMachineTests {
         expect(
             stateMachine.state
                 == .closing(
-                    .init(context: "testClosedClosingState", pendingCommands: [.init(promise: .nio(promise), requestID: 17, deadline: .now())])
+                    .init(
+                        context: "testClosedClosingState",
+                        pendingCommands: [.init(promise: .nio(promise), requestID: 17, deadline: .now())]
+                    )
                 )
         )
         switch stateMachine.setClosed() {
@@ -460,7 +461,7 @@ extension ValkeyChannelHandler.StateMachine<String>.State {
         case .connected(let lhs):
             switch rhs {
             case .connected(let rhs):
-                return lhs.context == rhs.context && lhs.pendingHelloCommand.requestID == rhs.pendingHelloCommand.requestID
+                return lhs.context == rhs.context && lhs.pendingCommands.map { $0.requestID } == rhs.pendingCommands.map { $0.requestID }
             default:
                 return false
             }
@@ -535,7 +536,8 @@ extension ValkeyChannelHandler.StateMachine {
         let promise = EmbeddedEventLoop().makePromise(of: RESPToken.self)
         self.setConnected(
             context: context,
-            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: .now() + .seconds(30))
+            pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: .now() + .seconds(30)),
+            pendingCommands: []
         )
     }
 

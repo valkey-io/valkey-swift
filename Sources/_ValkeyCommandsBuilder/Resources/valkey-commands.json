@@ -2235,6 +2235,10 @@
       [
         "8.1.0",
         "`ID` option accepts multiple IDs."
+      ],
+      [
+        "9.0.0",
+        "Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP."
       ]
     ],
     "command_flags": [
@@ -2358,6 +2362,181 @@
                 "type": "integer",
                 "optional": true,
                 "since": "8.0.0"
+              },
+              {
+                "token": "NAME",
+                "name": "name",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "IDLE",
+                "name": "idle",
+                "type": "integer",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "FLAGS",
+                "name": "flags",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "LIB-NAME",
+                "name": "lib-name",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "LIB-VER",
+                "name": "lib-ver",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "DB",
+                "name": "db",
+                "type": "integer",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "CAPA",
+                "name": "capa",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "IP",
+                "name": "ip",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-TYPE",
+                "name": "not-client-type",
+                "type": "oneof",
+                "optional": true,
+                "since": "9.0.0",
+                "arguments": [
+                  {
+                    "name": "normal",
+                    "type": "pure-token",
+                    "token": "normal"
+                  },
+                  {
+                    "name": "master",
+                    "type": "pure-token",
+                    "token": "master"
+                  },
+                  {
+                    "name": "primary",
+                    "type": "pure-token",
+                    "token": "primary"
+                  },
+                  {
+                    "name": "slave",
+                    "type": "pure-token",
+                    "token": "slave"
+                  },
+                  {
+                    "name": "replica",
+                    "type": "pure-token",
+                    "token": "replica"
+                  },
+                  {
+                    "name": "pubsub",
+                    "type": "pure-token",
+                    "token": "pubsub"
+                  }
+                ]
+              },
+              {
+                "name": "not-client-id",
+                "token": "NOT-ID",
+                "type": "integer",
+                "optional": true,
+                "multiple": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-USER",
+                "name": "not-username",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-ADDR",
+                "name": "not-addr",
+                "display": "ip:port",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-LADDR",
+                "name": "not-laddr",
+                "display": "ip:port",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-NAME",
+                "name": "not-name",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-FLAGS",
+                "name": "not-flags",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-LIB-NAME",
+                "name": "not-lib-name",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-LIB-VER",
+                "name": "not-lib-ver",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-DB",
+                "name": "not-db",
+                "type": "integer",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-CAPA",
+                "name": "not-capa",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "token": "NOT-IP",
+                "name": "not-ip",
+                "type": "string",
+                "optional": true,
+                "since": "9.0.0"
               }
             ]
           }
@@ -2417,7 +2596,11 @@
       ],
       [
         "8.1.0",
-        "Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE"
+        "Added filters USER, ADDR, LADDR, SKIPME, and MAXAGE."
+      ],
+      [
+        "9.0.0",
+        "Added filters NAME, IDLE, FLAGS, LIB-NAME, LIB-VER, DB, CAPA, and IP. And negative filters NOT-ID, NOT-TYPE, NOT-ADDR, NOT-LADDR, NOT-USER, NOT-FLAGS, NOT-NAME, NOT-LIB-NAME, NOT-LIB-VER, NOT-DB, NOT-CAPA, NOT-IP."
       ]
     ],
     "command_flags": [
@@ -2523,6 +2706,171 @@
         "type": "integer",
         "optional": true,
         "since": "8.1.0"
+      },
+      {
+        "token": "NAME",
+        "name": "name",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "IDLE",
+        "name": "idle",
+        "type": "integer",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "FLAGS",
+        "name": "flags",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "LIB-NAME",
+        "name": "lib-name",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "LIB-VER",
+        "name": "lib-ver",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "DB",
+        "name": "db",
+        "type": "integer",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "CAPA",
+        "name": "capa",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "IP",
+        "name": "ip",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-TYPE",
+        "name": "not-client-type",
+        "type": "oneof",
+        "optional": true,
+        "since": "9.0.0",
+        "arguments": [
+          {
+            "name": "normal",
+            "type": "pure-token",
+            "token": "normal"
+          },
+          {
+            "name": "master",
+            "type": "pure-token",
+            "token": "master"
+          },
+          {
+            "name": "replica",
+            "type": "pure-token",
+            "token": "replica"
+          },
+          {
+            "name": "pubsub",
+            "type": "pure-token",
+            "token": "pubsub"
+          }
+        ]
+      },
+      {
+        "name": "not-client-id",
+        "token": "NOT-ID",
+        "type": "integer",
+        "optional": true,
+        "multiple": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-USER",
+        "name": "not-username",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-ADDR",
+        "name": "not-addr",
+        "display": "ip:port",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-LADDR",
+        "name": "not-laddr",
+        "display": "ip:port",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-NAME",
+        "name": "not-name",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-FLAGS",
+        "name": "not-flags",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-LIB-NAME",
+        "name": "not-lib-name",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-LIB-VER",
+        "name": "not-lib-ver",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-DB",
+        "name": "not-db",
+        "type": "integer",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-CAPA",
+        "name": "not-capa",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
+      },
+      {
+        "token": "NOT-IP",
+        "name": "not-ip",
+        "type": "string",
+        "optional": true,
+        "since": "9.0.0"
       }
     ]
   },
@@ -2666,6 +3014,7 @@
     "function": "clientReplyCommand",
     "command_flags": [
       "NOSCRIPT",
+      "NO_MULTI",
       "LOADING",
       "STALE",
       "SENTINEL"
@@ -3107,6 +3456,23 @@
       ]
     }
   },
+  "CLUSTER CANCELSLOTMIGRATIONS": {
+    "summary": "Cancel all current ongoing slot migration operations.",
+    "complexity": "O(N), where N is the number of slot migration operations being cancelled.",
+    "group": "cluster",
+    "since": "9.0.0",
+    "container": "CLUSTER",
+    "function": "clusterCommand",
+    "arity": 2,
+    "command_flags": [
+      "NO_ASYNC_LOADING",
+      "ADMIN",
+      "STALE"
+    ],
+    "reply_schema": {
+      "const": "OK"
+    }
+  },
   "CLUSTER COUNT-FAILURE-REPORTS": {
     "summary": "Returns the number of active failure reports active for a node.",
     "complexity": "O(N) where N is the number of failure reports",
@@ -3251,6 +3617,49 @@
       "const": "OK"
     }
   },
+  "CLUSTER FLUSHSLOT": {
+    "summary": "Remove all keys from the target slot.",
+    "complexity": "O(N) where N is the number of keys in the target slot",
+    "group": "cluster",
+    "since": "9.0.0",
+    "arity": -3,
+    "container": "CLUSTER",
+    "function": "clusterCommand",
+    "command_flags": [
+      "WRITE",
+      "NO_ASYNC_LOADING",
+      "ADMIN"
+    ],
+    "acl_categories": [
+      "KEYSPACE"
+    ],
+    "reply_schema": {
+      "const": "OK"
+    },
+    "arguments": [
+      {
+        "name": "slot",
+        "type": "integer"
+      },
+      {
+        "name": "flush-type",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "async",
+            "type": "pure-token",
+            "token": "ASYNC"
+          },
+          {
+            "name": "sync",
+            "type": "pure-token",
+            "token": "SYNC"
+          }
+        ]
+      }
+    ]
+  },
   "CLUSTER FLUSHSLOTS": {
     "summary": "Deletes all slots information from a node.",
     "complexity": "O(1)",
@@ -3321,6 +3730,71 @@
       "items": {
         "description": "Key name.",
         "type": "string"
+      }
+    }
+  },
+  "CLUSTER GETSLOTMIGRATIONS": {
+    "summary": "Get the status of ongoing and recently finished slot import and export operations.",
+    "complexity": "O(N), where N is the number of active slot import and export jobs.",
+    "group": "cluster",
+    "since": "9.0.0",
+    "container": "CLUSTER",
+    "function": "clusterCommand",
+    "arity": 2,
+    "command_flags": [
+      "NO_ASYNC_LOADING",
+      "ADMIN",
+      "STALE"
+    ],
+    "reply_schema": {
+      "description": "A nested list of maps, one for each migration, with keys and values representing migration fields.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "link_name": {
+            "type": "string",
+            "description": "A 40-byte randomly generated hex string representing the migration.",
+            "pattern": "^[0-9a-fA-F]{40}$"
+          },
+          "operation": {
+            "oneOf": [
+              {
+                "const": "IMPORT"
+              },
+              {
+                "const": "EXPORT"
+              }
+            ]
+          },
+          "slot_ranges": {
+            "description": "Slot ranges in the format <start>-<end> inclusive, each range separated by a space.",
+            "type": "string",
+            "pattern": "^([0-9]+-[0-9]+)( [0-9]+-[0-9]+)*$"
+          },
+          "node": {
+            "type": "string"
+          },
+          "create_time": {
+            "description": "Creation time, in seconds since the unix epoch.",
+            "type": "integer"
+          },
+          "last_update_time": {
+            "description": "Last update time, in seconds since the unix epoch.",
+            "type": "integer"
+          },
+          "last_ack_time": {
+            "description": "Last received ack time, in seconds since the unix epoch.",
+            "type": "integer"
+          },
+          "state": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -3484,6 +3958,65 @@
       "const": "OK"
     }
   },
+  "CLUSTER MIGRATESLOTS": {
+    "summary": "Migrate the given slots from this node to the specified nodes.",
+    "complexity": "O(N) where N is the total number of the slots between all start slot and end slot arguments.",
+    "group": "cluster",
+    "since": "9.0.0",
+    "arity": -4,
+    "container": "CLUSTER",
+    "function": "clusterCommand",
+    "command_flags": [
+      "NO_ASYNC_LOADING",
+      "ADMIN",
+      "STALE"
+    ],
+    "arguments": [
+      {
+        "name": "migration-group",
+        "type": "block",
+        "multiple": true,
+        "arguments": [
+          {
+            "name": "slotsrange-token",
+            "type": "pure-token",
+            "token": "SLOTSRANGE",
+            "description": "One or more ranges of slots to be migrated."
+          },
+          {
+            "name": "range",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "start-slot",
+                "type": "integer"
+              },
+              {
+                "name": "end-slot",
+                "type": "integer"
+              }
+            ],
+            "description": "Start and end slot for single range"
+          },
+          {
+            "name": "node-token",
+            "type": "pure-token",
+            "token": "NODE"
+          },
+          {
+            "name": "node-id",
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{40}$",
+            "description": "40 character node name of the node to migrate to"
+          }
+        ]
+      }
+    ],
+    "reply_schema": {
+      "const": "OK"
+    }
+  },
   "CLUSTER MYID": {
     "summary": "Returns the ID of a node.",
     "complexity": "O(1)",
@@ -3572,13 +4105,19 @@
     }
   },
   "CLUSTER REPLICATE": {
-    "summary": "Configure a node as replica of a primary node.",
+    "summary": "Configure a node as replica of a primary node or detach a replica from its primary.",
     "complexity": "O(1)",
     "group": "cluster",
     "since": "3.0.0",
-    "arity": 3,
+    "arity": -3,
     "container": "CLUSTER",
     "function": "clusterCommand",
+    "history": [
+      [
+        "9.0.0",
+        "Added support of 'NO ONE' arg instead of <node-id> resulting into detaching replica from primary node."
+      ]
+    ],
     "command_flags": [
       "NO_ASYNC_LOADING",
       "ADMIN",
@@ -3586,8 +4125,31 @@
     ],
     "arguments": [
       {
-        "name": "node-id",
-        "type": "string"
+        "name": "args",
+        "type": "oneof",
+        "arguments": [
+          {
+            "name": "node-id",
+            "type": "string"
+          },
+          {
+            "name": "no-one",
+            "type": "block",
+            "since": "9.0.0",
+            "arguments": [
+              {
+                "name": "no",
+                "type": "pure-token",
+                "token": "NO"
+              },
+              {
+                "name": "one",
+                "type": "pure-token",
+                "token": "ONE"
+              }
+            ]
+          }
+        ]
       }
     ],
     "reply_schema": {
@@ -4096,6 +4658,23 @@
         }
       }
     }
+  },
+  "CLUSTER SYNCSLOTS": {
+    "summary": "A container for internal slot migration commands.",
+    "complexity": "Depends on subcommand.",
+    "group": "cluster",
+    "since": "9.0.0",
+    "container": "CLUSTER",
+    "function": "clusterCommand",
+    "doc_flags": [
+      "SYSCMD"
+    ],
+    "arity": -3,
+    "command_flags": [
+      "NO_ASYNC_LOADING",
+      "ADMIN",
+      "STALE"
+    ]
   },
   "CLUSTER": {
     "summary": "A container for Cluster commands.",
@@ -4800,15 +5379,18 @@
         "arguments": [
           {
             "name": "slow",
-            "type": "string"
+            "type": "pure-token",
+            "token": "slow"
           },
           {
             "name": "large-request",
-            "type": "string"
+            "type": "pure-token",
+            "token": "large-request"
           },
           {
             "name": "large-reply",
-            "type": "string"
+            "type": "pure-token",
+            "token": "large-reply"
           }
         ]
       }
@@ -4864,15 +5446,18 @@
         "arguments": [
           {
             "name": "slow",
-            "type": "string"
+            "type": "pure-token",
+            "token": "slow"
           },
           {
             "name": "large-request",
-            "type": "string"
+            "type": "pure-token",
+            "token": "large-request"
           },
           {
             "name": "large-reply",
-            "type": "string"
+            "type": "pure-token",
+            "token": "large-reply"
           }
         ]
       }
@@ -4905,15 +5490,18 @@
         "arguments": [
           {
             "name": "slow",
-            "type": "string"
+            "type": "pure-token",
+            "token": "slow"
           },
           {
             "name": "large-request",
-            "type": "string"
+            "type": "pure-token",
+            "token": "large-request"
           },
           {
             "name": "large-reply",
-            "type": "string"
+            "type": "pure-token",
+            "token": "large-reply"
           }
         ]
       }
@@ -5354,6 +5942,64 @@
         "type": "key",
         "key_spec_index": 0,
         "multiple": true
+      }
+    ]
+  },
+  "DELIFEQ": {
+    "summary": "Delete key if value matches string.",
+    "complexity": "O(1)",
+    "group": "string",
+    "since": "9.0.0",
+    "arity": 3,
+    "function": "delifeqCommand",
+    "command_flags": [
+      "FAST",
+      "WRITE"
+    ],
+    "acl_categories": [
+      "STRING"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RM",
+          "DELETE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "oneOf": [
+        {
+          "description": "The key was not deleted.",
+          "const": 0
+        },
+        {
+          "description": "The key was deleted.",
+          "const": 1
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "value",
+        "type": "string"
       }
     ]
   },
@@ -7985,7 +8631,7 @@
     }
   },
   "GEOSEARCH": {
-    "summary": "Queries a geospatial index for members inside an area of a box or a circle.",
+    "summary": "Queries a geospatial index for members inside an area of a box, circle, or a polygon.",
     "complexity": "O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape",
     "group": "geo",
     "since": "6.2.0",
@@ -7995,6 +8641,10 @@
       [
         "7.0.0",
         "Added support for uppercase unit names."
+      ],
+      [
+        "9.0.0",
+        "Added support for the BYPOLYGON option."
       ]
     ],
     "command_flags": [
@@ -8032,6 +8682,7 @@
       {
         "name": "from",
         "type": "oneof",
+        "optional": true,
         "arguments": [
           {
             "token": "FROMMEMBER",
@@ -8132,6 +8783,33 @@
                     "name": "mi",
                     "type": "pure-token",
                     "token": "mi"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "polygon",
+            "since": "9.0.0",
+            "type": "block",
+            "arguments": [
+              {
+                "token": "BYPOLYGON",
+                "name": "num-vertices",
+                "type": "integer"
+              },
+              {
+                "name": "vertices",
+                "type": "block",
+                "multiple": true,
+                "arguments": [
+                  {
+                    "name": "longitude",
+                    "type": "double"
+                  },
+                  {
+                    "name": "latitude",
+                    "type": "double"
                   }
                 ]
               }
@@ -8250,7 +8928,7 @@
     }
   },
   "GEOSEARCHSTORE": {
-    "summary": "Queries a geospatial index for members inside an area of a box or a circle, optionally stores the result.",
+    "summary": "Queries a geospatial index for members inside an area of a box, a circle, or a polygon, optionally stores the result.",
     "complexity": "O(N+log(M)) where N is the number of elements in the grid-aligned bounding box area around the shape provided as the filter and M is the number of items inside the shape",
     "group": "geo",
     "since": "6.2.0",
@@ -8260,6 +8938,10 @@
       [
         "7.0.0",
         "Added support for uppercase unit names."
+      ],
+      [
+        "9.0.0",
+        "Added support for the BYPOLYGON option."
       ]
     ],
     "command_flags": [
@@ -8321,6 +9003,7 @@
       {
         "name": "from",
         "type": "oneof",
+        "optional": true,
         "arguments": [
           {
             "token": "FROMMEMBER",
@@ -8421,6 +9104,33 @@
                     "name": "mi",
                     "type": "pure-token",
                     "token": "mi"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "polygon",
+            "since": "9.0.0",
+            "type": "block",
+            "arguments": [
+              {
+                "token": "BYPOLYGON",
+                "name": "num-vertices",
+                "type": "integer"
+              },
+              {
+                "name": "vertices",
+                "type": "block",
+                "multiple": true,
+                "arguments": [
+                  {
+                    "name": "longitude",
+                    "type": "double"
+                  },
+                  {
+                    "name": "latitude",
+                    "type": "double"
                   }
                 ]
               }
@@ -9074,6 +9784,323 @@
       }
     ]
   },
+  "HEXPIRE": {
+    "summary": "Set expiry time on hash fields.",
+    "complexity": "O(N) where N is the number of specified fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -6,
+    "function": "hexpireCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the HASH, or key does not exist.",
+            "const": -2
+          },
+          {
+            "description": "The specified NX | XX | GT | LT condition has not been met.",
+            "const": 0
+          },
+          {
+            "description": "The expiration time was applied.",
+            "const": 1
+          },
+          {
+            "description": "When called with a 0 second",
+            "const": 2
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "seconds",
+        "type": "integer"
+      },
+      {
+        "name": "condition",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "nx",
+            "type": "pure-token",
+            "token": "NX"
+          },
+          {
+            "name": "xx",
+            "type": "pure-token",
+            "token": "XX"
+          },
+          {
+            "name": "gt",
+            "type": "pure-token",
+            "token": "GT"
+          },
+          {
+            "name": "lt",
+            "type": "pure-token",
+            "token": "LT"
+          }
+        ]
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
+  "HEXPIREAT": {
+    "summary": "Set expiry time on hash fields.",
+    "complexity": "O(N) where N is the number of specified fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -6,
+    "function": "hexpireatCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the HASH, or HASH is empty.",
+            "const": -2
+          },
+          {
+            "description": "The specified NX | XX | GT | LT condition has not been met.",
+            "const": 0
+          },
+          {
+            "description": "The expiration time was applied.",
+            "const": 1
+          },
+          {
+            "description": "When called with a 0 second or is called with a past Unix time in seconds.",
+            "const": 2
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "unix-time-seconds",
+        "type": "integer"
+      },
+      {
+        "name": "condition",
+        "type": "oneof",
+        "optional": true,
+        "since": "9.0.0",
+        "arguments": [
+          {
+            "name": "nx",
+            "type": "pure-token",
+            "token": "NX"
+          },
+          {
+            "name": "xx",
+            "type": "pure-token",
+            "token": "XX"
+          },
+          {
+            "name": "gt",
+            "type": "pure-token",
+            "token": "GT"
+          },
+          {
+            "name": "lt",
+            "type": "pure-token",
+            "token": "LT"
+          }
+        ]
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
+  "HEXPIRETIME": {
+    "summary": "Returns Unix timestamps in seconds since the epoch at which the given key's field(s) will expire",
+    "complexity": "O(1) for each field, so O(N) for N items when the command is called with multiple fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -5,
+    "function": "hexpiretimeCommand",
+    "command_flags": [
+      "READONLY",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the provided hash key, or the hash key is empty.",
+            "const": -2
+          },
+          {
+            "description": "Field exists in the provided hash key, but has no expiration associated with it.",
+            "const": -1
+          },
+          {
+            "description": "The expiration time associated with the hash key field, in seconds.",
+            "type": "integer",
+            "minimum": 0
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
   "HGET": {
     "summary": "Returns the value of a field in a hash.",
     "complexity": "O(1)",
@@ -9180,6 +10207,114 @@
         "name": "key",
         "type": "key",
         "key_spec_index": 0
+      }
+    ]
+  },
+  "HGETEX": {
+    "summary": "Get the value of one or more fields of a given hash key, and optionally set their expiration time or time-to-live (TTL).",
+    "complexity": "O(1)",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -5,
+    "function": "hgetexCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of values associated with the given fields, in the same order as they are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "expiration",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "seconds",
+            "type": "integer",
+            "token": "EX"
+          },
+          {
+            "name": "milliseconds",
+            "type": "integer",
+            "token": "PX"
+          },
+          {
+            "name": "unix-time-seconds",
+            "type": "unix-time",
+            "token": "EXAT"
+          },
+          {
+            "name": "unix-time-milliseconds",
+            "type": "unix-time",
+            "token": "PXAT"
+          },
+          {
+            "name": "persist",
+            "type": "pure-token",
+            "token": "PERSIST"
+          }
+        ]
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
       }
     ]
   },
@@ -9520,6 +10655,490 @@
       }
     ]
   },
+  "HPERSIST": {
+    "summary": "Remove the existing expiration on a hash key's field(s).",
+    "complexity": "O(1) for each field assigned with TTL, so O(N) to persist N items when the command is called with multiple fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -5,
+    "function": "hpersistCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the provided hash key, or the hash key does not exist.",
+            "const": -2
+          },
+          {
+            "description": "Field exists in the provided hash key, but has no expiration associated with it.",
+            "const": -1
+          },
+          {
+            "description": "The expiration time was removed from the hash key field.",
+            "const": 1
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
+  "HPEXPIRE": {
+    "summary": "Set expiry time on hash object.",
+    "complexity": "O(N) where N is the number of specified fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -6,
+    "function": "hpexpireCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the HASH, or HASH is empty.",
+            "const": -2
+          },
+          {
+            "description": "The specified NX | XX | GT | LT condition has not been met.",
+            "const": 0
+          },
+          {
+            "description": "The expiration time was applied.",
+            "const": 1
+          },
+          {
+            "description": "When called with a 0 millisecond",
+            "const": 2
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "milliseconds",
+        "type": "integer"
+      },
+      {
+        "name": "condition",
+        "type": "oneof",
+        "optional": true,
+        "since": "9.0.0",
+        "arguments": [
+          {
+            "name": "nx",
+            "type": "pure-token",
+            "token": "NX"
+          },
+          {
+            "name": "xx",
+            "type": "pure-token",
+            "token": "XX"
+          },
+          {
+            "name": "gt",
+            "type": "pure-token",
+            "token": "GT"
+          },
+          {
+            "name": "lt",
+            "type": "pure-token",
+            "token": "LT"
+          }
+        ]
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
+  "HPEXPIREAT": {
+    "summary": "Set expiration time on hash field.",
+    "complexity": "O(N) where N is the number of specified fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -6,
+    "function": "hpexpireatCommand",
+    "command_flags": [
+      "WRITE",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "UPDATE"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of integer codes indicating the result of setting expiry on each specified field, in the same order as the fields are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the HASH, or HASH is empty.",
+            "const": -2
+          },
+          {
+            "description": "The specified NX | XX | GT | LT condition has not been met.",
+            "const": 0
+          },
+          {
+            "description": "The expiration time was applied.",
+            "const": 1
+          },
+          {
+            "description": "When called with a 0 second or is called with a past Unix time in milliseconds.",
+            "const": 2
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "unix-time-milliseconds",
+        "type": "integer"
+      },
+      {
+        "name": "condition",
+        "type": "oneof",
+        "optional": true,
+        "since": "9.0.0",
+        "arguments": [
+          {
+            "name": "nx",
+            "type": "pure-token",
+            "token": "NX"
+          },
+          {
+            "name": "xx",
+            "type": "pure-token",
+            "token": "XX"
+          },
+          {
+            "name": "gt",
+            "type": "pure-token",
+            "token": "GT"
+          },
+          {
+            "name": "lt",
+            "type": "pure-token",
+            "token": "LT"
+          }
+        ]
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
+  "HPEXPIRETIME": {
+    "summary": "Returns the Unix timestamp in milliseconds since Unix epoch at which the given key's field(s) will expire",
+    "complexity": "O(1) for each field, so O(N) for N items when the command is called with multiple fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -5,
+    "function": "hpexpiretimeCommand",
+    "command_flags": [
+      "READONLY",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of values associated with the result of getting the absolute expiry timestamp of the specific fields, in the same order as they are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the provided hash key, or the hash key is empty.",
+            "const": -2
+          },
+          {
+            "description": "Field exists in the provided hash key, but has no expiration associated with it.",
+            "const": -1
+          },
+          {
+            "description": "The expiration time associated with the hash key field, in milliseconds.",
+            "type": "integer",
+            "minimum": 0
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
+  "HPTTL": {
+    "summary": "Returns the remaining time to live in milliseconds of a hash key's field(s) that have an associated expiration.",
+    "complexity": "O(1) for each field assigned with TTL, so O(N) for N items when the command is called with multiple fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -5,
+    "function": "hpttlCommand",
+    "command_flags": [
+      "READONLY",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the provided hash key, or the hash key is empty",
+            "const": -2
+          },
+          {
+            "description": "Field exists in the provided hash key, but has no expiration associated with it.",
+            "const": -1
+          },
+          {
+            "description": "The expiration time associated with the hash key field, in milliseconds.",
+            "type": "integer",
+            "minimum": 0
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
+      }
+    ]
+  },
   "HRANDFIELD": {
     "summary": "Returns one or more random fields from a hash.",
     "complexity": "O(N) where N is the number of fields returned",
@@ -9772,6 +11391,139 @@
       }
     ]
   },
+  "HSETEX": {
+    "summary": "Set the value of one or more fields of a given hash key, and optionally set their expiration time.",
+    "complexity": "O(1)",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -6,
+    "function": "hsetexCommand",
+    "command_flags": [
+      "WRITE",
+      "DENYOOM",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RW",
+          "INSERT"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "oneOf": [
+        {
+          "description": "None of the provided fields value and or expiration time was set.",
+          "const": 0
+        },
+        {
+          "description": "All the fields value and or expiration time was set.",
+          "const": 1
+        }
+      ]
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "fields-condition",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "fnx",
+            "type": "pure-token",
+            "token": "FNX"
+          },
+          {
+            "name": "fxx",
+            "type": "pure-token",
+            "token": "FXX"
+          }
+        ]
+      },
+      {
+        "name": "expiration",
+        "type": "oneof",
+        "optional": true,
+        "arguments": [
+          {
+            "name": "seconds",
+            "type": "integer",
+            "token": "EX"
+          },
+          {
+            "name": "milliseconds",
+            "type": "integer",
+            "token": "PX"
+          },
+          {
+            "name": "unix-time-seconds",
+            "type": "unix-time",
+            "token": "EXAT"
+          },
+          {
+            "name": "unix-time-milliseconds",
+            "type": "unix-time",
+            "token": "PXAT"
+          },
+          {
+            "name": "keepttl",
+            "type": "pure-token",
+            "token": "KEEPTTL"
+          }
+        ]
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "data",
+            "type": "block",
+            "multiple": true,
+            "arguments": [
+              {
+                "name": "field",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "HSETNX": {
     "summary": "Sets the value of a field in a hash only when the field doesn't exist.",
     "complexity": "O(1)",
@@ -9882,6 +11634,89 @@
       {
         "name": "field",
         "type": "string"
+      }
+    ]
+  },
+  "HTTL": {
+    "summary": "Returns the remaining time to live (in seconds) of a hash key's field(s) that have an associated expiration.",
+    "complexity": "O(1) for each field, so O(N) for N items when the command is called with multiple fields.",
+    "group": "hash",
+    "since": "9.0.0",
+    "arity": -5,
+    "function": "httlCommand",
+    "command_flags": [
+      "READONLY",
+      "FAST"
+    ],
+    "acl_categories": [
+      "HASH"
+    ],
+    "key_specs": [
+      {
+        "flags": [
+          "RO",
+          "ACCESS"
+        ],
+        "begin_search": {
+          "index": {
+            "pos": 1
+          }
+        },
+        "find_keys": {
+          "range": {
+            "lastkey": 0,
+            "step": 1,
+            "limit": 0
+          }
+        }
+      }
+    ],
+    "reply_schema": {
+      "description": "List of values associated with the result of getting the remaining time-to-live of the specific fields, in the same order as they are requested.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "description": "Field does not exist in the provided hash key, or the hash key is empty",
+            "const": -2
+          },
+          {
+            "description": "Field exists in the provided hash key, but has no expiration associated with it.",
+            "const": -1
+          },
+          {
+            "description": "The expiration time associated with the hash key field, in seconds.",
+            "type": "integer",
+            "minimum": 0
+          }
+        ]
+      }
+    },
+    "arguments": [
+      {
+        "name": "key",
+        "type": "key",
+        "key_spec_index": 0
+      },
+      {
+        "name": "fields",
+        "token": "FIELDS",
+        "type": "block",
+        "arguments": [
+          {
+            "name": "numfields",
+            "type": "integer",
+            "key_spec_index": 0,
+            "multiple": false,
+            "minimum": 1
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "multiple": true
+          }
+        ]
       }
     ]
   },
@@ -10984,7 +12819,7 @@
     ]
   },
   "LPOP": {
-    "summary": "Returns the first elements in a list after removing it. Deletes the list if the last element was popped.",
+    "summary": "Returns and removes one or more elements from the beginning of a list. Deletes the list if the last element was popped.",
     "complexity": "O(N) where N is the number of elements returned",
     "group": "list",
     "since": "1.0.0",
@@ -11587,6 +13422,12 @@
           "type": "integer"
         },
         "cluster.links": {
+          "type": "integer"
+        },
+        "cluster.slot_import": {
+          "type": "integer"
+        },
+        "cluster.slot_export": {
           "type": "integer"
         },
         "aof.buffer": {
@@ -14249,7 +16090,7 @@
     }
   },
   "RPOP": {
-    "summary": "Returns and removes the last elements of a list. Deletes the list if the last element was popped.",
+    "summary": "Returns and removes one or more elements from the end of a list. Deletes the list if the last element was popped.",
     "complexity": "O(N) where N is the number of elements returned",
     "group": "list",
     "since": "1.0.0",
@@ -14465,7 +16306,7 @@
     ]
   },
   "RPUSHX": {
-    "summary": "Appends an element to a list only when the list exists.",
+    "summary": "Appends one or more elements to a list only when the list exists.",
     "complexity": "O(1) for each element added, so O(N) to add N elements when the command is called with multiple arguments.",
     "group": "list",
     "since": "2.2.0",
@@ -14764,7 +16605,8 @@
     "container": "SCRIPT",
     "function": "scriptCommand",
     "command_flags": [
-      "NOSCRIPT"
+      "NOSCRIPT",
+      "STALE"
     ],
     "acl_categories": [
       "SCRIPTING"
@@ -14812,7 +16654,8 @@
       ]
     ],
     "command_flags": [
-      "NOSCRIPT"
+      "NOSCRIPT",
+      "STALE"
     ],
     "acl_categories": [
       "SCRIPTING"
@@ -14930,7 +16773,8 @@
     "container": "SCRIPT",
     "function": "scriptCommand",
     "command_flags": [
-      "NOSCRIPT"
+      "NOSCRIPT",
+      "STALE"
     ],
     "acl_categories": [
       "SCRIPTING"
@@ -15296,9 +17140,15 @@
     "summary": "Forces a Sentinel failover.",
     "group": "sentinel",
     "since": "2.8.4",
-    "arity": 3,
+    "arity": -3,
     "container": "SENTINEL",
     "function": "sentinelCommand",
+    "history": [
+      [
+        "9.0.0",
+        "`COORDINATED` option."
+      ]
+    ],
     "command_flags": [
       "ADMIN",
       "SENTINEL",
@@ -15306,12 +17156,19 @@
     ],
     "reply_schema": {
       "const": "OK",
-      "description": "Force a fail over as if the primary was not reachable, and without asking for agreement to other Sentinels."
+      "description": "Force a fail over of the primary. Without options, the fail over is executed immediately as if the primary was not reachable. Using `COORDINATED`, fail over seeking agreement from other Sentinels and using coordinated fail over."
     },
     "arguments": [
       {
         "name": "primary-name",
         "type": "string"
+      },
+      {
+        "token": "COORDINATED",
+        "name": "coordinated",
+        "type": "pure-token",
+        "optional": true,
+        "since": "9.0.0"
       }
     ]
   },
@@ -16486,6 +18343,10 @@
       [
         "7.0.0",
         "Added the `NOW`, `FORCE` and `ABORT` modifiers."
+      ],
+      [
+        "9.0.0",
+        "Added the `SAFE` and `FAILOVER` modifiers."
       ]
     ],
     "command_flags": [
@@ -16537,6 +18398,20 @@
                 "token": "FORCE",
                 "optional": true,
                 "since": "7.0.0"
+              },
+              {
+                "name": "safe",
+                "type": "pure-token",
+                "token": "SAFE",
+                "optional": true,
+                "since": "9.0.0"
+              },
+              {
+                "name": "failover",
+                "type": "pure-token",
+                "token": "FAILOVER",
+                "optional": true,
+                "since": "9.0.0"
               }
             ]
           },

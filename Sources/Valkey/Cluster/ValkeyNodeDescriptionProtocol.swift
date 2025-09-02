@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import NIOCore
 
 /// A description of a single node that is part of a Valkey cluster.

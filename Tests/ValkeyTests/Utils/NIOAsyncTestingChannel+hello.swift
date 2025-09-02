@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
-// This source file is part of the valkey-swift open source project
-//
+// This source file is part of the valkey-swift project
 // Copyright (c) 2025 the valkey-swift project authors
-// Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of valkey-swift project authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import NIOCore
 import NIOEmbedded
 import Testing
@@ -21,7 +14,15 @@ import Testing
 extension NIOAsyncTestingChannel {
     func processHello() async throws {
         let hello = try await self.waitForOutboundWrite(as: ByteBuffer.self)
-        #expect(hello == RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
+        var expectedBuffer = ByteBuffer()
+        expectedBuffer.writeImmutableBuffer(RESPToken(.array([.bulkString("HELLO"), .bulkString("3")])).base)
+        expectedBuffer.writeImmutableBuffer(
+            RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-name"), .bulkString(valkeySwiftLibraryName)])).base
+        )
+        expectedBuffer.writeImmutableBuffer(
+            RESPToken(.array([.bulkString("CLIENT"), .bulkString("SETINFO"), .bulkString("lib-ver"), .bulkString(valkeySwiftLibraryVersion)])).base
+        )
+        #expect(hello == expectedBuffer)
         try await self.writeInbound(
             RESPToken(
                 .map([
@@ -35,5 +36,7 @@ extension NIOAsyncTestingChannel {
                 ])
             ).base
         )
+        try await self.writeInbound(RESPToken.ok.base)
+        try await self.writeInbound(RESPToken.ok.base)
     }
 }

@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
-// This source file is part of the valkey-swift open source project
-//
+// This source file is part of the valkey-swift project
 // Copyright (c) 2025 the valkey-swift project authors
-// Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
-// See CONTRIBUTORS.txt for the list of valkey-swift project authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 import Logging
 import NIOCore
 import NIOPosix
@@ -29,6 +22,14 @@ import ServiceLifecycle
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
+    @usableFromInline
+    typealias ConnectionStateMachine =
+        SubscriptionConnectionStateMachine<
+            ValkeyConnection,
+            CheckedContinuation<ValkeyConnection, Error>,
+            CheckedContinuation<Void, Never>
+        >
+
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
@@ -41,6 +42,17 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
+    /// subscription state
+    @usableFromInline
+    let subscriptionConnectionStateMachine: Mutex<ConnectionStateMachine>
+    let subscriptionConnectionIDGenerator: ConnectionIDGenerator
+
+    enum RunAction: Sendable {
+        case runNodeClient(ValkeyNodeClient)
+        case leaseSubscriptionConnection(leaseID: Int)
+    }
+    let actionStream: AsyncStream<RunAction>
+    let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
     /// Creates a new Valkey client
     ///
@@ -84,6 +96,10 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        self.subscriptionConnectionStateMachine = .init(.init())
+        self.subscriptionConnectionIDGenerator = .init()
+        (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
+        self.queueAction(.runNodeClient(self.node))
     }
 }
 
@@ -95,11 +111,22 @@ extension ValkeyClient {
         precondition(!atomicOp.original, "ValkeyClient.run() should just be called once!")
         #if ServiceLifecycleSupport
         await cancelWhenGracefulShutdown {
-            await self.node.run()
+            await self._withTaskGroup()
         }
         #else
-        await self.node.run()
+        await self._withTaskGroup()
         #endif
+    }
+
+    private func _withTaskGroup() async {
+        /// Run discarding task group running actions
+        await withDiscardingTaskGroup { group in
+            for await action in self.actionStream {
+                group.addTask {
+                    await self.runAction(action)
+                }
+            }
+        }
     }
 
     /// Get connection from connection pool and run operation using connection
@@ -114,6 +141,30 @@ extension ValkeyClient {
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         try await self.node.withConnection(isolation: isolation, operation: operation)
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClient {
+    func queueAction(_ action: RunAction) {
+        self.actionStreamContinuation.yield(action)
+    }
+
+    private func runAction(_ action: RunAction) async {
+        switch action {
+        case .runNodeClient(let nodeClient):
+            await nodeClient.run()
+        case .leaseSubscriptionConnection(let leaseID):
+            do {
+                try await self.withConnection { connection in
+                    await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+                        self.acquiredSubscriptionConnection(leaseID: leaseID, connection: connection, releaseContinuation: cont)
+                    }
+                }
+            } catch {
+                self.errorAcquiringSubscriptionConnection(leaseID: leaseID, error: error)
+            }
+        }
     }
 }
 

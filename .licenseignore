@@ -32,5 +32,6 @@ Makefile
 Dockerfile
 **/Dockerfile
 Snippets/*
+Sources/ValkeyConnectionPool/*
 dev/git.commit.template
 .unacceptablelanguageignore

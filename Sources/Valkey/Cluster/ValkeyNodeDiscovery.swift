@@ -1,19 +1,13 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 /// A type that allows the cluster client to initially find at least one node in the cluster, or find the
 /// nodes again if connection to them has been lost.
+@available(valkeySwift 1.0, *)
 public protocol ValkeyNodeDiscovery: Sendable {
     /// A type that describes a single node in a valkey cluster
     associatedtype NodeDescription: ValkeyNodeDescriptionProtocol
