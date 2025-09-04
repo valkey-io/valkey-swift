@@ -93,8 +93,6 @@ public struct BLMPOP: ValkeyCommand {
             }
         }
     }
-    public typealias Response = RESPToken.Array?
-
     @inlinable public static var name: String { "BLMPOP" }
 
     public var timeout: Double
@@ -312,8 +310,6 @@ public struct LMOVE: ValkeyCommand {
             }
         }
     }
-    public typealias Response = ByteBuffer
-
     @inlinable public static var name: String { "LMOVE" }
 
     public var source: ValkeyKey
@@ -689,7 +685,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: The key from which elements were popped and the popped elements
     @inlinable
     @discardableResult
-    public func blmpop(timeout: Double, keys: [ValkeyKey], where: BLMPOP.Where, count: Int? = nil) async throws -> RESPToken.Array? {
+    public func blmpop(timeout: Double, keys: [ValkeyKey], where: BLMPOP.Where, count: Int? = nil) async throws -> BLMPOP.Response {
         try await execute(BLMPOP(timeout: timeout, keys: keys, where: `where`, count: count))
     }
 
@@ -794,7 +790,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The element being popped and pushed.
     @inlinable
     @discardableResult
-    public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> ByteBuffer {
+    public func lmove(source: ValkeyKey, destination: ValkeyKey, wherefrom: LMOVE.Wherefrom, whereto: LMOVE.Whereto) async throws -> LMOVE.Response {
         try await execute(LMOVE(source: source, destination: destination, wherefrom: wherefrom, whereto: whereto))
     }
 
