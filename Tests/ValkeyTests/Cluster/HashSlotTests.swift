@@ -1,17 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
-
 // This is a derived version from:
 // https://github.com/swift-server/RediStack/blob/2df32390e2366b58cc15c2612bb324b3fc37a190/Tests/RediStackTests/RedisHashSlotTests.swift
 

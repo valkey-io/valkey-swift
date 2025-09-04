@@ -1,16 +1,10 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
 
 import Testing
 import Valkey
@@ -30,10 +24,13 @@ struct ValkeyClusterClientStateMachineTests {
         TimerCancellationToken
     >
 
-    let testConfiguration = ValkeyClusterClientStateMachineConfiguration(
-        circuitBreakerDuration: .seconds(30),
-        defaultClusterRefreshInterval: .seconds(60)
-    )
+    @available(valkeySwift 1.0, *)
+    var testConfiguration: ValkeyClusterClientStateMachineConfiguration {
+        .init(
+            circuitBreakerDuration: .seconds(30),
+            defaultClusterRefreshInterval: .seconds(60)
+        )
+    }
 
     @Test
     @available(valkeySwift 1.0, *)
@@ -119,6 +116,7 @@ struct ValkeyClusterClientStateMachineTests {
 
 }
 
+@available(valkeySwift 1.0, *)
 extension ValkeyClusterClientStateMachine.WaitForHealthyAction {
     var isNone: Bool {
         switch self {

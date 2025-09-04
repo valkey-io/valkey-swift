@@ -97,7 +97,7 @@ let package = Package(
 )
 
 if Context.environment["ENABLE_VALKEY_BENCHMARKS"] != nil {
-    package.platforms = [.macOS(.v10_15)]
+    package.platforms = [.macOS(.v13)]
     package.dependencies.append(
         .package(url: "https://github.com/ordo-one/package-benchmark", from: "1.0.0")
     )

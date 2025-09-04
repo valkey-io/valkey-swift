@@ -1,16 +1,16 @@
-//===----------------------------------------------------------------------===//
 //
 // This source file is part of the valkey-swift project
-//
-// Copyright (c) 2025 the valkey-swift authors
-// Licensed under Apache License v2.0
+// Copyright (c) 2025 the valkey-swift project authors
 //
 // See LICENSE.txt for license information
-// See valkey-swift/CONTRIBUTORS.txt for the list of valkey-swift authors
-//
 // SPDX-License-Identifier: Apache-2.0
 //
-//===----------------------------------------------------------------------===//
+
+import NIOCore
+
+extension LMOVE {
+    public typealias Response = ByteBuffer?
+}
 
 extension LMPOP {
     /// - Returns: One of the following
@@ -30,4 +30,11 @@ extension LMPOP {
         }
     }
     public typealias Response = OptionalResponse?
+}
+
+extension BLMPOP {
+    /// - Returns: One of the following
+    ///     * [Null]: If no element could be popped.
+    ///     * [Array]: List key from which elements were popped.
+    public typealias Response = LMPOP.Response
 }
