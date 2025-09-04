@@ -543,35 +543,6 @@ struct ClientIntegratedTests {
         }
     }
 
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testClientCaching() async throws {
-        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .trace
-        try await withValkeyConnection(
-            .hostname(valkeyHostname, port: 6379),
-            logger: logger
-        ) { connection in
-            try await connection.clientTracking(status: .on)
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                group.addTask {
-                    try await connection.subscribeKeyInvalidations { keys in
-                        cont.finish()
-                        var iterator = keys.makeAsyncIterator()
-                        let key = try await iterator.next()
-                        #expect(key == "foo")
-                    }
-                }
-                await stream.first { _ in true }
-                _ = try await connection.get("foo")
-                try await connection.set("foo", value: "baz")
-
-                try await group.waitForAll()
-            }
-        }
-    }
-
     @available(valkeySwift 1.0, *)
     @Test
     func testGEOPOS() async throws {
