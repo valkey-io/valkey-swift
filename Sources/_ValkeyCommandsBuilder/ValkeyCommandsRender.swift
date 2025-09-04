@@ -8,6 +8,7 @@
 /// List of functions where the Response calculation has been disabled because we want
 /// to override the response in the Valkey library
 private let disableResponseCalculationCommands: Set<String> = [
+    "BLMPOP",
     "BZMPOP",
     "BZPOPMAX",
     "BZPOPMIN",
@@ -18,7 +19,6 @@ private let disableResponseCalculationCommands: Set<String> = [
     "ROLE",
     "LMOVE",
     "LMPOP",
-    "SPOP",
     "SSCAN",
     "XAUTOCLAIM",
     "XCLAIM",
