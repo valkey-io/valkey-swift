@@ -57,6 +57,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         @usableFromInline
         let blockingCommandTimeout: TimeAmount
         let clientName: String?
+        let clientRedirectCapability: Bool
     }
     @usableFromInline
     struct PendingCommand {
@@ -286,10 +287,15 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let clientInfoLibName = CLIENT.SETINFO(attr: .libname(valkeySwiftLibraryName))
         let clientInfoLibVersion = CLIENT.SETINFO(attr: .libver(valkeySwiftLibraryVersion))
 
+        var extraCommands = 2
         self.encoder.reset()
         helloCommand.encode(into: &self.encoder)
         clientInfoLibName.encode(into: &self.encoder)
         clientInfoLibVersion.encode(into: &self.encoder)
+        if self.configuration.clientRedirectCapability {
+            extraCommands += 1
+            CLIENT.CAPA(capabilities: ["redirect"]).encode(into: &self.encoder)
+        }
 
         let promise = eventLoop.makePromise(of: RESPToken.self)
 
@@ -300,10 +306,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         self.stateMachine.setConnected(
             context: context,
             pendingHelloCommand: .init(promise: .nio(promise), requestID: 0, deadline: deadline),
-            pendingCommands: [
-                .init(promise: .forget, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libname
-                .init(promise: .forget, requestID: 0, deadline: deadline),  // CLIENT.SETINFO libver
-            ]
+            pendingCommands: .init(repeating: .init(promise: .forget, requestID: 0, deadline: deadline), count: extraCommands)
         )
     }
 
@@ -526,7 +529,8 @@ extension ValkeyChannelHandler.Configuration {
             authentication: other.authentication,
             commandTimeout: .init(other.commandTimeout),
             blockingCommandTimeout: .init(other.blockingCommandTimeout),
-            clientName: other.clientName
+            clientName: other.clientName,
+            clientRedirectCapability: true
         )
     }
 }
