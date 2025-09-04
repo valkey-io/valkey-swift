@@ -8,6 +8,10 @@
 
 import NIOSSL
 
+#if DistributedTracingSupport
+import Tracing
+#endif
+
 /// A configuration object that defines how to connect to a Valkey server.
 ///
 /// `ValkeyConnectionConfiguration` allows you to customize various aspects of the connection,
@@ -112,6 +116,10 @@ public struct ValkeyConnectionConfiguration: Sendable {
     /// Default value is `nil` (no client name is set).
     public var clientName: String?
 
+    #if DistributedTracingSupport
+    public var tracing: ValkeyTracingConfiguration = .init()
+    #endif
+
     /// Creates a new Valkey connection configuration.
     ///
     /// Use this initializer to create a configuration object that can be used to establish
@@ -137,3 +145,26 @@ public struct ValkeyConnectionConfiguration: Sendable {
         self.clientName = clientName
     }
 }
+
+#if DistributedTracingSupport
+public struct ValkeyTracingConfiguration: Sendable {
+
+    public var tracer: (any Tracer)? = InstrumentationSystem.tracer
+
+    public var attributeNames: AttributeNames = .init()
+    public var attributeValue: AttributeValues = .init()
+
+    public struct AttributeNames: Sendable {
+        public var databaseOperationName: String = "db.operation.name"
+        public var databaseSystemName: String = "db.system.name"
+        public var networkPeerAddress: String = "network.peer.address"
+        public var networkPeerPort: String = "network.peer.port"
+        public var serverAddress: String = "server.address"
+        public var serverPort: String = "server.port"
+    }
+
+    public struct AttributeValues: Sendable {
+        public var databaseSystem: String = "valkey"
+    }
+}
+#endif
