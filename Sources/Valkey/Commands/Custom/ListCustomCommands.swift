@@ -31,3 +31,10 @@ extension LMPOP {
     }
     public typealias Response = OptionalResponse?
 }
+
+extension BLMPOP {
+    /// - Returns: One of the following
+    ///     * [Null]: If no element could be popped.
+    ///     * [Array]: List key from which elements were popped.
+    public typealias Response = LMPOP.Response
+}

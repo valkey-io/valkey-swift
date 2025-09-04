@@ -5,10 +5,6 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
-extension SPOP {
-    public typealias Response = [RESPToken]?
-}
-
 extension SSCAN {
     public struct Response: RESPTokenDecodable, Sendable {
         public let cursor: Int
