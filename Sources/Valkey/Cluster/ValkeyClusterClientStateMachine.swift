@@ -601,7 +601,8 @@ package struct ValkeyClusterClientStateMachine<
                 if let pool = self.runningClients[movedError.nodeID]?.pool {
                     return .connectionPool(pool)
                 }
-                // TODO: need to deal with situation where node isn't in list of running clients
+                // allow code to drop through to rebuild cluster state as new node is not in the
+                // running client list
             } else {
                 switch healthyContext.hashSlotShardMap.updateSlots(with: movedError) {
                 case .updatedSlotToUnknownNode:
