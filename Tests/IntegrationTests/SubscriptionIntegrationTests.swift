@@ -500,4 +500,32 @@ struct PubSubIntegratedTests {
         _ = try await connection.del(keys: [key])
         return value
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientCachingRedirect() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                let (stream, cont) = AsyncStream.makeStream(of: Int.self)
+                group.addTask {
+                    try await client.subscribeKeyInvalidations { keys, id in
+                        cont.yield(id)
+                        var iterator = keys.makeAsyncIterator()
+                        let key = try await iterator.next()
+                        #expect(key == "foo")
+                    }
+                }
+                let clientId = await stream.first { _ in true }
+                try await client.withConnection { connection in
+                    try await connection.clientTracking(status: .on, clientId: clientId)
+                    _ = try await connection.get("foo")
+                    try await connection.set("foo", value: "baz")
+
+                    try await group.waitForAll()
+                }
+            }
+        }
+    }
 }
