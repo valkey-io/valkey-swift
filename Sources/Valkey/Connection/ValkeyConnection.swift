@@ -772,11 +772,11 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             future.whenSuccess { _ in
                 logger.debug("Client connected to \(host):\(port)")
             }
-        case .unixDomainSocket(let path):
+        /*case .unixDomainSocket(let path):
             future = connect.connect(unixDomainSocketPath: path)
             future.whenSuccess { _ in
                 logger.debug("Client connected to socket path \(path)")
-            }
+            }*/
         }
 
         return future.flatMapThrowing { channel in
