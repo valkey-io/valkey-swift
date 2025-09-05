@@ -587,6 +587,28 @@ struct ConnectionTests {
         try await channel.close()
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testTriggerGracefulShutdown() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        async let fooResult = connection.get("foo").map { String(buffer: $0) }
+
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
+
+        await connection.triggerGracefulShutdown()
+        #expect(channel.isActive)
+
+        try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
+        #expect(try await fooResult == "Bar")
+
+        try await channel.closeFuture.get()
+    }
+
     #if DistributedTracingSupport
     @Suite
     struct DistributedTracingTests {
