@@ -7,25 +7,30 @@
 //
 import NIOCore
 
-/// Represents a `MOVED` redirection error from a Valkey cluster node.
+/// Represents a redirection error from a Valkey cluster node.
 ///
 /// When a client sends a command to a Valkey cluster node that doesn't own
 /// the hash slot for the specified key, the node responds with a `MOVED` error
 /// containing information about which node actually owns that slot.
 ///
+/// When a client sends a command to a Valkey cluster node for a hash slot that
+/// is currently migrating for a key that does not exist the node responds
+/// with a `ASK` error containing information about which node is importing
+/// that hash slot
+///
 /// This error provides the necessary information for clients to redirect their
 /// request to the correct node in the cluster.
 @usableFromInline
-package struct ValkeyMovedError: Hashable, Sendable {
+package struct ValkeyClusterRedirectionError: Hashable, Sendable {
     @usableFromInline
-    package enum Request: Sendable {
+    package enum Redirection: Sendable {
         case move
         case ask
     }
 
     /// Request type
     @usableFromInline
-    package var request: Request
+    package var redirection: Redirection
 
     /// The hash slot number that triggered the redirection.
     package var slot: HashSlot
@@ -36,8 +41,8 @@ package struct ValkeyMovedError: Hashable, Sendable {
     /// The port number of the node that owns the requested hash slot.
     package var port: Int
 
-    package init(request: Request, slot: HashSlot, endpoint: String, port: Int) {
-        self.request = request
+    package init(request: Redirection, slot: HashSlot, endpoint: String, port: Int) {
+        self.redirection = request
         self.slot = slot
         self.endpoint = endpoint
         self.port = port
@@ -49,23 +54,24 @@ package struct ValkeyMovedError: Hashable, Sendable {
     }
 }
 
-extension ValkeyMovedError {
+extension ValkeyClusterRedirectionError {
     static let movedPrefix = "MOVED "
     static let askPrefix = "ASK "
 
-    /// Attempts to parse a Valkey MOVED error from a String.
+    /// Attempts to parse a Valkey MOVED/ASK error from a String.
     ///
     /// This method extracts the hash slot, endpoint, and port information from the string
-    /// if it represents a Valkey MOVED error. MOVED errors are returned by Valkey cluster
-    /// nodes when a client attempts to access a key that belongs to a different node.
+    /// if it represents a Valkey MOVED/ASK error. Redirection errors are returned by Valkey
+    /// cluster nodes when a client attempts to access a key that belongs to a different node
+    /// or the hashslot is currently migrating.
     ///
     /// The error format is expected to be: `"MOVED <slot> <endpoint>:<port>"`
     ///
-    /// - Returns: A `ValkeyMovedError` if the token represents a valid MOVED error, or `nil` otherwise.
+    /// - Returns: A `ValkeyClusterRedirectionError` if the token represents a valid MOVED/ASK error, or `nil` otherwise.
     @usableFromInline
     init?(_ errorMessage: String) {
         let msg: String.SubSequence
-        let request: Request
+        let request: Redirection
         if errorMessage.hasPrefix(Self.movedPrefix) {
             msg = errorMessage.dropFirst(Self.movedPrefix.count)
             request = .move
@@ -97,6 +103,6 @@ extension ValkeyMovedError {
             return nil
         }
 
-        self = ValkeyMovedError(request: request, slot: slot, endpoint: Swift.String(endpoint), port: port)
+        self = ValkeyClusterRedirectionError(request: request, slot: slot, endpoint: Swift.String(endpoint), port: port)
     }
 }
