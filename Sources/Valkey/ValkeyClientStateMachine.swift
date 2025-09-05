@@ -65,7 +65,7 @@ struct ValkeyClientStateMachine<
         if let pool = self.runningClients[nodeID]?.pool {
             return pool
         } else {
-            precondition(false)
+            preconditionFailure()
         }
     }
 
@@ -85,8 +85,8 @@ struct ValkeyClientStateMachine<
     }
 
     struct AddReplicasAction {
-        var poolsToShutdown: [ConnectionPool]
-        var poolsToRun: [(ConnectionPool, ValkeyNodeID)]
+        var clientsToShutdown: [ConnectionPool]
+        var clientsToRun: [ConnectionPool]
     }
 
     mutating func addReplicas(nodeIDs: [ValkeyNodeID]) -> AddReplicasAction {
@@ -99,7 +99,7 @@ struct ValkeyClientStateMachine<
             let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: true)
             let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: nodeIDs)
             self.state = .running(newNodes)
-            return .init(poolsToShutdown: action.poolsToShutdown, poolsToRun: action.poolsToRun)
+            return .init(clientsToShutdown: action.poolsToShutdown, clientsToRun: action.poolsToRun.map { $0.0 })
         }
     }
 }
