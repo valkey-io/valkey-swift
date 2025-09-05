@@ -20,7 +20,7 @@ import NIOCore
 ///
 /// The protocol requires both hostname and IP address properties to be available, though either may be nil
 /// depending on how the node is identified. The ``endpoint`` property provides the actual connection target.
-public protocol ValkeyNodeDescriptionProtocol: Sendable, Equatable {
+public protocol ValkeyNodeDescriptionProtocol: Sendable {
     /// The node's host name, if available.
     ///
     /// This may be nil if the node is identified solely by IP address.
