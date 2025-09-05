@@ -9,7 +9,6 @@ import Foundation
 import Logging
 import Testing
 import Valkey
-import XCTest
 
 @Suite(
     "Cluster Integration Tests",

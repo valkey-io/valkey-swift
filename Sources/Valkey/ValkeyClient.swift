@@ -39,6 +39,7 @@ public final class ValkeyClient: Sendable {
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
     /// Logger
+    @usableFromInline
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
@@ -177,8 +178,17 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Returns: Response from Valkey command
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        let token = try await self._execute(command)
-        return try Command.Response(fromRESP: token)
+        do {
+            let token = try await self._execute(command)
+            return try Command.Response(fromRESP: token)
+        } catch let error as ValkeyClientError where error.errorCode == .commandError {
+            guard let errorMessage = error.message, let redirectError = ValkeyRedirectError(errorMessage) else {
+                throw error
+            }
+            self.logger.debug("Received redirect error \(redirectError)")
+            // currently throw error, but we should set the state
+            throw error
+        }
     }
 
     @inlinable
