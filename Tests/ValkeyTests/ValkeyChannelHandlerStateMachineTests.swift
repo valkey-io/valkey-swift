@@ -146,7 +146,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         var stateMachine = ValkeyChannelHandler.StateMachine<String>()
         stateMachine.setConnected(context: "testGracefulShutdown")
         stateMachine.receiveHelloResponse()
-        switch stateMachine.gracefulShutdown() {
+        switch stateMachine.triggerGracefulShutdown() {
         case .closeConnection(let context):
             #expect(context == "testGracefulShutdown")
         default:
@@ -168,10 +168,10 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        switch stateMachine.gracefulShutdown() {
-        case .waitForPendingCommands(let context):
-            #expect(context == "testGracefulShutdown")
-        default:
+        switch stateMachine.triggerGracefulShutdown() {
+        case .doNothing:
+            break
+        case .closeConnection:
             Issue.record("Invalid waitForPendingCommands action")
         }
         expect(
@@ -207,10 +207,10 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        switch stateMachine.gracefulShutdown() {
-        case .waitForPendingCommands(let context):
-            #expect(context == "testClosedClosingState")
-        default:
+        switch stateMachine.triggerGracefulShutdown() {
+        case .doNothing:
+            break
+        case .closeConnection:
             Issue.record("Invalid waitForPendingCommands action")
         }
         expect(
@@ -333,7 +333,7 @@ struct ValkeyChannelHandlerStateMachineTests {
         case .throwError:
             Issue.record("Invalid sendCommand action")
         }
-        _ = stateMachine.gracefulShutdown()
+        _ = stateMachine.triggerGracefulShutdown()
         switch stateMachine.cancel(requestID: 23) {
         case .failPendingCommandsAndClose(let context, let cancel, let closeConnectionDueToCancel):
             #expect(context == "testCancelGracefulShutdown")
