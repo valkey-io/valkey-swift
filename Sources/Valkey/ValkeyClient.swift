@@ -42,9 +42,10 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
-    /// subscription state
+    /// subscription connection state
     @usableFromInline
     let subscriptionConnectionStateMachine: Mutex<ConnectionStateMachine>
+    @usableFromInline
     let subscriptionConnectionIDGenerator: ConnectionIDGenerator
 
     enum RunAction: Sendable {

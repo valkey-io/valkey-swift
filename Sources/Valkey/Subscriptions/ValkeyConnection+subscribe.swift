@@ -48,18 +48,11 @@ extension ValkeyConnection {
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        let command = SUBSCRIBE(channels: channels)
-        let (id, stream) = try await subscribe(command: command, filters: channels.map { .channel($0) })
-        let value: Value
-        do {
-            value = try await process(stream)
-            try Task.checkCancellation()
-        } catch {
-            _ = try? await unsubscribe(id: id)
-            throw error
-        }
-        _ = try await unsubscribe(id: id)
-        return value
+        try await self.subscribe(
+            command: SUBSCRIBE(channels: channels),
+            filters: channels.map { .channel($0) },
+            process: process
+        )
     }
 
     /// Subscribe to list of channel patterns and run closure with subscription
@@ -101,18 +94,11 @@ extension ValkeyConnection {
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        let command = PSUBSCRIBE(patterns: patterns)
-        let (id, stream) = try await subscribe(command: command, filters: patterns.map { .pattern($0) })
-        let value: Value
-        do {
-            value = try await process(stream)
-            try Task.checkCancellation()
-        } catch {
-            _ = try? await unsubscribe(id: id)
-            throw error
-        }
-        _ = try await unsubscribe(id: id)
-        return value
+        try await self.subscribe(
+            command: PSUBSCRIBE(patterns: patterns),
+            filters: patterns.map { .pattern($0) },
+            process: process
+        )
     }
 
     /// Subscribe to list of shard channels and run closure with subscription
@@ -123,17 +109,17 @@ extension ValkeyConnection {
     /// pattern
     ///
     /// - Parameters:
-    ///   - shardchannel: list of shard channels to subscribe to
+    ///   - shardchannels: list of shard channels to subscribe to
     ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
     public func ssubscribe<Value>(
-        to shardchannel: String...,
+        to shardchannels: String...,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        try await self.ssubscribe(to: shardchannel, process: process)
+        try await self.ssubscribe(to: shardchannels, process: process)
     }
 
     /// Subscribe to list of shard channels and run closure with subscription
@@ -144,28 +130,21 @@ extension ValkeyConnection {
     /// pattern
     ///
     /// - Parameters:
-    ///   - shardchannel: list of shard channels to subscribe to
+    ///   - shardchannels: list of shard channels to subscribe to
     ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
     public func ssubscribe<Value>(
-        to shardchannel: [String],
+        to shardchannels: [String],
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        let command = SSUBSCRIBE(shardchannels: shardchannel)
-        let (id, stream) = try await subscribe(command: command, filters: shardchannel.map { .shardChannel($0) })
-        let value: Value
-        do {
-            value = try await process(stream)
-            try Task.checkCancellation()
-        } catch {
-            _ = try? await unsubscribe(id: id)
-            throw error
-        }
-        _ = try await unsubscribe(id: id)
-        return value
+        try await self.subscribe(
+            command: SSUBSCRIBE(shardchannels: shardchannels),
+            filters: shardchannels.map { .shardChannel($0) },
+            process: process
+        )
     }
 
     /// Subscribe to key invalidation channel required for client-side caching
@@ -178,16 +157,44 @@ extension ValkeyConnection {
     /// channel
     ///
     /// - Parameters:
+    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with async sequence of key invalidations
     /// - Returns: Return value of closure
     @inlinable
     public func subscribeKeyInvalidations<Value>(
+        isolation: isolated (any Actor)? = #isolation,
         process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> sending Value
     ) async throws -> sending Value {
         try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
             let keys = subscription.map { ValkeyKey($0.message) }
             return try await process(keys)
         }
+    }
+
+    @inlinable
+    func subscribe<Value>(
+        command: some ValkeyCommand,
+        filters: [ValkeySubscriptionFilter],
+        isolation: isolated (any Actor)? = #isolation,
+        process: (ValkeySubscription) async throws -> sending Value
+    ) async throws -> sending Value {
+        let (id, stream) = try await subscribe(command: command, filters: filters)
+        let value: Value
+        do {
+            value = try await process(stream)
+            try Task.checkCancellation()
+        } catch {
+            // call unsubscribe in unstructured Task to avoid it being cancelled
+            _ = await Task {
+                try await unsubscribe(id: id)
+            }.result
+            throw error
+        }
+        // call unsubscribe in unstructured Task to avoid it being cancelled
+        _ = try await Task {
+            try await unsubscribe(id: id)
+        }.value
+        return value
     }
 
     @usableFromInline

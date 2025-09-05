@@ -12,32 +12,7 @@ import _ValkeyConnectionPool
 
 @available(valkeySwift 1.0, *)
 extension ValkeyClient {
-    /// Run operation with the valkey subscription connection
-    ///
-    /// - Parameters:
-    ///   - isolation: Actor isolation
-    ///   - operation: Closure to run with subscription connection
     @usableFromInline
-    func withSubscriptionConnection<Value>(
-        isolation: isolated (any Actor)? = #isolation,
-        _ operation: (ValkeyConnection) async throws -> sending Value
-    ) async throws -> sending Value {
-        let id = self.subscriptionConnectionIDGenerator.next()
-
-        let connection = try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
-                self.leaseSubscriptionConnection(id: id, request: cont)
-            }
-        } onCancel: {
-            self.cancelSubscriptionConnection(id: id)
-        }
-
-        defer {
-            self.releaseSubscriptionConnection(id: id)
-        }
-        return try await operation(connection)
-    }
-
     func leaseSubscriptionConnection(id: Int, request: CheckedContinuation<ValkeyConnection, Error>) {
         self.logger.trace("Get subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
         enum LeaseAction {
@@ -95,6 +70,7 @@ extension ValkeyClient {
 
     }
 
+    @usableFromInline
     func releaseSubscriptionConnection(id: Int) {
         self.logger.trace("Release subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
         let action = self.subscriptionConnectionStateMachine.withLock { stateMachine in
@@ -110,6 +86,7 @@ extension ValkeyClient {
 
     }
 
+    @usableFromInline
     func cancelSubscriptionConnection(id: Int) {
         self.logger.trace("Cancel subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
         let action = self.subscriptionConnectionStateMachine.withLock { stateMachine in
@@ -287,6 +264,14 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
                 self = .acquired(state)
                 return .doNothing
             }
+        }
+    }
+
+    func isEmpty() -> Bool {
+        switch self.state {
+        case .uninitialized: true
+        case .acquiring: false
+        case .acquired: false
         }
     }
 
