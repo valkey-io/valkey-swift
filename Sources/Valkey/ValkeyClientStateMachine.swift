@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+@usableFromInline
 @available(valkeySwift 1.0, *)
 struct ValkeyClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
@@ -35,10 +36,26 @@ struct ValkeyClientStateMachine<
         }
     }
 
+    @usableFromInline
+    enum State {
+        case uninitialized
+        case running(ValkeyNodeIDs)
+    }
+    @usableFromInline
     var runningClients: ValkeyRunningClientsStateMachine<ConnectionPool, ConnectionPoolFactory>
-    var nodes: ValkeyNodeIDs
+    @usableFromInline
+    var state: State
 
+    init(poolFactory: ConnectionPoolFactory) {
+        self.runningClients = .init(poolFactory: poolFactory)
+        self.state = .uninitialized
+    }
+
+    @usableFromInline
     func getNode(readOnly: Bool) -> ConnectionPool {
+        guard case .running(let nodes) = self.state else {
+            preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
+        }
         let nodeID =
             if readOnly {
                 nodes.nodes[Int.random(in: 0..<nodes.nodes.count)]
@@ -52,15 +69,15 @@ struct ValkeyClientStateMachine<
         }
     }
 
-    enum AddPrimaryAction {
+    enum SetPrimaryAction {
         case runNodeAndFindReplicas(ConnectionPool)
         case findReplicas
         case doNothing
     }
-    mutating func addPrimary(nodeID: ValkeyNodeID) -> AddPrimaryAction {
-        guard self.nodes.primary != nodeID else { return .doNothing }
-        self.nodes = .init(primary: nodeID)
+    mutating func setPrimary(nodeID: ValkeyNodeID) -> SetPrimaryAction {
+        let nodes = ValkeyNodeIDs(primary: nodeID)
         let action = self.runningClients.addNode(.init(endpoint: nodeID.endpoint, port: nodeID.port, useTLS: false))
+        self.state = .running(nodes)
         return switch action {
         case .doNothing: .findReplicas
         case .runNode(let pool): .runNodeAndFindReplicas(pool)
@@ -73,9 +90,16 @@ struct ValkeyClientStateMachine<
     }
 
     mutating func addReplicas(nodeIDs: [ValkeyNodeID]) -> AddReplicasAction {
-        var nodes = [ValkeyNodeDescription(endpoint: self.nodes.primary.endpoint, port: self.nodes.primary.port, useTLS: false)]
-        nodes.append(contentsOf: nodeIDs.lazy.map { .init(endpoint: $0.endpoint, port: $0.port, useTLS: false) })
-        let action = self.runningClients.updateNodes(nodes, removeUnmentionedPools: true)
-        return .init(poolsToShutdown: action.poolsToShutdown, poolsToRun: action.poolsToRun)
+        switch self.state {
+        case .uninitialized:
+            preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
+        case .running(let nodes):
+            var nodeDescriptions = [ValkeyNodeDescription(endpoint: nodes.primary.endpoint, port: nodes.primary.port, useTLS: false)]
+            nodeDescriptions.append(contentsOf: nodeIDs.lazy.map { .init(endpoint: $0.endpoint, port: $0.port, useTLS: false) })
+            let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: true)
+            let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: nodeIDs)
+            self.state = .running(newNodes)
+            return .init(poolsToShutdown: action.poolsToShutdown, poolsToRun: action.poolsToRun)
+        }
     }
 }
