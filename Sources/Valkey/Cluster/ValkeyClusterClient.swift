@@ -164,12 +164,12 @@ public final class ValkeyClusterClient: Sendable {
             } catch ValkeyClusterError.noNodeToTalkTo {
                 // TODO: Rerun node discovery!
             } catch let error as ValkeyClientError where error.errorCode == .commandError {
-                guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
+                guard let errorMessage = error.message, let redirectError = ValkeyClusterRedirectionError(errorMessage) else {
                     throw error
                 }
-                self.logger.trace("Received move error", metadata: ["error": "\(movedError)"])
-                clientSelector = { try await self.nodeClient(for: movedError) }
-                asking = (movedError.request == .ask)
+                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
+                clientSelector = { try await self.nodeClient(for: redirectError) }
+                asking = (redirectError.redirection == .ask)
             }
         }
         throw CancellationError()
@@ -383,7 +383,7 @@ public final class ValkeyClusterClient: Sendable {
     ///     the MOVED error after multiple attempts
     ///   - `ValkeyClusterError.clientRequestCancelled` if the request is cancelled
     @usableFromInline
-    /* private */ func nodeClient(for moveError: ValkeyMovedError) async throws -> ValkeyNodeClient {
+    /* private */ func nodeClient(for moveError: ValkeyClusterRedirectionError) async throws -> ValkeyNodeClient {
         var counter = 0
         while counter < 3 {
             defer { counter += 1 }

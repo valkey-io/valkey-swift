@@ -577,7 +577,7 @@ package struct ValkeyClusterClientStateMachine<
     }
 
     @usableFromInline
-    package mutating func poolFastPath(for movedError: ValkeyMovedError) throws(ValkeyClusterError) -> PoolForMovedErrorAction {
+    package mutating func poolFastPath(for redirectError: ValkeyClusterRedirectionError) throws(ValkeyClusterError) -> PoolForMovedErrorAction {
         switch self.clusterState {
         case .unavailable(let unavailableContext):
             if unavailableContext.start.advanced(by: self.configuration.circuitBreakerDuration) > self.clock.now {
@@ -586,10 +586,10 @@ package struct ValkeyClusterClientStateMachine<
             throw ValkeyClusterError.noConsensusReachedCircuitBreakerOpen
 
         case .degraded(var degradedContext):
-            switch degradedContext.hashSlotShardMap.updateSlots(with: movedError) {
+            switch degradedContext.hashSlotShardMap.updateSlots(with: redirectError) {
             case .updatedSlotToExistingNode, .updatedSlotToUnknownNode:
                 self.clusterState = .degraded(degradedContext)
-                if let pool = self.runningClients[movedError.nodeID]?.pool {
+                if let pool = self.runningClients[redirectError.nodeID]?.pool {
                     return .connectionPool(pool)
                 }
                 return .waitForDiscovery
@@ -597,19 +597,19 @@ package struct ValkeyClusterClientStateMachine<
 
         case .healthy(var healthyContext):
             // If request is ASK, don't update slots
-            if movedError.request == .ask {
-                if let pool = self.runningClients[movedError.nodeID]?.pool {
+            if redirectError.redirection == .ask {
+                if let pool = self.runningClients[redirectError.nodeID]?.pool {
                     return .connectionPool(pool)
                 }
                 // allow code to drop through to rebuild cluster state as new node is not in the
                 // running client list
             } else {
-                switch healthyContext.hashSlotShardMap.updateSlots(with: movedError) {
+                switch healthyContext.hashSlotShardMap.updateSlots(with: redirectError) {
                 case .updatedSlotToUnknownNode:
                     break
 
                 case .updatedSlotToExistingNode:
-                    if let pool = self.runningClients[movedError.nodeID]?.pool {
+                    if let pool = self.runningClients[redirectError.nodeID]?.pool {
                         self.clusterState = .healthy(healthyContext)
                         return .connectionPool(pool)
                     }
