@@ -35,17 +35,17 @@ public final class ValkeyNodeClient: Sendable {
         ContinuousClock
     >
     /// Server address
-    let serverAddress: ValkeyServerAddress
+    public let serverAddress: ValkeyServerAddress
     /// Connection pool
     let connectionPool: Pool
 
     let connectionFactory: ValkeyConnectionFactory
     /// configuration
-    var configuration: ValkeyClientConfiguration { self.connectionFactory.configuration }
+    public var configuration: ValkeyClientConfiguration { self.connectionFactory.configuration }
     /// EventLoopGroup to use
-    let eventLoopGroup: any EventLoopGroup
+    public let eventLoopGroup: any EventLoopGroup
     /// Logger
-    let logger: Logger
+    public let logger: Logger
 
     package init(
         _ address: ValkeyServerAddress,

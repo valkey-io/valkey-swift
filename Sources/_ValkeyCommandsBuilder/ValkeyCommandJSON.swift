@@ -51,7 +51,11 @@ struct ValkeyCommand: Decodable {
             }
             self.multiple = multiple
             self.optional = try container.decodeIfPresent(Bool.self, forKey: .optional) ?? false
-            self.token = try container.decodeIfPresent(String.self, forKey: .token)
+            var token = try container.decodeIfPresent(String.self, forKey: .token)
+            if token == "\"\"" {
+                token = ""
+            }
+            self.token = token
             self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
             self.keySpecIndex = try container.decodeIfPresent(Int.self, forKey: .keySpecIndex)
         }
@@ -103,7 +107,11 @@ struct ValkeyCommand: Decodable {
             }
             self.multiple = multiple
             self.optional = try container.decodeIfPresent(Bool.self, forKey: .optional) ?? false
-            self.token = try container.decodeIfPresent(String.self, forKey: .token)
+            var token = try container.decodeIfPresent(String.self, forKey: .token)
+            if token == "\"\"" {
+                token = ""
+            }
+            self.token = token
             self.arguments = try container.decodeIfPresent([Argument].self, forKey: .arguments)
             self.combinedWithCount = false
         }
