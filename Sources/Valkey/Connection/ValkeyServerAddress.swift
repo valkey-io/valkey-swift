@@ -11,7 +11,6 @@ import NIOCore
 public struct ValkeyServerAddress: Sendable, Equatable, Hashable {
     enum _Internal: Equatable, Hashable {
         case hostname(_ host: String, port: Int)
-        case unixDomainSocket(path: String)
     }
 
     let value: _Internal
@@ -21,6 +20,4 @@ public struct ValkeyServerAddress: Sendable, Equatable, Hashable {
 
     // Address define by host and port
     public static func hostname(_ host: String, port: Int = 6379) -> Self { .init(.hostname(host, port: port)) }
-    // Address defined by unxi domain socket
-    public static func unixDomainSocket(path: String) -> Self { .init(.unixDomainSocket(path: path)) }
 }
