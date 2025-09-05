@@ -33,7 +33,7 @@ public final class ValkeyClient: Sendable {
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
-    let node: ValkeyNodeClient
+    let stateMachine: Mutex<ValkeyClientStateMachine<ValkeyNodeClient, ValkeyNodeClientFactory>>
     /// configuration
     var configuration: ValkeyClientConfiguration { self.nodeClientFactory.configuration }
     /// EventLoopGroup to use
@@ -96,11 +96,20 @@ public final class ValkeyClient: Sendable {
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
         self.runningAtomic = .init(false)
-        self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        self.stateMachine = .init(.init(poolFactory: self.nodeClientFactory))
         self.subscriptionConnectionStateMachine = .init(.init())
         self.subscriptionConnectionIDGenerator = .init()
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
-        self.queueAction(.runNodeClient(self.node))
+        switch address.value {
+        case .hostname(let host, let port):
+            let action = self.stateMachine.withLock { $0.setPrimary(nodeID: .init(endpoint: host, port: port)) }
+            switch action {
+            case .runNodeAndFindReplicas(let client):
+                self.queueAction(.runNodeClient(client))
+            case .findReplicas, .doNothing:
+                preconditionFailure("First time you call setPrimary it should always return runNodeAndFindReplicas")
+            }
+        }
     }
 }
 
@@ -141,7 +150,8 @@ extension ValkeyClient {
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        try await self.node.withConnection(isolation: isolation, operation: operation)
+        let node = self.stateMachine.withLock { $0.getNode(readOnly: false) }
+        return try await node.withConnection(isolation: isolation, operation: operation)
     }
 }
 
