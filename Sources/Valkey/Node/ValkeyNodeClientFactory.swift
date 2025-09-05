@@ -22,7 +22,7 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
     let connectionFactory: ValkeyConnectionFactory
 
     @usableFromInline
-    package struct NodeDescription {
+    package struct NodeDescription: Equatable {
         let address: ValkeyServerAddress
         let readOnly: Bool
     }
