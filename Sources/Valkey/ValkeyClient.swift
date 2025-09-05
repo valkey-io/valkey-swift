@@ -37,6 +37,7 @@ public final class ValkeyClient: Sendable {
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
+        case runRole(ValkeyNodeClient)
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -90,6 +91,7 @@ public final class ValkeyClient: Sendable {
             switch action {
             case .runNodeAndFindReplicas(let client):
                 self.queueAction(.runNodeClient(client))
+                self.queueAction(.runRole(client))
             case .findReplicas, .doNothing:
                 preconditionFailure("First time you call setPrimary it should always return runNodeAndFindReplicas")
             }
@@ -130,6 +132,7 @@ extension ValkeyClient {
     /// - Returns: Value returned by closure
     @inlinable
     public func withConnection<Value>(
+        readOnly: Bool = false,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         let node = self.stateMachine.withLock { $0.getNode() }
@@ -147,6 +150,26 @@ extension ValkeyClient {
         switch action {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
+
+        case .runRole(let nodeClient):
+            var replicas: [ValkeyNodeID] = []
+            if let role = try? await nodeClient.execute(ROLE()) {
+                switch role {
+                case .primary(let primary):
+                    replicas = primary.replicas.map { .init(endpoint: $0.ip, port: $0.port) }
+                case .replica:
+                    break
+                case .sentinel:
+                    preconditionFailure("Valkey-swift does not support sentinel at this point in time.")
+                }
+            }
+            let action = self.stateMachine.withLock { $0.addReplicas(nodeIDs: replicas) }
+            for node in action.clientsToRun {
+                self.queueAction(.runNodeClient(node))
+            }
+            for node in action.clientsToShutdown {
+                node.triggerGracefulShutdown()
+            }
         }
     }
 }
