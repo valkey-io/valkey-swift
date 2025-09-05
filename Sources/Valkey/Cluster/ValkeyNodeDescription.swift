@@ -65,6 +65,17 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
         self.port = description.port
     }
 
+    /// Creates a node description.
+    ///
+    /// - Parameter description: A value conforming to `ValkeyNodeDescriptionProtocol` that provides
+    ///                         the necessary node information.
+    package init(endpoint: String, port: Int) {
+        self.host = nil
+        self.ip = nil
+        self.endpoint = endpoint
+        self.port = port
+    }
+
     /// Creates a node description from a cluster node description.
     ///
     /// This initializer converts a `ValkeyClusterDescription.Node` to a `ValkeyNodeDescription`,
