@@ -16,7 +16,7 @@ import NIOCore
 /// This error provides the necessary information for clients to redirect their
 /// request to the correct node in the cluster.
 @usableFromInline
-package struct ValkeyMovedError: Hashable, Sendable {
+package struct ValkeyMovedError: Error, Hashable, Sendable {
     /// The hash slot number that triggered the redirection.
     package var slot: HashSlot
 

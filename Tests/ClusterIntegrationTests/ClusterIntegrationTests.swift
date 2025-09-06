@@ -65,7 +65,6 @@ struct ClusterIntegrationTests {
                     SET(key, value: "cluster pipeline test"),
                     GET(key)
                 )
-
                 let response = try results.1.get()
                 #expect(response.map { String(buffer: $0) } == "cluster pipeline test")
             }
@@ -98,6 +97,39 @@ struct ClusterIntegrationTests {
                 try await clusterClient.set(key, value: "baz")
                 let response = try await clusterClient.get(key)
                 #expect(response.map { String(buffer: $0) } == "baz")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testFailoverWithPipeline() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { clusterClient in
+            try await Self.withKey(connection: clusterClient) { key in
+                try await clusterClient.set(key, value: "bar")
+                let cluster = try await clusterClient.clusterShards()
+                let shard = try #require(
+                    cluster.shards.first { shard in
+                        let hashSlot = HashSlot(key: key)
+                        return shard.slots[0].lowerBound <= hashSlot && shard.slots[0].upperBound >= hashSlot
+                    }
+                )
+                let replica = try #require(shard.nodes.first { $0.role == .replica })
+                let port = try #require(replica.port)
+                // connect to replica and call CLUSTER FAILOVER
+                try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
+                    try await client.clusterFailover()
+                }
+                let results = try await clusterClient.execute(
+                    SET(key, value: "cluster pipeline test"),
+                    GET(key)
+                )
+                let response = try results.1.get()
+                #expect(response.map { String(buffer: $0) } == "cluster pipeline test")
             }
         }
     }
