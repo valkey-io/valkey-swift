@@ -528,13 +528,13 @@ package struct ValkeyClusterClientStateMachine<
     }
 
     @inlinable
-    package func poolFastPath(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ConnectionPool {
+    package func poolFastPath(for slot: HashSlot?) throws(ValkeyClusterError) -> ConnectionPool {
         switch self.clusterState {
         case .unavailable:
             throw ValkeyClusterError.clusterIsUnavailable
 
         case .degraded(let context):
-            let shardID = try context.hashSlotShardMap.nodeID(for: slots)
+            let shardID = try context.hashSlotShardMap.nodeID(for: slot)
             if let pool = self.runningClients[shardID.primary]?.pool {
                 return pool
             }
@@ -544,7 +544,7 @@ package struct ValkeyClusterClientStateMachine<
             throw ValkeyClusterError.clusterIsMissingMovedErrorNode
 
         case .healthy(let context):
-            let shardID = try context.hashSlotShardMap.nodeID(for: slots)
+            let shardID = try context.hashSlotShardMap.nodeID(for: slot)
             if let pool = self.runningClients[shardID.primary]?.pool {
                 return pool
             }
