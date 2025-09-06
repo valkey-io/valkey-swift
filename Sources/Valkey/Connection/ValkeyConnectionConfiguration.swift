@@ -147,6 +147,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
 }
 
 #if DistributedTracingSupport
+@available(valkeySwift 1.0, *)
 public struct ValkeyTracingConfiguration: Sendable {
 
     public var tracer: (any Tracer)? = InstrumentationSystem.tracer
