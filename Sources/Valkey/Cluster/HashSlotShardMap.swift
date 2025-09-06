@@ -75,14 +75,14 @@ package struct HashSlotShardMap: Sendable {
     /// All slots must map to the same shard, otherwise an error is thrown.
     /// If no slots are provided, a random shard is returned.
     ///
-    /// - Parameter slots: A collection of hash slots that should map to the same shard
+    /// - Parameter slot: An optional hash slot
     /// - Returns: The shard node information for the given slots
     /// - Throws: `ValkeyClusterError.clusterHasNoNodes` if the cluster has no nodes
     ///           `ValkeyClusterError.clusterIsMissingSlotAssignment` if any slot is unassigned
     ///           `ValkeyClusterError.keysInCommandRequireMultipleNodes` if slots map to different shards
     @usableFromInline
-    package func nodeID(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ValkeyShardNodeIDs {
-        guard let firstSlot = slots.first else {
+    package func nodeID(for slot: HashSlot?) throws(ValkeyClusterError) -> ValkeyShardNodeIDs {
+        guard let slot else {
             if let shardID = self.shardIDToShard.randomElement() {
                 return shardID
             } else {
@@ -90,22 +90,10 @@ package struct HashSlotShardMap: Sendable {
             }
         }
 
-        let ogNodeID = self.slotToShardID[Int(firstSlot.rawValue)]
-        guard let ogNodeIndex = ogNodeID.value else {
+        guard let shardID = self.slotToShardID[Int(slot.rawValue)].value else {
             throw ValkeyClusterError.clusterIsMissingSlotAssignment
         }
-
-        for slot in slots.dropFirst() {
-            let nodeID = self.slotToShardID[Int(slot.rawValue)]
-            if nodeID == .missing {
-                throw ValkeyClusterError.clusterIsMissingSlotAssignment
-            }
-            guard ogNodeID == nodeID else {
-                throw ValkeyClusterError.keysInCommandRequireMultipleNodes
-            }
-        }
-
-        return self.shardIDToShard[ogNodeIndex]
+        return self.shardIDToShard[shardID]
     }
 
     /// Updates the cluster mapping with new shard information.
