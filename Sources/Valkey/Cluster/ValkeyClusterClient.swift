@@ -165,6 +165,11 @@ public final class ValkeyClusterClient: Sendable {
         throw CancellationError()
     }
 
+    @usableFromInline
+    enum WasItMoved<Command: ValkeyCommand> {
+        case moved(Command)
+        case result(Result<Command.Response, Error>)
+    }
     /// Pipeline a series of commands to Valkey cluster connection
     ///
     /// Once all the responses for the commands have been received the function returns
@@ -176,6 +181,21 @@ public final class ValkeyClusterClient: Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        var movedError: ValkeyMovedError? = nil
+        func mapResultToMovedResult<C: ValkeyCommand>(command: C, result: Result<C.Response, Error>) -> WasItMoved<C> {
+            do {
+                return try .result(.success(result.get()))
+            } catch let error as ValkeyClientError where error.errorCode == .commandError {
+                guard let errorMessage = error.message, let parsedMovedError = ValkeyMovedError(errorMessage) else {
+                    return .result(.failure(error))
+                }
+                self.logger.trace("Received move error", metadata: ["error": "\(parsedMovedError)"])
+                movedError = parsedMovedError
+                return .moved(command)
+            } catch {
+                return .result(.failure(error))
+            }
+        }
         var hashSlot: HashSlot? = nil
         for command in repeat each commands {
             let newHashSlot = try self.hashSlot(for: command.keysAffected)
@@ -191,6 +211,10 @@ public final class ValkeyClusterClient: Sendable {
         do {
             let results = try await node.withConnection { connection in
                 await connection.execute(repeat (each commands))
+            }
+            let movedResult = (repeat mapResultToMovedResult(command: each commands, result: each results))
+            if let movedError {
+                let node = try await self.nodeClient(for: movedError)
             }
             return results
         } catch {
