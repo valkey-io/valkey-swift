@@ -54,6 +54,26 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testPipeline() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            try await Self.withKey(suffix: "{foo}", connection: client) { key in
+                let results = try await client.execute(
+                    SET(key, value: "cluster pipeline test"),
+                    GET(key)
+                )
+
+                let response = try results.1.get()
+                #expect(response.map { String(buffer: $0) } == "cluster pipeline test")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testFailover() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
@@ -84,10 +104,11 @@ struct ClusterIntegrationTests {
 
     @available(valkeySwift 1.0, *)
     static func withKey<Value>(
+        suffix: String = "",
         connection: some ValkeyClientProtocol,
         _ operation: (ValkeyKey) async throws -> Value
     ) async throws -> Value {
-        let key = ValkeyKey(UUID().uuidString)
+        let key = ValkeyKey("\(UUID().uuidString)\(suffix)")
         let result: Result<Value, any Error>
         do {
             result = try await .success(operation(key))

@@ -165,6 +165,39 @@ public final class ValkeyClusterClient: Sendable {
         throw CancellationError()
     }
 
+    /// Pipeline a series of commands to Valkey cluster connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// a parameter pack of Results, one for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the results of all the commands
+    @inlinable
+    public func execute<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        var hashSlot: HashSlot? = nil
+        for command in repeat each commands {
+            let newHashSlot = try self.hashSlot(for: command.keysAffected)
+            if let newHashSlot {
+                if let hashSlot {
+                    guard newHashSlot == hashSlot else { throw ValkeyClusterError.keysInCommandRequireMultipleHashSlots }
+                } else {
+                    hashSlot = newHashSlot
+                }
+            }
+        }
+        let node = try await self.nodeClient(for: hashSlot)
+        do {
+            let results = try await node.withConnection { connection in
+                await connection.execute(repeat (each commands))
+            }
+            return results
+        } catch {
+            return (repeat Result<(each Command).Response, Error>.failure(error))
+        }
+    }
+
     /// Get connection from cluster and run operation using connection
     ///
     /// - Parameters:
