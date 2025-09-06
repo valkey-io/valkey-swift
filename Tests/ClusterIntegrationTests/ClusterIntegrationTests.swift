@@ -55,6 +55,25 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testPipeline() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            try await Self.withKey(connection: client, suffix: "{foo}") { key in
+                let results = try await client.execute(
+                    SET(key, value: "cluster pipeline test"),
+                    GET(key)
+                )
+                let response = try results.1.get()
+                #expect(response.map { String(buffer: $0) } == "cluster pipeline test")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testFailover() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
@@ -79,6 +98,43 @@ struct ClusterIntegrationTests {
                 try await clusterClient.set(key, value: "baz")
                 let response = try await clusterClient.get(key)
                 #expect(response.map { String(buffer: $0) } == "baz")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testFailoverWithPipeline() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { clusterClient in
+            try await Self.withKey(connection: clusterClient) { key in
+                try await clusterClient.set(key, value: "bar")
+                let cluster = try await clusterClient.clusterShards()
+                let shard = try #require(
+                    cluster.shards.first { shard in
+                        let hashSlot = HashSlot(key: key)
+                        return shard.slots.reduce(into: false) { $0 = $0 || ($1.lowerBound <= hashSlot && $1.upperBound >= hashSlot) }
+                    }
+                )
+                let replica = try #require(shard.nodes.first { $0.role == .replica })
+                let port = try #require(replica.port)
+                // connect to replica and call CLUSTER FAILOVER
+                try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
+                    try await client.clusterFailover()
+                }
+                let results = try await clusterClient.execute(
+                    SET(key, value: "100"),
+                    INCR(key),
+                    ECHO(message: "Test non moved command"),
+                    GET(key)
+                )
+                let response2 = try results.2.get()
+                #expect(String(buffer: response2) == "Test non moved command")
+                let response3 = try results.3.get()
+                #expect(response3.map { String(buffer: $0) } == "101")
             }
         }
     }
