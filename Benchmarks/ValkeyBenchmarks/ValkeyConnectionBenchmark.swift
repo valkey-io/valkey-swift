@@ -7,6 +7,7 @@
 //
 
 import Benchmark
+import Foundation
 import Logging
 import NIOCore
 import NIOPosix
@@ -24,6 +25,9 @@ func connectionBenchmarks() {
 @discardableResult
 func makeConnectionCreateAndDropBenchmark() -> Benchmark? {
     let serverMutex = Mutex<(any Channel)?>(nil)
+
+    // don't run this benchmark in CI it is too erratic
+    guard ProcessInfo.processInfo.environment["CI"] == nil else { return nil }
 
     return Benchmark("Connection: Create and drop benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
         let port = serverMutex.withLock { $0 }!.localAddress!.port!
