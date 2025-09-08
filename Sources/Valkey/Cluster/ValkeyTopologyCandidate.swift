@@ -37,16 +37,12 @@ package struct ValkeyTopologyCandidate: Hashable {
         /// The port to connect to (either standard port or TLS port).
         package var port: Int
 
-        /// Whether TLS should be used for connecting to this node.
-        package var useTLS: Bool
-
         /// Creates a simplified node representation from a `ValkeyClusterDescription.Node`.
         ///
         /// - Parameter node: The source node from a cluster description.
         package init(_ node: ValkeyClusterDescription.Node) {
             self.endpoint = node.endpoint
             self.port = node.tlsPort ?? node.port ?? 6379
-            self.useTLS = node.tlsPort != nil
         }
     }
 
@@ -86,9 +82,6 @@ package struct ValkeyTopologyCandidate: Hashable {
                 }
                 if lhs.port != rhs.port {
                     return lhs.port < rhs.port
-                }
-                if lhs.useTLS != rhs.useTLS {
-                    return !lhs.useTLS
                 }
                 return true
             })
