@@ -125,11 +125,15 @@ struct ClusterIntegrationTests {
                     try await client.clusterFailover()
                 }
                 let results = try await clusterClient.execute(
-                    SET(key, value: "cluster pipeline test"),
+                    SET(key, value: "100"),
+                    INCR(key),
+                    ECHO(message: "Test non moved command"),
                     GET(key)
                 )
-                let response = try results.1.get()
-                #expect(response.map { String(buffer: $0) } == "cluster pipeline test")
+                let response2 = try results.2.get()
+                #expect(String(buffer: response2) == "Test non moved command")
+                let response3 = try results.3.get()
+                #expect(response3.map { String(buffer: $0) } == "101")
             }
         }
     }
