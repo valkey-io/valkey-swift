@@ -238,7 +238,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             bootstrap = tsBootstrap
         } else {
             #if os(iOS) || os(tvOS)
-            self.logger.warning(
+            logger.warning(
                 "Running BSD sockets on iOS or tvOS is not recommended. Please use NIOTSEventLoopGroup, to run with the Network framework"
             )
             #endif
