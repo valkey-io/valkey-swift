@@ -187,10 +187,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 }
             }
         }
-        let commandPromises = self._execute(requestID: requestID, commands: repeat each commands)
-        // get response from channel handler
-        var index = AutoIncrementingInteger()
         return await withTaskCancellationHandler {
+            let commandPromises = self._execute(requestID: requestID, commands: repeat each commands)
+            var index = AutoIncrementingInteger()
             return await (repeat convert(commandPromises[index.next()].futureResult._result(), to: (each Command).Response.self))
         } onCancel: {
             self.cancel(requestID: requestID)
@@ -200,47 +199,85 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// Pipeline a series of commands to Valkey connection
     ///
     /// Once all the responses for the commands have been received the function returns
-    /// a parameter pack of Results, one for each command.
+    /// an array of RESPToken Results.
     ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
-    /// - Returns: Parameter pack holding the responses of all the commands
+    /// - Returns: Array of RESPToken results
     @inlinable
-    public func clusterExecute<each Command: ValkeyCommand>(
+    func respExecute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+    ) async throws -> [Result<RESPToken, Error>] {
         let requestID = Self.requestIDGenerator.next()
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) throws -> Result<Response, Error> {
-            switch result {
-            case .success(let value):
-                do {
-                    return try .success(Response(fromRESP: value))
-                } catch {
-                    return .failure(error)
-                }
-            case .failure(let error):
-                if let clientError = error as? ValkeyClientError,
-                    clientError.errorCode == .commandError,
-                    let errorMessage = clientError.message,
-                    let movedError = ValkeyMovedError(errorMessage) {
-                        throw movedError
-                    }
-                return .failure(error)
+        return await withTaskCancellationHandler {
+            let commandPromises = self._execute(requestID: requestID, commands: repeat each commands)
+            var results: [Result<RESPToken, Error>] = .init()
+            for promise in commandPromises {
+                await results.append(promise.futureResult._result())
             }
+            return results
+        } onCancel: {
+            self.cancel(requestID: requestID)
         }
-        let commandPromises = self._execute(requestID: requestID, commands: repeat each commands)
-        // get response from channel handler
-        var index = AutoIncrementingInteger()
-        return try await withTaskCancellationHandler {
-            return try await (repeat convert(commandPromises[index.next()].futureResult._result(), to: (each Command).Response.self))
+    }
+
+    @usableFromInline
+    enum RetryCommand<Command: ValkeyCommand>: Sendable {
+        case retry(Command)
+        case result(Result<RESPToken, Error>)
+    }
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Array of RESPToken results
+    @inlinable
+    func retryExecute<each Command: ValkeyCommand>(
+        _ retryCommands: repeat RetryCommand<each Command>
+    ) async throws -> [Result<RESPToken, Error>] {
+        let requestID = Self.requestIDGenerator.next()
+        return await withTaskCancellationHandler {
+            // this currently allocates a promise for every command. We could collapse this down to one promise
+            var mpromises: [EventLoopPromise<RESPToken>] = []
+            var encoder = ValkeyCommandEncoder()
+            for retryCommand in repeat each retryCommands {
+                switch retryCommand {
+                case .retry(let command):
+                    command.encode(into: &encoder)
+                    mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+                case .result:
+                    break
+                }
+            }
+            let outBuffer = encoder.buffer
+            let promises = mpromises
+            if Task.isCancelled {
+                for promise in mpromises {
+                    promise.fail(ValkeyClientError(.cancelled))
+                }
+            } else {
+                // write directly to channel handler
+                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
+            }
+            var results: [Result<RESPToken, Error>] = .init()
+            var promiseIterator = promises.makeIterator()
+            for retryCommand in repeat each retryCommands {
+                switch retryCommand {
+                case .retry:
+                    guard let promise = promiseIterator.next() else { preconditionFailure("Promise count should be the same") }
+                    await results.append(promise.futureResult._result())
+                case .result(let result):
+                    results.append(result)
+                }
+            }
+            return results
         } onCancel: {
             self.cancel(requestID: requestID)
         }
     }
 
     /// Pipeline a series of commands to Valkey connection
-    ///
-    /// Once all the responses for the commands have been received the function returns
-    /// a parameter pack of Results, one for each command.
     ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Array of promises (one for each command)
@@ -444,5 +481,10 @@ struct AutoIncrementingInteger {
     mutating func next() -> Int {
         value += 1
         return value - 1
+    }
+
+    @inlinable
+    mutating func reset() {
+        value = 0
     }
 }

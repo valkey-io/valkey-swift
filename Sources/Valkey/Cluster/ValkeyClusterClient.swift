@@ -176,6 +176,28 @@ public final class ValkeyClusterClient: Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        var movedError: ValkeyMovedError? = nil
+        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
+            result.flatMap {
+                do {
+                    return try .success(Response(fromRESP: $0))
+                } catch {
+                    return .failure(error)
+                }
+            }
+        }
+        func retryResult<C: ValkeyCommand>(result: Result<RESPToken, Error>, command: C) -> ValkeyConnection.RetryCommand<C> {
+            if case .failure(let error) = result,
+                let clientError = error as? ValkeyClientError,
+                clientError.errorCode == .commandError,
+                let errorMessage = clientError.message,
+                let parsedMovedError = ValkeyMovedError(errorMessage)
+            {
+                movedError = parsedMovedError
+                return .retry(command)
+            }
+            return .result(result)
+        }
         var hashSlot: HashSlot? = nil
         for command in repeat each commands {
             let newHashSlot = try self.hashSlot(for: command.keysAffected)
@@ -187,32 +209,38 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         }
-        while !Task.isCancelled {
-            let node = try await self.nodeClient(for: hashSlot)
-            return try await node.withConnection { connection in
-                try await connection.clusterExecute(repeat each commands)
+        let node = try await self.nodeClient(for: hashSlot)
+        let results = try await node.withConnection { connection in
+            try await connection.respExecute(repeat each commands)
+        }
+        var index = AutoIncrementingInteger()
+        var retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
+        if let nonOptionalMovedError = movedError {
+            var clientSelector: () async throws -> ValkeyNodeClient = {
+                try await self.nodeClient(for: nonOptionalMovedError)
             }
-            /*var movedError: ValkeyMovedError? = nil
-            for result in repeat each results {
-                if case .failure(let error) = result,
-                    let clientError = error as? ValkeyClientError,
-                    clientError.errorCode == .commandError,
-                    let errorMessage = clientError.message,
-                    let parsedMovedError = ValkeyMovedError(errorMessage)
-                {
-                    movedError = parsedMovedError
-                    break
+            while !Task.isCancelled {
+                let node = try await clientSelector()
+                let results = try await node.withConnection { connection in
+                    try await connection.retryExecute(repeat each retryResults)
+                }
+                movedError = nil
+                index.reset()
+                retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
+                if let movedError {
+                    clientSelector = {
+                        try await self.nodeClient(for: movedError)
+                    }
+                } else {
+                    index.reset()
+                    return (repeat convert(results[index.next()], to: (each Command).Response.self))
                 }
             }
-            if let movedError {
-                clientSelector = { try await self.nodeClient(for: movedError) }
-                continue
-            } else {
-                return results
-            }*/
-            //return results
+            throw CancellationError()
+        } else {
+            index.reset()
+            return (repeat convert(results[index.next()], to: (each Command).Response.self))
         }
-        throw CancellationError()
     }
 
     /// Get connection from cluster and run operation using connection
