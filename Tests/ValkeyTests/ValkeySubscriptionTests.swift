@@ -674,6 +674,40 @@ struct SubscriptionTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testCancelSubscribe() async throws {
+        let channel = NIOAsyncTestingChannel()
+        var logger = Logger(label: "test")
+        logger.logLevel = .trace
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+        try await channel.processHello()
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await #expect(throws: CancellationError.self) {
+                    try await connection.subscribe(to: "test") { subscription in
+                        for try await _ in subscription {}
+                    }
+                }
+            }
+            var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            // expect SUBSCRIBE command
+            #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
+            group.cancelAll()
+            try await Task.sleep(for: .milliseconds(10))
+
+            // push subscribe
+            try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
+            // expect UNSUBSCRIBE command
+            outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
+            // push unsubscribe
+            try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(0)])).base)
+        }
+        #expect(await connection.isSubscriptionsEmpty())
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testCancelSubscribeStream() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")
