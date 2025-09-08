@@ -674,32 +674,6 @@ struct SubscriptionTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testCancelSubscribe() async throws {
-        let channel = NIOAsyncTestingChannel()
-        var logger = Logger(label: "test")
-        logger.logLevel = .trace
-        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-        try await channel.processHello()
-
-        try await withThrowingTaskGroup(of: Void.self) { group in
-            group.addTask {
-                await #expect(throws: ValkeyClientError(.cancelled)) {
-                    try await connection.subscribe(to: "test") { _ in }
-                }
-            }
-            group.addTask {
-                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                // expect SUBSCRIBE command
-                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
-            }
-            try await group.next()
-            group.cancelAll()
-        }
-        #expect(await connection.isSubscriptionsEmpty())
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
     func testCancelSubscribeStream() async throws {
         let channel = NIOAsyncTestingChannel()
         var logger = Logger(label: "test")

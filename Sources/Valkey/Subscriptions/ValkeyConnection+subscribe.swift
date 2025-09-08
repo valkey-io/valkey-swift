@@ -204,37 +204,26 @@ extension ValkeyConnection {
     ) async throws -> (Int, ValkeySubscription) {
         let requestID = Self.requestIDGenerator.next()
         let (stream, streamContinuation) = ValkeySubscription.makeStream()
-        return try await withTaskCancellationHandler {
-            if Task.isCancelled {
-                throw ValkeyClientError(.cancelled)
-            }
-            let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
-                self.channelHandler.subscribe(
-                    command: command,
-                    streamContinuation: streamContinuation,
-                    filters: filters,
-                    promise: .swift(continuation),
-                    requestID: requestID
-                )
-            }
-            return (subscriptionID, stream)
-        } onCancel: {
-            self.cancel(requestID: requestID)
+        if Task.isCancelled {
+            throw ValkeyClientError(.cancelled)
         }
+        let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
+            self.channelHandler.subscribe(
+                command: command,
+                streamContinuation: streamContinuation,
+                filters: filters,
+                promise: .swift(continuation),
+                requestID: requestID
+            )
+        }
+        return (subscriptionID, stream)
     }
 
     @usableFromInline
     func unsubscribe(id: Int) async throws {
         let requestID = Self.requestIDGenerator.next()
-        try await withTaskCancellationHandler {
-            if Task.isCancelled {
-                throw ValkeyClientError(.cancelled)
-            }
-            try await withCheckedThrowingContinuation { continuation in
-                self.channelHandler.unsubscribe(id: id, promise: .swift(continuation), requestID: requestID)
-            }
-        } onCancel: {
-            self.cancel(requestID: requestID)
+        try await withCheckedThrowingContinuation { continuation in
+            self.channelHandler.unsubscribe(id: id, promise: .swift(continuation), requestID: requestID)
         }
     }
 
