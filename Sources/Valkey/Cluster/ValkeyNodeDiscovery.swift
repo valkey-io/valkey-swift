@@ -36,8 +36,8 @@ public protocol ValkeyNodeDiscovery: Sendable {
 /// ```swift
 /// // Using ExpressibleByArrayLiteral conformance for more concise initialization
 /// let discovery: ValkeyStaticNodeDiscovery = [
-///     .init(host: "replica1.valkey.io", port: 10600, useTLS: false),
-///     .init(ip: "192.168.12.1", port: 10600, useTLS: true)
+///     .init(host: "replica1.valkey.io", port: 10600),
+///     .init(ip: "192.168.12.1", port: 10600)
 /// ]
 /// ```
 public struct ValkeyStaticNodeDiscovery: ValkeyNodeDiscovery {
@@ -47,7 +47,6 @@ public struct ValkeyStaticNodeDiscovery: ValkeyNodeDiscovery {
         public var ip: String?
         public var endpoint: String
         public var port: Int
-        public var useTLS: Bool
 
         /// Initializes a `NodeDescription` with a host and optional IP.
         ///
@@ -55,13 +54,11 @@ public struct ValkeyStaticNodeDiscovery: ValkeyNodeDiscovery {
         ///   - host: The host name of the node.
         ///   - ip: The optional IP address of the node.
         ///   - port: The port number the node listens on (default is 6379).
-        ///   - useTLS: A boolean indicating whether TLS should be used (default is true).
-        public init(host: String, ip: String? = nil, port: Int = 6379, useTLS: Bool = true) {
+        public init(host: String, ip: String? = nil, port: Int = 6379) {
             self.host = host
             self.ip = ip
             self.endpoint = host
             self.port = port
-            self.useTLS = useTLS
         }
 
         /// Initializes a `NodeDescription` with an IP address.
@@ -69,13 +66,11 @@ public struct ValkeyStaticNodeDiscovery: ValkeyNodeDiscovery {
         /// - Parameters:
         ///   - ip: The IP address of the node.
         ///   - port: The port number the node listens on (default is 6379).
-        ///   - useTLS: A boolean indicating whether TLS should be used (default is false).
-        public init(ip: String, port: Int = 6379, useTLS: Bool = false) {
+        public init(ip: String, port: Int = 6379) {
             self.host = nil
             self.ip = ip
             self.endpoint = ip
             self.port = port
-            self.useTLS = useTLS
         }
     }
 

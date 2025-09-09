@@ -107,7 +107,7 @@ struct ClusterIntegrationTests {
     ) async throws -> T {
         let client = ValkeyClusterClient(
             clientConfiguration: nodeClientConfiguration,
-            nodeDiscovery: ValkeyStaticNodeDiscovery(nodeAddresses.map { .init(host: $0.host, port: $0.port, useTLS: $0.tls) }),
+            nodeDiscovery: ValkeyStaticNodeDiscovery(nodeAddresses.map { .init(host: $0.host, port: $0.port) }),
             logger: logger
         )
 
