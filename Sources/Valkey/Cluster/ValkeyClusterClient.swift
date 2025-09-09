@@ -143,9 +143,9 @@ public final class ValkeyClusterClient: Sendable {
     ///   - Other errors if the command execution or parsing fails
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        let hashSlots = command.keysAffected.map { HashSlot(key: $0) }
+        let hashSlot = try self.hashSlot(for: command.keysAffected)
         var clientSelector: () async throws -> ValkeyNodeClient = {
-            try await self.nodeClient(for: hashSlots)
+            try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
         }
 
         while !Task.isCancelled {
@@ -178,8 +178,8 @@ public final class ValkeyClusterClient: Sendable {
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let hashSlots = keys.map { HashSlot(key: $0) }
-        let node = try await self.nodeClient(for: hashSlots)
+        let hashSlot = try self.hashSlot(for: keys)
+        let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
         return try await node.withConnection(isolation: isolation, operation: operation)
     }
 
@@ -233,6 +233,20 @@ public final class ValkeyClusterClient: Sendable {
     }
 
     // MARK: - Private methods -
+
+    /// Return HashSlot for collection of keys.
+    ///
+    /// If collection is empty return `nil`
+    /// If collection of keys use a variety of hash slot then throw an error
+    @usableFromInline
+    /* private */ func hashSlot(for keys: some Collection<ValkeyKey>) throws -> HashSlot? {
+        guard let firstKey = keys.first else { return nil }
+        let hashSlot = HashSlot(key: firstKey)
+        for key in keys.dropFirst() {
+            guard hashSlot == HashSlot(key: key) else { throw ValkeyClusterError.keysInCommandRequireMultipleHashSlots }
+        }
+        return hashSlot
+    }
 
     private func queueAction(_ action: RunAction) {
         self.actionStreamContinuation.yield(action)
@@ -418,7 +432,7 @@ public final class ValkeyClusterClient: Sendable {
     ///   - `ValkeyClusterError.clusterIsUnavailable` if no healthy nodes are available
     ///   - `ValkeyClusterError.clusterIsMissingSlotAssignment` if the slot assignment cannot be determined
     @inlinable
-    func nodeClient(for slots: some (Collection<HashSlot> & Sendable)) async throws -> ValkeyNodeClient {
+    func nodeClient(for slots: [HashSlot]) async throws -> ValkeyNodeClient {
         var retries = 0
         while retries < 3 {
             defer { retries += 1 }

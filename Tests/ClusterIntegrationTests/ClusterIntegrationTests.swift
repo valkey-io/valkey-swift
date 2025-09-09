@@ -66,7 +66,7 @@ struct ClusterIntegrationTests {
                 let shard = try #require(
                     cluster.shards.first { shard in
                         let hashSlot = HashSlot(key: key)
-                        return shard.slots[0].lowerBound <= hashSlot && shard.slots[0].upperBound >= hashSlot
+                        return shard.slots.reduce(into: false) { $0 = $0 || ($1.lowerBound <= hashSlot && $1.upperBound >= hashSlot) }
                     }
                 )
                 let replica = try #require(shard.nodes.first { $0.role == .replica })

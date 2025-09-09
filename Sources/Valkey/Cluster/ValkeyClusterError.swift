@@ -14,6 +14,7 @@ package enum ValkeyClusterError: Error {
     case noNodeToTalkTo
     case serverDiscoveryFailedNoKnownNode
     case keysInCommandRequireMultipleNodes
+    case keysInCommandRequireMultipleHashSlots
     case clusterIsUnavailable
     case noConsensusReachedCircuitBreakerOpen
     case clusterHasNoNodes
