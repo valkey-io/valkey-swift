@@ -80,6 +80,18 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
         self.port = description.tlsPort ?? description.port ?? 6379
     }
 
+    /// Creates a node description from a redirection error.
+    ///
+    /// This initializer converts a `ValkeyClusterRedirectionError` to a `ValkeyNodeDescription`.
+    ///
+    /// - Parameter description: A `ValkeyClusterRedirectionError` instance.
+    package init(redirectionErrpr: ValkeyClusterRedirectionError) {
+        self.host = nil
+        self.ip = nil
+        self.endpoint = redirectionErrpr.endpoint
+        self.port = redirectionErrpr.port
+    }
+
     /// Determines whether this node description matches a given cluster node description.
     ///
     /// This method compares the essential connection properties of this node with

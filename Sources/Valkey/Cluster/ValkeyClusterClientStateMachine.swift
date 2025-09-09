@@ -559,8 +559,9 @@ package struct ValkeyClusterClientStateMachine<
     }
 
     @usableFromInline
-    package enum PoolForMovedErrorAction {
+    package enum PoolForRedirectErrorAction {
         case connectionPool(ConnectionPool)
+        case runAndUseConnectionPool(ConnectionPool)
         case moveToDegraded(MoveToDegraded)
         case waitForDiscovery
 
@@ -577,7 +578,29 @@ package struct ValkeyClusterClientStateMachine<
     }
 
     @usableFromInline
-    package mutating func poolFastPath(for redirectError: ValkeyClusterRedirectionError) throws(ValkeyClusterError) -> PoolForMovedErrorAction {
+    package mutating func poolFastPath(for redirectError: ValkeyClusterRedirectionError) throws(ValkeyClusterError) -> PoolForRedirectErrorAction {
+        switch redirectError.redirection {
+        case .ask:
+            return try poolFastPath(forAskError: redirectError)
+        case .move:
+            return try poolFastPath(forMovedError: redirectError)
+        }
+    }
+
+    @usableFromInline
+    package mutating func poolFastPath(forAskError askError: ValkeyClusterRedirectionError) throws(ValkeyClusterError) -> PoolForRedirectErrorAction {
+        switch self.runningClients.addNode(ValkeyNodeDescription(redirectionErrpr: askError)) {
+        case .useExistingPool(let connectionPool):
+            return .connectionPool(connectionPool)
+        case .runAndUsePool(let connectionPool):
+            return .runAndUseConnectionPool(connectionPool)
+        }
+    }
+
+    @usableFromInline
+    package mutating func poolFastPath(
+        forMovedError movedError: ValkeyClusterRedirectionError
+    ) throws(ValkeyClusterError) -> PoolForRedirectErrorAction {
         switch self.clusterState {
         case .unavailable(let unavailableContext):
             if unavailableContext.start.advanced(by: self.configuration.circuitBreakerDuration) > self.clock.now {
@@ -586,33 +609,24 @@ package struct ValkeyClusterClientStateMachine<
             throw ValkeyClusterError.noConsensusReachedCircuitBreakerOpen
 
         case .degraded(var degradedContext):
-            switch degradedContext.hashSlotShardMap.updateSlots(with: redirectError) {
+            switch degradedContext.hashSlotShardMap.updateSlots(with: movedError) {
             case .updatedSlotToExistingNode, .updatedSlotToUnknownNode:
                 self.clusterState = .degraded(degradedContext)
-                if let pool = self.runningClients[redirectError.nodeID]?.pool {
+                if let pool = self.runningClients[movedError.nodeID]?.pool {
                     return .connectionPool(pool)
                 }
                 return .waitForDiscovery
             }
 
         case .healthy(var healthyContext):
-            // If request is ASK, don't update slots
-            if redirectError.redirection == .ask {
-                if let pool = self.runningClients[redirectError.nodeID]?.pool {
-                    return .connectionPool(pool)
-                }
-                // allow code to drop through to rebuild cluster state as new node is not in the
-                // running client list
-            } else {
-                switch healthyContext.hashSlotShardMap.updateSlots(with: redirectError) {
-                case .updatedSlotToUnknownNode:
-                    break
+            switch healthyContext.hashSlotShardMap.updateSlots(with: movedError) {
+            case .updatedSlotToUnknownNode:
+                break
 
-                case .updatedSlotToExistingNode:
-                    if let pool = self.runningClients[redirectError.nodeID]?.pool {
-                        self.clusterState = .healthy(healthyContext)
-                        return .connectionPool(pool)
-                    }
+            case .updatedSlotToExistingNode:
+                if let pool = self.runningClients[movedError.nodeID]?.pool {
+                    self.clusterState = .healthy(healthyContext)
+                    return .connectionPool(pool)
                 }
             }
             let circuitBreakerTimerID = self.nextTimerID()

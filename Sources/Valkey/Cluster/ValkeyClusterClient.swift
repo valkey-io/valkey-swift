@@ -387,12 +387,16 @@ public final class ValkeyClusterClient: Sendable {
         var counter = 0
         while counter < 3 {
             defer { counter += 1 }
-            let action = try self.stateLock.withLock { stateMachine throws(ValkeyClusterError) -> StateMachine.PoolForMovedErrorAction in
+            let action = try self.stateLock.withLock { stateMachine throws(ValkeyClusterError) -> StateMachine.PoolForRedirectErrorAction in
                 try stateMachine.poolFastPath(for: moveError)
             }
 
             switch action {
             case .connectionPool(let node):
+                return node
+
+            case .runAndUseConnectionPool(let node):
+                self.queueAction(.runClient(node))
                 return node
 
             case .waitForDiscovery:
@@ -502,7 +506,7 @@ public final class ValkeyClusterClient: Sendable {
     /// Handles the transition to a degraded state when a moved error is received.
     ///
     /// - Parameter action: The action containing operations for degraded mode.
-    private func runMovedToDegraded(_ action: StateMachine.PoolForMovedErrorAction.MoveToDegraded) {
+    private func runMovedToDegraded(_ action: StateMachine.PoolForRedirectErrorAction.MoveToDegraded) {
         if let cancelToken = action.runDiscoveryAndCancelTimer {
             cancelToken.yield()
             self.queueAction(.runClusterDiscovery(runNodeDiscovery: false))
