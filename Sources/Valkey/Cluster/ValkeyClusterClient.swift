@@ -376,19 +376,19 @@ public final class ValkeyClusterClient: Sendable {
     /// This internal method is used when handling cluster topology changes indicated by
     /// MOVED responses from Valkey nodes.
     ///
-    /// - Parameter moveError: The MOVED error response from a Valkey node.
+    /// - Parameter redirectError: The MOVED/ASK error response from a Valkey node.
     /// - Returns: A ``ValkeyNode`` connected to the node that can handle the request.
     /// - Throws:
     ///   - `ValkeyClusterError.waitedForDiscoveryAfterMovedErrorThreeTimes` if unable to resolve
     ///     the MOVED error after multiple attempts
     ///   - `ValkeyClusterError.clientRequestCancelled` if the request is cancelled
     @usableFromInline
-    /* private */ func nodeClient(for moveError: ValkeyClusterRedirectionError) async throws -> ValkeyNodeClient {
+    /* private */ func nodeClient(for redirectError: ValkeyClusterRedirectionError) async throws -> ValkeyNodeClient {
         var counter = 0
         while counter < 3 {
             defer { counter += 1 }
             let action = try self.stateLock.withLock { stateMachine throws(ValkeyClusterError) -> StateMachine.PoolForRedirectErrorAction in
-                try stateMachine.poolFastPath(for: moveError)
+                try stateMachine.poolFastPath(for: redirectError)
             }
 
             switch action {
