@@ -94,58 +94,84 @@ struct ClusterIntegrationTests {
             let keySuffix = "{\(UUID().uuidString)}"
             try await Self.withKey(connection: client, suffix: keySuffix) { key in
                 let hashSlot = HashSlot(key: key)
-                let nodeAClient = try await client.nodeClient(for: [hashSlot])
-                // find another shard
-                var nodeBClient: ValkeyNodeClient
-                repeat {
-                    nodeBClient = try await client.nodeClient(for: [HashSlot(rawValue: Int.random(in: 0..<16384))!])
-                } while nodeAClient === nodeBClient
-
-                guard let (hostnameA, portA) = nodeAClient.serverAddress.getHostnameAndPort() else { return }
-                guard let (hostnameB, portB) = nodeBClient.serverAddress.getHostnameAndPort() else { return }
-                let clientAID = try await nodeAClient.execute(CLUSTER.MYID())
-                let clientBID = try await nodeBClient.execute(CLUSTER.MYID())
-
                 try await client.set(key, value: "Testing before import")
 
-                // start migration by setting hash slot state
-                logger.info("SETSLOT importing")
-                _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .importing(clientAID)))
-                _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .migrating(clientBID)))
-
-                // key still uses nodeA
-                var value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
-                #expect(value == "Testing before import")
-
-                // get keys associated with slot and migrate them
-                logger.info("MIGRATE")
-                let keys = try await nodeAClient.execute(CLUSTER.GETKEYSINSLOT(slot: numericCast(hashSlot.rawValue), count: 100))
-                // key doesnt exist on nodeA anymore, so we receive an ASK error
-                _ = try await nodeAClient.execute(
-                    MIGRATE(host: hostnameB, port: portB, keySelector: .emptyString, destinationDb: 0, timeout: 5000, keys: keys)
-                )
-                value = try await client.set(key, value: "After migrate", get: true).map { String(buffer: $0) }
-                #expect(value == "Testing during import")
-
-                // finalise migration
-                logger.info("SETSLOT node")
-                _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientBID)))
-                _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientBID)))
-
-                value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
-                #expect(value == "After migrate")
-
-                // revert everything
-                _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .migrating(clientAID)))
-                _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .importing(clientBID)))
-                let keys2 = try await nodeBClient.execute(CLUSTER.GETKEYSINSLOT(slot: numericCast(hashSlot.rawValue), count: 100))
-                _ = try await nodeBClient.execute(
-                    MIGRATE(host: hostnameA, port: portA, keySelector: .emptyString, destinationDb: 0, timeout: 5000, keys: keys2)
-                )
-                _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientAID)))
-                _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientAID)))
+                try await testMigratingHashSlot(hashSlot, client: client) {
+                    // key still uses nodeA
+                    let value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
+                    #expect(value == "Testing before import")
+                } afterMigrate: {
+                    // key has been migrated to nodeB so will receive an ASK error
+                    let value = try await client.set(key, value: "After migrate", get: true).map { String(buffer: $0) }
+                    #expect(value == "Testing during import")
+                } finished: {
+                    let value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
+                    #expect(value == "After migrate")
+                }
             }
         }
+    }
+
+    @available(valkeySwift 1.0, *)
+    func testMigratingHashSlot(
+        _ hashSlot: HashSlot,
+        client: ValkeyClusterClient,
+        beforeMigrate: () async throws -> Void,
+        afterMigrate: () async throws -> Void = {},
+        finished: () async throws -> Void = {}
+    ) async throws {
+        let nodeAClient = try await client.nodeClient(for: [hashSlot])
+        // find another shard
+        var nodeBClient: ValkeyNodeClient
+        repeat {
+            nodeBClient = try await client.nodeClient(for: [HashSlot(rawValue: Int.random(in: 0..<16384))!])
+        } while nodeAClient === nodeBClient
+
+        guard let (hostnameA, portA) = nodeAClient.serverAddress.getHostnameAndPort() else { return }
+        guard let (hostnameB, portB) = nodeBClient.serverAddress.getHostnameAndPort() else { return }
+        let clientAID = try await nodeAClient.execute(CLUSTER.MYID())
+        let clientBID = try await nodeBClient.execute(CLUSTER.MYID())
+
+        let result: Result<Void, Error>
+        do {
+            // start migration by setting hash slot state
+            client.logger.info("SETSLOT importing")
+            _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .importing(clientAID)))
+            _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .migrating(clientBID)))
+
+            try await beforeMigrate()
+
+            // get keys associated with slot and migrate them
+            client.logger.info("MIGRATE")
+            let keys = try await nodeAClient.execute(CLUSTER.GETKEYSINSLOT(slot: numericCast(hashSlot.rawValue), count: 100))
+            // key doesnt exist on nodeA anymore, so we receive an ASK error
+            _ = try await nodeAClient.execute(
+                MIGRATE(host: hostnameB, port: portB, keySelector: .emptyString, destinationDb: 0, timeout: 5000, keys: keys)
+            )
+
+            try await afterMigrate()
+
+            // finalise migration
+            client.logger.info("SETSLOT node")
+            _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientBID)))
+            _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientBID)))
+
+            try await finished()
+            result = .success(())
+        } catch {
+            result = .failure(error)
+        }
+        // revert everything
+        _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .migrating(clientAID)))
+        _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .importing(clientBID)))
+        let keys2 = try await nodeBClient.execute(CLUSTER.GETKEYSINSLOT(slot: numericCast(hashSlot.rawValue), count: 100))
+        _ = try await nodeBClient.execute(
+            MIGRATE(host: hostnameA, port: portA, keySelector: .emptyString, destinationDb: 0, timeout: 5000, keys: keys2)
+        )
+        _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientAID)))
+        _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientAID)))
+
+        try result.get()
     }
 
     @available(valkeySwift 1.0, *)
