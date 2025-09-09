@@ -683,17 +683,25 @@ struct SubscriptionTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
-                await #expect(throws: ValkeyClientError(.cancelled)) {
-                    try await connection.subscribe(to: "test") { _ in }
+                await #expect(throws: CancellationError.self) {
+                    try await connection.subscribe(to: "test") { subscription in
+                        for try await _ in subscription {}
+                    }
                 }
             }
-            group.addTask {
-                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                // expect SUBSCRIBE command
-                #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
-            }
-            try await group.next()
+            var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            // expect SUBSCRIBE command
+            #expect(outbound == RESPToken(.command(["SUBSCRIBE", "test"])).base)
             group.cancelAll()
+            try await Task.sleep(for: .milliseconds(10))
+
+            // push subscribe
+            try await channel.writeInbound(RESPToken(.push([.bulkString("subscribe"), .bulkString("test"), .number(1)])).base)
+            // expect UNSUBSCRIBE command
+            outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+            #expect(outbound == RESPToken(.command(["UNSUBSCRIBE", "test"])).base)
+            // push unsubscribe
+            try await channel.writeInbound(RESPToken(.push([.bulkString("unsubscribe"), .bulkString("test"), .number(0)])).base)
         }
         #expect(await connection.isSubscriptionsEmpty())
     }
