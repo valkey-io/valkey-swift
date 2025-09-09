@@ -40,10 +40,4 @@ public protocol ValkeyNodeDescriptionProtocol: Sendable, Equatable {
 
     /// The port number on which the Valkey service is listening.
     var port: Int { get }
-
-    /// Indicates whether TLS (Transport Layer Security) should be used when connecting to this node.
-    ///
-    /// - `true`: Use a secure TLS connection
-    /// - `false`: Use a plain TCP connection
-    var useTLS: Bool { get }
 }
