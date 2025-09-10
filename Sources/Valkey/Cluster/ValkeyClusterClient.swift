@@ -148,18 +148,28 @@ public final class ValkeyClusterClient: Sendable {
             try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
         }
 
+        var asking = false
         while !Task.isCancelled {
             do {
                 let client = try await clientSelector()
-                return try await client.execute(command)
+                if asking {
+                    // if asking we need to call ASKING beforehand otherwise we will get a MOVE error
+                    return try await client.execute(
+                        ASKING(),
+                        command
+                    ).1.get()
+                } else {
+                    return try await client.execute(command)
+                }
             } catch ValkeyClusterError.noNodeToTalkTo {
                 // TODO: Rerun node discovery!
             } catch let error as ValkeyClientError where error.errorCode == .commandError {
-                guard let errorMessage = error.message, let movedError = ValkeyMovedError(errorMessage) else {
+                guard let errorMessage = error.message, let redirectError = ValkeyClusterRedirectionError(errorMessage) else {
                     throw error
                 }
-                self.logger.trace("Received move error", metadata: ["error": "\(movedError)"])
-                clientSelector = { try await self.nodeClient(for: movedError) }
+                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
+                clientSelector = { try await self.nodeClient(for: redirectError) }
+                asking = (redirectError.redirection == .ask)
             }
         }
         throw CancellationError()
@@ -366,23 +376,27 @@ public final class ValkeyClusterClient: Sendable {
     /// This internal method is used when handling cluster topology changes indicated by
     /// MOVED responses from Valkey nodes.
     ///
-    /// - Parameter moveError: The MOVED error response from a Valkey node.
+    /// - Parameter redirectError: The MOVED/ASK error response from a Valkey node.
     /// - Returns: A ``ValkeyNode`` connected to the node that can handle the request.
     /// - Throws:
     ///   - `ValkeyClusterError.waitedForDiscoveryAfterMovedErrorThreeTimes` if unable to resolve
     ///     the MOVED error after multiple attempts
     ///   - `ValkeyClusterError.clientRequestCancelled` if the request is cancelled
     @usableFromInline
-    /* private */ func nodeClient(for moveError: ValkeyMovedError) async throws -> ValkeyNodeClient {
+    /* private */ func nodeClient(for redirectError: ValkeyClusterRedirectionError) async throws -> ValkeyNodeClient {
         var counter = 0
         while counter < 3 {
             defer { counter += 1 }
-            let action = try self.stateLock.withLock { stateMachine throws(ValkeyClusterError) -> StateMachine.PoolForMovedErrorAction in
-                try stateMachine.poolFastPath(for: moveError)
+            let action = try self.stateLock.withLock { stateMachine throws(ValkeyClusterError) -> StateMachine.PoolForRedirectErrorAction in
+                try stateMachine.poolFastPath(for: redirectError)
             }
 
             switch action {
             case .connectionPool(let node):
+                return node
+
+            case .runAndUseConnectionPool(let node):
+                self.queueAction(.runClient(node))
                 return node
 
             case .waitForDiscovery:
@@ -432,7 +446,7 @@ public final class ValkeyClusterClient: Sendable {
     ///   - `ValkeyClusterError.clusterIsUnavailable` if no healthy nodes are available
     ///   - `ValkeyClusterError.clusterIsMissingSlotAssignment` if the slot assignment cannot be determined
     @inlinable
-    func nodeClient(for slots: [HashSlot]) async throws -> ValkeyNodeClient {
+    package func nodeClient(for slots: some (Collection<HashSlot> & Sendable)) async throws -> ValkeyNodeClient {
         var retries = 0
         while retries < 3 {
             defer { retries += 1 }
@@ -492,7 +506,7 @@ public final class ValkeyClusterClient: Sendable {
     /// Handles the transition to a degraded state when a moved error is received.
     ///
     /// - Parameter action: The action containing operations for degraded mode.
-    private func runMovedToDegraded(_ action: StateMachine.PoolForMovedErrorAction.MoveToDegraded) {
+    private func runMovedToDegraded(_ action: StateMachine.PoolForRedirectErrorAction.MoveToDegraded) {
         if let cancelToken = action.runDiscoveryAndCancelTimer {
             cancelToken.yield()
             self.queueAction(.runClusterDiscovery(runNodeDiscovery: false))

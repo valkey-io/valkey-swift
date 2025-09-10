@@ -284,8 +284,6 @@ public enum CLUSTER {
     /// Returns the key names in a hash slot.
     @_documentation(visibility: internal)
     public struct GETKEYSINSLOT: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "CLUSTER GETKEYSINSLOT" }
 
         public var slot: Int
@@ -462,8 +460,6 @@ public enum CLUSTER {
     /// Returns the ID of a node.
     @_documentation(visibility: internal)
     public struct MYID: ValkeyCommand {
-        public typealias Response = ByteBuffer
-
         @inlinable public static var name: String { "CLUSTER MYID" }
 
         @inlinable public init() {
@@ -477,8 +473,6 @@ public enum CLUSTER {
     /// Returns the shard ID of a node.
     @_documentation(visibility: internal)
     public struct MYSHARDID: ValkeyCommand {
-        public typealias Response = ByteBuffer
-
         @inlinable public static var name: String { "CLUSTER MYSHARDID" }
 
         @inlinable public init() {
@@ -1014,7 +1008,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array with up to count elements.
     @inlinable
     @discardableResult
-    public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> RESPToken.Array {
+    public func clusterGetkeysinslot(slot: Int, count: Int) async throws -> CLUSTER.GETKEYSINSLOT.Response {
         try await execute(CLUSTER.GETKEYSINSLOT(slot: slot, count: count))
     }
 
@@ -1108,7 +1102,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The node id.
     @inlinable
     @discardableResult
-    public func clusterMyid() async throws -> ByteBuffer {
+    public func clusterMyid() async throws -> CLUSTER.MYID.Response {
         try await execute(CLUSTER.MYID())
     }
 
@@ -1120,7 +1114,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The node's shard id.
     @inlinable
     @discardableResult
-    public func clusterMyshardid() async throws -> ByteBuffer {
+    public func clusterMyshardid() async throws -> CLUSTER.MYSHARDID.Response {
         try await execute(CLUSTER.MYSHARDID())
     }
 
