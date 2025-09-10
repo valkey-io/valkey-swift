@@ -84,12 +84,12 @@ package struct ValkeyNodeDescription: Identifiable, Hashable, Sendable {
     ///
     /// This initializer converts a `ValkeyClusterRedirectionError` to a `ValkeyNodeDescription`.
     ///
-    /// - Parameter description: A `ValkeyClusterRedirectionError` instance.
-    package init(redirectionErrpr: ValkeyClusterRedirectionError) {
+    /// - Parameter redirectionError: A `ValkeyClusterRedirectionError` instance.
+    package init(redirectionError: ValkeyClusterRedirectionError) {
         self.host = nil
         self.ip = nil
-        self.endpoint = redirectionErrpr.endpoint
-        self.port = redirectionErrpr.port
+        self.endpoint = redirectionError.endpoint
+        self.port = redirectionError.port
     }
 
     /// Determines whether this node description matches a given cluster node description.

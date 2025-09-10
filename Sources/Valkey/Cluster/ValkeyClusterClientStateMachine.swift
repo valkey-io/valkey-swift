@@ -589,7 +589,7 @@ package struct ValkeyClusterClientStateMachine<
 
     @usableFromInline
     package mutating func poolFastPath(forAskError askError: ValkeyClusterRedirectionError) throws(ValkeyClusterError) -> PoolForRedirectErrorAction {
-        switch self.runningClients.addNode(ValkeyNodeDescription(redirectionErrpr: askError)) {
+        switch self.runningClients.addNode(ValkeyNodeDescription(redirectionError: askError)) {
         case .useExistingPool(let connectionPool):
             return .connectionPool(connectionPool)
         case .runAndUsePool(let connectionPool):

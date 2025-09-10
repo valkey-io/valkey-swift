@@ -182,6 +182,7 @@ package struct HashSlotShardMap: Sendable {
     /// This logic was first implemented in `valkey-glide` (see `Notice.txt`) and adopted for Swift here.
     @usableFromInline
     package mutating func updateSlots(with movedError: ValkeyClusterRedirectionError) -> UpdateSlotsResult {
+        assert(movedError.redirection == .move)
         if let shardIndex = self.slotToShardID[Int(movedError.slot.rawValue)].value {
             // if the slot had a shard assignment before
             var shard = self.shardIDToShard[shardIndex]
