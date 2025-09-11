@@ -177,6 +177,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - authentication: The authentication credentials.
     ///   - connectionPool: The connection pool configuration.
     ///   - keepAliveBehavior: The connection keep alive behavior.
+    ///   - retryParameters: Retry parameters for when client returns an error that requires a retry
     ///   - commandTimeout: The timeout for a connection response.
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
