@@ -73,6 +73,8 @@ public final class ValkeyClusterClient: Sendable {
     /* private */ let stateLock: Mutex<StateMachine>
     @usableFromInline
     /* private */ let nextRequestIDGenerator = Atomic(0)
+    @usableFromInline
+    /* private */ let clientConfiguration: ValkeyClientConfiguration
 
     private enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
@@ -101,6 +103,7 @@ public final class ValkeyClusterClient: Sendable {
         connectionFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
         self.logger = logger
+        self.clientConfiguration = clientConfiguration
 
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
@@ -149,10 +152,12 @@ public final class ValkeyClusterClient: Sendable {
         }
 
         var asking = false
+        var attempt = 0
         while !Task.isCancelled {
             do {
                 let client = try await clientSelector()
                 if asking {
+                    asking = false
                     // if asking we need to call ASKING beforehand otherwise we will get a MOVE error
                     return try await client.execute(
                         ASKING(),
@@ -164,12 +169,25 @@ public final class ValkeyClusterClient: Sendable {
             } catch ValkeyClusterError.noNodeToTalkTo {
                 // TODO: Rerun node discovery!
             } catch let error as ValkeyClientError where error.errorCode == .commandError {
-                guard let errorMessage = error.message, let redirectError = ValkeyClusterRedirectionError(errorMessage) else {
+                guard let errorMessage = error.message else {
                     throw error
                 }
-                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
-                clientSelector = { try await self.nodeClient(for: redirectError) }
-                asking = (redirectError.redirection == .ask)
+                attempt += 1
+                if let redirectError = ValkeyClusterRedirectionError(errorMessage) {
+                    self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
+                    clientSelector = { try await self.nodeClient(for: redirectError) }
+                    asking = (redirectError.redirection == .ask)
+                } else {
+                    let prefix = errorMessage.prefix { $0 != " " }
+                    switch prefix {
+                    case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
+                        self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
+                        let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                        try await Task.sleep(for: wait)
+                    default:
+                        throw error
+                    }
+                }
             }
         }
         throw CancellationError()
