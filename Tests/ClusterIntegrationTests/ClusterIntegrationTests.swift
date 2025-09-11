@@ -112,11 +112,35 @@ struct ClusterIntegrationTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHashSlotMigrationAndTryAgain() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            let keySuffix = "{\(UUID().uuidString)}"
+            try await Self.withKey(connection: client, suffix: keySuffix) { key in
+                try await Self.withKey(connection: client, suffix: keySuffix) { key2 in
+                    let hashSlot = HashSlot(key: key)
+                    try await client.lpush(key, elements: ["testing"])
+
+                    try await testMigratingHashSlot(hashSlot, client: client) {
+                    } duringMigrate: {
+                        try await client.rpoplpush(source: key, destination: key2)
+                    }
+                }
+            }
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     func testMigratingHashSlot(
         _ hashSlot: HashSlot,
         client: ValkeyClusterClient,
         beforeMigrate: () async throws -> Void,
+        duringMigrate: sending () async throws -> Void = {},
         afterMigrate: () async throws -> Void = {},
         finished: () async throws -> Void = {}
     ) async throws {
@@ -139,6 +163,8 @@ struct ClusterIntegrationTests {
             _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .importing(clientAID)))
             _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .migrating(clientBID)))
 
+            async let duringMigrateTask: Void = duringMigrate()
+
             try await beforeMigrate()
 
             // get keys associated with slot and migrate them
@@ -155,6 +181,9 @@ struct ClusterIntegrationTests {
             client.logger.info("SETSLOT node")
             _ = try await nodeAClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientBID)))
             _ = try await nodeBClient.execute(CLUSTER.SETSLOT(slot: numericCast(hashSlot.rawValue), subcommand: .node(clientBID)))
+
+            // wait for during migrate
+            try await duringMigrateTask
 
             try await finished()
             result = .success(())

@@ -9,6 +9,20 @@
 import NIOSSL
 import _ValkeyConnectionPool
 
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif canImport(Musl)
+import Musl
+#elseif canImport(WinSDK)
+import WinSDK
+#elseif canImport(Bionic)
+import Bionic
+#else
+#error("Unsupported platform")
+#endif
+
 /// Configuration for the Valkey client.
 @available(valkeySwift 1.0, *)
 public struct ValkeyClientConfiguration: Sendable {
@@ -64,6 +78,43 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
+    /// Retry parameters for when a client needs to retry a command
+    public struct RetryParameters: Sendable {
+        let exponentBase: Double
+        let factor: Double
+        let minWaitTime: Double
+        let maxWaitTime: Double
+
+        /// Initialize RetryParameters
+        /// - Parameters:
+        ///   - exponentBase: Exponent base number
+        ///   - factor: Duration to multiple exponent by get base wait value
+        ///   - minWaitTime: Minimum wait time
+        ///   - maxWaitTime: Maximum wait time
+        public init(
+            exponentBase: Double = 2,
+            factor: Duration = .milliseconds(10.0),
+            minWaitTime: Duration = .seconds(1.28),
+            maxWaitTime: Duration = .seconds(655.36)
+        ) {
+            self.exponentBase = exponentBase
+            self.factor = factor / .milliseconds(1)
+            self.minWaitTime = minWaitTime / .milliseconds(1)
+            self.maxWaitTime = maxWaitTime / .milliseconds(1)
+        }
+
+        /// Calculate wait time for retry number
+        ///
+        /// This code is a copy from the `RetryParam` type in cluster_clients.rs of valkey-glide,
+        @usableFromInline
+        func calculateWaitTime(retry: Int) -> Duration {
+            let baseWait = pow(self.exponentBase, Double(retry)) * self.factor
+            let clampedWait = max(min(baseWait, self.maxWaitTime), self.minWaitTime)
+            let jitteredWait = Double.random(in: minWaitTime...clampedWait)
+            return .milliseconds(jitteredWait)
+        }
+    }
+
     /// The connection pool definition for Valkey connections.
     public struct ConnectionPool: Hashable, Sendable {
         /// The minimum number of connections to preserve in the pool.
@@ -108,6 +159,8 @@ public struct ValkeyClientConfiguration: Sendable {
     public var connectionPool: ConnectionPool
     /// The keep alive behavior for the connection.
     public var keepAliveBehavior: KeepAliveBehavior
+    /// Retry parameters for when a client needs to retry a command
+    public var retryParameters: RetryParameters
     /// The timeout the client uses to determine if a connection is considered dead.
     ///
     /// The connection is considered dead if a response isn't received within this time.
@@ -131,6 +184,7 @@ public struct ValkeyClientConfiguration: Sendable {
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
         keepAliveBehavior: KeepAliveBehavior = .init(),
+        retryParameters: RetryParameters = .init(),
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable
@@ -138,6 +192,7 @@ public struct ValkeyClientConfiguration: Sendable {
         self.authentication = authentication
         self.connectionPool = connectionPool
         self.keepAliveBehavior = keepAliveBehavior
+        self.retryParameters = retryParameters
         self.commandTimeout = commandTimeout
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
