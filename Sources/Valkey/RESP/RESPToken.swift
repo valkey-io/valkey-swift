@@ -637,8 +637,8 @@ extension RESPToken.Array: CustomStringConvertible {
         self.descriptionWith(indent: "")
     }
 
-    fileprivate func descriptionWith(indent tab: String, redact: Bool = true) -> String {
-        self.map { $0.value.descriptionWith(indent: "\(tab)", childIndent: "\(tab)", redact: redact) }.joined(separator: ",\n")
+    fileprivate func descriptionWith(indent tab: String) -> String {
+        self.map { $0.value.descriptionWith(indent: "\(tab)", childIndent: "\(tab)") }.joined(separator: ",\n")
     }
 }
 
@@ -647,7 +647,7 @@ extension RESPToken.Map: CustomStringConvertible {
         self.descriptionWith(indent: "")
     }
 
-    fileprivate func descriptionWith(indent tab: String, redact: Bool = true) -> String {
+    fileprivate func descriptionWith(indent tab: String) -> String {
         self.map {
             "\($0.key.value.descriptionWith(indent: "\(tab)", childIndent: "\(tab)", redact: false)): \($0.value.value.descriptionWith(indent: "", childIndent: "\(tab)"))"
         }.joined(separator: ",\n")
