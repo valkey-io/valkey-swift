@@ -101,7 +101,7 @@ package struct HashSlotShardMap: Sendable {
                 throw ValkeyClusterError.clusterIsMissingSlotAssignment
             }
             guard ogNodeID == nodeID else {
-                throw ValkeyClusterError.keysInCommandRequireMultipleNodes
+                throw ValkeyClusterError.keysRequireMultipleNodes
             }
         }
 

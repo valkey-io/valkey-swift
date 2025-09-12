@@ -192,7 +192,7 @@ struct HashSlotShardMapTests {
 
         // Test slots from different shards - should throw
         let differentShardSlots: [HashSlot] = [5, 150]  // 5 from shard1, 150 from shard2
-        #expect(throws: ValkeyClusterError.keysInCommandRequireMultipleNodes) {
+        #expect(throws: ValkeyClusterError.keysRequireMultipleNodes) {
             try map.nodeID(for: differentShardSlots)
         }
     }
@@ -449,7 +449,7 @@ struct HashSlotShardMapTests {
         #expect(shardNodes2.replicas.contains(expectedReplica2_2))
 
         // Verify that nodeID(for:) still throws when slots span multiple shards
-        #expect(throws: ValkeyClusterError.keysInCommandRequireMultipleNodes) {
+        #expect(throws: ValkeyClusterError.keysRequireMultipleNodes) {
             _ = try map.nodeID(for: [1000, 10000])
         }
     }
