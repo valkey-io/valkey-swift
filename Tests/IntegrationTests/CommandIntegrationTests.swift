@@ -187,6 +187,23 @@ struct CommandIntegratedTests {
             #expect(library.functions.count == 2)
             #expect(library.functions[0].name == "valkey_swift_test_set")
             #expect(library.functions[1].name == "valkey_swift_test_get")
+
+            try await client.functionDelete(libraryName: "_valkey_swift_tests")
+        }
+    }
+
+    @available(valkeySwift 1.0, *)
+    @Test
+    func testSCRIPTfunctions() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            let sha1 = try await client.scriptLoad(
+                script: "return redis.call(\"GET\", KEYS[1])"
+            )
+            let script = try await client.scriptShow(sha1: sha1)
+            #expect(script == "return redis.call(\"GET\", KEYS[1])")
+            _ = try await client.scriptExists(sha1s: [sha1])
         }
     }
 }
