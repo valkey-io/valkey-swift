@@ -25,7 +25,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.4"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.3"),
-        .package(url: "https://github.com/slashmo/swift-distributed-tracing.git", branch: "feature/tracing-test-kit"),
+        .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.81.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.23.0"),
@@ -93,7 +93,7 @@ let package = Package(
                 .product(name: "NIOTestUtils", package: "swift-nio"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOEmbedded", package: "swift-nio"),
-                .product(name: "TracingTestKit", package: "swift-distributed-tracing", condition: .when(traits: ["DistributedTracingSupport"])),
+                .product(name: "InMemoryTracing", package: "swift-distributed-tracing", condition: .when(traits: ["DistributedTracingSupport"])),
             ],
             swiftSettings: defaultSwiftSettings
         ),

@@ -15,7 +15,7 @@ import Testing
 @testable import Valkey
 
 #if DistributedTracingSupport
-import TracingTestKit
+import InMemoryTracing
 #endif
 
 @Suite
@@ -497,7 +497,7 @@ struct ConnectionTests {
         @Test
         @available(valkeySwift 1.0, *)
         func testSingleCommandSpan() async throws {
-            let tracer = TestTracer()
+            let tracer = InMemoryTracer()
             var config = ValkeyConnectionConfiguration()
             config.tracing.tracer = tracer
 
@@ -534,7 +534,7 @@ struct ConnectionTests {
         @Test
         @available(valkeySwift 1.0, *)
         func testSingleCommandFailureSpan() async throws {
-            let tracer = TestTracer()
+            let tracer = InMemoryTracer()
             var config = ValkeyConnectionConfiguration()
             config.tracing.tracer = tracer
 
@@ -578,7 +578,7 @@ struct ConnectionTests {
         @Test(.disabled("Pipeline support not implemented yet"))
         @available(valkeySwift 1.0, *)
         func testPipelinedSameCommandsSpan() async throws {
-            let tracer = TestTracer()
+            let tracer = InMemoryTracer()
             var config = ValkeyConnectionConfiguration()
             config.tracing.tracer = tracer
 
@@ -621,7 +621,7 @@ struct ConnectionTests {
         @Test(.disabled("Pipeline support not implemented yet"))
         @available(valkeySwift 1.0, *)
         func testPipelinedDifferentCommandsSpan() async throws {
-            let tracer = TestTracer()
+            let tracer = InMemoryTracer()
             var config = ValkeyConnectionConfiguration()
             config.tracing.tracer = tracer
 
@@ -664,7 +664,7 @@ struct ConnectionTests {
         @Test(.disabled("Pipeline support not implemented yet"))
         @available(valkeySwift 1.0, *)
         func testPipelinedCommandFailureSpan() async throws {
-            let tracer = TestTracer()
+            let tracer = InMemoryTracer()
             var config = ValkeyConnectionConfiguration()
             config.tracing.tracer = tracer
 
