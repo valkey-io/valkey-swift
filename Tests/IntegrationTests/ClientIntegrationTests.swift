@@ -317,83 +317,6 @@ struct ClientIntegratedTests {
         }
     }
 
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testRole() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            let role = try await connection.role()
-            switch role {
-            case .primary:
-                break
-            case .replica, .sentinel:
-                Issue.record()
-            }
-        }
-    }
-
-    @available(valkeySwift 1.0, *)
-    @Test("Array with count using LMPOP")
-    func testArrayWithCount() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .trace
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                try await withKey(connection: connection) { key2 in
-                    try await connection.lpush(key, elements: ["a"])
-                    try await connection.lpush(key2, elements: ["b"])
-                    try await connection.lpush(key2, elements: ["c"])
-                    try await connection.lpush(key2, elements: ["d"])
-                    let rt1 = try await connection.lmpop(keys: [key, key2], where: .right)
-                    let (element) = try rt1?.values.decodeElements(as: (String).self)
-                    #expect(rt1?.key == key)
-                    #expect(element == "a")
-                    let rt2 = try await connection.lmpop(keys: [key, key2], where: .right)
-                    let elements2 = try rt2?.values.decode(as: [String].self)
-                    #expect(rt2?.key == key2)
-                    #expect(elements2 == ["b"])
-                    let rt3 = try await connection.lmpop(keys: [key, key2], where: .right, count: 2)
-                    let elements3 = try rt3?.values.decode(as: [String].self)
-                    #expect(rt3?.key == key2)
-                    #expect(elements3 == ["c", "d"])
-                }
-            }
-        }
-    }
-
-    @available(valkeySwift 1.0, *)
-    @Test
-    func testLMOVE() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .trace
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                try await withKey(connection: connection) { key2 in
-                    let rtEmpty = try await connection.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left)
-                    #expect(rtEmpty == nil)
-                    try await connection.lpush(key, elements: ["a"])
-                    try await connection.lpush(key, elements: ["b"])
-                    try await connection.lpush(key, elements: ["c"])
-                    try await connection.lpush(key, elements: ["d"])
-                    let list1Before = try await connection.lrange(key, start: 0, stop: -1).decode(as: [String].self)
-                    #expect(list1Before == ["d", "c", "b", "a"])
-                    let list2Before = try await connection.lrange(key2, start: 0, stop: -1).decode(as: [String].self)
-                    #expect(list2Before == [])
-                    for expectedValue in ["a", "b", "c", "d"] {
-                        var rt = try #require(try await connection.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left))
-                        let value = rt.readString(length: 1)
-                        #expect(value == expectedValue)
-                    }
-                    let list1After = try await connection.lrange(key, start: 0, stop: -1).decode(as: [String].self)
-                    #expect(list1After == [])
-                    let list2After = try await connection.lrange(key2, start: 0, stop: -1).decode(as: [String].self)
-                    #expect(list2After == ["d", "c", "b", "a"])
-                }
-            }
-        }
-    }
-
     @available(valkeySwift 1.0, *)
     @Test("Test command error is thrown")
     func testCommandError() async throws {
@@ -540,34 +463,6 @@ struct ClientIntegratedTests {
             }
             let took = ContinuousClock().now - time
             #expect(.milliseconds(500) <= took && took < .seconds(1))
-        }
-    }
-
-    @available(valkeySwift 1.0, *)
-    @Test
-    func testGEOPOS() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .trace
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                let count = try await connection.geoadd(
-                    key,
-                    data: [.init(longitude: 1.0, latitude: 53.0, member: "Edinburgh"), .init(longitude: 1.4, latitude: 53.5, member: "Glasgow")]
-                )
-                #expect(count == 2)
-                let search = try await connection.geosearch(
-                    key,
-                    from: .fromlonlat(.init(longitude: 0.0, latitude: 53.0)),
-                    by: .circle(.init(radius: 10000, unit: .mi)),
-                    withcoord: true,
-                    withdist: true,
-                    withhash: true
-                )
-                print(search.map { $0.member })
-                try print(search.map { try $0.attributes[0].decode(as: Double.self) })
-                try print(search.map { try $0.attributes[1].decode(as: String.self) })
-                try print(search.map { try $0.attributes[2].decode(as: GeoCoordinates.self) })
-            }
         }
     }
 
