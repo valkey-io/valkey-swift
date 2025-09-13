@@ -63,7 +63,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         self.logger = logger
         #if DistributedTracingSupport
         self.tracer = configuration.tracing.tracer
-        #endif
         switch address?.value {
         case let .hostname(host, port):
             self.address = (host, port)
@@ -72,6 +71,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         case nil:
             self.address = nil
         }
+        #endif
         self.isClosed = .init(false)
     }
 
@@ -263,6 +263,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
     }
 
+    #if DistributedTracingSupport
     @usableFromInline
     func applyCommonAttributes(to attributes: inout SpanAttributes, commandName: String) {
         attributes[self.configuration.tracing.attributeNames.databaseOperationName] = commandName
@@ -272,6 +273,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         attributes[self.configuration.tracing.attributeNames.serverAddress] = address?.hostOrSocketPath
         attributes[self.configuration.tracing.attributeNames.serverPort] = address?.port == 6379 ? nil : address?.port
     }
+    #endif
 
     @usableFromInline
     nonisolated func cancel(requestID: Int) {
