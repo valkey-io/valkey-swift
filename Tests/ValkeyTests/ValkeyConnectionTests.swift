@@ -575,6 +575,48 @@ struct ConnectionTests {
             #expect(span.status?.code == .error)
         }
 
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testSingleCommandUnknownFailureSpan() async throws {
+            let tracer = InMemoryTracer()
+            var config = ValkeyConnectionConfiguration()
+            config.tracing.tracer = tracer
+
+            let channel = NIOAsyncTestingChannel()
+            let logger = Logger(label: "test")
+            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
+            try await channel.processHello()
+
+            async let fooResult = connection.get("foo")
+            _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+
+            await #expect(throws: RESPParsingError.self) {
+                try await channel.writeInbound(ByteBuffer(string: "invalid resp token"))
+            }
+            do {
+                _ = try await fooResult
+                Issue.record()
+            } catch is RESPParsingError {}
+
+            #expect(tracer.finishedSpans.count == 1)
+            let span = try #require(tracer.finishedSpans.first)
+            #expect(span.operationName == "GET")
+            #expect(span.kind == .client)
+            #expect(span.errors.count == 1)
+            let error = try #require(span.errors.first)
+            #expect((error.error as? RESPParsingError)?.code == .invalidLeadingByte)
+            #expect(
+                span.attributes == [
+                    "db.system.name": "valkey",
+                    "db.operation.name": "GET",
+                    "server.address": "127.0.0.1",
+                    "network.peer.address": "127.0.0.1",
+                    "network.peer.port": 6379,
+                ]
+            )
+            #expect(span.status?.code == .error)
+        }
+
         @Test(.disabled("Pipeline support not implemented yet"))
         @available(valkeySwift 1.0, *)
         func testPipelinedSameCommandsSpan() async throws {

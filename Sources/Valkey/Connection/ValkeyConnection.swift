@@ -210,7 +210,10 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             throw error
         } catch {
             #if DistributedTracingSupport
-            span?.recordError(error)
+            if let span {
+                span.recordError(error)
+                span.setStatus(SpanStatus(code: .error))
+            }
             #endif
             throw error
         }
