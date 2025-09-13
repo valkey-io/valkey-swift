@@ -267,7 +267,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @usableFromInline
     func applyCommonAttributes(to attributes: inout SpanAttributes, commandName: String) {
         attributes[self.configuration.tracing.attributeNames.databaseOperationName] = commandName
-        attributes[self.configuration.tracing.attributeNames.databaseSystemName] = self.configuration.tracing.attributeValue.databaseSystem
+        attributes[self.configuration.tracing.attributeNames.databaseSystemName] = self.configuration.tracing.attributeValues.databaseSystem
         attributes[self.configuration.tracing.attributeNames.networkPeerAddress] = channel.remoteAddress?.ipAddress
         attributes[self.configuration.tracing.attributeNames.networkPeerPort] = channel.remoteAddress?.port
         attributes[self.configuration.tracing.attributeNames.serverAddress] = address?.hostOrSocketPath

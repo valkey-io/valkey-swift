@@ -117,6 +117,8 @@ public struct ValkeyConnectionConfiguration: Sendable {
     public var clientName: String?
 
     #if DistributedTracingSupport
+    /// The distributed tracing configuration to use for this connection.
+    /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
     public var tracing: ValkeyTracingConfiguration = .init()
     #endif
 
@@ -148,13 +150,19 @@ public struct ValkeyConnectionConfiguration: Sendable {
 
 #if DistributedTracingSupport
 @available(valkeySwift 1.0, *)
+/// A configuration object that defines distributed tracing behavior of a Valkey client.
 public struct ValkeyTracingConfiguration: Sendable {
-
+    /// The tracer to use, or `nil` to disable tracing.
+    /// Defaults to the globally bootstrapped tracer.
     public var tracer: (any Tracer)? = InstrumentationSystem.tracer
 
+    /// The attribute names used in spans created by Valkey. Defaults to OpenTelemetry semantics.
     public var attributeNames: AttributeNames = .init()
-    public var attributeValue: AttributeValues = .init()
 
+    /// The static attribute values used in spans created by Valkey.
+    public var attributeValues: AttributeValues = .init()
+
+    /// Attribute names used in spans created by Valkey.
     public struct AttributeNames: Sendable {
         public var databaseOperationName: String = "db.operation.name"
         public var databaseSystemName: String = "db.system.name"
@@ -164,6 +172,7 @@ public struct ValkeyTracingConfiguration: Sendable {
         public var serverPort: String = "server.port"
     }
 
+    /// Static attribute values used in spans created by Valkey.
     public struct AttributeValues: Sendable {
         public var databaseSystem: String = "valkey"
     }
