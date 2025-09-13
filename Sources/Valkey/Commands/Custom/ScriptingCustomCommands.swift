@@ -87,7 +87,6 @@ extension FUNCTION.STATS {
         public let runningScript: Script
         public let engines: [String: Engine]
         public init(fromRESP token: RESPToken) throws {
-            print(token.value.descriptionWith(redact: false))
             let map = try [String: RESPToken](fromRESP: token)
             guard let runningScript = map["running_script"] else { throw RESPParsingError(code: .unexpectedType, buffer: token.base) }
             guard let engines = map["engines"] else { throw RESPParsingError(code: .unexpectedType, buffer: token.base) }
