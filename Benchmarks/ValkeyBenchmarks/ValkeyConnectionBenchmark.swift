@@ -14,10 +14,17 @@ import NIOPosix
 import Synchronization
 import Valkey
 
+#if DistributedTracingSupport
+import Tracing
+#endif
+
 @available(valkeySwift 1.0, *)
 func connectionBenchmarks() {
     makeConnectionCreateAndDropBenchmark()
     makeConnectionGETBenchmark()
+    #if DistributedTracingSupport
+    makeConnectionGETNoOpTracerBenchmark()
+    #endif
     makeConnectionPipelineBenchmark()
 }
 
@@ -58,9 +65,16 @@ func makeConnectionGETBenchmark() -> Benchmark? {
     return Benchmark("Connection: GET benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
         let port = serverMutex.withLock { $0 }!.localAddress!.port!
         let logger = Logger(label: "test")
+        #if DistributedTracingSupport
+        // explicitly set tracer to nil, if trait is enabled
+        var configuration = ValkeyConnectionConfiguration()
+        configuration.tracing.tracer = nil
+        #else
+        let configuration = ValkeyConnectionConfiguration()
+        #endif
         try await ValkeyConnection.withConnection(
             address: .hostname("127.0.0.1", port: port),
-            configuration: .init(),
+            configuration: configuration,
             logger: logger
         ) { connection in
             benchmark.startMeasurement()
@@ -77,6 +91,38 @@ func makeConnectionGETBenchmark() -> Benchmark? {
         try await serverMutex.withLock { $0 }?.close().get()
     }
 }
+
+#if DistributedTracingSupport
+@available(valkeySwift 1.0, *)
+@discardableResult
+func makeConnectionGETNoOpTracerBenchmark() -> Benchmark? {
+    let serverMutex = Mutex<(any Channel)?>(nil)
+
+    return Benchmark("Connection: GET benchmark – NoOpTracer", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+        let port = serverMutex.withLock { $0 }!.localAddress!.port!
+        let logger = Logger(label: "test")
+        var configuration = ValkeyConnectionConfiguration()
+        configuration.tracing.tracer = NoOpTracer()
+        try await ValkeyConnection.withConnection(
+            address: .hostname("127.0.0.1", port: port),
+            configuration: configuration,
+            logger: logger
+        ) { connection in
+            benchmark.startMeasurement()
+            for _ in benchmark.scaledIterations {
+                let foo = try await connection.get("foo")
+                precondition(foo.map { String(buffer: $0) } == "Bar")
+            }
+            benchmark.stopMeasurement()
+        }
+    } setup: {
+        let server = try await makeLocalServer()
+        serverMutex.withLock { $0 = server }
+    } teardown: {
+        try await serverMutex.withLock { $0 }?.close().get()
+    }
+}
+#endif
 
 @available(valkeySwift 1.0, *)
 @discardableResult

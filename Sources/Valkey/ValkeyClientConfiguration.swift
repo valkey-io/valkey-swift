@@ -118,6 +118,12 @@ public struct ValkeyClientConfiguration: Sendable {
     /// The TLS to use for the Valkey connection.
     public var tls: TLS
 
+    #if DistributedTracingSupport
+    /// The distributed tracing configuration to use for the Valkey connection.
+    /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
+    public var tracing: ValkeyTracingConfiguration = .init()
+    #endif
+
     /// Creates a Valkey client connection configuration.
     ///
     /// - Parameters:
