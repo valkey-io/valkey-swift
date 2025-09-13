@@ -69,6 +69,8 @@ func makeConnectionGETBenchmark() -> Benchmark? {
         // explicitly set tracer to nil, if trait is enabled
         var configuration = ValkeyConnectionConfiguration()
         configuration.tracing.tracer = nil
+        #else
+        let configuration = ValkeyConnectionConfiguration()
         #endif
         try await ValkeyConnection.withConnection(
             address: .hostname("127.0.0.1", port: port),
