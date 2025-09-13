@@ -185,8 +185,8 @@ struct CommandIntegratedTests {
             #expect(library.engine == "LUA")
             #expect(library.libraryCode?.hasPrefix("#!lua name=_valkey_swift_tests") == true)
             #expect(library.functions.count == 2)
-            #expect(library.functions[0].name == "valkey_swift_test_set")
-            #expect(library.functions[1].name == "valkey_swift_test_get")
+            #expect(library.functions.contains { $0.name == "valkey_swift_test_set" })
+            #expect(library.functions.contains { $0.name == "valkey_swift_test_get" })
 
             try await client.functionDelete(libraryName: "_valkey_swift_tests")
         }
