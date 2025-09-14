@@ -17,6 +17,10 @@ import Network
 import NIOTransportServices
 #endif
 
+#if DistributedTracingSupport
+import Tracing
+#endif
+
 /// A single connection to a Valkey database.
 @available(valkeySwift 1.0, *)
 public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
@@ -29,6 +33,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public let id: ID
     /// Logger used by Server
     let logger: Logger
+    #if DistributedTracingSupport
+    @usableFromInline
+    let tracer: (any Tracer)?
+    @usableFromInline
+    let address: (hostOrSocketPath: String, port: Int?)?
+    #endif
     @usableFromInline
     let channel: any Channel
     @usableFromInline
@@ -42,6 +52,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         connectionID: ID,
         channelHandler: ValkeyChannelHandler,
         configuration: ValkeyConnectionConfiguration,
+        address: ValkeyServerAddress?,
         logger: Logger
     ) {
         self.unownedExecutor = channel.eventLoop.executor.asUnownedSerialExecutor()
@@ -50,6 +61,17 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         self.configuration = configuration
         self.id = connectionID
         self.logger = logger
+        #if DistributedTracingSupport
+        self.tracer = configuration.tracing.tracer
+        switch address?.value {
+        case let .hostname(host, port):
+            self.address = (host, port)
+        case let .unixDomainSocket(path):
+            self.address = (path, nil)
+        case nil:
+            self.address = nil
+        }
+        #endif
         self.isClosed = .init(false)
     }
 
@@ -153,16 +175,47 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     @inlinable
     func _execute<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
+        #if DistributedTracingSupport
+        let span = self.tracer?.startSpan(Command.name, ofKind: .client)
+        defer { span?.end() }
+
+        span?.updateAttributes { attributes in
+            self.applyCommonAttributes(to: &attributes, commandName: Command.name)
+        }
+        #endif
+
         let requestID = Self.requestIDGenerator.next()
-        return try await withTaskCancellationHandler {
-            if Task.isCancelled {
-                throw ValkeyClientError(.cancelled)
+
+        do {
+            return try await withTaskCancellationHandler {
+                if Task.isCancelled {
+                    throw ValkeyClientError(.cancelled)
+                }
+                return try await withCheckedThrowingContinuation { continuation in
+                    self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
+                }
+            } onCancel: {
+                self.cancel(requestID: requestID)
             }
-            return try await withCheckedThrowingContinuation { continuation in
-                self.channelHandler.write(command: command, continuation: continuation, requestID: requestID)
+        } catch let error as ValkeyClientError {
+            #if DistributedTracingSupport
+            if let span {
+                span.recordError(error)
+                span.setStatus(SpanStatus(code: .error))
+                if let prefix = error.simpleErrorPrefix {
+                    span.attributes["db.response.status_code"] = "\(prefix)"
+                }
             }
-        } onCancel: {
-            self.cancel(requestID: requestID)
+            #endif
+            throw error
+        } catch {
+            #if DistributedTracingSupport
+            if let span {
+                span.recordError(error)
+                span.setStatus(SpanStatus(code: .error))
+            }
+            #endif
+            throw error
         }
     }
 
@@ -212,6 +265,18 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             self.cancel(requestID: requestID)
         }
     }
+
+    #if DistributedTracingSupport
+    @usableFromInline
+    func applyCommonAttributes(to attributes: inout SpanAttributes, commandName: String) {
+        attributes[self.configuration.tracing.attributeNames.databaseOperationName] = commandName
+        attributes[self.configuration.tracing.attributeNames.databaseSystemName] = self.configuration.tracing.attributeValues.databaseSystem
+        attributes[self.configuration.tracing.attributeNames.networkPeerAddress] = channel.remoteAddress?.ipAddress
+        attributes[self.configuration.tracing.attributeNames.networkPeerPort] = channel.remoteAddress?.port
+        attributes[self.configuration.tracing.attributeNames.serverAddress] = address?.hostOrSocketPath
+        attributes[self.configuration.tracing.attributeNames.serverPort] = address?.port == 6379 ? nil : address?.port
+    }
+    #endif
 
     @usableFromInline
     nonisolated func cancel(requestID: Int) {
@@ -278,6 +343,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 connectionID: connectionID,
                 channelHandler: handler,
                 configuration: configuration,
+                address: address,
                 logger: logger
             )
         }
@@ -313,6 +379,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 connectionID: 0,
                 channelHandler: handler,
                 configuration: configuration,
+                address: .hostname("127.0.0.1", port: 6379),
                 logger: logger
             )
             return channel.connect(to: try SocketAddress(ipAddress: "127.0.0.1", port: 6379)).map {
@@ -390,3 +457,20 @@ struct AutoIncrementingInteger {
         return value - 1
     }
 }
+
+#if DistributedTracingSupport
+extension ValkeyClientError {
+    /// Extract the simple error prefix from this error.
+    ///
+    /// - SeeAlso: [](https://valkey.io/topics/protocol/#simple-errors)
+    @usableFromInline
+    var simpleErrorPrefix: Substring? {
+        guard let message else { return nil }
+        var prefixEndIndex = message.startIndex
+        while prefixEndIndex < message.endIndex, message[prefixEndIndex] != " " {
+            message.formIndex(after: &prefixEndIndex)
+        }
+        return message[message.startIndex..<prefixEndIndex]
+    }
+}
+#endif
