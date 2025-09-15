@@ -613,16 +613,16 @@ extension RESPToken.Value: CustomDebugStringConvertible {
 
     func descriptionWith(indent tab: String = "", childIndent childTab: String = "", redact: Bool = true) -> String {
         switch self {
-        case .simpleString(let buffer): "\(tab).simpleString(\(redact ? "***" : "\"\(String(buffer: buffer))\""))"
+        case .simpleString(let buffer): "\(tab).simpleString(\(redact ? "\"***\"" : "\"\(String(buffer: buffer))\""))"
         case .simpleError(let buffer): "\(tab).simpleError(\("\"\(String(buffer: buffer))\""))"
-        case .bulkString(let buffer): "\(tab).bulkString(\(redact ? "***" : "\"\(String(buffer: buffer))\""))"
+        case .bulkString(let buffer): "\(tab).bulkString(\(redact ? "\"***\"" : "\"\(String(buffer: buffer))\""))"
         case .bulkError(let buffer): "\(tab).bulkError(\("\"\(String(buffer: buffer))\""))"
-        case .verbatimString(let buffer): "\(tab).verbatimString(\(redact ? "***" : "\"\(String(buffer: buffer))\""))"
+        case .verbatimString(let buffer): "\(tab).verbatimString(\(redact ? "\"txt:***\"" : "\"\(String(buffer: buffer))\""))"
         case .number(let integer): "\(tab).number(\(integer))"
         case .double(let double): "\(tab).double(\(double))"
-        case .boolean(let bool): "\(tab).boolean(\(bool ? "t" : "f"))"
+        case .boolean(let bool): "\(tab).boolean(\(bool ? "true" : "false"))"
         case .null: "\(tab).null"
-        case .bigNumber: "\(tab).bigNumber(\"***\"))"
+        case .bigNumber(let buffer): "\(tab).bigNumber(\(redact ? "\"***\"" : "\"\(String(buffer: buffer))\""))"
         case .array(let array): "\(tab).array([\n\(array.descriptionWith(indent: "\(childTab)  ", redact: redact))\n\(childTab)])"
         case .attribute(let map): "\(tab).attribute([\n\(map.descriptionWith(indent: "\(childTab)  ", redact: redact))\n\(childTab)])"
         case .map(let map): "\(tab).map([\n\(map.descriptionWith(indent: "\(childTab)  ", redact: redact))\n\(childTab)])"
