@@ -18,12 +18,14 @@ let package = Package(
     ],
     traits: [
         .trait(name: "ServiceLifecycleSupport"),
-        .default(enabledTraits: ["ServiceLifecycleSupport"]),
+        .trait(name: "DistributedTracingSupport"),
+        .default(enabledTraits: ["ServiceLifecycleSupport", "DistributedTracingSupport"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-atomics.git", from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-collections.git", from: "1.1.4"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.6.3"),
+        .package(url: "https://github.com/apple/swift-distributed-tracing.git", from: "1.3.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.81.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.29.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.23.0"),
@@ -36,6 +38,7 @@ let package = Package(
                 .byName(name: "_ValkeyConnectionPool"),
                 .product(name: "DequeModule", package: "swift-collections"),
                 .product(name: "Logging", package: "swift-log"),
+                .product(name: "Tracing", package: "swift-distributed-tracing", condition: .when(traits: ["DistributedTracingSupport"])),
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "NIOSSL", package: "swift-nio-ssl"),
@@ -90,6 +93,7 @@ let package = Package(
                 .product(name: "NIOTestUtils", package: "swift-nio"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOEmbedded", package: "swift-nio"),
+                .product(name: "InMemoryTracing", package: "swift-distributed-tracing", condition: .when(traits: ["DistributedTracingSupport"])),
             ],
             swiftSettings: defaultSwiftSettings
         ),
