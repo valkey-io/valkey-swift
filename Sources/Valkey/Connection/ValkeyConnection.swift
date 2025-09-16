@@ -240,6 +240,10 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// Once all the responses for the commands have been received the function returns
     /// an array of RESPToken Results.
     ///
+    /// This version of execute is required as the 6.1 compiler crashes when deleting
+    /// tuples returned from functions that are then parsed as a parameter pack.
+    /// Otherwise we could use the standard version above
+    ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Array of RESPToken results
     @inlinable
@@ -266,10 +270,16 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     }
     /// Pipeline a series of commands to Valkey connection
     ///
+    /// This version is supplied with a parameter pack of retry commands. Where the command
+    /// is only queued when the command is set to `retry``. Otherwise the result in the
+    /// retry command is returned.
+    ///
     /// Once all the responses for the commands have been received the function returns
     /// an array of RESPToken Results.
     ///
-    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Parameters
+    ///   - asking: Should we precede each command with an ASKING command
+    ///   - commands: Parameter pack of ValkeyCommands
     /// - Returns: Array of RESPToken results
     @inlinable
     func retryExecute<each Command: ValkeyCommand>(
