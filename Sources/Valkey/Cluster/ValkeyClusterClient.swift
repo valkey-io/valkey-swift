@@ -191,6 +191,10 @@ public final class ValkeyClusterClient: Sendable {
     /// Once all the responses for the commands have been received the function returns
     /// a parameter pack of Results, one for each command.
     ///
+    /// If any of the commands results in a redirection errors or an error that causes a
+    /// retry. Then those commands are sent again. This does mean that there is a possibility
+    /// that commands run out of order if the keys they affect are not from the same hash slot.
+    ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the results of all the commands
     @inlinable
