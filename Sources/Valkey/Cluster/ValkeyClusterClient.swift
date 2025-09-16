@@ -168,25 +168,18 @@ public final class ValkeyClusterClient: Sendable {
                 }
             } catch let error as ValkeyClusterError where error == .noNodeToTalkTo {
                 // TODO: Rerun node discovery!
-            } catch let error as ValkeyClientError where error.errorCode == .commandError {
-                guard let errorMessage = error.message else {
-                    throw error
-                }
-                attempt += 1
-                if let redirectError = ValkeyClusterRedirectionError(errorMessage) {
-                    self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
+            } catch {
+                let retryAction = self.getRetryAction(from: error)
+                switch retryAction {
+                case .redirect(let redirectError):
                     clientSelector = { try await self.nodeClient(for: redirectError) }
                     asking = (redirectError.redirection == .ask)
-                } else {
-                    let prefix = errorMessage.prefix { $0 != " " }
-                    switch prefix {
-                    case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
-                        self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
-                        let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
-                        try await Task.sleep(for: wait)
-                    default:
-                        throw error
-                    }
+                case .tryAgain:
+                    let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                    try await Task.sleep(for: wait)
+                    attempt += 1
+                case .dontRetry:
+                    throw error
                 }
             }
         }
@@ -206,41 +199,27 @@ public final class ValkeyClusterClient: Sendable {
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
         var movedError: ValkeyClusterRedirectionError? = nil
         var retry = false
-        // convert RESPToken result to Response, returning decode errors as a Failure
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
-            result.flatMap {
-                do {
-                    return try .success(Response(fromRESP: $0))
-                } catch {
-                    return .failure(error)
-                }
-            }
-        }
         // convert RESPToken result to retry decision
         func retryResult<C: ValkeyCommand>(result: Result<RESPToken, Error>, command: C) -> ValkeyConnection.RetryCommand<C> {
-            if case .failure(let error) = result,
-                let clientError = error as? ValkeyClientError,
-                clientError.errorCode == .commandError,
-                let errorMessage = clientError.message
-            {
-                if let parsedMovedError = ValkeyClusterRedirectionError(errorMessage) {
+            switch result {
+            case .failure(let error):
+                let retryAction = self.getRetryAction(from: error)
+                switch retryAction {
+                case .redirect(let error):
                     if movedError == nil {
-                        movedError = parsedMovedError
-                    }
-                    retry = true
-                } else {
-                    let prefix = errorMessage.prefix { $0 != " " }
-                    switch prefix {
-                    case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
-                        self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
+                        movedError = error
                         retry = true
-                    default:
-                        return .result(result)
                     }
+                    return .retry(command)
+                case .tryAgain:
+                    retry = true
+                    return .retry(command)
+                case .dontRetry:
+                    return .result(result)
                 }
-                return .retry(command)
+            case .success:
+                return .result(result)
             }
-            return .result(result)
         }
         // get hash slot affected
         var hashSlots: [HashSlot] = []
@@ -256,6 +235,7 @@ public final class ValkeyClusterClient: Sendable {
             try await connection.respExecute(repeat each commands)
         }
         var index = AutoIncrementingInteger()
+        // do we need to retry any of the commands
         var retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
         if retry {
             var attempt = 1
@@ -276,13 +256,13 @@ public final class ValkeyClusterClient: Sendable {
                 retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
                 if !retry {
                     index.reset()
-                    return (repeat convert(results[index.next()], to: (each Command).Response.self))
+                    return (repeat results[index.next()].convertRESP(to: (each Command).Response.self))
                 }
             }
             throw CancellationError()
         } else {
             index.reset()
-            return (repeat convert(results[index.next()], to: (each Command).Response.self))
+            return (repeat results[index.next()].convertRESP(to: (each Command).Response.self))
         }
     }
 
@@ -299,8 +279,8 @@ public final class ValkeyClusterClient: Sendable {
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let hashSlot = try self.hashSlot(for: keys)
-        let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+        let hashSlots = keys.compactMap { HashSlot(key: $0) }
+        let node = try await self.nodeClient(for: hashSlots)
         return try await node.withConnection(isolation: isolation, operation: operation)
     }
 
@@ -367,6 +347,38 @@ public final class ValkeyClusterClient: Sendable {
             guard hashSlot == HashSlot(key: key) else { throw ValkeyClusterError.keysInCommandRequireMultipleHashSlots }
         }
         return hashSlot
+    }
+
+    @usableFromInline
+    enum RetryAction {
+        case redirect(ValkeyClusterRedirectionError)
+        case tryAgain
+        case dontRetry
+    }
+
+    @usableFromInline
+    /* private */ func getRetryAction(from error: some Error) -> RetryAction {
+        switch error {
+        case let error as ValkeyClientError where error.errorCode == .commandError:
+            guard let errorMessage = error.message else {
+                return .dontRetry
+            }
+            if let redirectError = ValkeyClusterRedirectionError(errorMessage) {
+                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
+                return .redirect(redirectError)
+            } else {
+                let prefix = errorMessage.prefix { $0 != " " }
+                switch prefix {
+                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
+                    self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
+                    return .tryAgain
+                default:
+                    return .dontRetry
+                }
+            }
+        default:
+            return .dontRetry
+        }
     }
 
     private func queueAction(_ action: RunAction) {
