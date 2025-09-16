@@ -169,12 +169,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Returns: The command response as defined in the ValkeyCommand
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        let result = try await self._execute(command: command)
-        return try .init(fromRESP: result)
-    }
-
-    @inlinable
-    func _execute<Command: ValkeyCommand>(command: Command) async throws -> RESPToken {
         #if DistributedTracingSupport
         let span = self.tracer?.startSpan(Command.name, ofKind: .client)
         defer { span?.end() }
@@ -187,7 +181,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         let requestID = Self.requestIDGenerator.next()
 
         do {
-            return try await withTaskCancellationHandler {
+            let token = try await withTaskCancellationHandler {
                 if Task.isCancelled {
                     throw ValkeyClientError(.cancelled)
                 }
@@ -197,6 +191,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             } onCancel: {
                 self.cancel(requestID: requestID)
             }
+            return try .init(fromRESP: token)
         } catch let error as ValkeyClientError {
             #if DistributedTracingSupport
             if let span {
