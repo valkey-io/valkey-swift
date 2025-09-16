@@ -202,10 +202,13 @@ public final class ValkeyClusterClient: Sendable {
         func retryResult<C: ValkeyCommand>(result: Result<RESPToken, Error>, command: C) -> ValkeyConnection.RetryCommand<C> {
             switch result {
             case .failure(let error):
+                // get retry action for command
                 let commandRetryAction = self.getRetryAction(from: error)
+                // if retry action for command is dont retry return restul
                 if case .dontRetry = commandRetryAction {
                     return .result(result)
                 } else {
+                    // otherwise if retry action isnt already set, set it
                     if case .dontRetry = retryAction {
                         retryAction = commandRetryAction
                     }
