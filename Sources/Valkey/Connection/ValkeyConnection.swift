@@ -226,19 +226,10 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
         let requestID = Self.requestIDGenerator.next()
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
-            result.flatMap {
-                do {
-                    return try .success(Response(fromRESP: $0))
-                } catch {
-                    return .failure(error)
-                }
-            }
-        }
         return await withTaskCancellationHandler {
             let commandPromises = self._execute(requestID: requestID, commands: repeat each commands)
             var index = AutoIncrementingInteger()
-            return await (repeat convert(commandPromises[index.next()].futureResult._result(), to: (each Command).Response.self))
+            return await (repeat commandPromises[index.next()].futureResult._result().convertRESP(to: (each Command).Response.self))
         } onCancel: {
             self.cancel(requestID: requestID)
         }
@@ -615,3 +606,19 @@ extension ValkeyClientError {
     }
 }
 #endif
+
+extension Result where Success == RESPToken {
+    @inlinable
+    func convertRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, Error> {
+        switch self {
+        case .success(let token):
+            do {
+                return try .success(Response(fromRESP: token))
+            } catch {
+                return .failure(error)
+            }
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+}
