@@ -197,25 +197,19 @@ public final class ValkeyClusterClient: Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
-        var movedError: ValkeyClusterRedirectionError? = nil
-        var retry = false
-        // convert RESPToken result to retry decision
+        var retryAction: RetryAction = .dontRetry
+        // convert RESPToken result to retry decision, storing first retry action found
         func retryResult<C: ValkeyCommand>(result: Result<RESPToken, Error>, command: C) -> ValkeyConnection.RetryCommand<C> {
             switch result {
             case .failure(let error):
-                let retryAction = self.getRetryAction(from: error)
-                switch retryAction {
-                case .redirect(let error):
-                    if movedError == nil {
-                        movedError = error
-                        retry = true
+                let commandRetryAction = self.getRetryAction(from: error)
+                if case .dontRetry = commandRetryAction {
+                    return .result(result)
+                } else {
+                    if case .dontRetry = retryAction {
+                        retryAction = commandRetryAction
                     }
                     return .retry(command)
-                case .tryAgain:
-                    retry = true
-                    return .retry(command)
-                case .dontRetry:
-                    return .result(result)
                 }
             case .success:
                 return .result(result)
@@ -231,39 +225,33 @@ public final class ValkeyClusterClient: Sendable {
         // get shard from hash slots
         var node = try await self.nodeClient(for: hashSlots)
         // execute pipeline
-        let results = try await node.withConnection { connection in
+        var results = try await node.withConnection { connection in
             try await connection.respExecute(repeat each commands)
         }
         var index = AutoIncrementingInteger()
         // do we need to retry any of the commands
         var retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
-        if retry {
-            var attempt = 1
-            while !Task.isCancelled {
-                if let nonOptionalMovedError = movedError {
-                    node = try await self.nodeClient(for: nonOptionalMovedError)
-                } else {
-                    let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
-                    try await Task.sleep(for: wait)
-                    attempt += 1
-                }
-                let results = try await node.withConnection { connection in
-                    try await connection.retryExecute(repeat each retryResults)
-                }
-                movedError = nil
-                retry = false
+        var attempt = 1
+        while !Task.isCancelled {
+            switch retryAction {
+            case .redirect(let movedError):
+                node = try await self.nodeClient(for: movedError)
+            case .tryAgain:
+                let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                try await Task.sleep(for: wait)
+                attempt += 1
+            case .dontRetry:
                 index.reset()
-                retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
-                if !retry {
-                    index.reset()
-                    return (repeat results[index.next()].convertRESP(to: (each Command).Response.self))
-                }
+                return (repeat results[index.next()].convertRESP(to: (each Command).Response.self))
             }
-            throw CancellationError()
-        } else {
+            results = try await node.withConnection { connection in
+                try await connection.retryExecute(repeat each retryResults)
+            }
+            retryAction = .dontRetry
             index.reset()
-            return (repeat results[index.next()].convertRESP(to: (each Command).Response.self))
+            retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
         }
+        throw CancellationError()
     }
 
     /// Get connection from cluster and run operation using connection
