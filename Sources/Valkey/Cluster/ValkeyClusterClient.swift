@@ -205,6 +205,8 @@ public final class ValkeyClusterClient: Sendable {
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
         var movedError: ValkeyClusterRedirectionError? = nil
+        var retry = false
+        // convert RESPToken result to Response, returning decode errors as a Failure
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
             result.flatMap {
                 do {
@@ -214,47 +216,65 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         }
+        // convert RESPToken result to retry decision
         func retryResult<C: ValkeyCommand>(result: Result<RESPToken, Error>, command: C) -> ValkeyConnection.RetryCommand<C> {
             if case .failure(let error) = result,
                 let clientError = error as? ValkeyClientError,
                 clientError.errorCode == .commandError,
-                let errorMessage = clientError.message,
-                let parsedMovedError = ValkeyClusterRedirectionError(errorMessage)
+                let errorMessage = clientError.message
             {
-                movedError = parsedMovedError
+                if let parsedMovedError = ValkeyClusterRedirectionError(errorMessage) {
+                    if movedError == nil {
+                        movedError = parsedMovedError
+                    }
+                    retry = true
+                } else {
+                    let prefix = errorMessage.prefix { $0 != " " }
+                    switch prefix {
+                    case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
+                        self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
+                        retry = true
+                    default:
+                        return .result(result)
+                    }
+                }
                 return .retry(command)
             }
             return .result(result)
         }
+        // get hash slot affected
         var hashSlots: [HashSlot] = []
         for command in repeat each commands {
             if let newHashSlot = try self.hashSlot(for: command.keysAffected) {
                 hashSlots.append(newHashSlot)
             }
         }
-        let node = try await self.nodeClient(for: hashSlots)
+        // get shard from hash slots
+        var node = try await self.nodeClient(for: hashSlots)
+        // execute pipeline
         let results = try await node.withConnection { connection in
             try await connection.respExecute(repeat each commands)
         }
         var index = AutoIncrementingInteger()
         var retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
-        if let nonOptionalMovedError = movedError {
-            var clientSelector: () async throws -> ValkeyNodeClient = {
-                try await self.nodeClient(for: nonOptionalMovedError)
-            }
+        if retry {
+            var attempt = 1
             while !Task.isCancelled {
-                let node = try await clientSelector()
+                if let nonOptionalMovedError = movedError {
+                    node = try await self.nodeClient(for: nonOptionalMovedError)
+                } else {
+                    let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                    try await Task.sleep(for: wait)
+                    attempt += 1
+                }
                 let results = try await node.withConnection { connection in
                     try await connection.retryExecute(repeat each retryResults)
                 }
                 movedError = nil
+                retry = false
                 index.reset()
                 retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
-                if let movedError {
-                    clientSelector = {
-                        try await self.nodeClient(for: movedError)
-                    }
-                } else {
+                if !retry {
                     index.reset()
                     return (repeat convert(results[index.next()], to: (each Command).Response.self))
                 }
