@@ -273,6 +273,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// - Returns: Array of RESPToken results
     @inlinable
     func retryExecute<each Command: ValkeyCommand>(
+        asking: Bool,
         _ retryCommands: repeat RetryCommand<each Command>
     ) async throws -> [Result<RESPToken, Error>] {
         let requestID = Self.requestIDGenerator.next()
@@ -283,6 +284,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             for retryCommand in repeat each retryCommands {
                 switch retryCommand {
                 case .retry(let command):
+                    if asking {
+                        ASKING().encode(into: &encoder)
+                    }
                     command.encode(into: &encoder)
                     mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
                 case .result:
@@ -297,7 +301,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 }
             } else {
                 // write directly to channel handler
-                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
+                if asking {
+                    self.channelHandler.write(
+                        request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.flatMap { [.forget, .nio($0)] }, id: requestID)
+                    )
+                } else {
+                    self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
+                }
             }
             var results: [Result<RESPToken, Error>] = .init()
             var promiseIterator = promises.makeIterator()

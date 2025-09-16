@@ -172,6 +172,39 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testHashSlotMigrationAndAskRedirectionWithPipeline() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            let keySuffix = "{\(UUID().uuidString)}"
+            try await Self.withKey(connection: client, suffix: keySuffix) { key in
+                let hashSlot = HashSlot(key: key)
+                try await client.set(key, value: "Testing before import")
+
+                try await testMigratingHashSlot(hashSlot, client: client) {
+                    // key still uses nodeA
+                    let value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
+                    #expect(value == "Testing before import")
+                } afterMigrate: {
+                    // key has been migrated to nodeB so will receive an ASK error
+                    let values = try await client.execute(
+                        SET(key, value: "After migrate", get: true),
+                        GET(key)
+                    )
+                    #expect(try values.0.get().map { String(buffer: $0) } == "Testing during import")
+                    #expect(try values.1.get().map { String(buffer: $0) } == "After migrate")
+                } finished: {
+                    let value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
+                    #expect(value == "After migrate")
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testHashSlotMigrationAndTryAgain() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
