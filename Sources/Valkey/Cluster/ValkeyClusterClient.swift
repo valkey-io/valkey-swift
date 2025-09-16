@@ -226,18 +226,13 @@ public final class ValkeyClusterClient: Sendable {
             }
             return .result(result)
         }
-        var hashSlot: HashSlot? = nil
+        var hashSlots: [HashSlot] = []
         for command in repeat each commands {
-            let newHashSlot = try self.hashSlot(for: command.keysAffected)
-            if let newHashSlot {
-                if let hashSlot {
-                    guard newHashSlot == hashSlot else { throw ValkeyClusterError.keysInCommandRequireMultipleHashSlots }
-                } else {
-                    hashSlot = newHashSlot
-                }
+            if let newHashSlot = try self.hashSlot(for: command.keysAffected) {
+                hashSlots.append(newHashSlot)
             }
         }
-        let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+        let node = try await self.nodeClient(for: hashSlots)
         let results = try await node.withConnection { connection in
             try await connection.respExecute(repeat each commands)
         }
