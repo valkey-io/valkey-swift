@@ -95,6 +95,7 @@ struct ClusterIntegrationTests {
                 try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
                     try await client.clusterFailover()
                 }
+                // will receive a MOVED error as the primary has moved to a replica
                 try await clusterClient.set(key, value: "baz")
                 let response = try await clusterClient.get(key)
                 #expect(response.map { String(buffer: $0) } == "baz")
@@ -125,6 +126,7 @@ struct ClusterIntegrationTests {
                 try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
                     try await client.clusterFailover()
                 }
+                // will receive a MOVED errors for SET, INCR and GET as the primary has moved to a replica
                 let results = try await clusterClient.execute(
                     SET(key, value: "100"),
                     INCR(key),
@@ -185,6 +187,37 @@ struct ClusterIntegrationTests {
                     try await testMigratingHashSlot(hashSlot, client: client) {
                     } duringMigrate: {
                         try await client.rpoplpush(source: key, destination: key2)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHashSlotMigrationAndTryAgainWithPipeline() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            let keySuffix = "{\(UUID().uuidString)}"
+            try await Self.withKey(connection: client, suffix: keySuffix) { key in
+                try await Self.withKey(connection: client, suffix: keySuffix) { key2 in
+                    let hashSlot = HashSlot(key: key)
+                    try await client.lpush(key, elements: ["testing1"])
+
+                    try await testMigratingHashSlot(hashSlot, client: client) {
+                    } duringMigrate: {
+                        // LPUSH will succeed, as node is on
+                        let results = try await client.execute(
+                            LPUSH(key, elements: ["testing2"]),
+                            RPOPLPUSH(source: key, destination: key2)
+                        )
+                        let count = try results.0.get()
+                        #expect(count == 2)
+                        let value = try results.1.get()
+                        #expect(value.map { String(buffer: $0) } == "testing1")
                     }
                 }
             }
