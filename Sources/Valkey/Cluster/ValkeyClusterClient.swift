@@ -232,10 +232,12 @@ public final class ValkeyClusterClient: Sendable {
         // do we need to retry any of the commands
         var retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
         var attempt = 1
+        var asking = false
         while !Task.isCancelled {
             switch retryAction {
             case .redirect(let movedError):
                 node = try await self.nodeClient(for: movedError)
+                asking = movedError.redirection == .ask
             case .tryAgain:
                 let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
                 try await Task.sleep(for: wait)
@@ -245,7 +247,7 @@ public final class ValkeyClusterClient: Sendable {
                 return (repeat results[index.next()].convertRESP(to: (each Command).Response.self))
             }
             results = try await node.withConnection { connection in
-                try await connection.retryExecute(repeat each retryResults)
+                try await connection.retryExecute(asking: asking, repeat each retryResults)
             }
             retryAction = .dontRetry
             index.reset()
