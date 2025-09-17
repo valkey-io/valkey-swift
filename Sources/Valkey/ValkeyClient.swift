@@ -177,14 +177,8 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Returns: Response from Valkey command
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        let token = try await self._execute(command)
-        return try Command.Response(fromRESP: token)
-    }
-
-    @inlinable
-    func _execute<Command: ValkeyCommand>(_ command: Command) async throws -> RESPToken {
         try await self.withConnection { connection in
-            try await connection._execute(command: command)
+            try await connection.execute(command)
         }
     }
 }
