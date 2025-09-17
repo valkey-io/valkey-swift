@@ -11,7 +11,7 @@ import Synchronization
 import _ValkeyConnectionPool
 
 @available(valkeySwift 1.0, *)
-extension ValkeyClient {
+extension ValkeyNodeClient {
     @usableFromInline
     func leaseSubscriptionConnection(id: Int, request: CheckedContinuation<ValkeyConnection, Error>) {
         self.logger.trace("Get subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
@@ -102,6 +102,25 @@ extension ValkeyClient {
             break
         }
     }
+
+    @usableFromInline
+    func shutdownSubscriptionConnection() {
+        self.logger.trace("Shutdown subscription connection")
+        let action = self.subscriptionConnectionStateMachine.withLock { stateMachine in
+            stateMachine.shutdown()
+        }
+        switch action {
+        case .yield(let continuations):
+            for cont in continuations {
+                cont.resume(throwing: ValkeyClientError(.connectionClosing))
+            }
+        case .release(let continuation):
+            continuation.resume()
+            self.logger.trace("Released connection for subscriptions")
+        case .doNothing:
+            break
+        }
+    }
 }
 
 /// StateMachine for acquiring Subscription Connection.
@@ -114,6 +133,8 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
         case acquiring(leaseID: Int, waiters: [Int: Request])
         /// We have a connection
         case acquired(AcquiredState)
+        /// Connection is shutdown
+        case shutdown
 
         struct AcquiredState {
             var leaseID: Int
@@ -151,6 +172,8 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
             state.requestIDs.insert(id)
             self = .acquired(state)
             return .completeRequest(state.value)
+        case .shutdown:
+            preconditionFailure("Cannot get subscription connection when shutdown")
         }
     }
 
@@ -185,6 +208,9 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
                 self = .acquired(state)
                 return .doNothing
             }
+        case .shutdown:
+            self = .shutdown
+            return .doNothing
         }
     }
 
@@ -213,6 +239,9 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
             } else {
                 preconditionFailure("Acquired connection twice")
             }
+        case .shutdown:
+            self = .shutdown
+            return .release
         }
     }
 
@@ -241,6 +270,9 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
             } else {
                 preconditionFailure("Error acquiring connection we already have")
             }
+        case .shutdown:
+            self = .shutdown
+            return .doNothing
         }
     }
 
@@ -264,6 +296,32 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
                 self = .acquired(state)
                 return .doNothing
             }
+        case .shutdown:
+            self = .shutdown
+            return .doNothing
+        }
+    }
+
+    enum ShutdownAction {
+        case yield([Request])
+        case release(ReleaseRequest)
+        case doNothing
+    }
+
+    mutating func shutdown() -> ShutdownAction {
+        switch consume self.state {
+        case .uninitialized(let leaseID):
+            self = .uninitialized(nextLeaseID: leaseID)
+            return .doNothing
+        case .acquiring(let storedLeaseID, let waiters):
+            self = .uninitialized(nextLeaseID: storedLeaseID + 1)
+            return .yield(.init(waiters.values))
+        case .acquired(let state):
+            self = .uninitialized(nextLeaseID: state.leaseID + 1)
+            return .release(state.releaseRequest)
+        case .shutdown:
+            self = .shutdown
+            return .doNothing
         }
     }
 
@@ -272,10 +330,12 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
         case .uninitialized: true
         case .acquiring: false
         case .acquired: false
+        case .shutdown: true
         }
     }
 
     static private func uninitialized(nextLeaseID: Int) -> Self { .init(state: .uninitialized(nextLeaseID: nextLeaseID)) }
     static private func acquiring(leaseID: Int, waiters: [Int: Request]) -> Self { .init(state: .acquiring(leaseID: leaseID, waiters: waiters)) }
     static private func acquired(_ state: State.AcquiredState) -> Self { .init(state: .acquired(state)) }
+    static private var shutdown: Self { .init(state: .shutdown) }
 }

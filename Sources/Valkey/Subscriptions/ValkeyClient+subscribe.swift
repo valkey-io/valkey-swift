@@ -20,18 +20,19 @@ extension ValkeyClient {
         isolation: isolated (any Actor)? = #isolation,
         _ operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> sending Value {
-        let id = self.subscriptionConnectionIDGenerator.next()
+        let node = self.node
+        let id = node.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { (cont: CheckedContinuation<ValkeyConnection, Error>) in
-                self.leaseSubscriptionConnection(id: id, request: cont)
+                node.leaseSubscriptionConnection(id: id, request: cont)
             }
         } onCancel: {
-            self.cancelSubscriptionConnection(id: id)
+            node.cancelSubscriptionConnection(id: id)
         }
 
         defer {
-            self.releaseSubscriptionConnection(id: id)
+            node.releaseSubscriptionConnection(id: id)
         }
         return try await operation(connection)
     }
