@@ -474,3 +474,156 @@ extension RESPToken {
         }
     }
 }
+
+@Suite("RESPToken.debugDescription")
+struct DebugDescription {
+    @Test
+    func testNull() {
+        let token = RESPToken(.null)
+        #expect(token.value.debugDescription == ".null")
+    }
+
+    @Test
+    func testSimpleString() {
+        let token = RESPToken(.simpleString("test"))
+        #expect(token.value.debugDescription == ".simpleString(\"***\")")
+    }
+
+    @Test
+    func testBulkString() {
+        let token = RESPToken(.bulkString("test"))
+        #expect(token.value.debugDescription == ".bulkString(\"***\")")
+    }
+
+    @Test
+    func testVerbatimString() {
+        let token = RESPToken(.verbatimString("txt:test"))
+        #expect(token.value.debugDescription == ".verbatimString(\"txt:***\")")
+    }
+
+    @Test
+    func testBigNumber() {
+        let token = RESPToken(.bigNumber("12345678"))
+        #expect(token.value.debugDescription == ".bigNumber(\"***\")")
+    }
+
+    @Test
+    func testSimpleError() {
+        let token = RESPToken(.simpleError("test"))
+        #expect(token.value.debugDescription == ".simpleError(\"test\")")
+    }
+
+    @Test
+    func testBulkError() {
+        let token = RESPToken(.bulkError("test"))
+        #expect(token.value.debugDescription == ".bulkError(\"test\")")
+    }
+
+    @Test
+    func testNumber() {
+        let token = RESPToken(.number(1234))
+        #expect(token.value.debugDescription == ".number(1234)")
+    }
+
+    @Test
+    func testDouble() {
+        let token = RESPToken(.double(1234.5))
+        #expect(token.value.debugDescription == ".double(1234.5)")
+    }
+
+    @Test
+    func testBoolean() {
+        let token = RESPToken(.boolean(true))
+        #expect(token.value.debugDescription == ".boolean(true)")
+    }
+
+    @Test
+    func testArray() {
+        let token = RESPToken(.array([.bulkString("1"), .number(2), .bulkString("3")]))
+        #expect(
+            token.value.debugDescription == """
+                .array([
+                  .bulkString("***"),
+                  .number(2),
+                  .bulkString("***")
+                ])
+                """
+        )
+    }
+
+    @Test
+    func testSet() {
+        let token = RESPToken(.set([.bulkString("1"), .number(2), .bulkString("3")]))
+        #expect(
+            token.value.debugDescription == """
+                .set([
+                  .bulkString("***"),
+                  .number(2),
+                  .bulkString("***")
+                ])
+                """
+        )
+    }
+
+    @Test
+    func testMap() {
+        let token = RESPToken(
+            .map([
+                .bulkString("1"): .number(1),
+                .bulkString("2"): .number(2),
+            ])
+        )
+        #expect(
+            token.value.debugDescription == """
+                .map([
+                  .bulkString("1"): .number(1),
+                  .bulkString("2"): .number(2)
+                ])
+                """
+                || token.value.debugDescription == """
+                    .map([
+                      .bulkString("2"): .number(2),
+                      .bulkString("1"): .number(1)
+                    ])
+                    """
+        )
+    }
+
+    @Test
+    func testAttributes() {
+        let token = RESPToken(
+            .attribute([
+                .bulkString("1"): .number(1),
+                .bulkString("2"): .number(2),
+            ])
+        )
+        #expect(
+            token.value.debugDescription == """
+                .attribute([
+                  .bulkString("1"): .number(1),
+                  .bulkString("2"): .number(2)
+                ])
+                """
+                || token.value.debugDescription == """
+                    .attribute([
+                      .bulkString("2"): .number(2),
+                      .bulkString("1"): .number(1)
+                    ])
+                    """
+        )
+    }
+
+    @Test
+    func testPushToken() {
+        let token = RESPToken(.push([.bulkString("SUBSCRIBE"), .bulkString("test"), .bulkString("3")]))
+        #expect(
+            token.value.debugDescription == """
+                .push([
+                  .bulkString("***"),
+                  .bulkString("***"),
+                  .bulkString("***")
+                ])
+                """
+        )
+    }
+}
