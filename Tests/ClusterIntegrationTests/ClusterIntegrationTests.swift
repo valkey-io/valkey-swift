@@ -128,7 +128,7 @@ struct ClusterIntegrationTests {
                         }
                     }
                 }()
-                await #expect(throws: ValkeyClusterError.keysInCommandRequireMultipleNodes) {
+                await #expect(throws: ValkeyClusterError.keysRequireMultipleNodes) {
                     _ = try await client.execute(
                         SET(key, value: "cluster pipeline test"),
                         GET(key),
