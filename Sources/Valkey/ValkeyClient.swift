@@ -217,6 +217,31 @@ extension ValkeyClient {
     ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
         await node.execute(commands)
     }
+
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results, one for each command.
+    ///
+    /// This is an alternative version of the pipelining function ``ValkeyClient/execute(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but
+    /// is more expensive to run and the command responses are returned as ``RESPToken``
+    /// instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    @inlinable
+    public func execute<Commands: Collection & Sendable>(
+        _ commands: Commands
+    ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+        do {
+            return try await self.withConnection { connection in
+                await connection.execute(commands)
+            }
+        } catch {
+            return .init(repeating: .failure(error), count: commands.count)
+        }
+    }
 }
 
 #if ServiceLifecycleSupport
