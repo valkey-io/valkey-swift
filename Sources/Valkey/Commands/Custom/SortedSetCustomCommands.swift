@@ -18,7 +18,7 @@ public struct SortedSetEntry: RESPTokenDecodable, Sendable {
         case .array(let array):
             (self.value, self.score) = try array.decodeElements()
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.array], token: token)
         }
     }
 }
@@ -56,7 +56,7 @@ extension ZMPOP {
             case .array(let array):
                 (self.key, self.values) = try array.decodeElements()
             default:
-                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.array], token: token)
             }
         }
     }
