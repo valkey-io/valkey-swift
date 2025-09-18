@@ -74,6 +74,73 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testPipelineMultipleHashKeysSameNode() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            try await Self.withKey(connection: client, suffix: "{foo}") { key in
+                let hashSlot = HashSlot(key: key)
+                let node = try await client.nodeClient(for: [hashSlot])
+                // get a key from same node
+                let key2 = try await {
+                    while true {
+                        let key2 = ValkeyKey(UUID().uuidString)
+                        let hashSlot2 = HashSlot(key: key2)
+                        let node2 = try await client.nodeClient(for: [hashSlot2])
+                        if node2.serverAddress == node.serverAddress {
+                            return key2
+                        }
+                    }
+                }()
+                let results = try await client.execute(
+                    SET(key, value: "cluster pipeline test"),
+                    GET(key),
+                    SET(key2, value: "cluster pipeline test"),
+                    GET(key2),
+                    DEL(keys: [key2])
+                )
+                let response = try results.1.get()
+                #expect(response.map { String(buffer: $0) } == "cluster pipeline test")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testPipelineMultipleHashKeysDifferentNodes() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            try await Self.withKey(connection: client, suffix: "{foo}") { key in
+                let hashSlot = HashSlot(key: key)
+                let node = try await client.nodeClient(for: [hashSlot])
+                let key2 = try await {
+                    while true {
+                        let key2 = ValkeyKey(UUID().uuidString)
+                        let hashSlot2 = HashSlot(key: key2)
+                        let node2 = try await client.nodeClient(for: [hashSlot2])
+                        if node2.serverAddress != node.serverAddress {
+                            return key2
+                        }
+                    }
+                }()
+                await #expect(throws: ValkeyClusterError.keysInCommandRequireMultipleNodes) {
+                    _ = try await client.execute(
+                        SET(key, value: "cluster pipeline test"),
+                        GET(key),
+                        GET(key2),
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testFailover() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
@@ -117,7 +184,7 @@ struct ClusterIntegrationTests {
                 let shard = try #require(
                     cluster.shards.first { shard in
                         let hashSlot = HashSlot(key: key)
-                        return shard.slots.reduce(into: false) { $0 = $0 || ($1.lowerBound <= hashSlot && $1.upperBound >= hashSlot) }
+                        return shard.slots.reduce(into: false) { $0 = ($0 || ($1.lowerBound <= hashSlot && $1.upperBound >= hashSlot)) }
                     }
                 )
                 let replica = try #require(shard.nodes.first { $0.role == .replica })
