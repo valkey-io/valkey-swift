@@ -74,7 +74,7 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testPipelineMultipleHashKeysSameNode() async throws {
+    func testPipelineMultipleHashKeysSameShard() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
@@ -109,7 +109,7 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testPipelineMultipleHashKeysDifferentNodes() async throws {
+    func testPipelineMultipleHashKeysDifferentShards() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
