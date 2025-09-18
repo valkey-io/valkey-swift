@@ -12,8 +12,7 @@ extension SSCAN {
 
         public init(fromRESP token: RESPToken) throws {
             // cursor is encoded as a bulkString, but should be
-            let (cursorString, elements) = try token.decodeArrayElements(as: (String, RESPToken.Array).self)
-            guard let cursor = Int(cursorString) else { throw RESPParsingError(code: .unexpectedType, buffer: token.base) }
+            let (cursor, elements) = try token.decodeArrayElements(as: (Int, RESPToken.Array).self)
             self.cursor = cursor
             self.elements = elements
         }

@@ -39,7 +39,7 @@ extension ROLE {
                 public init(fromRESP token: RESPToken) throws {
                     let string = try String(fromRESP: token)
                     guard let state = State(rawValue: string) else {
-                        throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                        throw RESPDecodeError.unexpectedToken(token: token)
                     }
                     self = state
                 }
@@ -81,7 +81,7 @@ extension ROLE {
                 do {
                     var iterator = array.makeIterator()
                     guard let roleToken = iterator.next() else {
-                        throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                        throw RESPDecodeError.invalidArraySize(array)
                     }
                     let role = try String(fromRESP: roleToken)
                     switch role {
@@ -98,10 +98,10 @@ extension ROLE {
                         throw DecodeError()
                     }
                 } catch {
-                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                    throw RESPDecodeError.unexpectedToken(token: token)
                 }
             default:
-                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.array], token: token)
             }
         }
     }

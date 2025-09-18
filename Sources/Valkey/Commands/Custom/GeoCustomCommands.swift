@@ -44,7 +44,7 @@ extension GEOSEARCH {
             case .array(let array):
                 var arrayIterator = array.makeIterator()
                 guard let member = arrayIterator.next() else {
-                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                    throw RESPDecodeError.invalidArraySize(array)
                 }
                 self.member = try String(fromRESP: member)
                 self.attributes = array.dropFirst().map { $0 }
@@ -54,7 +54,7 @@ extension GEOSEARCH {
                 self.attributes = []
 
             default:
-                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.array, .bulkString], token: token)
             }
         }
     }
