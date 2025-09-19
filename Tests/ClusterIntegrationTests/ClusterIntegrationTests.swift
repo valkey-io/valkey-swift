@@ -299,6 +299,44 @@ struct ClusterIntegrationTests {
 
         @Test
         @available(valkeySwift 1.0, *)
+        func testNodePipelineWithErrorsNotZeroBasedArray() async throws {
+            // this will receive MOVED errors and deal with them. The collection passed into the execute
+            // function has a non-zero start index
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                client in
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
+                    let hashSlot = HashSlot(key: key)
+                    let node = try await client.nodeClient(for: [hashSlot])
+                    let key2 = try await {
+                        while true {
+                            let key2 = ValkeyKey(UUID().uuidString)
+                            let hashSlot2 = HashSlot(key: key2)
+                            let node2 = try await client.nodeClient(for: [hashSlot2])
+                            if node2.serverAddress != node.serverAddress {
+                                return key2
+                            }
+                        }
+                    }()
+                    var commands: [any ValkeyCommand] = .init()
+                    commands.append(ECHO(message: "ignore"))
+                    commands.append(SET(key, value: "cluster pipeline test"))
+                    commands.append(GET(key))
+                    commands.append(SET(key2, value: "cluster pipeline test"))
+                    commands.append(GET(key2))
+                    commands.append(DEL(keys: [key2]))
+                    let results = try await client.execute(node: node, commands: commands.dropFirst())
+                    let response = try results[3].get().decode(as: String.self)
+                    #expect(response == "cluster pipeline test")
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
         func testNodeFailoverWithPipeline() async throws {
             var logger = Logger(label: "ValkeyCluster")
             logger.logLevel = .trace
