@@ -185,6 +185,59 @@ public final class ValkeyClusterClient: Sendable {
         throw ValkeyClusterError.clientRequestCancelled
     }
 
+    /// Results from pipeline and index for each result
+    @usableFromInline
+    struct NodeResult: Sendable {
+        @usableFromInline
+        let indices: [[any ValkeyCommand].Index]
+        @usableFromInline
+        let results: [Result<RESPToken, Error>]
+
+        @inlinable
+        init(indices: [[any ValkeyCommand].Index], results: [Result<RESPToken, Error>]) {
+            self.indices = indices
+            self.results = results
+        }
+    }
+
+    @inlinable
+    public func execute(
+        _ commands: [any ValkeyCommand]
+    ) async throws -> sending [Result<RESPToken, Error>] {
+        guard commands.count > 0 else { return [] }
+        // get a list of nodes and the commands that should be run on them
+        let nodes = try await self.splitCommandsAcrossNodes(commands: commands)
+        // if this list has one element, then just run the pipeline on that single node
+        if nodes.count == 1 {
+            return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
+        }
+        return try await withThrowingTaskGroup(of: NodeResult.self) { group in
+            // run generated pipelines concurrently
+            for node in nodes {
+                let indices = node.commandIndices
+                group.addTask {
+                    let results = try await self.execute(node: node.node, commands: SparseCollection(commands, indices: indices))
+                    return .init(indices: indices, results: results)
+                }
+            }
+            var nodeResults: [NodeResult] = []
+            while let taskResult = try await group.next() {
+                nodeResults.append(taskResult)
+            }
+            return [Result<RESPToken, Error>](unsafeUninitializedCapacity: commands.count) { buffer, count in
+                count = 0
+                for nodeResult in nodeResults {
+                    precondition(nodeResult.indices.count == nodeResult.results.count)
+                    for index in 0..<nodeResult.indices.count {
+                        buffer.initializeElement(at: nodeResult.indices[index], to: nodeResult.results[index])
+                        count += 1
+                    }
+                }
+                precondition(count == commands.count)
+            }
+        }
+    }
+
     struct Redirection {
         let node: ValkeyNodeClient
         let ask: Bool
@@ -345,6 +398,69 @@ public final class ValkeyClusterClient: Sendable {
             guard hashSlot == HashSlot(key: key) else { throw ValkeyClusterError.keysInCommandRequireMultipleHashSlots }
         }
         return hashSlot
+    }
+
+    @usableFromInline
+    struct NodeAndCommands: Sendable {
+        @usableFromInline
+        let node: ValkeyNodeClient
+        @usableFromInline
+        var commandIndices: [Int]
+
+        @usableFromInline
+        internal init(node: ValkeyNodeClient, commandIndices: [Int]) {
+            self.node = node
+            self.commandIndices = commandIndices
+        }
+    }
+
+    @usableFromInline
+    func splitCommandsAcrossNodes(commands: [any ValkeyCommand]) async throws -> some Collection<NodeAndCommands> {
+        var nodeMap: [ValkeyServerAddress: NodeAndCommands] = [:]
+        var index = commands.startIndex
+        var prevAddress: ValkeyServerAddress? = nil
+        // iterate through commands until you reach one that affects a key
+        while index < commands.endIndex {
+            let command = commands[index]
+            index += 1
+            let keysAffected = command.keysAffected
+            if keysAffected.count > 0 {
+                // Get hash slot for key and add all the commands you have iterated through so far to the
+                // node associated with that key and break out of loop
+                let hashSlot = try self.hashSlot(for: keysAffected)
+                let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+                let address = node.serverAddress
+                let nodeAndCommands = NodeAndCommands(node: node, commandIndices: .init(commands.startIndex..<index))
+                nodeMap[address] = nodeAndCommands
+                prevAddress = address
+                break
+            }
+        }
+        // If we found a key while iterating through the commands iterate through the remaining commands
+        if var prevAddress {
+            while index < commands.endIndex {
+                let command = commands[index]
+                let keysAffected = command.keysAffected
+                if keysAffected.count > 0 {
+                    // If command affects a key get hash slot for key and add command to the node associated with that key
+                    let hashSlot = try self.hashSlot(for: keysAffected)
+                    let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+                    prevAddress = node.serverAddress
+                    nodeMap[prevAddress, default: .init(node: node, commandIndices: [])].commandIndices.append(index)
+                } else {
+                    // if command doesn't affect a key then use the node the previous command used
+                    nodeMap[prevAddress]!.commandIndices.append(index)
+                }
+                index += 1
+            }
+        } else {
+            // if none of the commands affect any keys then choose a random node
+            let node = try await self.nodeClient(for: [])
+            let address = node.serverAddress
+            let nodeAndCommands = NodeAndCommands(node: node, commandIndices: .init(commands.startIndex..<index))
+            nodeMap[address] = nodeAndCommands
+        }
+        return nodeMap.values
     }
 
     @usableFromInline

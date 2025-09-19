@@ -442,6 +442,52 @@ struct ClusterIntegrationTests {
                 }
             }
         }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testClientPipeline() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                client in
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
+                    var commands: [any ValkeyCommand] = .init()
+                    commands.append(SET(key, value: "cluster pipeline test"))
+                    commands.append(GET(key))
+                    let results = try await client.execute(commands)
+                    let response = try results[1].get().decode(as: String.self)
+                    #expect(response == "cluster pipeline test")
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testClientPipelineMultipleNodes() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                client in
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
+                    var commands: [any ValkeyCommand] = .init()
+                    for i in 0..<100 {
+                        let key = ValkeyKey("Test\(i)")
+                        commands.append(SET(key, value: String(i)))
+                        commands.append(GET(.init("Test\(i)")))
+                        commands.append(DEL(keys: [key]))
+                    }
+                    let results = try await client.execute(commands)
+                    let response = try results[1].get().decode(as: String.self)
+                    #expect(response == "0")
+                    let response2 = try results[7].get().decode(as: String.self)
+                    #expect(response2 == "2")
+                }
+            }
+        }
     }
 
     @available(valkeySwift 1.0, *)
