@@ -277,15 +277,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute(
         _ commands: some Collection<any ValkeyCommand>
     ) async -> sending [Result<RESPToken, Error>] {
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
-            result.flatMap {
-                do {
-                    return try .success(Response(fromRESP: $0))
-                } catch {
-                    return .failure(error)
-                }
-            }
-        }
         let requestID = Self.requestIDGenerator.next()
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
