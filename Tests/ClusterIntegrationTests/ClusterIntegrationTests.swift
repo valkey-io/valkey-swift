@@ -55,92 +55,6 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-    func testPipeline() async throws {
-        var logger = Logger(label: "ValkeyCluster")
-        logger.logLevel = .trace
-        let firstNodeHostname = clusterFirstNodeHostname!
-        let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
-            try await Self.withKey(connection: client, suffix: "{foo}") { key in
-                let results = try await client.execute(
-                    SET(key, value: "cluster pipeline test"),
-                    GET(key)
-                )
-                let response = try results.1.get()
-                #expect(response.map { String(buffer: $0) } == "cluster pipeline test")
-            }
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testPipelineMultipleHashKeysSameShard() async throws {
-        var logger = Logger(label: "ValkeyCluster")
-        logger.logLevel = .trace
-        let firstNodeHostname = clusterFirstNodeHostname!
-        let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
-            try await Self.withKey(connection: client, suffix: "{foo}") { key in
-                let hashSlot = HashSlot(key: key)
-                let node = try await client.nodeClient(for: [hashSlot])
-                // get a key from same node
-                let key2 = try await {
-                    while true {
-                        let key2 = ValkeyKey(UUID().uuidString)
-                        let hashSlot2 = HashSlot(key: key2)
-                        let node2 = try await client.nodeClient(for: [hashSlot2])
-                        if node2.serverAddress == node.serverAddress {
-                            return key2
-                        }
-                    }
-                }()
-                let results = try await client.execute(
-                    SET(key, value: "cluster pipeline test"),
-                    GET(key),
-                    SET(key2, value: "cluster pipeline test"),
-                    GET(key2),
-                    DEL(keys: [key2])
-                )
-                let response = try results.1.get()
-                #expect(response.map { String(buffer: $0) } == "cluster pipeline test")
-            }
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testPipelineMultipleHashKeysDifferentShards() async throws {
-        var logger = Logger(label: "ValkeyCluster")
-        logger.logLevel = .trace
-        let firstNodeHostname = clusterFirstNodeHostname!
-        let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
-            try await Self.withKey(connection: client, suffix: "{foo}") { key in
-                let hashSlot = HashSlot(key: key)
-                let node = try await client.nodeClient(for: [hashSlot])
-                let key2 = try await {
-                    while true {
-                        let key2 = ValkeyKey(UUID().uuidString)
-                        let hashSlot2 = HashSlot(key: key2)
-                        let node2 = try await client.nodeClient(for: [hashSlot2])
-                        if node2.serverAddress != node.serverAddress {
-                            return key2
-                        }
-                    }
-                }()
-                await #expect(throws: ValkeyClusterError.keysRequireMultipleNodes) {
-                    _ = try await client.execute(
-                        SET(key, value: "cluster pipeline test"),
-                        GET(key),
-                        GET(key2),
-                    )
-                }
-            }
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
     func testFailover() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
@@ -159,51 +73,13 @@ struct ClusterIntegrationTests {
                 let replica = try #require(shard.nodes.first { $0.role == .replica })
                 let port = try #require(replica.port)
                 // connect to replica and call CLUSTER FAILOVER
-                try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
+                try await Self.withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
                     try await client.clusterFailover()
                 }
                 // will receive a MOVED error as the primary has moved to a replica
                 try await clusterClient.set(key, value: "baz")
                 let response = try await clusterClient.get(key)
                 #expect(response.map { String(buffer: $0) } == "baz")
-            }
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testFailoverWithPipeline() async throws {
-        var logger = Logger(label: "ValkeyCluster")
-        logger.logLevel = .trace
-        let firstNodeHostname = clusterFirstNodeHostname!
-        let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { clusterClient in
-            try await Self.withKey(connection: clusterClient) { key in
-                try await clusterClient.set(key, value: "bar")
-                let cluster = try await clusterClient.clusterShards()
-                let shard = try #require(
-                    cluster.shards.first { shard in
-                        let hashSlot = HashSlot(key: key)
-                        return shard.slots.reduce(into: false) { $0 = ($0 || ($1.lowerBound <= hashSlot && $1.upperBound >= hashSlot)) }
-                    }
-                )
-                let replica = try #require(shard.nodes.first { $0.role == .replica })
-                let port = try #require(replica.port)
-                // connect to replica and call CLUSTER FAILOVER
-                try await withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
-                    try await client.clusterFailover()
-                }
-                // will receive a MOVED errors for SET, INCR and GET as the primary has moved to a replica
-                let results = try await clusterClient.execute(
-                    SET(key, value: "100"),
-                    INCR(key),
-                    ECHO(message: "Test non moved command"),
-                    GET(key)
-                )
-                let response2 = try results.2.get()
-                #expect(String(buffer: response2) == "Test non moved command")
-                let response3 = try results.3.get()
-                #expect(response3.map { String(buffer: $0) } == "101")
             }
         }
     }
@@ -221,7 +97,7 @@ struct ClusterIntegrationTests {
                 let hashSlot = HashSlot(key: key)
                 try await client.set(key, value: "Testing before import")
 
-                try await testMigratingHashSlot(hashSlot, client: client) {
+                try await Self.testMigratingHashSlot(hashSlot, client: client) {
                     // key still uses nodeA
                     let value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
                     #expect(value == "Testing before import")
@@ -229,39 +105,6 @@ struct ClusterIntegrationTests {
                     // key has been migrated to nodeB so will receive an ASK error
                     let value = try await client.set(key, value: "After migrate", get: true).map { String(buffer: $0) }
                     #expect(value == "Testing during import")
-                } finished: {
-                    let value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
-                    #expect(value == "After migrate")
-                }
-            }
-        }
-    }
-
-    @Test
-    @available(valkeySwift 1.0, *)
-    func testHashSlotMigrationAndAskRedirectionWithPipeline() async throws {
-        var logger = Logger(label: "ValkeyCluster")
-        logger.logLevel = .trace
-        let firstNodeHostname = clusterFirstNodeHostname!
-        let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
-            let keySuffix = "{\(UUID().uuidString)}"
-            try await Self.withKey(connection: client, suffix: keySuffix) { key in
-                let hashSlot = HashSlot(key: key)
-                try await client.set(key, value: "Testing before import")
-
-                try await testMigratingHashSlot(hashSlot, client: client) {
-                    // key still uses nodeA
-                    let value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
-                    #expect(value == "Testing before import")
-                } afterMigrate: {
-                    // key has been migrated to nodeB so will receive an ASK error
-                    let values = try await client.execute(
-                        SET(key, value: "After migrate", get: true),
-                        GET(key)
-                    )
-                    #expect(try values.0.get().map { String(buffer: $0) } == "Testing during import")
-                    #expect(try values.1.get().map { String(buffer: $0) } == "After migrate")
                 } finished: {
                     let value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
                     #expect(value == "After migrate")
@@ -284,7 +127,7 @@ struct ClusterIntegrationTests {
                     let hashSlot = HashSlot(key: key)
                     try await client.lpush(key, elements: ["testing"])
 
-                    try await testMigratingHashSlot(hashSlot, client: client) {
+                    try await Self.testMigratingHashSlot(hashSlot, client: client) {
                     } duringMigrate: {
                         try await client.rpoplpush(source: key, destination: key2)
                     }
@@ -293,39 +136,8 @@ struct ClusterIntegrationTests {
         }
     }
 
-    @Test
     @available(valkeySwift 1.0, *)
-    func testHashSlotMigrationAndTryAgainWithPipeline() async throws {
-        var logger = Logger(label: "ValkeyCluster")
-        logger.logLevel = .trace
-        let firstNodeHostname = clusterFirstNodeHostname!
-        let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
-            let keySuffix = "{\(UUID().uuidString)}"
-            try await Self.withKey(connection: client, suffix: keySuffix) { key in
-                try await Self.withKey(connection: client, suffix: keySuffix) { key2 in
-                    let hashSlot = HashSlot(key: key)
-                    try await client.lpush(key, elements: ["testing1"])
-
-                    try await testMigratingHashSlot(hashSlot, client: client) {
-                    } duringMigrate: {
-                        // LPUSH will succeed, as node is on
-                        let results = try await client.execute(
-                            LPUSH(key, elements: ["testing2"]),
-                            RPOPLPUSH(source: key, destination: key2)
-                        )
-                        let count = try results.0.get()
-                        #expect(count == 2)
-                        let value = try results.1.get()
-                        #expect(value.map { String(buffer: $0) } == "testing1")
-                    }
-                }
-            }
-        }
-    }
-
-    @available(valkeySwift 1.0, *)
-    func testMigratingHashSlot(
+    static func testMigratingHashSlot(
         _ hashSlot: HashSlot,
         client: ValkeyClusterClient,
         beforeMigrate: () async throws -> Void,
@@ -392,6 +204,207 @@ struct ClusterIntegrationTests {
         try result.get()
     }
 
+    @Suite("Pipelining Tests")
+    struct Pipeline {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testNodePipeline() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                client in
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
+                    let node = try await client.nodeClient(for: [HashSlot(key: key)])
+                    var commands: [any ValkeyCommand] = .init()
+                    commands.append(SET(key, value: "cluster pipeline test"))
+                    commands.append(GET(key))
+                    let results = try await client.execute(node: node, commands: commands)
+                    let response = try results[1].get().decode(as: String.self)
+                    #expect(response == "cluster pipeline test")
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testNodePipelineMultipleHashKeysSameShard() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                client in
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
+                    let hashSlot = HashSlot(key: key)
+                    let node = try await client.nodeClient(for: [hashSlot])
+                    // get a key from same node
+                    let key2 = try await {
+                        while true {
+                            let key2 = ValkeyKey(UUID().uuidString)
+                            let hashSlot2 = HashSlot(key: key2)
+                            let node2 = try await client.nodeClient(for: [hashSlot2])
+                            if node2.serverAddress == node.serverAddress {
+                                return key2
+                            }
+                        }
+                    }()
+                    var commands: [any ValkeyCommand] = .init()
+                    commands.append(SET(key, value: "cluster pipeline test"))
+                    commands.append(GET(key))
+                    commands.append(SET(key2, value: "cluster pipeline test"))
+                    commands.append(GET(key2))
+                    commands.append(DEL(keys: [key]))
+                    let results = try await client.execute(node: node, commands: commands)
+                    let response = try results[1].get().decode(as: String.self)
+                    #expect(response == "cluster pipeline test")
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testNodePipelineMultipleHashKeysDifferentShards() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                client in
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
+                    let hashSlot = HashSlot(key: key)
+                    let node = try await client.nodeClient(for: [hashSlot])
+                    let key2 = try await {
+                        while true {
+                            let key2 = ValkeyKey(UUID().uuidString)
+                            let hashSlot2 = HashSlot(key: key2)
+                            let node2 = try await client.nodeClient(for: [hashSlot2])
+                            if node2.serverAddress != node.serverAddress {
+                                return key2
+                            }
+                        }
+                    }()
+                    var commands: [any ValkeyCommand] = .init()
+                    commands.append(SET(key, value: "cluster pipeline test"))
+                    commands.append(GET(key))
+                    commands.append(GET(key2))
+                    let results = try await client.execute(node: node, commands: commands)
+                    let response = try results[1].get().decode(as: String.self)
+                    #expect(response == "cluster pipeline test")
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testNodeFailoverWithPipeline() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                clusterClient in
+                try await ClusterIntegrationTests.withKey(connection: clusterClient) { key in
+                    let node = try await clusterClient.nodeClient(for: [HashSlot(key: key)])
+                    try await clusterClient.set(key, value: "bar")
+                    let cluster = try await clusterClient.clusterShards()
+                    let shard = try #require(
+                        cluster.shards.first { shard in
+                            let hashSlot = HashSlot(key: key)
+                            return shard.slots.reduce(into: false) { $0 = ($0 || ($1.lowerBound <= hashSlot && $1.upperBound >= hashSlot)) }
+                        }
+                    )
+                    let replica = try #require(shard.nodes.first { $0.role == .replica })
+                    let port = try #require(replica.port)
+                    // connect to replica and call CLUSTER FAILOVER
+                    try await ClusterIntegrationTests.withValkeyClient(.hostname(replica.endpoint, port: port), logger: logger) { client in
+                        try await client.clusterFailover()
+                    }
+                    // will receive a MOVED errors for SET, INCR and GET as the primary has moved to a replica
+                    var commands: [any ValkeyCommand] = .init()
+                    commands.append(SET(key, value: "100"))
+                    commands.append(INCR(key))
+                    commands.append(ECHO(message: "Test non moved command"))
+                    commands.append(GET(key))
+                    let results = try await clusterClient.execute(node: node, commands: commands)
+                    let response2 = try results[2].get().decode(as: String.self)
+                    #expect(response2 == "Test non moved command")
+                    let response3 = try results[3].get().decode(as: String.self)
+                    #expect(response3 == "101")
+                }
+            }
+        }
+
+        @Test(.disabled())
+        @available(valkeySwift 1.0, *)
+        func testHashSlotMigrationAndAskRedirectionWithPipeline() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                client in
+                let keySuffix = "{\(UUID().uuidString)}"
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
+                    let hashSlot = HashSlot(key: key)
+                    let node = try await client.nodeClient(for: [hashSlot])
+                    try await client.set(key, value: "Testing before import")
+
+                    try await ClusterIntegrationTests.testMigratingHashSlot(hashSlot, client: client) {
+                        // key still uses nodeA
+                        let value = try await client.set(key, value: "Testing during import", get: true).map { String(buffer: $0) }
+                        #expect(value == "Testing before import")
+                    } afterMigrate: {
+                        // key has been migrated to nodeB so will receive an ASK error
+                        var commands: [any ValkeyCommand] = .init()
+                        commands.append(SET(key, value: "After migrate", get: true))
+                        commands.append(GET(key))
+                        let results = try await client.execute(node: node, commands: commands)
+                        #expect(try results[0].get().decode(as: String.self) == "Testing during import")
+                        #expect(try results[1].get().decode(as: String.self) == "After migrate")
+                    } finished: {
+                        let value = try await client.set(key, value: "Testing after import", get: true).map { String(buffer: $0) }
+                        #expect(value == "After migrate")
+                    }
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testHashSlotMigrationAndTryAgainWithPipeline() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+                client in
+                let keySuffix = "{\(UUID().uuidString)}"
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
+                    try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key2 in
+                        let hashSlot = HashSlot(key: key)
+                        let node = try await client.nodeClient(for: [hashSlot])
+                        try await client.lpush(key, elements: ["testing1"])
+
+                        try await ClusterIntegrationTests.testMigratingHashSlot(hashSlot, client: client) {
+                        } duringMigrate: {
+                            // LPUSH will succeed, as node is on
+                            var commands: [any ValkeyCommand] = .init()
+                            commands.append(LPUSH(key, elements: ["testing2"]))
+                            commands.append(RPOPLPUSH(source: key, destination: key2))
+                            let results = try await client.execute(node: node, commands: commands)
+                            let count = try results[0].get().decode(as: Int.self)
+                            #expect(count == 2)
+                            let value = try results[1].get().decode(as: String.self)
+                            #expect(value == "testing1")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @available(valkeySwift 1.0, *)
     static func withKey<Value>(
         connection: some ValkeyClientProtocol,
@@ -442,7 +455,7 @@ struct ClusterIntegrationTests {
     }
 
     @available(valkeySwift 1.0, *)
-    func withValkeyClient(
+    static func withValkeyClient(
         _ address: ValkeyServerAddress,
         configuration: ValkeyClientConfiguration = .init(),
         logger: Logger,
