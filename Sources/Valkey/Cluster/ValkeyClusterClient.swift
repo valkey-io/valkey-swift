@@ -200,6 +200,25 @@ public final class ValkeyClusterClient: Sendable {
         }
     }
 
+    /// Pipeline a series of commands to nodes in the Valkey cluster
+    ///
+    /// This function splits up the array of commands into smaller arrays containing
+    /// the commands that should be run on each node in the cluster. It then runs a
+    /// pipelined execute using these smaller arrays on each node concurrently.
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results, one for each command.
+    ///
+    /// Because the commands are split across nodes it is not possible to guarantee
+    /// the order that commands will run in. The only way to guarantee the order is to
+    /// only pipeline commands that use keys from the same HashSlot. If a key has a
+    /// substring between brackets `{}` then that substring is used to calculate the
+    /// HashSlot. That substring is called the hash tag. Using this you can ensure two
+    /// keys are in the same hash slot, by giving them the same hash tag eg `user:{123}`
+    /// and `profile:{123}`.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
     public func execute(
         _ commands: [any ValkeyCommand]
