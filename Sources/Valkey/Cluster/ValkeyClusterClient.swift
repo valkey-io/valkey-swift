@@ -186,13 +186,16 @@ public final class ValkeyClusterClient: Sendable {
         throw ValkeyClusterError.clientRequestCancelled
     }
 
-    /// Pipeline a series of commands to Valkey client
+    /// Pipeline a series of commands to a single node in the Valkey cluster
+    ///
+    /// This function supports retrying commands that return cluster specific
+    /// errors like MOVED, TRYAGAIN and ASK
     ///
     /// Once all the responses for the commands have been received the function returns
     /// an array of RESPToken Results, one for each command.
     ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
-    /// - Returns: Parameter pack holding the responses of all the commands
+    /// - Returns: Array holding the RESPToken responses of all the commands
     @usableFromInline
     func execute(
         node: ValkeyNodeClient,
@@ -209,6 +212,7 @@ public final class ValkeyClusterClient: Sendable {
         while !Task.isCancelled {
             var node = node
             var redirection: Redirection? = nil
+            // check if any results require the command to be retried
             for result in results.enumerated() {
                 switch result.element {
                 case .failure(let error):
@@ -234,6 +238,7 @@ public final class ValkeyClusterClient: Sendable {
                     break
                 }
             }
+            // There are no commands to retry we can return the results
             if retryCommands.count == 0 {
                 return results
             }
@@ -242,12 +247,14 @@ public final class ValkeyClusterClient: Sendable {
                 node = redirection.node
                 ask = redirection.ask
             }
+            // send commands that need retrying
             let retriedResults =
                 if ask {
                     await node.ask(retryCommands.map(\.0))
                 } else {
                     await node.execute(retryCommands.map(\.0))
                 }
+            // copy results back into main result array
             for result in retriedResults.enumerated() {
                 results[retryCommands[result.offset].1] = result.element
             }
