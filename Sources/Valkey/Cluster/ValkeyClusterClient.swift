@@ -183,7 +183,7 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         }
-        throw CancellationError()
+        throw ValkeyClusterError.clientRequestCancelled
     }
 
     /// Pipeline a series of commands to Valkey cluster connection
@@ -261,6 +261,74 @@ public final class ValkeyClusterClient: Sendable {
             retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
         }
         throw CancellationError()
+    }
+
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results, one for each command.
+    ///
+    /// This is an alternative version of the pipelining function ``ValkeyClient/execute(_:)->(_,_)``
+    /// that allows for a dynamic array of ValkeyCommands. It provides more flexibility but
+    /// is more expensive to run and the command responses are returned as ``RESPToken``
+    /// instead of the response type for the command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    @usableFromInline
+    func execute(
+        node: ValkeyNodeClient,
+        commands: [any ValkeyCommand]
+    ) async throws -> sending [Result<RESPToken, Error>] {
+        struct Redirection {
+            let node: ValkeyNodeClient
+            let ask: Bool
+        }
+        // execute pipeline
+        var results = await node.execute(commands)
+        var retryCommands: [(any ValkeyCommand, Int)] = []
+        var attempt = 1
+        while !Task.isCancelled {
+            var node = node
+            var redirection: Redirection? = nil
+            for result in results.enumerated() {
+                switch result.element {
+                case .failure(let error):
+                    // get retry action for command
+                    let commandRetryAction = self.getRetryAction(from: error)
+                    switch commandRetryAction {
+                    case .dontRetry:
+                        break
+                    case .tryAgain:
+                        retryCommands.append((commands[result.offset], result.offset))
+                        let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                        try await Task.sleep(for: wait)
+                        attempt += 1
+                    case .redirect(let redirectError):
+                        if redirection == nil {
+                            let node = try await self.nodeClient(for: redirectError)
+                            let asking = redirectError.redirection == .ask
+                            redirection = .init(node: node, ask: asking)
+                        }
+                        retryCommands.append((commands[result.offset], result.offset))
+                    }
+                case .success:
+                    break
+                }
+            }
+            if retryCommands.count == 0 {
+                return results
+            }
+            if let redirection {
+                node = redirection.node
+            }
+            let retriedResults = await node.execute(retryCommands.map(\.0))
+            for result in retriedResults.enumerated() {
+                results[retryCommands[result.offset].1] = result.element
+            }
+            retryCommands.removeAll(keepingCapacity: true)
+        }
+        throw ValkeyClusterError.clientRequestCancelled
     }
 
     /// Get connection from cluster and run operation using connection
