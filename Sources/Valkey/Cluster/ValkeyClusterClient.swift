@@ -200,14 +200,10 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @usableFromInline
-    func execute(
+    func execute<Commands: Collection & Sendable>(
         node: ValkeyNodeClient,
-        commands: [any ValkeyCommand]
-    ) async throws -> sending [Result<RESPToken, Error>] {
-        struct Redirection {
-            let node: ValkeyNodeClient
-            let ask: Bool
-        }
+        commands: Commands
+    ) async throws -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
         // execute pipeline
         var results = await node.execute(commands)
         var retryCommands: [(any ValkeyCommand, Int)] = []

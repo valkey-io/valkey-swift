@@ -328,7 +328,7 @@ struct ClusterIntegrationTests {
                     commands.append(SET(key2, value: "cluster pipeline test"))
                     commands.append(GET(key2))
                     commands.append(DEL(keys: [key2]))
-                    let results = try await client.execute(node: node, commands: .init(commands.dropFirst()))
+                    let results = try await client.execute(node: node, commands: commands.dropFirst())
                     let response = try results[3].get().decode(as: String.self)
                     #expect(response == "cluster pipeline test")
                 }
