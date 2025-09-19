@@ -266,6 +266,7 @@ struct ClusterIntegrationTests {
         @Test
         @available(valkeySwift 1.0, *)
         func testNodePipelineMultipleHashKeysDifferentShards() async throws {
+            // this will receive MOVED errors and deal with them
             var logger = Logger(label: "ValkeyCluster")
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
@@ -336,9 +337,9 @@ struct ClusterIntegrationTests {
             }
         }
 
-        @Test(.disabled())
         @available(valkeySwift 1.0, *)
-        func testHashSlotMigrationAndAskRedirectionWithPipeline() async throws {
+        @Test
+        func testNodeHashSlotMigrationAndAskRedirectionWithPipeline() async throws {
             var logger = Logger(label: "ValkeyCluster")
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
@@ -373,7 +374,7 @@ struct ClusterIntegrationTests {
 
         @Test
         @available(valkeySwift 1.0, *)
-        func testHashSlotMigrationAndTryAgainWithPipeline() async throws {
+        func testNodeHashSlotMigrationAndTryAgainWithPipeline() async throws {
             var logger = Logger(label: "ValkeyCluster")
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!

@@ -237,107 +237,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     /// Pipeline a series of commands to Valkey connection
     ///
-    /// Once all the responses for the commands have been received the function returns
-    /// an array of RESPToken Results.
-    ///
-    /// This version of execute is required as the 6.1 compiler crashes when deleting
-    /// tuples returned from functions that are then parsed as a parameter pack.
-    /// Otherwise we could use the standard version above
-    ///
-    /// - Parameter commands: Parameter pack of ValkeyCommands
-    /// - Returns: Array of RESPToken results
-    @inlinable
-    func respExecute<each Command: ValkeyCommand>(
-        _ commands: repeat each Command
-    ) async throws -> [Result<RESPToken, Error>] {
-        let requestID = Self.requestIDGenerator.next()
-        return await withTaskCancellationHandler {
-            let commandPromises = self._execute(requestID: requestID, commands: repeat each commands)
-            var results: [Result<RESPToken, Error>] = .init()
-            for promise in commandPromises {
-                await results.append(promise.futureResult._result())
-            }
-            return results
-        } onCancel: {
-            self.cancel(requestID: requestID)
-        }
-    }
-
-    @usableFromInline
-    enum RetryCommand<Command: ValkeyCommand>: Sendable {
-        case retry(Command)
-        case result(Result<RESPToken, Error>)
-    }
-    /// Pipeline a series of commands to Valkey connection
-    ///
-    /// This version is supplied with a parameter pack of retry commands. Where the command
-    /// is only queued when the command is set to `retry``. Otherwise the result in the
-    /// retry command is returned.
-    ///
-    /// Once all the responses for the commands have been received the function returns
-    /// an array of RESPToken Results.
-    ///
-    /// - Parameters
-    ///   - asking: Should we precede each command with an ASKING command
-    ///   - commands: Parameter pack of ValkeyCommands
-    /// - Returns: Array of RESPToken results
-    @inlinable
-    func retryExecute<each Command: ValkeyCommand>(
-        asking: Bool,
-        _ retryCommands: repeat RetryCommand<each Command>
-    ) async throws -> [Result<RESPToken, Error>] {
-        let requestID = Self.requestIDGenerator.next()
-        return await withTaskCancellationHandler {
-            // this currently allocates a promise for every command. We could collapse this down to one promise
-            var mpromises: [EventLoopPromise<RESPToken>] = []
-            var encoder = ValkeyCommandEncoder()
-            for retryCommand in repeat each retryCommands {
-                switch retryCommand {
-                case .retry(let command):
-                    if asking {
-                        ASKING().encode(into: &encoder)
-                    }
-                    command.encode(into: &encoder)
-                    mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
-                case .result:
-                    break
-                }
-            }
-            let outBuffer = encoder.buffer
-            let promises = mpromises
-            if Task.isCancelled {
-                for promise in mpromises {
-                    promise.fail(ValkeyClientError(.cancelled))
-                }
-            } else {
-                // write directly to channel handler
-                if asking {
-                    self.channelHandler.write(
-                        request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.flatMap { [.forget, .nio($0)] }, id: requestID)
-                    )
-                } else {
-                    self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
-                }
-            }
-            var results: [Result<RESPToken, Error>] = .init()
-            var promiseIterator = promises.makeIterator()
-            for retryCommand in repeat each retryCommands {
-                switch retryCommand {
-                case .retry:
-                    guard let promise = promiseIterator.next() else { preconditionFailure("Promise count should be the same") }
-                    await results.append(promise.futureResult._result())
-                case .result(let result):
-                    results.append(result)
-                }
-            }
-            return results
-        } onCancel: {
-            self.cancel(requestID: requestID)
-        }
-    }
-
-    /// Pipeline a series of commands to Valkey connection
-    ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Array of promises (one for each command)
     @inlinable
@@ -371,8 +270,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// an array of RESPToken Results, one for each command.
     ///
     /// This is an alternative version of the pipelining function ``ValkeyConnection/execute(_:)->(_,_)``
-    /// that allows for a collection of ValkeyCommands. It provides more flexibility but
-    /// is more expensive to run and the command responses are returned as ``RESPToken``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but is
+    /// slightly more expensive to run and the command responses are returned as ``RESPToken``
     /// instead of the response type for the command.
     ///
     /// - Parameter commands: Collection of ValkeyCommands
@@ -400,6 +299,55 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             } else {
                 // write directly to channel handler
                 self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
+            }
+            // get response from channel handler
+            var results: [Result<RESPToken, Error>] = .init()
+            results.reserveCapacity(commands.count)
+            for promise in promises {
+                await results.append(promise.futureResult._result())
+            }
+            return results
+        } onCancel: {
+            self.cancel(requestID: requestID)
+        }
+    }
+
+    /// Pipeline a series of commands to Valkey connection and precede each command with an ASKING
+    /// command
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results, one for each command.
+    ///
+    /// This is an internal function used by the cluster client
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    @inlinable
+    func ask(
+        _ commands: some Collection<any ValkeyCommand>
+    ) async -> sending [Result<RESPToken, Error>] {
+        let requestID = Self.requestIDGenerator.next()
+        // this currently allocates a promise for every command. We could collapse this down to one promise
+        var mpromises: [EventLoopPromise<RESPToken>] = []
+        mpromises.reserveCapacity(commands.count)
+        var encoder = ValkeyCommandEncoder()
+        for command in commands {
+            ASKING().encode(into: &encoder)
+            command.encode(into: &encoder)
+            mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        }
+        let outBuffer = encoder.buffer
+        let promises = mpromises
+        return await withTaskCancellationHandler {
+            if Task.isCancelled {
+                for promise in mpromises {
+                    promise.fail(ValkeyClientError(.cancelled))
+                }
+            } else {
+                // write directly to channel handler
+                self.channelHandler.write(
+                    request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.flatMap { [.forget, .nio($0)] }, id: requestID)
+                )
             }
             // get response from channel handler
             var results: [Result<RESPToken, Error>] = .init()

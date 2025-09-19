@@ -186,92 +186,10 @@ public final class ValkeyClusterClient: Sendable {
         throw ValkeyClusterError.clientRequestCancelled
     }
 
-    /// Pipeline a series of commands to Valkey cluster connection
-    ///
-    /// Once all the responses for the commands have been received the function returns
-    /// a parameter pack of Results, one for each command.
-    ///
-    /// If any of the commands results in a redirection errors or an error that causes a
-    /// retry. Then those commands are sent again. This does mean that there is a possibility
-    /// that commands run out of order if the keys they affect are not from the same hash slot.
-    ///
-    /// - Parameter commands: Parameter pack of ValkeyCommands
-    /// - Returns: Parameter pack holding the results of all the commands
-    @inlinable
-    public func execute<each Command: ValkeyCommand>(
-        _ commands: repeat each Command
-    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
-        var retryAction: RetryAction = .dontRetry
-        // convert RESPToken result to retry decision, storing first retry action found
-        func retryResult<C: ValkeyCommand>(result: Result<RESPToken, Error>, command: C) -> ValkeyConnection.RetryCommand<C> {
-            switch result {
-            case .failure(let error):
-                // get retry action for command
-                let commandRetryAction = self.getRetryAction(from: error)
-                // if retry action for command is dont retry return restul
-                if case .dontRetry = commandRetryAction {
-                    return .result(result)
-                } else {
-                    // otherwise if retry action isnt already set, set it
-                    if case .dontRetry = retryAction {
-                        retryAction = commandRetryAction
-                    }
-                    return .retry(command)
-                }
-            case .success:
-                return .result(result)
-            }
-        }
-        // get hash slot affected
-        var hashSlots: [HashSlot] = []
-        for command in repeat each commands {
-            if let newHashSlot = try self.hashSlot(for: command.keysAffected) {
-                hashSlots.append(newHashSlot)
-            }
-        }
-        // get shard from hash slots
-        var node = try await self.nodeClient(for: hashSlots)
-        // execute pipeline
-        var results = try await node.withConnection { connection in
-            try await connection.respExecute(repeat each commands)
-        }
-        var index = AutoIncrementingInteger()
-        // do we need to retry any of the commands
-        var retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
-        var attempt = 1
-        var asking = false
-        while !Task.isCancelled {
-            switch retryAction {
-            case .redirect(let movedError):
-                node = try await self.nodeClient(for: movedError)
-                asking = movedError.redirection == .ask
-            case .tryAgain:
-                let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
-                try await Task.sleep(for: wait)
-                attempt += 1
-            case .dontRetry:
-                index.reset()
-                return (repeat results[index.next()].convertRESP(to: (each Command).Response.self))
-            }
-            results = try await node.withConnection { connection in
-                try await connection.retryExecute(asking: asking, repeat each retryResults)
-            }
-            retryAction = .dontRetry
-            index.reset()
-            retryResults = (repeat retryResult(result: results[index.next()], command: each commands))
-        }
-        throw CancellationError()
-    }
-
-    /// Pipeline a series of commands to Valkey connection
+    /// Pipeline a series of commands to Valkey client
     ///
     /// Once all the responses for the commands have been received the function returns
     /// an array of RESPToken Results, one for each command.
-    ///
-    /// This is an alternative version of the pipelining function ``ValkeyClient/execute(_:)->(_,_)``
-    /// that allows for a dynamic array of ValkeyCommands. It provides more flexibility but
-    /// is more expensive to run and the command responses are returned as ``RESPToken``
-    /// instead of the response type for the command.
     ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the responses of all the commands
@@ -319,10 +237,17 @@ public final class ValkeyClusterClient: Sendable {
             if retryCommands.count == 0 {
                 return results
             }
+            var ask = false
             if let redirection {
                 node = redirection.node
+                ask = redirection.ask
             }
-            let retriedResults = await node.execute(retryCommands.map(\.0))
+            let retriedResults =
+                if ask {
+                    await node.ask(retryCommands.map(\.0))
+                } else {
+                    await node.execute(retryCommands.map(\.0))
+                }
             for result in retriedResults.enumerated() {
                 results[retryCommands[result.offset].1] = result.element
             }
