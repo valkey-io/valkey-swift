@@ -186,6 +186,10 @@ public final class ValkeyClusterClient: Sendable {
         throw ValkeyClusterError.clientRequestCancelled
     }
 
+    struct Redirection {
+        let node: ValkeyNodeClient
+        let ask: Bool
+    }
     /// Pipeline a series of commands to a single node in the Valkey cluster
     ///
     /// This function supports retrying commands that return cluster specific
@@ -197,14 +201,10 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @usableFromInline
-    func execute(
+    func execute<Commands: Collection & Sendable>(
         node: ValkeyNodeClient,
-        commands: [any ValkeyCommand]
-    ) async throws -> sending [Result<RESPToken, Error>] {
-        struct Redirection {
-            let node: ValkeyNodeClient
-            let ask: Bool
-        }
+        commands: Commands
+    ) async throws -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
         // execute pipeline
         var results = await node.execute(commands)
         var retryCommands: [(any ValkeyCommand, Int)] = []
@@ -222,7 +222,7 @@ public final class ValkeyClusterClient: Sendable {
                     case .dontRetry:
                         break
                     case .tryAgain:
-                        retryCommands.append((commands[result.offset], result.offset))
+                        retryCommands.append((commands[commands.startIndex + result.offset], result.offset))
                         let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
                         try await Task.sleep(for: wait)
                         attempt += 1
@@ -232,7 +232,7 @@ public final class ValkeyClusterClient: Sendable {
                             let asking = redirectError.redirection == .ask
                             redirection = .init(node: node, ask: asking)
                         }
-                        retryCommands.append((commands[result.offset], result.offset))
+                        retryCommands.append((commands[commands.startIndex + result.offset], result.offset))
                     }
                 case .success:
                     break
