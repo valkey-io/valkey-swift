@@ -134,6 +134,130 @@ struct ClusterIntegrationTests {
             }
         }
     }
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterClientSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.subscribe(to: "testSubscriptions") { subscription in
+                        cont.finish()
+                        var iterator = subscription.makeAsyncIterator()
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                    }
+                }
+                await stream.first { _ in true }
+                try await Task.sleep(for: .milliseconds(100))
+                _ = try await client.publish(channel: "testSubscriptions", message: "hello")
+                _ = try await client.publish(channel: "testSubscriptions", message: "goodbye")
+                try await group.waitForAll()
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientSubscriptionsTwice() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.subscribe(to: "testSubscriptions") { subscription in
+                        cont.yield()
+                        var iterator = subscription.makeAsyncIterator()
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                    }
+                    try await client.subscribe(to: "testSubscriptions") { subscription in
+                        cont.finish()
+                        var iterator = subscription.makeAsyncIterator()
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                    }
+                }
+                await stream.first { _ in true }
+                try await Task.sleep(for: .milliseconds(10))
+                _ = try await client.publish(channel: "testSubscriptions", message: "hello")
+                _ = try await client.publish(channel: "testSubscriptions", message: "goodbye")
+                await stream.first { _ in true }
+                try await Task.sleep(for: .milliseconds(10))
+                _ = try await client.publish(channel: "testSubscriptions", message: "hello")
+                _ = try await client.publish(channel: "testSubscriptions", message: "goodbye")
+                try await group.waitForAll()
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientMultipleSubscriptions() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                let count = 50
+                for i in 0..<count {
+                    group.addTask {
+                        try await client.subscribe(to: ["sub\(i)", "sub\(i+1)"]) { subscription in
+                            cont.yield()
+                            var iterator = subscription.makeAsyncIterator()
+                            await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "\(i)" }
+                            client.logger.info("Received \(i): \(i)")
+                            await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "\(i+1)" }
+                            client.logger.info("Received \(i): \(i+1)")
+                        }
+                    }
+                }
+                var iterator = stream.makeAsyncIterator()
+                for _ in 0..<count {
+                    await iterator.next()
+                }
+
+                try await Task.sleep(for: .milliseconds(200))
+                for i in 0..<(count + 1) {
+                    try await client.publish(channel: "sub\(i)", message: "\(i)")
+                    client.logger.info("Published \(i)")
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientCancelSubscription() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+            await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.subscribe(to: "testCancelSubscriptions") { subscription in
+                        cont.finish()
+                        for try await _ in subscription {
+                        }
+                    }
+                }
+                await stream.first { _ in true }
+                group.cancelAll()
+            }
+        }
+    }
 
     @available(valkeySwift 1.0, *)
     func testMigratingHashSlot(
