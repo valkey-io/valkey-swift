@@ -261,6 +261,54 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
     }
 
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results, one for each command.
+    ///
+    /// This is an alternative version of the pipelining function ``ValkeyConnection/execute(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but
+    /// is more expensive to run and the command responses are returned as ``RESPToken``
+    /// instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    @inlinable
+    public func execute(
+        _ commands: some Collection<any ValkeyCommand>
+    ) async -> sending [Result<RESPToken, Error>] {
+        let requestID = Self.requestIDGenerator.next()
+        // this currently allocates a promise for every command. We could collapse this down to one promise
+        var mpromises: [EventLoopPromise<RESPToken>] = []
+        mpromises.reserveCapacity(commands.count)
+        var encoder = ValkeyCommandEncoder()
+        for command in commands {
+            command.encode(into: &encoder)
+            mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        }
+        let outBuffer = encoder.buffer
+        let promises = mpromises
+        return await withTaskCancellationHandler {
+            if Task.isCancelled {
+                for promise in mpromises {
+                    promise.fail(ValkeyClientError(.cancelled))
+                }
+            } else {
+                // write directly to channel handler
+                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
+            }
+            // get response from channel handler
+            var results: [Result<RESPToken, Error>] = .init()
+            results.reserveCapacity(commands.count)
+            for promise in promises {
+                await results.append(promise.futureResult._result())
+            }
+            return results
+        } onCancel: {
+            self.cancel(requestID: requestID)
+        }
+    }
+
     #if DistributedTracingSupport
     @usableFromInline
     func applyCommonAttributes(to attributes: inout SpanAttributes, commandName: String) {
