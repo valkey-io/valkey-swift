@@ -225,25 +225,16 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
-        let requestID = Self.requestIDGenerator.next()
-        return await withTaskCancellationHandler {
-            let commandPromises = self._execute(requestID: requestID, commands: repeat each commands)
-            var index = AutoIncrementingInteger()
-            return await (repeat commandPromises[index.next()].futureResult._result().convertRESP(to: (each Command).Response.self))
-        } onCancel: {
-            self.cancel(requestID: requestID)
+        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
+            result.flatMap {
+                do {
+                    return try .success(Response(fromRESP: $0))
+                } catch {
+                    return .failure(error)
+                }
+            }
         }
-    }
-
-    /// Pipeline a series of commands to Valkey connection
-    ///
-    /// - Parameter commands: Parameter pack of ValkeyCommands
-    /// - Returns: Array of promises (one for each command)
-    @inlinable
-    func _execute<each Command: ValkeyCommand>(
-        requestID: Int,
-        commands: repeat each Command
-    ) -> [EventLoopPromise<RESPToken>] {
+        let requestID = Self.requestIDGenerator.next()
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
@@ -253,15 +244,21 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         let outBuffer = encoder.buffer
         let promises = mpromises
-        if Task.isCancelled {
-            for promise in mpromises {
-                promise.fail(ValkeyClientError(.cancelled))
+        return await withTaskCancellationHandler {
+            if Task.isCancelled {
+                for promise in mpromises {
+                    promise.fail(ValkeyClientError(.cancelled))
+                }
+            } else {
+                // write directly to channel handler
+                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
             }
-        } else {
-            // write directly to channel handler
-            self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
+            // get response from channel handler
+            var index = AutoIncrementingInteger()
+            return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
+        } onCancel: {
+            self.cancel(requestID: requestID)
         }
-        return promises
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -551,11 +548,6 @@ struct AutoIncrementingInteger {
         value += 1
         return value - 1
     }
-
-    @inlinable
-    mutating func reset() {
-        value = 0
-    }
 }
 
 #if DistributedTracingSupport
@@ -574,19 +566,3 @@ extension ValkeyClientError {
     }
 }
 #endif
-
-extension Result where Success == RESPToken {
-    @inlinable
-    func convertRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, Error> {
-        switch self {
-        case .success(let token):
-            do {
-                return try .success(Response(fromRESP: token))
-            } catch {
-                return .failure(error)
-            }
-        case .failure(let error):
-            return .failure(error)
-        }
-    }
-}
