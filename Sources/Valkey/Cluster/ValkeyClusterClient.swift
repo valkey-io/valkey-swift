@@ -166,7 +166,7 @@ public final class ValkeyClusterClient: Sendable {
                 } else {
                     return try await client.execute(command)
                 }
-            } catch ValkeyClusterError.noNodeToTalkTo {
+            } catch let error as ValkeyClusterError where error == .noNodeToTalkTo {
                 // TODO: Rerun node discovery!
             } catch let error as ValkeyClientError where error.errorCode == .commandError {
                 guard let errorMessage = error.message else {
@@ -473,7 +473,7 @@ public final class ValkeyClusterClient: Sendable {
                 return try self.stateLock.withLock { state -> ValkeyNodeClient in
                     try state.poolFastPath(for: slots)
                 }
-            } catch ValkeyClusterError.clusterIsUnavailable {
+            } catch let error as ValkeyClusterError where error == .clusterIsUnavailable {
                 let waiterID = self.nextRequestID()
 
                 try await withTaskCancellationHandler {

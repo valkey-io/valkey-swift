@@ -221,6 +221,40 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testAlternativePipelinedSetGet() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                var commands: [any ValkeyCommand] = []
+                commands.append(SET(key, value: "Pipelined Hello"))
+                commands.append(GET(key))
+                let responses = await connection.execute(commands)
+                let value = try responses[1].get().decode(as: String.self)
+                #expect(value == "Pipelined Hello")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testAlternativePipelinedSetGetClient() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                var commands: [any ValkeyCommand] = []
+                commands.append(SET(key, value: "Pipelined Hello"))
+                commands.append(GET(key))
+                let responses = await client.execute(commands)
+                let value = try responses[1].get().decode(as: String.self)
+                #expect(value == "Pipelined Hello")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
