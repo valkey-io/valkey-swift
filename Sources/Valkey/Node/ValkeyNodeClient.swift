@@ -189,7 +189,7 @@ extension ValkeyNodeClient {
     ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
-                await connection.ask(commands)
+                await connection.executeWithAsk(commands)
             }
         } catch {
             return .init(repeating: .failure(error), count: commands.count)

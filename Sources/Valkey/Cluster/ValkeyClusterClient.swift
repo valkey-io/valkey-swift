@@ -9,7 +9,6 @@
 import Logging
 import NIOCore
 import NIOPosix
-import NIOSSL
 import Synchronization
 
 /// A client for interacting with a Valkey cluster.
@@ -225,7 +224,6 @@ public final class ValkeyClusterClient: Sendable {
                         retryCommands.append((commands[commands.startIndex + result.offset], result.offset))
                         let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
                         try await Task.sleep(for: wait)
-                        attempt += 1
                     case .redirect(let redirectError):
                         if redirection == nil {
                             let node = try await self.nodeClient(for: redirectError)
@@ -246,6 +244,9 @@ public final class ValkeyClusterClient: Sendable {
             if let redirection {
                 node = redirection.node
                 ask = redirection.ask
+            } else {
+                // only increment attempt if we aren't redirecting to another node
+                attempt += 1
             }
             // send commands that need retrying
             let retriedResults =
