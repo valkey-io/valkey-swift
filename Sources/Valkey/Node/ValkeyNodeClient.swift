@@ -181,6 +181,20 @@ extension ValkeyNodeClient {
             return .init(repeating: .failure(error), count: commands.count)
         }
     }
+
+    /// Internal command used by cluster client, that precedes each command with a ASKING
+    /// command
+    func ask<Commands: Collection & Sendable>(
+        _ commands: Commands
+    ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+        do {
+            return try await self.withConnection { connection in
+                await connection.executeWithAsk(commands)
+            }
+        } catch {
+            return .init(repeating: .failure(error), count: commands.count)
+        }
+    }
 }
 
 /// Extension that makes ``ValkeyNode`` conform to ``ValkeyNodeConnectionPool``.
