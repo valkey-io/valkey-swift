@@ -26,6 +26,7 @@ func connectionBenchmarks() {
     makeConnectionGETNoOpTracerBenchmark()
     #endif
     makeConnectionPipelineBenchmark()
+    makeConnectionPipelineArrayExistentialsBenchmark()
 }
 
 @available(valkeySwift 1.0, *)
@@ -145,6 +146,36 @@ func makeConnectionPipelineBenchmark() -> Benchmark? {
                     GET("foo")
                 )
                 let result = try foo.2.get().map { String(buffer: $0) }
+                precondition(result == "Bar")
+            }
+            benchmark.stopMeasurement()
+        }
+    } setup: {
+        let server = try await makeLocalServer()
+        serverMutex.withLock { $0 = server }
+    } teardown: {
+        try await serverMutex.withLock { $0 }?.close().get()
+    }
+}
+
+@available(valkeySwift 1.0, *)
+@discardableResult
+func makeConnectionPipelineArrayExistentialsBenchmark() -> Benchmark? {
+    let serverMutex = Mutex<(any Channel)?>(nil)
+
+    return Benchmark("Connection: Pipeline array benchmark", configuration: .init(metrics: defaultMetrics, scalingFactor: .kilo)) { benchmark in
+        let port = serverMutex.withLock { $0 }!.localAddress!.port!
+        let logger = Logger(label: "test")
+        try await ValkeyConnection.withConnection(
+            address: .hostname("127.0.0.1", port: port),
+            configuration: .init(),
+            logger: logger
+        ) { connection in
+            benchmark.startMeasurement()
+            for _ in benchmark.scaledIterations {
+                let commands: [any ValkeyCommand] = .init(repeating: GET("foo"), count: 3)
+                let foo = await connection.execute(commands)
+                let result = try foo[2].get().decode(as: String.self)
                 precondition(result == "Bar")
             }
             benchmark.stopMeasurement()
