@@ -25,7 +25,7 @@ extension LMPOP {
             case .array(let array):
                 (self.key, self.values) = try array.decodeElements()
             default:
-                throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.array], token: token)
+                throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
         }
     }

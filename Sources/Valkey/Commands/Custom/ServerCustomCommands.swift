@@ -7,7 +7,7 @@
 //
 extension ROLE {
     public enum Response: RESPTokenDecodable, Sendable {
-        struct DecodeError: Error {}
+        struct MissingValueDecodeError: Error {}
         public struct Primary: Sendable {
             public struct Replica: RESPTokenDecodable, Sendable {
                 public let ip: String
@@ -23,7 +23,7 @@ extension ROLE {
 
             init(arrayIterator: inout RESPToken.Array.Iterator) throws {
                 guard let replicationOffsetToken = arrayIterator.next(), let replicasToken = arrayIterator.next() else {
-                    throw DecodeError()
+                    throw MissingValueDecodeError()
                 }
                 self.replicationOffset = try .init(fromRESP: replicationOffsetToken)
                 self.replicas = try .init(fromRESP: replicasToken)
@@ -39,7 +39,7 @@ extension ROLE {
                 public init(fromRESP token: RESPToken) throws {
                     let string = try String(fromRESP: token)
                     guard let state = State(rawValue: string) else {
-                        throw RESPDecodeError.unexpectedToken(token: token)
+                        throw RESPDecodeError(.unexpectedToken, token: token)
                     }
                     self = state
                 }
@@ -55,7 +55,7 @@ extension ROLE {
                     let stateToken = arrayIterator.next(),
                     let replicationToken = arrayIterator.next()
                 else {
-                    throw DecodeError()
+                    throw MissingValueDecodeError()
                 }
                 self.primaryIP = try .init(fromRESP: primaryIPToken)
                 self.primaryPort = try .init(fromRESP: primaryPortToken)
@@ -67,7 +67,7 @@ extension ROLE {
             public let primaryNames: [String]
 
             init(arrayIterator: inout RESPToken.Array.Iterator) throws {
-                guard let primaryNamesToken = arrayIterator.next() else { throw DecodeError() }
+                guard let primaryNamesToken = arrayIterator.next() else { throw MissingValueDecodeError() }
                 self.primaryNames = try .init(fromRESP: primaryNamesToken)
             }
         }
@@ -95,13 +95,13 @@ extension ROLE {
                         let sentinel = try Sentinel(arrayIterator: &iterator)
                         self = .sentinel(sentinel)
                     default:
-                        throw DecodeError()
+                        throw RESPDecodeError(.unexpectedToken, token: token)
                     }
-                } catch {
-                    throw RESPDecodeError.unexpectedToken(token: token)
+                } catch is MissingValueDecodeError {
+                    throw RESPDecodeError.invalidArraySize(array)
                 }
             default:
-                throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.array], token: token)
+                throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
         }
     }

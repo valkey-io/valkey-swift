@@ -54,7 +54,7 @@ extension GEOSEARCH {
                 self.attributes = []
 
             default:
-                throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.array, .bulkString], token: token)
+                throw RESPDecodeError.tokenMismatch(expected: [.array, .bulkString], token: token)
             }
         }
     }

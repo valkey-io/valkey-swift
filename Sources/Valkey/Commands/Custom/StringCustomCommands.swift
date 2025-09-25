@@ -44,7 +44,7 @@ extension LCS {
                 guard let length else { throw RESPDecodeError.missingToken(key: "length", token: token) }
                 self = .matches(length: numericCast(length), matches: matches)
             default:
-                throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.bulkString, .integer, .map], token: token)
+                throw RESPDecodeError.tokenMismatch(expected: [.bulkString, .integer, .map], token: token)
 
             }
         }

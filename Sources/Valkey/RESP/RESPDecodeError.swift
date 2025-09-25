@@ -7,50 +7,75 @@
 //
 /// Error returned when decoding a RESPToken.
 /// Error thrown when decoding RESPTokens
-public struct RESPDecodeError: Error, CustomStringConvertible {
-    @usableFromInline
-    enum InternalError: Sendable {
-        case unexpectedTokenIdentifier(expected: [RESPTypeIdentifier])
-        case invalidArraySize
-        case missingToken(key: String)
-        case cannotParseInteger
-        case cannotParseDouble
-        case unexpectedToken
-    }
-    @usableFromInline
-    let error: InternalError
-    let token: RESPToken.Value
-
-    public static func unexpectedTokenIdentifier(expected: [RESPTypeIdentifier], token: RESPToken) -> Self {
-        .init(error: .unexpectedTokenIdentifier(expected: expected), token: token.value)
-    }
-    public static func invalidArraySize(_ array: RESPToken.Array) -> Self { .init(error: .invalidArraySize, token: .array(array)) }
-    public static func missingToken(key: String, token: RESPToken) -> Self { .init(error: .missingToken(key: key), token: token.value) }
-    public static func cannotParseInteger(token: RESPToken) -> Self { .init(error: .cannotParseInteger, token: token.value) }
-    public static func cannotParseDouble(token: RESPToken) -> Self { .init(error: .cannotParseDouble, token: token.value) }
-    public static func unexpectedToken(token: RESPToken) -> Self { .init(error: .unexpectedToken, token: token.value) }
-
-    public var description: String {
-        switch self.error {
-        case .unexpectedTokenIdentifier(let expected):
-            if expected.count == 0 {
-                return "Found unexpected token while decoding \(self.token)"
-            } else if expected.count == 1 {
-                return "Expected to find a \(expected[0]) token but found a \(self.token)"
-            } else {
-                let expectedTokens = "\(expected.dropLast().map { "\"\($0)\"" }.joined(separator: ", ")) or \"\(expected.last!)\""
-                return "Expected to find a \(expectedTokens) token but found a \(self.token)"
-            }
-        case .invalidArraySize:
-            return "Invalid array length while decoding \(self.token)"
-        case .missingToken(let key):
-            return "Expected map to contain token with key \"\(key)\" while decoding \(self.token)"
-        case .cannotParseInteger:
-            return "Cannot parse integer while decoding \(self.token)"
-        case .cannotParseDouble:
-            return "Cannot parse double while decoding \(self.token)"
-        case .unexpectedToken:
-            return "Token was unexpected \(self.token)"
+public struct RESPDecodeError: Error {
+    /// Error code for decode error
+    public struct ErrorCode: Sendable, Equatable, CustomStringConvertible {
+        fileprivate enum Code: Sendable, Equatable {
+            case tokenMismatch
+            case invalidArraySize
+            case missingToken
+            case cannotParseInteger
+            case cannotParseDouble
+            case unexpectedToken
         }
+
+        fileprivate let code: Code
+        fileprivate init(_ code: Code) {
+            self.code = code
+        }
+
+        public var description: String { String(describing: self.code) }
+
+        /// Token does not match one of the expected tokens
+        public static var tokenMismatch: Self { .init(.tokenMismatch) }
+        /// Does not match the expected array size
+        public static var invalidArraySize: Self { .init(.invalidArraySize) }
+        /// Token is missing
+        public static var missingToken: Self { .init(.missingToken) }
+        /// Failed to parse an integer
+        public static var cannotParseInteger: Self { .init(.cannotParseInteger) }
+        /// Failed to parse a double
+        public static var cannotParseDouble: Self { .init(.cannotParseDouble) }
+        /// Token is not as expected
+        public static var unexpectedToken: Self { .init(.unexpectedToken) }
+    }
+    public let errorCode: ErrorCode
+    public let message: String?
+    public let token: RESPToken.Value
+
+    public init(_ errorCode: ErrorCode, token: RESPToken.Value, message: String? = nil) {
+        self.errorCode = errorCode
+        self.token = token
+        self.message = message
+    }
+
+    public init(_ errorCode: ErrorCode, token: RESPToken, message: String? = nil) {
+        self = .init(errorCode, token: token.value, message: message)
+    }
+
+    /// Token does not match one of the expected tokens
+    public static func tokenMismatch(expected: [RESPTypeIdentifier], token: RESPToken) -> Self {
+        if expected.count == 0 {
+            return .init(.tokenMismatch, token: token, message: "Found unexpected token while decoding")
+        } else if expected.count == 1 {
+            return .init(.tokenMismatch, token: token, message: "Expected to find a \(expected[0])")
+        } else {
+            let expectedTokens = "\(expected.dropLast().map { "\($0)" }.joined(separator: ", ")) or \(expected.last!)"
+            return .init(.tokenMismatch, token: token, message: "Expected to find a \(expectedTokens) token")
+        }
+    }
+    /// Does not match the expected array size
+    public static func invalidArraySize(_ array: RESPToken.Array) -> Self {
+        .init(.invalidArraySize, token: .array(array))
+    }
+    /// Token associated with key is missing
+    public static func missingToken(key: String, token: RESPToken) -> Self {
+        .init(.missingToken, token: token, message: "Expected map to contain token with key \"\(key)\"")
+    }
+}
+
+extension RESPDecodeError: CustomStringConvertible {
+    public var description: String {
+        "Error: \"\(self.message ?? String(describing: self.errorCode))\", token: \(self.token.debugDescription)"
     }
 }

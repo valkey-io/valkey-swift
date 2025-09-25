@@ -61,7 +61,7 @@ extension ValkeyKey: RESPTokenDecodable {
         case .simpleString(let buffer), .bulkString(let buffer):
             self._storage = .buffer(buffer)
         default:
-            throw RESPDecodeError.unexpectedTokenIdentifier(expected: [.simpleString, .bulkString], token: token)
+            throw RESPDecodeError.tokenMismatch(expected: [.simpleString, .bulkString], token: token)
         }
     }
 }
