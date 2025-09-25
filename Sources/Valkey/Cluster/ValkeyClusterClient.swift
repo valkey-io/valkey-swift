@@ -251,7 +251,7 @@ public final class ValkeyClusterClient: Sendable {
             // send commands that need retrying
             let retriedResults =
                 if ask {
-                    await node.ask(retryCommands.map(\.0))
+                    await node.executeWithAsk(retryCommands.map(\.0))
                 } else {
                     await node.execute(retryCommands.map(\.0))
                 }

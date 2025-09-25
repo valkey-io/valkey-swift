@@ -23,7 +23,8 @@ import ServiceLifecycle
 ///
 /// Supports TLS via both NIOSSL and Network framework.
 @available(valkeySwift 1.0, *)
-public final class ValkeyNodeClient: Sendable {
+@usableFromInline
+package final class ValkeyNodeClient: Sendable {
     typealias Pool = ConnectionPool<
         ValkeyConnection,
         ValkeyConnection.ID,
@@ -184,7 +185,7 @@ extension ValkeyNodeClient {
 
     /// Internal command used by cluster client, that precedes each command with a ASKING
     /// command
-    func ask<Commands: Collection & Sendable>(
+    func executeWithAsk<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
         do {
