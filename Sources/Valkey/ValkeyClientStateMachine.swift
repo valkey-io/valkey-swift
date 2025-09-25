@@ -70,11 +70,11 @@ struct ValkeyClientStateMachine<
     }
     mutating func setPrimary(nodeID: ValkeyNodeID) -> SetPrimaryAction {
         let nodes = ValkeyNodeIDs(primary: nodeID)
-        let action = self.runningClients.addNode(.init(endpoint: nodeID.endpoint, port: nodeID.port, useTLS: false))
+        let action = self.runningClients.addNode(.init(endpoint: nodeID.endpoint, port: nodeID.port))
         self.state = .running(nodes)
         return switch action {
-        case .doNothing: .findReplicas
-        case .runNode(let pool): .runNodeAndFindReplicas(pool)
+        case .useExistingPool: .findReplicas
+        case .runAndUsePool(let pool): .runNodeAndFindReplicas(pool)
         }
     }
 
@@ -88,8 +88,8 @@ struct ValkeyClientStateMachine<
         case .uninitialized:
             preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
         case .running(let nodes):
-            var nodeDescriptions = [ValkeyNodeDescription(endpoint: nodes.primary.endpoint, port: nodes.primary.port, useTLS: false)]
-            nodeDescriptions.append(contentsOf: nodeIDs.lazy.map { .init(endpoint: $0.endpoint, port: $0.port, useTLS: false) })
+            var nodeDescriptions = [ValkeyNodeDescription(endpoint: nodes.primary.endpoint, port: nodes.primary.port)]
+            nodeDescriptions.append(contentsOf: nodeIDs.lazy.map { .init(endpoint: $0.endpoint, port: $0.port) })
             let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: true)
             let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: nodeIDs)
             self.state = .running(newNodes)

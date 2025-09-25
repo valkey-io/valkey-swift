@@ -95,6 +95,8 @@ public final class ValkeyClient: Sendable {
             case .findReplicas, .doNothing:
                 preconditionFailure("First time you call setPrimary it should always return runNodeAndFindReplicas")
             }
+        case .unixDomainSocket:
+            fatalError("Currently unsupported")
         }
     }
 }
