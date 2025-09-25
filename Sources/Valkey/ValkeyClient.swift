@@ -96,7 +96,7 @@ public final class ValkeyClient: Sendable {
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
         self.runningAtomic = .init(false)
-        self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
+        self.node = self.nodeClientFactory.makeConnectionPool(nodeDescription: address)
         self.subscriptionConnectionStateMachine = .init(.init())
         self.subscriptionConnectionIDGenerator = .init()
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)

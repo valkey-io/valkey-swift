@@ -60,7 +60,12 @@ package struct ValkeyClusterClientStateMachine<
     Clock: _Concurrency.Clock,
     SuccessNotifier,
     TimerCancellationToken: Sendable
-> where ConnectionPool == ConnectionPoolFactory.ConnectionPool, Clock.Duration == Duration {
+>
+where
+    ConnectionPool == ConnectionPoolFactory.ConnectionPool,
+    Clock.Duration == Duration,
+    ConnectionPoolFactory.NodeDescription == ValkeyNodeDescription
+{
 
     @usableFromInline
     struct Timer {
