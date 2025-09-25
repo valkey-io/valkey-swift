@@ -111,6 +111,8 @@ public final class ValkeyClient: Sendable {
             case .findReplicas, .doNothing:
                 preconditionFailure("First time you call setPrimary it should always return runNodeAndFindReplicas")
             }
+        case .unixDomainSocket:
+            fatalError("Currently unsupported")
         }
     }
 }
@@ -230,7 +232,8 @@ extension ValkeyClient {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
-        await node.execute(repeat each commands)
+        let node = self.stateMachine.withLock { $0.getNode(readOnly: false) }
+        return await node.execute(repeat each commands)
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -249,7 +252,8 @@ extension ValkeyClient {
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
     ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
-        await node.execute(commands)
+        let node = self.stateMachine.withLock { $0.getNode(readOnly: false) }
+        return await node.execute(commands)
     }
 }
 
