@@ -272,6 +272,25 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testInvalidTransactionSetIncrGet() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                try await connection.set(key, value: "100")
+                let responses = try await connection.transaction(
+                    LPUSH(key, elements: ["Hello"]),
+                    INCR(key),
+                    GET(key)
+                )
+                let result = try responses.2.get().map { String(buffer: $0) }
+                #expect(result == "101")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testWatch() async throws {
         let logger = {
             var logger = Logger(label: "Valkey")

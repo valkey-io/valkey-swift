@@ -225,15 +225,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, Error>) {
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
-            result.flatMap {
-                do {
-                    return try .success(Response(fromRESP: $0))
-                } catch {
-                    return .failure(error)
-                }
-            }
-        }
         let requestID = Self.requestIDGenerator.next()
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var mpromises: [EventLoopPromise<RESPToken>] = []
@@ -255,7 +246,52 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
             // get response from channel handler
             var index = AutoIncrementingInteger()
-            return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
+            return await (repeat promises[index.next()].futureResult._result().convertFromRESP(to: (each Command).Response.self))
+        } onCancel: {
+            self.cancel(requestID: requestID)
+        }
+    }
+
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// a parameter pack of Results, one for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    @inlinable
+    public func transaction<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        let requestID = Self.requestIDGenerator.next()
+        // this currently allocates a promise for every command. We could collapse this down to one promise
+        var mpromises: [EventLoopPromise<RESPToken>] = []
+        var encoder = ValkeyCommandEncoder()
+        MULTI().encode(into: &encoder)
+        mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        for command in repeat each commands {
+            command.encode(into: &encoder)
+            mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        }
+        EXEC().encode(into: &encoder)
+        mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+
+        let outBuffer = encoder.buffer
+        let promises = mpromises
+        return try await withTaskCancellationHandler {
+            if Task.isCancelled {
+                for promise in mpromises {
+                    promise.fail(ValkeyClientError(.cancelled))
+                }
+            } else {
+                // write directly to channel handler
+                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
+            }
+            // get response from channel handler
+            guard let responses = try await promises.last!.futureResult._result().convertFromRESP(to: EXEC.Response.self).get() else {
+                throw ValkeyClientError(.transactionAborted)
+            }
+            return responses.decodeElementResults()
         } onCancel: {
             self.cancel(requestID: requestID)
         }
@@ -539,8 +575,8 @@ struct AutoIncrementingInteger {
     var value: Int = 0
 
     @inlinable
-    init() {
-        self.value = 0
+    init(_ value: Int = 0) {
+        self.value = value
     }
 
     @inlinable
@@ -566,3 +602,16 @@ extension ValkeyClientError {
     }
 }
 #endif
+
+extension Result where Success == RESPToken, Failure == any Error {
+    @usableFromInline
+    func convertFromRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, Error> {
+        self.flatMap {
+            do {
+                return try .success(Response(fromRESP: $0))
+            } catch {
+                return .failure(error)
+            }
+        }
+    }
+}
