@@ -140,7 +140,7 @@ struct PushToken: RESPTokenDecodable {
             .map,
             .set,
             .attribute:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.push], token: token)
         }
     }
 }
