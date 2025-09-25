@@ -22,26 +22,6 @@ extension RESPToken: RESPTokenDecodable {
         try Value(fromRESP: self)
     }
 
-    /// Convert RESP3Token to a Result containing the type to convert to or any error found while converting
-    ///
-    /// This function also checks for RESP error types and returns them if found
-    ///
-    /// - Parameter type: Type to convert to
-    /// - Returns: Result containing either the Value or an error
-    @usableFromInline
-    func decodeResult<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) -> Result<Value, any Error> {
-        switch self.identifier {
-        case .simpleError, .bulkError:
-            return .failure(ValkeyClientError(.commandError, message: self.errorString.map { Swift.String(buffer: $0) }))
-        default:
-            do {
-                return try .success(Value(fromRESP: self))
-            } catch {
-                return .failure(error)
-            }
-        }
-    }
-
     @inlinable
     public init(fromRESP token: RESPToken) throws {
         self = token
@@ -352,10 +332,14 @@ extension RESPToken.Array: RESPTokenDecodable {
         return try (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
     }
 
-    /// Convert RESPToken Array to a tuple of values
-    /// - Parameter type: Tuple of types to convert to
-    /// - Throws: RESPDecodeError
+    /// Convert RESPToken Array to a tuple of values.
+    ///
+    /// RESP error tokens are converted into Result.failure. This is used by the transaction
+    /// code to convert the array response from EXEC into a parameter pack of Results
+    ///
+    /// - Parameter as: Tuple of types to convert to
     /// - Returns: Tuple of decoded values
+    /// - Throws: RESPDecodeError
     @inlinable
     public func decodeElementResults<each Value: RESPTokenDecodable>(
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
@@ -363,7 +347,16 @@ extension RESPToken.Array: RESPTokenDecodable {
         func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, any Error> {
             switch token {
             case .some(let value):
-                return value.decodeResult(as: T.self)
+                switch value.identifier {
+                case .simpleError, .bulkError:
+                    return .failure(ValkeyClientError(.commandError, message: value.errorString.map { Swift.String(buffer: $0) }))
+                default:
+                    do {
+                        return try .success(T(fromRESP: value))
+                    } catch {
+                        return .failure(error)
+                    }
+                }
             case .none:
                 return .failure(RESPDecodeError.invalidArraySize(self, expectedSize: self._parameterPackTypeSize(type)))
             }
