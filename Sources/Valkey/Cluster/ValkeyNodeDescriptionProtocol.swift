@@ -21,20 +21,10 @@ import NIOCore
 /// The protocol requires both hostname and IP address properties to be available, though either may be nil
 /// depending on how the node is identified. The ``endpoint`` property provides the actual connection target.
 public protocol ValkeyNodeDescriptionProtocol: Sendable, Equatable {
-    /// The node's host name, if available.
-    ///
-    /// This may be nil if the node is identified solely by IP address.
-    var host: String? { get }
-
-    /// The node's IP address, if available.
-    ///
-    /// This may be nil if the node is identified solely by hostname.
-    var ip: String? { get }
-
     /// The node's connection endpoint string.
     ///
-    /// This should typically be the ``host`` if the node has a routable hostname,
-    /// otherwise it should be the ``ip``. This property is used to establish
+    /// This should typically be the hostname if the node has a routable hostname,
+    /// otherwise it should be the ip. This property is used to establish
     /// network connections to the node.
     var endpoint: String { get }
 
