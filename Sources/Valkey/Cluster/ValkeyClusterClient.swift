@@ -185,6 +185,43 @@ public final class ValkeyClusterClient: Sendable {
         throw ValkeyClusterError.clientRequestCancelled
     }
 
+    /// Pipeline a series of commands to nodes in the Valkey cluster
+    ///
+    /// This function splits up the array of commands into smaller arrays containing
+    /// the commands that should be run on each node in the cluster. It then runs a
+    /// pipelined execute using these smaller arrays on each node concurrently.
+    ///
+    /// Once all the responses for the commands have been received the function converys
+    /// them to their expected Response type.
+    ///
+    /// Because the commands are split across nodes it is not possible to guarantee
+    /// the order that commands will run in. The only way to guarantee the order is to
+    /// only pipeline commands that use keys from the same HashSlot. If a key has a
+    /// substring between brackets `{}` then that substring is used to calculate the
+    /// HashSlot. That substring is called the hash tag. Using this you can ensure two
+    /// keys are in the same hash slot, by giving them the same hash tag eg `user:{123}`
+    /// and `profile:{123}`.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    @inlinable
+    public func execute<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
+            result.flatMap {
+                do {
+                    return try .success(Response(fromRESP: $0))
+                } catch {
+                    return .failure(error)
+                }
+            }
+        }
+        let results = try await self.execute([any ValkeyCommand](commands: repeat each commands))
+        var index = AutoIncrementingInteger()
+        return (repeat convert(results[index.next()], to: (each Command).Response.self))
+    }
+
     /// Results from pipeline and index for each result
     @usableFromInline
     struct NodeResult: Sendable {
@@ -239,21 +276,15 @@ public final class ValkeyClusterClient: Sendable {
                     return .init(indices: indices, results: results)
                 }
             }
-            var nodeResults: [NodeResult] = []
+            var results = [Result<RESPToken, Error>](repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned), count: commands.count)
+            // get results for each node
             while let taskResult = try await group.next() {
-                nodeResults.append(taskResult)
-            }
-            return [Result<RESPToken, Error>](unsafeUninitializedCapacity: commands.count) { buffer, count in
-                count = 0
-                for nodeResult in nodeResults {
-                    precondition(nodeResult.indices.count == nodeResult.results.count)
-                    for index in 0..<nodeResult.indices.count {
-                        buffer.initializeElement(at: nodeResult.indices[index], to: nodeResult.results[index])
-                        count += 1
-                    }
+                precondition(taskResult.indices.count == taskResult.results.count)
+                for index in 0..<taskResult.indices.count {
+                    results[taskResult.indices[index]] = taskResult.results[index]
                 }
-                precondition(count == commands.count)
             }
+            return results
         }
     }
 
@@ -419,6 +450,7 @@ public final class ValkeyClusterClient: Sendable {
         return hashSlot
     }
 
+    /// Node and list of indices into command array
     @usableFromInline
     struct NodeAndCommands: Sendable {
         @usableFromInline
@@ -433,6 +465,10 @@ public final class ValkeyClusterClient: Sendable {
         }
     }
 
+    /// Split command array into multiple arrays of indices into the original array.
+    ///
+    /// These array of indices are then used to create collections of commands to
+    /// run on each node
     @usableFromInline
     func splitCommandsAcrossNodes(commands: [any ValkeyCommand]) async throws -> some Collection<NodeAndCommands> {
         var nodeMap: [ValkeyServerAddress: NodeAndCommands] = [:]
@@ -926,3 +962,18 @@ public final class ValkeyClusterClient: Sendable {
 /// This allows the cluster client to be used anywhere a `ValkeyClientProtocol` is expected.
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient: ValkeyClientProtocol {}
+
+extension Array where Element == any ValkeyCommand {
+    /// Initializer used internally in cluster client and tests for constructing an array
+    /// of commands from a parameter pack of commands
+    @inlinable
+    init<each Command: ValkeyCommand>(
+        commands: repeat each Command
+    ) {
+        var commandArray: [any ValkeyCommand] = []
+        for command in repeat each commands {
+            commandArray.append(command)
+        }
+        self = commandArray
+    }
+}
