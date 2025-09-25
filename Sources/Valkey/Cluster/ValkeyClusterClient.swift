@@ -224,7 +224,7 @@ public final class ValkeyClusterClient: Sendable {
 
     /// Results from pipeline and index for each result
     @usableFromInline
-    struct NodeResult: Sendable {
+    struct NodePipelineResult: Sendable {
         @usableFromInline
         let indices: [[any ValkeyCommand].Index]
         @usableFromInline
@@ -267,7 +267,7 @@ public final class ValkeyClusterClient: Sendable {
         if nodes.count == 1 {
             return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
         }
-        return try await withThrowingTaskGroup(of: NodeResult.self) { group in
+        return try await withThrowingTaskGroup(of: NodePipelineResult.self) { group in
             // run generated pipelines concurrently
             for node in nodes {
                 let indices = node.commandIndices
