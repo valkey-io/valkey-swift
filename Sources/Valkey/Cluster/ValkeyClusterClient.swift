@@ -58,7 +58,7 @@ public final class ValkeyClusterClient: Sendable {
     @usableFromInline
     typealias StateMachine = ValkeyClusterClientStateMachine<
         ValkeyNodeClient,
-        ValkeyNodeClientFactory,
+        ValkeyClusterNodeClientFactory,
         ContinuousClock,
         CheckedContinuation<Void, any Error>,
         AsyncStream<Void>.Continuation
@@ -106,7 +106,7 @@ public final class ValkeyClusterClient: Sendable {
 
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
-        let factory = ValkeyNodeClientFactory(
+        let factory = ValkeyClusterNodeClientFactory(
             logger: logger,
             configuration: clientConfiguration,
             connectionFactory: ValkeyConnectionFactory(
