@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 @usableFromInline
-struct SparseCollection<Base: Collection>: Collection {
+struct IndexedSubCollection<Base: Collection>: Collection {
     @usableFromInline
     typealias Element = Base.Element
     @usableFromInline
@@ -76,4 +76,4 @@ struct SparseCollection<Base: Collection>: Collection {
     }
 }
 
-extension SparseCollection: Sendable where Base: Sendable, Base.Index: Sendable {}
+extension IndexedSubCollection: Sendable where Base: Sendable, Base.Index: Sendable {}

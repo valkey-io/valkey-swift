@@ -272,7 +272,7 @@ public final class ValkeyClusterClient: Sendable {
             for node in nodes {
                 let indices = node.commandIndices
                 group.addTask {
-                    let results = try await self.execute(node: node.node, commands: SparseCollection(commands, indices: indices))
+                    let results = try await self.execute(node: node.node, commands: IndexedSubCollection(commands, indices: indices))
                     return .init(indices: indices, results: results)
                 }
             }
