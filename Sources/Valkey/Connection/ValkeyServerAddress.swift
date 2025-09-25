@@ -8,8 +8,8 @@
 import NIOCore
 
 /// A Valkey server address to connect to.
-public struct ValkeyServerAddress: Sendable, Equatable, Hashable {
-    enum _Internal: Equatable, Hashable {
+public struct ValkeyServerAddress: Sendable, Equatable {
+    enum _Internal: Equatable {
         case hostname(_ host: String, port: Int)
         case unixDomainSocket(path: String)
     }
