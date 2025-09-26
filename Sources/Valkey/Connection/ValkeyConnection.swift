@@ -248,8 +248,9 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// Another client will never be served in the middle of the execution of these
     /// commands. See https://valkey.io/topics/transactions/ for more information.
     ///
-    /// Once all the responses for the commands have been received the function returns
-    /// a parameter pack of Results, one for each command.
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into a parameter pack of Results, one
+    /// for each command.
     ///
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the responses of all the commands
@@ -288,13 +289,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// Another client will never be served in the middle of the execution of these
     /// commands. See https://valkey.io/topics/transactions/ for more information.
     ///
-    /// Once all the responses for the commands have been received the function returns
-    /// an array of RESPToken Results, one for each command.
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
     ///
-    /// This is an alternative version of the pipelining function ``ValkeyConnection/transaction(_:)->(_,_)``
-    /// that allows for a collection of ValkeyCommands. It provides more flexibility but is
-    /// slightly more expensive to run and the command responses are returned as ``RESPToken``
-    /// instead of the response type for the command.
+    /// This is an alternative version of the transaction function ``ValkeyConnection/transaction(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
+    /// responses are returned as ``RESPToken`` instead of the response type for the command.
     ///
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
