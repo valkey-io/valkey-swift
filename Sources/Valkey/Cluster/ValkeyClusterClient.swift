@@ -265,20 +265,28 @@ public final class ValkeyClusterClient: Sendable {
         let nodes = try await self.splitCommandsAcrossNodes(commands: commands)
         // if this list has one element, then just run the pipeline on that single node
         if nodes.count == 1 {
-            return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
+            do {
+                return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
+            } catch {
+                return .init(repeating: .failure(error), count: commands.count)
+            }
         }
-        return try await withThrowingTaskGroup(of: NodePipelineResult.self) { group in
+        return await withTaskGroup(of: NodePipelineResult.self) { group in
             // run generated pipelines concurrently
             for node in nodes {
                 let indices = node.commandIndices
                 group.addTask {
-                    let results = try await self.execute(node: node.node, commands: IndexedSubCollection(commands, indices: indices))
-                    return .init(indices: indices, results: results)
+                    do {
+                        let results = try await self.execute(node: node.node, commands: IndexedSubCollection(commands, indices: indices))
+                        return .init(indices: indices, results: results)
+                    } catch {
+                        return NodePipelineResult(indices: indices, results: .init(repeating: .failure(error), count: indices.count))
+                    }
                 }
             }
             var results = [Result<RESPToken, Error>](repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned), count: commands.count)
             // get results for each node
-            while let taskResult = try await group.next() {
+            while let taskResult = await group.next() {
                 precondition(taskResult.indices.count == taskResult.results.count)
                 for index in 0..<taskResult.indices.count {
                     results[taskResult.indices[index]] = taskResult.results[index]
