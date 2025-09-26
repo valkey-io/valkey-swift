@@ -283,6 +283,11 @@ struct ClientIntegratedTests {
                     INCR(key),
                     GET(key)
                 )
+                let lpushError = #expect(throws: ValkeyClientError.self) {
+                    _ = try responses.0.get()
+                }
+                #expect(lpushError?.errorCode == .commandError)
+                #expect(lpushError?.message?.hasPrefix("WRONGTYPE") == true)
                 let result = try responses.2.get().map { String(buffer: $0) }
                 #expect(result == "101")
             }
