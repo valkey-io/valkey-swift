@@ -258,28 +258,53 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        func replaceSuccessWithError<Response: RESPTokenDecodable>(
+            response: Response.Type,
+            result: Result<RESPToken, Error>,
+            error: any Error
+        ) -> Result<Response, Error> {
+            switch result {
+            case .failure(let error):
+                return .failure(error)
+            case .success:
+                return .failure(error)
+            }
+        }
         var encoder = ValkeyCommandEncoder()
-        var count = 0
+        var promises: [EventLoopPromise<RESPToken>] = []
         MULTI().encode(into: &encoder)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         for command in repeat each commands {
-            count += 1
             command.encode(into: &encoder)
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
         EXEC().encode(into: &encoder)
-        let promise = channel.eventLoop.makePromise(of: RESPToken.self)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         return try await _execute(
             buffer: encoder.buffer,
-            promises: CollectionOfOne(promise),
-            valkeyPromises: .init(repeating: .forget, count: count + 1) + [.nio(promise)]
+            promises: promises,
+            valkeyPromises: promises.map { .nio($0) }
         ) { promises -> sending Result<(repeat Result<(each Command).Response, Error>), Error> in
             // get response from channel handler
             do {
-                guard let responses = try await promises[0].futureResult._result().convertFromRESP(to: EXEC.Response.self).get() else {
+                guard let responses = try await promises.last!.futureResult._result().convertFromRESP(to: EXEC.Response.self).get() else {
                     return .failure(ValkeyClientError(.transactionAborted))
                 }
                 return .success(responses.decodeElementResults())
             } catch {
-                return .failure(error)
+                // we received an error while running the EXEC command. We return an
+                // array of results all with errors. If the queuing of a command already
+                // generated an error then we use that error, otherwise we use the error
+                // that we have just caught
+                var index = AutoIncrementingInteger(1)
+                return await .success(
+                    (repeat
+                        replaceSuccessWithError(
+                            response: (each Command).Response.self,
+                            result: promises[index.next()].futureResult._result(),
+                            error: error
+                        ))
+                )
             }
         }.get()
     }
@@ -339,21 +364,22 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         _ commands: some Collection<any ValkeyCommand>
     ) async throws -> [Result<RESPToken, Error>] {
         var encoder = ValkeyCommandEncoder()
-        var count = 0
+        var promises: [EventLoopPromise<RESPToken>] = []
         MULTI().encode(into: &encoder)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         for command in commands {
-            count += 1
             command.encode(into: &encoder)
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
         EXEC().encode(into: &encoder)
-        let promise = channel.eventLoop.makePromise(of: RESPToken.self)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         return try await _execute(
             buffer: encoder.buffer,
-            promises: CollectionOfOne(promise),
-            valkeyPromises: .init(repeating: .forget, count: count + 1) + [.nio(promise)]
+            promises: promises,
+            valkeyPromises: promises.map { .nio($0) }
         ) { promises -> sending Result<[Result<RESPToken, Error>], Error> in
             do {
-                guard let responses = try await promises[0].futureResult._result().convertFromRESP(to: EXEC.Response.self).get() else {
+                guard let responses = try await promises.last!.futureResult._result().convertFromRESP(to: EXEC.Response.self).get() else {
                     return .failure(ValkeyClientError(.transactionAborted))
                 }
                 return .success(
@@ -367,7 +393,22 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                     }
                 )
             } catch {
-                return .failure(error)
+                // we received an error while running the EXEC command. We return an
+                // array of results all with errors. If the queuing of a command already
+                // generated an error then we use that error, otherwise we use the error
+                // that we have just caught
+                var results: [Result<RESPToken, Error>] = .init()
+                results.reserveCapacity(promises.count - 2)
+                for promise in promises[1..<(promises.count - 1)] {
+                    let result = await promise.futureResult._result()
+                    switch result {
+                    case .failure:
+                        results.append(result)
+                    case .success:
+                        results.append(.failure(error))
+                    }
+                }
+                return .success(results)
             }
         }.get()
     }
@@ -421,12 +462,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// The function is provided with an array of EventLoopPromises for the responses of commands
     /// we care about and an array of valkey promises one for each command
     @inlinable
-    func _execute<Value, Promises: Collection & Sendable>(
+    func _execute<Value>(
         buffer: ByteBuffer,
-        promises: Promises,
+        promises: [EventLoopPromise<RESPToken>],
         valkeyPromises: [ValkeyPromise<RESPToken>],
-        processResults: sending (Promises) async -> Value
-    ) async -> Value where Promises.Element == EventLoopPromise<RESPToken> {
+        processResults: sending ([EventLoopPromise<RESPToken>]) async -> Value
+    ) async -> Value {
         let requestID = Self.requestIDGenerator.next()
         return await withTaskCancellationHandler {
             if Task.isCancelled {
