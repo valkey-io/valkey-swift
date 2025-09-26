@@ -243,7 +243,10 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
     }
 
-    /// Pipeline a series of commands to Valkey connection
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
     ///
     /// Once all the responses for the commands have been received the function returns
     /// a parameter pack of Results, one for each command.
@@ -280,12 +283,15 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }.get()
     }
 
-    /// Pipeline a series of commands to Valkey connection
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
     ///
     /// Once all the responses for the commands have been received the function returns
     /// an array of RESPToken Results, one for each command.
     ///
-    /// This is an alternative version of the pipelining function ``ValkeyConnection/execute(_:)->(_,_)``
+    /// This is an alternative version of the pipelining function ``ValkeyConnection/transaction(_:)->(_,_)``
     /// that allows for a collection of ValkeyCommands. It provides more flexibility but is
     /// slightly more expensive to run and the command responses are returned as ``RESPToken``
     /// instead of the response type for the command.

@@ -258,9 +258,9 @@ struct ClientIntegratedTests {
     func testTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                let responses = try await connection.transaction(
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                let responses = try await client.transaction(
                     SET(key, value: "100"),
                     INCR(key),
                     GET(key)
@@ -275,10 +275,10 @@ struct ClientIntegratedTests {
     func testInvalidTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                try await connection.set(key, value: "100")
-                let responses = try await connection.transaction(
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                try await client.set(key, value: "100")
+                let responses = try await client.transaction(
                     LPUSH(key, elements: ["Hello"]),
                     INCR(key),
                     GET(key)
