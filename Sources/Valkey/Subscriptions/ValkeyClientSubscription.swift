@@ -5,7 +5,12 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
-/// A sequence of messages from multiple Valkey subscription.
+/// A sequence of subscription messages from multiple sequential Valkey subscriptions.
+///
+/// The sequence is passed a subscription and a continuation which is resumes when it has
+/// finished with a subscription sequence. The async iterator iterates through messages
+/// from the subscription until it receives a connection closed/closing error and at that
+/// point asks for a new connection from the connection stream.
 @available(valkeySwift 1.0, *)
 public struct ValkeyClientSubscription: AsyncSequence, Sendable {
     @usableFromInline
