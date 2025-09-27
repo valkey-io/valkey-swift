@@ -448,6 +448,63 @@ struct PubSubIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testClientMultipleSubscriptionsWithClose() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                let count = 50
+                for i in 0..<count {
+                    group.addTask {
+                        try await client.subscribe(to: ["sub\(i)", "sub\(i+1)"]) { subscription in
+                            cont.yield()
+                            var iterator = subscription.makeAsyncIterator()
+                            await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "\(i)" }
+                            client.logger.info("Received \(i): \(i)")
+                            await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "\(i+1)" }
+                            client.logger.info("Received \(i): \(i+1)")
+                            cont.yield()
+                            await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "\(i)" }
+                            client.logger.info("Received \(i): \(i)")
+                            await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "\(i+1)" }
+                            client.logger.info("Received \(i): \(i+1)")
+                        }
+                    }
+                }
+                var iterator = stream.makeAsyncIterator()
+                for _ in 0..<count {
+                    await iterator.next()
+                }
+
+                try await Task.sleep(for: .milliseconds(200))
+                for i in 0..<(count + 1) {
+                    try await client.publish(channel: "sub\(i)", message: "\(i)")
+                    client.logger.info("Published \(i)")
+                }
+
+                for _ in 0..<count {
+                    await iterator.next()
+                }
+
+                try await client.withSubscriptionConnection { connection in
+                    connection.close()
+                }
+                try await Task.sleep(for: .milliseconds(200))
+                for i in 0..<(count + 1) {
+                    try await client.publish(channel: "sub\(i)", message: "\(i)")
+                    client.logger.info("Published \(i)")
+                }
+                try await group.waitForAll()
+                client.subscriptionConnectionStateMachine.withLock { stateMachine in
+                    #expect(stateMachine.isEmpty() == true)
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testClientCancelSubscription() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "Subscriptions")

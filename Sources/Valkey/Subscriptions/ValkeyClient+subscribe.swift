@@ -5,6 +5,7 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+import Logging
 import NIOCore
 import Synchronization
 
@@ -29,6 +30,7 @@ extension ValkeyClient {
         } onCancel: {
             self.cancelSubscriptionConnection(id: id)
         }
+        self.logger.trace("Got subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
 
         defer {
             self.releaseSubscriptionConnection(id: id)
@@ -52,7 +54,7 @@ extension ValkeyClient {
     public func subscribe<Value>(
         to channels: String...,
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
+        process: sending (ValkeyClientSubscription) async throws -> sending Value
     ) async throws -> sending Value {
         try await self.subscribe(to: channels, process: process)
     }
@@ -73,7 +75,7 @@ extension ValkeyClient {
     public func subscribe<Value>(
         to channels: [String],
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
+        process: sending (ValkeyClientSubscription) async throws -> sending Value
     ) async throws -> sending Value {
         try await self.subscribe(
             command: SUBSCRIBE(channels: channels),
@@ -98,7 +100,7 @@ extension ValkeyClient {
     public func psubscribe<Value>(
         to patterns: String...,
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
+        process: sending (ValkeyClientSubscription) async throws -> sending Value
     ) async throws -> sending Value {
         try await self.psubscribe(to: patterns, process: process)
     }
@@ -119,7 +121,7 @@ extension ValkeyClient {
     public func psubscribe<Value>(
         to patterns: [String],
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
+        process: sending (ValkeyClientSubscription) async throws -> sending Value
     ) async throws -> sending Value {
         try await self.subscribe(
             command: PSUBSCRIBE(patterns: patterns),
@@ -163,10 +165,37 @@ extension ValkeyClient {
         command: some ValkeyCommand,
         filters: [ValkeySubscriptionFilter],
         isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
+        process: sending (ValkeyClientSubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        try await self.withSubscriptionConnection { connection in
-            try await connection.subscribe(command: command, filters: filters, process: process)
+        try await withThrowingTaskGroup(of: Void.self, isolation: isolation) { group in
+            let (stream, streamContinuation) = ValkeyClientSubscription.makeStream()
+            group.addTask {
+                defer { streamContinuation.finish() }
+                while true {
+                    try Task.checkCancellation()
+                    do {
+                        return try await self.withSubscriptionConnection { connection in
+                            try await connection.subscribe(command: command, filters: filters) { subscription in
+                                try await withCheckedThrowingContinuation { cont in
+                                    streamContinuation.yield(.init(subscription: subscription, continuation: cont))
+                                }
+                            }
+                        }
+                    } catch let error as ValkeyClientError {
+                        // if connection closes for some reason don't exit loop so it opens a new connection
+                        switch error.errorCode {
+                        case .connectionClosed, .connectionClosedDueToCancellation, .connectionClosing:
+                            break
+                        default:
+                            throw error
+                        }
+                    }
+                    break
+                }
+            }
+            let value = try await process(stream)
+            group.cancelAll()
+            return value
         }
     }
 }

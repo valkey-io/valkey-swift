@@ -39,6 +39,7 @@ public final class ValkeyClient: Sendable {
     /// EventLoopGroup to use
     let eventLoopGroup: any EventLoopGroup
     /// Logger
+    @usableFromInline
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
