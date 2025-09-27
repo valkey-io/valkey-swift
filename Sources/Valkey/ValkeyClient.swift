@@ -42,15 +42,9 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
-    /// subscription connection state
-    @usableFromInline
-    let subscriptionConnectionStateMachine: Mutex<ConnectionStateMachine>
-    @usableFromInline
-    let subscriptionConnectionIDGenerator: ConnectionIDGenerator
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
-        case leaseSubscriptionConnection(leaseID: Int)
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -97,8 +91,6 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
-        self.subscriptionConnectionStateMachine = .init(.init())
-        self.subscriptionConnectionIDGenerator = .init()
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runNodeClient(self.node))
     }
@@ -155,16 +147,6 @@ extension ValkeyClient {
         switch action {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
-        case .leaseSubscriptionConnection(let leaseID):
-            do {
-                try await self.withConnection { connection in
-                    await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
-                        self.acquiredSubscriptionConnection(leaseID: leaseID, connection: connection, releaseContinuation: cont)
-                    }
-                }
-            } catch {
-                self.errorAcquiringSubscriptionConnection(leaseID: leaseID, error: error)
-            }
         }
     }
 }
