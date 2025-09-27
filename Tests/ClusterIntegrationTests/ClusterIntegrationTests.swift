@@ -143,7 +143,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     try await client.subscribe(to: "testSubscriptions") { subscription in
@@ -170,7 +170,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     try await client.subscribe(to: "testSubscriptions") { subscription in
@@ -207,7 +207,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
             try await withThrowingTaskGroup(of: Void.self) { group in
                 let count = 50
                 for i in 0..<count {
@@ -245,7 +245,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
             await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     try await client.subscribe(to: "testCancelSubscriptions") { subscription in
