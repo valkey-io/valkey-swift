@@ -257,9 +257,9 @@ public final class ValkeyClusterClient: Sendable {
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func execute(
-        _ commands: [any ValkeyCommand]
-    ) async throws -> sending [Result<RESPToken, Error>] {
+    public func execute<Commands: Collection & Sendable>(
+        _ commands: Commands
+    ) async throws -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
         guard commands.count > 0 else { return [] }
         // get a list of nodes and the commands that should be run on them
         let nodes = try await self.splitCommandsAcrossNodes(commands: commands)
@@ -478,7 +478,8 @@ public final class ValkeyClusterClient: Sendable {
     /// These array of indices are then used to create collections of commands to
     /// run on each node
     @usableFromInline
-    func splitCommandsAcrossNodes(commands: [any ValkeyCommand]) async throws -> some Collection<NodeAndCommands> {
+    func splitCommandsAcrossNodes<Commands: Collection & Sendable>(commands: Commands) async throws -> some Collection<NodeAndCommands>
+    where Commands.Element == any ValkeyCommand, Commands.Index == Int {
         var nodeMap: [ValkeyServerAddress: NodeAndCommands] = [:]
         var index = commands.startIndex
         var prevAddress: ValkeyServerAddress? = nil
