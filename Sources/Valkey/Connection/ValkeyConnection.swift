@@ -319,7 +319,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
-    @inlinable
+    @usableFromInline
     func executeWithAsk(
         _ commands: some Collection<any ValkeyCommand>
     ) async -> sending [Result<RESPToken, Error>] {

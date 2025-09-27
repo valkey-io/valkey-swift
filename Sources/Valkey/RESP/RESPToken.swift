@@ -564,7 +564,7 @@ extension ByteBuffer {
         return crIndex
     }
 
-    public mutating func writeRESP3Token(_ token: RESPToken.Value) {
+    mutating func writeRESP3Token(_ token: RESPToken.Value) {
         switch token {
         case .simpleString(var string):
             self.writeInteger(RESPTypeIdentifier.simpleString.rawValue)

@@ -25,7 +25,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
             try await Self.withKey(connection: client) { key in
                 try await client.set(key, value: "Hello")
 
@@ -42,7 +42,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
             try await Self.withKey(connection: client) { key in
                 try await client.withConnection(forKeys: [key]) { connection in
                     _ = try await connection.set(key, value: "Hello")
@@ -60,7 +60,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { clusterClient in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { clusterClient in
             try await Self.withKey(connection: clusterClient) { key in
                 try await clusterClient.set(key, value: "bar")
                 let cluster = try await clusterClient.clusterShards()
@@ -91,7 +91,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
             let keySuffix = "{\(UUID().uuidString)}"
             try await Self.withKey(connection: client, suffix: keySuffix) { key in
                 let hashSlot = HashSlot(key: key)
@@ -120,7 +120,7 @@ struct ClusterIntegrationTests {
         logger.logLevel = .trace
         let firstNodeHostname = clusterFirstNodeHostname!
         let firstNodePort = clusterFirstNodePort ?? 6379
-        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) { client in
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
             let keySuffix = "{\(UUID().uuidString)}"
             try await Self.withKey(connection: client, suffix: keySuffix) { key in
                 try await Self.withKey(connection: client, suffix: keySuffix) { key2 in
@@ -337,7 +337,7 @@ struct ClusterIntegrationTests {
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
             let firstNodePort = clusterFirstNodePort ?? 6379
-            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let node = try await client.nodeClient(for: [HashSlot(key: key)])
@@ -358,7 +358,7 @@ struct ClusterIntegrationTests {
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
             let firstNodePort = clusterFirstNodePort ?? 6379
-            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
@@ -395,7 +395,7 @@ struct ClusterIntegrationTests {
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
             let firstNodePort = clusterFirstNodePort ?? 6379
-            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
@@ -430,7 +430,7 @@ struct ClusterIntegrationTests {
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
             let firstNodePort = clusterFirstNodePort ?? 6379
-            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
@@ -466,7 +466,7 @@ struct ClusterIntegrationTests {
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
             let firstNodePort = clusterFirstNodePort ?? 6379
-            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 clusterClient in
                 try await ClusterIntegrationTests.withKey(connection: clusterClient) { key in
                     let node = try await clusterClient.nodeClient(for: [HashSlot(key: key)])
@@ -506,7 +506,7 @@ struct ClusterIntegrationTests {
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
             let firstNodePort = clusterFirstNodePort ?? 6379
-            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
                 let keySuffix = "{\(UUID().uuidString)}"
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
@@ -541,7 +541,7 @@ struct ClusterIntegrationTests {
             logger.logLevel = .trace
             let firstNodeHostname = clusterFirstNodeHostname!
             let firstNodePort = clusterFirstNodePort ?? 6379
-            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort, tls: false)], logger: logger) {
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
                 let keySuffix = "{\(UUID().uuidString)}"
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
@@ -566,6 +566,112 @@ struct ClusterIntegrationTests {
                 }
             }
         }
+
+        @Test(arguments: [
+            // verify an array of commands with no keys all go to the same node
+            (commands: [LOLWUT(), LOLWUT(), LOLWUT()], selection: [[0, 1, 2]]),
+            // verify an array of commands which starts with entries with no keys all go to the same node as the
+            // first that does affect a key
+            (commands: [any ValkeyCommand](commands: LOLWUT(), LOLWUT(), GET("foo")), selection: [[0, 1, 2]]),
+            // verify that commands that affect keys in different shards get broken up. This test makes the assumption that
+            // foo and baz are in different shards
+            (commands: [any ValkeyCommand](commands: LOLWUT(), GET("foo"), GET("baz")), selection: [[0, 1], [2]]),
+            // verify that a command has no key that follows a command that does goes to the same node
+            (commands: [any ValkeyCommand](commands: GET("foo"), LOLWUT(), GET("baz"), LOLWUT()), selection: [[0, 1], [2, 3]]),
+            // verify that commands that affect same node go to the same regardless of order
+            (commands: [any ValkeyCommand](commands: GET("foo"), GET("baz"), GET("foo")), selection: [[0, 2], [1]]),
+        ])
+        @available(valkeySwift 1.0, *)
+        func testNodeSelection(values: (commands: [any ValkeyCommand], selection: [[Int]])) async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster(
+                [(host: firstNodeHostname, port: firstNodePort)],
+                logger: logger
+            ) { client in
+                let nodesAndIndices = try await client.splitCommandsAcrossNodes(commands: values.commands)
+                #expect(nodesAndIndices.count == values.selection.count)
+                let sortedNodeAndIndics = nodesAndIndices.sorted { $0.commandIndices[0] < $1.commandIndices[0] }
+                var iterator = sortedNodeAndIndics.makeIterator()
+                var expectedIterator = values.selection.makeIterator()
+                while let result = iterator.next() {
+                    #expect(result.commandIndices == expectedIterator.next())
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testClientPipeline() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
+                client in
+                try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
+                    var commands: [any ValkeyCommand] = .init()
+                    commands.append(SET(key, value: "cluster pipeline test"))
+                    commands.append(GET(key))
+                    let results = try await client.execute(commands)
+                    let response = try results[1].get().decode(as: String.self)
+                    #expect(response == "cluster pipeline test")
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testClientPipelineMultipleNodes() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
+                client in
+                var commands: [any ValkeyCommand] = .init()
+                for i in 0..<100 {
+                    let key = ValkeyKey("Test\(i)")
+                    commands.append(SET(key, value: String(i)))
+                    commands.append(GET(key))
+                    commands.append(DEL(keys: [key]))
+                }
+                let results = try await client.execute(commands)
+                let response = try results[1].get().decode(as: String.self)
+                #expect(response == "0")
+                let response2 = try results[7].get().decode(as: String.self)
+                #expect(response2 == "2")
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testClientPipelineMultipleNodesParameterPack() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
+                client in
+                let results = try await client.execute(
+                    SET("test1", value: "1"),
+                    GET("test1"),
+                    DEL(keys: ["test1"]),
+                    SET("test2", value: "2"),
+                    GET("test2"),
+                    DEL(keys: ["test2"]),
+                    SET("test3", value: "3"),
+                    GET("test3"),
+                    DEL(keys: ["test3"])
+                )
+                let response = try results.1.get().map { String(buffer: $0) }
+                #expect(response == "1")
+                let response2 = try results.7.get().map { String(buffer: $0) }
+                #expect(response2 == "3")
+            }
+        }
     }
 
     @available(valkeySwift 1.0, *)
@@ -587,14 +693,14 @@ struct ClusterIntegrationTests {
 
     @available(valkeySwift 1.0, *)
     static func withValkeyCluster<T>(
-        _ nodeAddresses: [(host: String, port: Int, tls: Bool)],
+        _ nodeAddresses: [(host: String, port: Int)],
         nodeClientConfiguration: ValkeyClientConfiguration = .init(),
         logger: Logger,
         _ body: (ValkeyClusterClient) async throws -> sending T
     ) async throws -> T {
         let client = ValkeyClusterClient(
             clientConfiguration: nodeClientConfiguration,
-            nodeDiscovery: ValkeyStaticNodeDiscovery(nodeAddresses.map { .init(host: $0.host, port: $0.port) }),
+            nodeDiscovery: ValkeyStaticNodeDiscovery(nodeAddresses.map { .init(endpoint: $0.host, port: $0.port) }),
             logger: logger
         )
 
