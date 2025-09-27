@@ -290,12 +290,13 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
         try await channel.writeInbound(RESPToken(.simpleError("ERROR")).base)
         try await channel.writeInbound(RESPToken(.simpleError("EXECABORT")).base)
-        do {
-            _ = try await asyncResults
-            Issue.record("Transaction should throw error")
-        } catch let error as ValkeyClientError {
-            #expect(error == ValkeyClientError(.commandError, message: "EXECABORT"))
-        }
+        let results = try await asyncResults
+        var error = #expect(throws: ValkeyClientError.self) { try results.0.get() }
+        #expect(error?.errorCode == .commandError)
+        #expect(error?.message == "EXECABORT")
+        error = #expect(throws: ValkeyClientError.self) { try results.1.get() }
+        #expect(error?.errorCode == .commandError)
+        #expect(error?.message == "ERROR")
     }
 
     @Test
@@ -373,12 +374,13 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
         try await channel.writeInbound(RESPToken(.simpleError("ERROR")).base)
         try await channel.writeInbound(RESPToken(.simpleError("EXECABORT")).base)
-        do {
-            _ = try await asyncResults
-            Issue.record("Transaction should throw error")
-        } catch let error as ValkeyClientError {
-            #expect(error == ValkeyClientError(.commandError, message: "EXECABORT"))
-        }
+        let results = try await asyncResults
+        var error = #expect(throws: ValkeyClientError.self) { try results[0].get() }
+        #expect(error?.errorCode == .commandError)
+        #expect(error?.message == "EXECABORT")
+        error = #expect(throws: ValkeyClientError.self) { try results[1].get() }
+        #expect(error?.errorCode == .commandError)
+        #expect(error?.message == "ERROR")
     }
 
     @Test

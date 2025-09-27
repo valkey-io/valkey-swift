@@ -466,7 +466,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         buffer: ByteBuffer,
         promises: [EventLoopPromise<RESPToken>],
         valkeyPromises: [ValkeyPromise<RESPToken>],
-        processResults: sending ([EventLoopPromise<RESPToken>]) async -> Value
+        processResults: sending ([EventLoopPromise<RESPToken>]) async -> sending Value
     ) async -> Value {
         let requestID = Self.requestIDGenerator.next()
         return await withTaskCancellationHandler {
