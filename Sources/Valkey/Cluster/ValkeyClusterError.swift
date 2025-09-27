@@ -23,6 +23,7 @@ public struct ValkeyClusterError: Error, Equatable {
         case clusterClientIsShutDown
         case clientRequestCancelled
         case waitedForDiscoveryAfterMovedErrorThreeTimes
+        case pipelinedResultNotReturned
     }
     private let value: Internal
     private init(_ value: Internal) {
@@ -57,5 +58,7 @@ public struct ValkeyClusterError: Error, Equatable {
     static public var clientRequestCancelled: Self { .init(.clientRequestCancelled) }
     /// Wait for discovery failed three times after receiving a MOVED error
     static public var waitedForDiscoveryAfterMovedErrorThreeTimes: Self { .init(.waitedForDiscoveryAfterMovedErrorThreeTimes) }
+    /// Pipelined result not returned. If you receive this, it is an internal error and should be reported as a bug
+    static public var pipelinedResultNotReturned: Self { .init(.waitedForDiscoveryAfterMovedErrorThreeTimes) }
 
 }
