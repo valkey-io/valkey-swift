@@ -22,14 +22,6 @@ import ServiceLifecycle
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
-    @usableFromInline
-    typealias ConnectionStateMachine =
-        SubscriptionConnectionStateMachine<
-            ValkeyConnection,
-            CheckedContinuation<ValkeyConnection, Error>,
-            CheckedContinuation<Void, Never>
-        >
-
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
