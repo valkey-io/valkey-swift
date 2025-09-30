@@ -97,6 +97,8 @@ struct ValkeySubscriptions {
             subscription.sendError(error)
         }
         self.subscriptionIDMap = [:]
+        self.subscriptionMap = [:]
+        self.commandStack = .init()
     }
 
     static func getSubscriptionID() -> Int {
