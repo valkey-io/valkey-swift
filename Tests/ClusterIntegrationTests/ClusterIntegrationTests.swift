@@ -615,7 +615,7 @@ struct ClusterIntegrationTests {
                     var commands: [any ValkeyCommand] = .init()
                     commands.append(SET(key, value: "cluster pipeline test"))
                     commands.append(GET(key))
-                    let results = try await client.execute(commands)
+                    let results = await client.execute(commands)
                     let response = try results[1].get().decode(as: String.self)
                     #expect(response == "cluster pipeline test")
                 }
@@ -638,7 +638,7 @@ struct ClusterIntegrationTests {
                     commands.append(GET(key))
                     commands.append(DEL(keys: [key]))
                 }
-                let results = try await client.execute(commands)
+                let results = await client.execute(commands)
                 let response = try results[1].get().decode(as: String.self)
                 #expect(response == "0")
                 let response2 = try results[7].get().decode(as: String.self)
@@ -655,7 +655,7 @@ struct ClusterIntegrationTests {
             let firstNodePort = clusterFirstNodePort ?? 6379
             try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
-                let results = try await client.execute(
+                let results = await client.execute(
                     SET("test1", value: "1"),
                     GET("test1"),
                     DEL(keys: ["test1"]),

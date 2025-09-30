@@ -207,7 +207,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, Error>) {
         func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
             result.flatMap {
                 do {
@@ -217,7 +217,7 @@ public final class ValkeyClusterClient: Sendable {
                 }
             }
         }
-        let results = try await self.execute([any ValkeyCommand](commands: repeat each commands))
+        let results = await self.execute([any ValkeyCommand](commands: repeat each commands))
         var index = AutoIncrementingInteger()
         return (repeat convert(results[index.next()], to: (each Command).Response.self))
     }
@@ -259,40 +259,44 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute(
         _ commands: [any ValkeyCommand]
-    ) async throws -> sending [Result<RESPToken, Error>] {
+    ) async -> sending [Result<RESPToken, Error>] {
         guard commands.count > 0 else { return [] }
         // get a list of nodes and the commands that should be run on them
-        let nodes = try await self.splitCommandsAcrossNodes(commands: commands)
-        // if this list has one element, then just run the pipeline on that single node
-        if nodes.count == 1 {
-            do {
-                return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
-            } catch {
-                return .init(repeating: .failure(error), count: commands.count)
+        do {
+            let nodes = try await self.splitCommandsAcrossNodes(commands: commands)
+            // if this list has one element, then just run the pipeline on that single node
+            if nodes.count == 1 {
+                do {
+                    return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
+                } catch {
+                    return .init(repeating: .failure(error), count: commands.count)
+                }
             }
-        }
-        return await withTaskGroup(of: NodePipelineResult.self) { group in
-            // run generated pipelines concurrently
-            for node in nodes {
-                let indices = node.commandIndices
-                group.addTask {
-                    do {
-                        let results = try await self.execute(node: node.node, commands: IndexedSubCollection(commands, indices: indices))
-                        return .init(indices: indices, results: results)
-                    } catch {
-                        return NodePipelineResult(indices: indices, results: .init(repeating: .failure(error), count: indices.count))
+            return await withTaskGroup(of: NodePipelineResult.self) { group in
+                // run generated pipelines concurrently
+                for node in nodes {
+                    let indices = node.commandIndices
+                    group.addTask {
+                        do {
+                            let results = try await self.execute(node: node.node, commands: IndexedSubCollection(commands, indices: indices))
+                            return .init(indices: indices, results: results)
+                        } catch {
+                            return NodePipelineResult(indices: indices, results: .init(repeating: .failure(error), count: indices.count))
+                        }
                     }
                 }
-            }
-            var results = [Result<RESPToken, Error>](repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned), count: commands.count)
-            // get results for each node
-            while let taskResult = await group.next() {
-                precondition(taskResult.indices.count == taskResult.results.count)
-                for index in 0..<taskResult.indices.count {
-                    results[taskResult.indices[index]] = taskResult.results[index]
+                var results = [Result<RESPToken, Error>](repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned), count: commands.count)
+                // get results for each node
+                while let taskResult = await group.next() {
+                    precondition(taskResult.indices.count == taskResult.results.count)
+                    for index in 0..<taskResult.indices.count {
+                        results[taskResult.indices[index]] = taskResult.results[index]
+                    }
                 }
+                return results
             }
-            return results
+        } catch {
+            return .init(repeating: .failure(error), count: commands.count)
         }
     }
 
