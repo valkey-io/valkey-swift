@@ -5,16 +5,14 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
-@usableFromInline
-enum ValkeySubscriptionFilter: Equatable, Hashable, Sendable {
+public enum ValkeySubscriptionFilter: Equatable, Hashable, Sendable {
     case channel(String)
     case pattern(String)
     case shardChannel(String)
 }
 
 extension ValkeySubscriptionFilter: CustomStringConvertible {
-    @usableFromInline
-    var description: String {
+    public var description: String {
         switch self {
         case .channel(let string):
             "channel(\(string))"
