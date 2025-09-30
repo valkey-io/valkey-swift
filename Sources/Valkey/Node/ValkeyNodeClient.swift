@@ -35,6 +35,13 @@ package final class ValkeyNodeClient: Sendable {
         ValkeyClientMetrics,
         ContinuousClock
     >
+    @usableFromInline
+    typealias ConnectionStateMachine =
+        SubscriptionConnectionStateMachine<
+            ValkeyConnection,
+            CheckedContinuation<ValkeyConnection, Error>,
+            CheckedContinuation<Void, Never>
+        >
     /// Server address
     public let serverAddress: ValkeyServerAddress
     /// Connection pool
@@ -47,6 +54,17 @@ package final class ValkeyNodeClient: Sendable {
     public let eventLoopGroup: any EventLoopGroup
     /// Logger
     public let logger: Logger
+    /// subscription connection state
+    @usableFromInline
+    let subscriptionConnectionStateMachine: Mutex<ConnectionStateMachine>
+    @usableFromInline
+    let subscriptionConnectionIDGenerator: ConnectionIDGenerator
+    /// Actions that can be run on a node
+    enum RunAction: Sendable {
+        case leaseSubscriptionConnection(leaseID: Int)
+    }
+    let actionStream: AsyncStream<RunAction>
+    let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
     package init(
         _ address: ValkeyServerAddress,
@@ -85,6 +103,9 @@ package final class ValkeyNodeClient: Sendable {
         self.connectionFactory = connectionFactory
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
+        self.subscriptionConnectionStateMachine = .init(.init())
+        self.subscriptionConnectionIDGenerator = .init()
+        (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
     }
 }
 
@@ -93,7 +114,18 @@ extension ValkeyNodeClient {
     /// Run ValkeyNode connection pool
     @usableFromInline
     package func run() async {
-        await self.connectionPool.run()
+        /// Run discarding task group running actions
+        await withDiscardingTaskGroup { group in
+            group.addTask {
+                await self.connectionPool.run()
+                self.shutdownSubscriptionConnection()
+            }
+            for await action in self.actionStream {
+                group.addTask {
+                    await self.runAction(action)
+                }
+            }
+        }
     }
 
     func triggerForceShutdown() {
@@ -211,5 +243,27 @@ extension ValkeyNodeClient: ValkeyNodeConnectionPool {
     package func triggerGracefulShutdown() {
         // TODO: Implement graceful shutdown
         self.triggerForceShutdown()
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyNodeClient {
+    func queueAction(_ action: RunAction) {
+        self.actionStreamContinuation.yield(action)
+    }
+
+    private func runAction(_ action: RunAction) async {
+        switch action {
+        case .leaseSubscriptionConnection(let leaseID):
+            do {
+                try await self.withConnection { connection in
+                    await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+                        self.acquiredSubscriptionConnection(leaseID: leaseID, connection: connection, releaseContinuation: cont)
+                    }
+                }
+            } catch {
+                self.errorAcquiringSubscriptionConnection(leaseID: leaseID, error: error)
+            }
+        }
     }
 }

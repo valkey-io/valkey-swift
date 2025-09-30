@@ -9,7 +9,7 @@ import NIOCore
 import Synchronization
 
 @available(valkeySwift 1.0, *)
-extension ValkeyClient {
+extension ValkeyClusterClient {
     /// Run operation with the valkey subscription connection
     ///
     /// - Parameters:
@@ -20,7 +20,7 @@ extension ValkeyClient {
         isolation: isolated (any Actor)? = #isolation,
         _ operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> sending Value {
-        let node = self.node
+        let node = try await self.nodeClient(for: [])
         let id = node.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
