@@ -25,6 +25,5 @@ public protocol ValkeyClientProtocol: Sendable {
     ///
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
-    @inlinable
     func execute(_ commands: [any ValkeyCommand]) async -> sending [Result<RESPToken, Error>]
 }
