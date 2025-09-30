@@ -92,14 +92,14 @@ public final class ValkeyClusterClient: Sendable {
     ///   - nodeDiscovery: A ``ValkeyNodeDiscovery`` service that discovers Valkey nodes for the client in the cluster.
     ///   - eventLoopGroup: The event loop group used for handling connections. Defaults to the global singleton.
     ///   - logger: A logger for recording internal events and diagnostic information.
-    ///   - connectionFactory: An overwrite to provide create your own underlying `Channel`s. Use this to wrap connections
-    ///                        in other NIO protocols (like SSH).
+    ///   - channelFactory: An overwrite to provide create your own underlying `Channel`s. Use this to wrap connections
+    ///                     in other NIO protocols (like SSH).
     public init(
         clientConfiguration: ValkeyClientConfiguration,
         nodeDiscovery: some ValkeyNodeDiscovery,
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger,
-        connectionFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
+        channelFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
         self.logger = logger
         self.clientConfiguration = clientConfiguration
@@ -111,7 +111,7 @@ public final class ValkeyClusterClient: Sendable {
             configuration: clientConfiguration,
             connectionFactory: ValkeyConnectionFactory(
                 configuration: clientConfiguration,
-                customHandler: connectionFactory
+                customHandler: channelFactory
             ),
             eventLoopGroup: eventLoopGroup
         )
