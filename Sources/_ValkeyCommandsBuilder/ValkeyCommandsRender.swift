@@ -384,8 +384,8 @@ extension String {
             typeName = name.commandTypeName
         }
         let conformance = "ValkeyCommand"
-        let disableGenericParameters = subscribeFunctions.contains(name)
-        let genericTypeParameters = disableGenericParameters ? genericTypeParameters(command.arguments) : ""
+        let enableGenericParameters = !subscribeFunctions.contains(name)
+        let genericTypeParameters = enableGenericParameters ? genericTypeParameters(command.arguments) : ""
         // Comment header
         self.appendCommandCommentHeader(command: command, name: name, tab: tab)
         self.append("\(tab)@_documentation(visibility: internal)\n")
@@ -407,7 +407,7 @@ extension String {
         // Command function
         var commandParametersString =
             arguments
-            .map { "\($0.swiftVariable): \(parameterType($0, names: [], scope: nil, isArray: true, genericStrings: !disableGenericParameters))" }
+            .map { "\($0.swiftVariable): \(parameterType($0, names: [], scope: nil, isArray: true, genericStrings: enableGenericParameters))" }
             .joined(separator: ", ")
         if arguments.first?.shouldRemoveArgumentLabel == true {
             commandParametersString = "_ \(commandParametersString)"
@@ -415,7 +415,7 @@ extension String {
         let commandArguments =
             if let subCommand {
                 ["\"\(commandName)\"", "\"\(subCommand)\""]
-                    + arguments.map { $0.respRepresentable(isArray: true, genericString: !disableGenericParameters) }
+                    + arguments.map { $0.respRepresentable(isArray: true, genericString: enableGenericParameters) }
             } else {
                 ["\"\(commandName)\""] + arguments.map { $0.respRepresentable(isArray: true, genericString: true) }
             }
@@ -428,7 +428,7 @@ extension String {
         if arguments.count > 0 {
             for arg in arguments {
                 self.append(
-                    "\(tab)    public var \(arg.swiftVariable): \(variableType(arg, names: [], scope: nil, isArray: true, genericStrings: !disableGenericParameters))\n"
+                    "\(tab)    public var \(arg.swiftVariable): \(variableType(arg, names: [], scope: nil, isArray: true, genericStrings: enableGenericParameters))\n"
                 )
             }
             self.append("\n")
