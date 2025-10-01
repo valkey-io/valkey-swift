@@ -5,6 +5,7 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+/// Protocol for command that initiates a subscription
 public protocol ValkeySubscribeCommand: ValkeyCommand {
     /// Array of subscription filters
     var filters: [ValkeySubscriptionFilter] { get }

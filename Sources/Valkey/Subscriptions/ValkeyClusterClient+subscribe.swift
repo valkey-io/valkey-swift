@@ -67,6 +67,12 @@ extension ValkeyClusterClient {
         }
     }
 
+    /// Execute subscribe command and run closure using related ``ValkeySubscription``
+    /// AsyncSequence
+    ///
+    /// This should not be called directly, used the related commands
+    /// ``ValkeyClusterClient/subscribe(to:isolation:process:)`` or
+    /// ``ValkeyClusterClient/psubscribe(to:isolation:process:)``
     @inlinable
     public func _subscribe<Value>(
         command: some ValkeySubscribeCommand,

@@ -28,11 +28,12 @@ public protocol ValkeyClientProtocol: Sendable {
     /// - Returns: Array holding the RESPToken responses of all the commands
     func execute(_ commands: [any ValkeyCommand]) async -> sending [Result<RESPToken, Error>]
 
-    /// Execute subscribe command and run closure using related Subscription stream
+    /// Execute subscribe command and run closure using related ``ValkeySubscription``
+    /// AsyncSequence
     ///
     /// This should not be called directly, used the related commands
     /// ``ValkeyClientProtocol/subscribe(to:isolation:process:)`` or
-    /// ``ValkeyClientProtocol/psubscribe(to:isolation:process:)`
+    /// ``ValkeyClientProtocol/psubscribe(to:isolation:process:)``
     func _subscribe<Value>(
         command: some ValkeySubscribeCommand,
         isolation: isolated (any Actor)?,

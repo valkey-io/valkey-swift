@@ -67,6 +67,12 @@ extension ValkeyClient {
         }
     }
 
+    /// Execute subscribe command and run closure using related ``ValkeySubscription``
+    /// AsyncSequence
+    ///
+    /// This should not be called directly, used the related commands
+    /// ``ValkeyClient/subscribe(to:isolation:process:)`` or
+    /// ``ValkeyClient/psubscribe(to:isolation:process:)``
     @inlinable
     public func _subscribe<Value>(
         command: some ValkeySubscribeCommand,
