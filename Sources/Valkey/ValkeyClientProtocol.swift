@@ -28,10 +28,13 @@ public protocol ValkeyClientProtocol: Sendable {
     /// - Returns: Array holding the RESPToken responses of all the commands
     func execute(_ commands: [any ValkeyCommand]) async -> sending [Result<RESPToken, Error>]
 
-    /// Execute subscribe command and run closure using related Subscription
+    /// Execute subscribe command and run closure using related Subscription stream
+    ///
+    /// This should not be called directly, used the related commands
+    /// ``ValkeyClientProtocol/subscribe(to:isolation:process:)`` or
+    /// ``ValkeyClientProtocol/psubscribe(to:isolation:process:)`
     func _subscribe<Value>(
-        command: some ValkeyCommand,
-        filters: [ValkeySubscriptionFilter],
+        command: some ValkeySubscribeCommand,
         isolation: isolated (any Actor)?,
         process: (Subscription) async throws -> sending Value
     ) async throws -> sending Value
@@ -60,7 +63,6 @@ extension ValkeyClientProtocol {
         try await self.subscribe(to: channels, isolation: isolation, process: process)
     }
 
-    @inlinable
     /// Subscribe to list of channels and run closure with subscription
     ///
     /// When the closure is exited the channels are automatically unsubscribed from. It is
@@ -73,6 +75,7 @@ extension ValkeyClientProtocol {
     ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
+    @inlinable
     public func subscribe<Value>(
         to channels: [String],
         isolation: isolated (any Actor)? = #isolation,
@@ -80,7 +83,6 @@ extension ValkeyClientProtocol {
     ) async throws -> sending Value {
         try await self._subscribe(
             command: SUBSCRIBE(channels: channels),
-            filters: channels.map { .channel($0) },
             isolation: isolation,
             process: process
         )
@@ -127,7 +129,6 @@ extension ValkeyClientProtocol {
     ) async throws -> sending Value {
         try await self._subscribe(
             command: PSUBSCRIBE(patterns: patterns),
-            filters: patterns.map { .pattern($0) },
             isolation: isolation,
             process: process
         )

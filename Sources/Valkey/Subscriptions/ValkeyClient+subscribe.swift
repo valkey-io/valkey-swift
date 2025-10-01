@@ -69,13 +69,12 @@ extension ValkeyClient {
 
     @inlinable
     public func _subscribe<Value>(
-        command: some ValkeyCommand,
-        filters: [ValkeySubscriptionFilter],
+        command: some ValkeySubscribeCommand,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
         try await self.withSubscriptionConnection { connection in
-            try await connection._subscribe(command: command, filters: filters, isolation: isolation, process: process)
+            try await connection._subscribe(command: command, isolation: isolation, process: process)
         }
     }
 }

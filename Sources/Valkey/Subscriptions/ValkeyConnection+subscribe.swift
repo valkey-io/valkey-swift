@@ -50,7 +50,6 @@ extension ValkeyConnection {
     ) async throws -> sending Value {
         try await self._subscribe(
             command: SSUBSCRIBE(shardchannels: shardchannels),
-            filters: shardchannels.map { .shardChannel($0) },
             isolation: isolation,
             process: process
         )
@@ -82,12 +81,11 @@ extension ValkeyConnection {
 
     @inlinable
     public func _subscribe<Value>(
-        command: some ValkeyCommand,
-        filters: [ValkeySubscriptionFilter],
+        command: some ValkeySubscribeCommand,
         isolation: isolated (any Actor)? = #isolation,
         process: (ValkeySubscription) async throws -> sending Value
     ) async throws -> sending Value {
-        let (id, stream) = try await subscribe(command: command, filters: filters)
+        let (id, stream) = try await subscribe(command: command, filters: command.filters)
         let value: Value
         do {
             value = try await process(stream)
