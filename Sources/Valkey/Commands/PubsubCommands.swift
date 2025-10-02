@@ -196,12 +196,12 @@ public struct SPUBLISH<Shardchannel: RESPStringRenderable, Message: RESPStringRe
 
 /// Listens for messages published to shard channels.
 @_documentation(visibility: internal)
-public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
+public struct SSUBSCRIBE: ValkeyCommand {
     @inlinable public static var name: String { "SSUBSCRIBE" }
 
-    public var shardchannels: [Shardchannel]
+    public var shardchannels: [String]
 
-    @inlinable public init(shardchannels: [Shardchannel]) {
+    @inlinable public init(shardchannels: [String]) {
         self.shardchannels = shardchannels
     }
 
@@ -212,12 +212,12 @@ public struct SSUBSCRIBE<Shardchannel: RESPStringRenderable>: ValkeyCommand {
 
 /// Listens for messages published to channels.
 @_documentation(visibility: internal)
-public struct SUBSCRIBE<Channel: RESPStringRenderable>: ValkeyCommand {
+public struct SUBSCRIBE: ValkeyCommand {
     @inlinable public static var name: String { "SUBSCRIBE" }
 
-    public var channels: [Channel]
+    public var channels: [String]
 
-    @inlinable public init(channels: [Channel]) {
+    @inlinable public init(channels: [String]) {
         self.channels = channels
     }
 

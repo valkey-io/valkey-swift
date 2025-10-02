@@ -8,6 +8,7 @@
 /// A type that provides the ability to send a Valkey command and get a response.
 @available(valkeySwift 1.0, *)
 public protocol ValkeyClientProtocol: Sendable {
+    associatedtype Subscription: AsyncSequence<ValkeySubscriptionMessage, any Error>
     /// Send RESP command to Valkey connection
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand
@@ -26,4 +27,111 @@ public protocol ValkeyClientProtocol: Sendable {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     func execute(_ commands: [any ValkeyCommand]) async -> sending [Result<RESPToken, Error>]
+
+    /// Execute subscribe command and run closure using related ``ValkeySubscription``
+    /// AsyncSequence
+    ///
+    /// This should not be called directly, used the related commands
+    /// ``ValkeyClientProtocol/subscribe(to:isolation:process:)`` or
+    /// ``ValkeyClientProtocol/psubscribe(to:isolation:process:)``
+    func _subscribe<Value>(
+        command: some ValkeySubscribeCommand,
+        isolation: isolated (any Actor)?,
+        process: (Subscription) async throws -> sending Value
+    ) async throws -> sending Value
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyClientProtocol {
+    /// Subscribe to list of channels and run closure with subscription
+    ///
+    /// When the closure is exited the channels are automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// channel
+    ///
+    /// - Parameters:
+    ///   - channels: list of channels to subscribe to
+    ///   - isolation: Actor isolation
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
+    public func subscribe<Value>(
+        to channels: String...,
+        isolation: isolated (any Actor)? = #isolation,
+        process: (Subscription) async throws -> sending Value
+    ) async throws -> sending Value {
+        try await self.subscribe(to: channels, isolation: isolation, process: process)
+    }
+
+    /// Subscribe to list of channels and run closure with subscription
+    ///
+    /// When the closure is exited the channels are automatically unsubscribed from. It is
+    /// possible to have multiple subscriptions running on the same connection and unsubscribe
+    /// commands will only be sent to Valkey when there are no subscriptions active for that
+    /// channel
+    ///
+    /// - Parameters:
+    ///   - channels: list of channels to subscribe to
+    ///   - isolation: Actor isolation
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
+    public func subscribe<Value>(
+        to channels: [String],
+        isolation: isolated (any Actor)? = #isolation,
+        process: (Subscription) async throws -> sending Value
+    ) async throws -> sending Value {
+        try await self._subscribe(
+            command: SUBSCRIBE(channels: channels),
+            isolation: isolation,
+            process: process
+        )
+    }
+
+    /// Subscribe to list of channel patterns and run closure with subscription
+    ///
+    /// When the closure is exited the patterns are automatically unsubscribed from.
+    ///
+    /// When running subscribe from `ValkeyClient` a single connection is used for
+    /// all subscriptions.
+    ///
+    /// - Parameters:
+    ///   - patterns: list of channel patterns to subscribe to
+    ///   - isolation: Actor isolation
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
+    public func psubscribe<Value>(
+        to patterns: String...,
+        isolation: isolated (any Actor)? = #isolation,
+        process: (Subscription) async throws -> sending Value
+    ) async throws -> sending Value {
+        try await self.psubscribe(to: patterns, isolation: isolation, process: process)
+    }
+
+    /// Subscribe to list of pattern matching channels and run closure with subscription
+    ///
+    /// When the closure is exited the patterns are automatically unsubscribed from.
+    ///
+    /// When running subscribe from `ValkeyClient` a single connection is used for
+    /// all subscriptions.
+    ///
+    /// - Parameters:
+    ///   - patterns: list of channel patterns to subscribe to
+    ///   - isolation: Actor isolation
+    ///   - process: Closure that is called with subscription async sequence
+    /// - Returns: Return value of closure
+    @inlinable
+    public func psubscribe<Value>(
+        to patterns: [String],
+        isolation: isolated (any Actor)? = #isolation,
+        process: (Subscription) async throws -> sending Value
+    ) async throws -> sending Value {
+        try await self._subscribe(
+            command: PSUBSCRIBE(patterns: patterns),
+            isolation: isolation,
+            process: process
+        )
+    }
 }
