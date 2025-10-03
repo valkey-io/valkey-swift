@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 /// A value that represents the response type.
-public enum RESPTypeIdentifier: UInt8 {
+public enum RESPTypeIdentifier: UInt8, Sendable {
     /// An integer
     case integer = 58  // UInt8(ascii: ":")
     /// A double
