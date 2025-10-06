@@ -32,7 +32,7 @@ public struct ValkeySubscription: AsyncSequence, Sendable {
     /// The type that the sequence produces.
     public typealias Element = ValkeySubscriptionMessage
 
-    typealias BaseAsyncSequence = AsyncThrowingStream<ValkeySubscriptionMessage, Error>
+    typealias BaseAsyncSequence = AsyncThrowingStream<ValkeySubscriptionMessage, any Error>
     typealias Continuation = BaseAsyncSequence.Continuation
 
     let base: BaseAsyncSequence

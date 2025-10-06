@@ -97,7 +97,7 @@ public final class ValkeyClusterClient: Sendable {
     public init(
         clientConfiguration: ValkeyClientConfiguration,
         nodeDiscovery: some ValkeyNodeDiscovery,
-        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger,
         channelFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
@@ -207,8 +207,8 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, Error>) {
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
+    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
+        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, any Error>, to: Response.Type) -> Result<Response, any Error> {
             result.flatMap {
                 do {
                     return try .success(Response(fromRESP: $0))
@@ -228,10 +228,10 @@ public final class ValkeyClusterClient: Sendable {
         @usableFromInline
         let indices: [[any ValkeyCommand].Index]
         @usableFromInline
-        let results: [Result<RESPToken, Error>]
+        let results: [Result<RESPToken, any Error>]
 
         @inlinable
-        init(indices: [[any ValkeyCommand].Index], results: [Result<RESPToken, Error>]) {
+        init(indices: [[any ValkeyCommand].Index], results: [Result<RESPToken, any Error>]) {
             self.indices = indices
             self.results = results
         }
@@ -259,7 +259,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute(
         _ commands: [any ValkeyCommand]
-    ) async -> sending [Result<RESPToken, Error>] {
+    ) async -> sending [Result<RESPToken, any Error>] {
         guard commands.count > 0 else { return [] }
         // get a list of nodes and the commands that should be run on them
         do {
@@ -285,7 +285,7 @@ public final class ValkeyClusterClient: Sendable {
                         }
                     }
                 }
-                var results = [Result<RESPToken, Error>](repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned), count: commands.count)
+                var results = [Result<RESPToken, any Error>](repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned), count: commands.count)
                 // get results for each node
                 while let taskResult = await group.next() {
                     precondition(taskResult.indices.count == taskResult.results.count)
@@ -318,7 +318,7 @@ public final class ValkeyClusterClient: Sendable {
     func execute<Commands: Collection & Sendable>(
         node: ValkeyNodeClient,
         commands: Commands
-    ) async throws -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
+    ) async throws -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
         // execute pipeline
         var results = await node.execute(commands)
         var retryCommands: [(any ValkeyCommand, Int)] = []

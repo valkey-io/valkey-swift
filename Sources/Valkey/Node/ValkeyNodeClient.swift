@@ -39,7 +39,7 @@ package final class ValkeyNodeClient: Sendable {
     typealias ConnectionStateMachine =
         SubscriptionConnectionStateMachine<
             ValkeyConnection,
-            CheckedContinuation<ValkeyConnection, Error>,
+            CheckedContinuation<ValkeyConnection, any Error>,
             CheckedContinuation<Void, Never>
         >
     /// Server address
@@ -70,7 +70,7 @@ package final class ValkeyNodeClient: Sendable {
         _ address: ValkeyServerAddress,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
-        eventLoopGroup: EventLoopGroup,
+        eventLoopGroup: any EventLoopGroup,
         logger: Logger
     ) {
         self.serverAddress = address
@@ -180,13 +180,13 @@ extension ValkeyNodeClient {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
         do {
             return try await self.withConnection { connection in
                 await connection.execute(repeat (each commands))
             }
         } catch {
-            return (repeat Result<(each Command).Response, Error>.failure(error))
+            return (repeat Result<(each Command).Response, any Error>.failure(error))
         }
     }
 
@@ -205,7 +205,7 @@ extension ValkeyNodeClient {
     @inlinable
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
                 await connection.execute(commands)
@@ -219,7 +219,7 @@ extension ValkeyNodeClient {
     /// command
     func executeWithAsk<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
                 await connection.executeWithAsk(commands)

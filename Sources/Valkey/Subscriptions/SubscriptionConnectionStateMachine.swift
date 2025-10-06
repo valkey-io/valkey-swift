@@ -13,7 +13,7 @@ import _ValkeyConnectionPool
 @available(valkeySwift 1.0, *)
 extension ValkeyNodeClient {
     @usableFromInline
-    func leaseSubscriptionConnection(id: Int, request: CheckedContinuation<ValkeyConnection, Error>) {
+    func leaseSubscriptionConnection(id: Int, request: CheckedContinuation<ValkeyConnection, any Error>) {
         self.logger.trace("Get subscription connection", metadata: ["valkey_subscription_connection_id": .stringConvertible(id)])
         enum LeaseAction {
             case cancel
@@ -55,7 +55,7 @@ extension ValkeyNodeClient {
 
     }
 
-    func errorAcquiringSubscriptionConnection(leaseID: Int, error: Error) {
+    func errorAcquiringSubscriptionConnection(leaseID: Int, error: any Error) {
         let action = self.subscriptionConnectionStateMachine.withLock { stateMachine in
             stateMachine.errorAcquiring(leaseID: leaseID, error: error)
         }
@@ -250,7 +250,7 @@ struct SubscriptionConnectionStateMachine<Value, Request, ReleaseRequest>: ~Copy
         case doNothing
     }
 
-    mutating func errorAcquiring(leaseID: Int, error: Error) -> ErrorAcquiringAction {
+    mutating func errorAcquiring(leaseID: Int, error: any Error) -> ErrorAcquiringAction {
         switch consume self.state {
         case .uninitialized(let leaseID):
             self = .uninitialized(nextLeaseID: leaseID)

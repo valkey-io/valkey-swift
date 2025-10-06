@@ -235,7 +235,7 @@ final class SubscriptionRef: Identifiable {
         self.continuation.yield(message)
     }
 
-    func sendError(_ error: Error) {
+    func sendError(_ error: any Error) {
         self.continuation.finish(throwing: error)
     }
 
