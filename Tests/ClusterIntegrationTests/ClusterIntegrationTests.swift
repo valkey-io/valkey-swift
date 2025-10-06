@@ -7,6 +7,7 @@
 //
 import Foundation
 import Logging
+import NIOCore
 import Testing
 import XCTest
 
