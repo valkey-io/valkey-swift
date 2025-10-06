@@ -27,7 +27,7 @@ enum ValkeyPromise<T: Sendable>: Sendable {
         }
     }
 
-    func fail(_ e: Error) {
+    func fail(_ e: any Error) {
         switch self {
         case .nio(let eventLoopPromise):
             eventLoopPromise.fail(e)
@@ -99,7 +99,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
 
     static let simpleOk = RESPToken(validated: ByteBuffer(string: "+OK\r\n"))
     @usableFromInline
-    /*private*/ let eventLoop: EventLoop
+    /*private*/ let eventLoop: any EventLoop
     @usableFromInline
     /*private*/ var encoder = ValkeyCommandEncoder()
     @usableFromInline
@@ -116,7 +116,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
     /* private*/ let configuration: Configuration
 
     /// Initialize a ValkeyChannelHandler
-    init(configuration: Configuration, eventLoop: EventLoop, logger: Logger) {
+    init(configuration: Configuration, eventLoop: any EventLoop, logger: Logger) {
         self.configuration = configuration
         self.eventLoop = eventLoop
         self.subscriptions = .init(logger: logger)
@@ -448,7 +448,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         }
     }
 
-    func handleError(context: ChannelHandlerContext, error: Error) {
+    func handleError(context: ChannelHandlerContext, error: any Error) {
         self.logger.debug("ValkeyCommandHandler: ERROR", metadata: ["error": "\(error)"])
         switch self.stateMachine.close() {
         case .failPendingCommandsAndClose(let context, let commands):

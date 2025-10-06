@@ -281,7 +281,7 @@ struct ClusterIntegrationTests {
         let clientAID = try await nodeAClient.execute(CLUSTER.MYID())
         let clientBID = try await nodeBClient.execute(CLUSTER.MYID())
 
-        let result: Result<Void, Error>
+        let result: Result<Void, any Error>
         do {
             // start migration by setting hash slot state
             client.logger.info("SETSLOT importing")

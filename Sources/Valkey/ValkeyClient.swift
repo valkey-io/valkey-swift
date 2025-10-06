@@ -67,7 +67,7 @@ public final class ValkeyClient: Sendable {
         _ address: ValkeyServerAddress,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
-        eventLoopGroup: EventLoopGroup,
+        eventLoopGroup: any EventLoopGroup,
         logger: Logger
     ) {
         self.nodeClientFactory = ValkeyNodeClientFactory(
@@ -169,7 +169,7 @@ extension ValkeyClient {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
         await node.execute(repeat each commands)
     }
 
@@ -188,7 +188,7 @@ extension ValkeyClient {
     @inlinable
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         await node.execute(commands)
     }
 }
