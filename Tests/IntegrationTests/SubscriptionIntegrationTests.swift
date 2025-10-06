@@ -8,6 +8,7 @@
 import Foundation
 import Logging
 import NIOCore
+import Synchronization
 import Testing
 import Valkey
 

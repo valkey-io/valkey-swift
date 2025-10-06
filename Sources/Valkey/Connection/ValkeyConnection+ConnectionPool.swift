@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import Logging
+import NIOCore
 import Synchronization
 import _ValkeyConnectionPool
 

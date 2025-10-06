@@ -5,6 +5,8 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+import Foundation
+
 extension StringProtocol {
     var swiftFunction: String {
         self

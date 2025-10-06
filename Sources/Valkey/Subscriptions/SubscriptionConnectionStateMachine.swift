@@ -8,7 +8,6 @@
 
 import Logging
 import Synchronization
-import _ValkeyConnectionPool
 
 @available(valkeySwift 1.0, *)
 extension ValkeyNodeClient {
