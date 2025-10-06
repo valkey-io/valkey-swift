@@ -285,7 +285,10 @@ public final class ValkeyClusterClient: Sendable {
                         }
                     }
                 }
-                var results = [Result<RESPToken, any Error>](repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned), count: commands.count)
+                var results = [Result<RESPToken, any Error>](
+                    repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned),
+                    count: commands.count
+                )
                 // get results for each node
                 while let taskResult = await group.next() {
                     precondition(taskResult.indices.count == taskResult.results.count)
