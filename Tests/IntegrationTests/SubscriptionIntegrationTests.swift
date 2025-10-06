@@ -8,6 +8,7 @@
 import Foundation
 import Logging
 import NIOCore
+import Synchronization
 import Testing
 import Valkey
 
@@ -366,6 +367,41 @@ struct PubSubIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testClientProtocolSubscriptions() async throws {
+        @Sendable func subscribe(_ client: some ValkeyClientProtocol) async throws {
+            try await client.subscribe(to: "testSubscriptions") { subscription in
+                cont.finish()
+                var iterator = subscription.makeAsyncIterator()
+                await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
+                await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+            }
+        }
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Subscriptions")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask {
+                    try await client.subscribe(to: "testSubscriptions") { subscription in
+                        cont.finish()
+                        var iterator = subscription.makeAsyncIterator()
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
+                    }
+                }
+                try await client.withConnection { connection in
+                    await stream.first { _ in true }
+                    try await Task.sleep(for: .milliseconds(100))
+                    _ = try await connection.publish(channel: "testSubscriptions", message: "hello")
+                    _ = try await connection.publish(channel: "testSubscriptions", message: "goodbye")
+                }
+                try await group.waitForAll()
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testClientSubscriptionsTwice() async throws {
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
         var logger = Logger(label: "Subscriptions")
@@ -379,7 +415,7 @@ struct PubSubIntegratedTests {
                         await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
                         await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
                     }
-                    client.subscriptionConnectionStateMachine.withLock { stateMachine in
+                    client.node.subscriptionConnectionStateMachine.withLock { stateMachine in
                         #expect(stateMachine.isEmpty() == true)
                     }
                     try await client.subscribe(to: "testSubscriptions") { subscription in
@@ -388,7 +424,7 @@ struct PubSubIntegratedTests {
                         await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "hello" }
                         await #expect(throws: Never.self) { try await iterator.next().map { String(buffer: $0.message) } == "goodbye" }
                     }
-                    client.subscriptionConnectionStateMachine.withLock { stateMachine in
+                    client.node.subscriptionConnectionStateMachine.withLock { stateMachine in
                         #expect(stateMachine.isEmpty() == true)
                     }
                 }
@@ -439,7 +475,7 @@ struct PubSubIntegratedTests {
                     client.logger.info("Published \(i)")
                 }
                 try await group.waitForAll()
-                client.subscriptionConnectionStateMachine.withLock { stateMachine in
+                client.node.subscriptionConnectionStateMachine.withLock { stateMachine in
                     #expect(stateMachine.isEmpty() == true)
                 }
             }

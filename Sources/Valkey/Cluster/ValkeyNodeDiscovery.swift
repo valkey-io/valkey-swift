@@ -43,33 +43,16 @@ public protocol ValkeyNodeDiscovery: Sendable {
 public struct ValkeyStaticNodeDiscovery: ValkeyNodeDiscovery {
     /// A description of a single node in the Valkey cluster.
     public struct NodeDescription: ValkeyNodeDescriptionProtocol {
-        public var host: String?
-        public var ip: String?
         public var endpoint: String
         public var port: Int
 
         /// Initializes a `NodeDescription` with a host and optional IP.
         ///
         /// - Parameters:
-        ///   - host: The host name of the node.
-        ///   - ip: The optional IP address of the node.
+        ///   - endpoint: The node endpoint.
         ///   - port: The port number the node listens on (default is 6379).
-        public init(host: String, ip: String? = nil, port: Int = 6379) {
-            self.host = host
-            self.ip = ip
-            self.endpoint = host
-            self.port = port
-        }
-
-        /// Initializes a `NodeDescription` with an IP address.
-        ///
-        /// - Parameters:
-        ///   - ip: The IP address of the node.
-        ///   - port: The port number the node listens on (default is 6379).
-        public init(ip: String, port: Int = 6379) {
-            self.host = nil
-            self.ip = ip
-            self.endpoint = ip
+        public init(endpoint: String, port: Int = 6379) {
+            self.endpoint = endpoint
             self.port = port
         }
     }

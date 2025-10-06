@@ -8,4 +8,4 @@
 /// library name reported to server using CLIENT SETINFO
 package let valkeySwiftLibraryName = "valkey-swift"
 /// library version reported to server using CLIENT SETINFO
-package let valkeySwiftLibraryVersion = "0.1.0"
+package let valkeySwiftLibraryVersion = "0.3.0"

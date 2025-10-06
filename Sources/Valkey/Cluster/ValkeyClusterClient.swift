@@ -9,7 +9,6 @@
 import Logging
 import NIOCore
 import NIOPosix
-import NIOSSL
 import Synchronization
 
 /// A client for interacting with a Valkey cluster.
@@ -73,6 +72,8 @@ public final class ValkeyClusterClient: Sendable {
     /* private */ let stateLock: Mutex<StateMachine>
     @usableFromInline
     /* private */ let nextRequestIDGenerator = Atomic(0)
+    @usableFromInline
+    /* private */ let clientConfiguration: ValkeyClientConfiguration
 
     private enum RunAction {
         case runClusterDiscovery(runNodeDiscovery: Bool)
@@ -91,16 +92,17 @@ public final class ValkeyClusterClient: Sendable {
     ///   - nodeDiscovery: A ``ValkeyNodeDiscovery`` service that discovers Valkey nodes for the client in the cluster.
     ///   - eventLoopGroup: The event loop group used for handling connections. Defaults to the global singleton.
     ///   - logger: A logger for recording internal events and diagnostic information.
-    ///   - connectionFactory: An overwrite to provide create your own underlying `Channel`s. Use this to wrap connections
-    ///                        in other NIO protocols (like SSH).
+    ///   - channelFactory: An overwrite to provide create your own underlying `Channel`s. Use this to wrap connections
+    ///                     in other NIO protocols (like SSH).
     public init(
         clientConfiguration: ValkeyClientConfiguration,
         nodeDiscovery: some ValkeyNodeDiscovery,
-        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
+        eventLoopGroup: any EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger,
-        connectionFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
+        channelFactory: (@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)? = nil
     ) {
         self.logger = logger
+        self.clientConfiguration = clientConfiguration
 
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
 
@@ -109,7 +111,7 @@ public final class ValkeyClusterClient: Sendable {
             configuration: clientConfiguration,
             connectionFactory: ValkeyConnectionFactory(
                 configuration: clientConfiguration,
-                customHandler: connectionFactory
+                customHandler: channelFactory
             ),
             eventLoopGroup: eventLoopGroup
         )
@@ -149,10 +151,12 @@ public final class ValkeyClusterClient: Sendable {
         }
 
         var asking = false
+        var attempt = 0
         while !Task.isCancelled {
             do {
                 let client = try await clientSelector()
                 if asking {
+                    asking = false
                     // if asking we need to call ASKING beforehand otherwise we will get a MOVE error
                     return try await client.execute(
                         ASKING(),
@@ -161,18 +165,221 @@ public final class ValkeyClusterClient: Sendable {
                 } else {
                     return try await client.execute(command)
                 }
-            } catch ValkeyClusterError.noNodeToTalkTo {
+            } catch let error as ValkeyClusterError where error == .noNodeToTalkTo {
                 // TODO: Rerun node discovery!
-            } catch let error as ValkeyClientError where error.errorCode == .commandError {
-                guard let errorMessage = error.message, let redirectError = ValkeyClusterRedirectionError(errorMessage) else {
+            } catch {
+                let retryAction = self.getRetryAction(from: error)
+                switch retryAction {
+                case .redirect(let redirectError):
+                    clientSelector = { try await self.nodeClient(for: redirectError) }
+                    asking = (redirectError.redirection == .ask)
+                case .tryAgain:
+                    let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                    try await Task.sleep(for: wait)
+                    attempt += 1
+                case .dontRetry:
                     throw error
                 }
-                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
-                clientSelector = { try await self.nodeClient(for: redirectError) }
-                asking = (redirectError.redirection == .ask)
             }
         }
-        throw CancellationError()
+        throw ValkeyClusterError.clientRequestCancelled
+    }
+
+    /// Pipeline a series of commands to nodes in the Valkey cluster
+    ///
+    /// This function splits up the array of commands into smaller arrays containing
+    /// the commands that should be run on each node in the cluster. It then runs a
+    /// pipelined execute using these smaller arrays on each node concurrently.
+    ///
+    /// Once all the responses for the commands have been received the function converys
+    /// them to their expected Response type.
+    ///
+    /// Because the commands are split across nodes it is not possible to guarantee
+    /// the order that commands will run in. The only way to guarantee the order is to
+    /// only pipeline commands that use keys from the same HashSlot. If a key has a
+    /// substring between brackets `{}` then that substring is used to calculate the
+    /// HashSlot. That substring is called the hash tag. Using this you can ensure two
+    /// keys are in the same hash slot, by giving them the same hash tag eg `user:{123}`
+    /// and `profile:{123}`.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    @inlinable
+    public func execute<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
+        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, any Error>, to: Response.Type) -> Result<Response, any Error> {
+            result.flatMap {
+                do {
+                    return try .success(Response(fromRESP: $0))
+                } catch {
+                    return .failure(error)
+                }
+            }
+        }
+        let results = await self.execute([any ValkeyCommand](commands: repeat each commands))
+        var index = AutoIncrementingInteger()
+        return (repeat convert(results[index.next()], to: (each Command).Response.self))
+    }
+
+    /// Results from pipeline and index for each result
+    @usableFromInline
+    struct NodePipelineResult: Sendable {
+        @usableFromInline
+        let indices: [[any ValkeyCommand].Index]
+        @usableFromInline
+        let results: [Result<RESPToken, any Error>]
+
+        @inlinable
+        init(indices: [[any ValkeyCommand].Index], results: [Result<RESPToken, any Error>]) {
+            self.indices = indices
+            self.results = results
+        }
+    }
+
+    /// Pipeline a series of commands to nodes in the Valkey cluster
+    ///
+    /// This function splits up the array of commands into smaller arrays containing
+    /// the commands that should be run on each node in the cluster. It then runs a
+    /// pipelined execute using these smaller arrays on each node concurrently.
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results, one for each command.
+    ///
+    /// Because the commands are split across nodes it is not possible to guarantee
+    /// the order that commands will run in. The only way to guarantee the order is to
+    /// only pipeline commands that use keys from the same HashSlot. If a key has a
+    /// substring between brackets `{}` then that substring is used to calculate the
+    /// HashSlot. That substring is called the hash tag. Using this you can ensure two
+    /// keys are in the same hash slot, by giving them the same hash tag eg `user:{123}`
+    /// and `profile:{123}`.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    @inlinable
+    public func execute(
+        _ commands: [any ValkeyCommand]
+    ) async -> sending [Result<RESPToken, any Error>] {
+        guard commands.count > 0 else { return [] }
+        // get a list of nodes and the commands that should be run on them
+        do {
+            let nodes = try await self.splitCommandsAcrossNodes(commands: commands)
+            // if this list has one element, then just run the pipeline on that single node
+            if nodes.count == 1 {
+                do {
+                    return try await self.execute(node: nodes[nodes.startIndex].node, commands: commands)
+                } catch {
+                    return .init(repeating: .failure(error), count: commands.count)
+                }
+            }
+            return await withTaskGroup(of: NodePipelineResult.self) { group in
+                // run generated pipelines concurrently
+                for node in nodes {
+                    let indices = node.commandIndices
+                    group.addTask {
+                        do {
+                            let results = try await self.execute(node: node.node, commands: IndexedSubCollection(commands, indices: indices))
+                            return .init(indices: indices, results: results)
+                        } catch {
+                            return NodePipelineResult(indices: indices, results: .init(repeating: .failure(error), count: indices.count))
+                        }
+                    }
+                }
+                var results = [Result<RESPToken, any Error>](
+                    repeating: .failure(ValkeyClusterError.pipelinedResultNotReturned),
+                    count: commands.count
+                )
+                // get results for each node
+                while let taskResult = await group.next() {
+                    precondition(taskResult.indices.count == taskResult.results.count)
+                    for index in 0..<taskResult.indices.count {
+                        results[taskResult.indices[index]] = taskResult.results[index]
+                    }
+                }
+                return results
+            }
+        } catch {
+            return .init(repeating: .failure(error), count: commands.count)
+        }
+    }
+
+    struct Redirection {
+        let node: ValkeyNodeClient
+        let ask: Bool
+    }
+    /// Pipeline a series of commands to a single node in the Valkey cluster
+    ///
+    /// This function supports retrying commands that return cluster specific
+    /// errors like MOVED, TRYAGAIN and ASK
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results, one for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    @usableFromInline
+    func execute<Commands: Collection & Sendable>(
+        node: ValkeyNodeClient,
+        commands: Commands
+    ) async throws -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
+        // execute pipeline
+        var results = await node.execute(commands)
+        var retryCommands: [(any ValkeyCommand, Int)] = []
+        var attempt = 1
+        while !Task.isCancelled {
+            var node = node
+            var redirection: Redirection? = nil
+            // check if any results require the command to be retried
+            for result in results.enumerated() {
+                switch result.element {
+                case .failure(let error):
+                    // get retry action for command
+                    let commandRetryAction = self.getRetryAction(from: error)
+                    switch commandRetryAction {
+                    case .dontRetry:
+                        break
+                    case .tryAgain:
+                        retryCommands.append((commands[commands.startIndex + result.offset], result.offset))
+                        let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                        try await Task.sleep(for: wait)
+                    case .redirect(let redirectError):
+                        if redirection == nil {
+                            let node = try await self.nodeClient(for: redirectError)
+                            let asking = redirectError.redirection == .ask
+                            redirection = .init(node: node, ask: asking)
+                        }
+                        retryCommands.append((commands[commands.startIndex + result.offset], result.offset))
+                    }
+                case .success:
+                    break
+                }
+            }
+            // There are no commands to retry we can return the results
+            if retryCommands.count == 0 {
+                return results
+            }
+            var ask = false
+            if let redirection {
+                node = redirection.node
+                ask = redirection.ask
+            } else {
+                // only increment attempt if we aren't redirecting to another node
+                attempt += 1
+            }
+            // send commands that need retrying
+            let retriedResults =
+                if ask {
+                    await node.executeWithAsk(retryCommands.map(\.0))
+                } else {
+                    await node.execute(retryCommands.map(\.0))
+                }
+            // copy results back into main result array
+            for result in retriedResults.enumerated() {
+                results[retryCommands[result.offset].1] = result.element
+            }
+            retryCommands.removeAll(keepingCapacity: true)
+        }
+        throw ValkeyClusterError.clientRequestCancelled
     }
 
     /// Get connection from cluster and run operation using connection
@@ -188,8 +395,8 @@ public final class ValkeyClusterClient: Sendable {
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        let hashSlot = try self.hashSlot(for: keys)
-        let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+        let hashSlots = keys.compactMap { HashSlot(key: $0) }
+        let node = try await self.nodeClient(for: hashSlots)
         return try await node.withConnection(isolation: isolation, operation: operation)
     }
 
@@ -256,6 +463,106 @@ public final class ValkeyClusterClient: Sendable {
             guard hashSlot == HashSlot(key: key) else { throw ValkeyClusterError.keysInCommandRequireMultipleHashSlots }
         }
         return hashSlot
+    }
+
+    /// Node and list of indices into command array
+    @usableFromInline
+    struct NodeAndCommands: Sendable {
+        @usableFromInline
+        let node: ValkeyNodeClient
+        @usableFromInline
+        var commandIndices: [Int]
+
+        @usableFromInline
+        internal init(node: ValkeyNodeClient, commandIndices: [Int]) {
+            self.node = node
+            self.commandIndices = commandIndices
+        }
+    }
+
+    /// Split command array into multiple arrays of indices into the original array.
+    ///
+    /// These array of indices are then used to create collections of commands to
+    /// run on each node
+    @usableFromInline
+    func splitCommandsAcrossNodes(commands: [any ValkeyCommand]) async throws -> some Collection<NodeAndCommands> {
+        var nodeMap: [ValkeyServerAddress: NodeAndCommands] = [:]
+        var index = commands.startIndex
+        var prevAddress: ValkeyServerAddress? = nil
+        // iterate through commands until you reach one that affects a key
+        while index < commands.endIndex {
+            let command = commands[index]
+            index += 1
+            let keysAffected = command.keysAffected
+            if keysAffected.count > 0 {
+                // Get hash slot for key and add all the commands you have iterated through so far to the
+                // node associated with that key and break out of loop
+                let hashSlot = try self.hashSlot(for: keysAffected)
+                let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+                let address = node.serverAddress
+                let nodeAndCommands = NodeAndCommands(node: node, commandIndices: .init(commands.startIndex..<index))
+                nodeMap[address] = nodeAndCommands
+                prevAddress = address
+                break
+            }
+        }
+        // If we found a key while iterating through the commands iterate through the remaining commands
+        if var prevAddress {
+            while index < commands.endIndex {
+                let command = commands[index]
+                let keysAffected = command.keysAffected
+                if keysAffected.count > 0 {
+                    // If command affects a key get hash slot for key and add command to the node associated with that key
+                    let hashSlot = try self.hashSlot(for: keysAffected)
+                    let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+                    prevAddress = node.serverAddress
+                    nodeMap[prevAddress, default: .init(node: node, commandIndices: [])].commandIndices.append(index)
+                } else {
+                    // if command doesn't affect a key then use the node the previous command used
+                    nodeMap[prevAddress]!.commandIndices.append(index)
+                }
+                index += 1
+            }
+        } else {
+            // if none of the commands affect any keys then choose a random node
+            let node = try await self.nodeClient(for: [])
+            let address = node.serverAddress
+            let nodeAndCommands = NodeAndCommands(node: node, commandIndices: .init(commands.startIndex..<index))
+            nodeMap[address] = nodeAndCommands
+        }
+        return nodeMap.values
+    }
+
+    @usableFromInline
+    enum RetryAction {
+        case redirect(ValkeyClusterRedirectionError)
+        case tryAgain
+        case dontRetry
+    }
+
+    @usableFromInline
+    /* private */ func getRetryAction(from error: some Error) -> RetryAction {
+        switch error {
+        case let error as ValkeyClientError where error.errorCode == .commandError:
+            guard let errorMessage = error.message else {
+                return .dontRetry
+            }
+            if let redirectError = ValkeyClusterRedirectionError(errorMessage) {
+                self.logger.trace("Received redirect error", metadata: ["error": "\(redirectError)"])
+                return .redirect(redirectError)
+            } else {
+                let prefix = errorMessage.prefix { $0 != " " }
+                switch prefix {
+                case "TRYAGAIN", "MASTERDOWN", "CLUSTERDOWN", "LOADING":
+                    self.logger.trace("Received cluster error", metadata: ["error": "\(prefix)"])
+                    return .tryAgain
+                default:
+                    return .dontRetry
+                }
+            }
+        default:
+            return .dontRetry
+        }
     }
 
     private func queueAction(_ action: RunAction) {
@@ -455,7 +762,7 @@ public final class ValkeyClusterClient: Sendable {
                 return try self.stateLock.withLock { state -> ValkeyNodeClient in
                     try state.poolFastPath(for: slots)
                 }
-            } catch ValkeyClusterError.clusterIsUnavailable {
+            } catch let error as ValkeyClusterError where error == .clusterIsUnavailable {
                 let waiterID = self.nextRequestID()
 
                 try await withTaskCancellationHandler {
@@ -670,3 +977,18 @@ public final class ValkeyClusterClient: Sendable {
 /// This allows the cluster client to be used anywhere a `ValkeyClientProtocol` is expected.
 @available(valkeySwift 1.0, *)
 extension ValkeyClusterClient: ValkeyClientProtocol {}
+
+extension Array where Element == any ValkeyCommand {
+    /// Initializer used internally in cluster client and tests for constructing an array
+    /// of commands from a parameter pack of commands
+    @inlinable
+    init<each Command: ValkeyCommand>(
+        commands: repeat each Command
+    ) {
+        var commandArray: [any ValkeyCommand] = []
+        for command in repeat each commands {
+            commandArray.append(command)
+        }
+        self = commandArray
+    }
+}

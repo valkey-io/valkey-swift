@@ -22,14 +22,6 @@ import ServiceLifecycle
 /// `ValkeyClient` supports TLS using both NIOSSL and the Network framework.
 @available(valkeySwift 1.0, *)
 public final class ValkeyClient: Sendable {
-    @usableFromInline
-    typealias ConnectionStateMachine =
-        SubscriptionConnectionStateMachine<
-            ValkeyConnection,
-            CheckedContinuation<ValkeyConnection, Error>,
-            CheckedContinuation<Void, Never>
-        >
-
     let nodeClientFactory: ValkeyNodeClientFactory
     /// single node
     @usableFromInline
@@ -42,15 +34,9 @@ public final class ValkeyClient: Sendable {
     let logger: Logger
     /// running atomic
     let runningAtomic: Atomic<Bool>
-    /// subscription connection state
-    @usableFromInline
-    let subscriptionConnectionStateMachine: Mutex<ConnectionStateMachine>
-    @usableFromInline
-    let subscriptionConnectionIDGenerator: ConnectionIDGenerator
 
     enum RunAction: Sendable {
         case runNodeClient(ValkeyNodeClient)
-        case leaseSubscriptionConnection(leaseID: Int)
     }
     let actionStream: AsyncStream<RunAction>
     let actionStreamContinuation: AsyncStream<RunAction>.Continuation
@@ -81,7 +67,7 @@ public final class ValkeyClient: Sendable {
         _ address: ValkeyServerAddress,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
-        eventLoopGroup: EventLoopGroup,
+        eventLoopGroup: any EventLoopGroup,
         logger: Logger
     ) {
         self.nodeClientFactory = ValkeyNodeClientFactory(
@@ -97,8 +83,6 @@ public final class ValkeyClient: Sendable {
         self.logger = logger
         self.runningAtomic = .init(false)
         self.node = self.nodeClientFactory.makeConnectionPool(serverAddress: address)
-        self.subscriptionConnectionStateMachine = .init(.init())
-        self.subscriptionConnectionIDGenerator = .init()
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         self.queueAction(.runNodeClient(self.node))
     }
@@ -155,16 +139,6 @@ extension ValkeyClient {
         switch action {
         case .runNodeClient(let nodeClient):
             await nodeClient.run()
-        case .leaseSubscriptionConnection(let leaseID):
-            do {
-                try await self.withConnection { connection in
-                    await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
-                        self.acquiredSubscriptionConnection(leaseID: leaseID, connection: connection, releaseContinuation: cont)
-                    }
-                }
-            } catch {
-                self.errorAcquiringSubscriptionConnection(leaseID: leaseID, error: error)
-            }
         }
     }
 }
@@ -177,14 +151,8 @@ extension ValkeyClient: ValkeyClientProtocol {
     /// - Returns: Response from Valkey command
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
-        let token = try await self._execute(command)
-        return try Command.Response(fromRESP: token)
-    }
-
-    @inlinable
-    func _execute<Command: ValkeyCommand>(_ command: Command) async throws -> RESPToken {
         try await self.withConnection { connection in
-            try await connection._execute(command: command)
+            try await connection.execute(command)
         }
     }
 }
@@ -201,14 +169,27 @@ extension ValkeyClient {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, Error>) {
-        do {
-            return try await self.withConnection { connection in
-                await connection.execute(repeat (each commands))
-            }
-        } catch {
-            return (repeat Result<(each Command).Response, Error>.failure(error))
-        }
+    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
+        await node.execute(repeat each commands)
+    }
+
+    /// Pipeline a series of commands to Valkey connection
+    ///
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of RESPToken Results, one for each command.
+    ///
+    /// This is an alternative version of the pipelining function ``ValkeyClient/execute(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but
+    /// is more expensive to run and the command responses are returned as ``RESPToken``
+    /// instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    @inlinable
+    public func execute<Commands: Collection & Sendable>(
+        _ commands: Commands
+    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+        await node.execute(commands)
     }
 }
 

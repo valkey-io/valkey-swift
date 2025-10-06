@@ -11,6 +11,7 @@ import NIOCore
 import NIOEmbedded
 import NIOPosix
 import Testing
+import Tracing
 
 @testable import Valkey
 

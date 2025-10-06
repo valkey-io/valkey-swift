@@ -13,7 +13,7 @@ import NIOCore
 extension ValkeyConnection {
 
     @inlinable
-    public func transaction<C0: ValkeyCommand>(_ c0: C0) async throws -> (Result<C0.Response, Error>) {
+    public func transaction<C0: ValkeyCommand>(_ c0: C0) async throws -> (Result<C0.Response, any Error>) {
         guard let responses = try await self.execute(MULTI(), ValkeyRawResponseCommand(c0), EXEC()).2.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
@@ -24,7 +24,7 @@ extension ValkeyConnection {
     public func transaction<C0: ValkeyCommand, C1: ValkeyCommand>(
         _ c0: C0,
         _ c1: C1
-    ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>) {
+    ) async throws -> (Result<C0.Response, any Error>, Result<C1.Response, any Error>) {
         guard let responses = try await self.execute(MULTI(), ValkeyRawResponseCommand(c0), ValkeyRawResponseCommand(c1), EXEC()).3.get() else {
             throw ValkeyClientError(.transactionAborted)
         }
@@ -36,7 +36,7 @@ extension ValkeyConnection {
         _ c0: C0,
         _ c1: C1,
         _ c2: C2
-    ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>) {
+    ) async throws -> (Result<C0.Response, any Error>, Result<C1.Response, any Error>, Result<C2.Response, any Error>) {
         guard
             let responses = try await self.execute(
                 MULTI(),
@@ -55,7 +55,8 @@ extension ValkeyConnection {
         _ c1: C1,
         _ c2: C2,
         _ c3: C3
-    ) async throws -> (Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>) {
+    ) async throws -> (Result<C0.Response, any Error>, Result<C1.Response, any Error>, Result<C2.Response, any Error>, Result<C3.Response, any Error>)
+    {
         guard
             let responses = try await self.execute(
                 MULTI(),
@@ -77,7 +78,8 @@ extension ValkeyConnection {
         _ c3: C3,
         _ c4: C4
     ) async throws -> (
-        Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>, Result<C4.Response, Error>
+        Result<C0.Response, any Error>, Result<C1.Response, any Error>, Result<C2.Response, any Error>, Result<C3.Response, any Error>,
+        Result<C4.Response, any Error>
     ) {
         guard
             let responses = try await self.execute(
@@ -102,8 +104,8 @@ extension ValkeyConnection {
         _ c4: C4,
         _ c5: C5
     ) async throws -> (
-        Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>, Result<C4.Response, Error>,
-        Result<C5.Response, Error>
+        Result<C0.Response, any Error>, Result<C1.Response, any Error>, Result<C2.Response, any Error>, Result<C3.Response, any Error>,
+        Result<C4.Response, any Error>, Result<C5.Response, any Error>
     ) {
         guard
             let responses = try await self.execute(
@@ -138,8 +140,8 @@ extension ValkeyConnection {
         _ c5: C5,
         _ c6: C6
     ) async throws -> (
-        Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>, Result<C4.Response, Error>,
-        Result<C5.Response, Error>, Result<C6.Response, Error>
+        Result<C0.Response, any Error>, Result<C1.Response, any Error>, Result<C2.Response, any Error>, Result<C3.Response, any Error>,
+        Result<C4.Response, any Error>, Result<C5.Response, any Error>, Result<C6.Response, any Error>
     ) {
         guard
             let responses = try await self.execute(
@@ -177,8 +179,8 @@ extension ValkeyConnection {
         _ c6: C6,
         _ c7: C7
     ) async throws -> (
-        Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>, Result<C4.Response, Error>,
-        Result<C5.Response, Error>, Result<C6.Response, Error>, Result<C7.Response, Error>
+        Result<C0.Response, any Error>, Result<C1.Response, any Error>, Result<C2.Response, any Error>, Result<C3.Response, any Error>,
+        Result<C4.Response, any Error>, Result<C5.Response, any Error>, Result<C6.Response, any Error>, Result<C7.Response, any Error>
     ) {
         guard
             let responses = try await self.execute(
@@ -219,8 +221,9 @@ extension ValkeyConnection {
         _ c7: C7,
         _ c8: C8
     ) async throws -> (
-        Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>, Result<C4.Response, Error>,
-        Result<C5.Response, Error>, Result<C6.Response, Error>, Result<C7.Response, Error>, Result<C8.Response, Error>
+        Result<C0.Response, any Error>, Result<C1.Response, any Error>, Result<C2.Response, any Error>, Result<C3.Response, any Error>,
+        Result<C4.Response, any Error>, Result<C5.Response, any Error>, Result<C6.Response, any Error>, Result<C7.Response, any Error>,
+        Result<C8.Response, any Error>
     ) {
         guard
             let responses = try await self.execute(
@@ -264,8 +267,9 @@ extension ValkeyConnection {
         _ c8: C8,
         _ c9: C9
     ) async throws -> (
-        Result<C0.Response, Error>, Result<C1.Response, Error>, Result<C2.Response, Error>, Result<C3.Response, Error>, Result<C4.Response, Error>,
-        Result<C5.Response, Error>, Result<C6.Response, Error>, Result<C7.Response, Error>, Result<C8.Response, Error>, Result<C9.Response, Error>
+        Result<C0.Response, any Error>, Result<C1.Response, any Error>, Result<C2.Response, any Error>, Result<C3.Response, any Error>,
+        Result<C4.Response, any Error>, Result<C5.Response, any Error>, Result<C6.Response, any Error>, Result<C7.Response, any Error>,
+        Result<C8.Response, any Error>, Result<C9.Response, any Error>
     ) {
         guard
             let responses = try await self.execute(
