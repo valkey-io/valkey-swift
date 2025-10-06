@@ -248,7 +248,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     /// Once all the responses for the commands have been received the function returns
     /// a parameter pack of Results, one for each command.
     ///
-    /// This is an alternative version of the pipeline function ``ValkeyConnection/pipeline(_:)->(_,_)``
+    /// This is an alternative version of the pipeline function ``ValkeyConnection/execute(_:)->(_,_)``
     /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
     /// responses are returned as ``RESPToken`` instead of the response type for the command.
     ///
