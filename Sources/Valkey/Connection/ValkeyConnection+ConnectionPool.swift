@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 import Logging
+import NIOCore
 import Synchronization
 import _ValkeyConnectionPool
 
@@ -78,7 +79,7 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
 
     /// A connection attempt failed with the given error. After some period of
     /// time ``startedConnecting(id:)`` may be called again.
-    func connectFailed(id: ConnectionID, error: Error) {
+    func connectFailed(id: ConnectionID, error: any Error) {
         self.logger.debug(
             "Connection creation failed",
             metadata: [
@@ -128,7 +129,7 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
 
     func keepAliveSucceeded(id: ConnectionID) {}
 
-    func keepAliveFailed(id: ValkeyConnection.ID, error: Error) {}
+    func keepAliveFailed(id: ValkeyConnection.ID, error: any Error) {}
 
     /// The remote peer is quiescing the connection: no new streams will be created on it. The
     /// connection will eventually be closed and removed from the pool.
@@ -143,7 +144,7 @@ final class ValkeyClientMetrics: ConnectionPoolObservabilityDelegate {
 
     /// The connection was closed. The connection may be established again in the future (notified
     /// via ``startedConnecting(id:)``).
-    func connectionClosed(id: ConnectionID, error: Error?) {
+    func connectionClosed(id: ConnectionID, error: (any Error)?) {
         self.logger.debug(
             "Connection closed",
             metadata: [

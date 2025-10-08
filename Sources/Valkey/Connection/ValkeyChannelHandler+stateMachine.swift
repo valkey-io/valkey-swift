@@ -18,7 +18,7 @@ extension ValkeyChannelHandler {
             case connected(ConnectedState)
             case active(ActiveState)
             case closing(ActiveState)
-            case closed(Error?)
+            case closed((any Error)?)
 
             @usableFromInline
             var description: String {
@@ -92,7 +92,7 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum SendCommandAction {
             case sendCommand(Context)
-            case throwError(Error)
+            case throwError(any Error)
         }
 
         /// handler wants to send a command
@@ -132,8 +132,8 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum ReceivedResponseAction {
             case respond(PendingCommand, DeadlineCallbackAction)
-            case respondAndClose(PendingCommand, Error?)
-            case closeWithError(Error)
+            case respondAndClose(PendingCommand, (any Error)?)
+            case closeWithError(any Error)
         }
 
         /// handler wants to send a command
@@ -203,7 +203,7 @@ extension ValkeyChannelHandler {
         @usableFromInline
         enum WaitOnActiveAction {
             case waitForPromise(EventLoopPromise<RESPToken>)
-            case reportedClosed(Error?)
+            case reportedClosed((any Error)?)
             case done
         }
 
@@ -439,7 +439,7 @@ extension ValkeyChannelHandler {
             StateMachine(.closing(state))
         }
 
-        private static func closed(_ error: Error?) -> Self {
+        private static func closed(_ error: (any Error)?) -> Self {
             StateMachine(.closed(error))
         }
     }

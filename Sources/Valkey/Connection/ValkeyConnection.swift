@@ -93,7 +93,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public static func withConnection<Value>(
         address: ValkeyServerAddress,
         configuration: ValkeyConnectionConfiguration = .init(),
-        eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
+        eventLoop: any EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger,
         isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
@@ -124,7 +124,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         address: ValkeyServerAddress,
         connectionID: ID,
         configuration: ValkeyConnectionConfiguration,
-        eventLoop: EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
+        eventLoop: any EventLoop = MultiThreadedEventLoopGroup.singleton.any(),
         logger: Logger
     ) async throws -> ValkeyConnection {
         let future =
@@ -224,88 +224,61 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, Error>) {
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, Error>, to: Response.Type) -> Result<Response, Error> {
-            result.flatMap {
-                do {
-                    return try .success(Response(fromRESP: $0))
-                } catch {
-                    return .failure(error)
-                }
-            }
-        }
-        let requestID = Self.requestIDGenerator.next()
+    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
         // this currently allocates a promise for every command. We could collapse this down to one promise
-        var mpromises: [EventLoopPromise<RESPToken>] = []
+        var promises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
         for command in repeat each commands {
             command.encode(into: &encoder)
-            mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
-        let outBuffer = encoder.buffer
-        let promises = mpromises
-        return await withTaskCancellationHandler {
-            if Task.isCancelled {
-                for promise in mpromises {
-                    promise.fail(ValkeyClientError(.cancelled))
-                }
-            } else {
-                // write directly to channel handler
-                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
-            }
+        return await _execute(
+            buffer: encoder.buffer,
+            promises: promises,
+            valkeyPromises: promises.map { .nio($0) }
+        ) { promises in
             // get response from channel handler
             var index = AutoIncrementingInteger()
-            return await (repeat convert(promises[index.next()].futureResult._result(), to: (each Command).Response.self))
-        } onCancel: {
-            self.cancel(requestID: requestID)
+            return await (repeat promises[index.next()].futureResult._result().convertFromRESP(to: (each Command).Response.self))
         }
     }
 
     /// Pipeline a series of commands to Valkey connection
     ///
     /// Once all the responses for the commands have been received the function returns
-    /// an array of RESPToken Results, one for each command.
+    /// a parameter pack of Results, one for each command.
     ///
-    /// This is an alternative version of the pipelining function ``ValkeyConnection/execute(_:)->(_,_)``
-    /// that allows for a collection of ValkeyCommands. It provides more flexibility but is
-    /// slightly more expensive to run and the command responses are returned as ``RESPToken``
-    /// instead of the response type for the command.
+    /// This is an alternative version of the pipeline function ``ValkeyConnection/execute(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
+    /// responses are returned as ``RESPToken`` instead of the response type for the command.
     ///
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
     public func execute(
         _ commands: some Collection<any ValkeyCommand>
-    ) async -> sending [Result<RESPToken, Error>] {
-        let requestID = Self.requestIDGenerator.next()
+    ) async -> sending [Result<RESPToken, any Error>] {
         // this currently allocates a promise for every command. We could collapse this down to one promise
-        var mpromises: [EventLoopPromise<RESPToken>] = []
-        mpromises.reserveCapacity(commands.count)
+        var promises: [EventLoopPromise<RESPToken>] = []
+        promises.reserveCapacity(commands.count)
         var encoder = ValkeyCommandEncoder()
         for command in commands {
             command.encode(into: &encoder)
-            mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         }
-        let outBuffer = encoder.buffer
-        let promises = mpromises
-        return await withTaskCancellationHandler {
-            if Task.isCancelled {
-                for promise in mpromises {
-                    promise.fail(ValkeyClientError(.cancelled))
-                }
-            } else {
-                // write directly to channel handler
-                self.channelHandler.write(request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.map { .nio($0) }, id: requestID))
-            }
+        let count = commands.count
+        return await _execute(
+            buffer: encoder.buffer,
+            promises: promises,
+            valkeyPromises: promises.map { .nio($0) }
+        ) { promises in
             // get response from channel handler
-            var results: [Result<RESPToken, Error>] = .init()
-            results.reserveCapacity(commands.count)
+            var results: [Result<RESPToken, any Error>] = .init()
+            results.reserveCapacity(count)
             for promise in promises {
                 await results.append(promise.futureResult._result())
             }
             return results
-        } onCancel: {
-            self.cancel(requestID: requestID)
         }
     }
 
@@ -319,40 +292,65 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
-    @inlinable
+    @usableFromInline
     func executeWithAsk(
         _ commands: some Collection<any ValkeyCommand>
-    ) async -> sending [Result<RESPToken, Error>] {
-        let requestID = Self.requestIDGenerator.next()
+    ) async -> [Result<RESPToken, any Error>] {
         // this currently allocates a promise for every command. We could collapse this down to one promise
-        var mpromises: [EventLoopPromise<RESPToken>] = []
-        mpromises.reserveCapacity(commands.count)
+        var promises: [EventLoopPromise<RESPToken>] = []
+        promises.reserveCapacity(commands.count)
+        var valkeyPromises: [ValkeyPromise<RESPToken>] = []
+        valkeyPromises.reserveCapacity(commands.count * 2)
         var encoder = ValkeyCommandEncoder()
         for command in commands {
             ASKING().encode(into: &encoder)
             command.encode(into: &encoder)
-            mpromises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+            valkeyPromises.append(.forget)
+            valkeyPromises.append(.nio(promises.last!))
         }
-        let outBuffer = encoder.buffer
-        let promises = mpromises
+
+        let count = commands.count
+        return await _execute(
+            buffer: encoder.buffer,
+            promises: promises,
+            valkeyPromises: valkeyPromises
+        ) { promises in
+            // get response from channel handler
+            var results: [Result<RESPToken, Error>] = .init()
+            results.reserveCapacity(count)
+            for promise in promises {
+                await results.append(promise.futureResult._result())
+            }
+            return results
+        }
+    }
+
+    /// Execute stream of commands written into buffer
+    ///
+    /// The function is provided with an array of EventLoopPromises for the responses of commands
+    /// we care about and an array of valkey promises one for each command
+    @inlinable
+    func _execute<Value>(
+        buffer: ByteBuffer,
+        promises: [EventLoopPromise<RESPToken>],
+        valkeyPromises: [ValkeyPromise<RESPToken>],
+        processResults: sending ([EventLoopPromise<RESPToken>]) async -> sending Value
+    ) async -> Value {
+        let requestID = Self.requestIDGenerator.next()
         return await withTaskCancellationHandler {
             if Task.isCancelled {
-                for promise in mpromises {
+                for promise in promises {
                     promise.fail(ValkeyClientError(.cancelled))
                 }
             } else {
                 // write directly to channel handler
                 self.channelHandler.write(
-                    request: ValkeyRequest.multiple(buffer: outBuffer, promises: promises.flatMap { [.forget, .nio($0)] }, id: requestID)
+                    request: ValkeyRequest.multiple(buffer: buffer, promises: valkeyPromises, id: requestID)
                 )
             }
-            // get response from channel handler
-            var results: [Result<RESPToken, Error>] = .init()
-            results.reserveCapacity(commands.count)
-            for promise in promises {
-                await results.append(promise.futureResult._result())
-            }
-            return results
+
+            return await processResults(promises)
         } onCancel: {
             self.cancel(requestID: requestID)
         }
@@ -383,13 +381,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     private static func _makeConnection(
         address: ValkeyServerAddress,
         connectionID: ID,
-        eventLoop: EventLoop,
+        eventLoop: any EventLoop,
         configuration: ValkeyConnectionConfiguration,
         logger: Logger
     ) -> EventLoopFuture<ValkeyConnection> {
         eventLoop.assertInEventLoop()
 
-        let bootstrap: NIOClientTCPBootstrapProtocol
+        let bootstrap: any NIOClientTCPBootstrapProtocol
         #if canImport(Network)
         if let tsBootstrap = createTSBootstrap(eventLoopGroup: eventLoop, tlsOptions: nil) {
             bootstrap = tsBootstrap
@@ -414,7 +412,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
         }
 
-        let future: EventLoopFuture<Channel>
+        let future: EventLoopFuture<any Channel>
         switch address.value {
         case .hostname(let host, let port):
             future = connect.connect(host: host, port: port)
@@ -512,13 +510,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     }
 
     /// create a BSD sockets based bootstrap
-    private static func createSocketsBootstrap(eventLoopGroup: EventLoopGroup) -> ClientBootstrap {
+    private static func createSocketsBootstrap(eventLoopGroup: any EventLoopGroup) -> ClientBootstrap {
         ClientBootstrap(group: eventLoopGroup)
     }
 
     #if canImport(Network)
     /// create a NIOTransportServices bootstrap using Network.framework
-    private static func createTSBootstrap(eventLoopGroup: EventLoopGroup, tlsOptions: NWProtocolTLS.Options?) -> NIOTSConnectionBootstrap? {
+    private static func createTSBootstrap(eventLoopGroup: any EventLoopGroup, tlsOptions: NWProtocolTLS.Options?) -> NIOTSConnectionBootstrap? {
         guard
             let bootstrap = NIOTSConnectionBootstrap(validatingGroup: eventLoopGroup)
         else {
@@ -539,8 +537,8 @@ struct AutoIncrementingInteger {
     var value: Int = 0
 
     @inlinable
-    init() {
-        self.value = 0
+    init(_ value: Int = 0) {
+        self.value = value
     }
 
     @inlinable
@@ -566,3 +564,16 @@ extension ValkeyClientError {
     }
 }
 #endif
+
+extension Result where Success == RESPToken, Failure == any Error {
+    @usableFromInline
+    func convertFromRESP<Response: RESPTokenDecodable>(to: Response.Type) -> Result<Response, Error> {
+        self.flatMap {
+            do {
+                return try .success(Response(fromRESP: $0))
+            } catch {
+                return .failure(error)
+            }
+        }
+    }
+}

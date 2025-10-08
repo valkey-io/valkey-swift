@@ -5,6 +5,8 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+import NIOCore
+
 /// A type that represents geographic coordinates.
 @_documentation(visibility: internal)
 public struct GeoCoordinates: RESPTokenDecodable, Sendable {

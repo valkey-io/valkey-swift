@@ -26,9 +26,9 @@ function genWithoutContextParameter() {
     for ((n = 1; n<how_many; n +=1)); do
         echo -n ", _ c$((n)): C$((n))"
     done
-    echo -n ") async throws -> (Result<C0.Response, Error>"
+    echo -n ") async throws -> (Result<C0.Response, any Error>"
     for ((n = 1; n<how_many; n +=1)); do
-        echo -n ", Result<C$((n)).Response, Error>"
+        echo -n ", Result<C$((n)).Response, any Error>"
     done
     echo ") {"
     echo -n "        guard let responses = try await self.execute(MULTI(), "

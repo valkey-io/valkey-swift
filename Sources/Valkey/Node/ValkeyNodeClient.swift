@@ -23,7 +23,8 @@ import ServiceLifecycle
 ///
 /// Supports TLS via both NIOSSL and Network framework.
 @available(valkeySwift 1.0, *)
-public final class ValkeyNodeClient: Sendable {
+@usableFromInline
+package final class ValkeyNodeClient: Sendable {
     typealias Pool = ConnectionPool<
         ValkeyConnection,
         ValkeyConnection.ID,
@@ -34,6 +35,13 @@ public final class ValkeyNodeClient: Sendable {
         ValkeyClientMetrics,
         ContinuousClock
     >
+    @usableFromInline
+    typealias ConnectionStateMachine =
+        SubscriptionConnectionStateMachine<
+            ValkeyConnection,
+            CheckedContinuation<ValkeyConnection, any Error>,
+            CheckedContinuation<Void, Never>
+        >
     /// Server address
     public let serverAddress: ValkeyServerAddress
     /// Connection pool
@@ -46,12 +54,23 @@ public final class ValkeyNodeClient: Sendable {
     public let eventLoopGroup: any EventLoopGroup
     /// Logger
     public let logger: Logger
+    /// subscription connection state
+    @usableFromInline
+    let subscriptionConnectionStateMachine: Mutex<ConnectionStateMachine>
+    @usableFromInline
+    let subscriptionConnectionIDGenerator: ConnectionIDGenerator
+    /// Actions that can be run on a node
+    enum RunAction: Sendable {
+        case leaseSubscriptionConnection(leaseID: Int)
+    }
+    let actionStream: AsyncStream<RunAction>
+    let actionStreamContinuation: AsyncStream<RunAction>.Continuation
 
     package init(
         _ address: ValkeyServerAddress,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
-        eventLoopGroup: EventLoopGroup,
+        eventLoopGroup: any EventLoopGroup,
         logger: Logger
     ) {
         self.serverAddress = address
@@ -84,6 +103,9 @@ public final class ValkeyNodeClient: Sendable {
         self.connectionFactory = connectionFactory
         self.eventLoopGroup = eventLoopGroup
         self.logger = logger
+        self.subscriptionConnectionStateMachine = .init(.init())
+        self.subscriptionConnectionIDGenerator = .init()
+        (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
     }
 }
 
@@ -92,7 +114,18 @@ extension ValkeyNodeClient {
     /// Run ValkeyNode connection pool
     @usableFromInline
     package func run() async {
-        await self.connectionPool.run()
+        /// Run discarding task group running actions
+        await withDiscardingTaskGroup { group in
+            group.addTask {
+                await self.connectionPool.run()
+                self.shutdownSubscriptionConnection()
+            }
+            for await action in self.actionStream {
+                group.addTask {
+                    await self.runAction(action)
+                }
+            }
+        }
     }
 
     func triggerForceShutdown() {
@@ -147,13 +180,13 @@ extension ValkeyNodeClient {
     @inlinable
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async -> sending (repeat Result<(each Command).Response, Error>) {
+    ) async -> sending (repeat Result<(each Command).Response, any Error>) {
         do {
             return try await self.withConnection { connection in
                 await connection.execute(repeat (each commands))
             }
         } catch {
-            return (repeat Result<(each Command).Response, Error>.failure(error))
+            return (repeat Result<(each Command).Response, any Error>.failure(error))
         }
     }
 
@@ -172,7 +205,7 @@ extension ValkeyNodeClient {
     @inlinable
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
                 await connection.execute(commands)
@@ -184,9 +217,9 @@ extension ValkeyNodeClient {
 
     /// Internal command used by cluster client, that precedes each command with a ASKING
     /// command
-    func ask<Commands: Collection & Sendable>(
+    func executeWithAsk<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
                 await connection.executeWithAsk(commands)
@@ -210,5 +243,27 @@ extension ValkeyNodeClient: ValkeyNodeConnectionPool {
     package func triggerGracefulShutdown() {
         // TODO: Implement graceful shutdown
         self.triggerForceShutdown()
+    }
+}
+
+@available(valkeySwift 1.0, *)
+extension ValkeyNodeClient {
+    func queueAction(_ action: RunAction) {
+        self.actionStreamContinuation.yield(action)
+    }
+
+    private func runAction(_ action: RunAction) async {
+        switch action {
+        case .leaseSubscriptionConnection(let leaseID):
+            do {
+                try await self.withConnection { connection in
+                    await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+                        self.acquiredSubscriptionConnection(leaseID: leaseID, connection: connection, releaseContinuation: cont)
+                    }
+                }
+            } catch {
+                self.errorAcquiringSubscriptionConnection(leaseID: leaseID, error: error)
+            }
+        }
     }
 }

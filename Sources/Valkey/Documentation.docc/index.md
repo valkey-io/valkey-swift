@@ -20,7 +20,6 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 - ``ValkeyClient``
 - ``ValkeyClientConfiguration``
 - ``ValkeyClientProtocol``
-- ``ValkeyNodeClient``
 - ``ValkeyServerAddress``
 - ``ValkeyConnection``
 - ``ValkeyConnectionConfiguration``

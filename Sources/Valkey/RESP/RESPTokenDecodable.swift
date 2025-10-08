@@ -29,7 +29,7 @@ extension RESPToken: RESPTokenDecodable {
     /// - Parameter type: Type to convert to
     /// - Returns: Result containing either the Value or an error
     @usableFromInline
-    func decodeResult<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) -> Result<Value, Error> {
+    func decodeResult<Value: RESPTokenDecodable>(as type: Value.Type = Value.self) -> Result<Value, any Error> {
         switch self.identifier {
         case .simpleError, .bulkError:
             return .failure(ValkeyClientError(.commandError, message: self.errorString.map { Swift.String(buffer: $0) }))
@@ -376,8 +376,8 @@ extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
     public func decodeElementResults<each Value: RESPTokenDecodable>(
         as: (repeat (each Value)).Type = (repeat (each Value)).self
-    ) -> (repeat Result<(each Value), Error>) {
-        func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, Error> {
+    ) -> (repeat Result<(each Value), any Error>) {
+        func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, any Error> {
             switch token {
             case .some(let value):
                 return value.decodeResult(as: T.self)

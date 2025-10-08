@@ -5,6 +5,7 @@
 // See LICENSE.txt for license information
 // SPDX-License-Identifier: Apache-2.0
 //
+import DequeModule
 import NIOCore
 import NIOEmbedded
 import Testing

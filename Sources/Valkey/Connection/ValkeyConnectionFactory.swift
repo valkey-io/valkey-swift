@@ -16,7 +16,7 @@ package final class ValkeyConnectionFactory: Sendable {
 
     enum Mode: Sendable {
         case `default`
-        case custom(@Sendable (ValkeyServerAddress, any EventLoop) async throws -> Channel)
+        case custom(@Sendable (ValkeyServerAddress, any EventLoop) async throws -> any Channel)
     }
 
     let mode: Mode
