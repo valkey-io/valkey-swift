@@ -15,9 +15,6 @@ import NIOCore
 @available(valkeySwift 1.0, *)
 @usableFromInline
 package struct ValkeyClusterNodeClientFactory: ValkeyNodeConnectionPoolFactory {
-    @usableFromInline
-    package typealias ConnectionPool = ValkeyNodeClient
-
     var logger: Logger
     var configuration: ValkeyClientConfiguration
     var eventLoopGroup: any EventLoopGroup
