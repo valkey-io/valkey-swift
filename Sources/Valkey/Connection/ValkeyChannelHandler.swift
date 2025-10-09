@@ -517,6 +517,15 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
             break
         }
     }
+
+    func triggerGracefulShutdown() {
+        switch self.stateMachine.triggerGracefulShutdown() {
+        case .closeConnection(let context):
+            context.close(mode: .all, promise: nil)
+        case .doNothing:
+            break
+        }
+    }
 }
 
 @available(valkeySwift 1.0, *)
