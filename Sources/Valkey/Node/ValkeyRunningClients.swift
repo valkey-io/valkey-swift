@@ -10,19 +10,20 @@
 struct ValkeyRunningClientsStateMachine<
     ConnectionPool: Sendable,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory
-> where ConnectionPoolFactory.ConnectionPool == ConnectionPool {
+> where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription: Sendable & Identifiable {
+    @usableFromInline typealias NodeDescription = ConnectionPoolFactory.NodeDescription
     @usableFromInline
     /* private */ struct NodeBundle: Sendable {
         @usableFromInline
-        var nodeID: ValkeyNodeID { self.nodeDescription.id }
+        var nodeID: NodeDescription.ID { self.nodeDescription.id }
         @usableFromInline
         var pool: ConnectionPool
         @usableFromInline
-        var nodeDescription: ValkeyNodeDescription
+        var nodeDescription: NodeDescription
     }
     let poolFactory: ConnectionPoolFactory
     @usableFromInline
-    var clientMap: [ValkeyNodeID: NodeBundle]
+    var clientMap: [NodeDescription.ID: NodeBundle]
     @inlinable
     var clients: some Collection<NodeBundle> { clientMap.values }
 
@@ -33,35 +34,25 @@ struct ValkeyRunningClientsStateMachine<
 
     struct PoolUpdateAction {
         var poolsToShutdown: [ConnectionPool]
-        var poolsToRun: [(ConnectionPool, ValkeyNodeID)]
+        var poolsToRun: [(ConnectionPool, NodeDescription.ID)]
 
         static func empty() -> PoolUpdateAction { PoolUpdateAction(poolsToShutdown: [], poolsToRun: []) }
     }
 
     mutating func updateNodes(
-        _ newNodes: some Collection<ValkeyNodeDescription>,
+        _ newNodes: some Collection<NodeDescription>,
         removeUnmentionedPools: Bool
     ) -> PoolUpdateAction {
         var previousNodes = self.clientMap
         self.clientMap.removeAll(keepingCapacity: true)
-        var newPools = [(ConnectionPool, ValkeyNodeID)]()
+        var newPools = [(ConnectionPool, NodeDescription.ID)]()
         newPools.reserveCapacity(16)
         var poolsToShutdown = [ConnectionPool]()
 
         for newNodeDescription in newNodes {
             // if we had a pool previously, let's continue to use it!
             if let existingPool = previousNodes.removeValue(forKey: newNodeDescription.id) {
-                if newNodeDescription == existingPool.nodeDescription {
-                    // the existing pool matches the new node description. nothing todo
-                    self.clientMap[newNodeDescription.id] = existingPool
-                } else {
-                    // the existing pool does not match new node description. For example tls may now be required.
-                    // shutdown the old pool and create a new one
-                    poolsToShutdown.append(existingPool.pool)
-                    let newPool = self.makePool(for: newNodeDescription)
-                    self.clientMap[newNodeDescription.id] = NodeBundle(pool: newPool, nodeDescription: newNodeDescription)
-                    newPools.append((newPool, newNodeDescription.id))
-                }
+                self.clientMap[newNodeDescription.id] = existingPool
             } else {
                 let newPool = self.makePool(for: newNodeDescription)
                 self.clientMap[newNodeDescription.id] = NodeBundle(pool: newPool, nodeDescription: newNodeDescription)
@@ -95,7 +86,7 @@ struct ValkeyRunningClientsStateMachine<
     }
 
     mutating func addNode(
-        _ node: ValkeyNodeDescription
+        _ node: NodeDescription
     ) -> AddNodeAction {
         if let pool = self.clientMap[node.id] {
             return .useExistingPool(pool.pool)
@@ -106,7 +97,7 @@ struct ValkeyRunningClientsStateMachine<
     }
 
     @inlinable
-    subscript(_ index: ValkeyNodeID) -> NodeBundle? {
+    subscript(_ index: NodeDescription.ID) -> NodeBundle? {
         self.clientMap[index]
     }
 
@@ -115,7 +106,7 @@ struct ValkeyRunningClientsStateMachine<
         self.clientMap.removeAll(keepingCapacity: false)
     }
 
-    func makePool(for description: ValkeyNodeDescription) -> ConnectionPool {
+    func makePool(for description: NodeDescription) -> ConnectionPool {
         self.poolFactory.makeConnectionPool(nodeDescription: description)
     }
 }

@@ -25,9 +25,10 @@ package protocol ValkeyNodeConnectionPool: AnyObject, Sendable {
 @available(valkeySwift 1.0, *)
 package protocol ValkeyNodeConnectionPoolFactory: Sendable {
     associatedtype ConnectionPool: ValkeyNodeConnectionPool
+    associatedtype NodeDescription
 
     /// Create a shard connection pool based on the provided configuration
     func makeConnectionPool(
-        nodeDescription: ValkeyNodeDescription
+        nodeDescription: NodeDescription
     ) -> ConnectionPool
 }
