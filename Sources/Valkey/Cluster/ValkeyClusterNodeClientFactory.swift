@@ -14,14 +14,14 @@ import NIOCore
 /// for each node in the cluster as needed.
 @available(valkeySwift 1.0, *)
 @usableFromInline
-package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
+package struct ValkeyClusterNodeClientFactory: ValkeyNodeConnectionPoolFactory {
     var logger: Logger
     var configuration: ValkeyClientConfiguration
     var eventLoopGroup: any EventLoopGroup
     let connectionIDGenerator = ConnectionIDGenerator()
     let connectionFactory: ValkeyConnectionFactory
 
-    /// Creates a new `ValkeyClientFactory` instance.
+    /// Creates a new `ValkeyClusterNodeClientFactory` instance.
     ///
     /// - Parameters:
     ///   - logger: The logger used for diagnostic information.
@@ -44,9 +44,10 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
     /// - Parameter nodeDescription: Description of the node to connect to.
     /// - Returns: A configured `ValkeyNode` instance ready to connect to the specified node.
     @usableFromInline
-    package func makeConnectionPool(nodeDescription: ValkeyServerAddress) -> ValkeyNodeClient {
-        ValkeyNodeClient(
-            nodeDescription,
+    package func makeConnectionPool(nodeDescription: ValkeyNodeDescription) -> ValkeyNodeClient {
+        let address = ValkeyServerAddress.hostname(nodeDescription.endpoint, port: nodeDescription.port)
+        return ValkeyNodeClient(
+            address,
             connectionIDGenerator: self.connectionIDGenerator,
             connectionFactory: self.connectionFactory,
             eventLoopGroup: self.eventLoopGroup,
