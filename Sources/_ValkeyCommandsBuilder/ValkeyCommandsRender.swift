@@ -21,9 +21,11 @@ private let disableResponseCalculationCommands: Set<String> = [
     "GEODIST",
     "GEOPOS",
     "GEOSEARCH",
-    "ROLE",
+    "KEYS",
     "LMOVE",
     "LMPOP",
+    "ROLE",
+    "SCAN",
     "SSCAN",
     "XAUTOCLAIM",
     "XCLAIM",
@@ -36,6 +38,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "ZPOPMAX",
     "ZPOPMIN",
 ]
+
 /// List of subscribe commands, which have their own implementation in code
 let subscribeFunctions: Set<String> = [
     "SUBSCRIBE",
@@ -45,6 +48,7 @@ let subscribeFunctions: Set<String> = [
     "PUNSUBSCRIBE",
     "SUNSUBSCRIBE",
 ]
+
 /// List of commands that should only be available from ValkeyConnection
 let connectionOnlyFunctionNames: Set<String> = [
     "MULTI",
