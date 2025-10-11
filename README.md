@@ -8,7 +8,7 @@ The valkey-swift project uses a connection pool, which requires a background pro
 
 ```swift
 let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
-try await withThrowingTaskgroup(of: Void.self) { group in
+try await withThrowingTaskGroup(of: Void.self) { group in
     group.addTask {
         // run connection pool in the background
         await valkeyClient.run()
