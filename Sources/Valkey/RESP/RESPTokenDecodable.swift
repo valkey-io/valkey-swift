@@ -9,6 +9,7 @@ import NIOCore
 
 /// A type that can decode from a response token.
 public protocol RESPTokenDecodable {
+    /// Initialize from RESPToken
     init(fromRESP: RESPToken) throws
 }
 
@@ -61,17 +62,6 @@ extension RESPToken: RESPTokenDecodable {
         default:
             throw RESPDecodeError.tokenMismatch(expected: [.array], token: self)
         }
-    }
-}
-
-extension Array where Element == RESPToken {
-    /// Convert RESPToken Array to a value array
-    /// - Parameter type: Type to convert to
-    /// - Throws: ValkeyClientError.unexpectedType
-    /// - Returns: Array of Value
-    @inlinable
-    public func decode<Value: RESPTokenDecodable>(as type: [Value].Type = [Value].self) throws -> [Value] {
-        try self.map { try $0.decode() }
     }
 }
 
