@@ -309,16 +309,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }.get()
     }
 
-    /// Pipeline a series of commands as a transaction to Valkey connection
+    /// Pipeline a series of commands to Valkey connection
     ///
-    /// Another client will never be served in the middle of the execution of these
-    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    /// Once all the responses for the commands have been received the function returns
+    /// an array of Results, one for each command.
     ///
-    /// EXEC and MULTI commands are added to the pipelined commands and the output
-    /// of the EXEC command is transformed into an array of RESPToken Results, one for
-    /// each command.
-    ///
-    /// This is an alternative version of the transaction function ``ValkeyConnection/transaction(_:)->(_,_)``
+    /// This is an alternative version of the pipeline function ``ValkeyConnection/execute(_:)->(_,_)``
     /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
     /// responses are returned as ``RESPToken`` instead of the response type for the command.
     ///
@@ -352,13 +348,21 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
     }
 
-    /// Pipeline a series of commands to Valkey connection
+    /// Pipeline a series of commands as a transaction to Valkey connection
     ///
-    /// Once all the responses for the commands have been received the function returns
-    /// a parameter pack of Results, one for each command.
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
     ///
-    /// - Parameter commands: Parameter pack of ValkeyCommands
-    /// - Returns: Parameter pack holding the responses of all the commands
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
+    ///
+    /// This is an alternative version of the transaction function ``ValkeyConnection/transaction(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
+    /// responses are returned as ``RESPToken`` instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
     public func transaction(
         _ commands: some Collection<any ValkeyCommand>
