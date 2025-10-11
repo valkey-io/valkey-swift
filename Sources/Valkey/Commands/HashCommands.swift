@@ -831,8 +831,6 @@ public struct HRANDFIELD: ValkeyCommand {
 /// Iterates over fields and values of a hash.
 @_documentation(visibility: internal)
 public struct HSCAN: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public static var name: String { "HSCAN" }
 
     public var key: ValkeyKey
@@ -1410,13 +1408,8 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func hscan(
-        _ key: ValkeyKey,
-        cursor: Int,
-        pattern: String? = nil,
-        count: Int? = nil,
-        novalues: Bool = false
-    ) async throws -> RESPToken.Array {
+    public func hscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, novalues: Bool = false) async throws -> HSCAN.Response
+    {
         try await execute(HSCAN(key, cursor: cursor, pattern: pattern, count: count, novalues: novalues))
     }
 
