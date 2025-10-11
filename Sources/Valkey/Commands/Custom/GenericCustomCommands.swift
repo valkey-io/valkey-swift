@@ -10,16 +10,10 @@ import NIOCore
 extension SCAN {
     public struct Response: RESPTokenDecodable, Sendable {
         public let cursor: Int
-        public let keys: [ValkeyKey]
+        public let keys: RESPToken.Array
 
         public init(fromRESP token: RESPToken) throws {
-            let (cursor, keys) = try token.decodeArrayElements(as: (Int, [ValkeyKey]).self)
-            self.cursor = cursor
-            self.keys = keys
+            (self.cursor, self.keys) = try token.decodeArrayElements(as: (Int, RESPToken.Array).self)
         }
     }
-}
-
-extension KEYS {
-    public typealias Response = [ValkeyKey]
 }
