@@ -21,7 +21,7 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
             self.id = id
             self.fields = keyValuePairs
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
         }
     }
 
@@ -77,7 +77,7 @@ public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
             self.id = id
             self.fields = keyValuePairs
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
         }
     }
 }
@@ -100,7 +100,7 @@ public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message:
                 return Stream(key: key, messages: messages)
             }
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.map], token: token)
         }
     }
 }
@@ -116,7 +116,7 @@ public struct XAUTOCLAIMResponse: RESPTokenDecodable, Sendable {
         case .array(let array):
             (self.streamID, self.messages, self.deletedMessages) = try array.decodeElements()
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
         }
     }
 }
@@ -143,7 +143,7 @@ public enum XCLAIMResponse: RESPTokenDecodable, Sendable {
                 self = try .ids(array.decode())
             }
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
         }
     }
 }
@@ -164,7 +164,7 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
                 case .array(let array):
                     (self.consumer, self.count) = try array.decodeElements()
                 default:
-                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                    throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
                 }
             }
         }
@@ -178,7 +178,7 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
             case .array(let array):
                 (self.pendingMessageCount, self.minimumID, self.maximumID, self.consumers) = try array.decodeElements()
             default:
-                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
         }
     }
@@ -194,7 +194,7 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
                 case .array(let array):
                     (self.id, self.consumer, self.millisecondsSinceDelivered, self.numberOfTimesDelivered) = try array.decodeElements()
                 default:
-                    throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                    throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
                 }
             }
         }
@@ -205,7 +205,7 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
             case .array(let array):
                 self.messages = try array.decode(as: [PendingMessage].self)
             default:
-                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
             }
         }
     }
