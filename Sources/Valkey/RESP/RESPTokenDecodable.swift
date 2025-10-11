@@ -350,7 +350,7 @@ extension RESPToken.Array: RESPTokenDecodable {
     }
 
     /// Convert RESPToken Array to a tuple of values
-    /// - Parameter as: Tuple of types to convert to
+    /// - Parameter type: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
     @inlinable
@@ -370,7 +370,7 @@ extension RESPToken.Array: RESPTokenDecodable {
     }
 
     /// Convert RESP3Token Array to a tuple of values
-    /// - Parameter as: Tuple of types to convert to
+    /// - Parameter type: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
     @inlinable
