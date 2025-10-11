@@ -12,14 +12,14 @@ You can use the `add-dependency` command:
 
 ```bash
 swift package add-dependency \
-    https://github.com/valkey-io/valkey-swift --from: 0.1.0
+    https://github.com/valkey-io/valkey-swift --from: 0.3.0
 ```
 
 or edit Package.swift directly:
 ```swift
 dependencies: [
     .package(url: "https://github.com/valkey-io/valkey-swift",
-             from: "0.1.0"),
+             from: "0.3.0"),
 ]
 ```
 
@@ -58,7 +58,7 @@ You can either run them using a Task group, for example:
 
 ```swift
 let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
-try await withThrowingTaskgroup(of: Void.self) { group in
+try await withThrowingTaskGroup(of: Void.self) { group in
     group.addTask {
         // run connection pool in the background
         await valkeyClient.run()
