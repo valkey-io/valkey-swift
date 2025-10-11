@@ -1143,8 +1143,6 @@ public struct ZREVRANK<Member: RESPStringRenderable>: ValkeyCommand {
 /// Iterates over members and scores of a sorted set.
 @_documentation(visibility: internal)
 public struct ZSCAN: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public static var name: String { "ZSCAN" }
 
     public var key: ValkeyKey
@@ -1788,13 +1786,8 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func zscan(
-        _ key: ValkeyKey,
-        cursor: Int,
-        pattern: String? = nil,
-        count: Int? = nil,
-        noscores: Bool = false
-    ) async throws -> RESPToken.Array {
+    public func zscan(_ key: ValkeyKey, cursor: Int, pattern: String? = nil, count: Int? = nil, noscores: Bool = false) async throws -> ZSCAN.Response
+    {
         try await execute(ZSCAN(key, cursor: cursor, pattern: pattern, count: count, noscores: noscores))
     }
 

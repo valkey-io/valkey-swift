@@ -43,6 +43,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "ZMPOP",
     "ZPOPMAX",
     "ZPOPMIN",
+    "ZSCAN",
 ]
 
 /// List of subscribe commands, which have their own implementation in code

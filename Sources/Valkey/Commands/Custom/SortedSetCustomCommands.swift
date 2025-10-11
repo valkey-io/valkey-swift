@@ -13,6 +13,11 @@ public struct SortedSetEntry: RESPTokenDecodable, Sendable {
     public let value: ByteBuffer
     public let score: Double
 
+    init(value: ByteBuffer, score: Double) {
+        self.value = value
+        self.score = score
+    }
+
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .array(let array):
@@ -75,4 +80,43 @@ extension ZPOPMIN {
     ///     * [Array]: List of popped elements and scores when 'COUNT' isn't specified.
     ///     * [Array]: List of popped elements and scores when 'COUNT' is specified.
     public typealias Response = [SortedSetEntry]
+}
+
+extension ZSCAN {
+    public struct Response: RESPTokenDecodable, Sendable {
+        public struct Members: RESPTokenDecodable, Sendable {
+            /// List of members and possibly scores.
+            public let elements: RESPToken.Array
+
+            public init(fromRESP token: RESPToken) throws {
+                self.elements = try token.decode(as: RESPToken.Array.self)
+            }
+
+            /// if ZSCAN was called with the `NOSCORES` parameter use this
+            /// function to get an array of members
+            public func withoutScores() throws -> [ByteBuffer] {
+                try self.elements.decode(as: [ByteBuffer].self)
+            }
+
+            /// if ZSCAN was called without the `NOSCORES` parameter use this
+            /// function to get an array of members and scores
+            public func withScores() throws -> [SortedSetEntry] {
+                var array: [SortedSetEntry] = []
+                for respElement in try self.elements.asMap() {
+                    let value = try ByteBuffer(fromRESP: respElement.key)
+                    let score = try Double(fromRESP: respElement.value)
+                    array.append(.init(value: value, score: score))
+                }
+                return array
+            }
+        }
+        /// Cursor to use in next call to ZSCAN
+        public let cursor: Int
+        /// Sorted set members
+        public let members: Members
+
+        public init(fromRESP token: RESPToken) throws {
+            (self.cursor, self.members) = try token.decodeArrayElements()
+        }
+    }
 }
