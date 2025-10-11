@@ -3,7 +3,6 @@
 Sending multiple commands at once without waiting for the response of each command.
 
 ## Overview
-=======
 
 Valkey pipelining is a technique for improving performance by issuing multiple commands at once without waiting for the response to each individual command. Pipelining not only reduces the latency cost of waiting for the result of each command it also reduces the cost to the server as it reduces I/O costs. Multiple commands can be read with a single syscall, and multiple results are delivered with a single syscall. 
 
@@ -22,6 +21,27 @@ if let result = try getResult.get().map({ String(buffer: $0) }) {
     print(result) // should print 101
 }
 ```
+
+### Dynamic pipelines
+
+The parameter pack implementation of pipelining allows for creation of static pipelines built at compile time. It doesn't provide much scope for generating more dynamic pipelines based on runtime conditions. To get around this an API that takes an array of existential `ValkeyCommands` and returns an array of `Result<RESPToken, Error>` is available. It allows you to build your pipeline at runtime. The downside of this method is you are returned a `Result` holding a ``RESPToken`` which needs decoding. 
+
+```swift
+// create command array
+var commands: [any ValkeyCommand] = []
+commands.append(SET("foo", value: "100"))
+commands.append(INCR("foo"))
+commands.append(GET("foo"))
+// execute commands
+let results = await valkeyClient.execute(commands)
+// get result and decode. We decode as an optional String
+// to avoid an error being thrown if the response is a null token
+if let value = results[2].get().decode(as: String?.self) {
+    print(value)
+}
+```
+
+You can find out more about decoding `RESPToken` in <doc:RESPToken-Decoding>.
 
 ### Pipelining and Concurrency
 

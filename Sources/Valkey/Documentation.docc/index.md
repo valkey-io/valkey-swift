@@ -12,6 +12,7 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 
 - <doc:getting-started>
 - <doc:Pipelining>
+- <doc:RESPToken-Decoding>
 - <doc:Pubsub>
 - <doc:Transactions>
 
@@ -23,6 +24,7 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 - ``ValkeyServerAddress``
 - ``ValkeyConnection``
 - ``ValkeyConnectionConfiguration``
+- ``ValkeyTracingConfiguration``
 
 ### Commands
 
@@ -42,10 +44,14 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 
 - ``ValkeySubscription``
 - ``ValkeySubscriptionMessage``
+- ``ValkeySubscribeCommand``
+- ``ValkeySubscriptionFilter``
 
 ### Errors
 
 - ``ValkeyClientError``
+- ``ValkeyClusterError``
+- ``RESPDecodeError``
 - ``RESPParsingError``
 
 ### Cluster
