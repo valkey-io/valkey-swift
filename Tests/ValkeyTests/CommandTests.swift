@@ -15,105 +15,177 @@ import Valkey
 ///
 /// Generally the commands being tested here are ones we have written custom responses for
 struct CommandTests {
+    struct ScriptCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func functionList() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FUNCTION", "LIST", "LIBRARYNAME", "_valkey_swift_tests", "WITHCODE"]),
+                    response: .map([
+                        .bulkString("library_name"): .bulkString("_valkey_swift_tests"),
+                        .bulkString("engine"): .bulkString("LUA"),
+                        .bulkString("functions"): .array([
+                            .map([
+                                .bulkString("name"): .bulkString("valkey_swift_test_get"),
+                                .bulkString("description"): .null,
+                                .bulkString("flags"): .set([]),
+                            ]),
+                            .map([
+                                .bulkString("name"): .bulkString("valkey_swift_test_set"),
+                                .bulkString("description"): .null,
+                                .bulkString("flags"): .set([]),
+                            ]),
+                        ]),
+                        .bulkString("library_code"): .bulkString(
+                            """
+                            #!lua name=_valkey_swift_tests
+                            local function test_get(keys, args)
+                                return redis.call("GET", keys[1])
+                            end
+                            local function test_set(keys, args)
+                                return redis.call("SET", keys[1], args[1])
+                            end
+                            server.register_function('valkey_swift_test_set', test_set)
+                            server.register_function('valkey_swift_test_get', test_get)")
+                            """
+                        ),
+                    ])
+                )
+            ) { connection in
+                let list = try await connection.functionList(libraryNamePattern: "_valkey_swift_tests", withcode: true)
+                let library = try #require(list.first)
+                #expect(library.libraryName == "_valkey_swift_tests")
+                #expect(library.engine == "LUA")
+                #expect(library.libraryCode?.hasPrefix("#!lua name=_valkey_swift_tests") == true)
+                #expect(library.functions.count == 2)
+                #expect(library.functions.contains { $0.name == "valkey_swift_test_set" })
+                #expect(library.functions.contains { $0.name == "valkey_swift_test_get" })
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func functionStats() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FUNCTION", "STATS"]),
+                    response: .map([
+                        .bulkString("running_script"): .map([
+                            .bulkString("name"): .bulkString("valkey_swift_infinite_loop"),
+                            .bulkString("command"): .array([
+                                .bulkString("FCALL"),
+                                .bulkString("valkey_swift_infinite_loop"),
+                                .bulkString("2"),
+                                .bulkString("30549BCC-6128-4C57-ACE4-ED7AC3ACFE3A"),
+                                .bulkString("13299520-9AF5-4FFE-83C2-38C8F801EDAD"),
+                            ]),
+                            .bulkString("duration_ms"): .number(5053),
+                        ]),
+                        .bulkString("engines"): .map([
+                            .bulkString("LUA"): .map([
+                                .bulkString("libraries_count"): .number(3),
+                                .bulkString("functions_count"): .number(8),
+                            ])
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let stats = try await connection.functionStats()
+                #expect(stats.runningScript.name == "valkey_swift_infinite_loop")
+                #expect(
+                    stats.runningScript.command.map { String(buffer: $0) } == [
+                        "FCALL",
+                        "valkey_swift_infinite_loop",
+                        "2",
+                        "30549BCC-6128-4C57-ACE4-ED7AC3ACFE3A",
+                        "13299520-9AF5-4FFE-83C2-38C8F801EDAD",
+                    ]
+                )
+                #expect(stats.runningScript.durationInMilliseconds == 5053)
+                let lua = try #require(stats.engines["LUA"])
+                #expect(lua.functionCount == 8)
+                #expect(lua.libraryCount == 3)
+            }
+        }
+    }
+
     struct ServerCommands {
         @Test
         @available(valkeySwift 1.0, *)
         func role() async throws {
-            let channel = NIOAsyncTestingChannel()
-            let logger = Logger(label: "test")
-            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
-
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                group.addTask {
-                    var role = try await connection.role()
-                    guard case .primary(let primary) = role else {
-                        Issue.record()
-                        return
-                    }
-                    #expect(primary.replicationOffset == 10)
-                    #expect(primary.replicas.count == 2)
-                    #expect(primary.replicas[0].ip == "127.0.0.1")
-                    #expect(primary.replicas[0].port == 9001)
-                    #expect(primary.replicas[0].replicationOffset == 1)
-                    #expect(primary.replicas[1].ip == "127.0.0.1")
-                    #expect(primary.replicas[1].port == 9002)
-                    #expect(primary.replicas[1].replicationOffset == 6)
-
-                    role = try await connection.role()
-                    guard case .replica(let replica) = role else {
-                        Issue.record()
-                        return
-                    }
-                    #expect(replica.primaryIP == "127.0.0.1")
-                    #expect(replica.primaryPort == 9000)
-                    #expect(replica.state == .connected)
-                    #expect(replica.replicationOffset == 6)
-                }
-                group.addTask {
-                    var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                    #expect(outbound == RESPToken(.command(["ROLE"])).base)
-                    try await channel.writeInbound(
-                        RESPToken(
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["ROLE"]),
+                    response: .array([
+                        .bulkString("master"),
+                        .number(10),
+                        .array([
                             .array([
-                                .bulkString("master"),
-                                .number(10),
-                                .array([
-                                    .array([
-                                        .bulkString("127.0.0.1"),
-                                        .bulkString("9001"),
-                                        .bulkString("1"),
-                                    ]),
-                                    .array([
-                                        .bulkString("127.0.0.1"),
-                                        .bulkString("9002"),
-                                        .bulkString("6"),
-                                    ]),
-                                ]),
-                            ])
-                        ).base
-                    )
-                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                    #expect(outbound == RESPToken(.command(["ROLE"])).base)
-                    try await channel.writeInbound(
-                        RESPToken(
-                            .array([
-                                .bulkString("slave"),
                                 .bulkString("127.0.0.1"),
-                                .number(9000),
-                                .bulkString("connected"),
-                                .number(6),
-                            ])
-                        ).base
-                    )
+                                .bulkString("9001"),
+                                .bulkString("1"),
+                            ]),
+                            .array([
+                                .bulkString("127.0.0.1"),
+                                .bulkString("9002"),
+                                .bulkString("6"),
+                            ]),
+                        ]),
+                    ])
+                ),
+                (
+                    request: .command(["ROLE"]),
+                    response: .array([
+                        .bulkString("slave"),
+                        .bulkString("127.0.0.1"),
+                        .number(9000),
+                        .bulkString("connected"),
+                        .number(6),
+                    ])
+                )
+            ) { connection in
+                var role = try await connection.role()
+                guard case .primary(let primary) = role else {
+                    Issue.record()
+                    return
                 }
-                try await group.waitForAll()
+                #expect(primary.replicationOffset == 10)
+                #expect(primary.replicas.count == 2)
+                #expect(primary.replicas[0].ip == "127.0.0.1")
+                #expect(primary.replicas[0].port == 9001)
+                #expect(primary.replicas[0].replicationOffset == 1)
+                #expect(primary.replicas[1].ip == "127.0.0.1")
+                #expect(primary.replicas[1].port == 9002)
+                #expect(primary.replicas[1].replicationOffset == 6)
+
+                role = try await connection.role()
+                guard case .replica(let replica) = role else {
+                    Issue.record()
+                    return
+                }
+                #expect(replica.primaryIP == "127.0.0.1")
+                #expect(replica.primaryPort == 9000)
+                #expect(replica.state == .connected)
+                #expect(replica.replicationOffset == 6)
             }
         }
         /// Test non-optional tokens render correctly
         @Test
         @available(valkeySwift 1.0, *)
         func replicaof() async throws {
-            let channel = NIOAsyncTestingChannel()
-            let logger = Logger(label: "test")
-            let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
-            try await channel.processHello()
-
-            try await withThrowingTaskGroup(of: Void.self) { group in
-                group.addTask {
-                    try await connection.replicaof(args: .hostPort(.init(host: "127.0.0.1", port: 18000)))
-                    try await connection.replicaof(args: .noOne)
-                }
-                group.addTask {
-                    var outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                    #expect(outbound == RESPToken(.command(["REPLICAOF", "127.0.0.1", "18000"])).base)
-                    try await channel.writeInbound(RESPToken(.simpleString("Ok")).base)
-
-                    outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
-                    #expect(outbound == RESPToken(.command(["REPLICAOF", "NO", "ONE"])).base)
-                    try await channel.writeInbound(RESPToken(.simpleString("Ok")).base)
-                }
-                try await group.waitForAll()
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["REPLICAOF", "127.0.0.1", "18000"]),
+                    response: .simpleString("Ok")
+                ),
+                (
+                    request: .command(["REPLICAOF", "NO", "ONE"]),
+                    response: .simpleString("Ok")
+                )
+            ) { connection in
+                try await connection.replicaof(args: .hostPort(.init(host: "127.0.0.1", port: 18000)))
+                try await connection.replicaof(args: .noOne)
             }
         }
     }
@@ -829,5 +901,31 @@ struct CommandTests {
                 try await group.waitForAll()
             }
         }
+    }
+}
+
+@available(valkeySwift 1.0, *)
+func testCommandEncodesDecodes(
+    _ respValues: (request: RESP3Value, response: RESP3Value)...,
+    sourceLocation: SourceLocation = #_sourceLocation,
+    operation: @escaping @Sendable (ValkeyConnection) async throws -> Void
+) async throws {
+    let channel = NIOAsyncTestingChannel()
+    let logger = Logger(label: "test")
+    let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
+    try await channel.processHello()
+
+    try await withThrowingTaskGroup(of: Void.self) { group in
+        group.addTask {
+            try await operation(connection)
+        }
+        group.addTask {
+            for (request, response) in respValues {
+                let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+                #expect(outbound == RESPToken(request).base, sourceLocation: sourceLocation)
+                try await channel.writeInbound(RESPToken(response).base)
+            }
+        }
+        try await group.waitForAll()
     }
 }

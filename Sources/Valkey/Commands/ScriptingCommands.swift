@@ -111,8 +111,6 @@ public enum FUNCTION {
     /// Returns information about all libraries.
     @_documentation(visibility: internal)
     public struct LIST: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "FUNCTION LIST" }
 
         public var libraryNamePattern: String?
@@ -131,8 +129,6 @@ public enum FUNCTION {
     /// Creates a library.
     @_documentation(visibility: internal)
     public struct LOAD<FunctionCode: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = ByteBuffer
-
         @inlinable public static var name: String { "FUNCTION LOAD" }
 
         public var replace: Bool
@@ -186,8 +182,6 @@ public enum FUNCTION {
     /// Returns information about a function during execution.
     @_documentation(visibility: internal)
     public struct STATS: ValkeyCommand {
-        public typealias Response = RESPToken.Map
-
         @inlinable public static var name: String { "FUNCTION STATS" }
 
         @inlinable public init() {
@@ -239,8 +233,6 @@ public enum SCRIPT {
     /// Determines whether server-side Lua scripts exist in the script cache.
     @_documentation(visibility: internal)
     public struct EXISTS<Sha1: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "SCRIPT EXISTS" }
 
         public var sha1s: [Sha1]
@@ -316,8 +308,6 @@ public enum SCRIPT {
     /// Loads a server-side Lua script to the script cache.
     @_documentation(visibility: internal)
     public struct LOAD<Script: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = ByteBuffer
-
         @inlinable public static var name: String { "SCRIPT LOAD" }
 
         public var script: Script
@@ -334,8 +324,6 @@ public enum SCRIPT {
     /// Show server-side Lua script in the script cache.
     @_documentation(visibility: internal)
     public struct SHOW<Sha1: RESPStringRenderable>: ValkeyCommand {
-        public typealias Response = ByteBuffer
-
         @inlinable public static var name: String { "SCRIPT SHOW" }
 
         public var sha1: Sha1
@@ -621,7 +609,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the number of functions
     @inlinable
     @discardableResult
-    public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> RESPToken.Array {
+    public func functionList(libraryNamePattern: String? = nil, withcode: Bool = false) async throws -> FUNCTION.LIST.Response {
         try await execute(FUNCTION.LIST(libraryNamePattern: libraryNamePattern, withcode: withcode))
     }
 
@@ -633,7 +621,10 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The library name that was loaded
     @inlinable
     @discardableResult
-    public func functionLoad<FunctionCode: RESPStringRenderable>(replace: Bool = false, functionCode: FunctionCode) async throws -> ByteBuffer {
+    public func functionLoad<FunctionCode: RESPStringRenderable>(
+        replace: Bool = false,
+        functionCode: FunctionCode
+    ) async throws -> FUNCTION.LOADResponse {
         try await execute(FUNCTION.LOAD(replace: replace, functionCode: functionCode))
     }
 
@@ -657,7 +648,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1)
     @inlinable
     @discardableResult
-    public func functionStats() async throws -> RESPToken.Map {
+    public func functionStats() async throws -> FUNCTION.STATS.Response {
         try await execute(FUNCTION.STATS())
     }
 
@@ -679,7 +670,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array of integers that correspond to the specified SHA1 digest arguments.
     @inlinable
     @discardableResult
-    public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws -> RESPToken.Array {
+    public func scriptExists<Sha1: RESPStringRenderable>(sha1s: [Sha1]) async throws -> SCRIPT.EXISTSResponse {
         try await execute(SCRIPT.EXISTS(sha1s: sha1s))
     }
 
@@ -725,7 +716,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The SHA1 digest of the script added into the script cache
     @inlinable
     @discardableResult
-    public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> ByteBuffer {
+    public func scriptLoad<Script: RESPStringRenderable>(script: Script) async throws -> SCRIPT.LOADResponse {
         try await execute(SCRIPT.LOAD(script: script))
     }
 
@@ -737,7 +728,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: Lua script if sha1 hash exists in script cache.
     @inlinable
     @discardableResult
-    public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> ByteBuffer {
+    public func scriptShow<Sha1: RESPStringRenderable>(sha1: Sha1) async throws -> SCRIPT.SHOWResponse {
         try await execute(SCRIPT.SHOW(sha1: sha1))
     }
 

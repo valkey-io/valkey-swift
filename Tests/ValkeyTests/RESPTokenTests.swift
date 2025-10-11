@@ -485,8 +485,8 @@ struct DebugDescription {
 
     @Test
     func testSimpleString() {
-        let token = RESPToken(.simpleString("test"))
-        #expect(token.value.debugDescription == ".simpleString(\"***\")")
+        let token = RESPToken(.simpleString("TEST"))
+        #expect(token.value.debugDescription == ".simpleString(\"TEST\")")
     }
 
     @Test
