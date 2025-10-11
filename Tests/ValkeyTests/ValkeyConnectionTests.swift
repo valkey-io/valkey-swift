@@ -291,12 +291,13 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
         try await channel.writeInbound(RESPToken(.simpleError("ERROR")).base)
         try await channel.writeInbound(RESPToken(.simpleError("EXECABORT")).base)
-        do {
-            _ = try await asyncResults
-            Issue.record("Transaction should throw error")
-        } catch let error as ValkeyClientError {
-            #expect(error == ValkeyClientError(.commandError, message: "EXECABORT"))
-        }
+        let results = try await asyncResults
+        var error = #expect(throws: ValkeyClientError.self) { try results.0.get() }
+        #expect(error?.errorCode == .commandError)
+        #expect(error?.message == "EXECABORT")
+        error = #expect(throws: ValkeyClientError.self) { try results.1.get() }
+        #expect(error?.errorCode == .commandError)
+        #expect(error?.message == "ERROR")
     }
 
     @Test
@@ -324,6 +325,86 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .bulkError("error")])).base)
         let results = try await asyncResults
         #expect(throws: ValkeyClientError(.commandError, message: "error")) { try results.1.get() }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testTransactionArray() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
+
+        var commands: [any ValkeyCommand] = []
+        commands.append(SET("foo", value: "10"))
+        commands.append(INCR("foo"))
+        async let results = connection.transaction(commands)
+
+        let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        var buffer = ByteBuffer()
+        buffer.writeImmutableBuffer(RESPToken(.command(["MULTI"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["SET", "foo", "10"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["INCR", "foo"])).base)
+        buffer.writeImmutableBuffer(RESPToken(.command(["EXEC"])).base)
+        #expect(outbound == buffer)
+
+        try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .number(11)])).base)
+
+        #expect(try await results[1].get().decode(as: Int.self) == 11)
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testTransactionArrayError() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
+
+        var commands: [any ValkeyCommand] = []
+        commands.append(SET("foo", value: "10"))
+        commands.append(INCR("foo"))
+
+        async let asyncResults = connection.transaction(commands)
+
+        _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+        try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.simpleError("ERROR")).base)
+        try await channel.writeInbound(RESPToken(.simpleError("EXECABORT")).base)
+        let results = try await asyncResults
+        var error = #expect(throws: ValkeyClientError.self) { try results[0].get() }
+        #expect(error?.errorCode == .commandError)
+        #expect(error?.message == "EXECABORT")
+        error = #expect(throws: ValkeyClientError.self) { try results[1].get() }
+        #expect(error?.errorCode == .commandError)
+        #expect(error?.message == "ERROR")
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testTransactionArrayCommandError() async throws {
+        let channel = NIOAsyncTestingChannel()
+        let logger = Logger(label: "test")
+        let connection = try await ValkeyConnection.setupChannelAndConnect(channel, logger: logger)
+        try await channel.processHello()
+
+        var commands: [any ValkeyCommand] = []
+        commands.append(SET("foo", value: "10"))
+        commands.append(INCR("foo"))
+        async let asyncResults = connection.transaction(commands)
+
+        _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
+
+        try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
+        try await channel.writeInbound(RESPToken(.array([.simpleString("OK"), .bulkError("error")])).base)
+        let results = try await asyncResults
+        #expect(throws: ValkeyClientError(.commandError, message: "error")) { try results[1].get() }
     }
 
     @Test

@@ -191,6 +191,45 @@ extension ValkeyClient {
     ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         await node.execute(commands)
     }
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into a parameter pack of Results, one
+    /// for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    @inlinable
+    public func transaction<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        try await node.transaction(repeat each commands)
+    }
+
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
+    ///
+    /// This is an alternative version of the transaction function ``ValkeyClient/transaction(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
+    /// responses are returned as ``RESPToken`` instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    @inlinable
+    public func transaction<Commands: Collection & Sendable>(
+        _ commands: Commands
+    ) async throws -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+        try await node.transaction(commands)
+    }
 }
 
 #if ServiceLifecycleSupport
