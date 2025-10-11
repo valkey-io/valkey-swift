@@ -102,7 +102,7 @@ struct CommandTests {
                         "13299520-9AF5-4FFE-83C2-38C8F801EDAD",
                     ]
                 )
-                #expect(stats.runningScript.duration == .milliseconds(5053))
+                #expect(stats.runningScript.durationInMilliseconds == 5053)
                 let lua = try #require(stats.engines["LUA"])
                 #expect(lua.functionCount == 8)
                 #expect(lua.libraryCount == 3)
