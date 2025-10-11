@@ -59,7 +59,7 @@ extension RESPToken: RESPTokenDecodable {
         case .array(let array), .set(let array):
             try array.decodeElements()
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: self.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: self)
         }
     }
 }
@@ -96,7 +96,10 @@ extension ByteBuffer: RESPTokenDecodable {
             .map,
             .set,
             .push:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(
+                expected: [.simpleString, .bulkString, .verbatimString, .bigNumber, .simpleError, .bulkError],
+                token: token
+            )
         }
     }
 }
@@ -128,7 +131,10 @@ extension String: RESPTokenDecodable {
             .map,
             .set,
             .push:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(
+                expected: [.simpleString, .bulkString, .verbatimString, .bigNumber, .simpleError, .bulkError, .double, .integer, .boolean],
+                token: token
+            )
         }
     }
 }
@@ -141,7 +147,7 @@ extension Int64: RESPTokenDecodable {
 
         case .bulkString(let buffer):
             guard let value = Int64(String(buffer: buffer)) else {
-                throw RESPParsingError(code: .canNotParseInteger, buffer: token.base)
+                throw RESPDecodeError(.cannotParseInteger, token: token)
             }
             self = value
 
@@ -158,7 +164,7 @@ extension Int64: RESPTokenDecodable {
             .set,
             .null,
             .map:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.integer, .bulkString], token: token)
         }
     }
 }
@@ -169,13 +175,13 @@ extension Int: RESPTokenDecodable {
         switch token.value {
         case .number(let value):
             guard let value = Int(exactly: value) else {
-                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                throw RESPDecodeError(.cannotParseInteger, token: token)
             }
             self = value
 
         case .bulkString(let buffer):
             guard let value = Int(String(buffer: buffer)) else {
-                throw RESPParsingError(code: .canNotParseInteger, buffer: token.base)
+                throw RESPDecodeError(.cannotParseInteger, token: token)
             }
             self = value
 
@@ -192,7 +198,7 @@ extension Int: RESPTokenDecodable {
             .set,
             .null,
             .map:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.integer, .bulkString], token: token)
         }
     }
 }
@@ -206,18 +212,18 @@ extension Double: RESPTokenDecodable {
 
         case .number(let value):
             guard let double = Double(exactly: value) else {
-                throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+                throw RESPDecodeError(.cannotParseDouble, token: token)
             }
             self = double
 
         case .bulkString(let buffer):
             guard let value = Double(String(buffer: buffer)) else {
-                throw RESPParsingError(code: .canNotParseDouble, buffer: token.base)
+                throw RESPDecodeError(.cannotParseDouble, token: token)
             }
             self = value
 
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.double, .integer, .bulkString], token: token)
         }
     }
 }
@@ -229,7 +235,7 @@ extension Bool: RESPTokenDecodable {
         case .boolean(let value):
             self = value
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.boolean], token: token)
         }
     }
 }
@@ -258,14 +264,19 @@ extension Array: RESPTokenDecodable where Element: RESPTokenDecodable {
                     array.append(element)
                 }
                 self = array
-            } catch let error as RESPParsingError where error.code == .unexpectedType {
-                // if decoding array failed it is possible `Element` is represented by an array and we have a single array
-                // that represents one element of `Element` instead of Array<Element>. We should attempt to decode this as a single element
-                let value = try Element(fromRESP: token)
-                self = [value]
+            } catch let error as RESPDecodeError {
+                switch error.errorCode {
+                case .tokenMismatch:
+                    // if decoding array failed it is possible `Element` is represented by an array and we have a single array
+                    // that represents one element of `Element` instead of Array<Element>. We should attempt to decode this as a single element
+                    let value = try Element(fromRESP: token)
+                    self = [value]
+                default:
+                    throw error
+                }
             }
         case .null:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: token)
         default:
             let value = try Element(fromRESP: token)
             self = [value]
@@ -285,7 +296,7 @@ extension Set: RESPTokenDecodable where Element: RESPTokenDecodable {
             }
             self = set
         case .null:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.set], token: token)
         default:
             let value = try Element(fromRESP: token)
             self = [value]
@@ -306,7 +317,7 @@ extension Dictionary: RESPTokenDecodable where Value: RESPTokenDecodable, Key: R
             }
             self = .init(array) { first, _ in first }
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.map], token: token)
         }
     }
 }
@@ -325,7 +336,7 @@ extension RESPToken.Array: RESPTokenDecodable {
         case .array(let respArray), .set(let respArray), .push(let respArray):
             self = respArray
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.array, .set, .push], token: token)
         }
     }
 
@@ -339,20 +350,19 @@ extension RESPToken.Array: RESPTokenDecodable {
     }
 
     /// Convert RESPToken Array to a tuple of values
-    /// - Parameter as: Tuple of types to convert to
+    /// - Parameter type: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
     @inlinable
     public func decodeElements<each Value: RESPTokenDecodable>(
-        as: (repeat (each Value)).Type = (repeat (each Value)).self
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
         func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) throws -> T {
             switch token {
             case .some(let value):
                 return try T(fromRESP: value)
             case .none:
-                // TODO: Fixup error when we have a decoding error
-                throw RESPParsingError(code: .unexpectedType, buffer: token?.base ?? .init())
+                throw RESPDecodeError.invalidArraySize(self, expectedSize: self._parameterPackTypeSize(type))
             }
         }
         var iterator = self.makeIterator()
@@ -360,24 +370,35 @@ extension RESPToken.Array: RESPTokenDecodable {
     }
 
     /// Convert RESP3Token Array to a tuple of values
-    /// - Parameter as: Tuple of types to convert to
+    /// - Parameter type: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
     @inlinable
     public func decodeElementResults<each Value: RESPTokenDecodable>(
-        as: (repeat (each Value)).Type = (repeat (each Value)).self
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) -> (repeat Result<(each Value), any Error>) {
         func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, any Error> {
             switch token {
             case .some(let value):
                 return value.decodeResult(as: T.self)
             case .none:
-                // TODO: Fixup error when we have a decoding error
-                return .failure(RESPParsingError(code: .unexpectedType, buffer: token?.base ?? .init()))
+                return .failure(RESPDecodeError.invalidArraySize(self, expectedSize: self._parameterPackTypeSize(type)))
             }
         }
         var iterator = self.makeIterator()
         return (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
+    }
+
+    @inlinable
+    func _parameterPackTypeSize<each Value>(
+        _ type: (repeat (each Value)).Type
+    ) -> Int {
+        var counter = 0
+        func incrementCounter<T>(_ type: T.Type) {
+            counter += 1
+        }
+        repeat incrementCounter((each Value).self)
+        return counter
     }
 }
 
@@ -388,7 +409,7 @@ extension RESPToken.Map: RESPTokenDecodable {
         case .map(let respArray):
             self = respArray
         default:
-            throw RESPParsingError(code: .unexpectedType, buffer: token.base)
+            throw RESPDecodeError.tokenMismatch(expected: [.map, .attribute], token: token)
         }
     }
 
