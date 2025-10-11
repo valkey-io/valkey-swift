@@ -355,14 +355,14 @@ extension RESPToken.Array: RESPTokenDecodable {
     /// - Returns: Tuple of decoded values
     @inlinable
     public func decodeElements<each Value: RESPTokenDecodable>(
-        as: (repeat (each Value)).Type = (repeat (each Value)).self
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) throws -> (repeat each Value) {
         func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) throws -> T {
             switch token {
             case .some(let value):
                 return try T(fromRESP: value)
             case .none:
-                throw RESPDecodeError.invalidArraySize(self)
+                throw RESPDecodeError.invalidArraySize(self, expectedSize: self._parameterPackTypeSize(type))
             }
         }
         var iterator = self.makeIterator()
@@ -375,18 +375,30 @@ extension RESPToken.Array: RESPTokenDecodable {
     /// - Returns: Tuple of decoded values
     @inlinable
     public func decodeElementResults<each Value: RESPTokenDecodable>(
-        as: (repeat (each Value)).Type = (repeat (each Value)).self
+        as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) -> (repeat Result<(each Value), any Error>) {
         func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, any Error> {
             switch token {
             case .some(let value):
                 return value.decodeResult(as: T.self)
             case .none:
-                return .failure(RESPDecodeError.invalidArraySize(self))
+                return .failure(RESPDecodeError.invalidArraySize(self, expectedSize: self._parameterPackTypeSize(type)))
             }
         }
         var iterator = self.makeIterator()
         return (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
+    }
+
+    @inlinable
+    func _parameterPackTypeSize<each Value>(
+        _ type: (repeat (each Value)).Type
+    ) -> Int {
+        var counter = 0
+        func incrementCounter<T>(_ type: T.Type) {
+            counter += 1
+        }
+        repeat incrementCounter((each Value).self)
+        return counter
     }
 }
 

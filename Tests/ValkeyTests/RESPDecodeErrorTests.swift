@@ -44,6 +44,7 @@ struct RESPDecodeErrorTests {
             _ = try Test(fromRESP: resp)
         }
         #expect(error?.errorCode == .invalidArraySize)
+        #expect(error?.message == "Expected array of size 2 but got an array of size 1")
     }
 
     @Test
