@@ -10,7 +10,9 @@ import Foundation
 /// List of functions where the Response calculation has been disabled because we want
 /// to override the response in the Valkey library
 private let disableResponseCalculationCommands: Set<String> = [
+    "BLPOP",
     "BLMPOP",
+    "BRPOP",
     "BZMPOP",
     "BZPOPMAX",
     "BZPOPMIN",
