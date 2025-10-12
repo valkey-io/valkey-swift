@@ -16,7 +16,7 @@ extension FUNCTION {
 extension FUNCTION.LIST {
     public typealias Response = [ResponseElement]
     public struct ResponseElement: RESPTokenDecodable, Sendable {
-        public struct Script: RESPTokenDecodable, Sendable {
+        public struct Function: RESPTokenDecodable, Sendable {
             public let name: String
             public let description: String?
             public let flags: [String]
@@ -33,7 +33,7 @@ extension FUNCTION.LIST {
         }
         public let libraryName: String
         public let engine: String
-        public let functions: [Script]
+        public let functions: [Function]
         public let libraryCode: String?
 
         public init(fromRESP token: RESPToken) throws {
@@ -44,7 +44,7 @@ extension FUNCTION.LIST {
             let libraryCode = map["library_code"]
             self.libraryName = try String(fromRESP: libraryName)
             self.engine = try String(fromRESP: engine)
-            self.functions = try [Script](fromRESP: functions)
+            self.functions = try [Function](fromRESP: functions)
             self.libraryCode = try libraryCode.map { try String(fromRESP: $0) }
         }
     }
