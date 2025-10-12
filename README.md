@@ -4,17 +4,12 @@ A Swift client library for Valkey.
 
 ## Usage
 
-The valkey-swift project uses a connection pool, which requires a background process to manage it. You can either run it using a Task group
+The valkey-swift project uses a connection pool, which requires a background process to manage it. You can either run it using a TaskGroup or async let. Below we are using async let to run the connection pool background process.
 
 ```swift
 let valkeyClient = ValkeyClient(.hostname("localhost", port: 6379), logger: logger)
-try await withThrowingTaskGroup(of: Void.self) { group in
-    group.addTask {
-        // run connection pool in the background
-        await valkeyClient.run()
-    }
-    // use valkey client
-}
+async let _ = valkeyClient.run()
+// use valkey client
 ```
 
 Or you can use ValkeyClient with [swift-service-lifecycle](https://github.com/swift-server/swift-service-lifecycle).
