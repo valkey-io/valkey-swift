@@ -8,6 +8,8 @@
 
 import NIOCore
 
+/// List entry
+@_documentation(visibility: internal)
 public struct ListEntry: RESPTokenDecodable, Sendable {
     public let key: ValkeyKey
     public let value: ByteBuffer
