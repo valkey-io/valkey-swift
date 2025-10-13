@@ -341,7 +341,7 @@ extension RESPToken.Array: RESPTokenDecodable {
     /// - Returns: Parameter pack of decoded values as `Results`
     /// - Throws: RESPDecodeError
     @inlinable
-    public func decodeElementResults<each Value: RESPTokenDecodable>(
+    func decodeExecResults<each Value: RESPTokenDecodable>(
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
     ) -> (repeat Result<(each Value), any Error>) {
         func decodeOptionalRESPToken<T: RESPTokenDecodable>(_ token: RESPToken?, as: T.Type) -> Result<T, any Error> {

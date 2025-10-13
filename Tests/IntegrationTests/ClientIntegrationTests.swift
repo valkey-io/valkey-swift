@@ -315,6 +315,39 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testInvalidTransactionExecError() async throws {
+        // Invalid command that'll cause the transaction to fail
+        struct INVALID: ValkeyCommand {
+            static var name: String { "INVALID" }
+
+            func encode(into commandEncoder: inout Valkey.ValkeyCommandEncoder) {
+                commandEncoder.encodeArray("INVALID")
+            }
+        }
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            let response = try await client.transaction(
+                GET("test"),
+                INVALID()
+            )
+            // verify get error is the execabort error from EXEC
+            let getError = #expect(throws: ValkeyClientError.self) {
+                _ = try response.0.get()
+            }
+            #expect(getError?.errorCode == .commandError)
+            #expect(getError?.message?.hasPrefix("EXECABORT Transaction discarded") == true)
+            // verify invalid error is the error that caused the transaction to abort
+            let invalidError = #expect(throws: ValkeyClientError.self) {
+                _ = try response.1.get()
+            }
+            #expect(invalidError?.errorCode == .commandError)
+            #expect(invalidError?.message?.hasPrefix("ERR unknown command") == true)
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testWatch() async throws {
         let logger = {
             var logger = Logger(label: "Valkey")
@@ -331,7 +364,7 @@ struct ClientIntegratedTests {
                         cont2.yield()
                         await stream.first { _ in true }
                         await #expect(throws: ValkeyClientError(.transactionAborted)) {
-                            try await connection.transaction(
+                            _ = try await connection.transaction(
                                 SET("testWatch", value: "value2")
                             )
                         }

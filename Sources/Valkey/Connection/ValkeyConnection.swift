@@ -264,12 +264,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             error: any Error
         ) -> Result<Response, Error> {
             switch result {
-            case .failure(let error):
-                return .failure(error)
+            case .failure(let orginalError):
+                return .failure(orginalError)
             case .success:
                 return .failure(error)
             }
         }
+        // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
         MULTI().encode(into: &encoder)
@@ -280,17 +281,16 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         EXEC().encode(into: &encoder)
         promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
-        return try await _execute(
+
+        let result = try await _execute(
             buffer: encoder.buffer,
             promises: promises,
             valkeyPromises: promises.map { .nio($0) }
-        ) { promises -> sending Result<(repeat Result<(each Command).Response, Error>), Error> in
-            // get response from channel handler
+        ) { promises -> sending Result<(repeat Result<(each Command).Response, Error>), ValkeyClientError> in
+            let responses: EXEC.Response
             do {
-                guard let responses = try await promises.last!.futureResult._result().convertFromRESP(to: EXEC.Response.self).get() else {
-                    return .failure(ValkeyClientError(.transactionAborted))
-                }
-                return .success(responses.decodeElementResults())
+                let execFutureResult = promises.last!.futureResult
+                responses = try await execFutureResult.get().decode(as: EXEC.Response.self)
             } catch {
                 // we received an error while running the EXEC command. We return an
                 // array of results all with errors. If the queuing of a command already
@@ -298,15 +298,24 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 // that we have just caught
                 var index = AutoIncrementingInteger(1)
                 return await .success(
-                    (repeat
-                        replaceSuccessWithError(
-                            response: (each Command).Response.self,
-                            result: promises[index.next()].futureResult._result(),
-                            error: error
-                        ))
+                    (repeat replaceSuccessWithError(
+                        response: (each Command).Response.self,
+                        result: promises[index.next()].futureResult._result(),
+                        error: error
+                    ))
                 )
+
             }
+            // If EXEC returned nil then transaction was aborted because a
+            // WATCHed variable changed
+            guard let responses else {
+                return .failure(ValkeyClientError(.transactionAborted))
+            }
+            // We convert all the RESP errors in the response array from EXEC to Result.failure
+            // and attempt to convert the remaining to their respective Response types
+            return .success(responses.decodeExecResults())
         }.get()
+        return result
     }
 
     /// Pipeline a series of commands to Valkey connection
@@ -367,6 +376,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func transaction(
         _ commands: some Collection<any ValkeyCommand>
     ) async throws -> [Result<RESPToken, Error>] {
+        // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
         MULTI().encode(into: &encoder)
@@ -377,25 +387,16 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         EXEC().encode(into: &encoder)
         promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+
         return try await _execute(
             buffer: encoder.buffer,
             promises: promises,
             valkeyPromises: promises.map { .nio($0) }
-        ) { promises -> sending Result<[Result<RESPToken, Error>], Error> in
+        ) { promises -> sending Result<[Result<RESPToken, Error>], ValkeyClientError> in
+            let responses: EXEC.Response
             do {
-                guard let responses = try await promises.last!.futureResult._result().convertFromRESP(to: EXEC.Response.self).get() else {
-                    return .failure(ValkeyClientError(.transactionAborted))
-                }
-                return .success(
-                    responses.map {
-                        switch $0.identifier {
-                        case .simpleError, .bulkError:
-                            .failure(ValkeyClientError(.commandError, message: $0.errorString.map { Swift.String(buffer: $0) }))
-                        default:
-                            .success($0)
-                        }
-                    }
-                )
+                let execFutureResult = promises.last!.futureResult
+                responses = try await execFutureResult.get().decode(as: EXEC.Response.self)
             } catch {
                 // we received an error while running the EXEC command. We return an
                 // array of results all with errors. If the queuing of a command already
@@ -414,6 +415,22 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 }
                 return .success(results)
             }
+            // If EXEC returned nil then transaction was aborted because a
+            // WATCHed variable changed
+            guard let responses else {
+                return .failure(ValkeyClientError(.transactionAborted))
+            }
+            // We convert all the RESP errors in the response from EXEC to Result.failure
+            return .success(
+                responses.map {
+                    switch $0.identifier {
+                    case .simpleError, .bulkError:
+                        .failure(ValkeyClientError(.commandError, message: $0.errorString.map { Swift.String(buffer: $0) }))
+                    default:
+                        .success($0)
+                    }
+                }
+            )
         }.get()
     }
 
