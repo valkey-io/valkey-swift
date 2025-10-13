@@ -312,10 +312,10 @@ extension RESPToken.Array: RESPTokenDecodable {
         try self.map { try $0.decode() }
     }
 
-    /// Convert RESPToken Array to a tuple of values
-    /// - Parameter type: Tuple of types to convert to
+    /// Convert RESPToken Array to a parameter pack of values
+    /// - Parameter type: Parameter pack of types to convert to
     /// - Throws: RESPDecodeError
-    /// - Returns: Tuple of decoded values
+    /// - Returns: Parameter pack of decoded values
     @inlinable
     public func decodeElements<each Value: RESPTokenDecodable>(
         as type: (repeat (each Value)).Type = (repeat (each Value)).self
@@ -332,13 +332,13 @@ extension RESPToken.Array: RESPTokenDecodable {
         return try (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
     }
 
-    /// Convert RESPToken Array to a tuple of values.
+    /// Convert RESPToken Array to a parameter pack of `Results`.
     ///
     /// RESP error tokens are converted into Result.failure. This is used by the transaction
     /// code to convert the array response from EXEC into a parameter pack of Results
     ///
-    /// - Parameter as: Tuple of types to convert to
-    /// - Returns: Tuple of decoded values
+    /// - Parameter as: Parameter pack of types to convert to
+    /// - Returns: Parameter pack of decoded values as `Results`
     /// - Throws: RESPDecodeError
     @inlinable
     public func decodeElementResults<each Value: RESPTokenDecodable>(
