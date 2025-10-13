@@ -298,13 +298,7 @@ extension Dictionary: RESPTokenDecodable where Value: RESPTokenDecodable, Key: R
     public init(fromRESP token: RESPToken) throws {
         switch token.value {
         case .map(let respMap), .attribute(let respMap):
-            var array: [(Key, Value)] = []
-            for respElement in respMap {
-                let key = try Key(fromRESP: respElement.key)
-                let value = try Value(fromRESP: respElement.value)
-                array.append((key, value))
-            }
-            self = .init(array) { first, _ in first }
+            self = try respMap.decode(as: Self.self)
         default:
             throw RESPDecodeError.tokenMismatch(expected: [.map], token: token)
         }
@@ -358,7 +352,7 @@ extension RESPToken.Array: RESPTokenDecodable {
         return try (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
     }
 
-    /// Convert RESP3Token Array to a tuple of values
+    /// Convert RESPToken Array to a tuple of values
     /// - Parameter type: Tuple of types to convert to
     /// - Throws: RESPDecodeError
     /// - Returns: Tuple of decoded values
@@ -376,6 +370,16 @@ extension RESPToken.Array: RESPTokenDecodable {
         }
         var iterator = self.makeIterator()
         return (repeat decodeOptionalRESPToken(iterator.next(), as: (each Value).self))
+    }
+
+    /// Decode RESPToken Array consisting of alternating key, value entries
+    /// - Parameter as: Array of key value pairs type
+    /// - Returns: Array of key value pairs
+    @inlinable
+    public func decodeKeyValuePairs<Key: RESPTokenDecodable, Value: RESPTokenDecodable>(
+        as: [(Key, Value)].Type = [(Key, Value)].self
+    ) throws -> [(Key, Value)] {
+        try self.asMap().decode()
     }
 
     @inlinable
@@ -402,18 +406,28 @@ extension RESPToken.Map: RESPTokenDecodable {
         }
     }
 
-    /// Convert RESPToken Map to a Dictionary with String keys
+    /// Convert RESPToken Map to a Dictionary
     /// - Parameter type: Type to convert to
     /// - Throws: ValkeyClientError.unexpectedType
     /// - Returns: String value dictionary
     @inlinable
-    public func decode<Value: RESPTokenDecodable>(as type: [String: Value].Type = [String: Value].self) throws -> [String: Value] {
-        var array: [(String, Value)] = []
-        for respElement in self {
-            let key = try String(fromRESP: respElement.key)
-            let value = try Value(fromRESP: respElement.value)
-            array.append((key, value))
-        }
+    public func decode<Key: RESPTokenDecodable & Hashable, Value: RESPTokenDecodable>(
+        as type: [Key: Value].Type = [Key: Value].self
+    ) throws -> [Key: Value] {
+        let array = try self.decode(as: [(Key, Value)].self)
         return .init(array) { first, _ in first }
+    }
+
+    /// Convert RESPToken Map to a Array of Key Value pairs
+    /// - Parameter type: Type to convert to
+    /// - Throws: ValkeyClientError.unexpectedType
+    /// - Returns: String value dictionary
+    @inlinable
+    public func decode<Key: RESPTokenDecodable, Value: RESPTokenDecodable>(
+        as type: [(Key, Value)].Type = [(Key, Value)].self
+    ) throws -> [(Key, Value)] {
+        try self.map {
+            try (Key(fromRESP: $0.key), Value(fromRESP: $0.value))
+        }
     }
 }
