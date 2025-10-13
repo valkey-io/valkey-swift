@@ -324,6 +324,8 @@ public struct EXPIRETIME: ValkeyCommand {
 /// Returns all key names that match a pattern.
 @_documentation(visibility: internal)
 public struct KEYS: ValkeyCommand {
+    public typealias Response = RESPToken.Array
+
     @inlinable public static var name: String { "KEYS" }
 
     public var pattern: String
@@ -1164,7 +1166,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) with N being the number of keys in the database, under the assumption that the key names in the database and the given pattern have limited length.
     /// - Response: [Array]: List of keys matching pattern.
     @inlinable
-    public func keys(pattern: String) async throws -> KEYS.Response {
+    public func keys(pattern: String) async throws -> RESPToken.Array {
         try await execute(KEYS(pattern: pattern))
     }
 
