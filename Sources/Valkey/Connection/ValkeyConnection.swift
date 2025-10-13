@@ -391,7 +391,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             buffer: encoder.buffer,
             promises: promises,
             valkeyPromises: promises.map { .nio($0) }
-        ) { promises -> sending Result<[Result<RESPToken, Error>], ValkeyClientError> in
+        ) { promises -> Result<[Result<RESPToken, Error>], Error> in
             let responses: EXEC.Response
             do {
                 let execFutureResult = promises.last!.futureResult
@@ -481,7 +481,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///
     /// The function is provided with an array of EventLoopPromises for the responses of commands
     /// we care about and an array of valkey promises one for each command
-    @inlinable
+    @usableFromInline  // would like to set this to inlinable but it crashes in release if I do
     func _execute<Value>(
         buffer: ByteBuffer,
         promises: [EventLoopPromise<RESPToken>],
