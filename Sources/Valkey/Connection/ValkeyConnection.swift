@@ -282,7 +282,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         EXEC().encode(into: &encoder)
         promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
 
-        let result = try await _execute(
+        return try await _execute(
             buffer: encoder.buffer,
             promises: promises,
             valkeyPromises: promises.map { .nio($0) }
@@ -315,7 +315,6 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             // and attempt to convert the remaining to their respective Response types
             return .success(responses.decodeExecResults())
         }.get()
-        return result
     }
 
     /// Pipeline a series of commands to Valkey connection
