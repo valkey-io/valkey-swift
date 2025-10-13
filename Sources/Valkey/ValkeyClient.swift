@@ -188,7 +188,7 @@ extension ValkeyClient {
     @inlinable
     public func execute<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         await node.execute(commands)
     }
     /// Pipeline a series of commands as a transaction to Valkey connection
@@ -227,7 +227,7 @@ extension ValkeyClient {
     @inlinable
     public func transaction<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async throws -> sending [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+    ) async throws -> [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
         try await node.transaction(commands)
     }
 }

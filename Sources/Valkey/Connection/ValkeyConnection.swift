@@ -332,7 +332,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func execute(
         _ commands: some Collection<any ValkeyCommand>
-    ) async -> sending [Result<RESPToken, any Error>] {
+    ) async -> [Result<RESPToken, any Error>] {
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
