@@ -324,8 +324,6 @@ public struct EXPIRETIME: ValkeyCommand {
 /// Returns all key names that match a pattern.
 @_documentation(visibility: internal)
 public struct KEYS: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public static var name: String { "KEYS" }
 
     public var pattern: String
@@ -740,8 +738,6 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
 /// Iterates over the key names in the database.
 @_documentation(visibility: internal)
 public struct SCAN: ValkeyCommand {
-    public typealias Response = RESPToken.Array
-
     @inlinable public static var name: String { "SCAN" }
 
     public var cursor: Int
@@ -1168,7 +1164,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) with N being the number of keys in the database, under the assumption that the key names in the database and the given pattern have limited length.
     /// - Response: [Array]: List of keys matching pattern.
     @inlinable
-    public func keys(pattern: String) async throws -> RESPToken.Array {
+    public func keys(pattern: String) async throws -> KEYS.Response {
         try await execute(KEYS(pattern: pattern))
     }
 
@@ -1433,7 +1429,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(1) for every call. O(N) for a complete iteration, including enough command calls for the cursor to return back to 0. N is the number of elements inside the collection.
     /// - Response: [Array]: Cursor and scan response in array form.
     @inlinable
-    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> RESPToken.Array {
+    public func scan(cursor: Int, pattern: String? = nil, count: Int? = nil, type: String? = nil) async throws -> SCAN.Response {
         try await execute(SCAN(cursor: cursor, pattern: pattern, count: count, type: type))
     }
 

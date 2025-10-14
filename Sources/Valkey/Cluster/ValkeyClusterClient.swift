@@ -259,7 +259,7 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute(
         _ commands: [any ValkeyCommand]
-    ) async -> sending [Result<RESPToken, any Error>] {
+    ) async -> [Result<RESPToken, any Error>] {
         guard commands.count > 0 else { return [] }
         // get a list of nodes and the commands that should be run on them
         do {
@@ -321,7 +321,7 @@ public final class ValkeyClusterClient: Sendable {
     func execute<Commands: Collection & Sendable>(
         node: ValkeyNodeClient,
         commands: Commands
-    ) async throws -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
+    ) async throws -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand, Commands.Index == Int {
         // execute pipeline
         var results = await node.execute(commands)
         var retryCommands: [(any ValkeyCommand, Int)] = []

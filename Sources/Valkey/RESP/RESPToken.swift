@@ -37,6 +37,7 @@ public struct RESPToken: Hashable, Sendable {
             }
         }
 
+        @usableFromInline
         internal func asMap() throws -> Map {
             guard (self.count & 1) == 0 else { throw RESPParsingError(code: .invalidElementCount, buffer: self.buffer) }
             return Map(count: self.count / 2, buffer: self.buffer)
@@ -613,10 +614,10 @@ extension RESPToken.Value: CustomDebugStringConvertible {
 
     func descriptionWith(indent tab: String = "", childIndent childTab: String = "", redact: Bool = true) -> String {
         switch self {
-        case .simpleString(let buffer): "\(tab).simpleString(\(redact ? "\"***\"" : "\"\(String(buffer: buffer))\""))"
-        case .simpleError(let buffer): "\(tab).simpleError(\("\"\(String(buffer: buffer))\""))"
+        case .simpleString(let buffer): "\(tab).simpleString(\"\(String(buffer: buffer))\")"
+        case .simpleError(let buffer): "\(tab).simpleError(\"\(String(buffer: buffer))\")"
         case .bulkString(let buffer): "\(tab).bulkString(\(redact ? "\"***\"" : "\"\(String(buffer: buffer))\""))"
-        case .bulkError(let buffer): "\(tab).bulkError(\("\"\(String(buffer: buffer))\""))"
+        case .bulkError(let buffer): "\(tab).bulkError(\"\(String(buffer: buffer))\")"
         case .verbatimString(let buffer): "\(tab).verbatimString(\(redact ? "\"txt:***\"" : "\"\(String(buffer: buffer))\""))"
         case .number(let integer): "\(tab).number(\(integer))"
         case .double(let double): "\(tab).double(\(double))"
