@@ -264,8 +264,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             error: any Error
         ) -> Result<Response, Error> {
             switch result {
-            case .failure(let orginalError):
-                return .failure(orginalError)
+            case .failure(let originalError):
+                return .failure(originalError)
             case .success:
                 return .failure(error)
             }
@@ -273,6 +273,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
+        promises.reserveCapacity(count(repeat each commands) + 2)
         MULTI().encode(into: &encoder)
         promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         for command in repeat each commands {
@@ -378,6 +379,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
+        promises.reserveCapacity(commands.count + 2)
         MULTI().encode(into: &encoder)
         promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
         for command in commands {
@@ -505,6 +507,18 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         } onCancel: {
             self.cancel(requestID: requestID)
         }
+    }
+
+    /// Count elements in a parameter pack
+    ///
+    /// Optimizer is clever enough to reduce this down to one instruction
+    @inlinable
+    func count<each T>(_ element: repeat each T) -> Int {
+        var count = 0
+        for _ in repeat each element {
+            count += 1
+        }
+        return count
     }
 
     #if DistributedTracingSupport
