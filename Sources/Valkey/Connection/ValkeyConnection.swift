@@ -243,10 +243,70 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
     }
 
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into a parameter pack of Results, one
+    /// for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    /// - Throws: ValkeyTransactionError when EXEC aborts
+    @inlinable
+    public func transaction<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        // Construct encoded commands and promise array
+        var encoder = ValkeyCommandEncoder()
+        var promises: [EventLoopPromise<RESPToken>] = []
+        MULTI().encode(into: &encoder)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        for command in repeat each commands {
+            command.encode(into: &encoder)
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        }
+        EXEC().encode(into: &encoder)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+
+        return try await _execute(
+            buffer: encoder.buffer,
+            promises: promises,
+            valkeyPromises: promises.map { .nio($0) }
+        ) { promises -> sending Result<(repeat Result<(each Command).Response, Error>), any Error> in
+            let responses: EXEC.Response
+            do {
+                let execFutureResult = promises.last!.futureResult
+                responses = try await execFutureResult.get().decode(as: EXEC.Response.self)
+            } catch let error as ValkeyClientError where error.errorCode == .commandError {
+                // we received an error while running the EXEC command. Extract queuing
+                // results and throw error
+                var results: [Result<RESPToken, Error>] = .init()
+                results.reserveCapacity(promises.count - 2)
+                for promise in promises[1..<(promises.count - 1)] {
+                    results.append(await promise.futureResult._result())
+                }
+                return .failure(ValkeyTransactionError.transactionErrors(queuedResults: results, execError: error))
+            } catch {
+                return .failure(error)
+            }
+            // If EXEC returned nil then transaction was aborted because a
+            // WATCHed variable changed
+            guard let responses else {
+                return .failure(ValkeyTransactionError.transactionAborted)
+            }
+            // We convert all the RESP errors in the response array from EXEC to Result.failure
+            // and attempt to convert the remaining to their respective Response types
+            return .success(responses.decodeExecResults())
+        }.get()
+    }
+
     /// Pipeline a series of commands to Valkey connection
     ///
     /// Once all the responses for the commands have been received the function returns
-    /// a parameter pack of Results, one for each command.
+    /// an array of Results, one for each command.
     ///
     /// This is an alternative version of the pipeline function ``ValkeyConnection/execute(_:)->(_,_)``
     /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
@@ -257,7 +317,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func execute(
         _ commands: some Collection<any ValkeyCommand>
-    ) async -> sending [Result<RESPToken, any Error>] {
+    ) async -> [Result<RESPToken, any Error>] {
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
@@ -280,6 +340,78 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             }
             return results
         }
+    }
+
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
+    ///
+    /// This is an alternative version of the transaction function ``ValkeyConnection/transaction(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
+    /// responses are returned as ``RESPToken`` instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    /// - Throws: ValkeyTransactionError when EXEC aborts
+    @inlinable
+    public func transaction(
+        _ commands: some Collection<any ValkeyCommand>
+    ) async throws -> [Result<RESPToken, Error>] {
+        // Construct encoded commands and promise array
+        var encoder = ValkeyCommandEncoder()
+        var promises: [EventLoopPromise<RESPToken>] = []
+        MULTI().encode(into: &encoder)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        for command in commands {
+            command.encode(into: &encoder)
+            promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+        }
+        EXEC().encode(into: &encoder)
+        promises.append(channel.eventLoop.makePromise(of: RESPToken.self))
+
+        return try await _execute(
+            buffer: encoder.buffer,
+            promises: promises,
+            valkeyPromises: promises.map { .nio($0) }
+        ) { promises -> Result<[Result<RESPToken, Error>], any Error> in
+            let responses: EXEC.Response
+            do {
+                let execFutureResult = promises.last!.futureResult
+                responses = try await execFutureResult.get().decode(as: EXEC.Response.self)
+            } catch let error as ValkeyClientError where error.errorCode == .commandError {
+                // we received an error while running the EXEC command. Extract queuing
+                // results and throw error
+                var results: [Result<RESPToken, Error>] = .init()
+                results.reserveCapacity(promises.count - 2)
+                for promise in promises[1..<(promises.count - 1)] {
+                    results.append(await promise.futureResult._result())
+                }
+                return .failure(ValkeyTransactionError.transactionErrors(queuedResults: results, execError: error))
+            } catch {
+                return .failure(error)
+            }
+            // If EXEC returned nil then transaction was aborted because a
+            // WATCHed variable changed
+            guard let responses else {
+                return .failure(ValkeyTransactionError.transactionAborted)
+            }
+            // We convert all the RESP errors in the response from EXEC to Result.failure
+            return .success(
+                responses.map {
+                    switch $0.identifier {
+                    case .simpleError, .bulkError:
+                        .failure(ValkeyClientError(.commandError, message: $0.errorString.map { Swift.String(buffer: $0) }))
+                    default:
+                        .success($0)
+                    }
+                }
+            )
+        }.get()
     }
 
     /// Pipeline a series of commands to Valkey connection and precede each command with an ASKING
@@ -330,7 +462,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     ///
     /// The function is provided with an array of EventLoopPromises for the responses of commands
     /// we care about and an array of valkey promises one for each command
-    @inlinable
+    @usableFromInline  // would like to set this to inlinable but it crashes in release if I do
     func _execute<Value>(
         buffer: ByteBuffer,
         promises: [EventLoopPromise<RESPToken>],

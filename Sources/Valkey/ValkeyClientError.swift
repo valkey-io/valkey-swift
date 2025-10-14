@@ -16,7 +16,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
             case commandError
             case subscriptionError
             case unsolicitedToken
-            case transactionAborted
             case tokenDoesNotExist
             case cancelled
             case connectionClosedDueToCancellation
@@ -38,8 +37,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         public static var subscriptionError: Self { .init(.subscriptionError) }
         /// Received an unsolicited token from the server.
         public static var unsolicitedToken: Self { .init(.unsolicitedToken) }
-        /// Transaction aborted because a watched key was touched.
-        public static var transactionAborted: Self { .init(.transactionAborted) }
         /// Expected token to exist.
         ///
         /// Thrown when iterating an array of tokens that is too short.
@@ -73,7 +70,6 @@ public struct ValkeyClientError: Error, CustomStringConvertible, Equatable {
         case .commandError: self.message ?? "Valkey command returned an error"
         case .subscriptionError: self.message ?? "Received invalid subscription push event"
         case .unsolicitedToken: self.message ?? "Received unsolicited token from Valkey server"
-        case .transactionAborted: self.message ?? "Transaction was aborted because a watched key was touched"
         case .tokenDoesNotExist: self.message ?? "Expected token does not exist."
         case .cancelled: self.message ?? "Task was cancelled."
         case .connectionClosedDueToCancellation: self.message ?? "Connection was closed because another command was cancelled."

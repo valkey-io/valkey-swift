@@ -277,14 +277,73 @@ struct ClientIntegratedTests {
     func testTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
-            try await withKey(connection: connection) { key in
-                let responses = try await connection.transaction(
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                let responses = try await client.transaction(
                     SET(key, value: "100"),
                     INCR(key),
                     GET(key)
                 )
                 #expect(try responses.2.get().map { String(buffer: $0) } == "101")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testInvalidTransactionSetIncrGet() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                try await client.set(key, value: "100")
+                let responses = try await client.transaction(
+                    LPUSH(key, elements: ["Hello"]),
+                    INCR(key),
+                    GET(key)
+                )
+                let lpushError = #expect(throws: ValkeyClientError.self) {
+                    _ = try responses.0.get()
+                }
+                #expect(lpushError?.errorCode == .commandError)
+                #expect(lpushError?.message?.hasPrefix("WRONGTYPE") == true)
+                let result = try responses.2.get().map { String(buffer: $0) }
+                #expect(result == "101")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testInvalidTransactionExecError() async throws {
+        // Invalid command that'll cause the transaction to fail
+        struct INVALID: ValkeyCommand {
+            static var name: String { "INVALID" }
+
+            func encode(into commandEncoder: inout Valkey.ValkeyCommandEncoder) {
+                commandEncoder.encodeArray("INVALID")
+            }
+        }
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            let error = await #expect(throws: ValkeyTransactionError.self) {
+                try await client.transaction(
+                    GET("test"),
+                    INVALID()
+                )
+            }
+            guard case .some(.transactionErrors(let results, _)) = error else {
+                Issue.record("Expected a transaction error")
+                return
+            }
+            guard case .success = results[0] else {
+                Issue.record("Queuing GET should be successful")
+                return
+            }
+            guard case .failure = results[1] else {
+                Issue.record("Queuing INVALID should be unsuccessful")
+                return
             }
         }
     }
@@ -306,10 +365,14 @@ struct ClientIntegratedTests {
                         try await connection.watch(keys: ["testWatch"])
                         cont2.yield()
                         await stream.first { _ in true }
-                        await #expect(throws: ValkeyClientError(.transactionAborted)) {
-                            try await connection.transaction(
+                        let error = await #expect(throws: ValkeyTransactionError.self) {
+                            _ = try await connection.transaction(
                                 SET("testWatch", value: "value2")
                             )
+                        }
+                        guard case .transactionAborted = error else {
+                            Issue.record("Unexpected error")
+                            return
                         }
                     }
                     group.addTask {

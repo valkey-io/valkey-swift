@@ -178,7 +178,7 @@ extension ValkeyNodeClient {
     /// - Parameter commands: Parameter pack of ValkeyCommands
     /// - Returns: Parameter pack holding the results of all the commands
     @inlinable
-    public func execute<each Command: ValkeyCommand>(
+    func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, any Error>) {
         do {
@@ -203,9 +203,9 @@ extension ValkeyNodeClient {
     /// - Parameter commands: Collection of ValkeyCommands
     /// - Returns: Array holding the RESPToken responses of all the commands
     @inlinable
-    public func execute<Commands: Collection & Sendable>(
+    func execute<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
                 await connection.execute(commands)
@@ -215,11 +215,55 @@ extension ValkeyNodeClient {
         }
     }
 
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into a parameter pack of Results, one
+    /// for each command.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    @inlinable
+    func transaction<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        try await self.withConnection { connection in
+            try await connection.transaction(repeat (each commands))
+        }
+    }
+
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
+    ///
+    /// This is an alternative version of the transaction function ``ValkeyNodeClient/transaction(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
+    /// responses are returned as ``RESPToken`` instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    @inlinable
+    func transaction<Commands: Collection & Sendable>(
+        _ commands: Commands
+    ) async throws -> [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+        try await self.withConnection { connection in
+            try await connection.transaction(commands)
+        }
+    }
+
     /// Internal command used by cluster client, that precedes each command with a ASKING
     /// command
     func executeWithAsk<Commands: Collection & Sendable>(
         _ commands: Commands
-    ) async -> sending [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
+    ) async -> [Result<RESPToken, any Error>] where Commands.Element == any ValkeyCommand {
         do {
             return try await self.withConnection { connection in
                 await connection.executeWithAsk(commands)
