@@ -258,7 +258,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
-    ) async throws(ValkeyTransactionError) -> sending (repeat Result<(each Command).Response, Error>) {
+    ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -275,12 +275,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             buffer: encoder.buffer,
             promises: promises,
             valkeyPromises: promises.map { .nio($0) }
-        ) { promises -> sending Result<(repeat Result<(each Command).Response, Error>), ValkeyTransactionError> in
+        ) { promises -> sending Result<(repeat Result<(each Command).Response, Error>), any Error> in
             let responses: EXEC.Response
             do {
                 let execFutureResult = promises.last!.futureResult
                 responses = try await execFutureResult.get().decode(as: EXEC.Response.self)
-            } catch {
+            } catch let error as ValkeyClientError where error.errorCode == .commandError {
                 // we received an error while running the EXEC command. Extract queuing
                 // results and throw error
                 var results: [Result<RESPToken, Error>] = .init()
@@ -288,12 +288,14 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 for promise in promises[1..<(promises.count - 1)] {
                     results.append(await promise.futureResult._result())
                 }
-                return .failure(.transactionErrors(queuedResults: results, execError: error))
+                return .failure(ValkeyTransactionError.transactionErrors(queuedResults: results, execError: error))
+            } catch {
+                return .failure(error)
             }
             // If EXEC returned nil then transaction was aborted because a
             // WATCHed variable changed
             guard let responses else {
-                return .failure(.transactionAborted)
+                return .failure(ValkeyTransactionError.transactionAborted)
             }
             // We convert all the RESP errors in the response array from EXEC to Result.failure
             // and attempt to convert the remaining to their respective Response types
@@ -359,7 +361,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     @inlinable
     public func transaction(
         _ commands: some Collection<any ValkeyCommand>
-    ) async throws(ValkeyTransactionError) -> [Result<RESPToken, Error>] {
+    ) async throws -> [Result<RESPToken, Error>] {
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -376,12 +378,12 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
             buffer: encoder.buffer,
             promises: promises,
             valkeyPromises: promises.map { .nio($0) }
-        ) { promises -> Result<[Result<RESPToken, Error>], ValkeyTransactionError> in
+        ) { promises -> Result<[Result<RESPToken, Error>], any Error> in
             let responses: EXEC.Response
             do {
                 let execFutureResult = promises.last!.futureResult
                 responses = try await execFutureResult.get().decode(as: EXEC.Response.self)
-            } catch {
+            } catch let error as ValkeyClientError where error.errorCode == .commandError {
                 // we received an error while running the EXEC command. Extract queuing
                 // results and throw error
                 var results: [Result<RESPToken, Error>] = .init()
@@ -389,12 +391,14 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 for promise in promises[1..<(promises.count - 1)] {
                     results.append(await promise.futureResult._result())
                 }
-                return .failure(.transactionErrors(queuedResults: results, execError: error))
+                return .failure(ValkeyTransactionError.transactionErrors(queuedResults: results, execError: error))
+            } catch {
+                return .failure(error)
             }
             // If EXEC returned nil then transaction was aborted because a
             // WATCHed variable changed
             guard let responses else {
-                return .failure(.transactionAborted)
+                return .failure(ValkeyTransactionError.transactionAborted)
             }
             // We convert all the RESP errors in the response from EXEC to Result.failure
             return .success(
