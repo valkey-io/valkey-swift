@@ -333,7 +333,7 @@ struct ClientIntegratedTests {
                     INVALID()
                 )
             }
-            guard case .some(.transactionErrors(queuedResults: let results)) = error else {
+            guard case .some(.transactionErrors(let results, _)) = error else {
                 Issue.record("Expected a transaction error")
                 return
             }

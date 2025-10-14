@@ -295,7 +295,7 @@ struct ConnectionTests {
         do {
             _ = try await asyncResults
             Issue.record("Transaction should fail")
-        } catch ValkeyTransactionError.transactionErrors(queuedResults: let results) {
+        } catch ValkeyTransactionError.transactionErrors(let results, _) {
             switch results[1] {
             case .failure(let error):
                 let valkeyError = try #require(error as? ValkeyClientError)
@@ -386,7 +386,7 @@ struct ConnectionTests {
         do {
             _ = try await asyncResults
             Issue.record("Transaction should fail")
-        } catch ValkeyTransactionError.transactionErrors(queuedResults: let results) {
+        } catch ValkeyTransactionError.transactionErrors(let results, _) {
             switch results[1] {
             case .failure(let error):
                 let valkeyError = try #require(error as? ValkeyClientError)

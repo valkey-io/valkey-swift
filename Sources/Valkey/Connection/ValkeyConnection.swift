@@ -288,7 +288,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 for promise in promises[1..<(promises.count - 1)] {
                     results.append(await promise.futureResult._result())
                 }
-                return .failure(.transactionErrors(queuedResults: results))
+                return .failure(.transactionErrors(queuedResults: results, execError: error))
             }
             // If EXEC returned nil then transaction was aborted because a
             // WATCHed variable changed
@@ -389,7 +389,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 for promise in promises[1..<(promises.count - 1)] {
                     results.append(await promise.futureResult._result())
                 }
-                return .failure(.transactionErrors(queuedResults: results))
+                return .failure(.transactionErrors(queuedResults: results, execError: error))
             }
             // If EXEC returned nil then transaction was aborted because a
             // WATCHed variable changed

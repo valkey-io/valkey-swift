@@ -11,5 +11,5 @@ public enum ValkeyTransactionError: Error {
     /// Transaction was aborted because a watched value was modified
     case transactionAborted
     /// Transaction was discarded because of previous error queuing commands
-    case transactionErrors(queuedResults: [Result<RESPToken, Error>])
+    case transactionErrors(queuedResults: [Result<RESPToken, Error>], execError: any Error)
 }
