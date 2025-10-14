@@ -28,6 +28,24 @@ public protocol ValkeyClientProtocol: Sendable {
     /// - Returns: Array holding the RESPToken responses of all the commands
     func execute(_ commands: [any ValkeyCommand]) async -> [Result<RESPToken, any Error>]
 
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
+    ///
+    /// This is an alternative version of the transaction function ``ValkeyConnection/transaction(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
+    /// responses are returned as ``RESPToken`` instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    /// - Throws: ValkeyTransactionError when EXEC aborts
+    func transaction(_ commands: [any ValkeyCommand]) async throws -> [Result<RESPToken, any Error>]
+
     /// Execute subscribe command and run closure using related ``ValkeySubscription``
     /// AsyncSequence
     ///
