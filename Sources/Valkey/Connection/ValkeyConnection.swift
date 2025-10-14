@@ -449,7 +449,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     func transactionWithAsk(
         _ commands: some Collection<any ValkeyCommand>
     ) async throws -> [Result<RESPToken, any Error>] {
-        // this currently allocates a promise for every command. We could collapse this down to one promise
+        self.logger.trace("transaction asking", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
         var valkeyPromises: [ValkeyPromise<RESPToken>] = []
