@@ -328,7 +328,7 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// Transactions come only affect keys coming from the same HashSlot.
     ///
-    /// This is an alternative version of the transaction function ``ValkeyCluster/transaction(_:)->(_,_)``
+    /// This is an alternative version of the transaction function ``ValkeyClusterClient/transaction(_:)->(_,_)``
     /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
     /// responses are returned as ``RESPToken`` instead of the response type for the command.
     ///
