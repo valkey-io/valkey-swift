@@ -327,22 +327,24 @@ struct ClientIntegratedTests {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
-            let response = try await client.transaction(
-                GET("test"),
-                INVALID()
-            )
-            // verify get error is the execabort error from EXEC
-            let getError = #expect(throws: ValkeyClientError.self) {
-                _ = try response.0.get()
+            let error = await #expect(throws: ValkeyTransactionError.self) {
+                try await client.transaction(
+                    GET("test"),
+                    INVALID()
+                )
             }
-            #expect(getError?.errorCode == .commandError)
-            #expect(getError?.message?.hasPrefix("EXECABORT Transaction discarded") == true)
-            // verify invalid error is the error that caused the transaction to abort
-            let invalidError = #expect(throws: ValkeyClientError.self) {
-                _ = try response.1.get()
+            guard case .some(.transactionErrors(queuedResults: let results)) = error else {
+                Issue.record("Expected a transaction error")
+                return
             }
-            #expect(invalidError?.errorCode == .commandError)
-            #expect(invalidError?.message?.hasPrefix("ERR unknown command") == true)
+            guard case .success = results[0] else {
+                Issue.record("Queuing GET should be successful")
+                return
+            }
+            guard case .failure = results[1] else {
+                Issue.record("Queuing INVALID should be unsuccessful")
+                return
+            }
         }
     }
 
@@ -363,10 +365,14 @@ struct ClientIntegratedTests {
                         try await connection.watch(keys: ["testWatch"])
                         cont2.yield()
                         await stream.first { _ in true }
-                        await #expect(throws: ValkeyClientError(.transactionAborted)) {
+                        let error = await #expect(throws: ValkeyTransactionError.self) {
                             _ = try await connection.transaction(
                                 SET("testWatch", value: "value2")
                             )
+                        }
+                        guard case .transactionAborted = error else {
+                            Issue.record("Unexpected error")
+                            return
                         }
                     }
                     group.addTask {

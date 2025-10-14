@@ -291,13 +291,20 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
         try await channel.writeInbound(RESPToken(.simpleError("ERROR")).base)
         try await channel.writeInbound(RESPToken(.simpleError("EXECABORT")).base)
-        let results = try await asyncResults
-        var error = #expect(throws: ValkeyClientError.self) { try results.0.get() }
-        #expect(error?.errorCode == .commandError)
-        #expect(error?.message == "EXECABORT")
-        error = #expect(throws: ValkeyClientError.self) { try results.1.get() }
-        #expect(error?.errorCode == .commandError)
-        #expect(error?.message == "ERROR")
+
+        do {
+            _ = try await asyncResults
+            Issue.record("Transaction should fail")
+        } catch ValkeyTransactionError.transactionErrors(queuedResults: let results) {
+            switch results[1] {
+            case .failure(let error):
+                let valkeyError = try #require(error as? ValkeyClientError)
+                #expect(valkeyError.errorCode == .commandError)
+                #expect(valkeyError.message == "ERROR")
+            case .success:
+                Issue.record("Should receive an error")
+            }
+        }
     }
 
     @Test
@@ -375,13 +382,20 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("QUEUED")).base)
         try await channel.writeInbound(RESPToken(.simpleError("ERROR")).base)
         try await channel.writeInbound(RESPToken(.simpleError("EXECABORT")).base)
-        let results = try await asyncResults
-        var error = #expect(throws: ValkeyClientError.self) { try results[0].get() }
-        #expect(error?.errorCode == .commandError)
-        #expect(error?.message == "EXECABORT")
-        error = #expect(throws: ValkeyClientError.self) { try results[1].get() }
-        #expect(error?.errorCode == .commandError)
-        #expect(error?.message == "ERROR")
+
+        do {
+            _ = try await asyncResults
+            Issue.record("Transaction should fail")
+        } catch ValkeyTransactionError.transactionErrors(queuedResults: let results) {
+            switch results[1] {
+            case .failure(let error):
+                let valkeyError = try #require(error as? ValkeyClientError)
+                #expect(valkeyError.errorCode == .commandError)
+                #expect(valkeyError.message == "ERROR")
+            case .success:
+                Issue.record("Should receive an error")
+            }
+        }
     }
 
     @Test
