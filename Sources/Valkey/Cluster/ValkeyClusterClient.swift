@@ -208,18 +208,9 @@ public final class ValkeyClusterClient: Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, any Error>) {
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, any Error>, to: Response.Type) -> Result<Response, any Error> {
-            result.flatMap {
-                do {
-                    return try .success(Response(fromRESP: $0))
-                } catch {
-                    return .failure(error)
-                }
-            }
-        }
         let results = await self.execute([any ValkeyCommand](commands: repeat each commands))
         var index = AutoIncrementingInteger()
-        return (repeat convert(results[index.next()], to: (each Command).Response.self))
+        return (repeat results[index.next()].convertFromRESP(to: (each Command).Response.self))
     }
 
     /// Results from pipeline and index for each result
@@ -312,7 +303,32 @@ public final class ValkeyClusterClient: Sendable {
     /// of the EXEC command is transformed into an array of RESPToken Results, one for
     /// each command.
     ///
-    /// This is an alternative version of the transaction function ``ValkeyConnection/transaction(_:)->(_,_)``
+    /// Transactions come only affect keys coming from the same HashSlot.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    /// - Throws: ValkeyTransactionError when EXEC aborts
+    @inlinable
+    public func transaction<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async throws -> sending (repeat Result<(each Command).Response, any Error>) {
+        let results = try await self.transaction([any ValkeyCommand](commands: repeat each commands))
+        var index = AutoIncrementingInteger()
+        return (repeat results[index.next()].convertFromRESP(to: (each Command).Response.self))
+    }
+
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
+    ///
+    /// Transactions come only affect keys coming from the same HashSlot.
+    ///
+    /// This is an alternative version of the transaction function ``ValkeyCluster/transaction(_:)->(_,_)``
     /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
     /// responses are returned as ``RESPToken`` instead of the response type for the command.
     ///
@@ -627,6 +643,7 @@ public final class ValkeyClusterClient: Sendable {
         case let transactionError as ValkeyTransactionError:
             switch transactionError {
             case .transactionErrors(let results, let execError):
+                // check whether queued results include any errors that warrent a retry
                 for result in results {
                     if case .failure(let queuedError) = result {
                         let queuedAction = self.getRetryAction(from: queuedError)
@@ -635,6 +652,7 @@ public final class ValkeyClusterClient: Sendable {
                         }
                     }
                 }
+                // check whether EXEC error warrents a retry
                 let execAction = self.getRetryAction(from: execError)
                 guard case .dontRetry = execAction else {
                     return execAction

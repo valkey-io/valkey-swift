@@ -19,7 +19,7 @@ public protocol ValkeyClientProtocol: Sendable {
     /// Once all the responses for the commands have been received the function returns
     /// an array of RESPToken Results, one for each command.
     ///
-    /// This is an alternative version of the pipelining function ``ValkeyClient/execute(_:)->(_,_)``
+    /// This is an alternative version of the pipelining function ``ValkeyConnection/execute(_:)->(_,_)``
     /// that allows for a collection of ValkeyCommands. It provides more flexibility but
     /// is more expensive to run and the command responses are returned as ``RESPToken``
     /// instead of the response type for the command.
