@@ -20,7 +20,7 @@ extension ValkeyClusterClient {
         isolation: isolated (any Actor)? = #isolation,
         _ operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> sending Value {
-        let node = try await self.nodeClient(for: [], readOnly: false)
+        let node = try await self.nodeClient(for: [], nodeSelection: .primary)
         let id = node.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {

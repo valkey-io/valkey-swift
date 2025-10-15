@@ -533,19 +533,17 @@ where
     }
 
     @inlinable
-    package func poolFastPath(for slots: some Collection<HashSlot>, readOnly: Bool) throws(ValkeyClusterError) -> ConnectionPool {
+    package func poolFastPath(
+        for slots: some Collection<HashSlot>,
+        nodeSelection: ValkeyClusterNodeSelection
+    ) throws(ValkeyClusterError) -> ConnectionPool {
         switch self.clusterState {
         case .unavailable:
             throw ValkeyClusterError.clusterIsUnavailable
 
         case .degraded(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
-            let nodeID =
-                if readOnly {
-                    shardID.replicas.randomElement() ?? shardID.primary
-                } else {
-                    shardID.primary
-                }
+            let nodeID = nodeSelection.select(nodeIDs: shardID)
             if let pool = self.runningClients[nodeID]?.pool {
                 return pool
             }
@@ -556,12 +554,7 @@ where
 
         case .healthy(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
-            let nodeID =
-                if readOnly {
-                    shardID.replicas.randomElement() ?? shardID.primary
-                } else {
-                    shardID.primary
-                }
+            let nodeID = nodeSelection.select(nodeIDs: shardID)
             if let pool = self.runningClients[nodeID]?.pool {
                 return pool
             }
