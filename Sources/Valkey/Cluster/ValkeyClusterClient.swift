@@ -146,9 +146,14 @@ public final class ValkeyClusterClient: Sendable {
     @inlinable
     public func execute<Command: ValkeyCommand>(_ command: Command) async throws -> Command.Response {
         let hashSlot = try self.hashSlot(for: command.keysAffected)
-        let readOnly = self.clientConfiguration.useReadOnlyReplicas && command.isReadOnly
+        let nodeSelection =
+            if command.isReadOnly {
+                self.clientConfiguration.readOnlyReplicaSelection.clusterNodeSelection
+            } else {
+                ValkeyClusterNodeSelection.primary
+            }
         var clientSelector: () async throws -> ValkeyNodeClient = {
-            try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], readOnly: readOnly)
+            try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], nodeSelection: nodeSelection)
         }
 
         var asking = false
@@ -470,7 +475,13 @@ public final class ValkeyClusterClient: Sendable {
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
         let hashSlots = keys.compactMap { HashSlot(key: $0) }
-        let node = try await self.nodeClient(for: hashSlots, readOnly: self.clientConfiguration.useReadOnlyReplicas && readOnly)
+        let nodeSelection =
+            if readOnly {
+                self.clientConfiguration.readOnlyReplicaSelection.clusterNodeSelection
+            } else {
+                ValkeyClusterNodeSelection.primary
+            }
+        let node = try await self.nodeClient(for: hashSlots, nodeSelection: nodeSelection)
         return try await node.withConnection(isolation: isolation, operation: operation)
     }
 
@@ -572,7 +583,7 @@ public final class ValkeyClusterClient: Sendable {
                 // Get hash slot for key and add all the commands you have iterated through so far to the
                 // node associated with that key and break out of loop
                 let hashSlot = try self.hashSlot(for: keysAffected)
-                let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], readOnly: false)
+                let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], nodeSelection: .primary)
                 let address = node.serverAddress
                 let nodeAndCommands = NodeAndCommands(node: node, commandIndices: .init(commands.startIndex..<index))
                 nodeMap[address] = nodeAndCommands
@@ -588,7 +599,7 @@ public final class ValkeyClusterClient: Sendable {
                 if keysAffected.count > 0 {
                     // If command affects a key get hash slot for key and add command to the node associated with that key
                     let hashSlot = try self.hashSlot(for: keysAffected)
-                    let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], readOnly: false)
+                    let node = try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], nodeSelection: .primary)
                     prevAddress = node.serverAddress
                     nodeMap[prevAddress, default: .init(node: node, commandIndices: [])].commandIndices.append(index)
                 } else {
@@ -599,7 +610,7 @@ public final class ValkeyClusterClient: Sendable {
             }
         } else {
             // if none of the commands affect any keys then choose a random node
-            let node = try await self.nodeClient(for: [], readOnly: false)
+            let node = try await self.nodeClient(for: [], nodeSelection: .primary)
             let address = node.serverAddress
             let nodeAndCommands = NodeAndCommands(node: node, commandIndices: .init(commands.startIndex..<index))
             nodeMap[address] = nodeAndCommands
@@ -856,14 +867,17 @@ public final class ValkeyClusterClient: Sendable {
     ///   - `ValkeyClusterError.clusterIsUnavailable` if no healthy nodes are available
     ///   - `ValkeyClusterError.clusterIsMissingSlotAssignment` if the slot assignment cannot be determined
     @inlinable
-    package func nodeClient(for slots: some (Collection<HashSlot> & Sendable), readOnly: Bool) async throws -> ValkeyNodeClient {
+    package func nodeClient(
+        for slots: some (Collection<HashSlot> & Sendable),
+        nodeSelection: ValkeyClusterNodeSelection
+    ) async throws -> ValkeyNodeClient {
         var retries = 0
         while retries < 3 {
             defer { retries += 1 }
 
             do {
                 return try self.stateLock.withLock { state -> ValkeyNodeClient in
-                    try state.poolFastPath(for: slots, readOnly: readOnly)
+                    try state.poolFastPath(for: slots, nodeSelection: nodeSelection)
                 }
             } catch let error as ValkeyClusterError where error == .clusterIsUnavailable {
                 let waiterID = self.nextRequestID()

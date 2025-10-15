@@ -153,6 +153,21 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
+    /// Determine how replicas are chosen for readonly commands
+    public struct ReadOnlyReplicaSelection: Sendable {
+        enum _Internal {
+            case none
+            case cycle
+        }
+
+        let value: _Internal
+
+        /// Do not use readonly replicas
+        public static var none: Self { .init(value: .none) }
+        /// Cycle through replicas
+        public static var cycle: Self { .init(value: .cycle) }
+    }
+
     /// The authentication credentials for the connection.
     public var authentication: Authentication?
     /// The connection pool configuration.
@@ -174,13 +189,15 @@ public struct ValkeyClientConfiguration: Sendable {
     /// Database Number to use for the Valkey Connection
     public var databaseNumber: Int = 0
     
-    /// Execute readonly commands on replicas.
+    /// Determine how we chose replicas for readonly commands
+    ///
+    /// A nil value indicates we do not want to use readonly replicas
     ///
     /// Cluster by default will redirect commands from replica nodes to the primary node.
-    /// Setting this flag will allow replicas to run readonly commands. This will reduce
+    /// Setting this value will allow replicas to run readonly commands. This will reduce
     /// load on your primary nodes but there is a chance you will receive stale data as
     /// the replica is not up to date.
-    public var useReadOnlyReplicas: Bool
+    public var readOnlyReplicaSelection: ReadOnlyReplicaSelection
 
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
@@ -199,7 +216,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
     ///   - databaseNumber: The Valkey Database number.
-    ///   - useReadOnlyReplicas: Execute readonly commands on replicas
+    ///   - readOnlyReplicaSelection: Whether we want to select replicas for readonly commands and how we do it
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
@@ -209,7 +226,7 @@ public struct ValkeyClientConfiguration: Sendable {
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable,
         databaseNumber: Int = 0
-        useReadOnlyReplicas: Bool = false
+        readOnlyReplicaSelection: ReadOnlyReplicaSelection = .none
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -219,6 +236,6 @@ public struct ValkeyClientConfiguration: Sendable {
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
         self.databaseNumber = databaseNumber
-        self.useReadOnlyReplicas = useReadOnlyReplicas
+        self.readOnlyReplicaSelection = readOnlyReplicaSelection
     }
 }

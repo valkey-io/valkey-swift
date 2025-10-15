@@ -288,11 +288,11 @@ struct ClusterIntegrationTests {
         afterMigrate: () async throws -> Void = {},
         finished: () async throws -> Void = {}
     ) async throws {
-        let nodeAClient = try await client.nodeClient(for: [hashSlot], readOnly: false)
+        let nodeAClient = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
         // find another shard
         var nodeBClient: ValkeyNodeClient
         repeat {
-            nodeBClient = try await client.nodeClient(for: [HashSlot(rawValue: Int.random(in: 0..<16384))!], readOnly: false)
+            nodeBClient = try await client.nodeClient(for: [HashSlot(rawValue: Int.random(in: 0..<16384))!], nodeSelection: .primary)
         } while nodeAClient === nodeBClient
 
         guard let (hostnameA, portA) = nodeAClient.serverAddress.getHostnameAndPort() else { return }
@@ -359,7 +359,7 @@ struct ClusterIntegrationTests {
             try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
-                    let node = try await client.nodeClient(for: [HashSlot(key: key)], readOnly: false)
+                    let node = try await client.nodeClient(for: [HashSlot(key: key)], nodeSelection: .primary)
                     var commands: [any ValkeyCommand] = .init()
                     commands.append(SET(key, value: "cluster pipeline test"))
                     commands.append(GET(key))
@@ -381,13 +381,13 @@ struct ClusterIntegrationTests {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
-                    let node = try await client.nodeClient(for: [hashSlot], readOnly: false)
+                    let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                     // get a key from same node
                     let key2 = try await {
                         while true {
                             let key2 = ValkeyKey(UUID().uuidString)
                             let hashSlot2 = HashSlot(key: key2)
-                            let node2 = try await client.nodeClient(for: [hashSlot2], readOnly: false)
+                            let node2 = try await client.nodeClient(for: [hashSlot2], nodeSelection: .primary)
                             if node2.serverAddress == node.serverAddress {
                                 return key2
                             }
@@ -418,12 +418,12 @@ struct ClusterIntegrationTests {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
-                    let node = try await client.nodeClient(for: [hashSlot], readOnly: false)
+                    let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                     let key2 = try await {
                         while true {
                             let key2 = ValkeyKey(UUID().uuidString)
                             let hashSlot2 = HashSlot(key: key2)
-                            let node2 = try await client.nodeClient(for: [hashSlot2], readOnly: false)
+                            let node2 = try await client.nodeClient(for: [hashSlot2], nodeSelection: .primary)
                             if node2.serverAddress != node.serverAddress {
                                 return key2
                             }
@@ -453,12 +453,12 @@ struct ClusterIntegrationTests {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
-                    let node = try await client.nodeClient(for: [hashSlot], readOnly: false)
+                    let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                     let key2 = try await {
                         while true {
                             let key2 = ValkeyKey(UUID().uuidString)
                             let hashSlot2 = HashSlot(key: key2)
-                            let node2 = try await client.nodeClient(for: [hashSlot2], readOnly: false)
+                            let node2 = try await client.nodeClient(for: [hashSlot2], nodeSelection: .primary)
                             if node2.serverAddress != node.serverAddress {
                                 return key2
                             }
@@ -488,7 +488,7 @@ struct ClusterIntegrationTests {
             try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 clusterClient in
                 try await ClusterIntegrationTests.withKey(connection: clusterClient) { key in
-                    let node = try await clusterClient.nodeClient(for: [HashSlot(key: key)], readOnly: false)
+                    let node = try await clusterClient.nodeClient(for: [HashSlot(key: key)], nodeSelection: .primary)
                     try await clusterClient.set(key, value: "bar")
                     let cluster = try await clusterClient.clusterShards()
                     let shard = try #require(
@@ -530,7 +530,7 @@ struct ClusterIntegrationTests {
                 let keySuffix = "{\(UUID().uuidString)}"
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
                     let hashSlot = HashSlot(key: key)
-                    let node = try await client.nodeClient(for: [hashSlot], readOnly: false)
+                    let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                     try await client.set(key, value: "Testing before import")
 
                     try await ClusterIntegrationTests.testMigratingHashSlot(hashSlot, client: client) {
@@ -566,7 +566,7 @@ struct ClusterIntegrationTests {
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
                     try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key2 in
                         let hashSlot = HashSlot(key: key)
-                        let node = try await client.nodeClient(for: [hashSlot], readOnly: false)
+                        let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                         try await client.lpush(key, elements: ["testing1"])
 
                         try await ClusterIntegrationTests.testMigratingHashSlot(hashSlot, client: client) {
@@ -838,7 +838,7 @@ struct ClusterIntegrationTests {
     @available(valkeySwift 1.0, *)
     static func withValkeyCluster<T>(
         _ nodeAddresses: [(host: String, port: Int)],
-        nodeClientConfiguration: ValkeyClientConfiguration = .init(useReadOnlyReplicas: true),
+        nodeClientConfiguration: ValkeyClientConfiguration = .init(readOnlyReplicaSelection: .cycle),
         logger: Logger,
         _ body: (ValkeyClusterClient) async throws -> sending T
     ) async throws -> T {
