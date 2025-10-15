@@ -171,6 +171,14 @@ public struct ValkeyClientConfiguration: Sendable {
     /// The TLS to use for the Valkey connection.
     public var tls: TLS
 
+    /// Execute readonly commands on replicas.
+    ///
+    /// Cluster by default will redirect commands from replica nodes to the primary node.
+    /// Setting this flag will allow replicas to run readonly commands. This will reduce
+    /// load on your primary nodes but there is a chance you will receive stale data as
+    /// the replica is not up to date.
+    public var useReadOnlyReplicas: Bool
+
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
     /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
@@ -187,6 +195,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - commandTimeout: The timeout for a connection response.
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
+    ///   - useReadOnlyReplicas: Execute readonly commands on replicas
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
@@ -194,7 +203,8 @@ public struct ValkeyClientConfiguration: Sendable {
         retryParameters: RetryParameters = .init(),
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
-        tls: TLS = .disable
+        tls: TLS = .disable,
+        useReadOnlyReplicas: Bool = false
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -203,5 +213,6 @@ public struct ValkeyClientConfiguration: Sendable {
         self.commandTimeout = commandTimeout
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
+        self.useReadOnlyReplicas = useReadOnlyReplicas
     }
 }
