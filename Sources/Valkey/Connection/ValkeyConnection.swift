@@ -179,7 +179,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         #endif
 
-        self.logger.trace("Execute", metadata: ["command": "\(Command.name)"])
+        self.logger.trace("execute", metadata: ["command": "\(Command.name)"])
 
         let requestID = Self.requestIDGenerator.next()
 
@@ -228,7 +228,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, any Error>) {
-        self.logger.trace("Pipeline", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands))])
+        self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands))])
 
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -264,7 +264,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
-        self.logger.trace("Transaction", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands))])
+        self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands))])
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -324,7 +324,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute(
         _ commands: some Collection<any ValkeyCommand>
     ) async -> [Result<RESPToken, any Error>] {
-        self.logger.trace("Pipeline", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
+        self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
 
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -370,7 +370,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func transaction(
         _ commands: some Collection<any ValkeyCommand>
     ) async throws -> [Result<RESPToken, Error>] {
-        self.logger.trace("Transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
+        self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -437,7 +437,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     func executeWithAsk(
         _ commands: some Collection<any ValkeyCommand>
     ) async -> [Result<RESPToken, any Error>] {
-        self.logger.trace("Asking", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
+        self.logger.trace("asking", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
@@ -533,7 +533,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 string += "..."
                 break
             } else {
-                string += ", \(Swift.type(of: command).name)"
+                string += ",\(Swift.type(of: command).name)"
             }
             count += 1
         }
@@ -554,7 +554,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 string += "..."
                 break
             } else {
-                string += ", \(Swift.type(of: command).name)"
+                string += ",\(Swift.type(of: command).name)"
             }
             count += 1
         }
