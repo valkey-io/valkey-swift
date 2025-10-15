@@ -50,6 +50,7 @@ package struct ValkeyClusterNodeClientFactory: ValkeyNodeConnectionPoolFactory {
             address,
             connectionIDGenerator: self.connectionIDGenerator,
             connectionFactory: self.connectionFactory,
+            readOnly: nodeDescription.readOnly,
             eventLoopGroup: self.eventLoopGroup,
             logger: self.logger
         )

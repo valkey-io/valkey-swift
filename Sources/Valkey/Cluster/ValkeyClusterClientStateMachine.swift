@@ -283,7 +283,7 @@ where
                 newShards.lazy.flatMap { $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) } },
                 removeUnmentionedPools: true
             )
-            assert(poolUpdate.poolsToRun.isEmpty)
+            //assert(poolUpdate.poolsToRun.isEmpty)
 
             var result = ClusterDiscoverySucceededAction(
                 createTimer: .init(

@@ -30,4 +30,7 @@ public protocol ValkeyNodeDescriptionProtocol: Sendable, Equatable {
 
     /// The port number on which the Valkey service is listening.
     var port: Int { get }
+
+    /// Is node a readonly replica.
+    var readOnly: Bool { get }
 }

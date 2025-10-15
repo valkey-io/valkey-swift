@@ -54,13 +54,14 @@ package final class ValkeyConnectionFactory: Sendable {
 
     package func makeConnection(
         address: ValkeyServerAddress,
+        readOnly: Bool,
         connectionID: Int,
         eventLoop: any EventLoop,
         logger: Logger
     ) async throws -> ValkeyConnection {
         switch self.mode {
         case .default:
-            let connectionConfig = try await self.makeConnectionConfiguration()
+            let connectionConfig = try await self.makeConnectionConfiguration(readOnly: readOnly)
             return try await ValkeyConnection.connect(
                 address: address,
                 connectionID: connectionID,
@@ -70,7 +71,7 @@ package final class ValkeyConnectionFactory: Sendable {
             )
 
         case .custom(let customHandler):
-            async let connectionConfigPromise = self.makeConnectionConfiguration()
+            async let connectionConfigPromise = self.makeConnectionConfiguration(readOnly: readOnly)
             let channel = try await customHandler(address, eventLoop)
             let connectionConfig = try await connectionConfigPromise
 
@@ -94,7 +95,7 @@ package final class ValkeyConnectionFactory: Sendable {
         }
     }
 
-    func makeConnectionConfiguration() async throws -> ValkeyConnectionConfiguration {
+    func makeConnectionConfiguration(readOnly: Bool) async throws -> ValkeyConnectionConfiguration {
         let tls: ValkeyConnectionConfiguration.TLS =
             switch self.configuration.tls.base {
             case .disable:
@@ -110,7 +111,8 @@ package final class ValkeyConnectionFactory: Sendable {
             commandTimeout: self.configuration.commandTimeout,
             blockingCommandTimeout: self.configuration.blockingCommandTimeout,
             tls: tls,
-            clientName: nil
+            clientName: nil,
+            readOnly: readOnly
         )
 
         #if DistributedTracingSupport
