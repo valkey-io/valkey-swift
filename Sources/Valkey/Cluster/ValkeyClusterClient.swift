@@ -485,7 +485,7 @@ public final class ValkeyClusterClient: Sendable {
     /// These array of indices are then used to create collections of commands to
     /// run on each node
     @usableFromInline
-    func splitCommandsAcrossNodes(commands: [any ValkeyCommand]) async throws -> some Collection<NodeAndCommands> {
+    func splitCommandsAcrossNodes(commands: [any ValkeyCommand]) async throws -> [ValkeyServerAddress: NodeAndCommands].Values {
         var nodeMap: [ValkeyServerAddress: NodeAndCommands] = [:]
         var index = commands.startIndex
         var prevAddress: ValkeyServerAddress? = nil
