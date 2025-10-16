@@ -31,7 +31,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     static let requestIDGenerator: IDGenerator = .init()
     /// Connection ID, used by connection pool
     public let id: ID
-    /// Logger used by Server
+    /// Logger used by connection
+    @usableFromInline
     let logger: Logger
     #if DistributedTracingSupport
     @usableFromInline
@@ -178,6 +179,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         }
         #endif
 
+        self.logger.trace("execute", metadata: ["command": "\(Command.name)"])
+
         let requestID = Self.requestIDGenerator.next()
 
         do {
@@ -225,6 +228,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, any Error>) {
+        self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands))])
+
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         var encoder = ValkeyCommandEncoder()
@@ -259,6 +264,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func transaction<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async throws -> sending (repeat Result<(each Command).Response, Error>) {
+        self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(repeat each commands))])
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -318,6 +324,8 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func execute(
         _ commands: some Collection<any ValkeyCommand>
     ) async -> [Result<RESPToken, any Error>] {
+        self.logger.trace("execute", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
+
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
@@ -362,6 +370,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     public func transaction(
         _ commands: some Collection<any ValkeyCommand>
     ) async throws -> [Result<RESPToken, Error>] {
+        self.logger.trace("transaction", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
         // Construct encoded commands and promise array
         var encoder = ValkeyCommandEncoder()
         var promises: [EventLoopPromise<RESPToken>] = []
@@ -428,6 +437,7 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
     func executeWithAsk(
         _ commands: some Collection<any ValkeyCommand>
     ) async -> [Result<RESPToken, any Error>] {
+        self.logger.trace("asking", metadata: ["commands": .string(Self.concatenateCommandNames(commands))])
         // this currently allocates a promise for every command. We could collapse this down to one promise
         var promises: [EventLoopPromise<RESPToken>] = []
         promises.reserveCapacity(commands.count)
@@ -507,6 +517,48 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
                 this.channelHandler.cancel(requestID: requestID)
             }
         }
+    }
+
+    /// Concatenate names from parameter pack of commands together
+    @usableFromInline
+    static func concatenateCommandNames<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) -> String {
+        var string: String = ""
+        var count = 0
+        for command in repeat each commands {
+            if count == 0 {
+                string += "\(Swift.type(of: command).name)"
+            } else if count == 16 {
+                string += "..."
+                break
+            } else {
+                string += ",\(Swift.type(of: command).name)"
+            }
+            count += 1
+        }
+        return string
+    }
+
+    /// Concatenate names from collection of command together
+    @usableFromInline
+    static func concatenateCommandNames<Commands: Collection>(
+        _ commands: Commands
+    ) -> String where Commands.Element == any ValkeyCommand {
+        var string: String = ""
+        guard let firstCommand = commands.first else { return "" }
+        string = "\(Swift.type(of: firstCommand).name)"
+        var count = 1
+        for command in commands.dropFirst() {
+            if count == 16 {
+                string += "..."
+                break
+            } else {
+                string += ",\(Swift.type(of: command).name)"
+            }
+            count += 1
+        }
+        return string
     }
 
     /// Create Valkey connection and return channel connection is running on and the Valkey channel handler
