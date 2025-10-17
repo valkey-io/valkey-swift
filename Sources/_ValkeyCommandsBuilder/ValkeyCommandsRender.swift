@@ -10,7 +10,9 @@ import Foundation
 /// List of functions where the Response calculation has been disabled because we want
 /// to override the response in the Valkey library
 private let disableResponseCalculationCommands: Set<String> = [
+    "BLPOP",
     "BLMPOP",
+    "BRPOP",
     "BZMPOP",
     "BZPOPMAX",
     "BZPOPMIN",
@@ -24,7 +26,8 @@ private let disableResponseCalculationCommands: Set<String> = [
     "GEODIST",
     "GEOPOS",
     "GEOSEARCH",
-    "KEYS",
+    "HSCAN",
+    "ROLE",
     "LMOVE",
     "LMPOP",
     "ROLE",
@@ -43,6 +46,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "ZMPOP",
     "ZPOPMAX",
     "ZPOPMIN",
+    "ZSCAN",
 ]
 
 /// List of subscribe commands, which have their own implementation in code
