@@ -119,8 +119,6 @@ public struct BLMPOP: ValkeyCommand {
 /// Removes and returns the first element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct BLPOP: ValkeyCommand {
-    public typealias Response = RESPToken.Array?
-
     @inlinable public static var name: String { "BLPOP" }
 
     public var keys: [ValkeyKey]
@@ -143,8 +141,6 @@ public struct BLPOP: ValkeyCommand {
 /// Removes and returns the last element in a list. Blocks until an element is available otherwise. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct BRPOP: ValkeyCommand {
-    public typealias Response = RESPToken.Array?
-
     @inlinable public static var name: String { "BRPOP" }
 
     public var keys: [ValkeyKey]
@@ -701,7 +697,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: The key from which the element was popped and the value of the popped element
     @inlinable
     @discardableResult
-    public func blpop(keys: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
+    public func blpop(keys: [ValkeyKey], timeout: Double) async throws -> BLPOP.Response {
         try await execute(BLPOP(keys: keys, timeout: timeout))
     }
 
@@ -717,7 +713,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: The name of the key where an element was popped
     @inlinable
     @discardableResult
-    public func brpop(keys: [ValkeyKey], timeout: Double) async throws -> RESPToken.Array? {
+    public func brpop(keys: [ValkeyKey], timeout: Double) async throws -> BRPOP.Response {
         try await execute(BRPOP(keys: keys, timeout: timeout))
     }
 
