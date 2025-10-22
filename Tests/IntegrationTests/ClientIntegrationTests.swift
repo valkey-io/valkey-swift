@@ -276,7 +276,7 @@ struct ClientIntegratedTests {
     @available(valkeySwift 1.0, *)
     func testTransactionSetIncrGet() async throws {
         var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
+        logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
             try await withKey(connection: client) { key in
                 let responses = try await client.transaction(

@@ -8,6 +8,17 @@
 
 import NIOCore
 
+/// List entry
+@_documentation(visibility: internal)
+public struct ListEntry: RESPTokenDecodable, Sendable {
+    public let key: ValkeyKey
+    public let value: ByteBuffer
+
+    public init(fromRESP token: RESPToken) throws {
+        (self.key, self.value) = try token.decodeArrayElements()
+    }
+}
+
 extension LMOVE {
     public typealias Response = ByteBuffer?
 }
@@ -37,4 +48,18 @@ extension BLMPOP {
     ///     * [Null]: If no element could be popped.
     ///     * [Array]: List key from which elements were popped.
     public typealias Response = LMPOP.Response
+}
+
+extension BLPOP {
+    /// - Response: One of the following
+    ///     * [Null]: No element could be popped and timeout expired
+    ///     * [Array]: The key from which the element was popped and the value of the popped element
+    public typealias Response = ListEntry?
+}
+
+extension BRPOP {
+    /// - Response: One of the following
+    ///     * [Null]: No element could be popped and the timeout expired.
+    ///     * [Array]: The key from which the element was popped and the value of the popped element
+    public typealias Response = ListEntry?
 }

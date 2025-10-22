@@ -9,6 +9,7 @@ import NIOCore
 
 /// A type that can decode from a response token.
 public protocol RESPTokenDecodable {
+    /// Initialize from RESPToken
     init(fromRESP: RESPToken) throws
 }
 

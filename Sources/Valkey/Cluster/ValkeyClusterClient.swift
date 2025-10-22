@@ -208,18 +208,9 @@ public final class ValkeyClusterClient: Sendable {
     public func execute<each Command: ValkeyCommand>(
         _ commands: repeat each Command
     ) async -> sending (repeat Result<(each Command).Response, any Error>) {
-        func convert<Response: RESPTokenDecodable>(_ result: Result<RESPToken, any Error>, to: Response.Type) -> Result<Response, any Error> {
-            result.flatMap {
-                do {
-                    return try .success(Response(fromRESP: $0))
-                } catch {
-                    return .failure(error)
-                }
-            }
-        }
         let results = await self.execute([any ValkeyCommand](commands: repeat each commands))
         var index = AutoIncrementingInteger()
-        return (repeat convert(results[index.next()], to: (each Command).Response.self))
+        return (repeat results[index.next()].convertFromRESP(to: (each Command).Response.self))
     }
 
     /// Results from pipeline and index for each result
@@ -301,6 +292,87 @@ public final class ValkeyClusterClient: Sendable {
         } catch {
             return .init(repeating: .failure(error), count: commands.count)
         }
+    }
+
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
+    ///
+    /// Transactions come only affect keys coming from the same HashSlot.
+    ///
+    /// - Parameter commands: Parameter pack of ValkeyCommands
+    /// - Returns: Parameter pack holding the responses of all the commands
+    /// - Throws: ValkeyTransactionError when EXEC aborts
+    @inlinable
+    public func transaction<each Command: ValkeyCommand>(
+        _ commands: repeat each Command
+    ) async throws -> sending (repeat Result<(each Command).Response, any Error>) {
+        let results = try await self.transaction([any ValkeyCommand](commands: repeat each commands))
+        var index = AutoIncrementingInteger()
+        return (repeat results[index.next()].convertFromRESP(to: (each Command).Response.self))
+    }
+
+    /// Pipeline a series of commands as a transaction to Valkey connection
+    ///
+    /// Another client will never be served in the middle of the execution of these
+    /// commands. See https://valkey.io/topics/transactions/ for more information.
+    ///
+    /// EXEC and MULTI commands are added to the pipelined commands and the output
+    /// of the EXEC command is transformed into an array of RESPToken Results, one for
+    /// each command.
+    ///
+    /// Transactions come only affect keys coming from the same HashSlot.
+    ///
+    /// This is an alternative version of the transaction function ``ValkeyClusterClient/transaction(_:)->(_,_)``
+    /// that allows for a collection of ValkeyCommands. It provides more flexibility but the command
+    /// responses are returned as ``RESPToken`` instead of the response type for the command.
+    ///
+    /// - Parameter commands: Collection of ValkeyCommands
+    /// - Returns: Array holding the RESPToken responses of all the commands
+    /// - Throws: ValkeyTransactionError when EXEC aborts
+    @inlinable
+    public func transaction<Commands: Collection & Sendable>(
+        _ commands: Commands
+    ) async throws -> [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
+        let hashSlot = try self.hashSlot(for: commands.flatMap { $0.keysAffected })
+
+        var clientSelector: () async throws -> ValkeyNodeClient = {
+            try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+        }
+
+        var asking = false
+        var attempt = 0
+        while !Task.isCancelled {
+            do {
+                let client = try await clientSelector()
+                if asking {
+                    return try await client.transactionWithAsk(commands)
+                } else {
+                    return try await client.transaction(commands)
+                }
+            } catch let error as ValkeyClusterError where error == .noNodeToTalkTo {
+                // TODO: Rerun node discovery!
+            } catch {
+                let retryAction = self.getTransactionRetryAction(from: error)
+                switch retryAction {
+                case .redirect(let redirectError):
+                    clientSelector = { try await self.nodeClient(for: redirectError) }
+                    asking = (redirectError.redirection == .ask)
+                case .tryAgain:
+                    let wait = self.clientConfiguration.retryParameters.calculateWaitTime(retry: attempt)
+                    try await Task.sleep(for: wait)
+                    attempt += 1
+                case .dontRetry:
+                    throw error
+                }
+            }
+        }
+        throw ValkeyClusterError.clientRequestCancelled
     }
 
     struct Redirection {
@@ -559,6 +631,35 @@ public final class ValkeyClusterClient: Sendable {
                 default:
                     return .dontRetry
                 }
+            }
+        default:
+            return .dontRetry
+        }
+    }
+
+    @usableFromInline
+    /* private */ func getTransactionRetryAction(from error: some Error) -> RetryAction {
+        switch error {
+        case let transactionError as ValkeyTransactionError:
+            switch transactionError {
+            case .transactionErrors(let results, let execError):
+                // check whether queued results include any errors that warrent a retry
+                for result in results {
+                    if case .failure(let queuedError) = result {
+                        let queuedAction = self.getRetryAction(from: queuedError)
+                        guard case .dontRetry = queuedAction else {
+                            return queuedAction
+                        }
+                    }
+                }
+                // check whether EXEC error warrents a retry
+                let execAction = self.getRetryAction(from: execError)
+                guard case .dontRetry = execAction else {
+                    return execAction
+                }
+                return .dontRetry
+            case .transactionAborted:
+                return .dontRetry
             }
         default:
             return .dontRetry
