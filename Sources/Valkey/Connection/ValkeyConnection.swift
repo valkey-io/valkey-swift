@@ -165,6 +165,14 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
         try await self.channelHandler.waitOnActive().get()
     }
 
+    /// Trigger graceful shutdown of connection
+    ///
+    /// The connection will wait until all pending commands have been processed before
+    /// closing the connection.
+    func triggerGracefulShutdown() {
+        self.channelHandler.triggerGracefulShutdown()
+    }
+
     /// Send RESP command to Valkey connection
     /// - Parameter command: ValkeyCommand structure
     /// - Returns: The command response as defined in the ValkeyCommand
