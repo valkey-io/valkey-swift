@@ -353,9 +353,15 @@ public final class ValkeyClusterClient: Sendable {
         _ commands: Commands
     ) async throws -> [Result<RESPToken, Error>] where Commands.Element == any ValkeyCommand {
         let hashSlot = try self.hashSlot(for: commands.flatMap { $0.keysAffected })
-
+        let readOnlyCommand = commands.reduce(true) { $0 && $1.isReadOnly }
+        let nodeSelection =
+            if readOnlyCommand {
+                self.clientConfiguration.readOnlyReplicaSelection.clusterNodeSelection
+            } else {
+                ValkeyClusterNodeSelection.primary
+            }
         var clientSelector: () async throws -> ValkeyNodeClient = {
-            try await self.nodeClient(for: hashSlot.map { [$0] } ?? [])
+            try await self.nodeClient(for: hashSlot.map { [$0] } ?? [], nodeSelection: nodeSelection)
         }
 
         var asking = false

@@ -11,6 +11,9 @@ package enum ValkeyClusterNodeSelection: Sendable {
     case primary
     case cycleReplicas(Int)
 
+    /// Select node from node ids
+    /// - Parameter nodeIDs: Primary and replica nodes
+    /// - Returns: ID of selected node
     @usableFromInline
     func select(nodeIDs: ValkeyShardNodeIDs) -> ValkeyNodeID {
         switch self {
@@ -22,7 +25,10 @@ package enum ValkeyClusterNodeSelection: Sendable {
         }
     }
 }
+
+@available(valkeySwift 1.0, *)
 extension ValkeyClientConfiguration.ReadOnlyReplicaSelection {
+    /// Convert from read only replica selection to node selection
     @usableFromInline
     var clusterNodeSelection: ValkeyClusterNodeSelection {
         switch self.value {
