@@ -57,7 +57,7 @@ struct ValkeyClusterClientStateMachineTests {
 
         // try to get shard
         #expect(throws: ValkeyClusterError.clusterIsUnavailable) {
-            try stateMachine.poolFastPath(for: CollectionOfOne(HashSlot(rawValue: 100)!))
+            try stateMachine.poolFastPath(for: CollectionOfOne(HashSlot(rawValue: 100)!), nodeSelection: .primary)
         }
         // let's register for the slow path
         let successNotifier = SuccessNotifier()
@@ -94,7 +94,7 @@ struct ValkeyClusterClientStateMachineTests {
 
         // try to get shard
         #expect(throws: ValkeyClusterError.clusterIsUnavailable) {
-            try stateMachine.poolFastPath(for: CollectionOfOne(HashSlot(rawValue: 100)!))
+            try stateMachine.poolFastPath(for: CollectionOfOne(HashSlot(rawValue: 100)!), nodeSelection: .primary)
         }
         // let's register for the slow path
         let successNotifier = SuccessNotifier()

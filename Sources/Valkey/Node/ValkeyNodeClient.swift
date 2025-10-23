@@ -46,8 +46,10 @@ package final class ValkeyNodeClient: Sendable {
     public let serverAddress: ValkeyServerAddress
     /// Connection pool
     let connectionPool: Pool
-
+    /// Connection factory
     let connectionFactory: ValkeyConnectionFactory
+    /// Should we create readonly connections
+    let readOnly: Bool
     /// configuration
     public var configuration: ValkeyClientConfiguration { self.connectionFactory.configuration }
     /// EventLoopGroup to use
@@ -70,6 +72,7 @@ package final class ValkeyNodeClient: Sendable {
         _ address: ValkeyServerAddress,
         connectionIDGenerator: ConnectionIDGenerator,
         connectionFactory: ValkeyConnectionFactory,
+        readOnly: Bool,
         eventLoopGroup: any EventLoopGroup,
         logger: Logger
     ) {
@@ -80,6 +83,7 @@ package final class ValkeyNodeClient: Sendable {
         poolConfiguration.maximumConnectionSoftLimit = connectionFactory.configuration.connectionPool.maximumConnectionCount
         poolConfiguration.maximumConnectionHardLimit = connectionFactory.configuration.connectionPool.maximumConnectionCount
 
+        self.readOnly = readOnly
         self.connectionPool = .init(
             configuration: poolConfiguration,
             idGenerator: connectionIDGenerator,
@@ -93,6 +97,7 @@ package final class ValkeyNodeClient: Sendable {
 
             let connection = try await connectionFactory.makeConnection(
                 address: address,
+                readOnly: readOnly,
                 connectionID: connectionID,
                 eventLoop: eventLoopGroup.any(),
                 logger: logger

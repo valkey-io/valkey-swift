@@ -283,7 +283,7 @@ where
                 newShards.lazy.flatMap { $0.nodes.lazy.map { ValkeyNodeDescription(description: $0) } },
                 removeUnmentionedPools: true
             )
-            assert(poolUpdate.poolsToRun.isEmpty)
+            //assert(poolUpdate.poolsToRun.isEmpty)
 
             var result = ClusterDiscoverySucceededAction(
                 createTimer: .init(
@@ -533,14 +533,18 @@ where
     }
 
     @inlinable
-    package func poolFastPath(for slots: some Collection<HashSlot>) throws(ValkeyClusterError) -> ConnectionPool {
+    package func poolFastPath(
+        for slots: some Collection<HashSlot>,
+        nodeSelection: ValkeyClusterNodeSelection
+    ) throws(ValkeyClusterError) -> ConnectionPool {
         switch self.clusterState {
         case .unavailable:
             throw ValkeyClusterError.clusterIsUnavailable
 
         case .degraded(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
-            if let pool = self.runningClients[shardID.primary]?.pool {
+            let nodeID = nodeSelection.select(nodeIDs: shardID)
+            if let pool = self.runningClients[nodeID]?.pool {
                 return pool
             }
             // If we don't have a node for a shard, that means that this shard got created from
@@ -550,7 +554,8 @@ where
 
         case .healthy(let context):
             let shardID = try context.hashSlotShardMap.nodeID(for: slots)
-            if let pool = self.runningClients[shardID.primary]?.pool {
+            let nodeID = nodeSelection.select(nodeIDs: shardID)
+            if let pool = self.runningClients[nodeID]?.pool {
                 return pool
             }
             // If we don't have a node for a shard, that means that this shard got created from
