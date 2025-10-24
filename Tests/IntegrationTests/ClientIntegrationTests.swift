@@ -156,6 +156,39 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testSetex() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                try await connection.setex(key, seconds: 10, value: "Hello")
+                let response = try await connection.get(key).map { String(buffer: $0) }
+                #expect(response == "Hello")
+                let ttl = try await connection.ttl(key)
+                #expect(ttl > 0)
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testSetRange() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                try await connection.set(key, value: "Hello World")
+                var response = try await connection.get(key).map { String(buffer: $0) }
+                #expect(response == "Hello World" )
+                try await connection.setrange(key, offset: 6, value: "Valkey")
+                response = try await connection.get(key).map { String(buffer: $0) }
+                #expect(response == "Hello Valkey")
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testSPOP() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
