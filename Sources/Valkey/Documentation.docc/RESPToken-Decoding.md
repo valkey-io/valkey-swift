@@ -10,7 +10,7 @@ We represent a raw RESP token using the type ``RESPToken``. A parsed RESP value 
 
 The majority of the Valkey commands return the Swift types equivalent to their expected response. eg `GET` returns a `ByteBuffer` containing the contents of the key, `STRLEN` returns the length of the contents as an `Int`. But there are a number of reasons for commands to not have a defined return type and in these cases a command may return the type ``RESPToken`` or one of the sequence types ``RESPToken/Array`` or ``RESPToken/Map``.
 
-## Decoding RESPToken
+### Decoding RESPToken
 
 A `RESPToken` contains the raw serialized bytes returned by the Valkey server. Valkey-swift introduces a protocol ``RESPTokenDecodable`` for types that can be decoded from a `RESPToken`. Many of Swift core types have been extended to conform to `RESPTokenDecodable`. There are two ways to decode a `RESPToken`. You can call ``RESPTokenDecodable/init(fromRESP:)``.
 
@@ -24,7 +24,7 @@ Or you can call the `RESPToken` method ``RESPToken/decode(as:)``. This can be ch
 let string = try await valkeyClient.rpop("myList")?.decode(as: String.self)
 ```
 
-## Decoding RESPToken.Array
+### Decoding RESPToken.Array
 
 When a command returns an array it is returned as an ``RESPToken/Array``. This can be to avoid the additional memory allocation of creating a Swift `Array` or because the array represents a more complex type. `RESPToken.Array` conforms to `Sequence` and its element type is a `RESPToken`. You can iterate over its contents and decode each element as follows.
 
@@ -48,7 +48,7 @@ The type of each element of a `RESPToken.Array` is not fixed. It is possible for
 let (member, score) = respToken.decodeArrayElements(as: (String, Int).self)
 ```
 
-## Decoding RESPToken.Map
+### Decoding RESPToken.Map
 
 When a command returns a dictionary it is returned as a ``RESPToken/Map``. This can be to avoid the additional memory allocation of creating a Swift `Dictionary`, or a more complex type is being represented. `RESPToken.Map` conforms to `Sequence` and its element type is a key value pair of two `RESPToken`. You can iterate over its contents and decode its elements as follows.
 
