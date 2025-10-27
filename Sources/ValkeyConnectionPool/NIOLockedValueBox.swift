@@ -12,7 +12,7 @@
 //
 // This source file is part of the SwiftNIO open source project
 //
-// Copyright (c) 2022 the SwiftNIO project authors
+// Copyright (c) 2022 Apple Inc. and the SwiftNIO project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -51,7 +51,7 @@ struct NIOLockedValueBox<Value> {
 
     /// Provides an unsafe view over the lock and its value.
     ///
-    /// This can be beneficial when you require fine-grained control over the lock in some
+    /// This can be beneficial when you require fine grained control over the lock in some
     /// situations but don't want lose the benefits of ``withLockedValue(_:)`` in others by
     /// switching to ``NIOLock``.
     var unsafe: Unsafe {

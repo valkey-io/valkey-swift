@@ -87,7 +87,7 @@ public protocol ConnectionRequestProtocol: Sendable {
 
     /// A function that is called with a connection or a
     /// `PoolError`.
-    func complete(with: Result<Connection, ConnectionPoolError>)
+    func complete(with: Result<ConnectionLease<Connection>, ConnectionPoolError>)
 }
 
 @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
@@ -275,6 +275,7 @@ where
         }
     }
 
+    @inlinable
     public func run() async {
         await withTaskCancellationHandler {
             if #available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *) {
@@ -319,13 +320,15 @@ where
     }
 
     @available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
-    private func run(in taskGroup: inout DiscardingTaskGroup) async {
+    @inlinable
+    /* private */ func run(in taskGroup: inout DiscardingTaskGroup) async {
         for await event in self.eventStream {
             self.runEvent(event, in: &taskGroup)
         }
     }
 
-    private func run(in taskGroup: inout TaskGroup<Void>) async {
+    @inlinable
+    /* private */ func run(in taskGroup: inout TaskGroup<Void>) async {
         var running = 0
         for await event in self.eventStream {
             running += 1
@@ -338,7 +341,8 @@ where
         }
     }
 
-    private func runEvent(_ event: NewPoolActions, in taskGroup: inout some TaskGroupProtocol) {
+    @inlinable
+    /* private */ func runEvent(_ event: NewPoolActions, in taskGroup: inout some TaskGroupProtocol) {
         switch event {
         case .makeConnection(let request):
             self.makeConnection(for: request, in: &taskGroup)
@@ -405,8 +409,11 @@ where
     /*private*/ func runRequestAction(_ action: StateMachine.RequestAction) {
         switch action {
         case .leaseConnection(let requests, let connection):
+            let lease = ConnectionLease(connection: connection) { connection in
+                self.releaseConnection(connection)
+            }
             for request in requests {
-                request.complete(with: .success(connection))
+                request.complete(with: .success(lease))
             }
 
         case .failRequest(let request, let error):
@@ -430,7 +437,7 @@ where
                 self.connectionEstablished(bundle)
 
                 // after the connection has been established, we keep the task open. This ensures
-                // that the pools run method cannot be exited before all connections have been
+                // that the pools run method can not be exited before all connections have been
                 // closed.
                 await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
                     bundle.connection.onClose {
@@ -458,7 +465,7 @@ where
     }
 
     @inlinable
-    /*private*/ func connectionEstablishFailed(_ error: any Error, for request: StateMachine.ConnectionRequest) {
+    /*private*/ func connectionEstablishFailed(_ error: Error, for request: StateMachine.ConnectionRequest) {
         self.observabilityDelegate.connectFailed(id: request.connectionID, error: error)
 
         self.modifyStateAndRunActions { state in
@@ -586,7 +593,6 @@ extension DiscardingTaskGroup: TaskGroupProtocol {
     }
 }
 
-@available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension TaskGroup<Void>: TaskGroupProtocol {
     @inlinable
     mutating func addTask_(operation: @escaping @Sendable () async -> Void) {
