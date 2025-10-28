@@ -21,6 +21,12 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
     let connectionIDGenerator = ConnectionIDGenerator()
     let connectionFactory: ValkeyConnectionFactory
 
+    @usableFromInline
+    package struct NodeDescription {
+        let address: ValkeyServerAddress
+        let readOnly: Bool
+    }
+
     /// Creates a new `ValkeyClientFactory` instance.
     ///
     /// - Parameters:
@@ -44,11 +50,12 @@ package struct ValkeyNodeClientFactory: ValkeyNodeConnectionPoolFactory {
     /// - Parameter nodeDescription: Description of the node to connect to.
     /// - Returns: A configured `ValkeyNode` instance ready to connect to the specified node.
     @usableFromInline
-    package func makeConnectionPool(nodeDescription: ValkeyServerAddress) -> ValkeyNodeClient {
+    package func makeConnectionPool(nodeDescription: NodeDescription) -> ValkeyNodeClient {
         ValkeyNodeClient(
-            nodeDescription,
+            nodeDescription.address,
             connectionIDGenerator: self.connectionIDGenerator,
             connectionFactory: self.connectionFactory,
+            readOnly: nodeDescription.readOnly,
             eventLoopGroup: self.eventLoopGroup,
             logger: self.logger
         )

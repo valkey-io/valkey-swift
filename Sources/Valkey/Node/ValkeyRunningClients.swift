@@ -10,7 +10,7 @@
 struct ValkeyRunningClientsStateMachine<
     ConnectionPool: Sendable,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory
-> where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription: Sendable & Identifiable {
+> where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription: Sendable & Identifiable & Equatable {
     @usableFromInline typealias NodeDescription = ConnectionPoolFactory.NodeDescription
     @usableFromInline
     /* private */ struct NodeBundle: Sendable {
@@ -52,7 +52,17 @@ struct ValkeyRunningClientsStateMachine<
         for newNodeDescription in newNodes {
             // if we had a pool previously, let's continue to use it!
             if let existingPool = previousNodes.removeValue(forKey: newNodeDescription.id) {
-                self.clientMap[newNodeDescription.id] = existingPool
+                if newNodeDescription == existingPool.nodeDescription {
+                    // the existing pool matches the new node description. nothing todo
+                    self.clientMap[newNodeDescription.id] = existingPool
+                } else {
+                    // the existing pool does not match new node description. For example it might be swapping between
+                    // readonly and readwrite state
+                    poolsToShutdown.append(existingPool.pool)
+                    let newPool = self.makePool(for: newNodeDescription)
+                    self.clientMap[newNodeDescription.id] = NodeBundle(pool: newPool, nodeDescription: newNodeDescription)
+                    newPools.append((newPool, newNodeDescription.id))
+                }
             } else {
                 let newPool = self.makePool(for: newNodeDescription)
                 self.clientMap[newNodeDescription.id] = NodeBundle(pool: newPool, nodeDescription: newNodeDescription)
