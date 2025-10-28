@@ -477,6 +477,7 @@ public final class ValkeyClusterClient: Sendable {
     ///
     /// - Parameters:
     ///   - keys: Keys affected by operation. This is used to choose the cluster node
+    ///   - readOnly: Is this connection only going to be used with readonly commands
     ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
