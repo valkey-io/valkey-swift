@@ -112,7 +112,8 @@ package final class ValkeyConnectionFactory: Sendable {
             blockingCommandTimeout: self.configuration.blockingCommandTimeout,
             tls: tls,
             clientName: nil,
-            readOnly: readOnly
+            readOnly: readOnly,
+            dbNum: self.configuration.dbNum
         )
 
         #if DistributedTracingSupport

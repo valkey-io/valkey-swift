@@ -121,6 +121,10 @@ public struct ValkeyConnectionConfiguration: Sendable {
     /// Readonly connections can run readonly commands on replica nodes
     public var readOnly: Bool
 
+    // The name of Valkey Database
+    public var dbNum : Int = 0
+
+
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for this connection.
     /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
@@ -145,7 +149,8 @@ public struct ValkeyConnectionConfiguration: Sendable {
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable,
         clientName: String? = nil,
-        readOnly: Bool = false
+        readOnly: Bool = false,
+        dbNum: Int = 0
     ) {
         self.authentication = authentication
         self.commandTimeout = commandTimeout
@@ -153,6 +158,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
         self.tls = tls
         self.clientName = clientName
         self.readOnly = readOnly
+        self.dbNum = dbNum
     }
 }
 
