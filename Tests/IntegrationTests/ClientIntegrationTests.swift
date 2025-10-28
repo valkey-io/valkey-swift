@@ -27,7 +27,7 @@ struct ClientIntegratedTests {
             _ = try? await connection.del(keys: [key])
             throw error
         }
-        _ = try await connection.del(keys: [key])
+         _ = try await connection.del(keys: [key])
         return value
     }
 
@@ -592,4 +592,29 @@ struct ClientIntegratedTests {
             #expect(clients.firstRange(of: "lib-ver=\(valkeySwiftLibraryVersion)") != nil)
         }
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testMultipleDB() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        // Test all default enabled databases in range {0,15}
+        for dbNum in 0...15 {
+            let clientConfig : ValkeyClientConfiguration = .init(dbNum: dbNum);
+            try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), configuration: clientConfig, logger: logger) { connection in
+                try await withKey(connection: connection) { key in
+                    // Verify ClientInfo contains dbNum
+                    let clientInfo = String(buffer: try await connection.clientInfo())
+                    #expect(clientInfo.contains("db=\(dbNum)"))
+
+                    // Verify via setting and getting keys on all the DBs
+                    let value = "value-\(dbNum)"
+                    try await connection.set(key, value: value)
+                    let response = try await connection.get(key).map { String(buffer: $0) }
+                    #expect(response == value)
+                }
+            }
+        }
+    }
+
 }

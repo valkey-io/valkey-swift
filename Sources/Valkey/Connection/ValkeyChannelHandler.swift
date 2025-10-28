@@ -297,14 +297,14 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         clientInfoLibName.encode(into: &self.encoder)
         clientInfoLibVersion.encode(into: &self.encoder)
 
-        if self.configuration.readOnly {
-            numberOfPendingCommands += 1
-            READONLY().encode(into: &self.encoder)
-        }
-            
         if(self.configuration.dbNum > 0) {
             numberOfPendingCommands += 1
             selectCommand.encode(into: &self.encoder)
+        }
+
+        if self.configuration.readOnly {
+            numberOfPendingCommands += 1
+            READONLY().encode(into: &self.encoder)
         }
 
         let promise = eventLoop.makePromise(of: RESPToken.self)
