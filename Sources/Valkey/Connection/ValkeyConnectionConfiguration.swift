@@ -138,6 +138,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
     ///   - blockingCommandTimeout: Maximum time to wait for a response to blocking commands. Defaults to 120 seconds.
     ///   - tls: TLS configuration for secure connections. Defaults to `.disable` for unencrypted connections.
     ///   - clientName: Optional name to identify this client connection on the server. Defaults to `nil`.
+    ///   - readOnly: Is the connection a readonly connection
     public init(
         authentication: Authentication? = nil,
         commandTimeout: Duration = .seconds(30),
