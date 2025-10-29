@@ -607,7 +607,8 @@ struct ClientIntegratedTests {
                 #expect(clientInfo.contains("db=\(dbNum)"))
 
                 // Verify via setting and getting keys on all the DBs
-                let key = "key-\(dbNum)", value =  "value-\(dbNum)"
+                let key = "key-\(dbNum)"
+                let value =  "value-\(dbNum)"
                 try await connection.set(ValkeyKey(key), value: value)
                 let response = try await connection.get(ValkeyKey(key)).map { String(buffer: $0) }
                 #expect(response == value)
