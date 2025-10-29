@@ -122,8 +122,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
     public var readOnly: Bool
 
     // The name of Valkey Database
-    public var dbNum : Int = 0
-
+    public var dbNum: Int = 0
 
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for this connection.
@@ -143,6 +142,7 @@ public struct ValkeyConnectionConfiguration: Sendable {
     ///   - tls: TLS configuration for secure connections. Defaults to `.disable` for unencrypted connections.
     ///   - clientName: Optional name to identify this client connection on the server. Defaults to `nil`.
     ///   - readOnly: Is the connection a readonly connection
+    ///   - dbNum: DB number to use for the connection
     public init(
         authentication: Authentication? = nil,
         commandTimeout: Duration = .seconds(30),

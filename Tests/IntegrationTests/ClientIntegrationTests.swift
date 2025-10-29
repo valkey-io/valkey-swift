@@ -27,7 +27,7 @@ struct ClientIntegratedTests {
             _ = try? await connection.del(keys: [key])
             throw error
         }
-         _ = try await connection.del(keys: [key])
+        _ = try await connection.del(keys: [key])
         return value
     }
 
@@ -600,7 +600,7 @@ struct ClientIntegratedTests {
         logger.logLevel = .debug
         // Test all default enabled databases in range {0,15}
         for dbNum in 0...15 {
-            let clientConfig : ValkeyClientConfiguration = .init(dbNum: dbNum);
+            let clientConfig: ValkeyClientConfiguration = .init(dbNum: dbNum);
             try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), configuration: clientConfig, logger: logger) { connection in
                 try await withKey(connection: connection) { key in
                     // Verify ClientInfo contains dbNum

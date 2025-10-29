@@ -288,18 +288,16 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let clientInfoLibName = CLIENT.SETINFO(attr: .libname(valkeySwiftLibraryName))
         let clientInfoLibVersion = CLIENT.SETINFO(attr: .libver(valkeySwiftLibraryVersion))
 
-        // Select DB
-        let selectCommand = SELECT(index: self.configuration.dbNum)
-
         var numberOfPendingCommands = 2
         self.encoder.reset()
         helloCommand.encode(into: &self.encoder)
         clientInfoLibName.encode(into: &self.encoder)
         clientInfoLibVersion.encode(into: &self.encoder)
 
-        if(self.configuration.dbNum > 0) {
+        // Select DB if needed
+        if self.configuration.dbNum > 0 {
             numberOfPendingCommands += 1
-            selectCommand.encode(into: &self.encoder)
+            SELECT(index: self.configuration.dbNum).encode(into: &self.encoder)
         }
 
         if self.configuration.readOnly {
