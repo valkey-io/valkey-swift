@@ -172,7 +172,7 @@ public struct ValkeyClientConfiguration: Sendable {
     public var tls: TLS
 
     /// Database Number to use for the Valkey Connection
-    public var dbNum: Int = 0
+    public var databaseNumber: Int = 0
 
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
@@ -190,7 +190,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - commandTimeout: The timeout for a connection response.
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
-    ///   - dbNum: The Valkey Database number.
+    ///   - databaseNumber: The Valkey Database number.
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
@@ -199,7 +199,7 @@ public struct ValkeyClientConfiguration: Sendable {
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable,
-        dbNum: Int = 0
+        databaseNumber: Int = 0
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -208,6 +208,6 @@ public struct ValkeyClientConfiguration: Sendable {
         self.commandTimeout = commandTimeout
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
-        self.dbNum = dbNum
+        self.databaseNumber = databaseNumber
     }
 }

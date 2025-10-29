@@ -113,7 +113,7 @@ package final class ValkeyConnectionFactory: Sendable {
             tls: tls,
             clientName: nil,
             readOnly: readOnly,
-            dbNum: self.configuration.dbNum
+            databaseNumber: self.configuration.databaseNumber
         )
 
         #if DistributedTracingSupport
