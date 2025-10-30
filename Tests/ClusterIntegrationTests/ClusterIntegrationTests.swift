@@ -875,7 +875,7 @@ struct ClusterIntegrationTests {
     @available(valkeySwift 1.0, *)
     static func withValkeyCluster<T>(
         _ nodeAddresses: [(host: String, port: Int)],
-        nodeClientConfiguration: ValkeyClientConfiguration = .init(readOnlyReplicaSelection: .cycle),
+        nodeClientConfiguration: ValkeyClientConfiguration = .init(readOnlyCommandNodeSelection: .cycleReplicas),
         logger: Logger,
         _ body: (ValkeyClusterClient) async throws -> sending T
     ) async throws -> T {

@@ -217,7 +217,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
     ///   - databaseNumber: The Valkey Database number.
-    ///   - readOnlyReplicaSelection: Whether we want to select replicas for readonly commands and how we do it
+    ///   - readOnlyCommandNodeSelection: How we choose a node when processing readonly commands
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
