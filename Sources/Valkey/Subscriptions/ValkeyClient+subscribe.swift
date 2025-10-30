@@ -20,7 +20,7 @@ extension ValkeyClient {
         isolation: isolated (any Actor)? = #isolation,
         _ operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> sending Value {
-        let node = self.node
+        let node = self.stateMachine.withLock { $0.getNode() }
         let id = node.subscriptionConnectionIDGenerator.next()
 
         let connection = try await withTaskCancellationHandler {
