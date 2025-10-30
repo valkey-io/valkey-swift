@@ -87,7 +87,7 @@ public final class ValkeyClient: Sendable {
         (self.actionStream, self.actionStreamContinuation) = AsyncStream.makeStream(of: RunAction.self)
         switch address.value {
         case .hostname(let host, let port):
-            let action = self.stateMachine.withLock { $0.setPrimary(nodeID: .init(endpoint: host, port: port)) }
+            let action = self.stateMachine.withLock { $0.setPrimary(.hostname(host, port: port)) }
             switch action {
             case .runNodeAndFindReplicas(let client):
                 self.queueAction(.runNodeClient(client))
@@ -154,11 +154,11 @@ extension ValkeyClient {
             await nodeClient.run()
 
         case .runRole(let nodeClient):
-            var replicas: [ValkeyNodeID] = []
+            var replicas: [ValkeyServerAddress] = []
             if let role = try? await nodeClient.execute(ROLE()) {
                 switch role {
                 case .primary(let primary):
-                    replicas = primary.replicas.map { .init(endpoint: $0.ip, port: $0.port) }
+                    replicas = primary.replicas.map { .hostname($0.ip, port: $0.port) }
                 case .replica:
                     break
                 case .sentinel:

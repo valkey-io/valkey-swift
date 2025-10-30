@@ -11,25 +11,25 @@
 struct ValkeyClientStateMachine<
     ConnectionPool: ValkeyNodeConnectionPool,
     ConnectionPoolFactory: ValkeyNodeConnectionPoolFactory
-> where ConnectionPoolFactory.ConnectionPool == ConnectionPool {
+> where ConnectionPoolFactory.ConnectionPool == ConnectionPool, ConnectionPoolFactory.NodeDescription == ValkeyNodeClientFactory.NodeDescription {
     /// Represents the mapping of primary and replica nodes.
     @usableFromInline
     package struct ValkeyNodeIDs: Hashable, Sendable {
         /// The primary node responsible for handling write operations for this shard.
         @usableFromInline
-        package var primary: ValkeyNodeID
+        package var primary: ValkeyServerAddress
 
         /// The replica nodes that maintain copies of the primary's data.
         /// Replicas can handle read operations but not writes.
         @usableFromInline
-        package var replicas: [ValkeyNodeID]
+        package var replicas: [ValkeyServerAddress]
 
         /// Creates a new shard node mapping with the specified primary and optional replicas.
         ///
         /// - Parameters:
         ///   - primary: The primary node ID for this shard
         ///   - replicas: An array of replica node IDs, defaults to empty
-        package init(primary: ValkeyNodeID, replicas: [ValkeyNodeID] = []) {
+        package init(primary: ValkeyServerAddress, replicas: [ValkeyServerAddress] = []) {
             self.primary = primary
             self.replicas = replicas
         }
@@ -68,9 +68,9 @@ struct ValkeyClientStateMachine<
         case findReplicas
         case doNothing
     }
-    mutating func setPrimary(nodeID: ValkeyNodeID) -> SetPrimaryAction {
-        let nodes = ValkeyNodeIDs(primary: nodeID)
-        let action = self.runningClients.addNode(.init(endpoint: nodeID.endpoint, port: nodeID.port))
+    mutating func setPrimary(_ address: ValkeyServerAddress) -> SetPrimaryAction {
+        let nodes = ValkeyNodeIDs(primary: address)
+        let action = self.runningClients.addNode(.init(address: address, readOnly: false))
         self.state = .running(nodes)
         return switch action {
         case .useExistingPool: .findReplicas
@@ -83,13 +83,17 @@ struct ValkeyClientStateMachine<
         var clientsToRun: [ConnectionPool]
     }
 
-    mutating func addReplicas(nodeIDs: [ValkeyNodeID]) -> AddReplicasAction {
+    mutating func addReplicas(nodeIDs: [ValkeyServerAddress]) -> AddReplicasAction {
         switch self.state {
         case .uninitialized:
             preconditionFailure("Cannot get a node if the client statemachine isn't initialized")
         case .running(let nodes):
-            var nodeDescriptions = [ValkeyNodeDescription(endpoint: nodes.primary.endpoint, port: nodes.primary.port)]
-            nodeDescriptions.append(contentsOf: nodeIDs.lazy.map { .init(endpoint: $0.endpoint, port: $0.port) })
+            var nodeDescriptions = [
+                ValkeyClientNodeDescription(address: nodes.primary, readOnly: false)
+            ]
+            nodeDescriptions.append(
+                contentsOf: nodeIDs.lazy.map { ValkeyClientNodeDescription(address: $0, readOnly: true) }
+            )
             let action = self.runningClients.updateNodes(nodeDescriptions, removeUnmentionedPools: true)
             let newNodes = ValkeyNodeIDs(primary: nodes.primary, replicas: nodeIDs)
             self.state = .running(newNodes)
