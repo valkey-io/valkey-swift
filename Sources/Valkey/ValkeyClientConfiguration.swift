@@ -153,6 +153,24 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
+    /// Determine how nodes are chosen for readonly commands
+    public struct ReadOnlyCommandNodeSelection: Sendable {
+        enum _Internal {
+            case primary
+            case cycleReplicas
+            case cycleAllNodes
+        }
+
+        let value: _Internal
+
+        /// Always use the primary node
+        public static var primary: Self { .init(value: .primary) }
+        /// Cycle through replicas
+        public static var cycleReplicas: Self { .init(value: .cycleReplicas) }
+        /// Cycle through primary and replicas
+        public static var cycleAllNodes: Self { .init(value: .cycleAllNodes) }
+    }
+
     /// The authentication credentials for the connection.
     public var authentication: Authentication?
     /// The connection pool configuration.
@@ -174,6 +192,14 @@ public struct ValkeyClientConfiguration: Sendable {
     /// Database Number to use for the Valkey Connection
     public var databaseNumber: Int = 0
 
+    /// Determine how we chose nodes for readonly commands
+    ///
+    /// Cluster by default will redirect commands from replica nodes to the primary node.
+    /// Setting this value to something other than ``ReadOnlyCommandNodeSelection/primary``
+    /// will allow replicas to run readonly commands. This will reduce load on your primary
+    /// nodes but there is a chance you will receive stale data as the replica is not up to date.
+    public var readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection
+
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
     /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
@@ -191,6 +217,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
     ///   - databaseNumber: The Valkey Database number.
+    ///   - readOnlyCommandNodeSelection: How we choose a node when processing readonly commands
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
@@ -199,7 +226,8 @@ public struct ValkeyClientConfiguration: Sendable {
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable,
-        databaseNumber: Int = 0
+        databaseNumber: Int = 0,
+        readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection = .primary
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -209,5 +237,6 @@ public struct ValkeyClientConfiguration: Sendable {
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
         self.databaseNumber = databaseNumber
+        self.readOnlyCommandNodeSelection = readOnlyCommandNodeSelection
     }
 }

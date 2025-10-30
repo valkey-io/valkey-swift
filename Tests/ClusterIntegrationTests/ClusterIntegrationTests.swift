@@ -56,6 +56,24 @@ struct ClusterIntegrationTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testWithReadOnlyConnection() async throws {
+        var logger = Logger(label: "ValkeyCluster")
+        logger.logLevel = .trace
+        let firstNodeHostname = clusterFirstNodeHostname!
+        let firstNodePort = clusterFirstNodePort ?? 6379
+        try await Self.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) { client in
+            try await Self.withKey(connection: client) { key in
+                try await client.set(key, value: "Hello")
+                try await client.withConnection(forKeys: [key], readOnly: true) { connection in
+                    let response = try await connection.get(key)
+                    #expect(response.map { String(buffer: $0) } == "Hello")
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testFailover() async throws {
         var logger = Logger(label: "ValkeyCluster")
         logger.logLevel = .trace
@@ -270,11 +288,11 @@ struct ClusterIntegrationTests {
         afterMigrate: () async throws -> Void = {},
         finished: () async throws -> Void = {}
     ) async throws {
-        let nodeAClient = try await client.nodeClient(for: [hashSlot])
+        let nodeAClient = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
         // find another shard
         var nodeBClient: ValkeyNodeClient
         repeat {
-            nodeBClient = try await client.nodeClient(for: [HashSlot(rawValue: Int.random(in: 0..<16384))!])
+            nodeBClient = try await client.nodeClient(for: [HashSlot(rawValue: Int.random(in: 0..<16384))!], nodeSelection: .primary)
         } while nodeAClient === nodeBClient
 
         guard let (hostnameA, portA) = nodeAClient.serverAddress.getHostnameAndPort() else { return }
@@ -341,7 +359,7 @@ struct ClusterIntegrationTests {
             try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
-                    let node = try await client.nodeClient(for: [HashSlot(key: key)])
+                    let node = try await client.nodeClient(for: [HashSlot(key: key)], nodeSelection: .primary)
                     var commands: [any ValkeyCommand] = .init()
                     commands.append(SET(key, value: "cluster pipeline test"))
                     commands.append(GET(key))
@@ -363,13 +381,13 @@ struct ClusterIntegrationTests {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
-                    let node = try await client.nodeClient(for: [hashSlot])
+                    let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                     // get a key from same node
                     let key2 = try await {
                         while true {
                             let key2 = ValkeyKey(UUID().uuidString)
                             let hashSlot2 = HashSlot(key: key2)
-                            let node2 = try await client.nodeClient(for: [hashSlot2])
+                            let node2 = try await client.nodeClient(for: [hashSlot2], nodeSelection: .primary)
                             if node2.serverAddress == node.serverAddress {
                                 return key2
                             }
@@ -400,12 +418,12 @@ struct ClusterIntegrationTests {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
-                    let node = try await client.nodeClient(for: [hashSlot])
+                    let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                     let key2 = try await {
                         while true {
                             let key2 = ValkeyKey(UUID().uuidString)
                             let hashSlot2 = HashSlot(key: key2)
-                            let node2 = try await client.nodeClient(for: [hashSlot2])
+                            let node2 = try await client.nodeClient(for: [hashSlot2], nodeSelection: .primary)
                             if node2.serverAddress != node.serverAddress {
                                 return key2
                             }
@@ -435,12 +453,12 @@ struct ClusterIntegrationTests {
                 client in
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: "{foo}") { key in
                     let hashSlot = HashSlot(key: key)
-                    let node = try await client.nodeClient(for: [hashSlot])
+                    let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                     let key2 = try await {
                         while true {
                             let key2 = ValkeyKey(UUID().uuidString)
                             let hashSlot2 = HashSlot(key: key2)
-                            let node2 = try await client.nodeClient(for: [hashSlot2])
+                            let node2 = try await client.nodeClient(for: [hashSlot2], nodeSelection: .primary)
                             if node2.serverAddress != node.serverAddress {
                                 return key2
                             }
@@ -470,7 +488,7 @@ struct ClusterIntegrationTests {
             try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
                 clusterClient in
                 try await ClusterIntegrationTests.withKey(connection: clusterClient) { key in
-                    let node = try await clusterClient.nodeClient(for: [HashSlot(key: key)])
+                    let node = try await clusterClient.nodeClient(for: [HashSlot(key: key)], nodeSelection: .primary)
                     try await clusterClient.set(key, value: "bar")
                     let cluster = try await clusterClient.clusterShards()
                     let shard = try #require(
@@ -512,7 +530,7 @@ struct ClusterIntegrationTests {
                 let keySuffix = "{\(UUID().uuidString)}"
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
                     let hashSlot = HashSlot(key: key)
-                    let node = try await client.nodeClient(for: [hashSlot])
+                    let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                     try await client.set(key, value: "Testing before import")
 
                     try await ClusterIntegrationTests.testMigratingHashSlot(hashSlot, client: client) {
@@ -548,7 +566,7 @@ struct ClusterIntegrationTests {
                 try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key in
                     try await ClusterIntegrationTests.withKey(connection: client, suffix: keySuffix) { key2 in
                         let hashSlot = HashSlot(key: key)
-                        let node = try await client.nodeClient(for: [hashSlot])
+                        let node = try await client.nodeClient(for: [hashSlot], nodeSelection: .primary)
                         try await client.lpush(key, elements: ["testing1"])
 
                         try await ClusterIntegrationTests.testMigratingHashSlot(hashSlot, client: client) {
@@ -592,13 +610,16 @@ struct ClusterIntegrationTests {
                 [(host: firstNodeHostname, port: firstNodePort)],
                 logger: logger
             ) { client in
-                let nodesAndIndices = try await client.splitCommandsAcrossNodes(commands: values.commands)
-                #expect(nodesAndIndices.count == values.selection.count)
-                let sortedNodeAndIndics = nodesAndIndices.sorted { $0.commandIndices[0] < $1.commandIndices[0] }
-                var iterator = sortedNodeAndIndics.makeIterator()
-                var expectedIterator = values.selection.makeIterator()
-                while let result = iterator.next() {
-                    #expect(result.commandIndices == expectedIterator.next())
+                let nodeSelections: [ValkeyClusterNodeSelection] = [.primary, .cycleReplicas(234)]
+                for selection in nodeSelections {
+                    let nodesAndIndices = try await client.splitCommandsAcrossNodes(commands: values.commands, nodeSelection: selection)
+                    #expect(nodesAndIndices.count == values.selection.count)
+                    let sortedNodeAndIndics = nodesAndIndices.sorted { $0.commandIndices[0] < $1.commandIndices[0] }
+                    var iterator = sortedNodeAndIndics.makeIterator()
+                    var expectedIterator = values.selection.makeIterator()
+                    while let result = iterator.next() {
+                        #expect(result.commandIndices == expectedIterator.next())
+                    }
                 }
             }
         }
@@ -644,6 +665,40 @@ struct ClusterIntegrationTests {
                 #expect(response == "0")
                 let response2 = try results[7].get().decode(as: String.self)
                 #expect(response2 == "2")
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func testClientPipelineMultipleNodesReadonly() async throws {
+            var logger = Logger(label: "ValkeyCluster")
+            logger.logLevel = .trace
+            let firstNodeHostname = clusterFirstNodeHostname!
+            let firstNodePort = clusterFirstNodePort ?? 6379
+            try await ClusterIntegrationTests.withValkeyCluster([(host: firstNodeHostname, port: firstNodePort)], logger: logger) {
+                client in
+                let keys = (0..<100).map { ValkeyKey("Test\($0)") }
+                var setCommands: [any ValkeyCommand] = .init()
+                for key in keys {
+                    setCommands.append(SET(key, value: key.description))
+                }
+                _ = await client.execute(setCommands)
+                var getCommands: [any ValkeyCommand] = .init()
+                for i in 0..<100 {
+                    let key = ValkeyKey("Test\(i)")
+                    getCommands.append(GET(key))
+                }
+                let results = await client.execute(getCommands)
+                let response = try results[0].get().decode(as: String.self)
+                #expect(response == "Test0")
+                let response2 = try results[2].get().decode(as: String.self)
+                #expect(response2 == "Test2")
+
+                var delCommands: [any ValkeyCommand] = .init()
+                for key in keys {
+                    delCommands.append(DEL(keys: [key]))
+                }
+                _ = await client.execute(delCommands)
             }
         }
 
@@ -820,7 +875,7 @@ struct ClusterIntegrationTests {
     @available(valkeySwift 1.0, *)
     static func withValkeyCluster<T>(
         _ nodeAddresses: [(host: String, port: Int)],
-        nodeClientConfiguration: ValkeyClientConfiguration = .init(),
+        nodeClientConfiguration: ValkeyClientConfiguration = .init(readOnlyCommandNodeSelection: .cycleReplicas),
         logger: Logger,
         _ body: (ValkeyClusterClient) async throws -> sending T
     ) async throws -> T {
