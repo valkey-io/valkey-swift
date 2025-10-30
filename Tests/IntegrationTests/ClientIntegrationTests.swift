@@ -592,4 +592,39 @@ struct ClientIntegratedTests {
             #expect(clients.firstRange(of: "lib-ver=\(valkeySwiftLibraryVersion)") != nil)
         }
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testMultipleDB() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        // Test all default enabled databases in range {0,15}
+        for dbNum in 0...15 {
+            let clientConfig: ValkeyClientConfiguration = .init(databaseNumber: dbNum)
+            try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), configuration: clientConfig, logger: logger) { connection in
+                // Verify ClientInfo contains dbNum
+                let clientInfo = String(buffer: try await connection.clientInfo())
+                #expect(clientInfo.contains("db=\(dbNum)"))
+
+                // Verify via setting and getting keys on all the DBs
+                let key = "key-\(dbNum)"
+                let value = "value-\(dbNum)"
+                try await connection.set(ValkeyKey(key), value: value)
+                let response = try await connection.get(ValkeyKey(key)).map { String(buffer: $0) }
+                #expect(response == value)
+
+                // Verify key belonging to other DBs don't exist in this DB
+                for otherDbNum in 0...15 {
+                    let otherKey = "key-\(otherDbNum)"
+                    if otherDbNum == dbNum { continue }
+                    let otherResponse = try await connection.get(ValkeyKey(otherKey)).map { String(buffer: $0) }
+                    #expect(otherResponse == nil)
+                }
+
+                let delCount = try await connection.del(keys: [ValkeyKey(key)])
+                #expect(delCount == 1)
+            }
+        }
+    }
+
 }

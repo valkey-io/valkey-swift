@@ -171,6 +171,9 @@ public struct ValkeyClientConfiguration: Sendable {
     /// The TLS to use for the Valkey connection.
     public var tls: TLS
 
+    /// Database Number to use for the Valkey Connection
+    public var databaseNumber: Int = 0
+
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
     /// Defaults to using the globally bootstrapped tracer with OpenTelemetry semantic conventions.
@@ -187,6 +190,7 @@ public struct ValkeyClientConfiguration: Sendable {
     ///   - commandTimeout: The timeout for a connection response.
     ///   - blockingCommandTimeout: The timeout for a blocking command response.
     ///   - tls: The TLS configuration.
+    ///   - databaseNumber: The Valkey Database number.
     public init(
         authentication: Authentication? = nil,
         connectionPool: ConnectionPool = .init(),
@@ -194,7 +198,8 @@ public struct ValkeyClientConfiguration: Sendable {
         retryParameters: RetryParameters = .init(),
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
-        tls: TLS = .disable
+        tls: TLS = .disable,
+        databaseNumber: Int = 0
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -203,5 +208,6 @@ public struct ValkeyClientConfiguration: Sendable {
         self.commandTimeout = commandTimeout
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
+        self.databaseNumber = databaseNumber
     }
 }

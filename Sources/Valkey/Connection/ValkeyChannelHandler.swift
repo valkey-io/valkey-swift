@@ -58,6 +58,7 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         let blockingCommandTimeout: TimeAmount
         let clientName: String?
         let readOnly: Bool
+        let databaseNumber: Int
     }
     @usableFromInline
     struct PendingCommand {
@@ -292,6 +293,13 @@ final class ValkeyChannelHandler: ChannelInboundHandler {
         helloCommand.encode(into: &self.encoder)
         clientInfoLibName.encode(into: &self.encoder)
         clientInfoLibVersion.encode(into: &self.encoder)
+
+        // Select DB if needed
+        if self.configuration.databaseNumber > 0 {
+            numberOfPendingCommands += 1
+            SELECT(index: self.configuration.databaseNumber).encode(into: &self.encoder)
+        }
+
         if self.configuration.readOnly {
             numberOfPendingCommands += 1
             READONLY().encode(into: &self.encoder)
@@ -539,7 +547,8 @@ extension ValkeyChannelHandler.Configuration {
             commandTimeout: .init(other.commandTimeout),
             blockingCommandTimeout: .init(other.blockingCommandTimeout),
             clientName: other.clientName,
-            readOnly: other.readOnly
+            readOnly: other.readOnly,
+            databaseNumber: other.databaseNumber
         )
     }
 }
