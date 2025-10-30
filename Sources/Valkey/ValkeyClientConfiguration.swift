@@ -153,19 +153,22 @@ public struct ValkeyClientConfiguration: Sendable {
         }
     }
 
-    /// Determine how replicas are chosen for readonly commands
-    public struct ReadOnlyReplicaSelection: Sendable {
+    /// Determine how nodes are chosen for readonly commands
+    public struct ReadOnlyCommandNodeSelection: Sendable {
         enum _Internal {
-            case none
-            case cycle
+            case primary
+            case cycleReplicas
+            case cycleAllNodes
         }
 
         let value: _Internal
 
-        /// Do not use readonly replicas
-        public static var none: Self { .init(value: .none) }
+        /// Always use the primary node
+        public static var primary: Self { .init(value: .primary) }
         /// Cycle through replicas
-        public static var cycle: Self { .init(value: .cycle) }
+        public static var cycleReplicas: Self { .init(value: .cycleReplicas) }
+        /// Cycle through primary and replicas
+        public static var cycleAllNodes: Self { .init(value: .cycleAllNodes) }
     }
 
     /// The authentication credentials for the connection.
@@ -188,16 +191,14 @@ public struct ValkeyClientConfiguration: Sendable {
 
     /// Database Number to use for the Valkey Connection
     public var databaseNumber: Int = 0
-    
-    /// Determine how we chose replicas for readonly commands
-    ///
-    /// A nil value indicates we do not want to use readonly replicas
+
+    /// Determine how we chose nodes for readonly commands
     ///
     /// Cluster by default will redirect commands from replica nodes to the primary node.
-    /// Setting this value will allow replicas to run readonly commands. This will reduce
-    /// load on your primary nodes but there is a chance you will receive stale data as
-    /// the replica is not up to date.
-    public var readOnlyReplicaSelection: ReadOnlyReplicaSelection
+    /// Setting this value to something other than ``ReadOnlyCommandNodeSelection/primary``
+    /// will allow replicas to run readonly commands. This will reduce load on your primary
+    /// nodes but there is a chance you will receive stale data as the replica is not up to date.
+    public var readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection
 
     #if DistributedTracingSupport
     /// The distributed tracing configuration to use for the Valkey connection.
@@ -225,8 +226,8 @@ public struct ValkeyClientConfiguration: Sendable {
         commandTimeout: Duration = .seconds(30),
         blockingCommandTimeout: Duration = .seconds(120),
         tls: TLS = .disable,
-        databaseNumber: Int = 0
-        readOnlyReplicaSelection: ReadOnlyReplicaSelection = .none
+        databaseNumber: Int = 0,
+        readOnlyCommandNodeSelection: ReadOnlyCommandNodeSelection = .primary
     ) {
         self.authentication = authentication
         self.connectionPool = connectionPool
@@ -236,6 +237,6 @@ public struct ValkeyClientConfiguration: Sendable {
         self.blockingCommandTimeout = blockingCommandTimeout
         self.tls = tls
         self.databaseNumber = databaseNumber
-        self.readOnlyReplicaSelection = readOnlyReplicaSelection
+        self.readOnlyCommandNodeSelection = readOnlyCommandNodeSelection
     }
 }

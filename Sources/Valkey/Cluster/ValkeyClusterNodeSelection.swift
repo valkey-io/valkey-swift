@@ -10,6 +10,7 @@
 package enum ValkeyClusterNodeSelection: Sendable {
     case primary
     case cycleReplicas(Int)
+    case cycleAllNodes(Int)
 
     /// Select node from node ids
     /// - Parameter nodeIDs: Primary and replica nodes
@@ -22,20 +23,29 @@ package enum ValkeyClusterNodeSelection: Sendable {
         case .cycleReplicas(let index):
             guard nodeIDs.replicas.count > 0 else { return nodeIDs.primary }
             return nodeIDs.replicas[index % nodeIDs.replicas.count]
+        case .cycleAllNodes(let index):
+            let index = index % (nodeIDs.replicas.count + 1)
+            if index == 0 {
+                return nodeIDs.primary
+            } else {
+                return nodeIDs.replicas[index - 1]
+            }
         }
     }
 }
 
 @available(valkeySwift 1.0, *)
-extension ValkeyClientConfiguration.ReadOnlyReplicaSelection {
-    /// Convert from read only replica selection to node selection
+extension ValkeyClientConfiguration.ReadOnlyCommandNodeSelection {
+    /// Convert from ``ValkeyClientConfiguration/ReadOnlyCommandNodeSelection`` to node selection
     @usableFromInline
     var clusterNodeSelection: ValkeyClusterNodeSelection {
         switch self.value {
-        case .none:
+        case .primary:
             .primary
-        case .cycle:
+        case .cycleReplicas:
             .cycleReplicas(Self.idGenerator.next())
+        case .cycleAllNodes:
+            .cycleAllNodes(Self.idGenerator.next())
         }
     }
 
