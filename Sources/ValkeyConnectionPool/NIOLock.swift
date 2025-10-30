@@ -12,7 +12,7 @@
 //
 // This source file is part of the SwiftNIO open source project
 //
-// Copyright (c) 2017-2022 the SwiftNIO project authors
+// Copyright (c) 2017-2022 Apple Inc. and the SwiftNIO project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -145,7 +145,7 @@ final class LockStorage<Value>: ManagedBuffer<Value, LockPrimitive> {
         let buffer = Self.create(minimumCapacity: 1) { _ in
             value
         }
-        // Intentionally using a force cast here to avoid a miss compilation in 5.10.
+        // Intentionally using a force cast here to avoid a miss compiliation in 5.10.
         // This is as fast as an unsafeDownCast since ManagedBuffer is inlined and the optimizer
         // can eliminate the upcast/downcast pair
         let storage = buffer as! Self

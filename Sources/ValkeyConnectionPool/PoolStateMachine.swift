@@ -17,7 +17,7 @@ struct PoolConfiguration: Sendable {
     @usableFromInline
     var minimumConnectionCount: Int = 0
 
-    /// The maximum number of connections for this pool, to be preserved.
+    /// The maximum number of connections to for this pool, to be preserved.
     @usableFromInline
     var maximumConnectionSoftLimit: Int = 10
 
@@ -434,6 +434,7 @@ struct PoolStateMachine<
         fatalError("Unimplemented")
     }
 
+    @usableFromInline
     mutating func triggerForceShutdown() -> Action {
         switch self.poolState {
         case .running:
