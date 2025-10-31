@@ -17,12 +17,13 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        image: ["swift:6.1", "swift:6.2"]
+        swift: ["swift:6.1", "swift:6.2"]
+        valkey: ["valkey:8.0", "valkey:8.1", "valkey:9.0"]
     container:
-      image: ${{ matrix.image }}
+      image: ${{ matrix.swift }}
     services:
       valkey:
-        image: valkey/valkey:8.0
+        image: valkey/${{ matrix.valkey }}
         ports:
           - 6379:6379
         options: --entrypoint valkey-server
