@@ -595,7 +595,6 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
-<<<<<<< HEAD
     func testMultipleDB() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -624,28 +623,12 @@ struct ClientIntegratedTests {
 
                 let delCount = try await connection.del(keys: [ValkeyKey(key)])
                 #expect(delCount == 1)
-
-    func testClusterSlots() async throws {
-        var logger = Logger(label: "Valkey")
-        logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 36001), logger: logger) { client in
-            let clusterSlots = try await client.clusterSlots()
-            for clusterSlot in clusterSlots {
-                #expect(clusterSlot.startSlot >= 0 && clusterSlot.startSlot <= 16383)
-                #expect(clusterSlot.endSlot >= 0 && clusterSlot.endSlot <= 16383)
-                for node in clusterSlot.nodes {
-                    #expect(!node.ip.isEmpty)
-                    #expect(node.port >= 0 && node.port <= 65535)
-                    #expect(!node.nodeId.isEmpty)
-                }
             }
         }
     }
 
     @Test
     @available(valkeySwift 1.0, *)
-=======
->>>>>>> 9f1118e (Fixing Custom response object fields)
     func testClusterLinks() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
