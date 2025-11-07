@@ -661,7 +661,7 @@ extension ValkeyClusterLink {
             switch key {
             case "direction":
                 guard let directionString = try? String(fromRESP: value),
-                      let directionValue = ValkeyClusterLink.Direction(rawValue: directionString)
+                    let directionValue = ValkeyClusterLink.Direction(rawValue: directionString)
                 else {
                     throw .invalidLinkDirection
                 }
@@ -713,7 +713,7 @@ extension ValkeyClusterSlotStats {
 
         // First element: slot number
         guard let slotToken = iterator.next(),
-              case .number(let slotNumber) = slotToken.value
+            case .number(let slotNumber) = slotToken.value
         else {
             throw .missingRequiredValueForSlotStats
         }
@@ -813,14 +813,14 @@ extension ValkeyClusterSlotRange {
 
         // First element: start slot
         guard let startSlotToken = iterator.next(),
-              case .number(let startSlotNumber) = startSlotToken.value
+            case .number(let startSlotNumber) = startSlotToken.value
         else {
             throw .missingRequiredValueForSlotRange
         }
 
         // Second element: end slot
         guard let endSlotToken = iterator.next(),
-              case .number(let endSlotNumber) = endSlotToken.value
+            case .number(let endSlotNumber) = endSlotToken.value
         else {
             throw .missingRequiredValueForSlotRange
         }
@@ -858,14 +858,14 @@ extension ValkeyClusterSlotRange.Node {
 
         // First element: IP address
         guard let ipToken = iterator.next(),
-              let ip = try? String(fromRESP: ipToken)
+            let ip = try? String(fromRESP: ipToken)
         else {
             throw .missingRequiredValueForSlotNode
         }
 
         // Second element: port
         guard let portToken = iterator.next(),
-              case .number(let portNumber) = portToken.value
+            case .number(let portNumber) = portToken.value
         else {
             throw .missingRequiredValueForSlotNode
         }
@@ -873,7 +873,7 @@ extension ValkeyClusterSlotRange.Node {
 
         // Third element: node ID
         guard let nodeIdToken = iterator.next(),
-              let nodeId = try? String(fromRESP: nodeIdToken)
+            let nodeId = try? String(fromRESP: nodeIdToken)
         else {
             throw .missingRequiredValueForSlotNode
         }
@@ -887,7 +887,7 @@ extension ValkeyClusterSlotRange.Node {
                 // Handle metadata as a map
                 for (keyToken, valueToken) in map {
                     if let key = try? String(fromRESP: keyToken),
-                       let value = try? String(fromRESP: valueToken)
+                        let value = try? String(fromRESP: valueToken)
                     {
                         metadata[key] = value
                     }
