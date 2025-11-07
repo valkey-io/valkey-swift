@@ -595,6 +595,7 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+<<<<<<< HEAD
     func testMultipleDB() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -643,6 +644,8 @@ struct ClientIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+=======
+>>>>>>> 9f1118e (Fixing Custom response object fields)
     func testClusterLinks() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
@@ -650,12 +653,24 @@ struct ClientIntegratedTests {
             let clusterLinks = try await client.clusterLinks()
             #expect(!clusterLinks.isEmpty && clusterLinks.count > 0)
             for clusterLink in clusterLinks {
-                #expect(clusterLink.direction == .from || clusterLink.direction == .to)
-                #expect(!clusterLink.node.isEmpty)
-                #expect(clusterLink.createTime > 0)
-                #expect(!clusterLink.events.isEmpty)
-                #expect(clusterLink.sendBufferAllocated >= 0)
-                #expect(clusterLink.sendBufferUsed >= 0)
+                if let direction = clusterLink.direction {
+                    #expect(direction == .from || direction == .to)
+                }
+                if let node = clusterLink.node {
+                    #expect(!node.isEmpty)
+                }
+                if let createTime = clusterLink.createTime {
+                    #expect(createTime > 0)
+                }
+                if let events = clusterLink.events {
+                    #expect(!events.isEmpty)
+                }
+                if let sendBufferAllocated = clusterLink.sendBufferAllocated {
+                    #expect(sendBufferAllocated >= 0)
+                }
+                if let sendBufferUsed = clusterLink.sendBufferUsed {
+                    #expect(sendBufferUsed >= 0)
+                }
             }
         }
     }
@@ -675,11 +690,41 @@ struct ClientIntegratedTests {
                     )
                 )
             )
-            print(slotStats)
             #expect(!slotStats.isEmpty && slotStats.count == 10)
             for slotStat in slotStats {
-                // Only verify slot, other fields are optional
+                // slot is a required field, other fields are optional
                 #expect(slotStat.slot >= 0 && slotStat.slot <= 16383)
+                if let keyCount = slotStat.keyCount {
+                    #expect(keyCount >= 0)
+                }
+                if let cpuUsec = slotStat.cpuUsec {
+                    #expect(cpuUsec >= 0)
+                }
+                if let networkBytesIn = slotStat.networkBytesIn {
+                    #expect(networkBytesIn >= 0)
+                }
+                if let networkBytesOut = slotStat.networkBytesOut {
+                    #expect(networkBytesOut >= 0)
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterSlots() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 36001), logger: logger) { client in
+            let clusterSlots = try await client.clusterSlots()
+            for clusterSlot in clusterSlots {
+                #expect(clusterSlot.startSlot >= 0 && clusterSlot.startSlot <= 16383)
+                #expect(clusterSlot.endSlot >= 0 && clusterSlot.endSlot <= 16383)
+                for node in clusterSlot.nodes {
+                    #expect(!node.ip.isEmpty)
+                    #expect(node.port >= 0 && node.port <= 65535)
+                    #expect(!node.nodeId.isEmpty)
+                }
             }
         }
     }

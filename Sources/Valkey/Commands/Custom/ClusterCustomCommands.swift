@@ -11,16 +11,16 @@ extension CLUSTER.GETKEYSINSLOT {
     public typealias Response = [ValkeyKey]
 }
 
-extension CLUSTER.LINKS {
-    public typealias Response = [ValkeyClusterLink]
-}
-
 extension CLUSTER.MYID {
     public typealias Response = String
 }
 
 extension CLUSTER.MYSHARDID {
     public typealias Response = String
+}
+
+extension CLUSTER.LINKS {
+    public typealias Response = [ValkeyClusterLink]
 }
 
 extension CLUSTER.SHARDS {
@@ -68,198 +68,6 @@ package struct ValkeyClusterParseError: Error, Equatable {
     package init(reason: Reason, token: RESPToken) {
         self.reason = reason
         self.token = token
-    }
-}
-
-/// Slot usage statistics for a hash slot in a Valkey cluster.
-///
-/// A description is returned when you call ``ValkeyClientProtocol/clusterSlotStats(filter:)``.
-public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
-    /// The hash slot number
-    public var slot: Int
-    /// Number of keys in the slot
-    public var keyCount: Int?
-    /// CPU time consumed by the slot in microseconds
-    public var cpuUsec: Int?
-    /// Network bytes read for the slot
-    public var networkBytesIn: Int?
-    /// Network bytes written for the slot
-    public var networkBytesOut: Int?
-
-    /// Creates a new cluster slot stats
-    /// - Parameters:
-    ///   - slot: The hash slot number
-    ///   - keyCount: Number of keys in the slot
-    ///   - cpuUsec: CPU time consumed in microseconds
-    ///   - networkBytesIn: Network bytes read
-    ///   - networkBytesOut: Network bytes written
-    public init(
-        slot: Int,
-        keyCount: Int? = nil,
-        cpuUsec: Int? = nil,
-        networkBytesIn: Int? = nil,
-        networkBytesOut: Int? = nil
-    ) {
-        self.slot = slot
-        self.keyCount = keyCount
-        self.cpuUsec = cpuUsec
-        self.networkBytesIn = networkBytesIn
-        self.networkBytesOut = networkBytesOut
-    }
-
-    /// Creates a cluster slot stats from the response token you provide.
-    /// - Parameter respToken: The response token.
-    public init(fromRESP respToken: RESPToken) throws {
-        do {
-            self = try Self.makeClusterSlotStats(respToken: respToken)
-        } catch {
-            throw ValkeyClusterParseError(reason: error, token: respToken)
-        }
-    }
-}
-
-/// A slot range mapping in a Valkey cluster.
-///
-/// A description is returned when you call ``ValkeyClientProtocol/clusterSlots()``.
-public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
-    /// A node serving a slot range in a Valkey cluster.
-    public struct Node: Hashable, Sendable {
-        /// The IP address of the node
-        public var ip: String
-        /// The port of the node
-        public var port: Int
-        /// The node ID
-        public var nodeId: String
-        /// Additional networking metadata
-        public var metadata: [String: String]
-
-        /// Creates a new cluster slot node
-        /// - Parameters:
-        ///   - ip: The IP address
-        ///   - port: The port
-        ///   - nodeId: The node ID
-        ///   - metadata: Additional networking metadata
-        public init(
-            ip: String,
-            port: Int,
-            nodeId: String,
-            metadata: [String: String] = [:]
-        ) {
-            self.ip = ip
-            self.port = port
-            self.nodeId = nodeId
-            self.metadata = metadata
-        }
-    }
-
-    /// The start slot of the range
-    public var startSlot: Int
-    /// The end slot of the range
-    public var endSlot: Int
-    /// The nodes serving this slot range
-    public var nodes: [Node]
-
-    /// Creates a new cluster slot range
-    /// - Parameters:
-    ///   - startSlot: The start slot
-    ///   - endSlot: The end slot
-    ///   - nodes: The nodes serving this range
-    public init(startSlot: Int, endSlot: Int, nodes: [Node]) {
-        self.startSlot = startSlot
-        self.endSlot = endSlot
-        self.nodes = nodes
-    }
-
-    /// Creates a cluster slot range from the response token you provide.
-    /// - Parameter respToken: The response token.
-    public init(fromRESP respToken: RESPToken) throws {
-        do {
-            self = try Self.makeClusterSlotRange(respToken: respToken)
-        } catch {
-            throw ValkeyClusterParseError(reason: error, token: respToken)
-        }
-    }
-}
-
-/// A cluster link between nodes in a Valkey cluster.
-///
-/// A description is returned when you call ``ValkeyClientProtocol/clusterLinks()``.
-public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
-    /// Direction of the cluster link.
-    public struct Direction: Sendable, Hashable, RawRepresentable {
-        /// The link is established by the local node to the peer.
-        public static let to = Direction(base: .to)
-        /// The link is accepted by the local node from the peer.
-        public static let from = Direction(base: .from)
-
-        public init?(rawValue: String) {
-            guard let base = Base(rawValue: rawValue) else {
-                return nil
-            }
-            self.base = base
-        }
-
-        public var rawValue: String {
-            self.base.rawValue
-        }
-
-        enum Base: String {
-            case to
-            case from
-        }
-
-        private(set) var base: Base
-
-        init(base: Base) {
-            self.base = base
-        }
-    }
-
-    /// The direction of the link (to or from)
-    public var direction: Direction
-    /// The node ID of the peer
-    public var node: String
-    /// Creation time of the link
-    public var createTime: Int
-    /// Events currently registered for the link (e.g., "r", "w", "rw")
-    public var events: String
-    /// Allocated size of the link's send buffer
-    public var sendBufferAllocated: Int
-    /// Size of the portion of the link's send buffer currently holding data
-    public var sendBufferUsed: Int
-
-    /// Creates a new cluster link
-    /// - Parameters:
-    ///   - direction: The direction of the link
-    ///   - node: The node ID of the peer
-    ///   - createTime: Creation time of the link
-    ///   - events: Events registered for the link
-    ///   - sendBufferAllocated: Allocated send buffer size
-    ///   - sendBufferUsed: Used send buffer size
-    public init(
-        direction: Direction,
-        node: String,
-        createTime: Int,
-        events: String,
-        sendBufferAllocated: Int,
-        sendBufferUsed: Int
-    ) {
-        self.direction = direction
-        self.node = node
-        self.createTime = createTime
-        self.events = events
-        self.sendBufferAllocated = sendBufferAllocated
-        self.sendBufferUsed = sendBufferUsed
-    }
-
-    /// Creates a cluster link from the response token you provide.
-    /// - Parameter respToken: The response token.
-    public init(fromRESP respToken: RESPToken) throws {
-        do {
-            self = try Self.makeClusterLink(respToken: respToken)
-        } catch {
-            throw ValkeyClusterParseError(reason: error, token: respToken)
-        }
     }
 }
 
@@ -420,6 +228,198 @@ public struct ValkeyClusterDescription: Hashable, Sendable, RESPTokenDecodable {
     /// - Parameter shards: The shards that make up the cluster.
     public init(_ shards: [ValkeyClusterDescription.Shard]) {
         self.shards = shards
+    }
+}
+
+/// A cluster link between nodes in a Valkey cluster.
+///
+/// A description is returned when you call ``ValkeyClientProtocol/clusterLinks()``.
+public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
+    /// Direction of the cluster link.
+    public struct Direction: Sendable, Hashable, RawRepresentable {
+        /// The link is established by the local node to the peer.
+        public static let to = Direction(base: .to)
+        /// The link is accepted by the local node from the peer.
+        public static let from = Direction(base: .from)
+
+        public init?(rawValue: String) {
+            guard let base = Base(rawValue: rawValue) else {
+                return nil
+            }
+            self.base = base
+        }
+
+        public var rawValue: String {
+            self.base.rawValue
+        }
+
+        enum Base: String {
+            case to
+            case from
+        }
+
+        private(set) var base: Base
+
+        init(base: Base) {
+            self.base = base
+        }
+    }
+
+    /// The direction of the link (to or from)
+    public var direction: Direction?
+    /// The node ID of the peer
+    public var node: String?
+    /// Creation time of the link
+    public var createTime: Int?
+    /// Events currently registered for the link (e.g., "r", "w", "rw")
+    public var events: String?
+    /// Allocated size of the link's send buffer
+    public var sendBufferAllocated: Int?
+    /// Size of the portion of the link's send buffer currently holding data
+    public var sendBufferUsed: Int?
+
+    /// Creates a new cluster link
+    /// - Parameters:
+    ///   - direction: The direction of the link
+    ///   - node: The node ID of the peer
+    ///   - createTime: Creation time of the link
+    ///   - events: Events registered for the link
+    ///   - sendBufferAllocated: Allocated send buffer size
+    ///   - sendBufferUsed: Used send buffer size
+    public init(
+        direction: Direction? = nil,
+        node: String? = nil,
+        createTime: Int? = nil,
+        events: String? = nil,
+        sendBufferAllocated: Int? = nil,
+        sendBufferUsed: Int? = nil
+    ) {
+        self.direction = direction
+        self.node = node
+        self.createTime = createTime
+        self.events = events
+        self.sendBufferAllocated = sendBufferAllocated
+        self.sendBufferUsed = sendBufferUsed
+    }
+
+    /// Creates a cluster link from the response token you provide.
+    /// - Parameter respToken: The response token.
+    public init(fromRESP respToken: RESPToken) throws {
+        do {
+            self = try Self.makeClusterLink(respToken: respToken)
+        } catch {
+            throw ValkeyClusterParseError(reason: error, token: respToken)
+        }
+    }
+}
+
+/// Slot usage statistics for a hash slot in a Valkey cluster.
+///
+/// A description is returned when you call ``ValkeyClientProtocol/clusterSlotStats(filter:)``.
+public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
+    /// The hash slot number
+    public var slot: Int
+    /// Number of keys in the slot
+    public var keyCount: Int?
+    /// CPU time consumed by the slot in microseconds
+    public var cpuUsec: Int?
+    /// Network bytes read for the slot
+    public var networkBytesIn: Int?
+    /// Network bytes written for the slot
+    public var networkBytesOut: Int?
+
+    /// Creates a new cluster slot stats
+    /// - Parameters:
+    ///   - slot: The hash slot number
+    ///   - keyCount: Number of keys in the slot
+    ///   - cpuUsec: CPU time consumed in microseconds
+    ///   - networkBytesIn: Network bytes read
+    ///   - networkBytesOut: Network bytes written
+    public init(
+        slot: Int,
+        keyCount: Int? = nil,
+        cpuUsec: Int? = nil,
+        networkBytesIn: Int? = nil,
+        networkBytesOut: Int? = nil
+    ) {
+        self.slot = slot
+        self.keyCount = keyCount
+        self.cpuUsec = cpuUsec
+        self.networkBytesIn = networkBytesIn
+        self.networkBytesOut = networkBytesOut
+    }
+
+    /// Creates a cluster slot stats from the response token you provide.
+    /// - Parameter respToken: The response token.
+    public init(fromRESP respToken: RESPToken) throws {
+        do {
+            self = try Self.makeClusterSlotStats(respToken: respToken)
+        } catch {
+            throw ValkeyClusterParseError(reason: error, token: respToken)
+        }
+    }
+}
+
+/// A slot range mapping in a Valkey cluster.
+///
+/// A description is returned when you call ``ValkeyClientProtocol/clusterSlots()``.
+public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
+    /// A node serving a slot range in a Valkey cluster.
+    public struct Node: Hashable, Sendable {
+        /// The IP address of the node
+        public var ip: String
+        /// The port of the node
+        public var port: Int
+        /// The node ID
+        public var nodeId: String
+        /// Additional networking metadata
+        public var metadata: [String: String]
+
+        /// Creates a new cluster slot node
+        /// - Parameters:
+        ///   - ip: The IP address
+        ///   - port: The port
+        ///   - nodeId: The node ID
+        ///   - metadata: Additional networking metadata
+        public init(
+            ip: String,
+            port: Int,
+            nodeId: String,
+            metadata: [String: String] = [:]
+        ) {
+            self.ip = ip
+            self.port = port
+            self.nodeId = nodeId
+            self.metadata = metadata
+        }
+    }
+
+    /// The start slot of the range
+    public var startSlot: Int
+    /// The end slot of the range
+    public var endSlot: Int
+    /// The nodes serving this slot range
+    public var nodes: [Node]
+
+    /// Creates a new cluster slot range
+    /// - Parameters:
+    ///   - startSlot: The start slot
+    ///   - endSlot: The end slot
+    ///   - nodes: The nodes serving this range
+    public init(startSlot: Int, endSlot: Int, nodes: [Node]) {
+        self.startSlot = startSlot
+        self.endSlot = endSlot
+        self.nodes = nodes
+    }
+
+    /// Creates a cluster slot range from the response token you provide.
+    /// - Parameter respToken: The response token.
+    public init(fromRESP respToken: RESPToken) throws {
+        do {
+            self = try Self.makeClusterSlotRange(respToken: respToken)
+        } catch {
+            throw ValkeyClusterParseError(reason: error, token: respToken)
+        }
     }
 }
 
@@ -687,22 +687,13 @@ extension ValkeyClusterLink {
             }
         }
 
-        guard let direction = direction,
-              let node = node,
-              let createTime = createTime,
-              let events = events,
-              let sendBufferAllocated = sendBufferAllocated,
-              let sendBufferUsed = sendBufferUsed else {
-            throw .missingRequiredValueForLink
-        }
-
         return ValkeyClusterLink(
             direction: direction,
             node: node,
-            createTime: Int(createTime),
+            createTime: createTime.map { Int($0) },
             events: events,
-            sendBufferAllocated: Int(sendBufferAllocated),
-            sendBufferUsed: Int(sendBufferUsed)
+            sendBufferAllocated: sendBufferAllocated.map { Int($0) },
+            sendBufferUsed: sendBufferUsed.map { Int($0) }
         )
     }
 }
@@ -741,6 +732,7 @@ extension ValkeyClusterSlotStats {
 
         switch statsToken.value {
         case .map(let map):
+            // For RESP3, handle RESPToken stats as map
             let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
                 if let key = try? String(fromRESP: keyNode) {
                     return (key, value)
@@ -769,7 +761,7 @@ extension ValkeyClusterSlotStats {
             }
 
         case .array(let array):
-            // Handle stats as key-value pairs in array format
+            // // For RESP2, handle RESPToken stats as key-value pairs in array format
             let mapArray = MapStyleArray(underlying: array)
             for (key, valueToken) in mapArray {
                 switch key {
@@ -853,6 +845,7 @@ extension ValkeyClusterSlotRange.Node {
             throw .clusterSlotNodeTokenIsNotAnArray
         }
 
+        // IP, Port and Node Id are expected, additional metadata is optional
         guard array.count >= 3 else {
             throw .missingRequiredValueForSlotNode
         }
