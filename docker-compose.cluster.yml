@@ -12,48 +12,53 @@ services:
   # for more information.
   valkey_1:
     image: 'valkey/valkey:latest'
-    network_mode: "host"
     container_name: valkey_1
-    command: valkey-server --port 36001 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "36001:36001"
+    command: valkey-server --bind 0.0.0.0 --port 36001 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
 
   valkey_2:
     image: 'valkey/valkey:latest'
-    network_mode: "host"
     container_name: valkey_2
-    command: valkey-server --port 36002 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "36002:36002"
+    command: valkey-server --bind 0.0.0.0 --port 36002 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
 
   valkey_3:
     image: 'valkey/valkey:latest'
-    network_mode: "host"
     container_name: valkey_3
-    command: valkey-server --port 36003 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "36003:36003"
+    command: valkey-server --bind 0.0.0.0 --port 36003 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
 
   valkey_4:
     image: 'valkey/valkey:latest'
-    network_mode: "host"
     container_name: valkey_4
-    command: valkey-server --port 36004 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "36004:36004"
+    command: valkey-server --bind 0.0.0.0 --port 36004 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
 
   valkey_5:
     image: 'valkey/valkey:latest'
-    network_mode: "host"
     container_name: valkey_5
-    command: valkey-server --port 36005 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "36005:36005"
+    command: valkey-server --bind 0.0.0.0 --port 36005 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
 
   valkey_6:
     image: 'valkey/valkey:latest'
-    network_mode: "host"
     container_name: valkey_6
-    command: valkey-server --port 36006 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
+    ports:
+      - "36006:36006"
+    command: valkey-server --bind 0.0.0.0 --port 36006 --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes
 
   # Ephemeral container to create the valkey cluster connections.
   # Once the setup is done, this container shuts down
   # and the cluster can be used by the service app container
   cluster_initiator:
     image: 'valkey/valkey:latest'
-    network_mode: "host"
     container_name: cluster_initiator
-    command: valkey-cli --cluster create localhost:36001 localhost:36002 localhost:36003 localhost:36004 localhost:36005 localhost:36006 --cluster-replicas 1 --cluster-yes
+    command: valkey-cli --cluster create valkey_1:36001 valkey_2:36002 valkey_3:36003 valkey_4:36004 valkey_5:36005 valkey_6:36006 --cluster-replicas 1 --cluster-yes
     tty: true
     depends_on:
       - valkey_1

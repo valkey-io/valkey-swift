@@ -623,6 +623,63 @@ struct ClientIntegratedTests {
 
                 let delCount = try await connection.del(keys: [ValkeyKey(key)])
                 #expect(delCount == 1)
+
+    func testClusterSlots() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 36001), logger: logger) { client in
+            let clusterSlots = try await client.clusterSlots()
+            for clusterSlot in clusterSlots {
+                #expect(clusterSlot.startSlot >= 0 && clusterSlot.startSlot <= 16383)
+                #expect(clusterSlot.endSlot >= 0 && clusterSlot.endSlot <= 16383)
+                for node in clusterSlot.nodes {
+                    #expect(!node.ip.isEmpty)
+                    #expect(node.port >= 0 && node.port <= 65535)
+                    #expect(!node.nodeId.isEmpty)
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterLinks() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 36001), logger: logger) { client in
+            let clusterLinks = try await client.clusterLinks()
+            #expect(!clusterLinks.isEmpty && clusterLinks.count > 0)
+            for clusterLink in clusterLinks {
+                #expect(clusterLink.direction == .from || clusterLink.direction == .to)
+                #expect(!clusterLink.node.isEmpty)
+                #expect(clusterLink.createTime > 0)
+                #expect(!clusterLink.events.isEmpty)
+                #expect(clusterLink.sendBufferAllocated >= 0)
+                #expect(clusterLink.sendBufferUsed >= 0)
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClusterSlotStats() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 36001), logger: logger) { client in
+            let slotStats = try await client.clusterSlotStats(
+                filter: .orderby(
+                    CLUSTER.SLOTSTATS.FilterOrderby(
+                        metric: "key-count",
+                        limit: 10,
+                        order: .desc
+                    )
+                )
+            )
+            print(slotStats)
+            #expect(!slotStats.isEmpty && slotStats.count == 10)
+            for slotStat in slotStats {
+                // Only verify slot, other fields are optional
+                #expect(slotStat.slot >= 0 && slotStat.slot <= 16383)
             }
         }
     }
