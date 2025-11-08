@@ -627,12 +627,12 @@ struct ClientIntegratedTests {
         }
     }
 
-    @Test
+    @Test(.disabled(if: clusterFirstNodeHostname == nil, "VALKEY_NODE1_HOSTNAME environment variable is not set."))
     @available(valkeySwift 1.0, *)
     func testClusterLinks() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 36001), logger: logger) { client in
+        try await withValkeyConnection(.hostname(clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001), logger: logger) { client in
             let clusterLinks = try await client.clusterLinks()
             #expect(!clusterLinks.isEmpty && clusterLinks.count > 0)
             for clusterLink in clusterLinks {
@@ -658,12 +658,13 @@ struct ClientIntegratedTests {
         }
     }
 
-    @Test
+    @Test(.disabled(if: clusterFirstNodeHostname == nil, "VALKEY_NODE1_HOSTNAME environment variable is not set."))
     @available(valkeySwift 1.0, *)
     func testClusterSlotStats() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 36001), logger: logger) { client in
+
+        try await withValkeyConnection(.hostname(clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001), logger: logger) { client in
             let slotStats = try await client.clusterSlotStats(
                 filter: .orderby(
                     CLUSTER.SLOTSTATS.FilterOrderby(
@@ -693,12 +694,12 @@ struct ClientIntegratedTests {
         }
     }
 
-    @Test
+    @Test(.disabled(if: clusterFirstNodeHostname == nil, "VALKEY_NODE1_HOSTNAME environment variable is not set."))
     @available(valkeySwift 1.0, *)
     func testClusterSlots() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .debug
-        try await withValkeyConnection(.hostname(valkeyHostname, port: 36001), logger: logger) { client in
+        try await withValkeyConnection(.hostname(clusterFirstNodeHostname!, port: clusterFirstNodePort ?? 36001), logger: logger) { client in
             let clusterSlots = try await client.clusterSlots()
             for clusterSlot in clusterSlots {
                 #expect(clusterSlot.startSlot >= 0 && clusterSlot.startSlot <= 16383)
@@ -713,3 +714,6 @@ struct ClientIntegratedTests {
     }
 
 }
+
+private let clusterFirstNodeHostname: String? = ProcessInfo.processInfo.environment["VALKEY_NODE1_HOSTNAME"]
+private let clusterFirstNodePort: Int? = ProcessInfo.processInfo.environment["VALKEY_NODE1_PORT"].flatMap { Int($0) }
