@@ -10,22 +10,21 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VALKEY_HOSTNAME: valkey
+  VALKEY_HOSTNAME: database
+  REDIS_HOSTNAME: database
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       matrix:
-        image: ["swift:6.1", "swift:6.2"]
+        swift: ["swift:6.1", "swift:6.2"]
+        database: ["valkey/valkey:latest", "redis:latest"]
     container:
-      image: ${{ matrix.image }}
+      image: ${{ matrix.swift }}
     services:
-      valkey:
-        image: valkey/valkey:latest
-        ports:
-          - 6379:6379
-        options: --entrypoint valkey-server
+      database:
+        image: ${{ matrix.database }}
     steps:
       - name: Install jemalloc
         run: |

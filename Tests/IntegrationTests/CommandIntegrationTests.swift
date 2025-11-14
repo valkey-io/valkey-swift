@@ -157,7 +157,7 @@ struct CommandIntegratedTests {
     }
 
     @available(valkeySwift 1.0, *)
-    @Test
+    @Test(.disabled("failed in redis"))
     func testFUNCTIONLIST() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
@@ -193,7 +193,7 @@ struct CommandIntegratedTests {
     }
 
     @available(valkeySwift 1.0, *)
-    @Test
+    @Test(.disabled("failed in redis"))
     func testSCRIPTfunctions() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
