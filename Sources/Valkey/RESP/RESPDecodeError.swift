@@ -65,11 +65,20 @@ public struct RESPDecodeError: Error {
         }
     }
     /// Does not match the expected array size
-    public static func invalidArraySize(_ array: RESPToken.Array, expectedSize: Int) -> Self {
-        .init(
+    public static func invalidArraySize(_ array: RESPToken.Array, expectedSize: Int = -1, minExpectedSize: Int = -1) -> Self {
+        let message: String
+        if minExpectedSize > 0 {
+            message = "Expected array of size at least \(minExpectedSize) but got an array of size \(array.count)"
+        } else if expectedSize > 0 {
+            message = "Expected array of size \(expectedSize) but got an array of size \(array.count)"
+        } else {
+            message = "Expected array of a different size but got an array of size \(array.count)"
+        }
+
+        return .init(
             .invalidArraySize,
             token: .array(array),
-            message: "Expected array of size \(expectedSize) but got an array of size \(array.count)"
+            message: message
         )
     }
     /// Token associated with key is missing

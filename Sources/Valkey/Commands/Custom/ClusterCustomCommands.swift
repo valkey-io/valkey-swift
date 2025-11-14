@@ -47,19 +47,6 @@ package struct ValkeyClusterParseError: Error, Equatable {
         case missingRequiredValueForNode
         case shardIsMissingHashSlots
         case shardIsMissingNode
-        case clusterLinksTokenIsNotAnArray
-        case clusterLinkTokenIsNotAnArrayOrMap
-        case missingRequiredValueForLink
-        case invalidLinkDirection
-        case clusterSlotStatsTokenIsNotAnArray
-        case clusterSlotStatsTokenIsNotAnArrayOrMap
-        case missingRequiredValueForSlotStats
-        case clusterSlotsTokenIsNotAnArray
-        case clusterSlotRangeTokenIsNotAnArray
-        case clusterSlotNodeTokenIsNotAnArray
-        case missingRequiredValueForSlotRange
-        case missingRequiredValueForSlotNode
-        case clusterSlotNodeMetadataIsNotAnArrayOrMap
     }
 
     package var reason: Reason
@@ -305,11 +292,7 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
     /// Creates a cluster link from the response token you provide.
     /// - Parameter respToken: The response token.
     public init(fromRESP respToken: RESPToken) throws {
-        do {
-            self = try Self.makeClusterLink(respToken: respToken)
-        } catch {
-            throw ValkeyClusterParseError(reason: error, token: respToken)
-        }
+        self = try Self.makeClusterLink(respToken: respToken)
     }
 }
 
@@ -352,11 +335,7 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
     /// Creates a cluster slot stats from the response token you provide.
     /// - Parameter respToken: The response token.
     public init(fromRESP respToken: RESPToken) throws {
-        do {
-            self = try Self.makeClusterSlotStats(respToken: respToken)
-        } catch {
-            throw ValkeyClusterParseError(reason: error, token: respToken)
-        }
+        self = try Self.makeClusterSlotStats(respToken: respToken)
     }
 }
 
@@ -415,11 +394,7 @@ public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
     /// Creates a cluster slot range from the response token you provide.
     /// - Parameter respToken: The response token.
     public init(fromRESP respToken: RESPToken) throws {
-        do {
-            self = try Self.makeClusterSlotRange(respToken: respToken)
-        } catch {
-            throw ValkeyClusterParseError(reason: error, token: respToken)
-        }
+        self = try Self.makeClusterSlotRange(respToken: respToken)
     }
 }
 
@@ -627,10 +602,10 @@ extension ValkeyClusterDescription.Node {
 }
 
 extension ValkeyClusterLink {
-    fileprivate static func makeClusterLink(respToken: RESPToken) throws(ValkeyClusterParseError.Reason) -> ValkeyClusterLink {
+    fileprivate static func makeClusterLink(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterLink {
         switch respToken.value {
         case .array(let array):
-            return try Self.makeFromTokenSequence(MapStyleArray(underlying: array))
+            return try Self.makeFromTokenSequence(MapStyleArray(underlying: array), respToken)
 
         case .map(let map):
             let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
@@ -640,16 +615,17 @@ extension ValkeyClusterLink {
                     return nil
                 }
             }
-            return try Self.makeFromTokenSequence(mapped)
+            return try Self.makeFromTokenSequence(mapped, respToken)
 
         default:
-            throw .clusterLinkTokenIsNotAnArrayOrMap
+            throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: respToken)
         }
     }
 
     fileprivate static func makeFromTokenSequence<TokenSequence: Sequence>(
-        _ sequence: TokenSequence
-    ) throws(ValkeyClusterParseError.Reason) -> Self where TokenSequence.Element == (String, RESPToken) {
+        _ sequence: TokenSequence,
+        _ respToken: RESPToken
+    ) throws(RESPDecodeError) -> Self where TokenSequence.Element == (String, RESPToken) {
         var direction: ValkeyClusterLink.Direction?
         var node: String?
         var createTime: Int64?
@@ -663,7 +639,7 @@ extension ValkeyClusterLink {
                 guard let directionString = try? String(fromRESP: value),
                     let directionValue = ValkeyClusterLink.Direction(rawValue: directionString)
                 else {
-                    throw .invalidLinkDirection
+                    throw RESPDecodeError.missingToken(key: "direction", token: respToken)
                 }
                 direction = directionValue
 
@@ -700,13 +676,13 @@ extension ValkeyClusterLink {
 }
 
 extension ValkeyClusterSlotStats {
-    fileprivate static func makeClusterSlotStats(respToken: RESPToken) throws(ValkeyClusterParseError.Reason) -> ValkeyClusterSlotStats {
+    fileprivate static func makeClusterSlotStats(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterSlotStats {
         guard case .array(let array) = respToken.value else {
-            throw .clusterSlotStatsTokenIsNotAnArray
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: respToken)
         }
 
         guard array.count >= 2 else {
-            throw .missingRequiredValueForSlotStats
+            throw RESPDecodeError.invalidArraySize(array, minExpectedSize: 2)
         }
 
         var iterator = array.makeIterator()
@@ -715,18 +691,18 @@ extension ValkeyClusterSlotStats {
         guard let slotToken = iterator.next(),
             case .number(let slotNumber) = slotToken.value
         else {
-            throw .missingRequiredValueForSlotStats
+            throw RESPDecodeError.missingToken(key: "slot", token: respToken)
         }
 
         // Second element: statistics map
         guard let statsToken = iterator.next() else {
-            throw .missingRequiredValueForSlotStats
+            throw RESPDecodeError.missingToken(key: "statistics", token: respToken)
         }
 
         return try Self.makeFromStatsToken(slot: Int(slotNumber), statsToken: statsToken)
     }
 
-    fileprivate static func makeFromStatsToken(slot: Int, statsToken: RESPToken) throws(ValkeyClusterParseError.Reason) -> Self {
+    fileprivate static func makeFromStatsToken(slot: Int, statsToken: RESPToken) throws(RESPDecodeError) -> Self {
         var keyCount: Int64?
         var cpuUsec: Int64?
         var networkBytesIn: Int64?
@@ -786,7 +762,7 @@ extension ValkeyClusterSlotStats {
             }
 
         default:
-            throw .clusterSlotStatsTokenIsNotAnArrayOrMap
+            throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: statsToken)
         }
 
         return ValkeyClusterSlotStats(
@@ -800,13 +776,13 @@ extension ValkeyClusterSlotStats {
 }
 
 extension ValkeyClusterSlotRange {
-    fileprivate static func makeClusterSlotRange(respToken: RESPToken) throws(ValkeyClusterParseError.Reason) -> ValkeyClusterSlotRange {
+    fileprivate static func makeClusterSlotRange(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterSlotRange {
         guard case .array(let array) = respToken.value else {
-            throw .clusterSlotRangeTokenIsNotAnArray
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: respToken)
         }
 
         guard array.count >= 3 else {
-            throw .missingRequiredValueForSlotRange
+            throw RESPDecodeError.invalidArraySize(array, minExpectedSize: 3)
         }
 
         var iterator = array.makeIterator()
@@ -815,14 +791,14 @@ extension ValkeyClusterSlotRange {
         guard let startSlotToken = iterator.next(),
             case .number(let startSlotNumber) = startSlotToken.value
         else {
-            throw .missingRequiredValueForSlotRange
+            throw RESPDecodeError.missingToken(key: "start slot", token: respToken)
         }
 
         // Second element: end slot
         guard let endSlotToken = iterator.next(),
             case .number(let endSlotNumber) = endSlotToken.value
         else {
-            throw .missingRequiredValueForSlotRange
+            throw RESPDecodeError.missingToken(key: "end slot", token: respToken)
         }
 
         let startSlot = Int(startSlotNumber)
@@ -844,14 +820,14 @@ extension ValkeyClusterSlotRange {
 }
 
 extension ValkeyClusterSlotRange.Node {
-    fileprivate static func makeSlotNode(respToken: RESPToken) throws(ValkeyClusterParseError.Reason) -> ValkeyClusterSlotRange.Node {
+    fileprivate static func makeSlotNode(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterSlotRange.Node {
         guard case .array(let array) = respToken.value else {
-            throw .clusterSlotNodeTokenIsNotAnArray
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: respToken)
         }
 
         // IP, Port and Node Id are expected, additional metadata is optional
         guard array.count >= 3 else {
-            throw .missingRequiredValueForSlotNode
+            throw RESPDecodeError.invalidArraySize(array, minExpectedSize: 3)
         }
 
         var iterator = array.makeIterator()
@@ -860,14 +836,14 @@ extension ValkeyClusterSlotRange.Node {
         guard let ipToken = iterator.next(),
             let ip = try? String(fromRESP: ipToken)
         else {
-            throw .missingRequiredValueForSlotNode
+            throw RESPDecodeError.missingToken(key: "ip", token: respToken)
         }
 
         // Second element: port
         guard let portToken = iterator.next(),
             case .number(let portNumber) = portToken.value
         else {
-            throw .missingRequiredValueForSlotNode
+            throw RESPDecodeError.missingToken(key: "port", token: respToken)
         }
         let port = Int(portNumber)
 
@@ -875,7 +851,7 @@ extension ValkeyClusterSlotRange.Node {
         guard let nodeIdToken = iterator.next(),
             let nodeId = try? String(fromRESP: nodeIdToken)
         else {
-            throw .missingRequiredValueForSlotNode
+            throw RESPDecodeError.missingToken(key: "node id", token: respToken)
         }
 
         var metadata: [String: String] = [:]
@@ -904,7 +880,7 @@ extension ValkeyClusterSlotRange.Node {
                     }
                 }
             default:
-                throw .clusterSlotNodeMetadataIsNotAnArrayOrMap
+                throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: respToken)
             }
         }
 
