@@ -157,7 +157,7 @@ struct CommandIntegratedTests {
     }
 
     @available(valkeySwift 1.0, *)
-    @Test(.disabled("failed in redis"))
+    @Test
     func testFUNCTIONLIST() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
@@ -175,8 +175,8 @@ struct CommandIntegratedTests {
                         return redis.call("SET", keys[1], args[1])
                     end
 
-                    server.register_function('valkey_swift_test_set', test_set)
-                    server.register_function('valkey_swift_test_get', test_get)
+                    redis.register_function('valkey_swift_test_set', test_set)
+                    redis.register_function('valkey_swift_test_get', test_get)
                     """
             )
             let list = try await client.functionList(libraryNamePattern: "_valkey_swift_tests", withcode: true)
