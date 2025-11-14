@@ -16,6 +16,7 @@ import Valkey
 @Suite("Command Integration Tests")
 struct CommandIntegratedTests {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
+    static let isValkey = ProcessInfo.processInfo.environment["IS_VALKEY"] == "true"
 
     @available(valkeySwift 1.0, *)
     func withKey<Value>(connection: some ValkeyClientProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
@@ -193,7 +194,7 @@ struct CommandIntegratedTests {
     }
 
     @available(valkeySwift 1.0, *)
-    @Test(.disabled("failed in redis"))
+    @Test(.enabled(if: Self.isValkey))
     func testSCRIPTfunctions() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
