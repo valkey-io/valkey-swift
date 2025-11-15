@@ -365,8 +365,6 @@ public enum CLUSTER {
     /// Returns a list of all TCP links to and from peer nodes.
     @_documentation(visibility: internal)
     public struct LINKS: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "CLUSTER LINKS" }
 
         @inlinable public init() {
@@ -789,8 +787,6 @@ public enum CLUSTER {
                 }
             }
         }
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "CLUSTER SLOT-STATS" }
 
         public var filter: Filter
@@ -807,8 +803,6 @@ public enum CLUSTER {
     /// Returns the mapping of cluster slots to nodes.
     @_documentation(visibility: internal)
     public struct SLOTS: ValkeyCommand {
-        public typealias Response = RESPToken.Array
-
         @inlinable public static var name: String { "CLUSTER SLOTS" }
 
         @inlinable public init() {
@@ -1068,7 +1062,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: An array of cluster links and their attributes.
     @inlinable
     @discardableResult
-    public func clusterLinks() async throws -> RESPToken.Array {
+    public func clusterLinks() async throws -> CLUSTER.LINKS.Response {
         try await execute(CLUSTER.LINKS())
     }
 
@@ -1229,7 +1223,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Array of nested arrays, where the inner array element represents a slot and its respective usage statistics.
     @inlinable
     @discardableResult
-    public func clusterSlotStats(filter: CLUSTER.SLOTSTATS.Filter) async throws -> RESPToken.Array {
+    public func clusterSlotStats(filter: CLUSTER.SLOTSTATS.Filter) async throws -> CLUSTER.SLOTSTATS.Response {
         try await execute(CLUSTER.SLOTSTATS(filter: filter))
     }
 
@@ -1244,7 +1238,7 @@ extension ValkeyClientProtocol {
     /// - Response: [Array]: Nested list of slot ranges with networking information.
     @inlinable
     @discardableResult
-    public func clusterSlots() async throws -> RESPToken.Array {
+    public func clusterSlots() async throws -> CLUSTER.SLOTS.Response {
         try await execute(CLUSTER.SLOTS())
     }
 
