@@ -627,4 +627,150 @@ struct ClientIntegratedTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHrandfieldSingleField() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                // Set up test hash with known fields
+                _ = try await connection.hset(key, data: [
+                    HSET.Data(field: "field1", value: "value1"),
+                    HSET.Data(field: "field2", value: "value2"),
+                    HSET.Data(field: "field3", value: "value3")
+                ])
+
+                // Test HRANDFIELD without options (should return single field)
+                let response = try await connection.hrandfield(key)
+
+                let singleField = try response.singleField()
+                #expect(singleField != nil)
+
+                let fieldName = String(buffer: singleField!)
+                #expect(["field1", "field2", "field3"].contains(fieldName))
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHrandfieldMultipleFields() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                // Set up test hash with known fields
+                _ = try await connection.hset(key, data: [
+                    HSET.Data(field: "field1", value: "value1"),
+                    HSET.Data(field: "field2", value: "value2"),
+                    HSET.Data(field: "field3", value: "value3"),
+                    HSET.Data(field: "field4", value: "value4")
+                ])
+
+                // Test HRANDFIELD with COUNT option (no WITHVALUES)
+                let options = HRANDFIELD.Options(count: 2, withvalues: false)
+                let response = try await connection.hrandfield(key, options: options)
+
+                let multipleFields = try response.multipleFields()
+                #expect(multipleFields.count == 2)
+
+                let fieldNames = multipleFields.map { String(buffer: $0) }
+                for fieldName in fieldNames {
+                    #expect(["field1", "field2", "field3", "field4"].contains(fieldName))
+                }
+
+                // Ensure we got unique fields
+                let uniqueFieldNames = Set(fieldNames)
+                #expect(uniqueFieldNames.count == fieldNames.count)
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHrandfieldMultipleFieldsWithValues() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                // Set up test hash with known field-value pairs
+                let testData = [
+                    ("field1", "value1"),
+                    ("field2", "value2"),
+                    ("field3", "value3"),
+                    ("field4", "value4")
+                ]
+
+                _ = try await connection.hset(key, data: testData.map {
+                    HSET.Data(field: $0.0, value: $0.1)
+                })
+
+                // Test HRANDFIELD with COUNT and WITHVALUES options
+                let options = HRANDFIELD.Options(count: 3, withvalues: true)
+                let response = try await connection.hrandfield(key, options: options)
+
+                let fieldValuePairs = try response.multipleFieldsWithValues()
+                #expect(fieldValuePairs.count == 3)
+
+                let expectedPairs = Dictionary(testData, uniquingKeysWith: { first, _ in first })
+
+                for entry in fieldValuePairs {
+                    let fieldName = String(buffer: entry.field)
+                    let fieldValue = String(buffer: entry.value)
+
+                    #expect(expectedPairs[fieldName] == fieldValue)
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHrandfieldNonExistentKey() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                // Test HRANDFIELD on non-existent key
+                let response = try await connection.hrandfield(key)
+
+                let singleField = try response.singleField()
+                #expect(singleField == nil)
+
+                let multipleFields = try response.multipleFields()
+                #expect(multipleFields.isEmpty)
+
+                let fieldValuePairs = try response.multipleFieldsWithValues()
+                #expect(fieldValuePairs.isEmpty)
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHrandfieldErrorHandling() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyConnection(.hostname(valkeyHostname, port: 6379), logger: logger) { connection in
+            try await withKey(connection: connection) { key in
+                // Set up test hash
+                _ = try await connection.hset(key, data: [
+                    HSET.Data(field: "field1", value: "value1")
+                ])
+
+                let response = try await connection.hrandfield(key)
+
+                // Test calling wrong method for response type should throw
+                #expect(throws: RESPDecodeError.self) {
+                    _ = try response.multipleFields() // Should throw since this is a single field response
+                }
+
+                #expect(throws: RESPDecodeError.self) {
+                    _ = try response.multipleFieldsWithValues() // Should throw since this is a single field response
+                }
+            }
+        }
+    }
+
 }
