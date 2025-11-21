@@ -225,24 +225,30 @@ struct CommandIntegratedTests {
                 #expect(fieldValuePairs.isEmpty)
 
                 // 2. Set up test hash with single field
-                _ = try await client.hset(key, data: [
-                    HSET.Data(field: "field1", value: "value1")
-                ])
+                _ = try await client.hset(
+                    key,
+                    data: [
+                        HSET.Data(field: "field1", value: "value1")
+                    ]
+                )
                 response = try await client.hrandfield(key)
                 // Test calling wrong method for response type should throw
                 #expect(throws: RESPDecodeError.self) {
-                    _ = try response.multipleFields() // Should throw since this is a single field response
+                    _ = try response.multipleFields()  // Should throw since this is a single field response
                 }
                 #expect(throws: RESPDecodeError.self) {
-                    _ = try response.multipleFieldsWithValues() // Should throw since this is a single field response
+                    _ = try response.multipleFieldsWithValues()  // Should throw since this is a single field response
                 }
 
                 // Set up test hash with known fields
-                _ = try await client.hset(key, data: [
-                    HSET.Data(field: "field1", value: "value1"),
-                    HSET.Data(field: "field2", value: "value2"),
-                    HSET.Data(field: "field3", value: "value3")
-                ])
+                _ = try await client.hset(
+                    key,
+                    data: [
+                        HSET.Data(field: "field1", value: "value1"),
+                        HSET.Data(field: "field2", value: "value2"),
+                        HSET.Data(field: "field3", value: "value3"),
+                    ]
+                )
 
                 // 3. Test HRANDFIELD without options (should return single field)
                 response = try await client.hrandfield(key)
