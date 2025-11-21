@@ -807,7 +807,6 @@ public struct HRANDFIELD: ValkeyCommand {
             RESPPureToken("WITHVALUES", withvalues).encode(into: &commandEncoder)
         }
     }
-    public typealias Response = RESPToken?
 
     @inlinable public static var name: String { "HRANDFIELD" }
 
@@ -1397,7 +1396,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: A list of fields. Returned in case `COUNT` was used.
     ///     * [Array]: Fields and their values. Returned in case `COUNT` and `WITHVALUES` were used. In RESP2 this is returned as a flat array.
     @inlinable
-    public func hrandfield(_ key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws -> RESPToken? {
+    public func hrandfield(_ key: ValkeyKey, options: HRANDFIELD.Options? = nil) async throws -> HRANDFIELD.Response {
         try await execute(HRANDFIELD(key, options: options))
     }
 
