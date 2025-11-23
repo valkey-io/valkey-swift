@@ -18,6 +18,7 @@ let package = Package(
         .library(name: "Valkey", targets: ["Valkey"]),
         .library(name: "ValkeyBloom", targets: ["ValkeyBloom"]),
         .library(name: "ValkeyJSON", targets: ["ValkeyJSON"]),
+        .library(name: "ValkeySearch", targets: ["ValkeySearch"]),
     ],
     traits: [
         .trait(name: "ServiceLifecycleSupport"),
@@ -57,6 +58,11 @@ let package = Package(
         ),
         .target(
             name: "ValkeyJSON",
+            dependencies: ["Valkey"],
+            swiftSettings: defaultSwiftSettings
+        ),
+        .target(
+            name: "ValkeySearch",
             dependencies: ["Valkey"],
             swiftSettings: defaultSwiftSettings
         ),
