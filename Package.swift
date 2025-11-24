@@ -99,6 +99,7 @@ let package = Package(
             name: "ValkeyTests",
             dependencies: [
                 "Valkey",
+                "ValkeySearch",
                 .product(name: "NIOTestUtils", package: "swift-nio"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "NIOEmbedded", package: "swift-nio"),

@@ -10,6 +10,7 @@ import NIOCore
 import NIOEmbedded
 import Testing
 import Valkey
+import ValkeySearch
 
 /// Test commands render correctly and process their response correctly.
 ///
@@ -798,6 +799,978 @@ struct CommandTests {
                 #expect(members.count == 2)
                 #expect(members[0] == ByteBuffer(string: "field3"))
                 #expect(members[1] == ByteBuffer(string: "field4"))
+            }
+        }
+    }
+
+    struct SearchCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftSearch() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FT.SEARCH", "idx:myIndex", "@title:Hello World"]),
+                    response: .array([
+                        .number(2),
+                        .bulkString("doc:1"),
+                        .array([
+                            .bulkString("title"),
+                            .bulkString("Hello World"),
+                            .bulkString("body"),
+                            .bulkString("This is a test document"),
+                        ]),
+                        .bulkString("doc:2"),
+                        .array([
+                            .bulkString("title"),
+                            .bulkString("Hello Again"),
+                            .bulkString("body"),
+                            .bulkString("Another world example"),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.ftSearch(index: "idx:myIndex", query: "@title:Hello World")
+                guard case .array(let array1) = result.value else {
+                    Issue.record("Expected array response")
+                    return
+                }
+                let items = Array(array1)
+                #expect(items.count == 5)
+                guard case .number(let count) = items[0].value else {
+                    Issue.record("Expected number")
+                    return
+                }
+                #expect(count == 2)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftSearch_nocontent() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.SEARCH",
+                        "idx:myIndex",
+                        "@title:Hello",
+                        "NOCONTENT",
+                    ]),
+                    response: .array([
+                        .number(2),
+                        .bulkString("doc:1"),
+                        .bulkString("doc:2"),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.ftSearch(
+                    index: "idx:myIndex",
+                    query: "@title:Hello",
+                    nocontent: true
+                )
+
+                guard case .array(let arr1) = result.value else {
+                    Issue.record("Expected array response")
+                    return
+                }
+
+                let items = Array(arr1)
+                #expect(items.count == 3)
+
+                guard case .number(let total) = items[0].value else {
+                    Issue.record("Expected first element to be number")
+                    return
+                }
+                #expect(total == 2)
+
+                guard case .bulkString = items[1].value else {
+                    Issue.record("Expected second element to be bulk string (doc id)")
+                    return
+                }
+                guard case .bulkString = items[2].value else {
+                    Issue.record("Expected third element to be bulk string (doc id)")
+                    return
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftSearch_limit() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.SEARCH",
+                        "idx:myIndex",
+                        "@title:Hello",
+                        "LIMIT", "10", "20",
+                    ]),
+                    response: .array([
+                        .number(0)
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.ftSearch(
+                    index: "idx:myIndex",
+                    query: "@title:Hello",
+                    limit: .init(offset: 10, count: 20)
+                )
+
+                guard case .array(let arr1) = result.value else {
+                    Issue.record("Expected array response")
+                    return
+                }
+
+                let items = Array(arr1)
+                #expect(items.count == 1)
+
+                guard case .number(let total) = items[0].value else {
+                    Issue.record("Expected first element to be number")
+                    return
+                }
+                #expect(total == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftSearch_timeout() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.SEARCH",
+                        "idx:myIndex",
+                        "@title:Hello",
+                        "TIMEOUT", "100",
+                    ]),
+                    response: .array([
+                        .number(0)
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.ftSearch(
+                    index: "idx:myIndex",
+                    query: "@title:Hello",
+                    timeout: .init(timeoutMs: 100)
+                )
+
+                guard case .array(let arr1) = result.value else {
+                    Issue.record("Expected array response")
+                    return
+                }
+
+                let items = Array(arr1)
+                #expect(items.count == 1)
+
+                guard case .number(let total) = items[0].value else {
+                    Issue.record("Expected first element to be number")
+                    return
+                }
+                #expect(total == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftSearch_paramsAndLocalOnly() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.SEARCH",
+                        "idx:myIndex",
+                        "@title:$t @tag:{$tag}",
+                        "PARAMS", "4",
+                        "t", "Hello",
+                        "tag", "world",
+                        "LOCALONLY",
+                    ]),
+                    response: .array([
+                        .number(0)
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.ftSearch(
+                    index: "idx:myIndex",
+                    query: "@title:$t @tag:{$tag}",
+                    params: .init(
+                        count: 4,
+                        pairs: ["t", "Hello", "tag", "world"]
+                    ),
+                    localonly: true
+                )
+
+                guard case .array(let arr1) = result.value else {
+                    Issue.record("Expected array response")
+                    return
+                }
+
+                let items = Array(arr1)
+                #expect(items.count == 1)
+
+                guard case .number(let total) = items[0].value else {
+                    Issue.record("Expected first element to be number")
+                    return
+                }
+                #expect(total == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftSearch_returnFields() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.SEARCH",
+                        "idx:myIndex",
+                        "@title:Hello",
+                        "RETURN", "2",
+                        "title", "body",
+                    ]),
+                    response: .array([
+                        .number(1),
+                        .bulkString("doc:1"),
+                        .array([
+                            .bulkString("title"),
+                            .bulkString("Hello"),
+                            .bulkString("body"),
+                            .bulkString("World"),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.ftSearch(
+                    index: "idx:myIndex",
+                    query: "@title:Hello",
+                    returnFields: .init(
+                        count: 2,
+                        fields: ["title", "body"]
+                    )
+                )
+
+                guard case .array(let arr1) = result.value else {
+                    Issue.record("Expected array response")
+                    return
+                }
+
+                let items = Array(arr1)
+                #expect(items.count == 3)
+
+                guard case .number(let total) = items[0].value else {
+                    Issue.record("Expected first element to be number")
+                    return
+                }
+                #expect(total == 1)
+
+                guard case .bulkString = items[1].value else {
+                    Issue.record("Expected second element to be bulk string (doc id)")
+                    return
+                }
+
+                guard case .array(let fields1) = items[2].value else {
+                    Issue.record("Expected third element to be array of fields")
+                    return
+                }
+
+                let fields = Array(fields1)
+                #expect(fields.count == 4)
+
+                // We only assert the shape here, not the exact ByteBuffer contents.
+                guard case .bulkString = fields[0].value,
+                    case .bulkString = fields[1].value,
+                    case .bulkString = fields[2].value,
+                    case .bulkString = fields[3].value
+                else {
+                    Issue.record("Expected alternating field/value bulk strings")
+                    return
+                }
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftSearch_nocontentLimitDialect() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.SEARCH",
+                        "idx:myIndex",
+                        "@title:Hello",
+                        "NOCONTENT",
+                        "LIMIT", "0", "5",
+                        "DIALECT", "2",
+                    ]),
+                    response: .array([
+                        .number(0)
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.ftSearch(
+                    index: "idx:myIndex",
+                    query: "@title:Hello",
+                    nocontent: true,
+                    limit: .init(offset: 0, count: 5),
+                    dialect: .init(dialect: 2)
+                )
+
+                guard case .array(let arr1) = result.value else {
+                    Issue.record("Expected array")
+                    return
+                }
+
+                let items = Array(arr1)
+                #expect(items.count == 1)
+
+                guard case .number(let total) = items[0].value else {
+                    Issue.record("Expected first element to be number")
+                    return
+                }
+                #expect(total == 0)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftAggregate() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FT.AGGREGATE", "idx:testIndex", "*"]),
+                    response: .array([
+                        .number(100),
+                        .array([
+                            .bulkString("field1"),
+                            .bulkString("value1"),
+                        ]),
+                    ])
+                )
+            ) { connection in
+                let result = try await connection.ftAggregate(
+                    index: "idx:testIndex",
+                    query: "*"
+                )
+
+                guard case .array(let outer) = result.value else {
+                    Issue.record("Expected array response from FT.AGGREGATE")
+                    return
+                }
+
+                let rows = Array(outer)
+                #expect(rows.count == 2)
+
+                guard case .number(let total) = rows[0].value else {
+                    Issue.record("Expected first element to be total row count")
+                    return
+                }
+                #expect(total == 100)
+
+                guard case .array(let row1) = rows[1].value else {
+                    Issue.record("Expected first row as array")
+                    return
+                }
+
+                let fields = Array(row1)
+                #expect(fields.count == 2)
+
+                guard case .bulkString(let fieldName) = fields[0].value,
+                    case .bulkString(let fieldValue) = fields[1].value
+                else {
+                    Issue.record("Expected field/value pair in first row")
+                    return
+                }
+
+                #expect(String(buffer: fieldName) == "field1")
+                #expect(String(buffer: fieldValue) == "value1")
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_onJson_withTextAlias() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:testIndex",
+                        "ON", "JSON",
+                        "PREFIX", "1", "item:",
+                        "SCHEMA",
+                        "$.name", "AS", "name", "TEXT",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:testIndex",
+                    on: .init(type: .json),
+                    prefix: .init(count: 1, prefixes: ["item:"]),
+                    schema: .init(fields: [
+                        .init(fieldIdentifier: "$.name", alias: .init(fieldIdentifier: "name"), fieldType: .text)
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_noOn_noPrefix_numeric() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:noOn",
+                        "SCHEMA",
+                        "age", "NUMERIC",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:noOn",
+                    on: nil,
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "age",
+                            alias: nil,
+                            fieldType: .numeric
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_tag_separatorOnly() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:tagSepOnly",
+                        "SCHEMA",
+                        "category", "TAG", "SEPARATOR", "|",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:tagSepOnly",
+                    on: nil,
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "category",
+                            alias: nil,
+                            fieldType: .tag(
+                                .init(
+                                    separator: .init(sep: "|"),
+                                    casesensitive: false
+                                )
+                            )
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_tag_caseSensitiveOnly() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:tagCaseOnly",
+                        "SCHEMA",
+                        "category", "TAG", "CASESENSITIVE",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:tagCaseOnly",
+                    on: nil,
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "category",
+                            alias: nil,
+                            fieldType: .tag(
+                                .init(
+                                    separator: nil,
+                                    casesensitive: true
+                                )
+                            )
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_onHASH_simpleText() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:hashIndex",
+                        "ON", "HASH",
+                        "SCHEMA",
+                        "name", "TEXT",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:hashIndex",
+                    on: .init(type: .hash),
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "name",
+                            alias: nil,
+                            fieldType: .text
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_onHASH_tagDefaultSeparator() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:tagIndex",
+                        "ON", "HASH",
+                        "SCHEMA",
+                        "category", "TAG",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:tagIndex",
+                    on: .init(type: .hash),
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "category",
+                            alias: nil,
+                            fieldType: .tag(
+                                .init(
+                                    separator: nil,
+                                    casesensitive: false
+                                )
+                            )
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_onHASH_tagWithSeparatorAndCaseSensitive() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:tagIndex2",
+                        "ON", "HASH",
+                        "SCHEMA",
+                        "category", "TAG", "SEPARATOR", "|", "CASESENSITIVE",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:tagIndex2",
+                    on: .init(type: .hash),
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "category",
+                            alias: nil,
+                            fieldType: .tag(
+                                .init(
+                                    separator: .init(sep: "|"),
+                                    casesensitive: true
+                                )
+                            )
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_onHASH_multiplePrefixes() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:multiPrefix",
+                        "ON", "HASH",
+                        "PREFIX", "2", "item:", "product:",
+                        "SCHEMA",
+                        "name", "TEXT",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:multiPrefix",
+                    on: .init(type: .hash),
+                    prefix: .init(count: 2, prefixes: ["item:", "product:"]),
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "name",
+                            alias: nil,
+                            fieldType: .text
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_onHASH_multipleFields() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:multiField",
+                        "ON", "HASH",
+                        "SCHEMA",
+                        "name", "TEXT",
+                        "age", "NUMERIC",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:multiField",
+                    on: .init(type: .hash),
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "name",
+                            alias: nil,
+                            fieldType: .text
+                        ),
+                        .init(
+                            fieldIdentifier: "age",
+                            alias: nil,
+                            fieldType: .numeric
+                        ),
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_mixedFields_allTypes() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:mixed",
+                        "ON", "HASH",
+                        "PREFIX", "2", "item:", "product:",
+                        "SCHEMA",
+                        "name", "TEXT",
+                        "price", "NUMERIC",
+                        "category", "TAG", "SEPARATOR", "|",
+                        "embedding", "VECTOR", "FLAT", "4",
+                        "TYPE", "FLOAT32",
+                        "DIM", "128",
+                        "DISTANCE_METRIC", "L2",
+                        "BLOCK_SIZE", "1024",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:mixed",
+                    on: .init(type: .hash),
+                    prefix: .init(count: 2, prefixes: ["item:", "product:"]),
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "name",
+                            alias: nil,
+                            fieldType: .text
+                        ),
+                        .init(
+                            fieldIdentifier: "price",
+                            alias: nil,
+                            fieldType: .numeric
+                        ),
+                        .init(
+                            fieldIdentifier: "category",
+                            alias: nil,
+                            fieldType: .tag(
+                                .init(
+                                    separator: .init(sep: "|"),
+                                    casesensitive: false
+                                )
+                            )
+                        ),
+                        .init(
+                            fieldIdentifier: "embedding",
+                            alias: nil,
+                            fieldType: .vector(
+                                .init(
+                                    algorithm: .flat,
+                                    attrCount: 4,
+                                    vectorParams: .init(
+                                        type: .init(),
+                                        dim: .init(value: 128),
+                                        distanceMetric: .init(metric: .l2),
+                                        m: nil,
+                                        efConstruction: nil,
+                                        blockSize: .init(value: 1024)
+                                    )
+                                )
+                            )
+                        ),
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_vectorHNSW() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "my_index_name",
+                        "SCHEMA",
+                        "my_hash_field_key",
+                        "VECTOR",
+                        "HNSW",
+                        "10",
+                        "TYPE", "FLOAT32",
+                        "DIM", "20",
+                        "DISTANCE_METRIC", "COSINE",
+                        "M", "4",
+                        "EF_CONSTRUCTION", "100",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "my_index_name",
+                    on: nil,
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "my_hash_field_key",
+                            alias: nil,
+                            fieldType: .vector(
+                                .init(
+                                    algorithm: .hnsw,
+                                    attrCount: 10,
+                                    vectorParams: .init(
+                                        type: .init(),
+                                        dim: .init(value: 20),
+                                        distanceMetric: .init(metric: .cosine),
+                                        m: .init(value: 4),
+                                        efConstruction: .init(value: 100)
+                                    )
+                                )
+                            )
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_vectorFLAT() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "my_flat_index",
+                        "SCHEMA",
+                        "embedding",
+                        "VECTOR",
+                        "FLAT",
+                        "4",
+                        "TYPE", "FLOAT32",
+                        "DIM", "128",
+                        "DISTANCE_METRIC", "L2",
+                        "BLOCK_SIZE", "1024",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "my_flat_index",
+                    on: nil,
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "embedding",
+                            alias: nil,
+                            fieldType: .vector(
+                                .init(
+                                    algorithm: .flat,
+                                    attrCount: 4,
+                                    vectorParams: .init(
+                                        type: .init(),
+                                        dim: .init(value: 128),
+                                        distanceMetric: .init(metric: .l2),
+                                        blockSize: .init(value: 1024)
+                                    )
+                                )
+                            )
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftCreate_vectorFlat_ipMetric() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command([
+                        "FT.CREATE",
+                        "idx:flatIP",
+                        "SCHEMA",
+                        "embedding",
+                        "VECTOR",
+                        "FLAT",
+                        "8",
+                        "TYPE", "FLOAT32",
+                        "DIM", "64",
+                        "DISTANCE_METRIC", "IP",
+                    ]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftCreate(
+                    indexName: "idx:flatIP",
+                    on: nil,
+                    prefix: nil,
+                    schema: .init(fields: [
+                        .init(
+                            fieldIdentifier: "embedding",
+                            alias: nil,
+                            fieldType: .vector(
+                                .init(
+                                    algorithm: .flat,
+                                    attrCount: 8,
+                                    vectorParams: .init(
+                                        type: .init(),
+                                        dim: .init(value: 64),
+                                        distanceMetric: .init(metric: .ip),
+                                        m: nil,
+                                        efConstruction: nil,
+                                        blockSize: nil
+                                    )
+                                )
+                            )
+                        )
+                    ])
+                )
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftDropindex() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FT.DROPINDEX", "idx:myIndex"]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.ftDropindex("idx:myIndex")
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftInfo() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FT.INFO", "idx:myIndex"]),
+                    response: .array([
+                        .bulkString("index_name"),
+                        .bulkString("myIndex"),
+                        .bulkString("num_docs"),
+                        .number(100),
+                        .bulkString("num_terms"),
+                        .number(500),
+                    ])
+                ),
+                (
+                    request: .command(["FT.INFO", "idx:myIndex", "LOCAL"]),
+                    response: .array([
+                        .bulkString("index_name"),
+                        .bulkString("myIndex"),
+                        .bulkString("num_docs"),
+                        .number(50),
+                    ])
+                ),
+                (
+                    request: .command(["FT.INFO", "idx:myIndex", "GLOBAL"]),
+                    response: .array([
+                        .bulkString("index_name"),
+                        .bulkString("idx:myIndex"),
+                        .bulkString("num_docs"),
+                        .number(200),
+                    ])
+                )
+            ) { connection in
+                _ = try await connection.ftInfo("idx:myIndex")
+                _ = try await connection.ftInfo("idx:myIndex", scope: .local)
+                _ = try await connection.ftInfo("idx:myIndex", scope: .global)
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftList() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FT._LIST"]),
+                    response: .array([
+                        .bulkString("idx:index1"),
+                        .bulkString("idx:index2"),
+                        .bulkString("idx:myIndex"),
+                    ])
+                )
+            ) { connection in
+                _ = try await connection.ftList()
+            }
+        }
+
+        @Test
+        @available(valkeySwift 1.0, *)
+        func ftDebug() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["FT._DEBUG"]),
+                    response: .array([
+                        .bulkString("debug_info"),
+                        .bulkString("some debug data"),
+                    ])
+                )
+            ) { connection in
+                _ = try await connection.ftDebug()
             }
         }
     }
