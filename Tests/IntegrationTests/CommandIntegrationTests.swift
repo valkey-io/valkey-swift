@@ -16,7 +16,6 @@ import Valkey
 @Suite("Command Integration Tests")
 struct CommandIntegratedTests {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
-    static let isValkey = ProcessInfo.processInfo.environment["IS_VALKEY"] == "true"
 
     @available(valkeySwift 1.0, *)
     func withKey<Value>(connection: some ValkeyClientProtocol, _ operation: (ValkeyKey) async throws -> Value) async throws -> Value {
@@ -194,11 +193,20 @@ struct CommandIntegratedTests {
     }
 
     @available(valkeySwift 1.0, *)
-    @Test(.enabled(if: Self.isValkey))
+    @Test
     func testSCRIPTfunctions() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            let helloResponse = try await client.hello()
+            let serverNameValue = try #require(helloResponse.first { $0.key.value == .bulkString(ByteBuffer(string: "server")) }?.value.value)
+            let serverName: String? = if case .bulkString(let nameBuffer) = serverNameValue {
+              String(buffer: nameBuffer)
+            } else {
+              nil
+            }
+            guard serverName == "valkey" else { return }
+
             let sha1 = try await client.scriptLoad(
                 script: "return redis.call(\"GET\", KEYS[1])"
             )

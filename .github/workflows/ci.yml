@@ -33,8 +33,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Test
-        env:
-          IS_VALKEY: ${{ matrix.database == 'valkey/valkey:latest' && 'true' || 'false' }}
         run: |
           swift test --enable-code-coverage
       - name: Convert coverage files
