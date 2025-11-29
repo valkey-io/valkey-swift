@@ -315,6 +315,82 @@ struct PubSubIntegratedTests {
 
     @Test
     @available(valkeySwift 1.0, *)
+    func testClientTrackingBroadcastSinglePrefix() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await client.withConnection { connection in
+                // Enable tracking with broadcast mode and a single prefix "user:"
+                try await connection.clientTracking(status: .on, prefixes: ["user:"], bcast: true)
+
+                try await withThrowingTaskGroup(of: Void.self) { group in
+                    group.addTask {
+                        try await connection.subscribeKeyInvalidations { keys in
+                            cont.finish()
+                            var iterator = keys.makeAsyncIterator()
+                            let key = try await iterator.next()
+                            #expect(key == "user:123")
+                        }
+                    }
+
+                    await stream.first { _ in true }
+
+                    // This should trigger invalidation (matches prefix)
+                    try await connection.set("user:123", value: "data")
+
+                    try await group.waitForAll()
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testClientTrackingBroadcastMultiplePrefixes() async throws {
+        let (stream, cont) = AsyncStream.makeStream(of: Void.self)
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await client.withConnection { connection in
+                // Enable tracking with broadcast mode and two prefixes: "user:" and "order:"
+                try await connection.clientTracking(status: .on, prefixes: ["user:", "order:"], bcast: true)
+
+                try await withThrowingTaskGroup(of: Void.self) { group in
+                    group.addTask {
+                        try await connection.subscribeKeyInvalidations { keys in
+                            cont.finish()
+                            var iterator = keys.makeAsyncIterator()
+
+                            // Should receive invalidation for user:123
+                            let key1 = try await iterator.next()
+                            #expect(key1 == "user:123")
+
+                            // Should receive invalidation for order:789
+                            let key2 = try await iterator.next()
+                            #expect(key2 == "order:789")
+                        }
+                    }
+
+                    await stream.first { _ in true }
+
+                    // This should trigger invalidation (matches "user:" prefix)
+                    try await connection.set("user:123", value: "user_data")
+
+                    // This should NOT trigger invalidation
+                    try await connection.set("not-matching-prefix:123", value: "not_matching_data")
+
+                    // This should trigger invalidation (matches "order:" prefix)
+                    try await connection.set("order:789", value: "order_data")
+
+                    try await group.waitForAll()
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
     func testKeyspaceSubscription() async throws {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
