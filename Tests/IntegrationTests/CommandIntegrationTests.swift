@@ -175,8 +175,8 @@ struct CommandIntegratedTests {
                         return redis.call("SET", keys[1], args[1])
                     end
 
-                    server.register_function('valkey_swift_test_set', test_set)
-                    server.register_function('valkey_swift_test_get', test_get)
+                    redis.register_function('valkey_swift_test_set', test_set)
+                    redis.register_function('valkey_swift_test_get', test_get)
                     """
             )
             let list = try await client.functionList(libraryNamePattern: "_valkey_swift_tests", withcode: true)
@@ -198,6 +198,16 @@ struct CommandIntegratedTests {
         var logger = Logger(label: "Valkey")
         logger.logLevel = .trace
         try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            let helloResponse = try await client.hello()
+            let serverNameValue = try #require(helloResponse.first { $0.key.value == .bulkString(ByteBuffer(string: "server")) }?.value.value)
+            let serverName: String? =
+                if case .bulkString(let nameBuffer) = serverNameValue {
+                    String(buffer: nameBuffer)
+                } else {
+                    nil
+                }
+            guard serverName == "valkey" else { return }
+
             let sha1 = try await client.scriptLoad(
                 script: "return redis.call(\"GET\", KEYS[1])"
             )
