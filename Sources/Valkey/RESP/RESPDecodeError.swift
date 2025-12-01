@@ -65,11 +65,11 @@ public struct RESPDecodeError: Error {
         }
     }
     /// Does not match the expected array size
-    public static func invalidArraySize(_ array: RESPToken.Array, expectedSize: Int = -1, minExpectedSize: Int = -1) -> Self {
+    public static func invalidArraySize(_ array: RESPToken.Array, expectedSize: Int? = nil, minExpectedSize: Int? = nil) -> Self {
         let message: String
-        if minExpectedSize > 0 {
+        if let minExpectedSize = minExpectedSize {
             message = "Expected array of size at least \(minExpectedSize) but got an array of size \(array.count)"
-        } else if expectedSize > 0 {
+        } else if let expectedSize = expectedSize {
             message = "Expected array of size \(expectedSize) but got an array of size \(array.count)"
         } else {
             message = "Expected array of a different size but got an array of size \(array.count)"
@@ -92,3 +92,4 @@ extension RESPDecodeError: CustomStringConvertible {
         "Error: \"\(self.message ?? String(describing: self.errorCode))\", token: \(self.token.debugDescription)"
     }
 }
+

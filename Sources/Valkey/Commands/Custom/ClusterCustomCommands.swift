@@ -294,6 +294,78 @@ public struct ValkeyClusterLink: Hashable, Sendable, RESPTokenDecodable {
     public init(fromRESP respToken: RESPToken) throws {
         self = try Self.makeClusterLink(respToken: respToken)
     }
+
+    fileprivate static func makeClusterLink(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterLink {
+        switch respToken.value {
+        case .array(let array):
+            return try Self.makeFromTokenSequence(MapStyleArray(underlying: array), respToken)
+
+        case .map(let map):
+            let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
+                if let key = try? String(fromRESP: keyNode) {
+                    return (key, value)
+                } else {
+                    return nil
+                }
+            }
+            return try Self.makeFromTokenSequence(mapped, respToken)
+
+        default:
+            throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: respToken)
+        }
+    }
+
+    fileprivate static func makeFromTokenSequence<TokenSequence: Sequence>(
+        _ sequence: TokenSequence,
+        _ respToken: RESPToken
+    ) throws(RESPDecodeError) -> Self where TokenSequence.Element == (String, RESPToken) {
+        var direction: ValkeyClusterLink.Direction?
+        var node: String?
+        var createTime: Int64?
+        var events: String?
+        var sendBufferAllocated: Int64?
+        var sendBufferUsed: Int64?
+
+        for (key, value) in sequence {
+            switch key {
+            case "direction":
+                guard let directionString = try? String(fromRESP: value),
+                    let directionValue = ValkeyClusterLink.Direction(rawValue: directionString)
+                else {
+                    throw RESPDecodeError.missingToken(key: "direction", token: respToken)
+                }
+                direction = directionValue
+
+            case "node":
+                node = try? String(fromRESP: value)
+
+            case "create-time":
+                createTime = try? Int64(fromRESP: value)
+
+            case "events":
+                events = try? String(fromRESP: value)
+
+            case "send-buffer-allocated":
+                sendBufferAllocated = try? Int64(fromRESP: value)
+
+            case "send-buffer-used":
+                sendBufferUsed = try? Int64(fromRESP: value)
+
+            default:
+                // ignore unexpected keys for forward compatibility
+                continue
+            }
+        }
+
+        return ValkeyClusterLink(
+            direction: direction,
+            node: node,
+            createTime: createTime.map { Int($0) },
+            events: events,
+            sendBufferAllocated: sendBufferAllocated.map { Int($0) },
+            sendBufferUsed: sendBufferUsed.map { Int($0) }
+        )
+    }
 }
 
 /// Slot usage statistics for a hash slot in a Valkey cluster.
@@ -336,6 +408,104 @@ public struct ValkeyClusterSlotStats: Hashable, Sendable, RESPTokenDecodable {
     /// - Parameter respToken: The response token.
     public init(fromRESP respToken: RESPToken) throws {
         self = try Self.makeClusterSlotStats(respToken: respToken)
+    }
+
+    fileprivate static func makeClusterSlotStats(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterSlotStats {
+        guard case .array(let array) = respToken.value else {
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: respToken)
+        }
+
+        guard array.count >= 2 else {
+            throw RESPDecodeError.invalidArraySize(array, minExpectedSize: 2)
+        }
+
+        var iterator = array.makeIterator()
+
+        // First element: slot number
+        guard let slotToken = iterator.next(),
+            case .number(let slotNumber) = slotToken.value
+        else {
+            throw RESPDecodeError.missingToken(key: "slot", token: respToken)
+        }
+
+        // Second element: statistics map
+        guard let statsToken = iterator.next() else {
+            throw RESPDecodeError.missingToken(key: "statistics", token: respToken)
+        }
+
+        return try Self.makeFromStatsToken(slot: Int(slotNumber), statsToken: statsToken)
+    }
+
+    fileprivate static func makeFromStatsToken(slot: Int, statsToken: RESPToken) throws(RESPDecodeError) -> Self {
+        var keyCount: Int64?
+        var cpuUsec: Int64?
+        var networkBytesIn: Int64?
+        var networkBytesOut: Int64?
+
+        switch statsToken.value {
+        case .map(let map):
+            // For RESP3, handle RESPToken stats as map
+            let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
+                if let key = try? String(fromRESP: keyNode) {
+                    return (key, value)
+                } else {
+                    return nil
+                }
+            }
+            for (key, value) in mapped {
+                switch key {
+                case "key-count":
+                    keyCount = try? Int64(fromRESP: value)
+
+                case "cpu-usec":
+                    cpuUsec = try? Int64(fromRESP: value)
+
+                case "network-bytes-in":
+                    networkBytesIn = try? Int64(fromRESP: value)
+
+                case "network-bytes-out":
+                    networkBytesOut = try? Int64(fromRESP: value)
+
+                default:
+                    // ignore unexpected keys for forward compatibility
+                    continue
+                }
+            }
+
+        case .array(let array):
+            // // For RESP2, handle RESPToken stats as key-value pairs in array format
+            let mapArray = MapStyleArray(underlying: array)
+            for (key, valueToken) in mapArray {
+                switch key {
+                case "key-count":
+                    keyCount = try? Int64(fromRESP: valueToken)
+
+                case "cpu-usec":
+                    cpuUsec = try? Int64(fromRESP: valueToken)
+
+                case "network-bytes-in":
+                    networkBytesIn = try? Int64(fromRESP: valueToken)
+
+                case "network-bytes-out":
+                    networkBytesOut = try? Int64(fromRESP: valueToken)
+
+                default:
+                    // ignore unexpected keys for forward compatibility
+                    continue
+                }
+            }
+
+        default:
+            throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: statsToken)
+        }
+
+        return ValkeyClusterSlotStats(
+            slot: slot,
+            keyCount: keyCount.map { Int($0) },
+            cpuUsec: cpuUsec.map { Int($0) },
+            networkBytesIn: networkBytesIn.map { Int($0) },
+            networkBytesOut: networkBytesOut.map { Int($0) }
+        )
     }
 }
 
@@ -395,6 +565,48 @@ public struct ValkeyClusterSlotRange: Hashable, Sendable, RESPTokenDecodable {
     /// - Parameter respToken: The response token.
     public init(fromRESP respToken: RESPToken) throws {
         self = try Self.makeClusterSlotRange(respToken: respToken)
+    }
+
+    fileprivate static func makeClusterSlotRange(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterSlotRange {
+        guard case .array(let array) = respToken.value else {
+            throw RESPDecodeError.tokenMismatch(expected: [.array], token: respToken)
+        }
+
+        guard array.count >= 3 else {
+            throw RESPDecodeError.invalidArraySize(array, minExpectedSize: 3)
+        }
+
+        var iterator = array.makeIterator()
+
+        // First element: start slot
+        guard let startSlotToken = iterator.next(),
+            case .number(let startSlotNumber) = startSlotToken.value
+        else {
+            throw RESPDecodeError.missingToken(key: "start slot", token: respToken)
+        }
+
+        // Second element: end slot
+        guard let endSlotToken = iterator.next(),
+            case .number(let endSlotNumber) = endSlotToken.value
+        else {
+            throw RESPDecodeError.missingToken(key: "end slot", token: respToken)
+        }
+
+        let startSlot = Int(startSlotNumber)
+        let endSlot = Int(endSlotNumber)
+
+        // Remaining elements are nodes
+        var nodes: [Node] = []
+        while let nodeToken = iterator.next() {
+            let node = try Node.makeSlotNode(respToken: nodeToken)
+            nodes.append(node)
+        }
+
+        return ValkeyClusterSlotRange(
+            startSlot: startSlot,
+            endSlot: endSlot,
+            nodes: nodes
+        )
     }
 }
 
@@ -597,224 +809,6 @@ extension ValkeyClusterDescription.Node {
             role: role,
             replicationOffset: Int(replicationOffset),
             health: health
-        )
-    }
-}
-
-extension ValkeyClusterLink {
-    fileprivate static func makeClusterLink(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterLink {
-        switch respToken.value {
-        case .array(let array):
-            return try Self.makeFromTokenSequence(MapStyleArray(underlying: array), respToken)
-
-        case .map(let map):
-            let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
-                if let key = try? String(fromRESP: keyNode) {
-                    return (key, value)
-                } else {
-                    return nil
-                }
-            }
-            return try Self.makeFromTokenSequence(mapped, respToken)
-
-        default:
-            throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: respToken)
-        }
-    }
-
-    fileprivate static func makeFromTokenSequence<TokenSequence: Sequence>(
-        _ sequence: TokenSequence,
-        _ respToken: RESPToken
-    ) throws(RESPDecodeError) -> Self where TokenSequence.Element == (String, RESPToken) {
-        var direction: ValkeyClusterLink.Direction?
-        var node: String?
-        var createTime: Int64?
-        var events: String?
-        var sendBufferAllocated: Int64?
-        var sendBufferUsed: Int64?
-
-        for (key, value) in sequence {
-            switch key {
-            case "direction":
-                guard let directionString = try? String(fromRESP: value),
-                    let directionValue = ValkeyClusterLink.Direction(rawValue: directionString)
-                else {
-                    throw RESPDecodeError.missingToken(key: "direction", token: respToken)
-                }
-                direction = directionValue
-
-            case "node":
-                node = try? String(fromRESP: value)
-
-            case "create-time":
-                createTime = try? Int64(fromRESP: value)
-
-            case "events":
-                events = try? String(fromRESP: value)
-
-            case "send-buffer-allocated":
-                sendBufferAllocated = try? Int64(fromRESP: value)
-
-            case "send-buffer-used":
-                sendBufferUsed = try? Int64(fromRESP: value)
-
-            default:
-                // ignore unexpected keys for forward compatibility
-                continue
-            }
-        }
-
-        return ValkeyClusterLink(
-            direction: direction,
-            node: node,
-            createTime: createTime.map { Int($0) },
-            events: events,
-            sendBufferAllocated: sendBufferAllocated.map { Int($0) },
-            sendBufferUsed: sendBufferUsed.map { Int($0) }
-        )
-    }
-}
-
-extension ValkeyClusterSlotStats {
-    fileprivate static func makeClusterSlotStats(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterSlotStats {
-        guard case .array(let array) = respToken.value else {
-            throw RESPDecodeError.tokenMismatch(expected: [.array], token: respToken)
-        }
-
-        guard array.count >= 2 else {
-            throw RESPDecodeError.invalidArraySize(array, minExpectedSize: 2)
-        }
-
-        var iterator = array.makeIterator()
-
-        // First element: slot number
-        guard let slotToken = iterator.next(),
-            case .number(let slotNumber) = slotToken.value
-        else {
-            throw RESPDecodeError.missingToken(key: "slot", token: respToken)
-        }
-
-        // Second element: statistics map
-        guard let statsToken = iterator.next() else {
-            throw RESPDecodeError.missingToken(key: "statistics", token: respToken)
-        }
-
-        return try Self.makeFromStatsToken(slot: Int(slotNumber), statsToken: statsToken)
-    }
-
-    fileprivate static func makeFromStatsToken(slot: Int, statsToken: RESPToken) throws(RESPDecodeError) -> Self {
-        var keyCount: Int64?
-        var cpuUsec: Int64?
-        var networkBytesIn: Int64?
-        var networkBytesOut: Int64?
-
-        switch statsToken.value {
-        case .map(let map):
-            // For RESP3, handle RESPToken stats as map
-            let mapped = map.lazy.compactMap { (keyNode, value) -> (String, RESPToken)? in
-                if let key = try? String(fromRESP: keyNode) {
-                    return (key, value)
-                } else {
-                    return nil
-                }
-            }
-            for (key, value) in mapped {
-                switch key {
-                case "key-count":
-                    keyCount = try? Int64(fromRESP: value)
-
-                case "cpu-usec":
-                    cpuUsec = try? Int64(fromRESP: value)
-
-                case "network-bytes-in":
-                    networkBytesIn = try? Int64(fromRESP: value)
-
-                case "network-bytes-out":
-                    networkBytesOut = try? Int64(fromRESP: value)
-
-                default:
-                    // ignore unexpected keys for forward compatibility
-                    continue
-                }
-            }
-
-        case .array(let array):
-            // // For RESP2, handle RESPToken stats as key-value pairs in array format
-            let mapArray = MapStyleArray(underlying: array)
-            for (key, valueToken) in mapArray {
-                switch key {
-                case "key-count":
-                    keyCount = try? Int64(fromRESP: valueToken)
-
-                case "cpu-usec":
-                    cpuUsec = try? Int64(fromRESP: valueToken)
-
-                case "network-bytes-in":
-                    networkBytesIn = try? Int64(fromRESP: valueToken)
-
-                case "network-bytes-out":
-                    networkBytesOut = try? Int64(fromRESP: valueToken)
-
-                default:
-                    // ignore unexpected keys for forward compatibility
-                    continue
-                }
-            }
-
-        default:
-            throw RESPDecodeError.tokenMismatch(expected: [.array, .map], token: statsToken)
-        }
-
-        return ValkeyClusterSlotStats(
-            slot: slot,
-            keyCount: keyCount.map { Int($0) },
-            cpuUsec: cpuUsec.map { Int($0) },
-            networkBytesIn: networkBytesIn.map { Int($0) },
-            networkBytesOut: networkBytesOut.map { Int($0) }
-        )
-    }
-}
-
-extension ValkeyClusterSlotRange {
-    fileprivate static func makeClusterSlotRange(respToken: RESPToken) throws(RESPDecodeError) -> ValkeyClusterSlotRange {
-        guard case .array(let array) = respToken.value else {
-            throw RESPDecodeError.tokenMismatch(expected: [.array], token: respToken)
-        }
-
-        guard array.count >= 3 else {
-            throw RESPDecodeError.invalidArraySize(array, minExpectedSize: 3)
-        }
-
-        var iterator = array.makeIterator()
-
-        // First element: start slot
-        guard let startSlotToken = iterator.next(),
-            case .number(let startSlotNumber) = startSlotToken.value
-        else {
-            throw RESPDecodeError.missingToken(key: "start slot", token: respToken)
-        }
-
-        // Second element: end slot
-        guard let endSlotToken = iterator.next(),
-            case .number(let endSlotNumber) = endSlotToken.value
-        else {
-            throw RESPDecodeError.missingToken(key: "end slot", token: respToken)
-        }
-
-        let startSlot = Int(startSlotNumber)
-        let endSlot = Int(endSlotNumber)
-
-        // Remaining elements are nodes
-        var nodes: [Node] = []
-        while let nodeToken = iterator.next() {
-            let node = try Node.makeSlotNode(respToken: nodeToken)
-            nodes.append(node)
-        }
-
-        return ValkeyClusterSlotRange(
-            startSlot: startSlot,
-            endSlot: endSlot,
-            nodes: nodes
         )
     }
 }
