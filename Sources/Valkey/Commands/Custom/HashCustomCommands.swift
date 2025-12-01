@@ -93,7 +93,7 @@ extension HRANDFIELD {
         /// - Throws: RESPDecodeError if response format is unexpected
         @inlinable
         public func multipleFields() throws -> [ByteBuffer]? {
-            return try [ByteBuffer]?(fromRESP: token)
+            try [ByteBuffer]?(fromRESP: token)
         }
 
         /// Get multiple random field-value pairs when HRANDFIELD was called with COUNT and WITHVALUES
