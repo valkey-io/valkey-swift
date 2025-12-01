@@ -81,97 +81,49 @@ extension HRANDFIELD {
         /// - Returns: Random field name as ByteBuffer, or nil if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
         public func singleField() throws -> ByteBuffer? {
-            switch token.value {
-            case .null:
+            // Handle .null as it is expected when the key doesn't exist
+            if token.value == .null {
                 return nil
-            case .bulkString(let buffer):
-                return buffer
-            default:
-                throw RESPDecodeError.tokenMismatch(expected: [.null, .bulkString], token: token)
             }
+            return try ByteBuffer(fromRESP: token)
         }
 
         /// Get multiple random fields when HRANDFIELD was called with COUNT but without WITHVALUES
         /// - Returns: Array of field names as ByteBuffer, or empty array if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
         @inlinable
-        public func multipleFields() throws -> [ByteBuffer] {
-            switch token.value {
-            case .null:
-                return []
-            case .array(let array):
-                return try array.decode(as: [ByteBuffer].self)
-            default:
-                throw RESPDecodeError.tokenMismatch(expected: [.null, .array], token: token)
-            }
+        public func multipleFields() throws -> [ByteBuffer]? {
+            return try [ByteBuffer]?(fromRESP: token)
         }
 
         /// Get multiple random field-value pairs when HRANDFIELD was called with COUNT and WITHVALUES
-        /// - Returns: Array of HashEntry (field-value pairs), or empty array if key doesn't exist
+        /// - Returns: Array of HashEntry (field-value pairs), or nil if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
-        public func multipleFieldsWithValues() throws -> [HashEntry] {
+        public func multipleFieldsWithValues() throws -> [HashEntry]? {
             switch token.value {
             case .null:
-                return []
+                return nil
             case .array(let array):
-                // RESP2 Response
-                return try _decodeArrayAsHashEntries(array)
-            case .map(let map):
-                // RESP3 Response
-                return try _decodeMapAsHashEntries(map)
-            default:
-                throw RESPDecodeError.tokenMismatch(expected: [.null, .array, .map], token: token)
-            }
-        }
-
-        /// Helper method to decode RESP array as hash entries
-        /// - Parameter array: RESP array to decode
-        /// - Returns: Array of HashEntry objects
-        /// - Throws: RESPDecodeError if format is invalid
-        private func _decodeArrayAsHashEntries(_ array: RESPToken.Array) throws -> [HashEntry] {
-            guard array.count > 0 else {
-                return []
-            }
-
-            // Get first element to determine format using iterator
-            var iterator = array.makeIterator()
-            guard let firstElement = iterator.next() else {
-                return []
-            }
-
-            switch firstElement.value {
-            case .array:
-                // Format: [[field1, value1], [field2, value2], ...]
-                return try _decodeNestedArrayFormat(array)
-            default:
-                // Format: [field1, value1, field2, value2, ...] (flat array)
-                return try _decodeFlatArrayFormat(array)
-            }
-        }
-
-        /// Helper method to decode nested array format
-        /// - Parameter array: RESP array containing nested arrays
-        /// - Returns: Array of HashEntry objects
-        /// - Throws: RESPDecodeError if format is invalid
-        private func _decodeNestedArrayFormat(_ array: RESPToken.Array) throws -> [HashEntry] {
-            var entries: [HashEntry] = []
-            entries.reserveCapacity(array.count)
-
-            for element in array {
-                guard case .array(let pairArray) = element.value else {
-                    throw RESPDecodeError.tokenMismatch(expected: [.array], token: element)
+                guard array.count > 0 else {
+                    return []
                 }
 
-                guard pairArray.count == 2 else {
-                    throw RESPDecodeError(.invalidArraySize, token: element)
+                // Check first element to determine format
+                var iterator = array.makeIterator()
+                guard let firstElement = iterator.next() else {
+                    return []
                 }
-
-                // Use decodeElements to extract field and value directly from nested array
-                let (field, value): (ByteBuffer, ByteBuffer) = try pairArray.decodeElements()
-                entries.append(HashEntry(field: field, value: value))
+                switch firstElement.value {
+                case .array:
+                    // Array of arrays format - can use HashEntry decode
+                    return try [HashEntry]?(fromRESP: token)
+                default:
+                    // Flat array format - handle manually
+                    return try _decodeFlatArrayFormat(array)
+                }
+            default:
+                throw RESPDecodeError.tokenMismatch(expected: [.null, .array], token: token)
             }
-
-            return entries
         }
 
         /// Helper method to decode flat array format
@@ -186,7 +138,7 @@ extension HRANDFIELD {
             var entries: [HashEntry] = []
             entries.reserveCapacity(array.count / 2)
 
-            // Iterate over pairs directly using enumerated
+            // Iterate over pairs
             var iterator = array.makeIterator()
             while let field = iterator.next(), let value = iterator.next() {
                 let fieldBuffer = try ByteBuffer(fromRESP: field)
@@ -196,23 +148,5 @@ extension HRANDFIELD {
 
             return entries
         }
-
-        /// Helper method to decode RESP map as hash entries
-        /// - Parameter map: RESP map to decode
-        /// - Returns: Array of HashEntry objects
-        /// - Throws: RESPDecodeError if format is invalid
-        private func _decodeMapAsHashEntries(_ map: RESPToken.Map) throws -> [HashEntry] {
-            var entries: [HashEntry] = []
-            entries.reserveCapacity(map.count)
-
-            for pair in map {
-                let field = try ByteBuffer(fromRESP: pair.key)
-                let value = try ByteBuffer(fromRESP: pair.value)
-                entries.append(HashEntry(field: field, value: value))
-            }
-
-            return entries
-        }
-
     }
 }
