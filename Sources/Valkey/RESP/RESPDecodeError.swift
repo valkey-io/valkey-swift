@@ -92,4 +92,3 @@ extension RESPDecodeError: CustomStringConvertible {
         "Error: \"\(self.message ?? String(describing: self.errorCode))\", token: \(self.token.debugDescription)"
     }
 }
-
