@@ -944,7 +944,7 @@ public enum MODULE {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
+            commandEncoder.encodeArray("MODULE", "LOADEX", RESPBulkString(path), RESPArrayWithToken("CONFIG", configs), RESPWithToken("ARGS", args))
         }
     }
 
