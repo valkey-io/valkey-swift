@@ -216,4 +216,74 @@ struct CommandIntegratedTests {
             _ = try await client.scriptExists(sha1s: [sha1])
         }
     }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testHrandfield() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+
+                // Non-existent hash
+                var response = try await client.hrandfield(key)
+                var singleField = try response.singleField()
+                #expect(singleField == nil)
+                var multipleFields = try response.multipleFields()
+                #expect(multipleFields == nil)
+                var fieldValuePairs = try response.multipleFieldsWithValues()
+                #expect(fieldValuePairs == nil)
+
+                // Hash with multiple fields
+                _ = try await client.hset(
+                    key,
+                    data: [
+                        HSET.Data(field: "field1", value: "value1"),
+                        HSET.Data(field: "field2", value: "value2"),
+                        HSET.Data(field: "field3", value: "value3"),
+                    ]
+                )
+
+                // Get Single Field
+                response = try await client.hrandfield(key)
+                singleField = try response.singleField()
+                #expect(singleField != nil)
+                let fieldName = String(buffer: singleField!)
+                #expect(["field1", "field2", "field3"].contains(fieldName))
+
+                // Get multiple fields
+                var options = HRANDFIELD.Options(count: 2, withvalues: false)
+                response = try await client.hrandfield(key, options: options)
+                multipleFields = try response.multipleFields()
+                #expect(multipleFields != nil)
+                if let unwrappedFields = multipleFields {
+                    #expect(unwrappedFields.count == 2)
+                    let fieldNames = unwrappedFields.map { String(buffer: $0) }
+                    for fieldName in fieldNames {
+                        #expect(["field1", "field2", "field3"].contains(fieldName))
+                    }
+                    // Ensure we got unique fields
+                    let uniqueFieldNames = Set(fieldNames)
+                    #expect(uniqueFieldNames.count == fieldNames.count)
+                }
+
+                // Get multiple fields with values
+                options = HRANDFIELD.Options(count: 3, withvalues: true)
+                response = try await client.hrandfield(key, options: options)
+                fieldValuePairs = try response.multipleFieldsWithValues()
+                #expect(fieldValuePairs != nil)
+                if let unwrappedFieldValuePairs = fieldValuePairs {
+                    #expect(unwrappedFieldValuePairs.count == 3)
+                    var expectedPairs: [String: String] = [:]
+                    for pair in unwrappedFieldValuePairs {
+                        expectedPairs[String(buffer: pair.field)] = String(buffer: pair.value)
+                    }
+                    #expect(expectedPairs["field1"] == "value1")
+                    #expect(expectedPairs["field2"] == "value2")
+                    #expect(expectedPairs["field3"] == "value3")
+                }
+            }
+        }
+    }
+
 }
