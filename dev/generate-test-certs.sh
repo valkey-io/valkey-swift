@@ -48,7 +48,7 @@ generate_cert() {
             -CAserial valkey/certs/ca.txt \
             -CAcreateserial \
             -days 365 \
-            $opts \
+            ${opts[@]} \
             -out "$certfile"
     chmod a+r "$keyfile"
 }

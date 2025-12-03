@@ -15,10 +15,8 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        # swift: ["swift:6.1", "swift:6.2"]
-        # database: ["valkey/valkey:latest", "redis:latest"]
-        swift: ["swift:6.2"]
-        database: ["valkey/valkey:latest"]
+        swift: ["swift:6.1", "swift:6.2"]
+        database: ["valkey/valkey:latest", "redis:latest"]
     container:
       image: ${{ matrix.swift }}
     services:
