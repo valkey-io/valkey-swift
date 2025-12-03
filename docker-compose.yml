@@ -1,11 +1,12 @@
+# This runs a valkey server with both non-TLS and TLS endpoints.
+# You need to run the script .dev/generate-test-certs.sh to generate the certificates needed for TLS
+
 services:
   valkey:
     image: valkey/valkey:9.0
     ports:
       - 6379:6379
       - 6380:6380
-    healthcheck:
-      test: ["CMD", "valkey-cli", "--raw", "incr", "ping"]
     volumes:
       - ./valkey:/valkey
       - valkey_data:/data

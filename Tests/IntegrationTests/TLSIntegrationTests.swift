@@ -80,13 +80,19 @@ struct TLSIntegratedTests {
 
     @available(valkeySwift 1.0, *)
     static func getTLSConfiguration() throws -> TLSConfiguration {
-        let rootCertificate = try NIOSSLCertificate.fromPEMFile(Self.rootPath + "/valkey/certs/ca.crt")
-        let certificate = try NIOSSLCertificate.fromPEMFile(Self.rootPath + "/valkey/certs/client.crt")
-        let privateKey = try NIOSSLPrivateKey(file: Self.rootPath + "/valkey/certs/client.key", format: .pem)
-        var tlsConfiguration = TLSConfiguration.makeClientConfiguration()
-        tlsConfiguration.trustRoots = .certificates(rootCertificate)
-        tlsConfiguration.certificateChain = certificate.map { .certificate($0) }
-        tlsConfiguration.privateKey = .privateKey(privateKey)
-        return tlsConfiguration
+        do {
+            let rootCertificate = try NIOSSLCertificate.fromPEMFile(Self.rootPath + "/valkey/certs/ca.crt")
+            let certificate = try NIOSSLCertificate.fromPEMFile(Self.rootPath + "/valkey/certs/client.crt")
+            let privateKey = try NIOSSLPrivateKey(file: Self.rootPath + "/valkey/certs/client.key", format: .pem)
+            var tlsConfiguration = TLSConfiguration.makeClientConfiguration()
+            tlsConfiguration.trustRoots = .certificates(rootCertificate)
+            tlsConfiguration.certificateChain = certificate.map { .certificate($0) }
+            tlsConfiguration.privateKey = .privateKey(privateKey)
+            return tlsConfiguration
+        } catch NIOSSLError.failedToLoadCertificate {
+            fatalError("Run script ./dev/generate-test-certs.sh to generate test certificates and restart your valkey server.")
+        } catch NIOSSLError.failedToLoadPrivateKey {
+            fatalError("Run script ./dev/generate-test-certs.sh to generate test certificates and restart your valkey server.")
+        }
     }
 }
