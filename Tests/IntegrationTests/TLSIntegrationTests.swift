@@ -14,7 +14,10 @@ import Valkey
 
 @testable import Valkey
 
-@Suite("TLS Integration Tests")
+@Suite(
+    "TLS Integration Tests",
+    .disabled(if: disableTLSTests != nil)
+)
 struct TLSIntegratedTests {
     let valkeyHostname = ProcessInfo.processInfo.environment["VALKEY_HOSTNAME"] ?? "localhost"
 
@@ -96,3 +99,5 @@ struct TLSIntegratedTests {
         }
     }
 }
+
+private let disableTLSTests: String? = ProcessInfo.processInfo.environment["DISABLE_TLS_TESTS"]

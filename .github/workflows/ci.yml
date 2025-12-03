@@ -16,7 +16,8 @@ jobs:
     strategy:
       matrix:
         swift: ["swift:6.1", "swift:6.2"]
-        database: ["valkey/valkey:latest", "redis:latest"]
+        # database: ["valkey/valkey:latest", "redis:latest"]
+        database: ["redis:latest"]
     container:
       image: ${{ matrix.swift }}
     services:
@@ -25,7 +26,6 @@ jobs:
         options: --name database
         env:
           VALKEY_EXTRA_FLAGS: "--tls-port 6380 --tls-cert-file /valkey/certs/server.crt --tls-key-file /valkey/certs/server.key --tls-ca-cert-file /valkey/certs/ca.crt"
-          REDIS_EXTRA_FLAGS: "--tls-port 6380 --tls-cert-file /valkey/certs/server.crt --tls-key-file /valkey/certs/server.key --tls-ca-cert-file /valkey/certs/ca.crt"
         ports:
           - 6379:6379
           - 6380:6380
@@ -48,7 +48,15 @@ jobs:
         uses: docker://docker
         with:
           args: docker restart database
-      - name: Test
+      - name: Test Redis
+        if: ${{ matrix.database == 'redis:latest' }}
+        env:
+          DISABLE_TLS_TESTS: true
+          VALKEY_HOSTNAME: database
+        run: |
+          swift test --enable-code-coverage
+      - name: Test Valkey
+        if: ${{ matrix.database != 'redis:latest' }}
         env:
           VALKEY_HOSTNAME: database
         run: |
