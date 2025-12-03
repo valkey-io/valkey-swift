@@ -30,7 +30,12 @@ services:
   valkey:
     image: 'valkey/valkey:latest'
     network_mode: "host"
-    command: valkey-server --port 6379
+    ports:
+      - 6379:6379
+      - 6380:6380
+    volumes:
+      - ./valkey:/valkey
+    command: valkey-server --tls-port 6380 --tls-cert-file /valkey/certs/server.crt --tls-key-file /valkey/certs/server.key --tls-ca-cert-file /valkey/certs/ca.crt
 
   valkey_cluster_1:
     image: 'valkey/valkey:latest'
