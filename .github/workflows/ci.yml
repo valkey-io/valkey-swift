@@ -25,13 +25,30 @@ jobs:
     services:
       database:
         image: ${{ matrix.database }}
+        options: >-
+          --tls-port 6380
+          --tls-cert-file /valkey/certs/server.crt
+          --tls-key-file /valkey/certs/server.key
+          --tls-ca-cert-file /valkey/certs/ca.crt
+        ports:
+          - 6379:6379
+          - 6380:6380
+        volumes:
+          - ./valkey:/valkey
     steps:
       - name: Install jemalloc
         run: |
           apt-get update
           apt-get install -y libjemalloc-dev
+          apt-get install curl
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Generate certificates
+        run: ./dev/generate-test-certs.sh
+      - name: Restart Docker
+        uses: docker://docker
+        with:
+          args: docker restart database
       - name: Test
         run: |
           swift test --enable-code-coverage
