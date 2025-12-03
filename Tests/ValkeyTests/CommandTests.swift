@@ -274,20 +274,16 @@ struct CommandTests {
                 )
             ) { connection in
                 var result = try await connection.lcs(key1: "key1", key2: "key2")
-                #expect(result == .subSequence("mytext"))
+                #expect(try result.longestMatch() == "mytext")
                 result = try await connection.lcs(key1: "key1", key2: "key2", len: true)
-                #expect(result == .subSequenceLength(6))
+                #expect(try result.longestMatchLength() == 6)
                 result = try await connection.lcs(key1: "key1", key2: "key2", idx: true)
-                switch result {
-                case .matches(let length, let matches):
-                    #expect(length == 6)
-                    #expect(matches[0].first == 4...7)
-                    #expect(matches[0].second == 5...8)
-                    #expect(matches[1].first == 2...3)
-                    #expect(matches[1].second == 0...1)
-                default:
-                    Issue.record("Expected `matches` case")
-                }
+                let matches = try result.matches()
+                #expect(matches.length == 6)
+                #expect(matches.matches[0].first == 4...7)
+                #expect(matches.matches[0].second == 5...8)
+                #expect(matches.matches[1].first == 2...3)
+                #expect(matches.matches[1].second == 0...1)
             }
         }
     }
