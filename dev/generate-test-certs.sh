@@ -37,6 +37,7 @@ generate_cert() {
     local certfile=valkey/certs/${name}.crt
 
     [ -f "$keyfile" ] || openssl genrsa -out "$keyfile" 2048
+    # shellcheck disable=SC2086
     openssl req \
         -new -sha256 \
         -subj "/O=Valkey Test/CN=$cn" \
@@ -48,8 +49,9 @@ generate_cert() {
             -CAserial valkey/certs/ca.txt \
             -CAcreateserial \
             -days 365 \
-            ${opts[@]} \
+            $opts \
             -out "$certfile"
+    # Set all users to read private keys files so CI works
     chmod a+r "$keyfile"
 }
 
