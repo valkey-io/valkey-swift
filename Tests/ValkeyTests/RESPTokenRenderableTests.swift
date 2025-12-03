@@ -39,6 +39,18 @@ struct RESPTokenRenderableTests {
     }
 
     @Test
+    func testRESPArrayWithTokens() async throws {
+        var commandEncoder = ValkeyCommandEncoder()
+        var commandEncoder2 = ValkeyCommandEncoder()
+        RESPArrayWithToken("test", ["john", "jane"]).encode(into: &commandEncoder)
+        "test".encode(into: &commandEncoder2)
+        "john".encode(into: &commandEncoder2)
+        "test".encode(into: &commandEncoder2)
+        "jane".encode(into: &commandEncoder2)
+        #expect(String(buffer: commandEncoder.buffer) == String(buffer: commandEncoder2.buffer))
+    }
+
+    @Test
     func testRESPArrayWithCount() async throws {
         var commandEncoder = ValkeyCommandEncoder()
         var commandEncoder2 = ValkeyCommandEncoder()

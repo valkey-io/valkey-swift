@@ -7,7 +7,7 @@
 //
 /// Error returned when decoding a RESPToken.
 /// Error thrown when decoding RESPTokens
-public struct RESPDecodeError: Error {
+public struct RESPDecodeError: Error, Equatable {
     /// Error code for decode error
     public struct ErrorCode: Sendable, Equatable, CustomStringConvertible {
         fileprivate enum Code: Sendable, Equatable {
@@ -80,6 +80,15 @@ public struct RESPDecodeError: Error {
             token: .array(array),
             message: message
         )
+    }
+    /// Does not match the expected array size
+    public static func invalidArraySize(_ token: RESPToken, expectedSize: Int? = nil, minExpectedSize: Int? = nil) -> Self {
+        switch token.value {
+        case .array(let array):
+            return invalidArraySize(array, expectedSize: expectedSize, minExpectedSize: minExpectedSize)
+        default:
+            return .tokenMismatch(expected: [.array], token: token)
+        }
     }
     /// Token associated with key is missing
     public static func missingToken(key: String, token: RESPToken) -> Self {

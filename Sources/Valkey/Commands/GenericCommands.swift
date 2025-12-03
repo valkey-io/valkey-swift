@@ -836,7 +836,7 @@ public struct SORT: ValkeyCommand {
             key,
             RESPWithToken("BY", byPattern),
             RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPatterns),
+            RESPArrayWithToken("GET", getPatterns),
             order,
             RESPPureToken("ALPHA", sorting),
             RESPWithToken("STORE", destination)
@@ -920,7 +920,7 @@ public struct SORTRO: ValkeyCommand {
             key,
             RESPWithToken("BY", byPattern),
             RESPWithToken("LIMIT", limit),
-            RESPWithToken("GET", getPatterns),
+            RESPArrayWithToken("GET", getPatterns),
             order,
             RESPPureToken("ALPHA", sorting)
         )

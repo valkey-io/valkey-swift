@@ -103,7 +103,7 @@ struct ValkeyClusterDescriptionTests {
         ])
         let token = RESPToken(val)
 
-        #expect(throws: ValkeyClusterParseError(reason: .invalidNodeHealth, token: token)) {
+        #expect(throws: RESPDecodeError(.unexpectedToken, token: .init(.bulkString("invalid-health-state")), message: "Invalid Node Health String")) {
             _ = try ValkeyClusterDescription(fromRESP: token)
         }
     }
@@ -112,7 +112,7 @@ struct ValkeyClusterDescriptionTests {
     func testSlotsAreNotAnArray() throws {
         // Non-array token for cluster description
         let singleValueToken = RESPToken(RESP3Value.bulkString("not-an-array"))
-        #expect(throws: ValkeyClusterParseError.self) {
+        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array], token: .init(.bulkString("not-an-array")))) {
             _ = try ValkeyClusterDescription(fromRESP: singleValueToken)
         }
 
@@ -145,7 +145,7 @@ struct ValkeyClusterDescriptionTests {
             ])
         )
 
-        #expect(throws: ValkeyClusterParseError(reason: .slotsTokenIsNotAnArray, token: invalidSlotsToken)) {
+        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array], token: .init(.bulkString("not-an-array")))) {
             try ValkeyClusterDescription(fromRESP: invalidSlotsToken)
         }
 
@@ -161,7 +161,7 @@ struct ValkeyClusterDescriptionTests {
             ])
         )
 
-        #expect(throws: ValkeyClusterParseError(reason: .nodesTokenIsNotAnArray, token: invalidNodesToken)) {
+        #expect(throws: RESPDecodeError.tokenMismatch(expected: [.array], token: .init(.bulkString("not-an-array")))) {
             _ = try ValkeyClusterDescription(fromRESP: invalidNodesToken)
         }
     }
@@ -197,7 +197,7 @@ struct ValkeyClusterDescriptionTests {
         let token = RESPToken(valWithMultipleErrors)
 
         // The error we expect to see first is the invalid role
-        #expect(throws: ValkeyClusterParseError(reason: .invalidNodeRole, token: token)) {
+        #expect(throws: RESPDecodeError(.unexpectedToken, token: .init(.bulkString("invalid-role")), message: "Invalid Role String")) {
             _ = try ValkeyClusterDescription(fromRESP: token)
         }
     }

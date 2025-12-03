@@ -29,6 +29,7 @@ private let disableResponseCalculationCommands: Set<String> = [
     "GEODIST",
     "GEOPOS",
     "GEOSEARCH",
+    "HRANDFIELD",
     "HSCAN",
     "ROLE",
     "LMOVE",
@@ -847,8 +848,12 @@ extension ValkeyCommand.Argument {
                 }
             }
             if let token = self.token {
-                return "RESPWithToken(\"\(token)\", \(variable))"
-            } else if multiple, combinedWithCount == true {
+                if self.multiple, self.multipleToken {
+                    return "RESPArrayWithToken(\"\(token)\", \(variable))"
+                } else {
+                    return "RESPWithToken(\"\(token)\", \(variable))"
+                }
+            } else if self.multiple, self.combinedWithCount == true {
                 if isArray {
                     return "RESPArrayWithCount(\(variable))"
                 } else {

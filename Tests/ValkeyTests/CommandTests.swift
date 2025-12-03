@@ -15,6 +15,31 @@ import Valkey
 ///
 /// Generally the commands being tested here are ones we have written custom responses for
 struct CommandTests {
+    struct ConnectionCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func clientTracking() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLIENT", "TRACKING", "OFF"]),
+                    response: .simpleString("OK")
+                ),
+                (
+                    request: .command(["CLIENT", "TRACKING", "ON", "REDIRECT", "25", "PREFIX", "test"]),
+                    response: .simpleString("OK")
+                ),
+                (
+                    request: .command(["CLIENT", "TRACKING", "ON", "REDIRECT", "25", "PREFIX", "test", "PREFIX", "this"]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.clientTracking(status: .off)
+                try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test"])
+                try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test", "this"])
+            }
+        }
+    }
+
     struct ScriptCommands {
         @Test
         @available(valkeySwift 1.0, *)
@@ -249,20 +274,16 @@ struct CommandTests {
                 )
             ) { connection in
                 var result = try await connection.lcs(key1: "key1", key2: "key2")
-                #expect(result == .subSequence("mytext"))
+                #expect(try result.longestMatch() == "mytext")
                 result = try await connection.lcs(key1: "key1", key2: "key2", len: true)
-                #expect(result == .subSequenceLength(6))
+                #expect(try result.longestMatchLength() == 6)
                 result = try await connection.lcs(key1: "key1", key2: "key2", idx: true)
-                switch result {
-                case .matches(let length, let matches):
-                    #expect(length == 6)
-                    #expect(matches[0].first == 4...7)
-                    #expect(matches[0].second == 5...8)
-                    #expect(matches[1].first == 2...3)
-                    #expect(matches[1].second == 0...1)
-                default:
-                    Issue.record("Expected `matches` case")
-                }
+                let matches = try result.matches()
+                #expect(matches.length == 6)
+                #expect(matches.matches[0].first == 4...7)
+                #expect(matches.matches[0].second == 5...8)
+                #expect(matches.matches[1].first == 2...3)
+                #expect(matches.matches[1].second == 0...1)
             }
         }
     }
