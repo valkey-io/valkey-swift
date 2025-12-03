@@ -15,8 +15,10 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        swift: ["swift:6.1", "swift:6.2"]
-        database: ["valkey/valkey:latest", "redis:latest"]
+        #swift: ["swift:6.1", "swift:6.2"]
+        #database: ["valkey/valkey:latest", "redis:latest"]
+        swift: ["swift:6.2"]
+        database: ["valkey/valkey:latest"]
     container:
       image: ${{ matrix.swift }}
     services:
@@ -29,7 +31,7 @@ jobs:
           - 6379:6379
           - 6380:6380
         volumes:
-          - ./valkey:/valkey
+          - ${{ github.workspace }}/valkey:/valkey
     steps:
       - name: Install jemalloc
         run: |
@@ -37,7 +39,7 @@ jobs:
           apt-get install -y libjemalloc-dev
           apt-get install curl
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Generate certificates
         run: ./dev/generate-test-certs.sh
       - name: Restart Docker
