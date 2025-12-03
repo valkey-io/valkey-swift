@@ -47,7 +47,7 @@ extension RESPToken: RESPTokenDecodable {
 
 extension ByteBuffer: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .simpleString(let buffer),
             .bulkString(let buffer),
@@ -76,7 +76,7 @@ extension ByteBuffer: RESPTokenDecodable {
 
 extension String: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .simpleString(let buffer),
             .bulkString(let buffer),
@@ -110,7 +110,7 @@ extension String: RESPTokenDecodable {
 }
 
 extension Int64: RESPTokenDecodable {
-    public init(fromRESP token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .number(let value):
             self = value
@@ -141,7 +141,7 @@ extension Int64: RESPTokenDecodable {
 
 extension Int: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .number(let value):
             guard let value = Int(exactly: value) else {
@@ -175,7 +175,7 @@ extension Int: RESPTokenDecodable {
 
 extension Double: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .double(let value):
             self = value
@@ -200,7 +200,7 @@ extension Double: RESPTokenDecodable {
 
 extension Bool: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .boolean(let value):
             self = value
@@ -295,7 +295,7 @@ extension ClosedRange: RESPTokenDecodable where Bound: RESPTokenDecodable {
 
 extension RESPToken.Array: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .array(let respArray), .set(let respArray), .push(let respArray):
             self = respArray
@@ -391,7 +391,7 @@ extension RESPToken.Array: RESPTokenDecodable {
 
 extension RESPToken.Map: RESPTokenDecodable {
     @inlinable
-    public init(fromRESP token: RESPToken) throws {
+    public init(fromRESP token: RESPToken) throws(RESPDecodeError) {
         switch token.value {
         case .map(let respArray):
             self = respArray
