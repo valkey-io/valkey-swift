@@ -9,9 +9,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-ci
   cancel-in-progress: true
 
-env:
-  VALKEY_HOSTNAME: database
-  REDIS_HOSTNAME: database
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
@@ -44,10 +41,15 @@ jobs:
       - name: Generate certificates
         run: ./dev/generate-test-certs.sh
       - name: Restart Docker
+        # The valkey service container is started *before* the certificates are
+        # generated. Restarting the container after the generate step is needed for the
+        # container to see the generated certificates.
         uses: docker://docker
         with:
           args: docker restart database
       - name: Test
+        env:
+          VALKEY_HOSTNAME: database
         run: |
           swift test --enable-code-coverage
       - name: Convert coverage files
