@@ -25,6 +25,7 @@ jobs:
     services:
       database:
         image: ${{ matrix.database }}
+        options: --name database
         env: 
           VALKEY_EXTRA_FLAGS: "--tls-port 6380 --tls-cert-file /valkey/certs/server.crt --tls-key-file /valkey/certs/server.key --tls-ca-cert-file /valkey/certs/ca.crt"
         ports:
