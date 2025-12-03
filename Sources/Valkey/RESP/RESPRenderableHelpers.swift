@@ -58,6 +58,31 @@ package struct RESPWithToken<Value: RESPRenderable>: RESPRenderable {
 }
 
 @usableFromInline
+package struct RESPArrayWithToken<Element: RESPRenderable>: RESPRenderable {
+    @usableFromInline
+    let array: [Element]
+    @usableFromInline
+    let token: String
+
+    @inlinable
+    package init(_ token: String, _ array: [Element]) {
+        self.array = array
+        self.token = token
+    }
+    @inlinable
+    package var respEntries: Int {
+        self.array.respEntries + self.array.count
+    }
+    @inlinable
+    package func encode(into commandEncoder: inout ValkeyCommandEncoder) {
+        for element in self.array {
+            token.encode(into: &commandEncoder)
+            element.encode(into: &commandEncoder)
+        }
+    }
+}
+
+@usableFromInline
 package struct RESPArrayWithCount<Element: RESPRenderable>: RESPRenderable {
     @usableFromInline
     let array: [Element]

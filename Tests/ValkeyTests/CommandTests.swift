@@ -15,6 +15,31 @@ import Valkey
 ///
 /// Generally the commands being tested here are ones we have written custom responses for
 struct CommandTests {
+    struct ConnectionCommands {
+        @Test
+        @available(valkeySwift 1.0, *)
+        func clientTracking() async throws {
+            try await testCommandEncodesDecodes(
+                (
+                    request: .command(["CLIENT", "TRACKING", "OFF"]),
+                    response: .simpleString("OK")
+                ),
+                (
+                    request: .command(["CLIENT", "TRACKING", "ON", "REDIRECT", "25", "PREFIX", "test"]),
+                    response: .simpleString("OK")
+                ),
+                (
+                    request: .command(["CLIENT", "TRACKING", "ON", "REDIRECT", "25", "PREFIX", "test", "PREFIX", "this"]),
+                    response: .simpleString("OK")
+                )
+            ) { connection in
+                try await connection.clientTracking(status: .off)
+                try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test"])
+                try await connection.clientTracking(status: .on, clientId: 25, prefixes: ["test", "this"])
+            }
+        }
+    }
+
     struct ScriptCommands {
         @Test
         @available(valkeySwift 1.0, *)

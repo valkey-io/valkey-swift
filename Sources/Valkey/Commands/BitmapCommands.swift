@@ -306,7 +306,7 @@ public struct BITFIELDRO: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("BITFIELD_RO", key, RESPWithToken("GET", getBlocks))
+        commandEncoder.encodeArray("BITFIELD_RO", key, RESPArrayWithToken("GET", getBlocks))
     }
 }
 
