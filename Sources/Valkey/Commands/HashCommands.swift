@@ -807,7 +807,6 @@ public struct HRANDFIELD: ValkeyCommand {
             RESPPureToken("WITHVALUES", withvalues).encode(into: &commandEncoder)
         }
     }
-
     @inlinable public static var name: String { "HRANDFIELD" }
 
     public var key: ValkeyKey
