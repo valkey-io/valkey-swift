@@ -32,9 +32,10 @@ struct ValkeyCommand: Decodable {
     struct InternalArgument: Decodable {
         let name: String
         let type: ArgumentType
-        let multiple: Bool?
-        let optional: Bool?
+        let multiple: Bool
+        let optional: Bool
         let token: String?
+        let multipleToken: Bool
         let arguments: [Argument]?
         let keySpecIndex: Int?
 
@@ -51,6 +52,7 @@ struct ValkeyCommand: Decodable {
             }
             self.multiple = multiple
             self.optional = try container.decodeIfPresent(Bool.self, forKey: .optional) ?? false
+            self.multipleToken = try container.decodeIfPresent(Bool.self, forKey: .multipleToken) ?? false
             var token = try container.decodeIfPresent(String.self, forKey: .token)
             if token == "\"\"" {
                 token = ""
@@ -66,6 +68,7 @@ struct ValkeyCommand: Decodable {
             case multiple
             case optional
             case token
+            case multipleToken = "multiple_token"
             case arguments
             case keySpecIndex = "key_spec_index"
         }
@@ -75,6 +78,7 @@ struct ValkeyCommand: Decodable {
         let type: ArgumentType
         let multiple: Bool
         let optional: Bool
+        let multipleToken: Bool
         let token: String?
         let arguments: [Argument]?
         let combinedWithCount: Bool?
@@ -82,8 +86,9 @@ struct ValkeyCommand: Decodable {
         init(argument: InternalArgument, keySpec: KeySpec?) {
             self.name = argument.name
             self.type = argument.type
-            self.multiple = argument.multiple ?? false
-            self.optional = argument.optional ?? false
+            self.multiple = argument.multiple
+            self.optional = argument.optional
+            self.multipleToken = argument.multipleToken
             self.token = argument.token
             self.arguments = argument.arguments
             self.combinedWithCount =
@@ -107,6 +112,7 @@ struct ValkeyCommand: Decodable {
             }
             self.multiple = multiple
             self.optional = try container.decodeIfPresent(Bool.self, forKey: .optional) ?? false
+            self.multipleToken = try container.decodeIfPresent(Bool.self, forKey: .multipleToken) ?? false
             var token = try container.decodeIfPresent(String.self, forKey: .token)
             if token == "\"\"" {
                 token = ""
@@ -121,6 +127,7 @@ struct ValkeyCommand: Decodable {
             case type
             case multiple
             case optional
+            case multipleToken = "multiple_token"
             case token
             case arguments
         }

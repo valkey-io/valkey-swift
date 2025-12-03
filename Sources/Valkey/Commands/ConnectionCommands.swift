@@ -776,7 +776,7 @@ extension CLIENT {
                 "TRACKING",
                 status,
                 RESPWithToken("REDIRECT", clientId),
-                RESPWithToken("PREFIX", prefixes),
+                RESPArrayWithToken("PREFIX", prefixes),
                 RESPPureToken("BCAST", bcast),
                 RESPPureToken("OPTIN", optin),
                 RESPPureToken("OPTOUT", optout),
