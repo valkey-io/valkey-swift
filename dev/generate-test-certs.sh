@@ -1,4 +1,12 @@
 #!/bin/bash
+##
+## This source file is part of the valkey-swift project
+## Copyright (c) 2025 the valkey-swift project authors
+##
+## See LICENSE.txt for license information
+## SPDX-License-Identifier: Apache-2.0
+##
+
 # This is a copy of the gen-test-certs.sh script from https://github/valkey-io/valkey
 # BSD 3-Clause License
 #
@@ -28,11 +36,11 @@ generate_cert() {
     local keyfile=valkey/certs/${name}.key
     local certfile=valkey/certs/${name}.crt
 
-    [ -f $keyfile ] || openssl genrsa -out $keyfile 2048
+    [ -f "$keyfile" ] || openssl genrsa -out "$keyfile" 2048
     openssl req \
         -new -sha256 \
         -subj "/O=Valkey Test/CN=$cn" \
-        -key $keyfile | \
+        -key "$keyfile" | \
         openssl x509 \
             -req -sha256 \
             -CA valkey/certs/ca.crt \
@@ -41,7 +49,8 @@ generate_cert() {
             -CAcreateserial \
             -days 365 \
             $opts \
-            -out $certfile
+            -out "$certfile"
+    chmod a+r "$keyfile"
 }
 
 mkdir -p valkey/certs

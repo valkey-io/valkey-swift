@@ -15,8 +15,8 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        #swift: ["swift:6.1", "swift:6.2"]
-        #database: ["valkey/valkey:latest", "redis:latest"]
+        # swift: ["swift:6.1", "swift:6.2"]
+        # database: ["valkey/valkey:latest", "redis:latest"]
         swift: ["swift:6.2"]
         database: ["valkey/valkey:latest"]
     container:
@@ -25,7 +25,7 @@ jobs:
       database:
         image: ${{ matrix.database }}
         options: --name database
-        env: 
+        env:
           VALKEY_EXTRA_FLAGS: "--tls-port 6380 --tls-cert-file /valkey/certs/server.crt --tls-key-file /valkey/certs/server.key --tls-ca-cert-file /valkey/certs/ca.crt"
         ports:
           - 6379:6379
