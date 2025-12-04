@@ -63,3 +63,47 @@ extension BRPOP {
     ///     * [Array]: The key from which the element was popped and the value of the popped element
     public typealias Response = ListEntry?
 }
+
+/// Custom response type for LPOP and RPOP commands
+/// Handles the different return types based on whether count parameter is provided
+@_documentation(visibility: internal)
+public struct ListPopResponse: RESPTokenDecodable, Sendable, Hashable {
+    /// Single element when count was not provided, nil when key doesn't exist or when multiple elements
+    private let _element: ByteBuffer?
+    /// Multiple elements when count was provided, nil when key doesn't exist or single element
+    private let _elements: [ByteBuffer]?
+
+    /// Returns true if no elements were returned (key doesn't exist)
+    public var isEmpty: Bool {
+        _element == nil && _elements == nil
+    }
+
+    /// Gets the single element when count was not provided
+    /// - Returns: ByteBuffer if a single element was returned, nil otherwise
+    public func element() -> ByteBuffer? {
+        return _element
+    }
+
+    /// Gets the multiple elements when count was provided
+    /// - Returns: Array of ByteBuffer if multiple elements were returned, nil otherwise
+    public func elements() -> [ByteBuffer]? {
+        return _elements
+    }
+
+    public init(fromRESP token: RESPToken) throws {
+        switch token.value {
+        case .null:
+            self._element = nil
+            self._elements = nil
+        case .bulkString(let buffer):
+            self._element = buffer
+            self._elements = nil
+        case .array(let array):
+            self._element = nil
+            let decodedElements = try array.decode(as: [ByteBuffer].self)
+            self._elements = decodedElements
+        default:
+            throw RESPDecodeError.tokenMismatch(expected: [.null, .bulkString, .array], token: token)
+        }
+    }
+}
