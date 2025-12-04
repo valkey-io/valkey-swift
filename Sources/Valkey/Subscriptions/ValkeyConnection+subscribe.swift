@@ -74,7 +74,7 @@ extension ValkeyConnection {
         process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> sending Value
     ) async throws -> sending Value {
         try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
-            let keys = subscription.map { ValkeyKey($0.message) }
+            let keys = subscription.map { ValkeyKey(fromBulkString: $0.message) }
             return try await process(keys)
         }
     }

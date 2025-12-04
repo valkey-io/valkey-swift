@@ -64,7 +64,7 @@ public enum XGROUP {
                 "XGROUP",
                 "CREATE",
                 key,
-                RESPBulkString(group),
+                RESPRenderableBulkString(group),
                 idSelector,
                 RESPPureToken("MKSTREAM", mkstream),
                 RESPWithToken("ENTRIESREAD", entriesread)
@@ -92,7 +92,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, RESPBulkString(group), RESPBulkString(consumer))
+            commandEncoder.encodeArray("XGROUP", "CREATECONSUMER", key, RESPRenderableBulkString(group), RESPRenderableBulkString(consumer))
         }
     }
 
@@ -116,7 +116,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, RESPBulkString(group), RESPBulkString(consumer))
+            commandEncoder.encodeArray("XGROUP", "DELCONSUMER", key, RESPRenderableBulkString(group), RESPRenderableBulkString(consumer))
         }
     }
 
@@ -138,7 +138,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "DESTROY", key, RESPBulkString(group))
+            commandEncoder.encodeArray("XGROUP", "DESTROY", key, RESPRenderableBulkString(group))
         }
     }
 
@@ -197,7 +197,7 @@ public enum XGROUP {
         public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XGROUP", "SETID", key, RESPBulkString(group), idSelector, RESPWithToken("ENTRIESREAD", entriesread))
+            commandEncoder.encodeArray("XGROUP", "SETID", key, RESPRenderableBulkString(group), idSelector, RESPWithToken("ENTRIESREAD", entriesread))
         }
     }
 
@@ -226,7 +226,7 @@ public enum XINFO {
         public var isReadOnly: Bool { true }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("XINFO", "CONSUMERS", key, RESPBulkString(group))
+            commandEncoder.encodeArray("XINFO", "CONSUMERS", key, RESPRenderableBulkString(group))
         }
     }
 
@@ -332,7 +332,7 @@ public struct XACK<Group: RESPStringRenderable, Id: RESPStringRenderable>: Valke
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XACK", key, RESPBulkString(group), ids.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("XACK", key, RESPRenderableBulkString(group), ids.map { RESPRenderableBulkString($0) })
     }
 }
 
@@ -428,16 +428,16 @@ public struct XADD<Field: RESPStringRenderable, Value: RESPStringRenderable>: Va
 
         @inlinable
         public var respEntries: Int {
-            RESPBulkString(field).respEntries + RESPBulkString(value).respEntries
+            RESPRenderableBulkString(field).respEntries + RESPRenderableBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPBulkString(field).encode(into: &commandEncoder)
-            RESPBulkString(value).encode(into: &commandEncoder)
+            RESPRenderableBulkString(field).encode(into: &commandEncoder)
+            RESPRenderableBulkString(value).encode(into: &commandEncoder)
         }
     }
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "XADD" }
 
@@ -501,10 +501,10 @@ public struct XAUTOCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRender
         commandEncoder.encodeArray(
             "XAUTOCLAIM",
             key,
-            RESPBulkString(group),
-            RESPBulkString(consumer),
-            RESPBulkString(minIdleTime),
-            RESPBulkString(start),
+            RESPRenderableBulkString(group),
+            RESPRenderableBulkString(consumer),
+            RESPRenderableBulkString(minIdleTime),
+            RESPRenderableBulkString(start),
             RESPWithToken("COUNT", count),
             RESPPureToken("JUSTID", justid)
         )
@@ -562,10 +562,10 @@ public struct XCLAIM<Group: RESPStringRenderable, Consumer: RESPStringRenderable
         commandEncoder.encodeArray(
             "XCLAIM",
             key,
-            RESPBulkString(group),
-            RESPBulkString(consumer),
-            RESPBulkString(minIdleTime),
-            ids.map { RESPBulkString($0) },
+            RESPRenderableBulkString(group),
+            RESPRenderableBulkString(consumer),
+            RESPRenderableBulkString(minIdleTime),
+            ids.map { RESPRenderableBulkString($0) },
             RESPWithToken("IDLE", ms),
             RESPWithToken("TIME", unixTimeMilliseconds.map { Int($0.timeIntervalSince1970 * 1000) }),
             RESPWithToken("RETRYCOUNT", count),
@@ -594,7 +594,7 @@ public struct XDEL<Id: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XDEL", key, ids.map { RESPBulkString($0) })
+        commandEncoder.encodeArray("XDEL", key, ids.map { RESPRenderableBulkString($0) })
     }
 }
 
@@ -670,7 +670,7 @@ public struct XPENDING<Group: RESPStringRenderable>: ValkeyCommand {
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XPENDING", key, RESPBulkString(group), filters)
+        commandEncoder.encodeArray("XPENDING", key, RESPRenderableBulkString(group), filters)
     }
 }
 
@@ -696,7 +696,7 @@ public struct XRANGE<Start: RESPStringRenderable, End: RESPStringRenderable>: Va
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XRANGE", key, RESPBulkString(start), RESPBulkString(end), RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("XRANGE", key, RESPRenderableBulkString(start), RESPRenderableBulkString(end), RESPWithToken("COUNT", count))
     }
 }
 
@@ -715,13 +715,13 @@ public struct XREAD<Id: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            keys.respEntries + ids.map { RESPBulkString($0) }.respEntries
+            keys.respEntries + ids.map { RESPRenderableBulkString($0) }.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             keys.encode(into: &commandEncoder)
-            ids.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+            ids.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
         }
     }
     @inlinable public static var name: String { "XREAD" }
@@ -762,13 +762,13 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 
         @inlinable
         public var respEntries: Int {
-            RESPBulkString(group).respEntries + RESPBulkString(consumer).respEntries
+            RESPRenderableBulkString(group).respEntries + RESPRenderableBulkString(consumer).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            RESPBulkString(group).encode(into: &commandEncoder)
-            RESPBulkString(consumer).encode(into: &commandEncoder)
+            RESPRenderableBulkString(group).encode(into: &commandEncoder)
+            RESPRenderableBulkString(consumer).encode(into: &commandEncoder)
         }
     }
     public struct Streams: RESPRenderable, Sendable, Hashable {
@@ -783,13 +783,13 @@ public struct XREADGROUP<Group: RESPStringRenderable, Consumer: RESPStringRender
 
         @inlinable
         public var respEntries: Int {
-            keys.respEntries + ids.map { RESPBulkString($0) }.respEntries
+            keys.respEntries + ids.map { RESPRenderableBulkString($0) }.respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             keys.encode(into: &commandEncoder)
-            ids.map { RESPBulkString($0) }.encode(into: &commandEncoder)
+            ids.map { RESPRenderableBulkString($0) }.encode(into: &commandEncoder)
         }
     }
     @inlinable public static var name: String { "XREADGROUP" }
@@ -846,7 +846,7 @@ public struct XREVRANGE<End: RESPStringRenderable, Start: RESPStringRenderable>:
     public var isReadOnly: Bool { true }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("XREVRANGE", key, RESPBulkString(end), RESPBulkString(start), RESPWithToken("COUNT", count))
+        commandEncoder.encodeArray("XREVRANGE", key, RESPRenderableBulkString(end), RESPRenderableBulkString(start), RESPWithToken("COUNT", count))
     }
 }
 
@@ -873,7 +873,7 @@ public struct XSETID<LastId: RESPStringRenderable>: ValkeyCommand {
         commandEncoder.encodeArray(
             "XSETID",
             key,
-            RESPBulkString(lastId),
+            RESPRenderableBulkString(lastId),
             RESPWithToken("ENTRIESADDED", entriesAdded),
             RESPWithToken("MAXDELETEDID", maxDeletedId)
         )
@@ -929,14 +929,15 @@ public struct XTRIM<Threshold: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            strategy.respEntries + `operator`.respEntries + RESPBulkString(threshold).respEntries + RESPWithToken("LIMIT", count).respEntries
+            strategy.respEntries + `operator`.respEntries + RESPRenderableBulkString(threshold).respEntries
+                + RESPWithToken("LIMIT", count).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             strategy.encode(into: &commandEncoder)
             `operator`.encode(into: &commandEncoder)
-            RESPBulkString(threshold).encode(into: &commandEncoder)
+            RESPRenderableBulkString(threshold).encode(into: &commandEncoder)
             RESPWithToken("LIMIT", count).encode(into: &commandEncoder)
         }
     }
@@ -992,7 +993,7 @@ extension ValkeyClientProtocol {
         trim: XADD<Field, Value>.Trim? = nil,
         idSelector: XADD<Field, Value>.IdSelector,
         data: [XADD<Field, Value>.Data]
-    ) async throws -> ByteBuffer? {
+    ) async throws -> RESPBulkString? {
         try await execute(XADD(key, nomkstream: nomkstream, trim: trim, idSelector: idSelector, data: data))
     }
 
