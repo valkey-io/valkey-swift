@@ -140,12 +140,10 @@ extension ValkeyNodeClient {
     /// Get connection from connection pool and run operation using connection
     ///
     /// - Parameters:
-    ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
     public func withConnection<Value>(
-        isolation: isolated (any Actor)? = #isolation,
-        operation: (ValkeyConnection) async throws -> sending Value
+        operation: (ValkeyConnection) async throws -> Value
     ) async throws -> Value {
         let lease = try await self.connectionPool.leaseConnection()
         defer { lease.release() }
