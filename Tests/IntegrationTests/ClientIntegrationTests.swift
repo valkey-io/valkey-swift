@@ -10,6 +10,7 @@ import Logging
 import NIOCore
 import Testing
 import Valkey
+import _ValkeyConnectionPool
 
 @testable import Valkey
 
@@ -627,4 +628,23 @@ struct ClientIntegratedTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testTriggerGracefulShutdown() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .trace
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            async let result = client.blpop(keys: ["sdfdsf"], timeout: 1)
+            try await Task.sleep(for: .milliseconds(100))
+            client.node.triggerGracefulShutdown()
+            try await Task.sleep(for: .milliseconds(100))
+            do {
+                _ = try await client.hello()
+            } catch let error as ConnectionPoolError where error == .poolShutdown {
+
+            }
+            let response = try await result
+            #expect(response == nil)
+        }
+    }
 }

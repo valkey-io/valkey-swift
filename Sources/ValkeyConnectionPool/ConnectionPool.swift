@@ -42,6 +42,17 @@ public protocol PooledConnection: AnyObject, Sendable {
     /// closures that were registered in `onClose` must be
     /// invoked.
     func close()
+
+    /// Trigger a graceful shutdown of the running connection. Once the close has completed
+    /// closures that were registered in `onClose` must be
+    /// invoked.
+    func triggerGracefulShutdown()
+}
+
+extension PooledConnection {
+    public func triggerGracefulShutdown() {
+        self.close()
+    }
 }
 
 /// A connection id generator. Its returned connection IDs will
@@ -298,6 +309,13 @@ where
         self.runStateMachineActions(actions)
     }
 
+    public func triggerGracefulShutdown() {
+        let actions = self.stateBox.withLockedValue { state in
+            state.stateMachine.triggerGracefulShutdown()
+        }
+        self.runStateMachineActions(actions)
+    }
+
     // MARK: - Private Methods -
 
     @inlinable
@@ -394,6 +412,12 @@ where
             self.closeConnection(connection)
             self.cancelTimers(timers)
 
+        case .gracefulShutdown(let cleanup):
+            for connection in cleanup.connections {
+                self.triggerGracefulShutdownOfConnection(connection)
+            }
+            self.cancelTimers(cleanup.timersToCancel)
+
         case .shutdown(let cleanup):
             for connection in cleanup.connections {
                 self.closeConnection(connection)
@@ -402,6 +426,7 @@ where
 
         case .none:
             break
+
         }
     }
 
@@ -502,6 +527,13 @@ where
         self.observabilityDelegate.connectionClosing(id: connection.id)
 
         connection.close()
+    }
+
+    @inlinable
+    /*private*/ func triggerGracefulShutdownOfConnection(_ connection: Connection) {
+        self.observabilityDelegate.connectionClosing(id: connection.id)
+
+        connection.triggerGracefulShutdown()
     }
 
     @usableFromInline

@@ -167,10 +167,13 @@ public final actor ValkeyConnection: ValkeyClientProtocol, Sendable {
 
     /// Trigger graceful shutdown of connection
     ///
-    /// The connection will wait until all pending commands have been processed before
-    /// closing the connection.
-    func triggerGracefulShutdown() {
-        self.channelHandler.triggerGracefulShutdown()
+    /// The connection will close once all inflight commands have finished
+    public nonisolated func triggerGracefulShutdown() {
+        self.channel.eventLoop.execute {
+            self.assumeIsolated { this in
+                this.channelHandler.triggerGracefulShutdown()
+            }
+        }
     }
 
     /// Send RESP command to Valkey connection

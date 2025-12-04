@@ -296,8 +296,7 @@ extension ValkeyNodeClient: ValkeyNodeConnectionPool {
     /// If not implemented, it falls back to force shutdown.
     @usableFromInline
     package func triggerGracefulShutdown() {
-        // TODO: Implement graceful shutdown
-        self.triggerForceShutdown()
+        self.connectionPool.triggerGracefulShutdown()
     }
 }
 
