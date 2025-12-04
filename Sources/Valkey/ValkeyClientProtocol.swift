@@ -54,7 +54,7 @@ public protocol ValkeyClientProtocol: Sendable {
     /// ``ValkeyClientProtocol/psubscribe(to:process:)``
     func _subscribe<Value>(
         command: some ValkeySubscribeCommand,
-        process: nonisolated(nonsending) (Subscription) async throws -> Value
+        process: (Subscription) async throws -> Value
     ) async throws -> Value
 }
 
@@ -93,7 +93,7 @@ extension ValkeyClientProtocol {
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public nonisolated(nonsending) func subscribe<Value>(
+    public func subscribe<Value>(
         to channels: [String],
         process: (Subscription) async throws -> Value
     ) async throws -> Value {
