@@ -69,7 +69,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Parameters:
     ///   - channels: list of channels to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -89,7 +88,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Parameters:
     ///   - channels: list of channels to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -112,7 +110,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Parameters:
     ///   - patterns: list of channel patterns to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
@@ -132,7 +129,6 @@ extension ValkeyClientProtocol {
     ///
     /// - Parameters:
     ///   - patterns: list of channel patterns to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable

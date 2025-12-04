@@ -117,7 +117,6 @@ extension ValkeyClient {
     /// Get connection from connection pool and run operation using connection
     ///
     /// - Parameters:
-    ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
     @inlinable
