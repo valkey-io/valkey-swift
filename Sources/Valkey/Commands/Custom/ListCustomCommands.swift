@@ -81,13 +81,13 @@ public struct ListPopResponse: RESPTokenDecodable, Sendable, Hashable {
     /// Gets the single element when count was not provided
     /// - Returns: ByteBuffer if a single element was returned, nil otherwise
     public func element() -> ByteBuffer? {
-        return _element
+        _element
     }
 
     /// Gets the multiple elements when count was provided
     /// - Returns: Array of ByteBuffer if multiple elements were returned, nil otherwise
     public func elements() -> [ByteBuffer]? {
-        return _elements
+        _elements
     }
 
     public init(fromRESP token: RESPToken) throws {
