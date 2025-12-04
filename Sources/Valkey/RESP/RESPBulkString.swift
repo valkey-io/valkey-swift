@@ -89,6 +89,18 @@ public struct RESPBulkString: Sendable, Equatable, Hashable, RandomAccessCollect
     public func _failEarlyRangeCheck(_ range: Range<Index>, bounds: Range<Index>) {}
 }
 
+#if compiler(>=6.2)
+extension RESPBulkString {
+    public var span: RawSpan {
+        @_lifetime(borrow self)
+        borrowing get {
+            let span = self.buffer.readableBytesSpan
+            return _overrideLifetime(span, borrowing: self)
+        }
+    }
+}
+#endif
+
 extension RESPBulkString: RESPTokenDecodable {
     @inlinable
     public init(fromRESP token: RESPToken) throws {
@@ -106,14 +118,14 @@ extension RESPBulkString: RESPStringRenderable {
 
 extension String {
     @inlinable
-    public init(fromBulkString bulkString: RESPBulkString) {
+    public init(_ bulkString: RESPBulkString) {
         self.init(buffer: bulkString.buffer)
     }
 }
 
 extension ByteBuffer {
     @inlinable
-    public init(fromBulkString bulkString: RESPBulkString) {
+    public init(_ bulkString: RESPBulkString) {
         self = bulkString.buffer
     }
 }

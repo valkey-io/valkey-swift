@@ -30,7 +30,7 @@ struct ConnectionTests {
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
         try await channel.processHello()
 
-        async let fooResult = connection.get("foo").map { String(fromBulkString: $0) }
+        async let fooResult = connection.get("foo").map { String($0) }
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
@@ -215,7 +215,7 @@ struct ConnectionTests {
         try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
         try await channel.writeInbound(RESPToken(.bulkString("bar")).base)
 
-        #expect(try await results.1.get().map { String(fromBulkString: $0) } == "bar")
+        #expect(try await results.1.get().map { String($0) } == "bar")
     }
 
     @Test
@@ -432,7 +432,7 @@ struct ConnectionTests {
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
                 await #expect(throws: ValkeyClientError(.cancelled)) {
-                    _ = try await connection.get("foo").map { String(fromBulkString: $0) }
+                    _ = try await connection.get("foo").map { String($0) }
                 }
             }
             _ = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
@@ -454,7 +454,7 @@ struct ConnectionTests {
             group.cancelAll()
             group.addTask {
                 await #expect(throws: ValkeyClientError(.cancelled)) {
-                    _ = try await connection.get("foo").map { String(fromBulkString: $0) }
+                    _ = try await connection.get("foo").map { String($0) }
                 }
             }
         }
@@ -473,13 +473,13 @@ struct ConnectionTests {
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask {
                 await #expect(throws: ValkeyClientError(.connectionClosedDueToCancellation)) {
-                    _ = try await connection.get("foo").map { String(fromBulkString: $0) }
+                    _ = try await connection.get("foo").map { String($0) }
                 }
             }
             try await withThrowingTaskGroup(of: Void.self) { group in
                 group.addTask {
                     await #expect(throws: ValkeyClientError(.cancelled)) {
-                        _ = try await connection.get("foo").map { String(fromBulkString: $0) }
+                        _ = try await connection.get("foo").map { String($0) }
                     }
                 }
                 // wait for outbound write from both tasks
@@ -595,7 +595,7 @@ struct ConnectionTests {
         let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: .init(), logger: logger)
         try await channel.processHello()
 
-        async let fooResult = connection.get("foo").map { String(fromBulkString: $0) }
+        async let fooResult = connection.get("foo").map { String($0) }
 
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
@@ -624,7 +624,7 @@ struct ConnectionTests {
             let connection = try await ValkeyConnection.setupChannelAndConnect(channel, configuration: config, logger: logger)
             try await channel.processHello()
 
-            async let fooResult = connection.get("foo").map { String(fromBulkString: $0) }
+            async let fooResult = connection.get("foo").map { String($0) }
 
             let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
             #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
@@ -758,7 +758,7 @@ struct ConnectionTests {
             try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
             try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
 
-            #expect(try await results.1.get().map { String(fromBulkString: $0) } == "OK")
+            #expect(try await results.1.get().map { String($0) } == "OK")
 
             #expect(tracer.finishedSpans.count == 1)
             let span = try #require(tracer.finishedSpans.first)
@@ -801,7 +801,7 @@ struct ConnectionTests {
             try await channel.writeInbound(RESPToken(.simpleString("OK")).base)
             try await channel.writeInbound(RESPToken(.bulkString("bar")).base)
 
-            #expect(try await results.1.get().map { String(fromBulkString: $0) } == "bar")
+            #expect(try await results.1.get().map { String($0) } == "bar")
 
             #expect(tracer.finishedSpans.count == 1)
             let span = try #require(tracer.finishedSpans.first)

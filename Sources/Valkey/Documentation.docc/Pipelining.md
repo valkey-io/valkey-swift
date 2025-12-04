@@ -18,7 +18,7 @@ let (_,_, getResult) = await valkeyClient.execute(
 )
 // get returns an optional ByteBuffer
 if let result = try getResult.get() {
-    print(String(fromBulkString: result)) // should print 101
+    print(String(result)) // should print 101
 }
 ```
 
@@ -37,7 +37,7 @@ let results = await valkeyClient.execute(commands)
 // get result and decode. We decode as an optional String
 // to avoid an error being thrown if the response is a null token
 if let value = results[2].get() {
-    print(String(fromBulkString: result))
+    print(String(result))
 }
 ```
 

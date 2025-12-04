@@ -31,8 +31,8 @@ struct PubSubIntegratedTests {
                         try await connection.subscribe(to: "testSubscriptions") { subscription in
                             cont.finish()
                             var iterator = subscription.makeAsyncIterator()
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "goodbye" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                         }
                         #expect(await connection.isSubscriptionsEmpty())
                     }
@@ -64,14 +64,14 @@ struct PubSubIntegratedTests {
                             try await connection.subscribe(to: "testDoubleSubscription") { stream2 in
                                 var iterator2 = stream2.makeAsyncIterator()
                                 cont.yield()
-                                await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
-                                await #expect(throws: Never.self) { try await iterator2.next().map { String(fromBulkString: $0.message) } == "hello" }
+                                await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                                await #expect(throws: Never.self) { try await iterator2.next().map { String($0.message) } == "hello" }
                                 // ensure we only see the message once, by waiting for second message.
-                                await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "world" }
-                                await #expect(throws: Never.self) { try await iterator2.next().map { String(fromBulkString: $0.message) } == "world" }
+                                await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "world" }
+                                await #expect(throws: Never.self) { try await iterator2.next().map { String($0.message) } == "world" }
                             }
                             cont.yield()
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "!" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "!" }
                         }
                         #expect(await connection.isSubscriptionsEmpty())
                     }
@@ -103,8 +103,8 @@ struct PubSubIntegratedTests {
                                 var iterator = stream.makeAsyncIterator()
                                 var iterator2 = stream2.makeAsyncIterator()
                                 cont.finish()
-                                await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
-                                await #expect(throws: Never.self) { try await iterator2.next().map { String(fromBulkString: $0.message) } == "goodbye" }
+                                await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                                await #expect(throws: Never.self) { try await iterator2.next().map { String($0.message) } == "goodbye" }
                             }
                         }
                         #expect(await connection.isSubscriptionsEmpty())
@@ -134,9 +134,9 @@ struct PubSubIntegratedTests {
                         try await connection.subscribe(to: "multi1", "multi2", "multi3") { stream in
                             var iterator = stream.makeAsyncIterator()
                             cont.yield()
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "1" }
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "2" }
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "3" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "1" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "2" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "3" }
                         }
                         #expect(await connection.isSubscriptionsEmpty())
                     }
@@ -261,15 +261,15 @@ struct PubSubIntegratedTests {
                         try await connection.subscribe(to: "testSubscriptionAndCommandOnSameConnection") { subscription in
                             cont.finish()
                             var iterator = subscription.makeAsyncIterator()
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
                             // test we can send commands on subscription connection
                             try await withKey(connection: connection) { key in
                                 try await connection.set(key, value: "Hello")
                                 let response = try await connection.get(key)
-                                #expect(response.map { String(fromBulkString: $0) } == "Hello")
+                                #expect(response.map { String($0) } == "Hello")
                             }
 
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "goodbye" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                         }
                         #expect(await connection.isSubscriptionsEmpty())
                     }
@@ -328,10 +328,10 @@ struct PubSubIntegratedTests {
                         var iterator = subscription.makeAsyncIterator()
                         var value = try await iterator.next()
                         #expect(value?.channel == "__keyspace@0__:\(key)")
-                        #expect(value.map { String(fromBulkString: $0.message) } == "set")
+                        #expect(value.map { String($0.message) } == "set")
                         value = try await iterator.next()
                         #expect(value?.channel == "__keyspace@0__:\(key)")
-                        #expect(value.map { String(fromBulkString: $0.message) } == "incrby")
+                        #expect(value.map { String($0.message) } == "incrby")
                     }
                 }
             }
@@ -350,8 +350,8 @@ struct PubSubIntegratedTests {
                     try await client.subscribe(to: "testSubscriptions") { subscription in
                         cont.finish()
                         var iterator = subscription.makeAsyncIterator()
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "goodbye" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
                 }
                 try await client.withConnection { connection in
@@ -372,8 +372,8 @@ struct PubSubIntegratedTests {
             try await client.subscribe(to: "testSubscriptions") { subscription in
                 cont.finish()
                 var iterator = subscription.makeAsyncIterator()
-                await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
-                await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "goodbye" }
+                await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
             }
         }
         let (stream, cont) = AsyncStream.makeStream(of: Void.self)
@@ -385,8 +385,8 @@ struct PubSubIntegratedTests {
                     try await client.subscribe(to: "testSubscriptions") { subscription in
                         cont.finish()
                         var iterator = subscription.makeAsyncIterator()
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "goodbye" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
                 }
                 try await client.withConnection { connection in
@@ -412,8 +412,8 @@ struct PubSubIntegratedTests {
                     try await client.subscribe(to: "testSubscriptions") { subscription in
                         cont.yield()
                         var iterator = subscription.makeAsyncIterator()
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "goodbye" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
                     client.node.subscriptionConnectionStateMachine.withLock { stateMachine in
                         #expect(stateMachine.isEmpty() == true)
@@ -421,8 +421,8 @@ struct PubSubIntegratedTests {
                     try await client.subscribe(to: "testSubscriptions") { subscription in
                         cont.finish()
                         var iterator = subscription.makeAsyncIterator()
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "hello" }
-                        await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "goodbye" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "hello" }
+                        await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "goodbye" }
                     }
                     client.node.subscriptionConnectionStateMachine.withLock { stateMachine in
                         #expect(stateMachine.isEmpty() == true)
@@ -457,9 +457,9 @@ struct PubSubIntegratedTests {
                         try await client.subscribe(to: ["sub\(i)", "sub\(i+1)"]) { subscription in
                             cont.yield()
                             var iterator = subscription.makeAsyncIterator()
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "\(i)" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "\(i)" }
                             client.logger.info("Received \(i): \(i)")
-                            await #expect(throws: Never.self) { try await iterator.next().map { String(fromBulkString: $0.message) } == "\(i+1)" }
+                            await #expect(throws: Never.self) { try await iterator.next().map { String($0.message) } == "\(i+1)" }
                             client.logger.info("Received \(i): \(i+1)")
                         }
                     }

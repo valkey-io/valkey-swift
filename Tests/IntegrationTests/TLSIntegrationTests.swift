@@ -68,9 +68,9 @@ struct TLSIntegratedTests {
         ) { connection in
             try await withKey(connection: connection) { key in
                 try await connection.set(key, value: "Hello")
-                let response = try await connection.get(key).map { String(fromBulkString: $0) }
+                let response = try await connection.get(key).map { String($0) }
                 #expect(response == "Hello")
-                let response2 = try await connection.get("sdf65fsdf").map { String(fromBulkString: $0) }
+                let response2 = try await connection.get("sdf65fsdf").map { String($0) }
                 #expect(response2 == nil)
             }
         }

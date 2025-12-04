@@ -116,7 +116,7 @@ struct CommandIntegratedTests {
                     #expect(list2Before == [])
                     for expectedValue in ["a", "b", "c", "d"] {
                         let rt = try #require(try await client.lmove(source: key, destination: key2, wherefrom: .right, whereto: .left))
-                        let value = String(fromBulkString: rt)
+                        let value = String(rt)
                         #expect(value == expectedValue)
                     }
                     let list1After = try await client.lrange(key, start: 0, stop: -1).decode(as: [String].self)
@@ -248,7 +248,7 @@ struct CommandIntegratedTests {
                 response = try await client.hrandfield(key)
                 singleField = try response.singleField()
                 #expect(singleField != nil)
-                let fieldName = String(fromBulkString: singleField!)
+                let fieldName = String(singleField!)
                 #expect(["field1", "field2", "field3"].contains(fieldName))
 
                 // Get multiple fields
@@ -258,7 +258,7 @@ struct CommandIntegratedTests {
                 #expect(multipleFields != nil)
                 if let unwrappedFields = multipleFields {
                     #expect(unwrappedFields.count == 2)
-                    let fieldNames = unwrappedFields.map { String(fromBulkString: $0) }
+                    let fieldNames = unwrappedFields.map { String($0) }
                     for fieldName in fieldNames {
                         #expect(["field1", "field2", "field3"].contains(fieldName))
                     }
@@ -276,7 +276,7 @@ struct CommandIntegratedTests {
                     #expect(unwrappedFieldValuePairs.count == 3)
                     var expectedPairs: [String: String] = [:]
                     for pair in unwrappedFieldValuePairs {
-                        expectedPairs[String(fromBulkString: pair.field)] = String(fromBulkString: pair.value)
+                        expectedPairs[String(pair.field)] = String(pair.value)
                     }
                     #expect(expectedPairs["field1"] == "value1")
                     #expect(expectedPairs["field2"] == "value2")
