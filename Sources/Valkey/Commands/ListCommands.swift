@@ -367,7 +367,7 @@ public struct LMPOP: ValkeyCommand {
 /// Returns and removes one or more elements from the beginning of a list. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct LPOP: ValkeyCommand {
-    public typealias Response = RESPToken?
+    public typealias Response = ListPopResponse?
 
     @inlinable public static var name: String { "LPOP" }
 
@@ -564,7 +564,7 @@ public struct LTRIM: ValkeyCommand {
 /// Returns and removes one or more elements from the end of a list. Deletes the list if the last element was popped.
 @_documentation(visibility: internal)
 public struct RPOP: ValkeyCommand {
-    public typealias Response = RESPToken?
+    public typealias Response = ListPopResponse?
 
     @inlinable public static var name: String { "RPOP" }
 
@@ -817,7 +817,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: In case `count` argument was given, a list of popped elements
     @inlinable
     @discardableResult
-    public func lpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func lpop(_ key: ValkeyKey, count: Int? = nil) async throws -> LPOP.Response {
         try await execute(LPOP(key, count: count))
     }
 
@@ -925,7 +925,7 @@ extension ValkeyClientProtocol {
     ///     * [Array]: When 'COUNT' was given, list of popped elements.
     @inlinable
     @discardableResult
-    public func rpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RESPToken? {
+    public func rpop(_ key: ValkeyKey, count: Int? = nil) async throws -> RPOP.Response {
         try await execute(RPOP(key, count: count))
     }
 
