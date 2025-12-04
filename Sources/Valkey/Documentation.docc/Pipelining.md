@@ -36,8 +36,8 @@ commands.append(GET("foo"))
 let results = await valkeyClient.execute(commands)
 // get result and decode. We decode as an optional String
 // to avoid an error being thrown if the response is a null token
-if let value = results[2].get() {
-    print(String(result))
+if let value = results[2].get().decode(as: String?.self) {
+    print(value)
 }
 ```
 
