@@ -88,6 +88,7 @@ struct PoolStateMachine<
         case runKeepAlive(Connection, TimerCancellationToken?)
         case cancelTimers(TinyFastSequence<TimerCancellationToken>)
         case closeConnection(Connection, Max2Sequence<TimerCancellationToken>)
+        case gracefulShutdown(Shutdown)
         case shutdown(Shutdown)
 
         case none
@@ -431,7 +432,27 @@ struct PoolStateMachine<
     }
 
     mutating func triggerGracefulShutdown() -> Action {
-        fatalError("Unimplemented")
+        switch self.poolState {
+        case .running:
+            self.poolState = .shuttingDown(graceful: false)
+            var shutdown = ConnectionAction.Shutdown()
+            self.connections.triggerForceShutdown(&shutdown)
+
+            if shutdown.connections.isEmpty {
+                self.poolState = .shutDown
+            }
+
+            return .init(
+                request: .failRequests(self.requestQueue.removeAll(), ConnectionPoolError.poolShutdown),
+                connection: .gracefulShutdown(shutdown)
+            )
+
+        case .shuttingDown:
+            return .none()
+
+        case .shutDown:
+            return .init(request: .none, connection: .none)
+        }
     }
 
     @usableFromInline

@@ -600,7 +600,7 @@ struct ConnectionTests {
         let outbound = try await channel.waitForOutboundWrite(as: ByteBuffer.self)
         #expect(outbound == RESPToken(.command(["GET", "foo"])).base)
 
-        await connection.triggerGracefulShutdown()
+        connection.triggerGracefulShutdown()
         #expect(channel.isActive)
 
         try await channel.writeInbound(RESPToken(.bulkString("Bar")).base)
