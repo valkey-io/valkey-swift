@@ -12,7 +12,7 @@ import NIOCore
 @_documentation(visibility: internal)
 public struct ListEntry: RESPTokenDecodable, Sendable {
     public let key: ValkeyKey
-    public let value: ByteBuffer
+    public let value: RESPBulkString
 
     public init(fromRESP token: RESPToken) throws {
         (self.key, self.value) = try token.decodeArrayElements()
@@ -20,7 +20,7 @@ public struct ListEntry: RESPTokenDecodable, Sendable {
 }
 
 extension LMOVE {
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 }
 
 extension LMPOP {

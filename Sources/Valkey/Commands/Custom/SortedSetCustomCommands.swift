@@ -10,10 +10,10 @@ import NIOCore
 /// Sorted set entry
 @_documentation(visibility: internal)
 public struct SortedSetEntry: RESPTokenDecodable, Sendable {
-    public let value: ByteBuffer
+    public let value: RESPBulkString
     public let score: Double
 
-    init(value: ByteBuffer, score: Double) {
+    init(value: RESPBulkString, score: Double) {
         self.value = value
         self.score = score
     }
@@ -94,8 +94,8 @@ extension ZSCAN {
 
             /// if ZSCAN was called with the `NOSCORES` parameter use this
             /// function to get an array of members
-            public func withoutScores() throws -> [ByteBuffer] {
-                try self.elements.decode(as: [ByteBuffer].self)
+            public func withoutScores() throws -> [RESPBulkString] {
+                try self.elements.decode(as: [RESPBulkString].self)
             }
 
             /// if ZSCAN was called without the `NOSCORES` parameter use this
@@ -103,7 +103,7 @@ extension ZSCAN {
             public func withScores() throws -> [SortedSetEntry] {
                 var array: [SortedSetEntry] = []
                 for respElement in try self.elements.asMap() {
-                    let value = try ByteBuffer(fromRESP: respElement.key)
+                    let value = try RESPBulkString(fromRESP: respElement.key)
                     let score = try Double(fromRESP: respElement.value)
                     array.append(.init(value: value, score: score))
                 }

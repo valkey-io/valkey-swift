@@ -10,10 +10,10 @@ import NIOCore
 /// Sorted set entry
 @_documentation(visibility: internal)
 public struct HashEntry: RESPTokenDecodable, Sendable {
-    public let field: ByteBuffer
-    public let value: ByteBuffer
+    public let field: RESPBulkString
+    public let value: RESPBulkString
 
-    init(field: ByteBuffer, value: ByteBuffer) {
+    init(field: RESPBulkString, value: RESPBulkString) {
         self.field = field
         self.value = value
     }
@@ -40,8 +40,8 @@ extension HSCAN {
 
             /// if HSCAN was called with the `NOVALUES` parameter use this
             /// function to get an array of fields
-            public func withoutValues() throws -> [ByteBuffer] {
-                try self.elements.decode(as: [ByteBuffer].self)
+            public func withoutValues() throws -> [RESPBulkString] {
+                try self.elements.decode(as: [RESPBulkString].self)
             }
 
             /// if HSCAN was called without the `NOVALUES` parameter use this
@@ -49,8 +49,8 @@ extension HSCAN {
             public func withValues() throws -> [HashEntry] {
                 var array: [HashEntry] = []
                 for respElement in try self.elements.asMap() {
-                    let field = try ByteBuffer(fromRESP: respElement.key)
-                    let value = try ByteBuffer(fromRESP: respElement.value)
+                    let field = try RESPBulkString(fromRESP: respElement.key)
+                    let value = try RESPBulkString(fromRESP: respElement.value)
                     array.append(.init(field: field, value: value))
                 }
                 return array
@@ -78,22 +78,22 @@ extension HRANDFIELD {
         }
 
         /// Get single random field when HRANDFIELD was called without COUNT
-        /// - Returns: Random field name as ByteBuffer, or nil if key doesn't exist
+        /// - Returns: Random field name as RESPBulkString, or nil if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
-        public func singleField() throws -> ByteBuffer? {
+        public func singleField() throws -> RESPBulkString? {
             // Handle .null as it is expected when the key doesn't exist
             if token.value == .null {
                 return nil
             }
-            return try ByteBuffer(fromRESP: token)
+            return try RESPBulkString(fromRESP: token)
         }
 
         /// Get multiple random fields when HRANDFIELD was called with COUNT but without WITHVALUES
-        /// - Returns: Array of field names as ByteBuffer, or empty array if key doesn't exist
+        /// - Returns: Array of field names as RESPBulkString, or empty array if key doesn't exist
         /// - Throws: RESPDecodeError if response format is unexpected
         @inlinable
-        public func multipleFields() throws -> [ByteBuffer]? {
-            try [ByteBuffer]?(fromRESP: token)
+        public func multipleFields() throws -> [RESPBulkString]? {
+            try [RESPBulkString]?(fromRESP: token)
         }
 
         /// Get multiple random field-value pairs when HRANDFIELD was called with COUNT and WITHVALUES
@@ -141,8 +141,8 @@ extension HRANDFIELD {
             // Iterate over pairs
             var iterator = array.makeIterator()
             while let field = iterator.next(), let value = iterator.next() {
-                let fieldBuffer = try ByteBuffer(fromRESP: field)
-                let valueBuffer = try ByteBuffer(fromRESP: value)
+                let fieldBuffer = try RESPBulkString(fromRESP: field)
+                let valueBuffer = try RESPBulkString(fromRESP: value)
                 entries.append(HashEntry(field: fieldBuffer, value: valueBuffer))
             }
 

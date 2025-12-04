@@ -59,7 +59,7 @@ extension FUNCTION.STATS {
 
         public struct Script: RESPTokenDecodable, Sendable {
             public let name: String
-            public let command: [ByteBuffer]
+            public let command: [RESPBulkString]
             public let durationInMilliseconds: Double
 
             public init(fromRESP token: RESPToken) throws {
