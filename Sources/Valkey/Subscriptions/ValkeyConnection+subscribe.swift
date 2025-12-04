@@ -21,9 +21,9 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public nonisolated(nonsending) func ssubscribe<Value>(
+    public func ssubscribe<Value>(
         to shardchannels: String...,
-        process: nonisolated(nonsending) (ValkeySubscription) async throws -> Value
+        process: (ValkeySubscription) async throws -> Value
     ) async throws -> Value {
         try await self.ssubscribe(to: shardchannels, process: process)
     }
@@ -40,9 +40,9 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public nonisolated(nonsending) func ssubscribe<Value>(
+    public func ssubscribe<Value>(
         to shardchannels: [String],
-        process: nonisolated(nonsending) (ValkeySubscription) async throws -> Value
+        process: (ValkeySubscription) async throws -> Value
     ) async throws -> Value {
         try await self._subscribe(
             command: SSUBSCRIBE(shardchannels: shardchannels),
@@ -63,8 +63,8 @@ extension ValkeyConnection {
     ///   - process: Closure that is called with async sequence of key invalidations
     /// - Returns: Return value of closure
     @inlinable
-    public nonisolated(nonsending) func subscribeKeyInvalidations<Value>(
-        process: nonisolated(nonsending) (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> Value
+    public func subscribeKeyInvalidations<Value>(
+        process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> Value
     ) async throws -> Value {
         try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
             let keys = subscription.map { ValkeyKey($0.message) }
