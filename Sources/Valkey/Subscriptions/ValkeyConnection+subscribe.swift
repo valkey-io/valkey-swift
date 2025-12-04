@@ -18,15 +18,13 @@ extension ValkeyConnection {
     ///
     /// - Parameters:
     ///   - shardchannels: list of shard channels to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public func ssubscribe<Value>(
+    public nonisolated(nonsending) func ssubscribe<Value>(
         to shardchannels: String...,
-        isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
+        process: nonisolated(nonsending) (ValkeySubscription) async throws -> Value
+    ) async throws -> Value {
         try await self.ssubscribe(to: shardchannels, process: process)
     }
 
@@ -39,18 +37,15 @@ extension ValkeyConnection {
     ///
     /// - Parameters:
     ///   - shardchannels: list of shard channels to subscribe to
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with subscription async sequence
     /// - Returns: Return value of closure
     @inlinable
-    public func ssubscribe<Value>(
+    public nonisolated(nonsending) func ssubscribe<Value>(
         to shardchannels: [String],
-        isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
+        process: nonisolated(nonsending) (ValkeySubscription) async throws -> Value
+    ) async throws -> Value {
         try await self._subscribe(
             command: SSUBSCRIBE(shardchannels: shardchannels),
-            isolation: isolation,
             process: process
         )
     }
@@ -65,14 +60,12 @@ extension ValkeyConnection {
     /// channel
     ///
     /// - Parameters:
-    ///   - isolation: Actor isolation
     ///   - process: Closure that is called with async sequence of key invalidations
     /// - Returns: Return value of closure
     @inlinable
-    public func subscribeKeyInvalidations<Value>(
-        isolation: isolated (any Actor)? = #isolation,
-        process: (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> sending Value
-    ) async throws -> sending Value {
+    public nonisolated(nonsending) func subscribeKeyInvalidations<Value>(
+        process: nonisolated(nonsending) (AsyncMapSequence<ValkeySubscription, ValkeyKey>) async throws -> Value
+    ) async throws -> Value {
         try await self.subscribe(to: [ValkeySubscriptions.invalidateChannel]) { subscription in
             let keys = subscription.map { ValkeyKey($0.message) }
             return try await process(keys)
@@ -83,15 +76,14 @@ extension ValkeyConnection {
     /// AsyncSequence
     ///
     /// This should not be called directly, used the related commands
-    /// ``ValkeyConnection/subscribe(to:isolation:process:)`` or
-    /// ``ValkeyConnection/psubscribe(to:isolation:process:)``
+    /// ``ValkeyConnection/subscribe(to:process:)`` or
+    /// ``ValkeyConnection/psubscribe(to:process:)``
     @inlinable
-    public func _subscribe<Value>(
+    public nonisolated(nonsending) func _subscribe<Value>(
         command: some ValkeySubscribeCommand,
-        isolation: isolated (any Actor)? = #isolation,
-        process: (ValkeySubscription) async throws -> sending Value
-    ) async throws -> sending Value {
-        let (id, stream) = try await subscribe(command: command, filters: command.filters)
+        process: nonisolated(nonsending) (ValkeySubscription) async throws -> Value
+    ) async throws -> Value {
+        let (id, stream) = try await self.subscribe(command: command, filters: command.filters)
         let value: Value
         do {
             value = try await process(stream)
@@ -120,7 +112,7 @@ extension ValkeyConnection {
         if Task.isCancelled {
             throw ValkeyClientError(.cancelled)
         }
-        let subscriptionID: Int = try await withCheckedThrowingContinuation { continuation in
+        let subscriptionID: Int = try await withCheckedThrowingContinuation(isolation: self) { continuation in
             self.channelHandler.subscribe(
                 command: command,
                 streamContinuation: streamContinuation,

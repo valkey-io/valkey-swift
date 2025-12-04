@@ -582,13 +582,13 @@ protocol TaskGroupProtocol {
     // We need to call this `addTask_` because some Swift versions define this
     // under exactly this name and others have different attributes. So let's pick
     // a name that doesn't clash anywhere and implement it using the standard `addTask`.
-    mutating func addTask_(operation: @escaping @Sendable () async -> Void)
+    mutating func addTask_(operation: @isolated(any) @escaping @Sendable () async -> Void)
 }
 
 @available(macOS 14.0, iOS 17.0, tvOS 17.0, watchOS 10.0, *)
 extension DiscardingTaskGroup: TaskGroupProtocol {
     @inlinable
-    mutating func addTask_(operation: @escaping @Sendable () async -> Void) {
+    mutating func addTask_(operation: @isolated(any) @escaping @Sendable () async -> Void) {
         self.addTask(priority: nil, operation: operation)
     }
 }
@@ -596,7 +596,7 @@ extension DiscardingTaskGroup: TaskGroupProtocol {
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension TaskGroup<Void>: TaskGroupProtocol {
     @inlinable
-    mutating func addTask_(operation: @escaping @Sendable () async -> Void) {
+    mutating func addTask_(operation: @isolated(any) @escaping @Sendable () async -> Void) {
         self.addTask(priority: nil, operation: operation)
     }
 }

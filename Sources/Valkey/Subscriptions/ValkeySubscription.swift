@@ -51,8 +51,13 @@ public struct ValkeySubscription: AsyncSequence, Sendable {
     public struct AsyncIterator: AsyncIteratorProtocol {
         var base: BaseAsyncSequence.AsyncIterator
 
+        @concurrent
         public mutating func next() async throws -> Element? {
             try await self.base.next()
+        }
+
+        public mutating func next(isolation actor: isolated (any Actor)?) async throws(any Error) -> ValkeySubscriptionMessage? {
+            try await self.base.next(isolation: actor)
         }
     }
 }
