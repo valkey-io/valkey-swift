@@ -456,7 +456,7 @@ extension PoolStateMachine {
 
         @inlinable
         mutating func keepAliveFailed() -> CloseAction? {
-            self.close()
+            self.close(graceful: false)
         }
 
         @inlinable
@@ -594,7 +594,7 @@ extension PoolStateMachine {
         }
 
         @inlinable
-        mutating func close() -> CloseAction? {
+        mutating func close(graceful: Bool) -> CloseAction? {
             switch self.state {
             case .starting:
                 // If we are currently starting, there is nothing we can do about it right now.
@@ -620,6 +620,9 @@ extension PoolStateMachine {
                 )
 
             case .leased(let connection, let usedStreams, let maxStreams, var keepAlive):
+                if graceful {
+                    return nil
+                }
                 self.state = .closing(connection)
                 return CloseAction(
                     connection: connection,

@@ -88,7 +88,6 @@ struct PoolStateMachine<
         case runKeepAlive(Connection, TimerCancellationToken?)
         case cancelTimers(TinyFastSequence<TimerCancellationToken>)
         case closeConnection(Connection, Max2Sequence<TimerCancellationToken>)
-        case gracefulShutdown(Shutdown)
         case shutdown(Shutdown)
 
         case none
@@ -434,17 +433,17 @@ struct PoolStateMachine<
     mutating func triggerGracefulShutdown() -> Action {
         switch self.poolState {
         case .running:
-            self.poolState = .shuttingDown(graceful: false)
+            self.poolState = .shuttingDown(graceful: true)
             var shutdown = ConnectionAction.Shutdown()
-            self.connections.triggerForceShutdown(&shutdown)
+            self.connections.triggerGracefulShutdown(&shutdown)
 
-            if shutdown.connections.isEmpty {
+            if self.connections.isEmpty {
                 self.poolState = .shutDown
             }
 
             return .init(
-                request: .failRequests(self.requestQueue.removeAll(), ConnectionPoolError.poolShutdown),
-                connection: .gracefulShutdown(shutdown)
+                request: .none,
+                connection: .shutdown(shutdown)
             )
 
         case .shuttingDown:
@@ -495,22 +494,8 @@ struct PoolStateMachine<
             )
         }
 
-        switch availableContext.use {
-        case .persisted, .demand:
-            switch availableContext.info {
-            case .leased:
-                return .none()
-
-            case .idle(_, let newIdle):
-                let timers = self.connections.parkConnection(at: index, hasBecomeIdle: newIdle).map(self.mapTimers)
-
-                return .init(
-                    request: .none,
-                    connection: .scheduleTimers(timers)
-                )
-            }
-
-        case .overflow:
+        switch self.poolState {
+        case .shuttingDown(graceful: true):
             if let closeAction = self.connections.closeConnectionIfIdle(at: index) {
                 return .init(
                     request: .none,
@@ -519,8 +504,34 @@ struct PoolStateMachine<
             } else {
                 return .none()
             }
-        }
 
+        case .running, .shutDown, .shuttingDown(graceful: false):
+            switch availableContext.use {
+            case .persisted, .demand:
+                switch availableContext.info {
+                case .leased:
+                    return .none()
+
+                case .idle(_, let newIdle):
+                    let timers = self.connections.parkConnection(at: index, hasBecomeIdle: newIdle).map(self.mapTimers)
+
+                    return .init(
+                        request: .none,
+                        connection: .scheduleTimers(timers)
+                    )
+                }
+
+            case .overflow:
+                if let closeAction = self.connections.closeConnectionIfIdle(at: index) {
+                    return .init(
+                        request: .none,
+                        connection: .closeConnection(closeAction.connection, closeAction.timersToCancel)
+                    )
+                } else {
+                    return .none()
+                }
+            }
+        }
     }
 
     @inlinable
