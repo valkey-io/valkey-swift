@@ -159,18 +159,14 @@ Not part of 1.0. Future plans:
 
 | Area | Description | Status |
 |------|-------------|--------|
-| Command Coverage | [All standard commands implemented with typed return values](#command-coverage) | ☐ |
-| Pipelines | [Node + cluster pipelines tested and validated](#pipelines) | ☑ |
-| Transactions | [Cluster transaction support functional](#transactions) | ☑ |
-| Error Handling | [Typed errors with file/line capture](#error-handling) | ☐ |
-| Security | [TLS/mTLS validated](#security) | ☑ |
-| Cluster Mode | [ASK/MOVED + READONLY + topology refresh](#cluster-mode-support) | ☑ |
-| Logging | [Debug/trace logs added across critical paths](#debug-ability) | ☐ |
-| Timeouts | [Command timeout support](#timeouts-and-retries) | ☑ |
-| Pending Issues | [Resolve critical GitHub issues](#additional-items) | ☐ |
-| Documentation | API docs + changelog finalized | ☐ |
-| GitHub Release | 1.0 tag + changelog published | ☐ |
-
-### Notes
-- **☐** = Planned for 1.0  
-- **☑** = Completed 
+| Command Coverage | [All standard commands implemented with typed return values](#command-coverage) | [] |
+| Pipelines | [Node + cluster pipelines tested and validated](#pipelines) | [x] |
+| Transactions | [Cluster transaction support functional](#transactions) | [x] |
+| Error Handling | [Typed errors with file/line capture](#error-handling) | [] |
+| Security | [TLS/mTLS validated](#security) | [x] |
+| Cluster Mode | [ASK/MOVED + READONLY + topology refresh](#cluster-mode-support) | [x] |
+| Logging | [Debug/trace logs added across critical paths](#debug-ability) | [] |
+| Timeouts | [Command timeout support](#timeouts-and-retries) | [x] |
+| Pending Issues | [Resolve critical GitHub issues](#additional-items) | [] |
+| Documentation | API docs + changelog finalized | [] |
+| GitHub Release | 1.0 tag + changelog published | [] |
