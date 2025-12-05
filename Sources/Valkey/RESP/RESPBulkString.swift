@@ -8,6 +8,24 @@
 import NIOCore
 
 /// Bulk string response from Valkey command
+///
+/// Bulk strings can store bytes, text, serialized objects and binary arrays.
+/// RESPBulkString conforms to `RandomAccessCollection where Element == UInt8` allowing
+/// readonly access to the contents of the bulk string.
+///
+/// You can also create a Swift String from a RESPBulkString using `String(_:)`.
+/// ```
+/// let bulkString = valkeyClient.get("myKey")
+/// let string = bulkString.map { String($0) }
+/// ```
+///
+/// Similarly if you want the bulk string bytes in the form of a SwiftNIO ByteBuffer
+/// you can use the initializer `ByteBuffer(_:)`. This method returns the internal
+/// buffer used by `RESPBulkString` so does not perform any copies.
+/// ```
+/// let bulkString = valkeyClient.get("myKey")
+/// let buffer = bulkString.map { ByteBuffer($0) }
+/// ```
 public struct RESPBulkString: Sendable, Equatable, Hashable, RandomAccessCollection {
     @usableFromInline
     let buffer: ByteBuffer
@@ -66,18 +84,6 @@ public struct RESPBulkString: Sendable, Equatable, Hashable, RandomAccessCollect
         RESPBulkString(buffer: self.buffer, range: range)
     }
 
-    #if compiler(>=6.2)
-    /// Provides safe high-performance read-only access to the readable bytes of this buffer.
-    @inlinable
-    @available(macOS 10.14.4, iOS 12.2, watchOS 5.2, tvOS 12.2, visionOS 1.0, *)
-    public var bytes: RawSpan {
-        @_lifetime(borrow self)
-        get {
-            self.buffer.readableBytesSpan
-        }
-    }
-    #endif
-
     // These are implemented as no-ops for performance reasons. The range check will be performed
     // when the slice is indexed with an index and not a range.
     // See https://github.com/swiftlang/swift/blob/153dd02cd8709f8c6afcda5f173237320a3eec87/stdlib/public/core/Collection.swift#L638
@@ -93,7 +99,8 @@ public struct RESPBulkString: Sendable, Equatable, Hashable, RandomAccessCollect
 
 #if compiler(>=6.2)
 extension RESPBulkString {
-    public var span: RawSpan {
+    /// Provides high performance read only access to the contents of the RESPBulkString
+    public var bytes: RawSpan {
         @_lifetime(borrow self)
         borrowing get {
             let span = self.buffer.readableBytesSpan
@@ -119,6 +126,8 @@ extension RESPBulkString: RESPStringRenderable {
 }
 
 extension String {
+    /// Initialize String from `RESPBulkString`
+    /// - Parameter bulkString: Source bulk string
     @inlinable
     public init(_ bulkString: RESPBulkString) {
         self.init(buffer: bulkString.buffer)
@@ -126,6 +135,11 @@ extension String {
 }
 
 extension ByteBuffer {
+    /// Initialize ByteBuffer from `RESPBulkString`
+    ///
+    /// This method returns the internal buffer used by `RESPBulkString` so does not perform any copies.
+    ///
+    /// - Parameter bulkString: Source bulk string
     @inlinable
     public init(_ bulkString: RESPBulkString) {
         self = bulkString.buffer
