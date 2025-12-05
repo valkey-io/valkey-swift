@@ -293,10 +293,10 @@ extension ValkeyNodeClient: ValkeyNodeConnectionPool {
     /// Initiates a graceful shutdown of the client.
     ///
     /// This method attempts to cleanly shut down the client's connections.
-    /// If not implemented, it falls back to force shutdown.
     @usableFromInline
     package func triggerGracefulShutdown() {
         self.connectionPool.triggerGracefulShutdown()
+        self.shutdownSubscriptionConnection()
     }
 }
 
