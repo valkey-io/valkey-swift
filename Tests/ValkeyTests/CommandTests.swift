@@ -299,14 +299,14 @@ struct CommandTests {
                 // Test single element LPOP
                 var lpopResponse = try await connection.lpop("key1")
                 #expect(lpopResponse != nil)
-                #expect(lpopResponse!.element() == ByteBuffer(string: "one"))
-                #expect(lpopResponse!.elements() == nil)
+                #expect(try lpopResponse!.element() == ByteBuffer(string: "one"))
+                #expect(try lpopResponse!.elements() == nil)
 
                 // Test multiple elements LPOP with count
                 lpopResponse = try await connection.lpop("key1", count: 3)
                 #expect(lpopResponse != nil)
-                #expect(lpopResponse!.element() == nil)
-                #expect(lpopResponse!.elements() == [ByteBuffer(string: "two"), ByteBuffer(string: "three"), ByteBuffer(string: "four")])
+                #expect(try lpopResponse!.element() == nil)
+                #expect(try lpopResponse!.elements() == [ByteBuffer(string: "two"), ByteBuffer(string: "three"), ByteBuffer(string: "four")])
             }
         }
 
