@@ -54,10 +54,7 @@ Valkey-Swift uses a code generator based on JSON definitions from the Valkey ser
 # Error Handling
 
 - All errors are typed using **`ValkeyClientError`**  
-- Should include:
-  - File name  
-  - Line number  
-  - Description  
+- Errors should capture the call site metadata including file, function, line, reason   
 
 ### Notes
 - File/line capture not implemented yet  
@@ -157,16 +154,14 @@ Not part of 1.0. Future plans:
 
 # 1.0 Release Readiness Checklist
 
-| Area | Description | Status |
-|------|-------------|--------|
-| Command Coverage | [All standard commands implemented with typed return values](#command-coverage) | [] |
-| Pipelines | [Node + cluster pipelines tested and validated](#pipelines) | [x] |
-| Transactions | [Cluster transaction support functional](#transactions) | [x] |
-| Error Handling | [Typed errors with file/line capture](#error-handling) | [] |
-| Security | [TLS/mTLS validated](#security) | [x] |
-| Cluster Mode | [ASK/MOVED + READONLY + topology refresh](#cluster-mode-support) | [x] |
-| Logging | [Debug/trace logs added across critical paths](#debug-ability) | [] |
-| Timeouts | [Command timeout support](#timeouts-and-retries) | [x] |
-| Pending Issues | [Resolve critical GitHub issues](#additional-items) | [] |
-| Documentation | API docs + changelog finalized | [] |
-| GitHub Release | 1.0 tag + changelog published | [] |
+- [ ] [All standard commands implemented with typed return values](#command-coverage)
+- [x] [Node + cluster pipelines tested and validated](#pipelines)
+- [x] [Cluster transaction support functional](#transactions)
+- [ ] [Typed errors with file/line capture](#error-handling)
+- [x] [TLS/mTLS validated](#security)
+- [x] [ASK/MOVED + READONLY + topology refresh](#cluster-mode-support)
+- [ ] [Debug/trace logs added across critical paths](#debug-ability)
+- [x] [Command timeout support](#timeouts-and-retries)
+- [ ] [Resolve critical GitHub issues](#additional-items)
+- [ ] API docs + changelog finalized
+- [ ] Publish 1.0 tag + changelog
