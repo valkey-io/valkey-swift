@@ -90,5 +90,4 @@ public struct ListPopResponse: RESPTokenDecodable, Sendable, Hashable {
     public func elements() throws -> [ByteBuffer]? {
         try [ByteBuffer]?(token)
     }
-    
 }
