@@ -63,3 +63,31 @@ extension BRPOP {
     ///     * [Array]: The key from which the element was popped and the value of the popped element
     public typealias Response = ListEntry?
 }
+
+/// Custom response type for LPOP and RPOP commands
+/// Handles the different return types based on whether count parameter is provided
+@_documentation(visibility: internal)
+public struct ListPopResponse: RESPTokenDecodable, Sendable, Hashable {
+
+    private let token: RESPToken
+
+    public init(_ token: RESPToken) throws {
+        self.token = token
+    }
+
+    /// Gets the single element when count was not provided
+    /// - Returns: ByteBuffer if a single element was returned, nil otherwise
+    public func element() throws -> ByteBuffer? {
+        // Handle .null as it is expected when the key doesn't exist
+        if token.value == .null {
+            return nil
+        }
+        return try ByteBuffer(token)
+    }
+
+    /// Gets the multiple elements when count was provided
+    /// - Returns: Array of ByteBuffer if multiple elements were returned, nil otherwise
+    public func elements() throws -> [ByteBuffer]? {
+        try [ByteBuffer]?(token)
+    }
+}

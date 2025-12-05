@@ -286,4 +286,76 @@ struct CommandIntegratedTests {
         }
     }
 
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testLpopCustomResponse() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                // Test empty key - LPOP should handle null response
+                var lpopResponse = try await client.lpop(key)
+                #expect(lpopResponse == nil)
+
+                // Set up list with elements
+                _ = try await client.rpush(key, elements: ["first", "second", "third", "fourth"])
+
+                // Test single element LPOP (no count)
+                lpopResponse = try await client.lpop(key)
+                #expect(lpopResponse != nil)
+                #expect(try lpopResponse!.element() == ByteBuffer(string: "first"))
+                #expect(try lpopResponse!.elements() == [ByteBuffer(string: "first")])
+
+                // Test multiple elements LPOP (with count)
+                lpopResponse = try await client.lpop(key, count: 2)
+                #expect(lpopResponse != nil)
+                #expect(try lpopResponse!.elements() == [ByteBuffer(string: "second"), ByteBuffer(string: "third")])
+                do {
+                    _ = try lpopResponse!.element()
+                    Issue.record("Expected RESPDecodeError.tokenMismatch to be thrown")
+                } catch let error as RESPDecodeError {
+                    #expect(error.errorCode == .tokenMismatch)
+                } catch {
+                    Issue.record("Unexpected error type: \(error)")
+                }
+            }
+        }
+    }
+
+    @Test
+    @available(valkeySwift 1.0, *)
+    func testRpopCustomResponse() async throws {
+        var logger = Logger(label: "Valkey")
+        logger.logLevel = .debug
+        try await withValkeyClient(.hostname(valkeyHostname, port: 6379), logger: logger) { client in
+            try await withKey(connection: client) { key in
+                // Test empty key - RPOP should return nil
+                var rpopResponse = try await client.rpop(key)
+                #expect(rpopResponse == nil)
+
+                // Set up list with elements
+                _ = try await client.rpush(key, elements: ["first", "second", "third", "fourth", "fifth"])
+
+                // Test single element RPOP (no count)
+                rpopResponse = try await client.rpop(key)
+                #expect(rpopResponse != nil)
+                #expect(try rpopResponse!.element() == ByteBuffer(string: "fifth"))
+                #expect(try rpopResponse!.elements() == [ByteBuffer(string: "fifth")])
+
+                // Test multiple elements RPOP (with count)
+                rpopResponse = try await client.rpop(key, count: 3)
+                #expect(rpopResponse != nil)
+                #expect(try rpopResponse!.elements() == [ByteBuffer(string: "fourth"), ByteBuffer(string: "third"), ByteBuffer(string: "second")])
+                do {
+                    _ = try rpopResponse!.element()
+                    Issue.record("Expected RESPDecodeError.tokenMismatch to be thrown")
+                } catch let error as RESPDecodeError {
+                    #expect(error.errorCode == .tokenMismatch)
+                } catch {
+                    Issue.record("Unexpected error type: \(error)")
+                }
+            }
+        }
+    }
+
 }

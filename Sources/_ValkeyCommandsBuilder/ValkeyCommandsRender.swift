@@ -34,6 +34,8 @@ private let disableResponseCalculationCommands: Set<String> = [
     "ROLE",
     "LMOVE",
     "LMPOP",
+    "LPOP",
+    "RPOP",
     "ROLE",
     "SCAN",
     "SSCAN",

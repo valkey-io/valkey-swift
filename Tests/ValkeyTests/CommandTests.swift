@@ -296,10 +296,24 @@ struct CommandTests {
                 (request: .command(["LPOP", "key1"]), response: .bulkString("one")),
                 (request: .command(["LPOP", "key1", "3"]), response: .array([.bulkString("two"), .bulkString("three"), .bulkString("four")]))
             ) { connection in
-                var values = try await connection.lpop("key1")
-                #expect(try values?.decode(as: [String].self) == ["one"])
-                values = try await connection.lpop("key1", count: 3)
-                #expect(try values?.decode(as: [String].self) == ["two", "three", "four"])
+                // Test single element LPOP
+                var lpopResponse = try await connection.lpop("key1")
+                #expect(lpopResponse != nil)
+                #expect(try lpopResponse!.element() == ByteBuffer(string: "one"))
+                #expect(try lpopResponse!.elements() == [ByteBuffer(string: "one")])
+
+                // Test multiple elements LPOP with count
+                lpopResponse = try await connection.lpop("key1", count: 3)
+                #expect(lpopResponse != nil)
+                do {
+                    _ = try lpopResponse!.element()
+                    Issue.record("Expected RESPDecodeError.tokenMismatch to be thrown")
+                } catch let error as RESPDecodeError {
+                    #expect(error.errorCode == .tokenMismatch)
+                } catch {
+                    Issue.record("Unexpected error type: \(error)")
+                }
+                #expect(try lpopResponse!.elements() == [ByteBuffer(string: "two"), ByteBuffer(string: "three"), ByteBuffer(string: "four")])
             }
         }
 
