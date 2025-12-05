@@ -21,7 +21,7 @@ public enum OBJECT {
     /// Returns the internal encoding of an object.
     @_documentation(visibility: internal)
     public struct ENCODING: ValkeyCommand {
-        public typealias Response = ByteBuffer?
+        public typealias Response = RESPBulkString?
 
         @inlinable public static var name: String { "OBJECT ENCODING" }
 
@@ -172,7 +172,7 @@ public struct DEL: ValkeyCommand {
 /// Returns a serialized representation of the value stored at a key.
 @_documentation(visibility: internal)
 public struct DUMP: ValkeyCommand {
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "DUMP" }
 
@@ -446,7 +446,7 @@ public struct MIGRATE<Host: RESPStringRenderable>: ValkeyCommand {
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
         commandEncoder.encodeArray(
             "MIGRATE",
-            RESPBulkString(host),
+            RESPRenderableBulkString(host),
             port,
             keySelector,
             destinationDb,
@@ -634,7 +634,7 @@ public struct PTTL: ValkeyCommand {
 /// Returns a random key name from the database.
 @_documentation(visibility: internal)
 public struct RANDOMKEY: ValkeyCommand {
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "RANDOMKEY" }
 
@@ -728,7 +728,7 @@ public struct RESTORE<SerializedValue: RESPStringRenderable>: ValkeyCommand {
             "RESTORE",
             key,
             ttl,
-            RESPBulkString(serializedValue),
+            RESPRenderableBulkString(serializedValue),
             RESPPureToken("REPLACE", replace),
             RESPPureToken("ABSTTL", absttl),
             RESPWithToken("IDLETIME", seconds),
@@ -974,7 +974,7 @@ public struct TTL: ValkeyCommand {
 /// Determines the type of value stored at a key.
 @_documentation(visibility: internal)
 public struct TYPE: ValkeyCommand {
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "TYPE" }
 
@@ -1096,7 +1096,7 @@ extension ValkeyClientProtocol {
     ///     * [String]: The serialized value.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func dump(_ key: ValkeyKey) async throws -> ByteBuffer? {
+    public func dump(_ key: ValkeyKey) async throws -> RESPBulkString? {
         try await execute(DUMP(key))
     }
 
@@ -1234,7 +1234,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Key doesn't exist.
     ///     * [String]: Encoding of the object.
     @inlinable
-    public func objectEncoding(_ key: ValkeyKey) async throws -> ByteBuffer? {
+    public func objectEncoding(_ key: ValkeyKey) async throws -> RESPBulkString? {
         try await execute(OBJECT.ENCODING(key))
     }
 
@@ -1368,7 +1368,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: When the database is empty.
     ///     * [String]: Random key in db.
     @inlinable
-    public func randomkey() async throws -> ByteBuffer? {
+    public func randomkey() async throws -> RESPBulkString? {
         try await execute(RANDOMKEY())
     }
 
@@ -1513,7 +1513,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Key doesn't exist
     ///     * [String]: Type of the key
     @inlinable
-    public func type(_ key: ValkeyKey) async throws -> ByteBuffer? {
+    public func type(_ key: ValkeyKey) async throws -> RESPBulkString? {
         try await execute(TYPE(key))
     }
 

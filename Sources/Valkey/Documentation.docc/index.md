@@ -35,6 +35,7 @@ Valkey-swift is a swift based client for Valkey, the high-performance key/value 
 ### RESP Protocol
 
 - ``RESPToken``
+- ``RESPBulkString``
 - ``RESPRenderable``
 - ``RESPStringRenderable``
 - ``RESPTokenDecodable``

@@ -59,14 +59,14 @@ extension CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "CAPA", capabilities.map { RESPBulkString($0) })
+            commandEncoder.encodeArray("CLIENT", "CAPA", capabilities.map { RESPRenderableBulkString($0) })
         }
     }
 
     /// Returns the name of the connection.
     @_documentation(visibility: internal)
     public struct GETNAME: ValkeyCommand {
-        public typealias Response = ByteBuffer?
+        public typealias Response = RESPBulkString?
 
         @inlinable public static var name: String { "CLIENT GETNAME" }
 
@@ -157,7 +157,7 @@ extension CLIENT {
     /// Returns information about the connection.
     @_documentation(visibility: internal)
     public struct INFO: ValkeyCommand {
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "CLIENT INFO" }
 
@@ -419,7 +419,7 @@ extension CLIENT {
                 }
             }
         }
-        public typealias Response = ByteBuffer
+        public typealias Response = RESPBulkString
 
         @inlinable public static var name: String { "CLIENT LIST" }
 
@@ -720,7 +720,7 @@ extension CLIENT {
         }
 
         @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-            commandEncoder.encodeArray("CLIENT", "SETNAME", RESPBulkString(connectionName))
+            commandEncoder.encodeArray("CLIENT", "SETNAME", RESPRenderableBulkString(connectionName))
         }
     }
 
@@ -864,7 +864,7 @@ public struct AUTH<Password: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("AUTH", username, RESPBulkString(password))
+        commandEncoder.encodeArray("AUTH", username, RESPRenderableBulkString(password))
     }
 }
 
@@ -884,7 +884,7 @@ public struct CLIENT: ValkeyCommand {
 /// Returns the given string.
 @_documentation(visibility: internal)
 public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "ECHO" }
 
@@ -895,7 +895,7 @@ public struct ECHO<Message: RESPStringRenderable>: ValkeyCommand {
     }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("ECHO", RESPBulkString(message))
+        commandEncoder.encodeArray("ECHO", RESPRenderableBulkString(message))
     }
 }
 
@@ -1164,7 +1164,7 @@ extension ValkeyClientProtocol {
         notDb: Int? = nil,
         notCapa: String? = nil,
         notIp: String? = nil
-    ) async throws -> ByteBuffer {
+    ) async throws -> RESPBulkString {
         try await execute(
             CLIENT.LIST(
                 clientType: clientType,
@@ -1273,7 +1273,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The given string
     @inlinable
     @discardableResult
-    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> ByteBuffer {
+    public func echo<Message: RESPStringRenderable>(message: Message) async throws -> RESPBulkString {
         try await execute(ECHO(message: message))
     }
 
@@ -1361,7 +1361,7 @@ extension ValkeyConnection {
     ///     * [Null]: Connection name was not set
     @inlinable
     @discardableResult
-    public func clientGetname() async throws -> ByteBuffer? {
+    public func clientGetname() async throws -> RESPBulkString? {
         try await execute(CLIENT.GETNAME())
     }
 
@@ -1385,7 +1385,7 @@ extension ValkeyConnection {
     /// - Response: [String]: A unique string, as described at the CLIENT LIST page, for the current client.
     @inlinable
     @discardableResult
-    public func clientInfo() async throws -> ByteBuffer {
+    public func clientInfo() async throws -> RESPBulkString {
         try await execute(CLIENT.INFO())
     }
 

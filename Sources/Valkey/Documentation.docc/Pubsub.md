@@ -25,7 +25,7 @@ try await valkeyClient.withConnection { connection in
             // a subscription item includes the channel the message was published on
             // as well as the message
             print(item.channel)
-            print(item.message)
+            print(String(item.message))
         }
     }
 }

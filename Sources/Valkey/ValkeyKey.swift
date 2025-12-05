@@ -99,6 +99,13 @@ extension ValkeyKey: ExpressibleByStringLiteral {
     }
 }
 
+extension ValkeyKey {
+    @inlinable
+    public init(_ bulkString: RESPBulkString) {
+        self = .init(bulkString.buffer)
+    }
+}
+
 extension String {
     ///  Initialize String from ValkeyKey
     /// - Parameter valkeyKey: key

@@ -33,7 +33,7 @@ public struct APPEND<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("APPEND", key, RESPBulkString(value))
+        commandEncoder.encodeArray("APPEND", key, RESPRenderableBulkString(value))
     }
 }
 
@@ -97,14 +97,14 @@ public struct DELIFEQ<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("DELIFEQ", key, RESPBulkString(value))
+        commandEncoder.encodeArray("DELIFEQ", key, RESPRenderableBulkString(value))
     }
 }
 
 /// Returns the string value of a key.
 @_documentation(visibility: internal)
 public struct GET: ValkeyCommand {
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "GET" }
 
@@ -126,7 +126,7 @@ public struct GET: ValkeyCommand {
 /// Returns the string value of a key after deleting the key.
 @_documentation(visibility: internal)
 public struct GETDEL: ValkeyCommand {
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "GETDEL" }
 
@@ -178,7 +178,7 @@ public struct GETEX: ValkeyCommand {
             }
         }
     }
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "GETEX" }
 
@@ -200,7 +200,7 @@ public struct GETEX: ValkeyCommand {
 /// Returns a substring of the string stored at a key.
 @_documentation(visibility: internal)
 public struct GETRANGE: ValkeyCommand {
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "GETRANGE" }
 
@@ -226,7 +226,7 @@ public struct GETRANGE: ValkeyCommand {
 /// Returns the previous string value of a key after setting it to a new value.
 @_documentation(visibility: internal)
 public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "GETSET" }
 
@@ -241,7 +241,7 @@ public struct GETSET<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("GETSET", key, RESPBulkString(value))
+        commandEncoder.encodeArray("GETSET", key, RESPRenderableBulkString(value))
     }
 }
 
@@ -290,7 +290,7 @@ public struct INCRBY: ValkeyCommand {
 /// Increment the floating point value of a key by a number. Uses 0 as initial value if the key doesn't exist.
 @_documentation(visibility: internal)
 public struct INCRBYFLOAT: ValkeyCommand {
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "INCRBYFLOAT" }
 
@@ -391,13 +391,13 @@ public struct MSET<Value: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + RESPBulkString(value).respEntries
+            key.respEntries + RESPRenderableBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             key.encode(into: &commandEncoder)
-            RESPBulkString(value).encode(into: &commandEncoder)
+            RESPRenderableBulkString(value).encode(into: &commandEncoder)
         }
     }
     @inlinable public static var name: String { "MSET" }
@@ -430,13 +430,13 @@ public struct MSETNX<Value: RESPStringRenderable>: ValkeyCommand {
 
         @inlinable
         public var respEntries: Int {
-            key.respEntries + RESPBulkString(value).respEntries
+            key.respEntries + RESPRenderableBulkString(value).respEntries
         }
 
         @inlinable
         public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
             key.encode(into: &commandEncoder)
-            RESPBulkString(value).encode(into: &commandEncoder)
+            RESPRenderableBulkString(value).encode(into: &commandEncoder)
         }
     }
     public typealias Response = Int
@@ -474,7 +474,7 @@ public struct PSETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("PSETEX", key, milliseconds, RESPBulkString(value))
+        commandEncoder.encodeArray("PSETEX", key, milliseconds, RESPRenderableBulkString(value))
     }
 }
 
@@ -536,7 +536,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
             }
         }
     }
-    public typealias Response = ByteBuffer?
+    public typealias Response = RESPBulkString?
 
     @inlinable public static var name: String { "SET" }
 
@@ -557,7 +557,7 @@ public struct SET<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SET", key, RESPBulkString(value), condition, RESPPureToken("GET", get), expiration)
+        commandEncoder.encodeArray("SET", key, RESPRenderableBulkString(value), condition, RESPPureToken("GET", get), expiration)
     }
 }
 
@@ -579,7 +579,7 @@ public struct SETEX<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SETEX", key, seconds, RESPBulkString(value))
+        commandEncoder.encodeArray("SETEX", key, seconds, RESPRenderableBulkString(value))
     }
 }
 
@@ -601,7 +601,7 @@ public struct SETNX<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SETNX", key, RESPBulkString(value))
+        commandEncoder.encodeArray("SETNX", key, RESPRenderableBulkString(value))
     }
 }
 
@@ -625,7 +625,7 @@ public struct SETRANGE<Value: RESPStringRenderable>: ValkeyCommand {
     public var keysAffected: CollectionOfOne<ValkeyKey> { .init(key) }
 
     @inlinable public func encode(into commandEncoder: inout ValkeyCommandEncoder) {
-        commandEncoder.encodeArray("SETRANGE", key, offset, RESPBulkString(value))
+        commandEncoder.encodeArray("SETRANGE", key, offset, RESPRenderableBulkString(value))
     }
 }
 
@@ -654,7 +654,7 @@ public struct STRLEN: ValkeyCommand {
 /// Returns a substring from a string value.
 @_documentation(visibility: internal)
 public struct SUBSTR: ValkeyCommand {
-    public typealias Response = ByteBuffer
+    public typealias Response = RESPBulkString
 
     @inlinable public static var name: String { "SUBSTR" }
 
@@ -738,7 +738,7 @@ extension ValkeyClientProtocol {
     ///     * [String]: The value of the key.
     ///     * [Null]: Key does not exist.
     @inlinable
-    public func get(_ key: ValkeyKey) async throws -> ByteBuffer? {
+    public func get(_ key: ValkeyKey) async throws -> RESPBulkString? {
         try await execute(GET(key))
     }
 
@@ -752,7 +752,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: The key does not exist.
     @inlinable
     @discardableResult
-    public func getdel(_ key: ValkeyKey) async throws -> ByteBuffer? {
+    public func getdel(_ key: ValkeyKey) async throws -> RESPBulkString? {
         try await execute(GETDEL(key))
     }
 
@@ -766,7 +766,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: Key does not exist.
     @inlinable
     @discardableResult
-    public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> ByteBuffer? {
+    public func getex(_ key: ValkeyKey, expiration: GETEX.Expiration? = nil) async throws -> RESPBulkString? {
         try await execute(GETEX(key, expiration: expiration))
     }
 
@@ -777,7 +777,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func getrange(_ key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
+    public func getrange(_ key: ValkeyKey, start: Int, end: Int) async throws -> RESPBulkString {
         try await execute(GETRANGE(key, start: start, end: end))
     }
 
@@ -792,7 +792,7 @@ extension ValkeyClientProtocol {
     ///     * [Null]: The key does not exist.
     @inlinable
     @discardableResult
-    public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> ByteBuffer? {
+    public func getset<Value: RESPStringRenderable>(_ key: ValkeyKey, value: Value) async throws -> RESPBulkString? {
         try await execute(GETSET(key, value: value))
     }
 
@@ -828,7 +828,7 @@ extension ValkeyClientProtocol {
     /// - Response: [String]: The value of the key after incrementing it.
     @inlinable
     @discardableResult
-    public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws -> ByteBuffer {
+    public func incrbyfloat(_ key: ValkeyKey, increment: Double) async throws -> RESPBulkString {
         try await execute(INCRBYFLOAT(key, increment: increment))
     }
 
@@ -923,7 +923,7 @@ extension ValkeyClientProtocol {
         condition: SET<Value>.Condition? = nil,
         get: Bool = false,
         expiration: SET<Value>.Expiration? = nil
-    ) async throws -> ByteBuffer? {
+    ) async throws -> RESPBulkString? {
         try await execute(SET(key, value: value, condition: condition, get: get, expiration: expiration))
     }
 
@@ -984,7 +984,7 @@ extension ValkeyClientProtocol {
     /// - Complexity: O(N) where N is the length of the returned string. The complexity is ultimately determined by the returned length, but because creating a substring from an existing string is very cheap, it can be considered O(1) for small strings.
     /// - Response: [String]: The substring of the string value stored at key, determined by the offsets start and end (both are inclusive).
     @inlinable
-    public func substr(_ key: ValkeyKey, start: Int, end: Int) async throws -> ByteBuffer {
+    public func substr(_ key: ValkeyKey, start: Int, end: Int) async throws -> RESPBulkString {
         try await execute(SUBSTR(key, start: start, end: end))
     }
 

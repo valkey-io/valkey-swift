@@ -31,7 +31,7 @@ When a command returns an array it is returned as an ``RESPToken/Array``. This c
 ```swift
 let values = try await valkeyClient.smembers("mySet")
 for value in values {
-    let string = value.decode(as: String.self)
+    let string = try value.decode(as: String.self)
     print(string)
 }
 ```
