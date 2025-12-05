@@ -12,7 +12,7 @@ public struct XREADMessage: RESPTokenDecodable, Sendable {
     public let id: String
     public let fields: [(key: String, value: RESPBulkString)]
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array).self)
@@ -66,7 +66,7 @@ public struct XREADGroupMessage: RESPTokenDecodable, Sendable {
     public let id: String
     public let fields: [(key: String, value: RESPBulkString)]?
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             let (id, values) = try array.decodeElements(as: (String, RESPToken.Array?).self)
@@ -91,7 +91,7 @@ public struct XREADStreams<Message>: RESPTokenDecodable, Sendable where Message:
 
     public let streams: [Stream]
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .map(let map):
             self.streams = try map.map {
@@ -111,7 +111,7 @@ public struct XAUTOCLAIMResponse: RESPTokenDecodable, Sendable {
     public let messages: [XREADMessage]
     public let deletedMessages: [String]
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             (self.streamID, self.messages, self.deletedMessages) = try array.decodeElements()
@@ -130,7 +130,7 @@ public enum XCLAIMResponse: RESPTokenDecodable, Sendable {
     case messages([XREADMessage])
     case ids([String])
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             if array.count == 0 {
@@ -159,7 +159,7 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
             public let consumer: String
             public let count: String
 
-            public init(fromRESP token: RESPToken) throws {
+            public init(_ token: RESPToken) throws {
                 switch token.value {
                 case .array(let array):
                     (self.consumer, self.count) = try array.decodeElements()
@@ -173,7 +173,7 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
         public let maximumID: String
         public let consumers: [Consumer]
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             switch token.value {
             case .array(let array):
                 (self.pendingMessageCount, self.minimumID, self.maximumID, self.consumers) = try array.decodeElements()
@@ -189,7 +189,7 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
             public let millisecondsSinceDelivered: Int
             public let numberOfTimesDelivered: Int
 
-            public init(fromRESP token: RESPToken) throws {
+            public init(_ token: RESPToken) throws {
                 switch token.value {
                 case .array(let array):
                     (self.id, self.consumer, self.millisecondsSinceDelivered, self.numberOfTimesDelivered) = try array.decodeElements()
@@ -200,7 +200,7 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
         }
         let messages: [PendingMessage]
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             switch token.value {
             case .array(let array):
                 self.messages = try array.decode(as: [PendingMessage].self)
@@ -213,11 +213,11 @@ public enum XPENDINGResponse: RESPTokenDecodable, Sendable {
     case standard(Standard)
     case extended(Extended)
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         do {
-            self = try .standard(.init(fromRESP: token))
+            self = try .standard(.init(token))
         } catch {
-            self = try .extended(.init(fromRESP: token))
+            self = try .extended(.init(token))
         }
     }
 }

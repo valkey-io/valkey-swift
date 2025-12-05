@@ -13,7 +13,7 @@ struct RESPDecodeErrorTests {
     func testTokenMismatchWith() {
         let resp = RESPToken(.null)
         let error = #expect(throws: RESPDecodeError.self) {
-            _ = try Bool(fromRESP: resp)
+            _ = try Bool(resp)
         }
         #expect(error?.errorCode == .tokenMismatch)
         #expect(error?.message == #"Expected to find a boolean"#)
@@ -23,7 +23,7 @@ struct RESPDecodeErrorTests {
     func testTokenMismatchWithMultipleMatches() {
         let resp = RESPToken(.null)
         let error = #expect(throws: RESPDecodeError.self) {
-            _ = try Double(fromRESP: resp)
+            _ = try Double(resp)
         }
         #expect(error?.errorCode == .tokenMismatch)
         #expect(error?.message == #"Expected to find a double, integer or bulkString token"#)
@@ -35,13 +35,13 @@ struct RESPDecodeErrorTests {
         struct Test: RESPTokenDecodable {
             let number: Double
             let number2: Double
-            init(fromRESP token: RESPToken) throws {
+            init(_ token: RESPToken) throws {
                 (self.number, self.number2) = try token.decodeArrayElements()
             }
         }
         let resp = RESPToken(.array([.double(1.0)]))
         let error = #expect(throws: RESPDecodeError.self) {
-            _ = try Test(fromRESP: resp)
+            _ = try Test(resp)
         }
         #expect(error?.errorCode == .invalidArraySize)
         #expect(error?.message == "Expected array of size 2 but got an array of size 1")
@@ -51,7 +51,7 @@ struct RESPDecodeErrorTests {
     func testCannotParseInt() {
         let resp = RESPToken(.bulkString("1.0"))
         let error = #expect(throws: RESPDecodeError.self) {
-            _ = try Int(fromRESP: resp)
+            _ = try Int(resp)
         }
         #expect(error?.errorCode == .cannotParseInteger)
         print(error!)
@@ -61,7 +61,7 @@ struct RESPDecodeErrorTests {
     func testCannotParseDouble() {
         let resp = RESPToken(.bulkString("1.0a"))
         let error = #expect(throws: RESPDecodeError.self) {
-            _ = try Double(fromRESP: resp)
+            _ = try Double(resp)
         }
         #expect(error?.errorCode == .cannotParseDouble)
     }

@@ -18,7 +18,7 @@ public struct HashEntry: RESPTokenDecodable, Sendable {
         self.value = value
     }
 
-    public init(fromRESP token: RESPToken) throws {
+    public init(_ token: RESPToken) throws {
         switch token.value {
         case .array(let array):
             (self.field, self.value) = try array.decodeElements()
@@ -34,7 +34,7 @@ extension HSCAN {
             /// List of members and possibly scores.
             public let elements: RESPToken.Array
 
-            public init(fromRESP token: RESPToken) throws {
+            public init(_ token: RESPToken) throws {
                 self.elements = try token.decode(as: RESPToken.Array.self)
             }
 
@@ -49,8 +49,8 @@ extension HSCAN {
             public func withValues() throws -> [HashEntry] {
                 var array: [HashEntry] = []
                 for respElement in try self.elements.asMap() {
-                    let field = try RESPBulkString(fromRESP: respElement.key)
-                    let value = try RESPBulkString(fromRESP: respElement.value)
+                    let field = try RESPBulkString(respElement.key)
+                    let value = try RESPBulkString(respElement.value)
                     array.append(.init(field: field, value: value))
                 }
                 return array
@@ -61,7 +61,7 @@ extension HSCAN {
         /// Sorted set members
         public let members: Members
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             (self.cursor, self.members) = try token.decodeArrayElements()
         }
     }
@@ -73,7 +73,7 @@ extension HRANDFIELD {
         /// The raw RESP token containing the response
         public let token: RESPToken
 
-        public init(fromRESP token: RESPToken) throws {
+        public init(_ token: RESPToken) throws {
             self.token = token
         }
 
@@ -85,7 +85,7 @@ extension HRANDFIELD {
             if token.value == .null {
                 return nil
             }
-            return try RESPBulkString(fromRESP: token)
+            return try RESPBulkString(token)
         }
 
         /// Get multiple random fields when HRANDFIELD was called with COUNT but without WITHVALUES
@@ -93,7 +93,7 @@ extension HRANDFIELD {
         /// - Throws: RESPDecodeError if response format is unexpected
         @inlinable
         public func multipleFields() throws -> [RESPBulkString]? {
-            try [RESPBulkString]?(fromRESP: token)
+            try [RESPBulkString]?(token)
         }
 
         /// Get multiple random field-value pairs when HRANDFIELD was called with COUNT and WITHVALUES
@@ -116,7 +116,7 @@ extension HRANDFIELD {
                 switch firstElement.value {
                 case .array:
                     // Array of arrays format - can use HashEntry decode
-                    return try [HashEntry]?(fromRESP: token)
+                    return try [HashEntry]?(token)
                 default:
                     // Flat array format - handle manually
                     return try _decodeFlatArrayFormat(array)
@@ -141,8 +141,8 @@ extension HRANDFIELD {
             // Iterate over pairs
             var iterator = array.makeIterator()
             while let field = iterator.next(), let value = iterator.next() {
-                let fieldBuffer = try RESPBulkString(fromRESP: field)
-                let valueBuffer = try RESPBulkString(fromRESP: value)
+                let fieldBuffer = try RESPBulkString(field)
+                let valueBuffer = try RESPBulkString(value)
                 entries.append(HashEntry(field: fieldBuffer, value: valueBuffer))
             }
 
