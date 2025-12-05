@@ -12,7 +12,7 @@ The majority of the Valkey commands return the Swift types equivalent to their e
 
 ### Decoding RESPToken
 
-A `RESPToken` contains the raw serialized bytes returned by the Valkey server. Valkey-swift introduces a protocol ``RESPTokenDecodable`` for types that can be decoded from a `RESPToken`. Many of Swift core types have been extended to conform to `RESPTokenDecodable`. There are two ways to decode a `RESPToken`. You can call ``RESPTokenDecodable/init(fromRESP:)``.
+A `RESPToken` contains the raw serialized bytes returned by the Valkey server. Valkey-swift introduces a protocol ``RESPTokenDecodable`` for types that can be decoded from a `RESPToken`. Many of Swift core types have been extended to conform to `RESPTokenDecodable`. There are two ways to decode a `RESPToken`. You can call ``RESPTokenDecodable/init(_:)``.
 
 ```swift
 let string = String(respToken)
