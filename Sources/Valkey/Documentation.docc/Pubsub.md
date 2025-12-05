@@ -16,7 +16,7 @@ try await valkeyClient.publish(channel: "channel1", message: "Hello, World!")
 
 ### Subscribing
 
-Use ``ValkeyConnection/subscribe(to:isolation:process:)-(String...,_,_)`` to subscribe to a single or multiple channels and receive every message published to the channel via an AsyncSequence. When you exit the closure provided, the Valkey client sends the relevant `UNSUBSCRIBE` messages.
+Use ``ValkeyConnection/subscribe(to:process:)-(String...,_)`` to subscribe to a single or multiple channels and receive every message published to the channel via an AsyncSequence. When you exit the closure provided, the Valkey client sends the relevant `UNSUBSCRIBE` messages.
 
 ```swift
 try await valkeyClient.withConnection { connection in
@@ -43,7 +43,7 @@ try await connection.subscribe(to: ["channel1"]) { subscription in
 
 ### Patterns
 
-Valkey allows you to use glob style patterns to subscribe to a range of channels. These are available with the function ``ValkeyConnection/psubscribe(to:isolation:process:)-([String],_,_)``. This is formatted in a similar manner to normal subscriptions.
+Valkey allows you to use glob style patterns to subscribe to a range of channels. These are available with the function ``ValkeyConnection/psubscribe(to:process:)-([String],_)``. This is formatted in a similar manner to normal subscriptions.
 
 ```swift
 try await connection.subscribe(to: ["channel*"]) { subscription in
@@ -85,7 +85,7 @@ try await connection.clientTracking(
 
 #### Subscribing to Invalidation Events
 
-Once tracking is enabled you can subscribe to invalidation events using ``ValkeyConnection/subscribeKeyInvalidations(isolation:process:)``. The AsyncSequence passed to the `process` closure is a list of keys that have been invalidated.
+Once tracking is enabled you can subscribe to invalidation events using ``ValkeyConnection/subscribeKeyInvalidations(process:)``. The AsyncSequence passed to the `process` closure is a list of keys that have been invalidated.
 
 ```swift
 try await connection.subscribeKeyInvalidations { keys in

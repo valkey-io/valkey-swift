@@ -117,15 +117,13 @@ extension ValkeyClient {
     /// Get connection from connection pool and run operation using connection
     ///
     /// - Parameters:
-    ///   - isolation: Actor isolation
     ///   - operation: Closure handling Valkey connection
     /// - Returns: Value returned by closure
     @inlinable
     public func withConnection<Value>(
-        isolation: isolated (any Actor)? = #isolation,
         operation: (ValkeyConnection) async throws -> sending Value
     ) async throws -> Value {
-        try await self.node.withConnection(isolation: isolation, operation: operation)
+        try await self.node.withConnection(operation: operation)
     }
 }
 
